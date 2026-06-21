@@ -271,11 +271,9 @@ public class PagLegalityCheck {
         if (!isLegalMagQuiet(mag, selection)) return false;
 
         // 3) Reconstitute PAG from the implied MAG.
-//        MagToPag magToPag = new MagToPag(mag);
-//        Graph pag2 = magToPag.convert(false, false);
-
-        Graph pag2 = GraphTransforms.magToPag(mag, false, -1);
-
+        MagToPag magToPag = new MagToPag(mag);
+        Graph pag2 = magToPag.convert(false, false);
+    
         // Mirror verbose logic:
         // If graphs differ, only fail if there exists an original edge that doesn't match.
         if (!pag.equals(pag2)) {

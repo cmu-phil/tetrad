@@ -76,7 +76,10 @@ public final class PhantomKernelEnumerator {
     private static final int     DEPTH           = -1;
     private static final int     RECURSIVE_DEPTH = -1;
     private static final long    TIMEOUT         = -1L;
-    private static final boolean EXCLUDE_SELECTION_BIAS = false;
+    private static final boolean EXCLUDE_SELECTION_BIAS = true;
+    private static final boolean PROBE_STEP_BREAKS       = true;   // I-map H0 -> legal non-I-map H1 probe
+    private static final boolean PROBE_R0_GENUINE        = true;   // widen genuineness test from R4 to R0
+    private static final boolean PROBE_RESPONSIBILITY    = true;   // are spurious-leg colliders SUFFICIENT?
 
     // Shared read-only config, set in main before the parallel stream.
     private static int OBS, P;
@@ -96,6 +99,7 @@ public final class PhantomKernelEnumerator {
                     || s.equalsIgnoreCase("warm") || s.equals("1");
         }
         String meekPath = (args.length > 5) ? args[5] : "meek_counterexamples.log";
+        String imapPath = (args.length > 6) ? args[6] : "imap_violations.log";
 
         OBS = N - NUM_LATENT;
         P   = N * (N - 1) / 2;
@@ -149,7 +153,145 @@ public final class PhantomKernelEnumerator {
             meekDump.close();
         }
 
+        // Write non-I-map H0 examples (the excluded population) to their own log.
+        PrintWriter imapDump = openDump(imapPath);
+        try {
+            imapDump.println("# Non-I-map H0 examples: legal PAGs whose cold reorientation of G*+spurious");
+            imapDump.println("# introduced an independence not entailed by G*, so I(H0) is NOT a subset of I(G*).");
+            imapDump.println("# Each carries a witness CI (holds in H0, fails in G*). Excluded from the Bryan test.");
+            imapDump.println("# Exhaustive over N=" + N + " latent=" + NUM_LATENT + " maxSpurious=" + MAX_SPURIOUS
+                    + ".  total non-I-map H0: " + total.bryanNotImap + "\n");
+            for (String w : total.imapWitnesses) imapDump.println(w);
+            if (total.imapSuppressed > 0) {
+                imapDump.println("==== (" + total.imapSuppressed + " further examples suppressed; raise WITNESS_CAP) ====");
+            }
+        } finally {
+            imapDump.flush();
+            imapDump.close();
+        }
+
+        // Write the PAG->PAG step-breaks (I-map H0 -> legal non-I-map H1) to their own log.
+        String stepBreakPath = (args.length > 7) ? args[7] : "pag_step_imap_break.log";
+        PrintWriter stepDump = openDump(stepBreakPath);
+        try {
+            stepDump.println("# PAG->PAG step-breaks: H0 is an I-map of G*, but a LEGAL single-edge");
+            stepDump.println("# remove+reorient yields H1 that is NOT an I-map of G* -- the move the");
+            stepDump.println("# PAG->PAG commit accepts silently (legality alone does not catch it).");
+            stepDump.println("# Each carries a witness CI (holds in H1, fails in G*).");
+            stepDump.println("# Exhaustive over N=" + N + " latent=" + NUM_LATENT + " maxSpurious=" + MAX_SPURIOUS
+                    + ".  total step-breaks: " + total.pagStepBreaks + "\n");
+            for (String w : total.stepBreakWitnesses) stepDump.println(w);
+            if (total.stepBreakSuppressed > 0) {
+                stepDump.println("==== (" + total.stepBreakSuppressed + " further suppressed; raise WITNESS_CAP) ====");
+            }
+        } finally {
+            stepDump.flush();
+            stepDump.close();
+        }
+
+        // Re-commit each step-break through FcitMag's path; does the MAG round-trip also break?
+        String magRecheckPath = (args.length > 8) ? args[8] : "mag_commit_recheck.log";
+        PrintWriter magDump = openDump(magRecheckPath);
+        try {
+            magDump.println("# For each PAG->PAG step-break, the SAME I-map H0 and SAME removal re-committed");
+            magDump.println("# through FcitMag's PAG->MAG->PAG path. Outcome per case: ALSO BREAKS / FIXED");
+            magDump.println("# (stays an I-map) / REVERTED (MAG illegal, step refused).");
+            magDump.println("# Tallies -- alsoBreaks: " + total.magCommitAlsoBreaks
+                    + " | fixed: " + total.magCommitFixed
+                    + " | reverted: " + total.magCommitReverted + "\n");
+            for (String w : total.magRecheckWitnesses) magDump.println(w);
+            if (total.magRecheckSuppressed > 0) {
+                magDump.println("==== (" + total.magRecheckSuppressed + " further suppressed; raise WITNESS_CAP) ====");
+            }
+        } finally {
+            magDump.flush();
+            magDump.close();
+        }
+
+        // Widened genuineness test (R0): legal reorientations the R0-inclusive definition rejects.
+        String r0NgPath = (args.length > 9) ? args[9] : "r0_nongenuine.log";
+        PrintWriter r0Dump = openDump(r0NgPath);
+        try {
+            r0Dump.println("# Genuineness widened from R4 to R0. Each entry is a LEGAL from-scratch");
+            r0Dump.println("# reorientation with an unshielded collider on a spurious leg -- an R0 firing");
+            r0Dump.println("# the paper's R4-only 'genuine' misses. 'legal => genuine' holds (R0-inclusive)");
+            r0Dump.println("# iff this count is 0. Cross-tab with the I-map step-breaks below.");
+            r0Dump.println("# legal R0-non-genuine: " + total.r0NonGenuineLegal
+                    + "  | also I-map step-breaks: " + total.r0NgAndStepBreak
+                    + "  | step-breaks NOT explained by R0: " + total.stepBreakNotExplainedByR0
+                    + "  (of " + total.pagStepBreaks + " step-breaks)\n");
+            for (String w : total.r0NgWitnesses) r0Dump.println(w);
+            if (total.r0NgSuppressed > 0) {
+                r0Dump.println("==== (" + total.r0NgSuppressed + " further suppressed; raise WITNESS_CAP) ====");
+            }
+        } finally {
+            r0Dump.flush();
+            r0Dump.close();
+        }
+
+        // Step-breaks re-binned by mechanism; the RESIDUE bucket (all-real-edge breaks) dumped in full.
+        String residuePath = (args.length > 10) ? args[10] : "step_break_residue.log";
+        PrintWriter resDump = openDump(residuePath);
+        try {
+            resDump.println("# Step-breaks re-binned by the mechanism of the false collider:");
+            resDump.println("#   R0         : PAG unshielded def-collider on a spurious leg");
+            resDump.println("#   R4         : shielded spurious-leg collider in the MAG (discriminating-path type)");
+            resDump.println("#   COMPLETION : unshielded spurious-leg collider realized only by MAG completion");
+            resDump.println("#   RESIDUE    : NO collider on any spurious leg -- all-real-edge break (expect 0)");
+            resDump.println("# tally -- R0: " + total.sbR0 + " | R4(shielded): " + total.sbR4Shielded
+                    + " | COMPLETION: " + total.sbCompletion + " | RESIDUE: " + total.sbResidue
+                    + "   (of " + total.pagStepBreaks + " step-breaks)");
+            resDump.println("# cross-check: R0 should equal alsoStepBreak=" + total.r0NgAndStepBreak
+                    + " ; R4+COMPLETION+RESIDUE should equal stepBreaksNotR0=" + total.stepBreakNotExplainedByR0 + "\n");
+            resDump.println("# --- RESIDUE witnesses (the only alarming bucket) ---");
+            for (String w : total.residueWitnesses) resDump.println(w);
+            if (total.residueSuppressed > 0) {
+                resDump.println("==== (" + total.residueSuppressed + " further suppressed; raise WITNESS_CAP) ====");
+            }
+        } finally {
+            resDump.flush();
+            resDump.close();
+        }
+
+        // Responsibility: are the spurious-leg colliders SUFFICIENT for every false CI of each step-break?
+        String respPath = (args.length > 11) ? args[11] : "step_break_resp_residue.log";
+        PrintWriter respDump = openDump(respPath);
+        try {
+            respDump.println("# Sufficiency test: per step-break, neutralize every spurious-leg collider and");
+            respDump.println("# re-test each false CI (skipping apices in that CI's conditioning set).");
+            respDump.println("#   responsible    : no false CI survives -> spurious-leg colliders are the whole");
+            respDump.println("#                    cause (upgrades 'spurious leg present' to 'responsible').");
+            respDump.println("#   NOT responsible: a false CI survives -> a non-spurious blocker (real-leg");
+            respDump.println("#                    collider, or unsound tail). Expect 0; dumped below.");
+            respDump.println("# tally -- responsible: " + total.sbResponsible
+                    + " | NOT responsible: " + total.sbNotResponsible
+                    + "   (of " + total.pagStepBreaks + " step-breaks)\n");
+            for (String w : total.respResidueWitnesses) respDump.println(w);
+            if (total.respResidueSuppressed > 0) {
+                respDump.println("==== (" + total.respResidueSuppressed + " further suppressed; raise WITNESS_CAP) ====");
+            }
+        } finally {
+            respDump.flush();
+            respDump.close();
+        }
+
         printSummary(total, dumpPath, meekPath);
+        System.out.println("Non-I-map H0 examples (" + total.bryanNotImap + ") written to: " + imapPath);
+        System.out.println("PAG->PAG step-breaks (" + total.pagStepBreaks + ") written to: " + stepBreakPath);
+        System.out.println("FcitMag re-commit (alsoBreaks=" + total.magCommitAlsoBreaks
+                + " fixed=" + total.magCommitFixed + " reverted=" + total.magCommitReverted
+                + ") written to: " + magRecheckPath);
+        System.out.println("R0-non-genuine legal (" + total.r0NonGenuineLegal
+                + ", alsoStepBreak=" + total.r0NgAndStepBreak
+                + ", stepBreaksNotR0=" + total.stepBreakNotExplainedByR0
+                + ") written to: " + r0NgPath);
+        System.out.println("Step-break mechanism -- R0=" + total.sbR0 + " R4=" + total.sbR4Shielded
+                + " COMPLETION=" + total.sbCompletion + " RESIDUE=" + total.sbResidue
+                + " (residue dumped to: " + residuePath + ")");
+        System.out.println("Step-break responsibility -- responsible=" + total.sbResponsible
+                + " NOT_responsible=" + total.sbNotResponsible + " (of those, displaced=" + total.sbDisplaced
+                + ", unexplained=" + (total.sbNotResponsible - total.sbDisplaced)
+                + ") residue dumped to: " + respPath);
     }
 
     // ── Per-DAG-mask work; thread-confined writes into r. Catches per-model. ───
@@ -180,6 +322,8 @@ public final class PhantomKernelEnumerator {
 
                 List<Node> obs = truePag.getNodes();
                 Set<Triple> initialColliders = noteInitialColliders(obs, truePag);
+                Graph trueMag = PROBE_STEP_BREAKS ? magOfPag(truePag) : null;        // PAG->PAG probe (true MAG)
+                MsepTest trueMsep = PROBE_STEP_BREAKS ? new MsepTest(trueMag) : null;
                 List<int[]> nonAdj = nonAdjacentPairs(truePag, obs);
                 if (nonAdj.isEmpty()) continue;
 
@@ -230,6 +374,10 @@ public final class PhantomKernelEnumerator {
                         int[] dlGenProng = new int[4], dlNgProng = new int[4];
                         StringBuilder dlLog = new StringBuilder();
 
+                        // Is H0 itself an I-map of G*? Only then is "I-map H0 -> non-I-map H1" the
+                        // real PAG->PAG soundness defect (vs. an invalid start we'd exclude anyway).
+                        boolean h0imap = PROBE_STEP_BREAKS && (imapWitnessAgainst(h0, obs, trueMsep) == null);
+
                         for (Edge e : spurious) {
                             Graph h1 = new EdgeListGraph(h0);
                             Edge present = h1.getEdge(e.getNode1(), e.getNode2());
@@ -248,6 +396,110 @@ public final class PhantomKernelEnumerator {
                             PagLegalityCheck.LegalPagRet ret = PagLegalityCheck.isLegalPag(h1, new HashSet<>());
                             boolean legal = ret.isLegalPag();
                             if (legal) legalEscapes++;   // a legal single-edge escape from H0
+
+                            // Widened genuineness test (R0, not just R4): does this LEGAL reorientation
+                            // carry an unshielded collider with a spurious leg? If so it is non-genuine
+                            // under the R0-inclusive definition -- a legal-but-non-genuine witness, i.e.
+                            // a counterexample to "legal => genuine" once genuineness is corrected.
+                            if (PROBE_R0_GENUINE && legal) {
+                                String r0ng = r0NonGenuineFiring(h1, truePag);
+                                if (r0ng != null) {
+                                    r.r0NonGenuineLegal++;
+                                    boolean alsoStepBreak = (trueMsep != null) && h0imap
+                                            && (imapWitnessAgainst(h1, obs, trueMsep) != null);
+                                    if (alsoStepBreak) r.r0NgAndStepBreak++;
+                                    r.addR0NgWitness(formatR0NonGenuine(mask, latSet, spurious, e,
+                                            dag, truePag, h0, h1, r0ng, h0imap, alsoStepBreak));
+                                }
+                            }
+
+                            // PAG->PAG soundness probe: a LEGAL single-edge remove+reorient from an
+                            // I-map H0 that lands OUTSIDE the I-map class of G*. This is the step the
+                            // PAG->PAG commit accepts on legality alone; the MAG-aware commit would not.
+                            if (h0imap && legal) {
+                                String h1break = imapWitnessAgainst(h1, obs, trueMsep);
+                                if (h1break != null) {
+                                    r.pagStepBreaks++;
+
+                                    // Re-bin by the mechanism of the false collider. R0: PAG unshielded
+                                    // def-collider on a spurious leg. R4: shielded spurious-leg collider in
+                                    // the MAG (discriminating-path type). COMPLETION: unshielded spurious-leg
+                                    // collider realized only by MAG completion (circles in the PAG -- the
+                                    // under-commit case). RESIDUE: NO collider on any spurious leg -- an
+                                    // all-real-edge break, a direct counterexample to Remark (traces).
+                                    String mech = "";
+                                    if (PROBE_R0_GENUINE) {
+                                        Graph mag1 = magOfPag(h1);
+                                        String r0 = r0NonGenuineFiring(h1, truePag);
+                                        if (r0 != null) {
+                                            r.sbR0++;
+                                            mech = "  mechanism R0 (PAG unshielded): " + r0;
+                                        } else {
+                                            r.stepBreakNotExplainedByR0++;
+                                            String sh = magColliderOnSpuriousLeg(mag1, truePag, h1, true);
+                                            String un = (sh == null) ? magColliderOnSpuriousLeg(mag1, truePag, h1, false) : null;
+                                            if (sh != null) {
+                                                r.sbR4Shielded++;
+                                                mech = "  mechanism R4 (MAG shielded): " + sh;
+                                            } else if (un != null) {
+                                                r.sbCompletion++;
+                                                mech = "  mechanism COMPLETION (MAG-only unshielded): " + un;
+                                            } else {
+                                                r.sbResidue++;
+                                                mech = "  mechanism RESIDUE: no collider on any spurious leg";
+                                                r.addResidueWitness(formatResidue(mask, latSet, spurious, e,
+                                                        dag, truePag, h0, h1, mag1, h1break));
+                                            }
+                                        }
+
+                                        // Responsibility / sufficiency: neutralize every spurious-leg collider
+                                        // (its spurious-leg arrowhead -> tail) and ask whether ANY false CI of
+                                        // H1 survives. None surviving => the spurious-leg colliders were the
+                                        // whole cause (PRESENT upgraded to RESPONSIBLE). A survivor is blocked
+                                        // by a non-spurious structure -- the real residue. Done per false CI,
+                                        // skipping colliders whose apex is in that CI's conditioning set.
+                                        if (PROBE_RESPONSIBILITY) {
+                                            String survives = stepBreakResidualBlock(mag1, truePag, trueMag, obs, trueMsep);
+                                            if (survives == null) {
+                                                r.sbResponsible++;
+                                            } else {
+                                                r.sbNotResponsible++;
+                                                String displaced = allRealLegUnsoundTriple(mag1, truePag, trueMag);
+                                                if (displaced != null) r.sbDisplaced++;
+                                                mech = mech + "  [RESP RESIDUE: " + survives
+                                                        + (displaced != null ? " | displaced: " + displaced
+                                                        : " | NO all-real unsound triple (INVESTIGATE)") + "]";
+                                                r.addRespResidueWitness(formatRespResidue(mask, latSet, spurious, e,
+                                                        dag, truePag, h0, h1, mag1, survives)
+                                                        + (displaced != null ? "  displaced unsound mark: " + displaced + "\n"
+                                                        : "  *** NO all-real-leg unsound triple found -- INVESTIGATE ***\n"));
+                                            }
+                                        }
+                                    }
+
+                                    r.addStepBreakWitness(formatStepBreak(mask, latSet, spurious, e,
+                                            dag, truePag, h0, h1, h1break) + mech + "\n");
+
+                                    // Re-commit the SAME removal through FcitMag's path: breaks too, fixes, or refuses?
+                                    Graph h1mag = magCommit(h0, e.getNode1(), e.getNode2(), sepsets);
+                                    String magBreak = null, outcome;
+                                    if (h1mag == null) {
+                                        r.magCommitReverted++;
+                                        outcome = "REVERTED (MAG illegal -- FcitMag refuses this step)";
+                                    } else {
+                                        magBreak = imapWitnessAgainst(h1mag, obs, trueMsep);
+                                        if (magBreak != null) {
+                                            r.magCommitAlsoBreaks++;
+                                            outcome = "ALSO BREAKS (FcitMag commit is also non-I-map)";
+                                        } else {
+                                            r.magCommitFixed++;
+                                            outcome = "FIXED (FcitMag commit stays an I-map of G*)";
+                                        }
+                                    }
+                                    r.addMagRecheckWitness(formatMagRecheck(mask, latSet, spurious, e,
+                                            dag, truePag, h0, h1, h1break, h1mag, magBreak, outcome));
+                                }long pagStepBreaks;
+                            }
 
                             // Classify every illegal deletion (deadlock anatomy), first-pass consistent.
                             if (!legal) {
@@ -381,7 +633,11 @@ public final class PhantomKernelEnumerator {
                             // canonical cold reorient). Only survivors here are genuine
                             // generalized-Meek counterexamples; they alone go to the meek log.
                             BryanInfo bi = bryanReachable(truePag, h0, spurious);
-                            if (!bi.checked) {
+                            if (bi.imapFail) {
+                                r.bryanNotImap++;     // H0 not an I-map of G*: invalid instance, excluded
+                                r.addImapWitness(formatImapViolation(mask, latSet, spurious,
+                                        dag, truePag, h0, bi));
+                            } else if (!bi.checked) {
                                 r.bryanUnchecked++;
                             } else if (!bi.reachable) {
                                 r.bryanCounterexamples++;
@@ -555,7 +811,8 @@ public final class PhantomKernelEnumerator {
         System.out.printf("reduced/reoriented skeleton, not just the canonical cold reorient):%n");
         System.out.printf("  GENUINE counterexamples (truePag still unreachable) : %d%n", t.bryanCounterexamples);
         System.out.printf("  rescued (a legal I-map removal/reorientation exists) : %d%n",
-                Math.max(0, t.meekCounterexamples - t.bryanCounterexamples - t.bryanUnchecked));
+                Math.max(0, t.meekCounterexamples - t.bryanCounterexamples - t.bryanUnchecked - t.bryanNotImap));
+        System.out.printf("  excluded (H0 not an I-map of G*, invalid instance)   : %d%n", t.bryanNotImap);
         System.out.printf("  unchecked (skeleton over %d edges, enumeration skipped) : %d%n",
                 BRYAN_MAX_SKELETON_EDGES, t.bryanUnchecked);
         if (t.bryanCounterexamples == 0 && t.bryanUnchecked == 0) {
@@ -612,6 +869,7 @@ public final class PhantomKernelEnumerator {
         long[] meekArityHist = new long[Math.max(3, OBS + 1)];
         long bryanCounterexamples;
         long bryanUnchecked;
+        long bryanNotImap;     // deadlocks whose H0 is not an I-map of G* (excluded from the test)
         // MAG-sweep escape: the closed per-edge fallback (Zhang MAG, delete the adjacency,
         // MAG->PAG, re-canonicalize each step) run over a stall's spurious set, in list order.
         long magSweepReachesTrue;   // sweep lands exactly on truePag
@@ -621,9 +879,54 @@ public final class PhantomKernelEnumerator {
         long meekSuppressed;
         List<String> witnesses = new ArrayList<>();
         long suppressed;
+        List<String> imapWitnesses = new ArrayList<>();   // non-I-map H0 examples
+        long imapSuppressed;
+        long pagStepBreaks;                               // I-map H0 -> legal non-I-map H1 (PAG->PAG defect)
+        List<String> stepBreakWitnesses = new ArrayList<>();
+        long stepBreakSuppressed;
+        long magCommitAlsoBreaks, magCommitFixed, magCommitReverted;   // FcitMag re-commit of each step-break
+        List<String> magRecheckWitnesses = new ArrayList<>();
+        long magRecheckSuppressed;
+        long r0NonGenuineLegal;          // legal H1 with an unshielded (R0) collider on a spurious leg
+        long r0NgAndStepBreak;           // ...of those, how many are also I-map step-breaks
+        long stepBreakNotExplainedByR0;  // step-breaks with NO spurious-leg R0 collider (= R4+COMPLETION+RESIDUE)
+        List<String> r0NgWitnesses = new ArrayList<>();
+        long r0NgSuppressed;
+        long sbR0, sbR4Shielded, sbCompletion, sbResidue;   // step-break mechanism re-bin
+        List<String> residueWitnesses = new ArrayList<>();  // the all-real-edge breaks (alarming)
+        long residueSuppressed;
+        long sbResponsible;        // step-breaks fully explained by spurious-leg colliders (sufficient)
+        long sbNotResponsible;     // ...a false CI survives their neutralization (responsibility residue)
+        long sbDisplaced;          // ...of those, ones with an exhibited all-real-leg displaced unsound mark
+        List<String> respResidueWitnesses = new ArrayList<>();
+        long respResidueSuppressed;
 
         void addWitness(String s) {
             if (witnesses.size() < WITNESS_CAP) witnesses.add(s); else suppressed++;
+        }
+
+        void addImapWitness(String s) {
+            if (imapWitnesses.size() < WITNESS_CAP) imapWitnesses.add(s); else imapSuppressed++;
+        }
+
+        void addStepBreakWitness(String s) {
+            if (stepBreakWitnesses.size() < WITNESS_CAP) stepBreakWitnesses.add(s); else stepBreakSuppressed++;
+        }
+
+        void addMagRecheckWitness(String s) {
+            if (magRecheckWitnesses.size() < WITNESS_CAP) magRecheckWitnesses.add(s); else magRecheckSuppressed++;
+        }
+
+        void addR0NgWitness(String s) {
+            if (r0NgWitnesses.size() < WITNESS_CAP) r0NgWitnesses.add(s); else r0NgSuppressed++;
+        }
+
+        void addResidueWitness(String s) {
+            if (residueWitnesses.size() < WITNESS_CAP) residueWitnesses.add(s); else residueSuppressed++;
+        }
+
+        void addRespResidueWitness(String s) {
+            if (respResidueWitnesses.size() < WITNESS_CAP) respResidueWitnesses.add(s); else respResidueSuppressed++;
         }
 
         void addMeekWitness(String s) {
@@ -662,6 +965,7 @@ public final class PhantomKernelEnumerator {
             a.meekCounterexamples += b.meekCounterexamples;
             a.bryanCounterexamples += b.bryanCounterexamples;
             a.bryanUnchecked += b.bryanUnchecked;
+            a.bryanNotImap += b.bryanNotImap;
             a.magSweepReachesTrue += b.magSweepReachesTrue;
             a.magSweepStuck += b.magSweepStuck;
             a.magSweepWrongPag += b.magSweepWrongPag;
@@ -674,6 +978,32 @@ public final class PhantomKernelEnumerator {
             for (int i = 0; i < n; i++) a.phantomLenHist[i] += b.phantomLenHist[i];
             for (String s : b.witnesses) a.addWitness(s);
             a.suppressed += b.suppressed;
+            for (String s : b.imapWitnesses) a.addImapWitness(s);
+            a.imapSuppressed += b.imapSuppressed;
+            a.pagStepBreaks += b.pagStepBreaks;
+            for (String s : b.stepBreakWitnesses) a.addStepBreakWitness(s);
+            a.stepBreakSuppressed += b.stepBreakSuppressed;
+            a.magCommitAlsoBreaks += b.magCommitAlsoBreaks;
+            a.magCommitFixed += b.magCommitFixed;
+            a.magCommitReverted += b.magCommitReverted;
+            for (String s : b.magRecheckWitnesses) a.addMagRecheckWitness(s);
+            a.magRecheckSuppressed += b.magRecheckSuppressed;
+            a.r0NonGenuineLegal += b.r0NonGenuineLegal;
+            a.r0NgAndStepBreak += b.r0NgAndStepBreak;
+            a.stepBreakNotExplainedByR0 += b.stepBreakNotExplainedByR0;
+            for (String s : b.r0NgWitnesses) a.addR0NgWitness(s);
+            a.r0NgSuppressed += b.r0NgSuppressed;
+            a.sbR0 += b.sbR0;
+            a.sbR4Shielded += b.sbR4Shielded;
+            a.sbCompletion += b.sbCompletion;
+            a.sbResidue += b.sbResidue;
+            for (String s : b.residueWitnesses) a.addResidueWitness(s);
+            a.residueSuppressed += b.residueSuppressed;
+            a.sbResponsible += b.sbResponsible;
+            a.sbNotResponsible += b.sbNotResponsible;
+            a.sbDisplaced += b.sbDisplaced;
+            for (String s : b.respResidueWitnesses) a.addRespResidueWitness(s);
+            a.respResidueSuppressed += b.respResidueSuppressed;
             return a;
         }
     }
@@ -880,6 +1210,8 @@ public final class PhantomKernelEnumerator {
     private static final class BryanInfo {
         boolean reachable;     // truePag reachable from H0 via Bryan moves
         boolean checked;       // false if skipped (skeleton too large)
+        boolean imapFail;      // H0 is not an I-map of truePag -> invalid instance, excluded
+        String imapWitness;    // a CI that H0 entails but G* does not (proof I(H0) !subset I(G*))
         int k;
         int statesExplored;
     }
@@ -916,6 +1248,28 @@ public final class PhantomKernelEnumerator {
         boolean[] truth = modelOf(new MsepTest(magOfPag(truePag)), obs, trPairs, trZ, T);
         String targetKey = key(truth, T);
 
+        // H0 must be an I-map of truePag (I(H0) subset I(G*)) for the Bryan question to be
+        // well-posed. Cold-reorienting G*+spurious can create colliders whose independencies
+        // are NOT in G*, so a legal H0 need not be an I-map; those are invalid instances and
+        // are excluded here -- before the expensive MAG enumeration -- not counted, not thrown.
+        boolean[] h0model = modelOf(new MsepTest(magOfPag(h0)), obs, trPairs, trZ, T);
+        String h0key = key(h0model, T);
+        if (!subsetModel(h0model, truth)) {
+            bi.imapFail = true;
+            // Witness: the first CI H0 entails but G* does not -- a concrete proof that
+            // cold-reorienting G*+spurious produced a non-I-map (the example we want to see).
+            for (int t = 0; t < T; t++) {
+                if (h0model[t] && !truth[t]) {
+                    Node wx = obs.get(trPairs.get(t)[0]);
+                    Node wy = obs.get(trPairs.get(t)[1]);
+                    bi.imapWitness = wx.getName() + " _||_ " + wy.getName() + " | " + trZ.get(t)
+                            + "   (m-separated in H0's MAG, m-connected in G*)";
+                    break;
+                }
+            }
+            return bi;
+        }
+
         // truePag.skel as node-pair list (orientation ignored; we re-orient freely).
         List<Node[]> baseSkel = new ArrayList<>();
         for (Edge e : truePag.getEdges()) baseSkel.add(new Node[]{e.getNode1(), e.getNode2()});
@@ -937,10 +1291,22 @@ public final class PhantomKernelEnumerator {
         }
 
         // Start = H0's model on the full subset; target = truth on the empty subset.
-        boolean[] h0model = modelOf(new MsepTest(magOfPag(h0)), obs, trPairs, trZ, T);
-        String h0key = key(h0model, T);
+        // (h0model/h0key already computed and I-map-checked above.)
         modelByKey.put(h0key, h0model);
         int full = (1 << k) - 1;
+
+        // API-drift guard: H0 is now a confirmed I-map, so it MUST appear among the enumerated
+        // legal I-map MAGs on the full skeleton, and truePag's own model MUST appear on the base
+        // skeleton. If either is missing, isLegalMag/magOfPag have drifted from the legality
+        // predicate that defines the deadlocks -- a real bug, so fail loudly rather than miscount.
+        if (!statesBySubset.getOrDefault(full, Collections.emptySet()).contains(h0key)) {
+            throw new IllegalStateException("bryanReachable: I-map H0 absent from enumerated states "
+                    + "on the full skeleton -- isLegalMag/magOfPag mismatch, verdict untrustworthy.");
+        }
+        if (!statesBySubset.getOrDefault(0, Collections.emptySet()).contains(targetKey)) {
+            throw new IllegalStateException("bryanReachable: truePag model absent from enumerated states "
+                    + "on the base skeleton -- isLegalMag/magOfPag mismatch, verdict untrustworthy.");
+        }
 
         Set<String> visited = new HashSet<>();
         Deque<String> q = new ArrayDeque<>();
@@ -1100,9 +1466,350 @@ public final class PhantomKernelEnumerator {
         }
         return true;
     }
-    private static String formatBryan(long mask, Set<Integer> latSet, List<Edge> spurious,
-                                      Graph dag, Graph truePag, Graph h0, MeekInfo mi, BryanInfo bi) {
+    private static String formatImapViolation(long mask, Set<Integer> latSet, List<Edge> spurious,
+                                              Graph dag, Graph truePag, Graph h0, BryanInfo bi) {
         StringBuilder sb = new StringBuilder();
+        sb.append("==== NON-I-MAP H0 (cold reorient of G*+spurious is NOT an I-map of G*) ====\n");
+        sb.append("  A legal PAG whose cold reorientation introduced an independence absent from G*,\n");
+        sb.append("  so it is excluded from the Bryan test. The witness CI below is the proof.\n");
+        sb.append("  dag mask              : ").append(mask).append('\n');
+        sb.append("  latent set            : ").append(latSet).append("  (latent nodes: ").append(latentNames(dag)).append(")\n");
+        sb.append("  extra (spurious) edges: ").append(spurious).append("  (k=").append(bi.k).append(")\n");
+        sb.append("  WITNESS (holds in H0, fails in G*): ").append(bi.imapWitness).append('\n');
+        sb.append("  true DAG (all variables, latents included):\n").append(dag).append('\n');
+        sb.append("  true PAG G* (over observed):\n").append(truePag).append('\n');
+        sb.append("  H0 (legal PAG = G* + spurious, cold-reoriented):\n").append(h0).append('\n');
+        return sb.toString();
+    }
+
+    // FcitMag's single-edge PAG->MAG->PAG commit, replicated so we can re-run the same removal
+    // through it. Returns the committed PAG, or null if the MAG was illegal (FcitMag reverts).
+    private static Graph magCommit(Graph h0, Node x, Node y, SepsetMap sepsets)
+            throws InterruptedException {
+        Graph mag = magOfPag(h0);                 // zhangMagFromPag(h0)
+        mag.removeEdge(x, y);
+        orientSepsetCollidersInMag(mag, sepsets); // same stamping FcitMag applies on commit
+        if (!isLegalMag(mag)) return null;        // FcitMag would revert this step
+        return new MagToPag(mag).convert(false, EXCLUDE_SELECTION_BIAS);
+    }
+
+    // FcitMag's adjustForExtraSepsets analogue (keyset form), as patched into FcitMag.
+    private static void orientSepsetCollidersInMag(Graph mag, SepsetMap sepsets) {
+        for (Set<Node> pair : sepsets.keySet()) {
+            List<Node> arr = new ArrayList<>(pair);
+            if (arr.size() != 2) continue;
+            Node x = arr.get(0), y = arr.get(1);
+            Set<Node> s = sepsets.get(x, y);
+            if (s == null) continue;
+            if (mag.isAdjacentTo(x, y)) continue;
+            List<Node> common = mag.getAdjacentNodes(x);
+            common.retainAll(mag.getAdjacentNodes(y));
+            for (Node c : common) {
+                if (s.contains(c)) continue;
+                if (mag.isDefCollider(x, c, y)) continue;
+                mag.setEndpoint(x, c, Endpoint.ARROW);
+                mag.setEndpoint(y, c, Endpoint.ARROW);
+            }
+        }
+    }
+
+    private static String formatMagRecheck(long mask, Set<Integer> latSet, List<Edge> spurious, Edge removed,
+                                           Graph dag, Graph truePag, Graph h0, Graph h1, String pagWitness,
+                                           Graph h1mag, String magWitness, String outcome) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("==== STEP-BREAK RE-COMMITTED THROUGH FcitMag (PAG->MAG->PAG) ====\n");
+        sb.append("  Same I-map H0, same removal. Does FcitMag's commit also leave the I-map class?\n");
+        sb.append("  FcitMag outcome       : ").append(outcome).append('\n');
+        sb.append("  dag mask              : ").append(mask).append('\n');
+        sb.append("  latent set            : ").append(latSet).append("  (latent nodes: ").append(latentNames(dag)).append(")\n");
+        sb.append("  extra (spurious) edges: ").append(spurious).append('\n');
+        sb.append("  edge removed from H0  : ").append(removed).append('\n');
+        sb.append("  PAG->PAG witness (in H1, not G*)  : ").append(pagWitness).append('\n');
+        if (magWitness != null) {
+            sb.append("  FcitMag witness  (in H1mag, not G*): ").append(magWitness).append('\n');
+        }
+        sb.append("  true PAG G* (over observed):\n").append(truePag).append('\n');
+        sb.append("  H0 (I-map of G*, legal):\n").append(h0).append('\n');
+        sb.append("  H1 via PAG->PAG (legal, NOT I-map):\n").append(h1).append('\n');
+        if (h1mag != null) {
+            sb.append("  H1 via FcitMag (PAG->MAG->PAG):\n").append(h1mag).append('\n');
+        } else {
+            sb.append("  H1 via FcitMag: (none -- MAG illegal, step refused)\n");
+        }
+        return sb.toString();
+    }
+
+    // Null iff `cand` is an I-map of the true PAG whose MAG-model is `trueMsep` (over `obs`);
+    // otherwise the first CI that `cand` entails but G* does not. Same m-separation-on-a-MAG
+    // basis as bryanReachable (the model is invariant across a PAG's equivalence class).
+    private static String imapWitnessAgainst(Graph cand, List<Node> obs, MsepTest trueMsep)
+            throws InterruptedException {
+        MsepTest candT = new MsepTest(magOfPag(cand));
+        int n = obs.size();
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                List<Integer> others = new ArrayList<>();
+                for (int t = 0; t < n; t++) if (t != i && t != j) others.add(t);
+                int mm = others.size();
+                for (int z = 0; z < (1 << mm); z++) {
+                    Set<Node> Z = new HashSet<>();
+                    for (int b = 0; b < mm; b++) if ((z & (1 << b)) != 0) Z.add(obs.get(others.get(b)));
+                    if (candT.checkIndependence(obs.get(i), obs.get(j), Z).isIndependent()
+                            && !trueMsep.checkIndependence(obs.get(i), obs.get(j), Z).isIndependent()) {
+                        return obs.get(i).getName() + " _||_ " + obs.get(j).getName() + " | " + Z
+                                + "   (m-separated here, m-connected in G*)";
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // Sufficiency test for a step-break. For each false CI (x _||_ y | Z holding in mag1 but not in
+    // G*), neutralize every spurious-leg collider whose apex is NOT in Z -- those are the candidate
+    // blockers; forcing the spurious-leg arrowhead to a tail un-colliders the apex and can only OPEN
+    // paths. Skipping apices in Z avoids the artifact where un-collidering an apex in Z turns it into
+    // a blocking non-collider. If the CI re-opens (m-connected), the spurious-leg colliders carried
+    // it. Returns the first false CI that SURVIVES (blocked by a non-spurious structure), else null.
+    // For a survivor: exhibit the displaced unsound mark -- a triple BOTH of whose legs are real in G*
+    // but whose collider status mag1 and G* disagree on. ARROWHEAD-displaced: collider in H1's MAG but
+    // a non-collider in G* (an unsound arrowhead carried here by propagation). TAIL-displaced: a
+    // non-collider in H1's MAG where G* has a collider (the MAG completion dropped a real collider).
+    // Either way the spurious firing's damage has moved onto all-real edges. Returns the first, or null.
+    private static String allRealLegUnsoundTriple(Graph mag1, Graph truePag, Graph trueMag) {
+        for (Node w : mag1.getNodes()) {
+            List<Node> adj = mag1.getAdjacentNodes(w);
+            int m = adj.size();
+            for (int p = 0; p < m; p++) {
+                for (int q = p + 1; q < m; q++) {
+                    Node a = adj.get(p), b = adj.get(q);
+                    if (!truePag.isAdjacentTo(a, w) || !truePag.isAdjacentTo(w, b)) continue;  // both legs real
+                    boolean magColl = mag1.getEndpoint(a, w) == Endpoint.ARROW
+                            && mag1.getEndpoint(b, w) == Endpoint.ARROW;
+                    boolean trueColl = trueMag.isAdjacentTo(a, w) && trueMag.isAdjacentTo(w, b)
+                            && trueMag.getEndpoint(a, w) == Endpoint.ARROW
+                            && trueMag.getEndpoint(b, w) == Endpoint.ARROW;
+                    if (magColl && !trueColl) {
+                        return a.getName() + " *-> " + w.getName() + " <-* " + b.getName()
+                                + "  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]";
+                    }
+                    if (!magColl && trueColl) {
+                        return a.getName() + " -- " + w.getName() + " -- " + b.getName()
+                                + "  [TAIL-displaced: non-collider in H1's MAG, collider in G*]";
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // Sufficiency test (corrected). For each false CI (x _||_ y | Z in mag1 but not in G*), neutralize
+    // the FULL unsound footprint of the spurious-leg firings: at every spurious-leg collider apex c
+    // (apex not in Z), force every arrowhead into c that disagrees with the true MAG to a tail -- not
+    // only the one on the spurious leg. A spurious-leg R0 firing also stamps a backwards arrowhead on
+    // its adjacent REAL leg; tailing only the spurious leg leaves that unsound real-leg mark, which can
+    // keep the CI blocked via another path (the inflated NOT_responsible count). Sound arrowheads are
+    // kept, so no over-neutralization. Returns the first false CI that SURVIVES -- blocked by an unsound
+    // mark NOT located at any spurious-leg apex -- else null.
+    private static String stepBreakResidualBlock(Graph mag1, Graph truePag, Graph trueMag,
+                                                 List<Node> obs, MsepTest trueMsep) throws InterruptedException {
+        MsepTest t1 = new MsepTest(mag1);
+        int n = obs.size();
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                Node x = obs.get(i), y = obs.get(j);
+                List<Integer> others = new ArrayList<>();
+                for (int t = 0; t < n; t++) if (t != i && t != j) others.add(t);
+                int mm = others.size();
+                for (int zk = 0; zk < (1 << mm); zk++) {
+                    Set<Node> Z = new HashSet<>();
+                    for (int b = 0; b < mm; b++) if ((zk & (1 << b)) != 0) Z.add(obs.get(others.get(b)));
+                    boolean falseInMag1 = t1.checkIndependence(x, y, Z).isIndependent()
+                            && !trueMsep.checkIndependence(x, y, Z).isIndependent();
+                    if (!falseInMag1) continue;
+
+                    Graph mag2 = new EdgeListGraph(mag1);
+                    for (Node c : mag1.getNodes()) {
+                        if (Z.contains(c)) continue;                        // skip apices in the conditioning set
+                        if (!isSpuriousLegApex(mag1, truePag, c)) continue; // only at spurious-leg collider apices
+                        for (Node a : mag1.getAdjacentNodes(c)) {
+                            if (mag1.getEndpoint(a, c) == Endpoint.ARROW && !soundArrowInTruth(trueMag, a, c)) {
+                                mag2.setEndpoint(a, c, Endpoint.TAIL);      // tail every UNSOUND arrowhead at apex
+                            }
+                        }
+                    }
+                    if (new MsepTest(mag2).checkIndependence(x, y, Z).isIndependent()) {
+                        return x.getName() + " _||_ " + y.getName() + " | " + Z
+                                + "  (survives: blocked by an unsound mark not at a spurious-leg apex)";
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    // c is the apex of some collider in `mag` at least one of whose legs is absent in G* (spurious).
+    private static boolean isSpuriousLegApex(Graph mag, Graph truePag, Node c) {
+        List<Node> adj = mag.getAdjacentNodes(c);
+        int m = adj.size();
+        for (int p = 0; p < m; p++) {
+            for (int q = p + 1; q < m; q++) {
+                Node a = adj.get(p), b = adj.get(q);
+                if (mag.getEndpoint(a, c) != Endpoint.ARROW) continue;
+                if (mag.getEndpoint(b, c) != Endpoint.ARROW) continue;
+                if (!truePag.isAdjacentTo(a, c) || !truePag.isAdjacentTo(c, b)) return true;
+            }
+        }
+        return false;
+    }
+
+    // The arrowhead mag1 places at c from a is sound iff the true MAG carries that same arrowhead.
+    private static boolean soundArrowInTruth(Graph trueMag, Node a, Node c) {
+        return trueMag.isAdjacentTo(a, c) && trueMag.getEndpoint(a, c) == Endpoint.ARROW;
+    }
+
+    private static String formatRespResidue(long mask, Set<Integer> latSet, List<Edge> spurious, Edge removed,
+                                            Graph dag, Graph truePag, Graph h0, Graph h1, Graph mag1, String survivingCi) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("==== RESPONSIBILITY RESIDUE (false CI survives neutralizing all spurious-leg colliders) ====\n");
+        sb.append("  Spurious-leg colliders are PRESENT but not SUFFICIENT: this CI holds in H1's MAG and\n");
+        sb.append("  fails in G*, yet stays m-separated after un-collidering every spurious-leg apex. It is\n");
+        sb.append("  blocked by a non-spurious structure -- a real-leg collider, or an unsound TAIL where\n");
+        sb.append("  truth has an arrowhead. This is the case 'killing spurious adjacencies' would miss.\n");
+        sb.append("  surviving false CI    : ").append(survivingCi).append('\n');
+        sb.append("  dag mask              : ").append(mask).append('\n');
+        sb.append("  latent set            : ").append(latSet).append("  (latent nodes: ").append(latentNames(dag)).append(")\n");
+        sb.append("  extra (spurious) edges: ").append(spurious).append('\n');
+        sb.append("  edge removed from H0  : ").append(removed).append('\n');
+        sb.append("  true PAG G* (over observed):\n").append(truePag).append('\n');
+        sb.append("  H1 (PAG, legal, non-I-map):\n").append(h1).append('\n');
+        sb.append("  MAG of H1 (magOfPag):\n").append(mag1).append('\n');
+        return sb.toString();
+    }
+
+    // Any collider a*->c<-*b in the MAG `mag` whose leg a-c or c-b is absent in G* (spurious).
+    // `wantShielded` selects shielded colliders (a,b adjacent in the MAG -- only orientable via a
+    // discriminating path, i.e. R4) vs unshielded ones (R0/seed in the PAG, or realized by MAG
+    // completion). This catches false colliders the PAG-level R0 test misses because the apex was
+    // left a circle in the PAG and only resolved to a collider by zhangMagFromPag. Returns the
+    // first such firing (annotated with whether it was already committed in the PAG), else null.
+    private static String magColliderOnSpuriousLeg(Graph mag, Graph truePag, Graph pag, boolean wantShielded) {
+        for (Node c : mag.getNodes()) {
+            List<Node> adj = mag.getAdjacentNodes(c);
+            int m = adj.size();
+            for (int i = 0; i < m; i++) {
+                for (int j = i + 1; j < m; j++) {
+                    Node a = adj.get(i), b = adj.get(j);
+                    if (mag.getEndpoint(a, c) != Endpoint.ARROW) continue;
+                    if (mag.getEndpoint(b, c) != Endpoint.ARROW) continue;   // collider a*->c<-*b in the MAG
+                    if (mag.isAdjacentTo(a, b) != wantShielded) continue;
+                    boolean legAC = truePag.isAdjacentTo(a, c);
+                    boolean legCB = truePag.isAdjacentTo(c, b);
+                    if (!legAC || !legCB) {
+                        String src = pag.isDefCollider(a, c, b) ? "committed in the PAG"
+                                : "circle(s) in the PAG -> realized by MAG completion";
+                        return a.getName() + " *-> " + c.getName() + " <-* " + b.getName()
+                                + "  [" + src + "]  spurious leg: "
+                                + (legAC ? "" : a.getName() + "-" + c.getName() + " ")
+                                + (legCB ? "" : c.getName() + "-" + b.getName());
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String formatResidue(long mask, Set<Integer> latSet, List<Edge> spurious, Edge removed,
+                                        Graph dag, Graph truePag, Graph h0, Graph h1, Graph mag1, String witness) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE -- falsifies Rem. traces) ====\n");
+        sb.append("  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG\n");
+        sb.append("  completion, sits on a spurious leg. If this bucket is non-empty the unsoundness is\n");
+        sb.append("  NOT traceable to a spurious adjacency by the leg test -- either R1-R3,R5-R10\n");
+        sb.append("  propagation produced an unsound mark from sound inputs, or the responsible collider\n");
+        sb.append("  has all-real legs. These are the cases to drill into with path-responsibility.\n");
+        sb.append("  WITNESS (in H1, not in G*): ").append(witness).append('\n');
+        sb.append("  dag mask              : ").append(mask).append('\n');
+        sb.append("  latent set            : ").append(latSet).append("  (latent nodes: ").append(latentNames(dag)).append(")\n");
+        sb.append("  extra (spurious) edges: ").append(spurious).append('\n');
+        sb.append("  edge removed from H0  : ").append(removed).append('\n');
+        sb.append("  true PAG G* (over observed):\n").append(truePag).append('\n');
+        sb.append("  H0:\n").append(h0).append('\n');
+        sb.append("  H1 (PAG, legal, non-I-map):\n").append(h1).append('\n');
+        sb.append("  MAG of H1 (magOfPag):\n").append(mag1).append('\n');
+        return sb.toString();
+    }
+
+    // Widened genuineness test (R0, not just R4). Enumerate the unshielded colliders of `cand`
+    // -- the R0 firing sites -- and test their legs against the truth. A leg (x,z) or (z,y) that
+    // is non-adjacent in G* is oracle-separable (spurious), so the apex was stamped a collider on
+    // a triple G* does not contain: a NON-genuine R0 firing. Returns the first such firing, or
+    // null if every unshielded collider has both legs in G* (R0-genuine). This is the per-instance
+    // detection test of Remark (detection, not prevention) applied to R0 rather than only R4.
+    private static String r0NonGenuineFiring(Graph cand, Graph truePag) {
+        for (Node z : cand.getNodes()) {
+            List<Node> adj = cand.getAdjacentNodes(z);
+            int m = adj.size();
+            for (int i = 0; i < m; i++) {
+                for (int j = i + 1; j < m; j++) {
+                    Node x = adj.get(i), y = adj.get(j);
+                    if (cand.isAdjacentTo(x, y)) continue;        // unshielded only -- the R0 site
+                    if (!cand.isDefCollider(x, z, y)) continue;   // R0 actually oriented x*->z<-*y
+                    boolean legXZ = truePag.isAdjacentTo(x, z);
+                    boolean legZY = truePag.isAdjacentTo(z, y);
+                    if (!legXZ || !legZY) {
+                        return x.getName() + " *-> " + z.getName() + " <-* " + y.getName()
+                                + "   (" + x.getName() + "," + y.getName() + " nonadjacent)   spurious leg: "
+                                + (legXZ ? "" : x.getName() + "-" + z.getName() + " ")
+                                + (legZY ? "" : z.getName() + "-" + y.getName());
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String formatR0NonGenuine(long mask, Set<Integer> latSet, List<Edge> spurious, Edge removed,
+                                             Graph dag, Graph truePag, Graph h0, Graph h1,
+                                             String firing, boolean h0imap, boolean alsoStepBreak) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("==== LEGAL BUT R0-NON-GENUINE (genuineness widened from R4 to R0) ====\n");
+        sb.append("  A LEGAL from-scratch reorientation carrying an unshielded collider with a spurious\n");
+        sb.append("  leg. The paper's R4-only 'genuine' passes it; the R0-inclusive test does not -- so\n");
+        sb.append("  this is a counterexample to 'legal => genuine' once genuineness is corrected.\n");
+        sb.append("  R0 non-genuine firing : ").append(firing).append('\n');
+        sb.append("  H0 was an I-map of G* : ").append(h0imap).append('\n');
+        sb.append("  also an I-map step-break (non-I-map H1): ").append(alsoStepBreak).append('\n');
+        sb.append("  dag mask              : ").append(mask).append('\n');
+        sb.append("  latent set            : ").append(latSet).append("  (latent nodes: ").append(latentNames(dag)).append(")\n");
+        sb.append("  extra (spurious) edges: ").append(spurious).append('\n');
+        sb.append("  edge removed from H0  : ").append(removed).append('\n');
+        sb.append("  true PAG G* (over observed):\n").append(truePag).append('\n');
+        sb.append("  H0:\n").append(h0).append('\n');
+        sb.append("  H1 (legal, R0-non-genuine):\n").append(h1).append('\n');
+        return sb.toString();
+    }
+
+    private static String formatStepBreak(long mask, Set<Integer> latSet, List<Edge> spurious, Edge removed,
+                                          Graph dag, Graph truePag, Graph h0, Graph h1, String witness) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("==== PAG->PAG STEP LEAVES I-MAP CLASS (real defect of the PAG->PAG commit) ====\n");
+        sb.append("  H0 is an I-map of G*, but the LEGAL single-edge remove+reorient below yields an\n");
+        sb.append("  H1 that is NOT an I-map of G*. The PAG->PAG commit accepts this on legality alone.\n");
+        sb.append("  dag mask              : ").append(mask).append('\n');
+        sb.append("  latent set            : ").append(latSet).append("  (latent nodes: ").append(latentNames(dag)).append(")\n");
+        sb.append("  extra (spurious) edges: ").append(spurious).append('\n');
+        sb.append("  edge removed from H0  : ").append(removed).append('\n');
+        sb.append("  WITNESS (in H1, not in G*): ").append(witness).append('\n');
+        sb.append("  true DAG (all variables, latents included):\n").append(dag).append('\n');
+        sb.append("  true PAG G* (over observed):\n").append(truePag).append('\n');
+        sb.append("  H0 (I-map of G*, legal):\n").append(h0).append('\n');
+        sb.append("  H1 (legal, NOT an I-map of G*):\n").append(h1).append('\n');
+        return sb.toString();
+    }
+
+    private static String formatBryan(long mask, Set<Integer> latSet, List<Edge> spurious,
+                                      Graph dag, Graph truePag, Graph h0, MeekInfo mi, BryanInfo bi) {       StringBuilder sb = new StringBuilder();
         sb.append("==== GENERALIZED-MEEK COUNTEREXAMPLE (Bryan full form: removals + reorientations) ====\n");
         sb.append("  A legal PAG, I-map of the true PAG, from which the true PAG is NOT reachable by any\n");
         sb.append("  sequence of legal single-edge removals and reorientations over I-map PAGs.\n");
