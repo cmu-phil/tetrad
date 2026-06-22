@@ -503,17 +503,17 @@ public final class FcitMag implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
-//        NongenuineScan finalScan = findNongenuineEdge();
-//
-//        if (finalScan.edge() != null) {
-//            TetradLogger.getInstance().log("\nNon-genuine DDPs detected.");
-//        } else if (finalScan.indeterminate()) {
-//            TetradLogger.getInstance().log(
-//                    "\nDetection inconclusive: a blocking search timed out before a verdict. "
-//                            + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
-//        } else {
-//            TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
-//        }
+        NongenuineScan finalScan = findR4NongenuineEdge();
+
+        if (finalScan.edge() != null) {
+            TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
+        } else if (finalScan.indeterminate()) {
+            TetradLogger.getInstance().log(
+                    "\nR4: Detection inconclusive: a blocking search timed out before a verdict. "
+                            + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
+        } else {
+            TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
+        }
 
         List<Edge> spurious = findSpuriousEdges();
         TetradLogger.getInstance().log(spurious.isEmpty()
@@ -523,6 +523,12 @@ public final class FcitMag implements IGraphSearch {
         if (spurious.size() >= 2) {
             tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
         }
+
+        List<Triple> r0Suspect = findR0CollidersWithSeparableLeg();
+        TetradLogger.getInstance().log(r0Suspect.isEmpty()
+                ? "\nNo R0 collider has a test-separable leg (collider-genuine on the R0 side)."
+                : "\n" + r0Suspect.size() + " R0 collider(s) carry a separable leg; "
+                  + "Markovness not certified: " + r0Suspect);
 
         TetradLogger.getInstance().log("\nFCIT finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
@@ -538,61 +544,61 @@ public final class FcitMag implements IGraphSearch {
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
-//    private NongenuineScan findNongenuineEdge() throws InterruptedException {
-//        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
-//
-//        // Within one pass, the same pair can appear as a leg/chord of several
-//        // discriminating paths. blockPathsRecursively is the expensive call, so
-//        // memoize its verdict per unordered pair for the duration of this pass.
-//        // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
-//        Map<Set<Node>, LegVerdict> verdictCache = new LinkedHashMap<>();
-//
-//        // Match findIndependenceCheckRecursive's convention: unlimited stays
-//        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
-//        // budget of `timeout` ms.
-//        final long deadlineMs = (timeout < 0L)
-//                ? Long.MAX_VALUE
-//                : System.currentTimeMillis() + timeout;
-//
-//        boolean sawIndeterminate = false;
-//
-//        for (DiscriminatingPath dd : ddps) {
-//            List<Node> colliderPath = dd.getColliderPath();
-//
-//            List<Node> spine = new ArrayList<>(colliderPath);
-//            spine.addFirst(dd.getX());
-//            spine.addLast(dd.getY());
-//
-//            // Path edges: consecutive spine vertices.
-//            for (int i = 0; i < spine.size() - 1; i++) {
-//                Node m = spine.get(i);
-//                Node n = spine.get(i + 1);
-//                LegVerdict v = legVerdict(m, n, deadlineMs, verdictCache);
-//                if (v == LegVerdict.SPURIOUS) {
-//                    return new NongenuineScan(pag.getEdge(m, n), sawIndeterminate);
-//                }
-//                if (v == LegVerdict.INDETERMINATE) {
-//                    sawIndeterminate = true;
-//                }
-//            }
-//
-//            // Chords v_i *-> c: each interior collider to the far endpoint y.
-//            Node y = dd.getY();
-//            for (Node v0 : colliderPath) {
-//                LegVerdict v = legVerdict(v0, y, deadlineMs, verdictCache);
-//                if (v == LegVerdict.SPURIOUS) {
-//                    return new NongenuineScan(pag.getEdge(v0, y), sawIndeterminate);
-//                }
-//                if (v == LegVerdict.INDETERMINATE) {
-//                    sawIndeterminate = true;
-//                }
-//            }
-//        }
-//
-//        // No confirmed-spurious leg. If any pair was indeterminate, we cannot
-//        // claim the graph is phantom-free; report it.
-//        return new NongenuineScan(null, sawIndeterminate);
-//    }
+    private NongenuineScan findR4NongenuineEdge() throws InterruptedException {
+        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
+
+        // Within one pass, the same pair can appear as a leg/chord of several
+        // discriminating paths. blockPathsRecursively is the expensive call, so
+        // memoize its verdict per unordered pair for the duration of this pass.
+        // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
+        Map<Set<Node>, LegVerdict> verdictCache = new LinkedHashMap<>();
+
+        // Match findIndependenceCheckRecursive's convention: unlimited stays
+        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
+        // budget of `timeout` ms.
+        final long deadlineMs = (timeout < 0L)
+                ? Long.MAX_VALUE
+                : System.currentTimeMillis() + timeout;
+
+        boolean sawIndeterminate = false;
+
+        for (DiscriminatingPath dd : ddps) {
+            List<Node> colliderPath = dd.getColliderPath();
+
+            List<Node> spine = new ArrayList<>(colliderPath);
+            spine.addFirst(dd.getX());
+            spine.addLast(dd.getY());
+
+            // Path edges: consecutive spine vertices.
+            for (int i = 0; i < spine.size() - 1; i++) {
+                Node m = spine.get(i);
+                Node n = spine.get(i + 1);
+                LegVerdict v = legVerdict(m, n, deadlineMs, verdictCache);
+                if (v == LegVerdict.SPURIOUS) {
+                    return new NongenuineScan(pag.getEdge(m, n), sawIndeterminate);
+                }
+                if (v == LegVerdict.INDETERMINATE) {
+                    sawIndeterminate = true;
+                }
+            }
+
+            // Chords v_i *-> c: each interior collider to the far endpoint y.
+            Node y = dd.getY();
+            for (Node v0 : colliderPath) {
+                LegVerdict v = legVerdict(v0, y, deadlineMs, verdictCache);
+                if (v == LegVerdict.SPURIOUS) {
+                    return new NongenuineScan(pag.getEdge(v0, y), sawIndeterminate);
+                }
+                if (v == LegVerdict.INDETERMINATE) {
+                    sawIndeterminate = true;
+                }
+            }
+        }
+
+        // No confirmed-spurious leg. If any pair was indeterminate, we cannot
+        // claim the graph is phantom-free; report it.
+        return new NongenuineScan(null, sawIndeterminate);
+    }
 
     private List<Edge> findSpuriousEdges() throws InterruptedException {
         List<Edge> spuriousEdges = new ArrayList<>();
@@ -631,8 +637,65 @@ public final class FcitMag implements IGraphSearch {
         return spuriousEdges;
     }
 
-    private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache)
-            throws InterruptedException {
+    /**
+     * End-of-run diagnostic: the R0 colliders carrying a test-separable ("spurious")
+     * leg. An R0 collider is one stamped from a recorded sepset, i.e. a common
+     * neighbour {@code c} of a separated pair {@code (x,y)} with {@code c} not in
+     * {@code Sepset(x,y)} -- the same condition {@link #orientSepsetCollidersInMag}
+     * and {@link #adjustForExtraSepsets} apply when stamping. A leg {@code x-c} or
+     * {@code c-y} counts as separable iff it is among the edges
+     * {@link #findSpuriousEdges()} returns, i.e. a recorded sepset (committed or
+     * deadlock-survivor) still tests its endpoints independent. Legs with no recorded
+     * sepset are not actively re-tested -- this is the cheap, recorded-sepset-only check.
+     *
+     * <p>An R0 collider on a separable leg is the precursor of an unsound collider and
+     * the dominant source of non-Markovness in legal output. The report is one-sided:
+     * an empty result certifies the output collider-genuine on the R0 side (and, under
+     * the certificate conjecture, Markov on that side); a non-empty result means
+     * Markovness is <em>not certified</em>, not that the output is non-Markov, and it
+     * does not localize the offending edge. R0 is the dominant but not the only
+     * mechanism, so this does not cover the R4 side.
+     *
+     * @return the R0 colliders with at least one test-separable leg.
+     * @throws InterruptedException if the independence checks are interrupted.
+     */
+    private List<Triple> findR0CollidersWithSeparableLeg() throws InterruptedException {
+        Set<Set<Node>> separable = new LinkedHashSet<>();
+        for (Edge e : findSpuriousEdges()) {
+            separable.add(Set.of(e.getNode1(), e.getNode2()));
+        }
+
+        List<Triple> flagged = new ArrayList<>();
+        Set<Triple> seen = new LinkedHashSet<>();
+
+        for (Set<Node> pair : sepsets.keySet()) {
+            List<Node> arr = new ArrayList<>(pair);
+            if (arr.size() != 2) continue;
+            Node x = arr.get(0);
+            Node y = arr.get(1);
+
+            Set<Node> s = sepsets.get(x, y);
+            if (s == null) continue;
+            if (pag.isAdjacentTo(x, y)) continue;       // R0 fires only once x-y is gone
+
+            List<Node> common = pag.getAdjacentNodes(x);
+            common.retainAll(pag.getAdjacentNodes(y));
+
+            for (Node c : common) {
+                if (s.contains(c)) continue;                // c in sepset: non-collider, not R0
+                if (!pag.isDefCollider(x, c, y)) continue;  // collider not present in final PAG
+                Triple t = new Triple(x, c, y);
+                if (!seen.add(t)) continue;
+                if (separable.contains(Set.of(x, c)) || separable.contains(Set.of(c, y))) {
+                    flagged.add(t);
+                }
+            }
+        }
+
+        return flagged;
+    }
+
+    private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache)            throws InterruptedException {
         Edge edge = pag.getEdge(m, n);
         if (edge == null) {
             return LegVerdict.NOT_SPURIOUS;
