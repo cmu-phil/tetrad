@@ -498,7 +498,7 @@ public final class PhantomKernelEnumerator {
                                     }
                                     r.addMagRecheckWitness(formatMagRecheck(mask, latSet, spurious, e,
                                             dag, truePag, h0, h1, h1break, h1mag, magBreak, outcome));
-                                }long pagStepBreaks;
+                                }
                             }
 
                             // Classify every illegal deletion (deadlock anatomy), first-pass consistent.
