@@ -503,6 +503,15 @@ public final class FcitMag implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
+        List<Edge> spurious = findSpuriousEdges();
+        TetradLogger.getInstance().log(spurious.isEmpty()
+                ? "\nNo spurious edges remain."
+                : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
+
+        if (spurious.size() >= 2) {
+            tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
+        }
+
         NongenuineScan finalScan = findR4NongenuineEdge();
 
         if (finalScan.edge() != null) {
@@ -513,15 +522,6 @@ public final class FcitMag implements IGraphSearch {
                             + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {
             TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
-        }
-
-        List<Edge> spurious = findSpuriousEdges();
-        TetradLogger.getInstance().log(spurious.isEmpty()
-                ? "\nNo spurious edges remain."
-                : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
-
-        if (spurious.size() >= 2) {
-            tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
         }
 
         List<Triple> r0Suspect = findR0CollidersWithSeparableLeg();
