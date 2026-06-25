@@ -529,58 +529,77 @@ public final class FcitMag3 implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
-        List<Edge> spurious = findSpuriousEdges();
-        TetradLogger.getInstance().log(spurious.isEmpty()
-                ? "\nNo spurious edges remain."
-                : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
-
-        if (spurious.size() >= 2) {
-            tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
-        }
-
-        NongenuineScan finalScan = findR4NongenuineEdge();
-
-        if (finalScan.edge() != null) {
-            TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
-        } else if (finalScan.indeterminate()) {
-            TetradLogger.getInstance().log(
-                    "\nR4: Detection inconclusive: a blocking search timed out before a verdict. "
-                            + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
-        } else {
-            TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
-        }
-
-        List<Triple> r0Suspect = findR0CollidersWithSeparableLeg();
-        TetradLogger.getInstance().log(r0Suspect.isEmpty()
-                ? "\nNo R0 collider has a test-separable leg (collider-genuine on the R0 side)."
-                : "\n" + r0Suspect.size() + " R0 collider(s) carry a separable leg; "
-                  + "Markovness not certified: " + r0Suspect);
-
-        TetradLogger.getInstance().log("\nFCIT finished.");
-        TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
-        TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
-        TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
-        TetradLogger.getInstance().log(checkCounter.report());
-
-        CachedIndependenceQueries cache = findCache();
-        if (cache != null) {
-            TetradLogger.getInstance().log(cache.cacheReport());
-        }
-
         List<Graph> _pagsReversed = new ArrayList<>(interimGraphs);
         _pagsReversed = _pagsReversed.reversed();
 
-        for (Graph pag : _pagsReversed) {
+        Graph _pag = null;
+
+        for (int i = 0; i < _pagsReversed.size(); i++) {
+            Graph pag = _pagsReversed.get(i);
+
             if (pag.paths().isLegalPag()) {
-                return GraphUtils.replaceNodes(pag, nodes);
+
+                TetradLogger.getInstance().log("Found last legal pag at index " + i + " of " + _pagsReversed.size());
+
+                _pag = pag;
+                break;
             }
         }
 
-        throw new IllegalStateException("No pags were legal in the series.");
+//        for (Graph pag : _pagsReversed) {
+//            if (pag.paths().isLegalPag()) {
+//                _pag = pag;
+//                break;
+//            }
+//        }
+
+        if (_pag == null) {
+            throw new IllegalStateException("No pags were legal in the series.");
+        } else {
+            List<Edge> spurious = findSpuriousEdges(_pag);
+            TetradLogger.getInstance().log(spurious.isEmpty()
+                    ? "\nNo spurious edges remain."
+                    : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
+
+            if (spurious.size() >= 2) {
+                tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
+            }
+
+            NongenuineScan finalScan = findR4NongenuineEdge(_pag);
+
+            if (finalScan.edge() != null) {
+                TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
+            } else if (finalScan.indeterminate()) {
+                TetradLogger.getInstance().log(
+                        "\nR4: Detection inconclusive: a blocking search timed out before a verdict. "
+                                + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
+            } else {
+                TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
+            }
+
+            List<Triple> r0Suspect = findR0CollidersWithSeparableLeg(_pag);
+            TetradLogger.getInstance().log(r0Suspect.isEmpty()
+                    ? "\nNo R0 collider has a test-separable leg (collider-genuine on the R0 side)."
+                    : "\n" + r0Suspect.size() + " R0 collider(s) carry a separable leg; "
+                      + "Markovness not certified: " + r0Suspect);
+
+            TetradLogger.getInstance().log("\nFCIT finished.");
+            TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
+            TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
+            TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
+            TetradLogger.getInstance().log(checkCounter.report());
+
+            CachedIndependenceQueries cache = findCache();
+            if (cache != null) {
+                TetradLogger.getInstance().log(cache.cacheReport());
+            }
+
+            return GraphUtils.replaceNodes(_pag, nodes);
+        }
     }
 
-    private NongenuineScan findR4NongenuineEdge() throws InterruptedException {
-        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(interimGraphs.getLast(), -1, true);
+    private NongenuineScan findR4NongenuineEdge(Graph pag) throws InterruptedException {
+        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
 
         // Within one pass, the same pair can appear as a leg/chord of several
         // discriminating paths. blockPathsRecursively is the expensive call, so
@@ -610,7 +629,7 @@ public final class FcitMag3 implements IGraphSearch {
                 Node n = spine.get(i + 1);
                 LegVerdict v = legVerdict(m, n, deadlineMs, verdictCache);
                 if (v == LegVerdict.SPURIOUS) {
-                    return new NongenuineScan(interimGraphs.getLast().getEdge(m, n), sawIndeterminate);
+                    return new NongenuineScan(pag.getEdge(m, n), sawIndeterminate);
                 }
                 if (v == LegVerdict.INDETERMINATE) {
                     sawIndeterminate = true;
@@ -622,7 +641,7 @@ public final class FcitMag3 implements IGraphSearch {
             for (Node v0 : colliderPath) {
                 LegVerdict v = legVerdict(v0, y, deadlineMs, verdictCache);
                 if (v == LegVerdict.SPURIOUS) {
-                    return new NongenuineScan(interimGraphs.getLast().getEdge(v0, y), sawIndeterminate);
+                    return new NongenuineScan(pag.getEdge(v0, y), sawIndeterminate);
                 }
                 if (v == LegVerdict.INDETERMINATE) {
                     sawIndeterminate = true;
@@ -635,10 +654,10 @@ public final class FcitMag3 implements IGraphSearch {
         return new NongenuineScan(null, sawIndeterminate);
     }
 
-    private List<Edge> findSpuriousEdges() throws InterruptedException {
+    private List<Edge> findSpuriousEdges(Graph pag) throws InterruptedException {
         List<Edge> spuriousEdges = new ArrayList<>();
 
-        for (Edge edge : interimGraphs.getLast().getEdges()) {
+        for (Edge edge : pag.getEdges()) {
             Node m = edge.getNode1();
             Node n = edge.getNode2();
 
@@ -679,7 +698,7 @@ public final class FcitMag3 implements IGraphSearch {
      * {@code Sepset(x,y)} -- the same condition {@link #orientSepsetCollidersInMag}
      * and {@link #adjustForExtraSepsets} apply when stamping. A leg {@code x-c} or
      * {@code c-y} counts as separable iff it is among the edges
-     * {@link #findSpuriousEdges()} returns, i.e. a recorded sepset (committed or
+     * findSpuriousEdges returns, i.e. a recorded sepset (committed or
      * deadlock-survivor) still tests its endpoints independent. Legs with no recorded
      * sepset are not actively re-tested -- this is the cheap, recorded-sepset-only check.
      *
@@ -694,9 +713,9 @@ public final class FcitMag3 implements IGraphSearch {
      * @return the R0 colliders with at least one test-separable leg.
      * @throws InterruptedException if the independence checks are interrupted.
      */
-    private List<Triple> findR0CollidersWithSeparableLeg() throws InterruptedException {
+    private List<Triple> findR0CollidersWithSeparableLeg(Graph pag) throws InterruptedException {
         Set<Set<Node>> separable = new LinkedHashSet<>();
-        for (Edge e : findSpuriousEdges()) {
+        for (Edge e : findSpuriousEdges(pag)) {
             separable.add(Set.of(e.getNode1(), e.getNode2()));
         }
 
@@ -1057,19 +1076,19 @@ public final class FcitMag3 implements IGraphSearch {
         // so the PAG we carry forward retains those arrowheads and RB sees fewer circles.
         orientSepsetCollidersInMag(_mag, sepsets);
 
-//        PagLegalityCheck.LegalMagRet legal =
-//                PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
-//
-//        if (!legal.isLegalMag()) {
-//            if (verbose) {
-//                TetradLogger.getInstance().log("\tTried removing " + _edge
-//                        + ", but it didn't lead to a MAG, sepset = " + b);
-//                System.out.println("\tReason = " + legal.getReason());
-//            }
-////            this.pag = _pag;
-////            sepsets.set(x, y, prevSepset);
-////            return false;
-//        }
+        PagLegalityCheck.LegalMagRet legal =
+                PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
+
+        if (!legal.isLegalMag()) {
+            if (verbose) {
+                TetradLogger.getInstance().log("\tTried removing " + _edge
+                        + ", but it didn't lead to a MAG, sepset = " + b);
+                System.out.println("\tReason = " + legal.getReason());
+            }
+            this.interimGraphs.removeLast();
+            sepsets.set(x, y, prevSepset);
+            return false;
+        }
 
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b);
@@ -1077,9 +1096,51 @@ public final class FcitMag3 implements IGraphSearch {
 
         // Colliders are baked into _mag, so the PAG you carry forward keeps those
         // arrowheads and RB sees fewer circle endpoints. Pass the real flag, not false.
+//        this.pag = new MagToPag(_mag).convert(false, excludeSelectionBias);
         this.interimGraphs.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
         return true;
     }
+
+//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type,
+//                                     boolean excludeSelectionBias, Set<Triple> initialColliders) {
+//        Edge _edge = interimGraphs.getLast().getEdge(x, y);
+//        Graph _pag = new EdgeListGraph(interimGraphs.getLast());
+//
+//        // MAG of the pre-removal (legal) PAG, so zhangMagFromPag's circle resolution
+//        // is well defined. Then delete the edge under test.
+//        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);
+//        _mag.removeEdge(x, y);
+//
+//        Set<Node> prevSepset = sepsets.get(x, y);
+//        sepsets.set(x, y, b);
+//
+//        // Stamp every recorded sepset's colliders onto the MAG we keep (idempotent),
+//        // so the PAG we carry forward retains those arrowheads and RB sees fewer circles.
+//        orientSepsetCollidersInMag(_mag, sepsets);
+//
+////        PagLegalityCheck.LegalMagRet legal =
+////                PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
+////
+////        if (!legal.isLegalMag()) {
+////            if (verbose) {
+////                TetradLogger.getInstance().log("\tTried removing " + _edge
+////                        + ", but it didn't lead to a MAG, sepset = " + b);
+////                System.out.println("\tReason = " + legal.getReason());
+////            }
+//////            this.pag = _pag;
+//////            sepsets.set(x, y, prevSepset);
+//////            return false;
+////        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b);
+//        }
+//
+//        // Colliders are baked into _mag, so the PAG you carry forward keeps those
+//        // arrowheads and RB sees fewer circle endpoints. Pass the real flag, not false.
+//        this.interimGraphs.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+//        return true;
+//    }
 
     private boolean tryToModifyGraph(List<Edge> edges, String type,
                                      boolean excludeSelectionBias, Set<Triple> initialColliders) {

@@ -106,6 +106,15 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
      */
     private boolean revertToLegalPag = true;
+    /**
+     * When true, a possible-D-SEP removal pass is run after the adjacency-subset removal pass: for each remaining edge
+     * (a, c), all subsets of Possible-D-SEP(a) are considered as candidate separating sets, and a removal is committed
+     * only if it leaves a legal PAG (otherwise reverted). This is the step the original GFCI had that *-FCI dropped; it
+     * is off by default and added for parity, not because it was shown necessary. Possible-D-SEP assumes colliders are
+     * already oriented as in FCI, which holds for the fully-oriented PAGs maintained here, so the pass always runs on an
+     * oriented graph and is always legality-gated regardless of {@link #revertToLegalPag}.
+     */
+    private boolean usePossibleDsep = false;
 
     /**
      * Constructs a new StarFci algorithm with the given independence test.
@@ -266,7 +275,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         Graph cpdag = getMarkovCpdag();
-        Graph pag = new EdgeListGraph(cpdag);
+        Graph pag = GraphTransforms.dagToPag(cpdag, false);
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
 
@@ -296,13 +305,52 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         List<Edge> edges = new ArrayList<>(pag.getEdges());
         shuffle(edges);
 
+        // Baseline orientation: the gate compares each candidate removal against a fully
+        // oriented PAG (the *-FCI starting point), the way FCIT starts from dagToPag(BOSS DAG)
+        // before any edge is removed. Needed only when the main pass is gated.
         if (revertToLegalPag) {
-            // Establish the baseline orientation so the gate compares against a fully
-            // oriented PAG (the *-FCI starting point), the way FCIT starts from
-            // dagToPag(BOSS DAG) before any edge is removed.
+            orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
+        }
+
+        // Pass 1: adjacency-subset removal. Candidate sepsets are subsets of adj(a) or adj(c).
+        for (Edge edge : edges) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            Node a = edge.getNode1();
+            Node c = edge.getNode2();
+
+            if (!pag.isAdjacentTo(a, c)) {
+                continue;
+            }
+
+            Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null, useMaxP);
+
+            if (sepset == null) {
+                continue;
+            }
+
+            pag = commitRemoval(pag, a, c, sepset, "adjacency-subset", revertToLegalPag,
+                    cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient, selection);
+        }
+
+        // Pass 2 (optional): possible-D-SEP removal. The original GFCI step that *-FCI dropped,
+        // restored here for parity. Always runs on an oriented PAG and is always legality-gated,
+        // since Possible-D-SEP presupposes FCI-oriented colliders.
+        if (usePossibleDsep) {
+            // Ensure colliders are oriented as in FCI before computing Possible-D-SEP. Idempotent
+            // when the main pass was gated (already oriented); required when it was greedy.
             orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
 
-            for (Edge edge : edges) {
+            if (verbose) {
+                TetradLogger.getInstance().log("Starting possible-D-SEP removal step.");
+            }
+
+            List<Edge> dsepEdges = new ArrayList<>(pag.getEdges());
+            shuffle(dsepEdges);
+
+            for (Edge edge : dsepEdges) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
@@ -310,75 +358,33 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 Node a = edge.getNode1();
                 Node c = edge.getNode2();
 
-                // Orientation never removes edges, but guard anyway.
                 if (!pag.isAdjacentTo(a, c)) {
                     continue;
                 }
 
-                Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null, useMaxP);
+                // One endpoint suffices (per JR); change `a` to `c`, or union the two, if parity
+                // ever turns out to need both ends.
+                int maxPathLength = -1; // unlimited path length
+                List<Node> possibleDsep = pag.paths().possibleDsep(a, maxPathLength);
+                possibleDsep.remove(a);
+                possibleDsep.remove(c);
+                possibleDsep.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+
+                // Candidate sepsets are all subsets of Possible-D-SEP(a), capped at depth.
+                Set<Node> sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
 
                 if (sepset == null) {
                     continue;
                 }
 
-                // --- FCIT-style try / re-orient / check-legal / revert ---
-                Graph saved = new EdgeListGraph(pag);          // snapshot
-                Set<Node> oldSepset = sepsetMap.get(a, c);     // may be null
-
-                pag.removeEdge(a, c);
-                sepsetMap.set(a, c, sepset);
-                orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
-
-                PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(pag, selection);
-
-                if (!legal.isLegalPag()) {
-                    pag = saved;                               // revert graph
-                    sepsetMap.set(a, c, oldSepset);            // revert sepset
-                    if (verbose) {
-                        TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c
-                                + ", but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
-                    }
-                } else if (verbose) {
-                    IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
-                    TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
-                            + " (legal PAG); sepset = " + sepset + ", p-value = " + result.getPValue() + ".");
-                }
+                pag = commitRemoval(pag, a, c, sepset, "possible-D-SEP", true,
+                        cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient, selection);
             }
-
-            // Re-sync orientation + unshieldedColliders to the final committed graph: a
-            // trailing reverted attempt leaves them reflecting a rejected state. This
-            // pass is idempotent on the committed (already-legal) PAG.
-            orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
-        } else {
-            // Original *-FCI behavior: greedy removal, single final orientation, no gate.
-            for (Edge edge : edges) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                Node a = edge.getNode1();
-                Node c = edge.getNode2();
-
-                Set<Node> sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null, useMaxP);
-
-                if (sepset != null) {
-                    pag.removeEdge(a, c);
-                    sepsetMap.set(a, c, sepset);
-
-                    if (verbose) {
-                        IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
-                        TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
-                                + sepset + ", p-value = " + result.getPValue() + ".");
-                    }
-                }
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Starting *-FCI-R0 and final orientation.");
-            }
-
-            orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
         }
+
+        // Final orientation: re-syncs the collider set after a possible trailing revert in the
+        // gated path, and is the sole orientation pass in the ungated path.
+        orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
 
         if (guaranteePag) {
             pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(),
@@ -441,6 +447,54 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         }
 
         fciOrient.finalOrientation(pag, excludeSelectionBias);
+    }
+
+    /**
+     * Attempts to remove edge (a, c) using the given candidate sepset. When {@code gated} is true, the removal is
+     * committed only if re-running the full *-FCI orientation yields a legal PAG; otherwise the graph and the pair's
+     * sepset are rolled back. When {@code gated} is false, the edge is removed unconditionally (original *-FCI
+     * behavior), leaving the graph for a single orientation pass later. Returns the graph to use going forward: the
+     * committed graph on success (or in the ungated case), or the restored snapshot on a reverted gated attempt.
+     */
+    private Graph commitRemoval(Graph pag, Node a, Node c, Set<Node> sepset, String type, boolean gated,
+                                Graph cpdag, List<Node> nodes, SepsetMap sepsetMap, Set<Triple> unshieldedColliders,
+                                FciOrient fciOrient, Set<Node> selection) throws InterruptedException {
+        if (!gated) {
+            pag.removeEdge(a, c);
+            sepsetMap.set(a, c, sepset);
+            if (verbose) {
+                IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
+                TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " (" + type + "); sepset = "
+                        + sepset + ", p-value = " + result.getPValue() + ".");
+            }
+            return pag;
+        }
+
+        // --- FCIT-style try / re-orient / check-legal / revert ---
+        Graph saved = new EdgeListGraph(pag);          // snapshot
+        Set<Node> oldSepset = sepsetMap.get(a, c);     // may be null
+
+        pag.removeEdge(a, c);
+        sepsetMap.set(a, c, sepset);
+        orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
+
+        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(pag, selection);
+
+        if (!legal.isLegalPag()) {
+            sepsetMap.set(a, c, oldSepset);            // revert sepset
+            if (verbose) {
+                TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
+                        + "), but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
+            }
+            return saved;                              // revert graph
+        }
+
+        if (verbose) {
+            IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
+            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " (" + type
+                    + ", legal PAG); sepset = " + sepset + ", p-value = " + result.getPValue() + ".");
+        }
+        return pag;
     }
 
     /**
@@ -573,6 +627,18 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     public void setRevertToLegalPag(boolean revertToLegalPag) {
         this.revertToLegalPag = revertToLegalPag;
+    }
+
+    /**
+     * Sets whether to run the possible-D-SEP removal pass (the original GFCI step that *-FCI dropped). False by
+     * default. When true, after the adjacency-subset pass, each remaining edge (a, c) is re-tested against all subsets
+     * of Possible-D-SEP(a), and any separating removal that keeps the graph a legal PAG is committed. The pass always
+     * runs on an oriented, legality-gated graph, so it is meaningful independently of {@link #setRevertToLegalPag}.
+     *
+     * @param usePossibleDsep True to run the possible-D-SEP removal pass.
+     */
+    public void setUsePossibleDsep(boolean usePossibleDsep) {
+        this.usePossibleDsep = usePossibleDsep;
     }
 }
 

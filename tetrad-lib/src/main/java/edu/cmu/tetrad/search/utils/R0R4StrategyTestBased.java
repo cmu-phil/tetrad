@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -243,6 +244,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking = sepsets.get(x, y);
 
+        if (blocking == null && blockingType == BlockingType.GREEDY) {
+            Set<Node> _blocking = findAdjSetSepset(graph, x, y, path, v);
+            if (_blocking != null) {
+                sepsets.set(x, y, _blocking);
+                return Pair.of(discriminatingPath, true);
+            }
+        }
+
         if (blocking == null) {
             // P1 ("recorded, not live"): compute an unrecorded endpoint separator
             // against the frozen initial Markov PAG (G_0) rather than the live,
@@ -313,6 +322,30 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             return Pair.of(discriminatingPath, true);
         }
+    }
+
+    private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
+        Set<Node> blocking;
+        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+
+        Set<Node> b1 = new HashSet<>(blocking);
+        b1.remove(v);
+
+        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
+
+        Set<Node> b2 = new HashSet<>(b1);
+        b2.add(v);
+
+        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
+
+        if (b1Indep) {
+            blocking = b1;
+        } else if (b2Indep) {
+            blocking = b2;
+        } else {
+            blocking = null;
+        }
+        return blocking;
     }
 
     /**

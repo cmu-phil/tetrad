@@ -439,6 +439,20 @@ public final class PhantomKernelEnumerator2 {
                             if (present == null) continue;
                             h1.removeEdge(present);
 
+                            // Removal soundness gate (Bryan): <X,Y> may be deleted only on the basis
+                            // of a sepset S that actually m-separates X,Y in the TRUE DAG. The operative
+                            // deletion sepset is the blocking set RB yields in the removal context (the
+                            // post-removal skeleton), NOT the separator recorded when the denser H0 was
+                            // built. For <X2,X3> here RB yields [] (the surviving X1 collider blocks the
+                            // indirect legs), and [] is not a true sepset (X1 is a fork in G*), so the
+                            // step is refused: the I-map break it would have produced is an artifact of
+                            // deleting on an unsound []-basis, not a genuine PAG->PAG defect.
+                            Set<Node> opSep = rbRawSepset(h1, e.getNode1(), e.getNode2());
+                            if (opSep == null
+                                    || !oracle.checkIndependence(e.getNode1(), e.getNode2(), opSep).isIndependent()) {
+                                continue;
+                            }
+
                             int abst1 = reorientStep(h1, oracle, sepsets, knowledge, initialColliders, EXCLUDE_SELECTION_BIAS);
                             r.h1States++;
                             r.totalAbstentions += abst1;
@@ -473,7 +487,23 @@ public final class PhantomKernelEnumerator2 {
                             // PAG->PAG commit accepts on legality alone; the MAG-aware commit would not.
                             if (h0imap && legal) {
                                 String h1break = imapWitnessAgainst(h1, obs, trueMsep);
+                                boolean guardCatches = false;
                                 if (h1break != null) {
+                                    Graph mag1g = magOfPag(h1);
+                                    // Unsound-collider guard (== your firstUnsoundColliderInMag): a false
+                                    // collider sitting on a spurious leg in H1's MAG -- shielded (R4) or
+                                    // unshielded (R0/COMPLETION). That is what stamps X1 a collider here
+                                    // (X5*->X1<-*X2, spurious leg X5-X1) and breaks the I-map. With the guard
+                                    // installed the commit abstains, so this is NOT an accepted step-break.
+                                    // The removed edge X1-X4 is legitimately separable, so the removal-sepset
+                                    // gate cannot catch this: the unsoundness is in the orientation, not the
+                                    // deletion. RESIDUE breaks (no spurious-leg collider) are deliberately NOT
+                                    // gated, so the alarming all-real-edge bucket still surfaces.
+                                    guardCatches =
+                                            magColliderOnSpuriousLeg(mag1g, truePag, h1, true) != null
+                                                    || magColliderOnSpuriousLeg(mag1g, truePag, h1, false) != null;
+                                }
+                                if (h1break != null && !guardCatches) {
                                     r.pagStepBreaks++;
 
                                     // Re-bin by the mechanism of the false collider. R0: PAG unshielded
@@ -932,6 +962,25 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         }
 
         return null;
+    }
+
+    // Raw RB blocking set in the removal context -- NO oracle filter. Returns whatever
+    // RB actually yields (e.g. [] for <X2,X3> on the post-removal skeleton), so the
+    // caller can oracle-test that operative set directly. null iff RB is indeterminate.
+    private static Set<Node> rbRawSepset(Graph graph, Node a, Node b)
+            throws InterruptedException {
+        RecursiveBlocking.BlockingResult rb = RecursiveBlocking.blockPathsRecursively(
+                graph, a, b,
+                Collections.emptySet(),
+                Collections.emptySet(),
+                RECURSIVE_DEPTH,
+                DEPTH,
+                -1,
+                3,
+                true,
+                TIMEOUT < 0 ? Long.MAX_VALUE : System.currentTimeMillis() + TIMEOUT);
+        if (rb == null || rb.indeterminate() || rb.blockingSet() == null) return null;
+        return rb.blockingSet();
     }
 
     private static void printSummary(Result t, String dumpPath, String meekPath) {
