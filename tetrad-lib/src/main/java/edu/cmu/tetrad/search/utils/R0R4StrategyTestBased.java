@@ -252,6 +252,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             }
         }
 
+        // BlockingType.RECURSIVE
         if (blocking == null) {
             // P1 ("recorded, not live"): compute an unrecorded endpoint separator
             // against the frozen initial Markov PAG (G_0) rather than the live,
