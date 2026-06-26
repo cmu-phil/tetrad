@@ -537,13 +537,11 @@ public final class FcitMag3 implements IGraphSearch {
         Graph _pag = null;
 
         for (int i = 0; i < _pagsReversed.size(); i++) {
-            Graph pag = _pagsReversed.get(i);
+            Graph _graph = _pagsReversed.get(i);
 
-            if (pag.paths().isLegalPag()) {
-
-                TetradLogger.getInstance().log("\nFound last legal pag at index " + i + " of " + _pagsReversed.size());
-
-                _pag = pag;
+            if (_graph.paths().isLegalPag()) {
+                TetradLogger.getInstance().log("\nFound last legal __pag at index " + i + " of " + _pagsReversed.size());
+                _pag = _graph;
                 break;
             }
         }
