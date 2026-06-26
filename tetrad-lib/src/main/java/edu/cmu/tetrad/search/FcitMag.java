@@ -539,9 +539,7 @@ public final class FcitMag implements IGraphSearch {
 //        List<Graph> _pagsReversed = new ArrayList<>(interimPags);
 //        _pagsReversed = _pagsReversed.reversed();
 
-        Graph _pag = interimPags.getLast();
-
-//        for (int i = 0; i < _pagsReversed.size(); i++) {
+        //        for (int i = 0; i < _pagsReversed.size(); i++) {
 //            Graph _graph = _pagsReversed.get(i);
 //
 //            if (_graph.paths().isLegalPag()) {
@@ -554,7 +552,7 @@ public final class FcitMag implements IGraphSearch {
 //        if (_pag == null) {
 //            throw new IllegalStateException("No pags were legal in the series.");
 //        } else {
-        List<Edge> spurious = findSpuriousEdges(_pag);
+        List<Edge> spurious = findSpuriousEdges(interimPags.getLast());
         TetradLogger.getInstance().log(spurious.isEmpty()
                 ? "\nNo spurious edges remain."
                 : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
@@ -563,7 +561,7 @@ public final class FcitMag implements IGraphSearch {
             tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
         }
 
-        NongenuineScan finalScan = findR4NongenuineEdge(_pag);
+        NongenuineScan finalScan = findR4NongenuineEdge(interimPags.getLast());
 
         if (finalScan.edge() != null) {
             TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
@@ -575,7 +573,7 @@ public final class FcitMag implements IGraphSearch {
             TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
         }
 
-        List<Triple> r0Suspect = findR0CollidersWithSeparableLeg(_pag);
+        List<Triple> r0Suspect = findR0CollidersWithSeparableLeg(interimPags.getLast());
         TetradLogger.getInstance().log(r0Suspect.isEmpty()
                 ? "\nNo R0 collider has a test-separable leg (collider-genuine on the R0 side)."
                 : "\n" + r0Suspect.size() + " R0 collider(s) carry a separable leg; "
@@ -592,7 +590,7 @@ public final class FcitMag implements IGraphSearch {
             TetradLogger.getInstance().log(cache.cacheReport());
         }
 
-        return GraphUtils.replaceNodes(_pag, nodes);
+        return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
 //        }
     }
 
@@ -1055,7 +1053,7 @@ public final class FcitMag implements IGraphSearch {
                         + ", but it didn't lead to a PAG, sepset = " + b);
                 System.out.println("\tReason = " + legal.getReason());
             }
-            this.interimPags.removeLast();
+//            this.interimPags.removeLast();
             sepsets.set(x, y, prevSepset);
             return false;
         }
@@ -1103,10 +1101,32 @@ public final class FcitMag implements IGraphSearch {
                         + ", but it didn't lead to a PAG");
                 System.out.println("\tReason = " + legal.getReason());
             }
-            this.interimPags.removeLast();
-//            sepsets.set(x, y, prevSepset);
+//            this.interimPags.removeLast();
+
+            for (Edge edge : edges) {
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+                Set<Node> prevSepset = prev.get(edge);
+                sepsets.set(x, y, prevSepset);
+            }
+
             return false;
         }
+
+        if (!legal.isLegalMag()) {
+            if (verbose) {
+                TetradLogger.getInstance().log("\tTried removing " + edges
+                        + ", but it didn't lead to a PAG");
+                System.out.println("\tReason = " + legal.getReason());
+            }
+            // No interimPags.removeLast() here — nothing was added; the add happens
+            // only on the success path below. Just roll back the sepset writes.
+            for (Edge edge : edges) {
+                sepsets.set(edge.getNode1(), edge.getNode2(), prev.get(edge));
+            }
+            return false;
+        }
+
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + edges + " (multi-edge), reached a PAG");
         }

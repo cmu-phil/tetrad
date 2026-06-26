@@ -292,7 +292,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(verbose);
+        fciOrient.setVerbose(true);
 
         // Selection nodes, needed by the PAG-legality check (mirrors FCIT).
         Set<Node> selection = new LinkedHashSet<>();
@@ -317,6 +317,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
+
+            TetradLogger.getInstance().log("\nTrying to remove " + edge + " by adjacency-subset.");
 
             Node a = edge.getNode1();
             Node c = edge.getNode2();
