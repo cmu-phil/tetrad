@@ -504,11 +504,13 @@ public final class FcitMag3 implements IGraphSearch {
         }
 
         // The main procedure.
-        this.interimGraphs.add(GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, recursiveDepth));
+        Graph pag = GraphTransforms.dagToPag(dag, knowledge, excludeSelectionBias, recursiveDepth);
 
-//        if (replicatingGraph) {
-//            this.pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
-//        }
+        if (replicatingGraph) {
+            pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
+        }
+
+        this.interimGraphs.add(pag);
 
         this.initialColliders = noteInitialColliders(interimGraphs.get(0).getNodes(), interimGraphs.get(0));
 
@@ -539,19 +541,12 @@ public final class FcitMag3 implements IGraphSearch {
 
             if (pag.paths().isLegalPag()) {
 
-                TetradLogger.getInstance().log("Found last legal pag at index " + i + " of " + _pagsReversed.size());
+                TetradLogger.getInstance().log("\nFound last legal pag at index " + i + " of " + _pagsReversed.size());
 
                 _pag = pag;
                 break;
             }
         }
-
-//        for (Graph pag : _pagsReversed) {
-//            if (pag.paths().isLegalPag()) {
-//                _pag = pag;
-//                break;
-//            }
-//        }
 
         if (_pag == null) {
             throw new IllegalStateException("No pags were legal in the series.");
@@ -661,30 +656,12 @@ public final class FcitMag3 implements IGraphSearch {
             Node m = edge.getNode1();
             Node n = edge.getNode2();
 
-//            long deadlineMs = (timeout < 0L)
-//                    ? Long.MAX_VALUE
-//                    : System.currentTimeMillis() + timeout;
-
-//            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
-//                    pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, false,
-//                    Long.MAX_VALUE);
-//
-//            // !found() => blockingSet() closes every path: a candidate sepset.
-//            if (!result.found()) {
-//                if (test.checkIndependence(m, n, result.blockingSet()).isIndependent()) {
-//                    spuriousEdges.add(edge);
-//                }
-//            }
-
-            Set<Node> sepset = sepsets.get(m, n);  // your stored structure
-            if (sepset != null && test.checkIndependence(m, n, sepset).isIndependent()) {
+            // A recorded separator (sepsets = committed; foundSepsets = data fact,
+            // survives revert) already certifies independence; X _||_ Y | S is
+            // invariant across rounds, so no re-test — a present entry means the
+            // still-standing edge is spurious.
+            if (sepsets.get(m, n) != null || foundSepsets.get(Set.of(m, n)) != null) {
                 spuriousEdges.add(edge);
-            } else {
-                sepset = foundSepsets.get(Set.of(m, n));
-
-                if (sepset != null && test.checkIndependence(m, n, sepset).isIndependent()) {
-                    spuriousEdges.add(edge);
-                }
             }
         }
 

@@ -616,15 +616,12 @@ public final class Fcit implements IGraphSearch {
 //                }
 //            }
 
-            Set<Node> sepset = sepsets.get(m, n);  // your stored structure
-            if (sepset != null && test.checkIndependence(m, n, sepset).isIndependent()) {
+            // A pair with a recorded separator was already confirmed independent
+            // (sepsets = committed; foundSepsets = data fact, survives revert).
+            // X _||_ Y | S is invariant across rounds, so no re-test: a present
+            // entry means the still-standing edge is spurious.
+            if (sepsets.get(m, n) != null || foundSepsets.get(Set.of(m, n)) != null) {
                 spuriousEdges.add(edge);
-            } else {
-                sepset = foundSepsets.get(Set.of(m, n));
-
-                if (sepset != null && test.checkIndependence(m, n, sepset).isIndependent()) {
-                    spuriousEdges.add(edge);
-                }
             }
         }
 
