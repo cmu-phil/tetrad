@@ -24,10 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.PagLegalityCheck;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
-import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -105,7 +102,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * original *-FCI behavior is used (greedy removal with a single final orientation). This is the one knob that
      * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
      */
-    private boolean revertToLegalPag = true;
+    private boolean revertToLegalPag = false;
     /**
      * When true, a possible-D-SEP removal pass is run after the adjacency-subset removal pass: for each remaining edge
      * (a, c), all subsets of Possible-D-SEP(a) are considered as candidate separating sets, and a removal is committed
@@ -141,6 +138,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
                                                      IndependenceTest test, int depth, List<Node> order, boolean useMaxP) {
+
+        test.setVerbose(false);
 
         // We need to look at the original adjx and adjy, not some modified version.
         List<Node> adjx = graph.getAdjacentNodes(x);
@@ -292,7 +291,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(true);
+        fciOrient.setUseR4(true);
+        fciOrient.setVerbose(false);
 
         // Selection nodes, needed by the PAG-legality check (mirrors FCIT).
         Set<Node> selection = new LinkedHashSet<>();
@@ -318,7 +318,9 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 break;
             }
 
-            TetradLogger.getInstance().log("\nTrying to remove " + edge + " by adjacency-subset.");
+            if (verbose) {
+                TetradLogger.getInstance().log("Trying to remove " + edge + " by adjacency-subset.");
+            }
 
             Node a = edge.getNode1();
             Node c = edge.getNode2();
@@ -397,6 +399,9 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             TetradLogger.getInstance().log("*-FCI finished.");
         }
 
+        TetradLogger.getInstance().log("Orienting final graph as a PAG");
+        pag = GraphUtils.replaceNodes(new MagToPag(GraphTransforms.zhangMagFromPag(pag)).convert(false, false), nodes);
+
         return pag;
     }
 
@@ -472,7 +477,33 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             return pag;
         }
 
-        // --- FCIT-style try / re-orient / check-legal / revert ---
+//        // --- FCIT-style try / re-orient / check-legal / revert ---
+//        Graph saved = new EdgeListGraph(pag);          // snapshot
+//        Set<Node> oldSepset = sepsetMap.get(a, c);     // may be null
+//
+//        pag.removeEdge(a, c);
+//        sepsetMap.set(a, c, sepset);
+//        orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
+//
+//        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(pag, selection);
+//
+//        if (!legal.isLegalPag()) {
+//            sepsetMap.set(a, c, oldSepset);            // revert sepset
+//            if (verbose) {
+//                TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
+//                        + "), but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
+//            }
+//            return saved;                              // revert graph
+//        }
+//
+//        if (verbose) {
+//            IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
+//            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " (" + type
+//                    + ", legal PAG); sepset = " + sepset + ", p-value = " + result.getPValue() + ".");
+//        }
+//        return pag;
+
+        // --- FCIT-MAG-style try / re-orient / check-legal-MAG / revert ---
         Graph saved = new EdgeListGraph(pag);          // snapshot
         Set<Node> oldSepset = sepsetMap.get(a, c);     // may be null
 
@@ -480,13 +511,20 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         sepsetMap.set(a, c, sepset);
         orientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
 
-        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(pag, selection);
+        // Gate on the Zhang MAG of the almost-PAG. R4 is off in fciOrient, so orientPag
+        // leaves an almost-PAG; it has already stamped the CPDAG and sepset colliders into
+        // pag, and zhangMagFromPag only resolves circles, so those arrowheads carry into the
+        // MAG with no separate stamping pass (unlike FCIT-MAG, which operates on the MAG
+        // directly and must call orientSepsetCollidersInMag). An illegal almost-PAG yields an
+        // illegal MAG and is reverted, as before — only the predicate changed.
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        PagLegalityCheck.LegalMagRet legal = PagLegalityCheck.isLegalMag(mag, new LinkedHashSet<>(selection));
 
-        if (!legal.isLegalPag()) {
+        if (!legal.isLegalMag()) {
             sepsetMap.set(a, c, oldSepset);            // revert sepset
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
-                        + "), but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
+                        + "), but it didn't lead to a legal MAG (reverted). Reason: " + legal.getReason());
             }
             return saved;                              // revert graph
         }
@@ -494,7 +532,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         if (verbose) {
             IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
             TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " (" + type
-                    + ", legal PAG); sepset = " + sepset + ", p-value = " + result.getPValue() + ".");
+                    + ", legal MAG); sepset = " + sepset + ", p-value = " + result.getPValue() + ".");
         }
         return pag;
     }
@@ -640,7 +678,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * @param usePossibleDsep True to run the possible-D-SEP removal pass.
      */
     public void setUsePossibleDsep(boolean usePossibleDsep) {
-        this.usePossibleDsep = usePossibleDsep;
+//        this.usePossibleDsep = usePossibleDsep;
     }
 }
 

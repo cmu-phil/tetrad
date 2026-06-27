@@ -318,6 +318,7 @@ public final class FcitMag implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setUseR4(false);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
@@ -493,7 +494,10 @@ public final class FcitMag implements IGraphSearch {
                 : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
 
         if (!spurious.isEmpty()) {
-            tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias);
+            boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
+            TetradLogger.getInstance().log(removed
+                    ? "\nSpurious edges removed."
+                    : "\nSpurious edges could not be removed.");
         }
 
         NongenuineScan finalScan = findR4NongenuineEdge(interimPags.getLast());
@@ -524,6 +528,9 @@ public final class FcitMag implements IGraphSearch {
         if (cache != null) {
             TetradLogger.getInstance().log(cache.cacheReport());
         }
+
+        interimPags.addLast(new MagToPag(GraphTransforms.zhangMagFromPag(interimPags.getLast()))
+                .convert(false, false));
 
         return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
     }
@@ -806,7 +813,7 @@ public final class FcitMag implements IGraphSearch {
 
             // Commit against the live PAG using the sepset found during the search —
             // no re-search needed, since the winner was searched against the current PAG.
-            boolean didChange = tryToModifyGraph(x, y, h.cond, "recursive",
+            boolean didChange = tryToModifyGraph(x, y, h.cond,
                     excludeSelectionBias);
 
             if (didChange) {
@@ -952,8 +959,7 @@ public final class FcitMag implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type,
-                                     boolean excludeSelectionBias) {
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, boolean excludeSelectionBias) {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
 
@@ -993,7 +999,7 @@ public final class FcitMag implements IGraphSearch {
         return true;
     }
 
-    private boolean tryToModifyGraph(List<Edge> edges, String type,
+    private boolean tryToModifyGraph(List<Edge> edges,
                                      boolean excludeSelectionBias) {
         Graph _pag = new EdgeListGraph(interimPags.getLast());
         Graph _mag = GraphTransforms.zhangMagFromPag(_pag);   // one MAG of the current legal PAG
