@@ -138,10 +138,10 @@ public class BossFciCheckPag extends AbstractBootstrapAlgorithm implements Algor
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setKnowledge(knowledge);
@@ -199,10 +199,10 @@ public class BossFciCheckPag extends AbstractBootstrapAlgorithm implements Algor
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
         params.add(Params.NUM_THREADS);
-        params.add(Params.GUARANTEE_PAG);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.DO_POSSIBLE_DSEP);
+        params.add(Params.GUARANTEE_PAG);
         params.add(Params.VERBOSE);
 
         // Parameters
