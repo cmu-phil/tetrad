@@ -256,55 +256,6 @@ public final class FcitMag implements IGraphSearch {
         return initialColliders;
     }
 
-//    private static void redoGfciOrientation(Graph pag, FciOrient fciOrient, Knowledge knowledge,
-//                                            Set<Triple> initialColliders, SepsetMap sepsets, boolean excludeSelectionBias,
-//                                            boolean superVerbose) {
-//        GraphUtils.reorientWithCircles(pag, superVerbose);
-//        GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
-//        adjustForExtraSepsets(sepsets, pag);
-//        fciOrient.finalOrientation(pag, excludeSelectionBias);
-//    }
-
-//    /**
-//     * Refines the structure of the Partial Ancestral Graph (PAG) by adjusting separation sets based on additional
-//     * independence evidence and ensuring consistency with known independence and causality constraints. This method
-//     * identifies and orients specific edges in the PAG to maintain its validity.
-//     * <p>
-//     * The method performs the following steps: (a) Iterates over all edges in the separation set map's key set. (cond)
-//     * For each edge, identifies adjacent nodes in the PAG and finds their common neighbors. (c) Removes adjacency
-//     * between the nodes if applicable and logs the operation if verbose mode is enabled. (d) Examines each common
-//     * neighbor, checking whether it is part of the separation set for the given nodes. If it is not part of the
-//     * separation set and does not create a forbidden collider, the endpoints of the edge between the common neighbor
-//     * and the adjacent nodes are adjusted to a directed orientation. (e) Logs oriented relationships in verbose mode.
-//     * <p>
-//     * This adjustment ensures proper handling of induced dependencies and maintains the correctness of the causal
-//     * structure represented by the PAG. The orientation of edges follows the rules
-//     */
-//    private static void adjustForExtraSepsets(SepsetMap sepsets, Graph pag) {
-//        for (Set<Node> edge : sepsets.keySet()) {
-//            List<Node> arr = new ArrayList<>(edge);
-//
-//            Node x = arr.get(0);
-//            Node y = arr.get(1);
-//
-//            if (pag.isAdjacentTo(x, y)) {
-//                continue;
-//            }
-//
-//            List<Node> common = pag.getAdjacentNodes(x);
-//            common.retainAll(pag.getAdjacentNodes(y));
-//
-//            for (Node node : common) {
-//                if (!sepsets.get(x, y).contains(node)) {
-//                    if (!pag.isDefCollider(x, node, y)) {
-//                        pag.setEndpoint(x, node, Endpoint.ARROW);
-//                        pag.setEndpoint(y, node, Endpoint.ARROW);
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     /**
      * MAG-side analog of adjustForExtraSepsets over every recorded sepset. Idempotent:
      * re-stamping an existing collider is a no-op (the isDefCollider guard), so calling
@@ -536,29 +487,13 @@ public final class FcitMag implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
-//        List<Graph> _pagsReversed = new ArrayList<>(interimPags);
-//        _pagsReversed = _pagsReversed.reversed();
-
-        //        for (int i = 0; i < _pagsReversed.size(); i++) {
-//            Graph _graph = _pagsReversed.get(i);
-//
-//            if (_graph.paths().isLegalPag()) {
-//                TetradLogger.getInstance().log("\nFound last legal __pag at index " + i + " of " + _pagsReversed.size());
-//                _pag = _graph;
-//                break;
-//            }
-//        }
-
-//        if (_pag == null) {
-//            throw new IllegalStateException("No pags were legal in the series.");
-//        } else {
         List<Edge> spurious = findSpuriousEdges(interimPags.getLast());
         TetradLogger.getInstance().log(spurious.isEmpty()
                 ? "\nNo spurious edges remain."
                 : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
 
         if (!spurious.isEmpty()) {
-            tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
+            tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias);
         }
 
         NongenuineScan finalScan = findR4NongenuineEdge(interimPags.getLast());
@@ -591,7 +526,6 @@ public final class FcitMag implements IGraphSearch {
         }
 
         return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
-//        }
     }
 
     private NongenuineScan findR4NongenuineEdge(Graph pag) throws InterruptedException {
@@ -873,7 +807,7 @@ public final class FcitMag implements IGraphSearch {
             // Commit against the live PAG using the sepset found during the search —
             // no re-search needed, since the winner was searched against the current PAG.
             boolean didChange = tryToModifyGraph(x, y, h.cond, "recursive",
-                    excludeSelectionBias, unshieldedTriples);
+                    excludeSelectionBias);
 
             if (didChange) {
                 changedThisSweep = true;
@@ -894,11 +828,6 @@ public final class FcitMag implements IGraphSearch {
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
-
-//        Set<Node> known = sepsets.get(x, y);
-//        if (known != null) {
-//            return new IndependenceCheck(edge, known);
-//        }
 
         Set<Node> known = sepsets.get(x, y);
         if (known != null) {
@@ -1011,10 +940,6 @@ public final class FcitMag implements IGraphSearch {
 
                 IndependenceCheck probe = new IndependenceCheck(edge, S);
                 checkCounter.increment("findIndependenceCheckRecursive (test executed)");
-//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-//                if (independenceResult.isIndependent()) {
-//                    return probe;
-//                }
 
                 IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
                 if (independenceResult.isIndependent()) {
@@ -1028,7 +953,7 @@ public final class FcitMag implements IGraphSearch {
     }
 
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type,
-                                     boolean excludeSelectionBias, Set<Triple> initialColliders) {
+                                     boolean excludeSelectionBias) {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
 
@@ -1053,7 +978,7 @@ public final class FcitMag implements IGraphSearch {
                         + ", but it didn't lead to a PAG, sepset = " + b);
                 System.out.println("\tReason = " + legal.getReason());
             }
-//            this.interimPags.removeLast();
+
             sepsets.set(x, y, prevSepset);
             return false;
         }
@@ -1069,7 +994,7 @@ public final class FcitMag implements IGraphSearch {
     }
 
     private boolean tryToModifyGraph(List<Edge> edges, String type,
-                                     boolean excludeSelectionBias, Set<Triple> initialColliders) {
+                                     boolean excludeSelectionBias) {
         Graph _pag = new EdgeListGraph(interimPags.getLast());
         Graph _mag = GraphTransforms.zhangMagFromPag(_pag);   // one MAG of the current legal PAG
 
@@ -1094,24 +1019,6 @@ public final class FcitMag implements IGraphSearch {
 
         PagLegalityCheck.LegalMagRet legal =
                 PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
-
-        if (!legal.isLegalMag()) {
-            if (verbose) {
-                TetradLogger.getInstance().log("\tTried removing " + edges
-                        + ", but it didn't lead to a PAG");
-                System.out.println("\tReason = " + legal.getReason());
-            }
-//            this.interimPags.removeLast();
-
-            for (Edge edge : edges) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-                Set<Node> prevSepset = prev.get(edge);
-                sepsets.set(x, y, prevSepset);
-            }
-
-            return false;
-        }
 
         if (!legal.isLegalMag()) {
             if (verbose) {
@@ -1309,43 +1216,6 @@ public final class FcitMag implements IGraphSearch {
     public SepsetMap getSepsetMap() {
         return sepsets;
     }
-
-    /// /        long deadlineMs = System.currentTimeMillis() + 500;
-//
-//        // Match findIndependenceCheckRecursive's convention: unlimited stays
-//        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
-//        // budget of `timeout` ms. A hardcoded budget here would make a slow scan
-//        // return null — reported as "no non-genuine DDPs" — when it merely ran
-//        // out of time, silently weakening both the discharge loop and the final
-//        // detection log line.
-//        final long deadlineMs = (timeout < 0L)
-//                ? Long.MAX_VALUE
-//                : System.currentTimeMillis() + timeout;
-//
-//        for (DiscriminatingPath dd : ddps) {
-//            List<Node> colliderPath = dd.getColliderPath();
-//
-//            List<Node> spine = new ArrayList<>(colliderPath);
-//            spine.addFirst(dd.getX());
-//            spine.addLast(dd.getY());
-//
-//            for (int i = 0; i < spine.size() - 1; i++) {
-//                Edge edge = spuriousLeg(spine.get(i), spine.get(i + 1), deadlineMs, blockedCache);
-//                if (edge != null) {
-//                    return edge;
-//                }
-//            }
-//
-//            Node y = dd.getY();
-//            for (Node v : colliderPath) {
-//                Edge edge = spuriousLeg(v, y, deadlineMs, blockedCache);
-//                if (edge != null) {
-//                    return edge;
-//                }
-//            }
-//        }
-//        return null;
-//    }
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 
