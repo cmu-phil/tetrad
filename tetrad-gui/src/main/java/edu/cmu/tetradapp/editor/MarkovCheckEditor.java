@@ -113,11 +113,11 @@ public class MarkovCheckEditor extends JPanel {
      * should be removed in the analysis.
      */
     private final JCheckBox removeExtraneousVariables;
-    /**
-     * A checkbox component that enables the user to toggle the inclusion or exclusion of the dependent distribution
-     * in the analysis.
-     */
-    private final JCheckBox checkDependentDistribution;
+//    /**
+//     * A checkbox component that enables the user to toggle the inclusion or exclusion of the dependent distribution
+//     * in the analysis.
+//     */
+//    private final JCheckBox checkDependentDistribution;
     /**
      * Whether verbose output should be printed to the log and console.
      */
@@ -374,8 +374,8 @@ public class MarkovCheckEditor extends JPanel {
 
         removeExtraneousVariables = new JCheckBox("Smallest Subset Yielding M-Separation");
         removeExtraneousVariables.setSelected(false);
-        checkDependentDistribution = new JCheckBox("Check Dependent Distribution");
-        checkDependentDistribution.setSelected(false);
+//        checkDependentDistribution = new JCheckBox("Check Dependent Distribution");
+//        checkDependentDistribution.setSelected(false);
 
         verbose = new JCheckBox("Verbose");
         verbose.setSelected(false);
@@ -414,7 +414,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         };
 
-        initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables, checkDependentDistribution,
+        initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables,
                 verbose, fractionSampleLabel);
     }
 
@@ -672,7 +672,7 @@ public class MarkovCheckEditor extends JPanel {
 
     private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane,
                                 JLabel conditioningSetsLabel, JCheckBox removeExtranenousVariables,
-                                JCheckBox checkDependentDistribution, JCheckBox verbose,
+                                JCheckBox verbose,
                                 JLabel fractionSampleLabel) {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -689,7 +689,6 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                        .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                 )
                                                 .addGroup(layout.createSequentialGroup()
@@ -708,26 +707,26 @@ public class MarkovCheckEditor extends JPanel {
                         .addContainerGap())
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(testLabel)
-                                .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(params)
-                                .addComponent(resample)
-                                .addComponent(fractionSampleLabel)
-                                .addComponent(fraction, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(conditioningSetsLabel)
-                                .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        )
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
-                        .addContainerGap())
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(testLabel)
+                                        .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(params)
+                                        .addComponent(resample)
+                                        .addComponent(fractionSampleLabel)
+                                        .addComponent(fraction, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                                .addComponent(conditioningSetTypeJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(conditioningSetsLabel)
+                                                .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//                                .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                )
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                                .addContainerGap())
         );
     }
 
@@ -759,17 +758,17 @@ public class MarkovCheckEditor extends JPanel {
                     throw new RuntimeException(e);
                 }
 
-                if (checkDependentDistribution.isSelected()) {
-                    if (clear) {
-                        model.getMarkovCheck().generateResults(true, true);
-                        model.getMarkovCheck().generateResults(false, false);
-                    } else {
-                        model.getMarkovCheck().generateResults(true, false);
-                        model.getMarkovCheck().generateResults(false, false);
-                    }
-                } else {
-                    model.getMarkovCheck().generateResults(true, clear);
-                }
+//                if (checkDependentDistribution.isSelected()) {
+//                    if (clear) {
+//                        model.getMarkovCheck().generateResults(true, true);
+////                        model.getMarkovCheck().generateResults(false, false);
+//                    } else {
+//                        model.getMarkovCheck().generateResults(true, false);
+////                        model.getMarkovCheck().generateResults(false, false);
+//                    }
+//                } else {
+//                model.getMarkovCheck().generateResults(true, clear);
+//                }
 
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();

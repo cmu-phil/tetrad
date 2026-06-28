@@ -109,7 +109,7 @@ public final class BossFci extends StarFciCheckMag {
 //        subAlg.setVerbose(isVerbose());
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(getKnowledge());
-        Graph cpdag = alg.search();
+        Graph cpdag = alg.search(false);
 
         if (isVerbose()) {
             TetradLogger.getInstance().log("Finished BOSS.");
