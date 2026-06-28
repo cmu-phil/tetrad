@@ -318,7 +318,7 @@ public final class FcitMag implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setUseR4(false);
+        fciOrient.setUseR4(true);
         fciOrient.setKnowledge(knowledge);
 
         Graph dag;
