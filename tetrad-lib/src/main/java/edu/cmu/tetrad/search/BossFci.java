@@ -39,7 +39,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @see StarFci
  * @see Boss
  */
-public final class BossFci extends StarFci {
+public final class BossFci extends StarFciCheckMag {
     /**
      * The score.
      */
@@ -106,7 +106,7 @@ public final class BossFci extends StarFci {
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
         subAlg.setNumThreads(numThreads);
-        subAlg.setVerbose(isVerbose());
+//        subAlg.setVerbose(isVerbose());
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(getKnowledge());
         Graph cpdag = alg.search();

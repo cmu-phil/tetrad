@@ -61,7 +61,7 @@ import static java.util.Collections.shuffle;
  * @see #getMarkovCpdag()
  * @see Knowledge
  */
-public abstract class StarFciCheckPag implements IGraphSearch {
+public abstract class StarFciCheckMag implements IGraphSearch {
     /**
      * The independence test used in search.
      */
@@ -114,7 +114,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      *
      * @param test The independence test to use.
      */
-    public StarFciCheckPag(IndependenceTest test) {
+    public StarFciCheckMag(IndependenceTest test) {
         this.independenceTest = test;
     }
 
@@ -312,9 +312,9 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 break;
             }
 
-            if (verbose) {
-                TetradLogger.getInstance().log("Trying to remove " + edge + " by adjacency-subset.");
-            }
+//            if (verbose) {
+//                TetradLogger.getInstance().log("Trying to remove " + edge + " by adjacency-subset.");
+//            }
 
             Node a = edge.getNode1();
             Node c = edge.getNode2();

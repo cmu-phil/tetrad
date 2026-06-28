@@ -79,6 +79,12 @@ public final class FcitMag implements IGraphSearch {
      */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new ConcurrentHashMap<>();
     /**
+     * P-value of the test that first separated each pair, keyed identically to
+     * {@link #foundSepsets}. Lets a cached-separator removal report the original
+     * test's p instead of NaN.
+     */
+    private final Map<Set<Node>, Double> foundPValues = new ConcurrentHashMap<>();
+    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -794,7 +800,7 @@ public final class FcitMag implements IGraphSearch {
                                 try {
                                     IndependenceCheck check = findIndependenceCheckRecursive(e);
                                     if (check == null) return null;
-                                    return new RemovalHit(i, e, check.cond());
+                                    return new RemovalHit(i, e, check.cond(), check.pValue());
                                 } catch (InterruptedException ie) {
                                     Thread.currentThread().interrupt();
                                     throw new RuntimeException(ie);
@@ -813,7 +819,7 @@ public final class FcitMag implements IGraphSearch {
 
             // Commit against the live PAG using the sepset found during the search —
             // no re-search needed, since the winner was searched against the current PAG.
-            boolean didChange = tryToModifyGraph(x, y, h.cond,
+            boolean didChange = tryToModifyGraph(x, y, h.cond, h.pValue(),
                     excludeSelectionBias);
 
             if (didChange) {
@@ -838,7 +844,7 @@ public final class FcitMag implements IGraphSearch {
 
         Set<Node> known = sepsets.get(x, y);
         if (known != null) {
-            return new IndependenceCheck(edge, known);
+            return new IndependenceCheck(edge, known, Double.NaN);
         }
 
         // Reuse a separator already found for this pair in an earlier sweep. The
@@ -848,7 +854,8 @@ public final class FcitMag implements IGraphSearch {
         // legality; if it reverts, the edge is retried next round with the same set.
         Set<Node> cached = foundSepsets.get(Set.of(x, y));
         if (cached != null) {
-            return new IndependenceCheck(edge, cached);
+            Double cachedP = foundPValues.get(Set.of(x, y));
+            return new IndependenceCheck(edge, cached, cachedP == null ? Double.NaN : cachedP);
         }
 
         // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
@@ -945,13 +952,13 @@ public final class FcitMag implements IGraphSearch {
 
                 if (this.depth != -1 && S.size() > this.depth) continue;
 
-                IndependenceCheck probe = new IndependenceCheck(edge, S);
                 checkCounter.increment("findIndependenceCheckRecursive (test executed)");
 
                 IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
                 if (independenceResult.isIndependent()) {
                     foundSepsets.put(Set.of(x, y), S);   // remember the fact, survives revert
-                    return probe;
+                    foundPValues.put(Set.of(x, y), independenceResult.getPValue());
+                    return new IndependenceCheck(edge, S, independenceResult.getPValue());
                 }
             }
         }
@@ -959,7 +966,7 @@ public final class FcitMag implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, boolean excludeSelectionBias) {
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias) {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
 
@@ -990,7 +997,8 @@ public final class FcitMag implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b);
+            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+                    + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
         }
 
         // Colliders are baked into _mag, so the PAG you carry forward keeps those
@@ -1251,10 +1259,10 @@ public final class FcitMag implements IGraphSearch {
         COMPLETE_GRAPH
     }
 
-    private record RemovalHit(int index, Edge edge, Set<Node> cond) {
+    private record RemovalHit(int index, Edge edge, Set<Node> cond, double pValue) {
     }
 
-    private record IndependenceCheck(Edge edge, Set<Node> cond) {
+    private record IndependenceCheck(Edge edge, Set<Node> cond, double pValue) {
     }
 
     /**
