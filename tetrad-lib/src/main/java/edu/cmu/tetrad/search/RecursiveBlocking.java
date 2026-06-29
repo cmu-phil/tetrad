@@ -215,7 +215,7 @@ public class RecursiveBlocking {
                             recursiveDepth, depth, maxRadius, nearWhichEndpoint,
                             ignoreDirectEdge, deadlineMs);
                 case SHALLOW_RECURSIVE:
-                    return ShallowRecursiveBlockingStack.blockPathsRecursively(graph, x, y, containing, notFollowed,
+                    return ShallowRecursiveBlockingMemo.blockPathsRecursively(graph, x, y, containing, notFollowed,
                             recursiveDepth, depth, maxRadius, nearWhichEndpoint,
                             ignoreDirectEdge, deadlineMs);
                 case Strategy.RECURSIVE:

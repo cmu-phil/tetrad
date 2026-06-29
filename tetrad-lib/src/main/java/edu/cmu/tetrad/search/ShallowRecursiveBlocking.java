@@ -331,7 +331,8 @@ public final class ShallowRecursiveBlocking {
             z.addAll(zSnap);                        // roll back A's additions
 
             boolean latent = b.getNodeType() == NodeType.LATENT;
-            boolean canAddB = !latent && pool.contains(b) && (depth < 0 || z.size() < depth);
+            boolean canAddB = !latent && pool.contains(b) && (depth < 0 || z.size() < depth)
+                    && addingBClosesANonCollider(graph, a, b, z, notFollowed, descendantsMap, deadlineMs);
 
             if (canAddB) {
                 // --- Branch B: add b to Z and block whatever it opens, deeper. ---
@@ -444,6 +445,34 @@ public final class ShallowRecursiveBlocking {
     // because they are private there. Make them package-private in
     // RecursiveBlocking and delete these if you'd rather not duplicate.)
     // -----------------------------------------------------------------------
+
+    /**
+     * True iff conditioning on {@code b} would close at least one currently-open
+     * continuation -- i.e. some reachable continuation {@code (a, b, c)} is a
+     * plain non-collider, which {@code b \u2208 Z} blocks. Colliders and underline
+     * triples are <em>not</em> closed by adding {@code b} (it opens them), so if
+     * every open continuation through {@code b} is one of those, conditioning on
+     * {@code b} closes nothing and we must block deeper instead.
+     *
+     * <p>This is the guard that keeps {@code Z} honest: {@code b} is conditioned
+     * on only to close a non-collider continuation. A node that is a collider on
+     * every open continuation through it is never added; a node may still sit in
+     * {@code Z} while being a collider on some other open path, provided it was
+     * added to close a non-collider elsewhere.</p>
+     */
+    private static boolean addingBClosesANonCollider(
+            Graph graph, Node a, Node b, Set<Node> z, Set<Node> notFollowed,
+            Map<Node, Set<Node>> descendantsMap, long deadlineMs)
+            throws InterruptedException, TimeoutException {
+        for (Node c : getReachableNodes(graph, a, b, z, descendantsMap, deadlineMs)) {
+            checkTimeout(deadlineMs);
+            if (notFollowed.contains(c)) continue;
+            if (!graph.isDefCollider(a, b, c)) {
+                return true;   // open non-collider continuation; b in Z would block it
+            }
+        }
+        return false;
+    }
 
     private static List<Node> getReachableNodes(Graph graph, Node a, Node b,
                                                 Set<Node> z,

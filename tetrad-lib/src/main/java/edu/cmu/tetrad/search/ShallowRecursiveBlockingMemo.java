@@ -12,55 +12,66 @@ import static edu.cmu.tetrad.search.RecursiveBlocking.Blockable.INDETERMINATE;
 import static edu.cmu.tetrad.search.RecursiveBlocking.Blockable.UNBLOCKABLE;
 
 /**
- * Explicit-stack (no JVM recursion) port of {@link ShallowRecursiveBlocking}
- * (the recursive "near-x" shallow-commit reference).
+ * {@link ShallowRecursiveBlockingStack} plus a delta-replay continuation memo.
  *
- * <p>This is the production form: it walks forward from {@code x} to {@code y}
- * and conditions on the <em>earliest</em> blockable non-collider on each open
- * path, so the returned conditioning set clusters near {@code x}.  See
- * {@link ShallowRecursiveBlocking} for the full rationale (openness flows back
- * from {@code y}, so the scout must still trace to {@code y} to establish
- * openness; conditioning on a non-collider opens its collider continuations,
- * which leak toward {@code y}; the returned set is not minimal and is not
- * orientation-neutral).</p>
+ * <p>Same algorithm, same results as the no-memo stack version (and the
+ * recursive reference); this class adds the clique optimization that
+ * {@link RecursiveBlocking} carries, adapted so it is correct for the
+ * shallow-commit variant.</p>
  *
- * <p><b>Nothing semantic changes vs. {@link ShallowRecursiveBlocking}.</b> The
- * verdict (BLOCKED / UNBLOCKABLE / INDETERMINATE) and the conditioning set are
- * identical; this class exists only so a deep graph cannot raise
- * {@link StackOverflowError}.  Run both on the same instances and diff the
- * results as a correctness check; pick one for production.  The mutual recursion
- * {@code findPath \u2194 blockAllContinuations} is replaced by an explicit
- * {@link Deque} of {@link Frame}s.  Each frame runs three passes: {@code ENTER}
- * (guards, snapshot Z), {@code BRANCH_A} (block continuations <em>without</em>
- * {@code b}; doubles as the openness probe), {@code BRANCH_B} (block
- * continuations <em>with</em> {@code b}).  The shallow commit rule is the
- * post-{@code BRANCH_A} block: if Branch&nbsp;A blocked without growing {@code Z},
- * the path was already closed and {@code b} is not added; otherwise the path was
- * open and we prefer to add {@code b} (Branch&nbsp;B), falling back to Branch&nbsp;A's
- * deeper solution only if adding {@code b} fails.</p>
+ * <p><b>Why a delta memo, not a verdict-only memo.</b> {@link RecursiveBlocking}
+ * caches the verdict alone and, on a hit, returns it without replaying the
+ * nodes that the original frame added to {@code Z}.  That is tolerable for the
+ * deep machine, whose commit decision never inspects whether {@code Z} grew, but
+ * it is unsafe here: the shallow machine's entire "already closed vs. open"
+ * decision <em>is</em> the Z-growth signal (Branch A blocked without growing
+ * {@code Z} ⇒ already closed ⇒ do not condition on {@code b}).  A verdict-only
+ * hit on a child would report BLOCKED with no growth, the parent would read that
+ * as "already closed," and a required near-{@code x} conditioning node would
+ * silently never be added.  So we cache the pair
+ * {@code (verdict, delta = Z\u2011added)} and, on a hit, do {@code z.addAll(delta)}
+ * before returning the verdict.</p>
  *
- * <p><b>One difference from {@link RecursiveBlocking}'s deep stack machine.</b>
- * There, an {@code INDETERMINATE} Branch&nbsp;A short-circuits the whole frame.
- * Here it must not: an inconclusive deep result can still be resolved by
- * conditioning on {@code b} shallowly, so Branch&nbsp;B is still attempted.</p>
+ * <p><b>Why delta replay is correct.</b> The key is {@code (a, b, entry\u2011Z)} and
+ * we cache only <em>determined</em> verdicts (BLOCKED with its delta, or
+ * UNBLOCKABLE with empty delta), never INDETERMINATE.  A determined verdict is a
+ * depth-independent fact: "{@code Z \u222a delta} blocks every {@code b\u2192y}
+ * continuation" (BLOCKED) or "some continuation is unblockable regardless of
+ * {@code Z}" (UNBLOCKABLE) holds no matter the arrival depth or the path taken
+ * to reach {@code (a, b)}.  Because the key pins entry-{@code Z}, a hit means the
+ * live {@code Z} equals the stored entry-{@code Z}, so replaying {@code delta}
+ * reproduces the original frame's final {@code Z} node-for-node \u2014 which also
+ * keeps the {@code depth} cap satisfied (same final size) and preserves the
+ * openness signal for the caller.</p>
  *
- * <p><b>Memoization is intentionally omitted</b> so this stays a 1:1
- * transcription of the recursive reference (diffable for identical output).  The
- * clique-optimization memo is a separate layer; a cache hit returns a verdict
- * without replaying the subtree's {@code Z} additions, which needs care to keep
- * the final {@code Z} complete \u2014 more so here, since the near-{@code x} bias
- * grows {@code Z} more aggressively.</p>
+ * <p><b>Taint.</b> The one path-dependent verdict is a cycle hit
+ * ({@code b \u2208 path} ⇒ BLOCKED), which is an artifact of where we came from.
+ * Such a verdict, and any ancestor verdict computed using it, must not be
+ * cached.  A {@code pathTainted} flag propagates from a cycle-hit child to its
+ * parent and onward; tainted frames are never stored.  Taint gates
+ * <em>storing</em> only \u2014 a cache <em>hit</em> is always safe because stored
+ * entries are untainted and therefore path-independent.  The flag is single and
+ * never reset, so a Branch-A cycle hit conservatively taints a frame even when
+ * the final verdict came from Branch B; this matches {@link RecursiveBlocking}
+ * and keeps the correctness argument simple, at the cost of some cache entries.</p>
  *
- * <p><b>API.</b> Identical to {@link RecursiveBlocking#blockPathsRecursively}'s
- * full-parameter signature; returns {@link RecursiveBlocking.BlockingResult}.</p>
+ * <p><b>Scope.</b> The memo lives for one {@code findPathToTargetVisitShallow}
+ * call (one first hop, one driver iteration).  It is deliberately not shared
+ * across first hops or fixed-point iterations, because {@code Z} grows between
+ * them and a per-call cache keeps every key consistent with the {@code Z} in
+ * effect when each frame was entered.</p>
+ *
+ * <p>The memo must be a pure speedup: results must be identical to
+ * {@link ShallowRecursiveBlockingStack} on every instance.  Any divergence is a
+ * memo bug.</p>
  */
-public final class ShallowRecursiveBlockingStack {
+public final class ShallowRecursiveBlockingMemo {
 
-    private ShallowRecursiveBlockingStack() {
+    private ShallowRecursiveBlockingMemo() {
     }
 
     // -----------------------------------------------------------------------
-    // Public entry points (mirror RecursiveBlocking.blockPathsRecursively)
+    // Public entry points
     // -----------------------------------------------------------------------
 
     /**
@@ -123,8 +134,7 @@ public final class ShallowRecursiveBlockingStack {
     }
 
     // -----------------------------------------------------------------------
-    // Full core + driver (the driver was already iterative; only findPath was
-    // recursive, and that is what becomes the explicit-stack machine below)
+    // Full core + driver (unchanged from the stack version)
     // -----------------------------------------------------------------------
 
     private static RecursiveBlocking.BlockingResult blockPathsShallowFull(
@@ -216,13 +226,7 @@ public final class ShallowRecursiveBlockingStack {
     }
 
     // -----------------------------------------------------------------------
-    // The recursive step, as an explicit-stack state machine.
-    //
-    // Each Frame is one findPath(a, b, ...) invocation. blockAllContinuations is
-    // inlined into the BRANCH_A / BRANCH_B passes via stepContinuationLoop, which
-    // pushes one child frame at a time and recomputes reachability between
-    // children (Z may have grown). The shallow commit rule is the post-BRANCH_A
-    // block.
+    // Explicit-stack recursive step, with delta-replay memo
     // -----------------------------------------------------------------------
 
     static RecursiveBlocking.Blockable findPathToTargetVisitShallow(
@@ -235,6 +239,9 @@ public final class ShallowRecursiveBlockingStack {
         Deque<Frame> callStack = new ArrayDeque<>();
         callStack.push(new Frame(aInit, bInit, y, depth, recursiveDepth, currentRecursiveDepth));
 
+        // Per-call delta-replay memo: (a, b, entry-Z) -> (verdict, Z-added).
+        Map<MemoKey, MemoVal> memo = new HashMap<>();
+
         RecursiveBlocking.Blockable lastResult = null;
 
         while (!callStack.isEmpty()) {
@@ -245,6 +252,9 @@ public final class ShallowRecursiveBlockingStack {
             // ENTER
             // ================================================================
             if (f.pass == Pass.ENTER) {
+                // Cheap, possibly path-dependent guards FIRST (before the memo):
+                // a cycle hit must take precedence over any path-independent
+                // cached verdict for (a, b, z).
                 if (f.currentRecursiveDepth > f.recursiveDepth) {
                     callStack.pop();
                     lastResult = INDETERMINATE;
@@ -257,7 +267,9 @@ public final class ShallowRecursiveBlockingStack {
                 }
                 if (path.contains(f.b)) {
                     callStack.pop();
-                    lastResult = BLOCKED;              // cycle
+                    Frame parent = callStack.peek();
+                    if (parent != null) parent.pathTainted = true;   // cycle hit: taint, do not cache
+                    lastResult = BLOCKED;
                     continue;
                 }
                 if (notFollowed.contains(f.b)) {
@@ -271,6 +283,18 @@ public final class ShallowRecursiveBlockingStack {
                     continue;
                 }
 
+                // Memo lookup -- a hit resolves the frame with zero exploration.
+                MemoKey key = new MemoKey(f.a, f.b, z);
+                MemoVal cached = memo.get(key);
+                if (cached != null) {
+                    callStack.pop();
+                    z.addAll(cached.delta());          // replay the subtree's Z additions
+                    lastResult = cached.verdict();
+                    continue;
+                }
+
+                // Miss: do real work. Charge the frame.
+                f.cacheKey = key;
                 path.add(f.b);
                 f.zSnapshot = new HashSet<>(z);
                 f.zSizeAtEntry = z.size();
@@ -286,13 +310,10 @@ public final class ShallowRecursiveBlockingStack {
                 RecursiveBlocking.Blockable rA;
 
                 if (lastResult == INDETERMINATE) {
-                    // A child was inconclusive. Unlike the deep machine, do NOT
-                    // short-circuit the frame -- conditioning on b may still
-                    // resolve it. Treat Branch A as INDETERMINATE and try B.
-                    rA = INDETERMINATE;
+                    rA = INDETERMINATE;                // do NOT short-circuit; try B
                     lastResult = null;
                 } else {
-                    if (lastResult != null) {                 // a child (BLOCKED/UNBLOCKABLE) returned
+                    if (lastResult != null) {
                         if (lastResult == UNBLOCKABLE) f.hadUnblockableWithout = true;
                         f.handled.add(f.pendingC);
                         f.pendingC = null;
@@ -300,7 +321,7 @@ public final class ShallowRecursiveBlockingStack {
                     }
                     RecursiveBlocking.Blockable step = stepContinuationLoop(
                             graph, f, y, z, notFollowed, descendantsMap, callStack, deadlineMs);
-                    if (step == null) continue;               // a new child was pushed
+                    if (step == null) continue;        // child pushed
                     rA = f.hadUnblockableWithout ? UNBLOCKABLE : BLOCKED;
                 }
 
@@ -308,18 +329,17 @@ public final class ShallowRecursiveBlockingStack {
                 f.withoutBResult = rA;
 
                 if (rA == BLOCKED && z.size() == f.zSizeAtEntry) {
-                    // Branch A blocked without adding anything => the path through
-                    // b was already closed; do not condition on b.
+                    // Already closed under current Z: do not condition on b.
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = BLOCKED;
+                    lastResult = finishAndCache(f, BLOCKED, z, callStack, memo);
                     continue;
                 }
 
                 // Path was open (A grew Z) or A failed. Prefer to commit at b.
-                f.zAfterA = new HashSet<>(z);                 // A's deep solution, if rA == BLOCKED
+                f.zAfterA = new HashSet<>(z);          // A's deep solution, if rA == BLOCKED
                 z.clear();
-                z.addAll(f.zSnapshot);                        // roll back A's additions
+                z.addAll(f.zSnapshot);                 // roll back A's additions
 
                 boolean latent = f.b.getNodeType() == NodeType.LATENT;
                 boolean canAddB = !latent && pool.contains(f.b)
@@ -328,13 +348,14 @@ public final class ShallowRecursiveBlockingStack {
 
                 if (!canAddB) {
                     path.remove(f.b);
-                    callStack.pop();
                     if (rA == BLOCKED) {
                         z.clear();
                         z.addAll(f.zAfterA);
-                        lastResult = BLOCKED;
+                        callStack.pop();
+                        lastResult = finishAndCache(f, BLOCKED, z, callStack, memo);
                     } else {
-                        lastResult = rA;                      // UNBLOCKABLE or INDETERMINATE
+                        callStack.pop();
+                        lastResult = finishAndCache(f, rA, z, callStack, memo);  // UNBLOCKABLE or INDETERMINATE
                     }
                     continue;
                 }
@@ -372,11 +393,11 @@ public final class ShallowRecursiveBlockingStack {
                 }
 
                 if (rB == BLOCKED) {
-                    // Committed at b (near x). Z keeps b plus whatever was needed
-                    // to block the collider continuations adding b opened.
+                    // Committed at b (near x). Z keeps b plus the deeper fixups
+                    // for the collider continuations adding b opened.
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = BLOCKED;
+                    lastResult = finishAndCache(f, BLOCKED, z, callStack, memo);
                     continue;
                 }
 
@@ -385,15 +406,18 @@ public final class ShallowRecursiveBlockingStack {
                 z.clear();
                 z.addAll(f.zSnapshot);
                 path.remove(f.b);
-                callStack.pop();
 
                 if (f.withoutBResult == BLOCKED) {
                     z.clear();
                     z.addAll(f.zAfterA);
-                    lastResult = BLOCKED;
+                    callStack.pop();
+                    lastResult = finishAndCache(f, BLOCKED, z, callStack, memo);
                 } else {
-                    lastResult = (f.withoutBResult == INDETERMINATE || rB == INDETERMINATE)
-                            ? INDETERMINATE : UNBLOCKABLE;
+                    callStack.pop();
+                    RecursiveBlocking.Blockable combined =
+                            (f.withoutBResult == INDETERMINATE || rB == INDETERMINATE)
+                                    ? INDETERMINATE : UNBLOCKABLE;
+                    lastResult = finishAndCache(f, combined, z, callStack, memo);
                 }
                 continue;
             }
@@ -403,14 +427,40 @@ public final class ShallowRecursiveBlockingStack {
     }
 
     /**
-     * Advances one continuation of the current branch.  Recomputes the reachable
-     * continuations of {@code (a, b)} under the current {@code z} (so colliders
-     * opened by a prior child's Z-growth are picked up), skips those already
-     * {@code handled}, and pushes the first remaining one as a child frame.
+     * Finalizes a just-popped frame: propagates path-taint to the parent (now on
+     * top of the stack) and stores {@code (result, delta)} in {@code memo} when
+     * safe.  {@code delta} is the net Z additions of this frame's subtree,
+     * {@code z \ zSnapshot}, computed from the live {@code z} at the moment of
+     * finishing (after any zAfterA restore).
      *
-     * @return {@code null} if a child frame was pushed (caller should suspend),
-     * or {@code BLOCKED} if no unhandled reachable continuation remains.
+     * <ul>
+     *   <li>Tainted frames are not cached; their taint propagates to the parent.</li>
+     *   <li>INDETERMINATE is never cached (a search-limit, not a fact).</li>
+     *   <li>Otherwise store {@code (result, z \ zSnapshot)} under {@code cacheKey}.</li>
+     * </ul>
+     *
+     * <p>Must be called <em>after</em> {@code callStack.pop()} so {@code peek()}
+     * is the parent.</p>
      */
+    private static RecursiveBlocking.Blockable finishAndCache(
+            Frame f, RecursiveBlocking.Blockable result,
+            Set<Node> z, Deque<Frame> callStack, Map<MemoKey, MemoVal> memo) {
+
+        if (f.pathTainted) {
+            Frame parent = callStack.peek();
+            if (parent != null) parent.pathTainted = true;
+            return result;
+        }
+
+        if (result != INDETERMINATE && f.cacheKey != null) {
+            Set<Node> delta = new HashSet<>(z);
+            delta.removeAll(f.zSnapshot);
+            memo.put(f.cacheKey, new MemoVal(result, delta));
+        }
+
+        return result;
+    }
+
     private static RecursiveBlocking.Blockable stepContinuationLoop(
             Graph graph, Frame f, Node y, Set<Node> z,
             Set<Node> notFollowed, Map<Node, Set<Node>> descendantsMap,
@@ -449,10 +499,10 @@ public final class ShallowRecursiveBlockingStack {
      * {@code b} closes nothing and we must block deeper instead.
      *
      * <p>This is the guard that keeps {@code Z} honest: {@code b} is conditioned
-     * on only to close a non-collider continuation. A node that is a collider on
-     * every open continuation through it is never added; a node may still sit in
-     * {@code Z} while being a collider on some other open path, provided it was
-     * added to close a non-collider elsewhere.</p>
+     * on only to close a non-collider continuation. It is a pure function of
+     * {@code (a, b, z)} and the graph, so it does not disturb the memo: the
+     * cached verdict and delta for a key remain a deterministic function of that
+     * key.</p>
      */
     private static boolean addingBClosesANonCollider(
             Graph graph, Node a, Node b, Set<Node> z, Set<Node> notFollowed,
@@ -575,20 +625,55 @@ public final class ShallowRecursiveBlockingStack {
     }
 
     // -----------------------------------------------------------------------
-    // Frame + passes
+    // Memo key / value
     // -----------------------------------------------------------------------
 
     /**
-     * Which pass a frame is executing.
-     *
-     * <pre>
-     *   ENTER     -> guard checks, path.add(b), snapshot Z
-     *   BRANCH_A  -> block continuations WITHOUT b (openness probe + deep solution)
-     *   BRANCH_B  -> block continuations WITH b (the near-x commit)
-     * </pre>
-     * <p>A frame for a LATENT b never reaches BRANCH_B (it cannot be added to Z),
-     * handled by the {@code canAddB} test after BRANCH_A.</p>
+     * Memoization value: a determined verdict and the net Z additions
+     * ({@code delta}) that produced it.  {@code delta} is empty for UNBLOCKABLE.
      */
+    private record MemoVal(RecursiveBlocking.Blockable verdict, Set<Node> delta) {
+    }
+
+    /**
+     * Memoization key {@code (a, b, entry-Z)}.  {@code z} is snapshot-copied at
+     * construction so later mutation of the live {@code z} does not corrupt
+     * stored keys.
+     */
+    private static final class MemoKey {
+        private final Node a;
+        private final Node b;
+        private final Set<Node> z;
+        private final int hash;
+
+        MemoKey(Node a, Node b, Set<Node> z) {
+            this.a = a;
+            this.b = b;
+            this.z = new HashSet<>(z);
+            this.hash = Objects.hash(a, b, this.z);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof MemoKey)) return false;
+            MemoKey other = (MemoKey) o;
+            return hash == other.hash
+                    && a == other.a
+                    && b == other.b
+                    && z.equals(other.z);
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Frame + passes
+    // -----------------------------------------------------------------------
+
     private enum Pass {
         ENTER,
         BRANCH_A,
@@ -606,21 +691,24 @@ public final class ShallowRecursiveBlockingStack {
 
         Pass pass = Pass.ENTER;
 
-        // Z at frame entry (for rollback), and its size (to detect whether
-        // Branch A actually had to block anything -- the openness signal).
         Set<Node> zSnapshot = null;
         int zSizeAtEntry = 0;
 
-        // Branch A's solution, captured before rolling back to prefer Branch B;
-        // restored if adding b (Branch B) fails but A had succeeded.
         Set<Node> zAfterA = null;
         RecursiveBlocking.Blockable withoutBResult = null;
 
-        // Continuation-loop state for the current branch (reset between A and B).
         Set<Node> handled = new HashSet<>();
         Node pendingC = null;
         boolean hadUnblockableWithout = false;
         boolean hadUnblockableWith = false;
+
+        // Memo support.
+        // pathTainted: this frame's verdict used a cycle-hit (path-dependent)
+        //   child verdict; never cached, propagates to the parent.
+        // cacheKey: (a, b, entry-Z) under which to store on an untainted finish;
+        //   null until set at the lookup point (so guard exits are never cached).
+        boolean pathTainted = false;
+        MemoKey cacheKey = null;
 
         Frame(Node a, Node b, Node y,
               int depth, int recursiveDepth, int currentRecursiveDepth) {
