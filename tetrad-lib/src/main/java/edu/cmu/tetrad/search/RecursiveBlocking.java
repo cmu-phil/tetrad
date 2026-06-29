@@ -214,6 +214,10 @@ public class RecursiveBlocking {
                     return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
                             recursiveDepth, depth, maxRadius, nearWhichEndpoint,
                             ignoreDirectEdge, deadlineMs);
+                case SHALLOW_RECURSIVE:
+                    return ShallowRecursiveBlockingStack.blockPathsRecursively(graph, x, y, containing, notFollowed,
+                            recursiveDepth, depth, maxRadius, nearWhichEndpoint,
+                            ignoreDirectEdge, deadlineMs);
                 case Strategy.RECURSIVE:
                 default:
                     return blockPathsRecursivelyFull(graph, x, y, containing, notFollowed,
@@ -961,60 +965,6 @@ public class RecursiveBlocking {
             // =================================================================
             // ENTER
             // =================================================================
-//            if (f.pass == Pass.ENTER) {
-//                if (f.currentRecursiveDepth > f.recursiveDepth) {
-//                    // INDETERMINATE: search-limit, not a graph fact. Never cached.
-//                    callStack.pop();
-//                    lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
-//                    continue;
-//                }
-//
-//                if (f.b == y) {
-//                    callStack.pop();
-//                    lastResult = finishFrame(f, Blockable.UNBLOCKABLE, callStack, memo);
-//                    continue;
-//                }
-//                if (path.contains(f.b)) {
-//                    // Cycle hit: this BLOCKED verdict is path-dependent, so it
-//                    // must never be cached, and any ancestor that consumes it
-//                    // must be tainted. Mark the parent tainted directly here.
-//                    callStack.pop();
-//                    Frame parent = callStack.peek();
-//                    if (parent != null) parent.pathTainted = true;
-//                    lastResult = Blockable.BLOCKED;
-//                    continue;
-//                }
-//                if (notFollowed.contains(f.b)) {
-//                    callStack.pop();
-//                    lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
-//                    continue;
-//                }
-//                if (notFollowed.contains(y)) {
-//                    callStack.pop();
-//                    lastResult = finishFrame(f, Blockable.BLOCKED, callStack, memo);
-//                    continue;
-//                }
-//
-//                // ---- MEMO LOOKUP ----
-//                // z here is the entry z for this frame. If we have already
-//                // computed an untainted verdict for (a, b, z), reuse it.
-//                MemoKey key = new MemoKey(f.a, f.b, z);
-//                Blockable cached = memo.get(key);
-//                if (cached != null) {
-//                    callStack.pop();
-//                    // A cached verdict is by construction untainted, so we do
-//                    // not taint the parent and do not re-store. Just return it.
-//                    lastResult = cached;
-//                    continue;
-//                }
-//                f.cacheKey = key;   // store on a successful, untainted pop
-//
-//                path.add(f.b);
-//
-//                f.zSnapshot = new HashSet<>(z);
-//                f.pass = Pass.CONTINUATIONS_WITHOUT_B;
-//            }
-
             Frame f = callStack.peek();
 
             if (f.pass == Pass.ENTER) {
@@ -1046,8 +996,6 @@ public class RecursiveBlocking {
                     lastResult = finishFrame(f, Blockable.BLOCKED, callStack, memo);
                     continue;
                 }
-//                if (notFollowed.contains(f.b)) { /* INDETERMINATE, pop */ ... continue; }
-//                if (notFollowed.contains(y))   { /* BLOCKED, pop */ ... continue; }
 
                 // Memo lookup — a hit means zero new exploration.
                 MemoKey key = new MemoKey(f.a, f.b, z);
@@ -1059,9 +1007,6 @@ public class RecursiveBlocking {
                 }
 
                 // ONLY NOW are we about to do real work. Charge a frame.
-//                if (++totalFrames[0] > MAX_TOTAL_FRAMES) {
-//                    return Blockable.INDETERMINATE;
-//                }
                 f.cacheKey = key;
                 path.add(f.b);
                 f.zSnapshot = new HashSet<>(z);
@@ -1405,7 +1350,11 @@ public class RecursiveBlocking {
         /**
          * Iterative deepening on recursion depth ({@link #blockPathsIterativeDeepening}).
          */
-        ITERATIVE_DEEPENING
+        ITERATIVE_DEEPENING,
+        /**
+         * Shallow recursive blocking.
+         */
+        SHALLOW_RECURSIVE
     }
 
     /**
@@ -1414,7 +1363,7 @@ public class RecursiveBlocking {
      * predefined approach, which is set to a recursive strategy.
      * It can be utilized wherever a default execution policy is required.
      */
-    public static Strategy DEFAULT_STRATEGY = Strategy.RECURSIVE;
+    public static Strategy DEFAULT_STRATEGY = Strategy.SHALLOW_RECURSIVE;
 
     // -----------------------------------------------------------------------
     // Continuation-loop stepper

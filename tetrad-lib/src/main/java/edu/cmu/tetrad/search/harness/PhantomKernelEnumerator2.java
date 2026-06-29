@@ -38,7 +38,7 @@ package edu.cmu.tetrad.search.harness;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.RecursiveBlocking;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.*;
@@ -56,52 +56,66 @@ import java.util.stream.LongStream;
  * Parallel exhaustive enumeration over small latent DAGs that either proves no
  * legal-non-genuine PAG exists up to a given size or prints a witness, while
  * censusing phantom spine length and probing the under-commitment mechanism.
+ * <p>
+ * These arguments are passed to the harness via the command line.
+ * <code>
+ * 6 1 2 phantom_kernel_witnesses2.log cold meek_counterexamples2.log imap_violations2.log pag_step_imap_break2.log
+ * </code>
  *
  * @author josephramsey (harness scaffolding by Claude)
  */
 public final class PhantomKernelEnumerator2 {
 
-    private static int N            = 6;
-    private static int NUM_LATENT   = 1;
+    // Indexed form of prong() for fast per-deadlock tallies. Indices match PRONG_NAME.
+    static final String[] PRONG_NAME = {"roundtrip", "maximality", "acyclic", "other"};
+    private static final int MAX_COND = 3;
+    private static final int MAX_LEN = -1;
+    private static final int DEPTH = -1;
+    private static final int RECURSIVE_DEPTH = -1;
+    private static final long TIMEOUT = -1L;
+    private static final boolean EXCLUDE_SELECTION_BIAS = true;
+    private static final boolean PROBE_STEP_BREAKS = true;   // I-map H0 -> legal non-I-map H1 probe
+    private static final boolean PROBE_R0_GENUINE = true;   // widen genuineness test from R4 to R0
+    private static final boolean PROBE_RESPONSIBILITY = true;   // are spurious-leg colliders SUFFICIENT?
+    private static final AtomicLong ROBUST_R0_ABSTAINS = new AtomicLong();
+    private static final AtomicLong ROBUST_R0_FORCED_QUERIES = new AtomicLong();
+    private static final AtomicLong ROBUST_R0_FORCED_CONFIRMED = new AtomicLong();
+    private static final AtomicLong ROBUST_R0_FORCED_INDETERMINATE = new AtomicLong();
+    private static final AtomicLong PROGRESS = new AtomicLong();
+    private static final int WITNESS_CAP = 5000; // per merged Result, to bound memory
+    // ── Bryan's generalized-Meek check ────────────────────────────────────────────
+    // Among legal PAGs that are I-maps of truePag, is truePag reachable from H0 by single-edge
+    // REMOVALS and REORIENTATIONS (the |Hi|-|Hi+1| in {0,1} move set), under the I(Hi) subset
+    // I(Hi+1) order? Only deadlocks unreachable here are genuine counterexamples to Bryan's
+    // conjecture; the single-edge canonical form (subsetReachability) is strictly weaker.
+    //
+    // A "state" is (skeleton = truePag.skel + subset of spurious, independence model). The model is
+    // the set of m-separations realised by SOME legal MAG on that skeleton; the state is admissible
+    // iff its model is a subset of truePag's model (I-map). Two flagged Tetrad calls below
+    // (isLegalMag, magOfPag) must be checked against your API.
+    private static final int BRYAN_MAX_SKELETON_EDGES = 12;   // guard on 3^edges MAG enumeration
+    private static int N = 6;
+    private static int NUM_LATENT = 1;
     private static int MAX_SPURIOUS = 2;
-
     // H1 delete-and-reorient mode. COLD (default): wipe to circles and re-close from scratch.
     // WARM (seeded): inherit H0's marks (minus the deleted edge) and run only the closure.
     // H0's own gating reorient is always COLD, so the gated population is identical in both
     // modes and any deadlock-count difference is attributable to the H1 step alone.
     private static boolean SEEDED_REORIENT = false;
-
-    private static final int     MAX_COND        = 3;
-    private static final int     MAX_LEN         = -1;
-    private static final int     DEPTH           = -1;
-    private static final int     RECURSIVE_DEPTH = -1;
-    private static final long    TIMEOUT         = -1L;
-    private static final boolean EXCLUDE_SELECTION_BIAS = true;
-    private static final boolean PROBE_STEP_BREAKS       = true;   // I-map H0 -> legal non-I-map H1 probe
-    private static final boolean PROBE_R0_GENUINE        = true;   // widen genuineness test from R4 to R0
-    private static final boolean PROBE_RESPONSIBILITY    = true;   // are spurious-leg colliders SUFFICIENT?
-
     // Robust R0 experiment.  Ordinary adjustForExtraSepsets stamps x*->z<-*y
     // whenever the recorded Sep(x,y) excludes z.  Robust R0 first asks whether
     // RB can find an oracle-confirmed separator CONTAINING z; if so, it abstains
     // from the collider orientation.  Enable with a 13th command-line argument
     // (args[12]) equal to robust/true/1, or with -DrobustR0=true.
     private static boolean ROBUST_R0 = Boolean.getBoolean("robustR0");
-    private static final AtomicLong ROBUST_R0_ABSTAINS = new AtomicLong();
-    private static final AtomicLong ROBUST_R0_FORCED_QUERIES = new AtomicLong();
-    private static final AtomicLong ROBUST_R0_FORCED_CONFIRMED = new AtomicLong();
-    private static final AtomicLong ROBUST_R0_FORCED_INDETERMINATE = new AtomicLong();
-
     // Shared read-only config, set in main before the parallel stream.
     private static int OBS, P;
     private static int[][] PAIR;
     private static long TOTAL_DAGS;
-    private static final AtomicLong PROGRESS = new AtomicLong();
-    private static final int WITNESS_CAP = 5000; // per merged Result, to bound memory
 
     public static void main(String[] args) {
-        if (args.length > 0) N            = Integer.parseInt(args[0]);
-        if (args.length > 1) NUM_LATENT   = Integer.parseInt(args[1]);
+        if (args.length > 0) N = Integer.parseInt(args[0]);
+        if (args.length > 1) NUM_LATENT = Integer.parseInt(args[1]);
         if (args.length > 2) MAX_SPURIOUS = Integer.parseInt(args[2]);
         String dumpPath = (args.length > 3) ? args[3] : "phantom_kernel_witnesses.log";
         if (args.length > 4) {
@@ -118,11 +132,14 @@ public final class PhantomKernelEnumerator2 {
         String imapPath = (args.length > 6) ? args[6] : "imap_violations.log";
 
         OBS = N - NUM_LATENT;
-        P   = N * (N - 1) / 2;
+        P = N * (N - 1) / 2;
         TOTAL_DAGS = 1L << P;
         PAIR = new int[P][2];
         for (int idx = 0, i = 0; i < N; i++) {
-            for (int j = i + 1; j < N; j++, idx++) { PAIR[idx][0] = i; PAIR[idx][1] = j; }
+            for (int j = i + 1; j < N; j++, idx++) {
+                PAIR[idx][0] = i;
+                PAIR[idx][1] = j;
+            }
         }
 
         int threads = Runtime.getRuntime().availableProcessors();
@@ -330,7 +347,10 @@ public final class PhantomKernelEnumerator2 {
                     }
                 }
                 Set<Integer> latSet = new HashSet<>();
-                for (int li : latChoice) { latSet.add(li); nodes.get(li).setNodeType(NodeType.LATENT); }
+                for (int li : latChoice) {
+                    latSet.add(li);
+                    nodes.get(li).setNodeType(NodeType.LATENT);
+                }
 
                 r.modelsScanned++;
 
@@ -600,13 +620,22 @@ public final class PhantomKernelEnumerator2 {
                             if (!legal) {
                                 int idx = prongIdx(ret.getReason());
                                 boolean gen = phantoms.isEmpty();
-                                if (gen) { dlGen++; dlGenProng[idx]++; } else { dlNg++; dlNgProng[idx]++; }
+                                if (gen) {
+                                    dlGen++;
+                                    dlGenProng[idx]++;
+                                } else {
+                                    dlNg++;
+                                    dlNgProng[idx]++;
+                                }
                                 dlLog.append("    ").append(e).append(" : illegal -- ")
                                         .append(gen ? "genuine/" : "non-genuine/").append(PRONG_NAME[idx])
                                         .append(" -- ").append(ret.getReason()).append('\n');
                             }
 
-                            if (phantoms.isEmpty()) { r.positives++; continue; }
+                            if (phantoms.isEmpty()) {
+                                r.positives++;
+                                continue;
+                            }
 
                             // phantom-length census
                             for (DiscriminatingPath dd : phantoms) {
@@ -623,7 +652,10 @@ public final class PhantomKernelEnumerator2 {
                             // Lemma-B probe: recorded sepset coverage of the DDP endpoints.
                             Node px = worst.getX(), py = worst.getY(), pv = worst.getV();
                             Set<Node> sxy = null;
-                            try { sxy = sepsets.get(px, py); } catch (Exception ignore) { }
+                            try {
+                                sxy = sepsets.get(px, py);
+                            } catch (Exception ignore) {
+                            }
                             if (sxy == null) {
                                 r.phantomXYNoSepset++;
                             } else {
@@ -638,13 +670,14 @@ public final class PhantomKernelEnumerator2 {
                             // at v on the (last-collider)->v edge. R4 needs an arrowhead there
                             // (w *-> v); a circle (w <-o v) means R4 never poses the question.
                             boolean spineDefinite = allSpineCollidersDefinite(h1, worst);
-                            if (spineDefinite) r.phantomSpineDefinite++; else r.phantomSpineNonDefinite++;
+                            if (spineDefinite) r.phantomSpineDefinite++;
+                            else r.phantomSpineNonDefinite++;
 
                             Endpoint wvAtV = wvEndpointAtV(h1, worst);
-                            if (wvAtV == Endpoint.ARROW)       r.wvArrowAtV++;
+                            if (wvAtV == Endpoint.ARROW) r.wvArrowAtV++;
                             else if (wvAtV == Endpoint.CIRCLE) r.wvCircleAtV++;
-                            else if (wvAtV == Endpoint.TAIL)   r.wvTailAtV++;
-                            else                                r.wvOtherAtV++;
+                            else if (wvAtV == Endpoint.TAIL) r.wvTailAtV++;
+                            else r.wvOtherAtV++;
 
                             // Off-hypothesis cases (w-v endpoint at v NOT a circle) are the
                             // would-be falsifiers: R4 had its precondition yet did not fire.
@@ -658,14 +691,17 @@ public final class PhantomKernelEnumerator2 {
                             // Decisive cross-tab for the formerly-thrown population:
                             // among non-genuine H1, split by {R4 abstained} x {legal}.
                             if (legal) {
-                                if (abstained) r.nonGenAbstainLegal++; else r.nonGenNoAbstainLegal++;
+                                if (abstained) r.nonGenAbstainLegal++;
+                                else r.nonGenNoAbstainLegal++;
                             } else {
-                                if (abstained) r.nonGenAbstainIllegal++; else r.nonGenNoAbstainIllegal++;
+                                if (abstained) r.nonGenAbstainIllegal++;
+                                else r.nonGenNoAbstainIllegal++;
                             }
 
                             if (legal) {
                                 r.counterexamples++;
-                                if (committed) r.committedLegal++; else r.circleLegal++;
+                                if (committed) r.committedLegal++;
+                                else r.circleLegal++;
                                 r.addWitness(formatCase(
                                         (committed ? "***** CONSISTENT LIE: legal, non-genuine, COMMITTED v-end *****"
                                                 : "***** COUNTEREXAMPLE: legal, non-genuine, circle v-end *****")
@@ -680,10 +716,18 @@ public final class PhantomKernelEnumerator2 {
                                 if (committed) {
                                     r.committedIllegal++;
                                     switch (prong(reason)) {
-                                        case "roundtrip":  r.committedIllegalRoundtrip++;  break;
-                                        case "maximality": r.committedIllegalMaximality++; break;
-                                        case "acyclic":    r.committedIllegalAcyclic++;    break;
-                                        default:           r.committedIllegalOther++;      break;
+                                        case "roundtrip":
+                                            r.committedIllegalRoundtrip++;
+                                            break;
+                                        case "maximality":
+                                            r.committedIllegalMaximality++;
+                                            break;
+                                        case "acyclic":
+                                            r.committedIllegalAcyclic++;
+                                            break;
+                                        default:
+                                            r.committedIllegalOther++;
+                                            break;
                                     }
                                     if ("roundtrip".equals(prong(reason))) {
                                         r.addWitness(formatCase("COMMITTED v-end, illegal by ROUND-TRIP "
@@ -702,11 +746,11 @@ public final class PhantomKernelEnumerator2 {
                             r.h0Deadlock++;
                             for (int i = 0; i < 4; i++) {
                                 r.dlGenProng[i] += dlGenProng[i];
-                                r.dlNgProng[i]  += dlNgProng[i];
+                                r.dlNgProng[i] += dlNgProng[i];
                             }
-                            if (dlNg == 0 && dlGen > 0)      r.dlAllGenuine++;
+                            if (dlNg == 0 && dlGen > 0) r.dlAllGenuine++;
                             else if (dlGen == 0 && dlNg > 0) r.dlAllNonGenuine++;
-                            else if (dlGen > 0 && dlNg > 0)  r.dlMixed++;
+                            else if (dlGen > 0 && dlNg > 0) r.dlMixed++;
                             r.addWitness(formatDeadlock(mask, latSet, spurious, dlLog.toString(), dag, truePag, h0));
 
                             // Generalized-Meek (single-edge form) reachability: a deadlock is a
@@ -744,9 +788,9 @@ public final class PhantomKernelEnumerator2 {
                             // adjacency, require a legal MAG, project MAG->PAG, re-canonicalize.
                             // Reaches G* iff the sequence lands exactly on truePag.
                             MagSweepInfo ms = magSweep(truePag, h0, spurious);
-                            if (ms.stuck)            r.magSweepStuck++;
+                            if (ms.stuck) r.magSweepStuck++;
                             else if (ms.reachesTrue) r.magSweepReachesTrue++;
-                            else                     r.magSweepWrongPag++;
+                            else r.magSweepWrongPag++;
                         } else {
                             r.h0WithEscape++;
                         }
@@ -765,10 +809,10 @@ public final class PhantomKernelEnumerator2 {
         }
     }
 
-//    private static String firstFalseCiBlocker(Graph h1, Graph trueMag, Graph truePag,
+    //    private static String firstFalseCiBlocker(Graph h1, Graph trueMag, Graph truePag,
 //                                              List<Node> obs, String witness)
-private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Graph truePag,
-                                          List<Node> obs, String witness)            throws InterruptedException {
+    private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Graph truePag,
+                                              List<Node> obs, String witness) throws InterruptedException {
         // Parse witness of form: "X2 _||_ X4 | [X3]   (...)"
         try {
             String left = witness.substring(0, witness.indexOf("   ")).trim();
@@ -1011,15 +1055,15 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         System.out.printf("H1 with >=1 abstention           : %d / %d%n", t.h1WithAbstention, t.h1States);
         System.out.println("non-genuine H1 by {R4 abstained} x {legal} -- the decisive test:");
         System.out.printf("  %-18s %12s %12s%n", "", "illegal", "LEGAL");
-        System.out.printf("  %-18s %12d %12d%n", "abstained",     t.nonGenAbstainIllegal,   t.nonGenAbstainLegal);
-        System.out.printf("  %-18s %12d %12d%n", "no abstention",  t.nonGenNoAbstainIllegal, t.nonGenNoAbstainLegal);
+        System.out.printf("  %-18s %12d %12d%n", "abstained", t.nonGenAbstainIllegal, t.nonGenAbstainLegal);
+        System.out.printf("  %-18s %12d %12d%n", "no abstention", t.nonGenNoAbstainIllegal, t.nonGenNoAbstainLegal);
         System.out.println("  (abstained, LEGAL) is a counterexample the throw-and-abort used to hide.");
         System.out.println("  It must be 0; if it is, the formerly-thrown population is also uniformly illegal");
         System.out.println("  and the exhaustive proof at this size is finally without coverage holes.");
 
         System.out.println("\n==== KERNEL CROSS-TAB (non-genuine H1: v-end committed? x legal?) ====");
         System.out.printf("  %-22s %12s %12s%n", "", "illegal", "LEGAL");
-        System.out.printf("  %-22s %12d %12d%n", "v-end = circle",    t.circleIllegal,    t.circleLegal);
+        System.out.printf("  %-22s %12d %12d%n", "v-end = circle", t.circleIllegal, t.circleLegal);
         System.out.printf("  %-22s %12d %12d%n", "v-end = committed", t.committedIllegal, t.committedLegal);
         System.out.printf("  committed-illegal by prong -> roundtrip=%d maximality=%d acyclic=%d other=%d%n",
                 t.committedIllegalRoundtrip, t.committedIllegalMaximality,
@@ -1030,7 +1074,10 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         System.out.println("phantom collider-length histogram (over all phantom DDPs):");
         boolean any = false;
         for (int L = 0; L < t.phantomLenHist.length; L++) {
-            if (t.phantomLenHist[L] > 0) { System.out.printf("  length %d : %d%n", L, t.phantomLenHist[L]); any = true; }
+            if (t.phantomLenHist[L] > 0) {
+                System.out.printf("  length %d : %d%n", L, t.phantomLenHist[L]);
+                any = true;
+            }
         }
         if (!any) System.out.println("  (no phantom DDPs observed)");
 
@@ -1119,7 +1166,10 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         System.out.println("  min escape arity histogram (edges removable in one legal move):");
         boolean anyArity = false;
         for (int a = 0; a < t.meekArityHist.length; a++) {
-            if (t.meekArityHist[a] > 0) { System.out.printf("    arity %d : %d%n", a, t.meekArityHist[a]); anyArity = true; }
+            if (t.meekArityHist[a] > 0) {
+                System.out.printf("    arity %d : %d%n", a, t.meekArityHist[a]);
+                anyArity = true;
+            }
         }
         if (!anyArity) System.out.println("    (none)");
         System.out.println("  arity>=2 means the true PAG can only be reached by removing >=2 edges at once,");
@@ -1165,170 +1215,6 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         System.out.println("\nwitnesses / anomalies written to: " + dumpPath);
     }
 
-    // ── Thread-confined accumulator ────────────────────────────────────────────
-    static final class Result {
-        long dagsScanned, modelsScanned, gated, h1States, positives, illegalNG, counterexamples;
-        long circleIllegal, circleLegal, committedIllegal, committedLegal;
-        long committedIllegalRoundtrip, committedIllegalMaximality, committedIllegalAcyclic, committedIllegalOther;
-        long phantomXYHasSepset, phantomXYNoSepset, phantomVInSepset;
-        long maxPhantomColliderLen;
-        // R4 abstention instrumentation (formerly the throw-and-abort population).
-        long totalAbstentions, gatedWithAbstention, h1WithAbstention, skipped;
-        long nonGenAbstainIllegal, nonGenAbstainLegal, nonGenNoAbstainIllegal, nonGenNoAbstainLegal;
-        long phantomSpineDefinite, phantomSpineNonDefinite;
-        long wvArrowAtV, wvCircleAtV, wvTailAtV, wvOtherAtV;
-        long[] phantomLenHist = new long[Math.max(2, OBS + 2)];
-        // NOSTALL probe: gated H0 with at least one legal single-edge escape vs none (deadlock).
-        long h0WithEscape, h0Deadlock;
-        // Deadlock anatomy: per-edge illegal-deletion prong tallies, split genuine vs non-genuine,
-        // and per-deadlock composition (all-genuine = legality non-monotonicity; all-non-genuine =
-        // mutual phantom masking; mixed = both).
-        long[] dlGenProng = new long[4], dlNgProng = new long[4];
-        long dlAllGenuine, dlAllNonGenuine, dlMixed;
-        // Generalized-Meek single-edge counterexamples (each deadlock is one) + escape-arity census.
-        long meekCounterexamples;
-        long[] meekArityHist = new long[Math.max(3, OBS + 1)];
-        long bryanCounterexamples;
-        long bryanUnchecked;
-        long bryanNotImap;     // deadlocks whose H0 is not an I-map of G* (excluded from the test)
-        // MAG-sweep escape: the closed per-edge fallback (Zhang MAG, delete the adjacency,
-        // MAG->PAG, re-canonicalize each step) run over a stall's spurious set, in list order.
-        long magSweepReachesTrue;   // sweep lands exactly on truePag
-        long magSweepStuck;         // a deletion left an illegal MAG (no clean projection)
-        long magSweepWrongPag;      // sweep finished legal but not on truePag
-        List<String> meekWitnesses = new ArrayList<>();
-        long meekSuppressed;
-        List<String> witnesses = new ArrayList<>();
-        long suppressed;
-        List<String> imapWitnesses = new ArrayList<>();   // non-I-map H0 examples
-        long imapSuppressed;
-        long pagStepBreaks;                               // I-map H0 -> legal non-I-map H1 (PAG->PAG defect)
-        List<String> stepBreakWitnesses = new ArrayList<>();
-        long stepBreakSuppressed;
-        long magCommitAlsoBreaks, magCommitFixed, magCommitReverted;   // FcitMag re-commit of each step-break
-        List<String> magRecheckWitnesses = new ArrayList<>();
-        long magRecheckSuppressed;
-        long r0NonGenuineLegal;          // legal H1 with an unshielded (R0) collider on a spurious leg
-        long r0NgAndStepBreak;           // ...of those, how many are also I-map step-breaks
-        long stepBreakNotExplainedByR0;  // step-breaks with NO spurious-leg R0 collider (= R4+COMPLETION+RESIDUE)
-        List<String> r0NgWitnesses = new ArrayList<>();
-        long r0NgSuppressed;
-        long sbR0, sbR4Shielded, sbCompletion, sbResidue;   // step-break mechanism re-bin
-        List<String> residueWitnesses = new ArrayList<>();  // the all-real-edge breaks (alarming)
-        long residueSuppressed;
-        long sbResponsible;        // step-breaks fully explained by spurious-leg colliders (sufficient)
-        long sbNotResponsible;     // ...a false CI survives their neutralization (responsibility residue)
-        long sbDisplaced;          // ...of those, ones with an exhibited all-real-leg displaced unsound mark
-        List<String> respResidueWitnesses = new ArrayList<>();
-        long respResidueSuppressed;
-
-        void addWitness(String s) {
-            if (witnesses.size() < WITNESS_CAP) witnesses.add(s); else suppressed++;
-        }
-
-        void addImapWitness(String s) {
-            if (imapWitnesses.size() < WITNESS_CAP) imapWitnesses.add(s); else imapSuppressed++;
-        }
-
-        void addStepBreakWitness(String s) {
-            if (stepBreakWitnesses.size() < WITNESS_CAP) stepBreakWitnesses.add(s); else stepBreakSuppressed++;
-        }
-
-        void addMagRecheckWitness(String s) {
-            if (magRecheckWitnesses.size() < WITNESS_CAP) magRecheckWitnesses.add(s); else magRecheckSuppressed++;
-        }
-
-        void addR0NgWitness(String s) {
-            if (r0NgWitnesses.size() < WITNESS_CAP) r0NgWitnesses.add(s); else r0NgSuppressed++;
-        }
-
-        void addResidueWitness(String s) {
-            if (residueWitnesses.size() < WITNESS_CAP) residueWitnesses.add(s); else residueSuppressed++;
-        }
-
-        void addRespResidueWitness(String s) {
-            if (respResidueWitnesses.size() < WITNESS_CAP) respResidueWitnesses.add(s); else respResidueSuppressed++;
-        }
-
-        void addMeekWitness(String s) {
-            if (meekWitnesses.size() < WITNESS_CAP) meekWitnesses.add(s); else meekSuppressed++;
-        }
-
-        static Result merge(Result a, Result b) {
-            a.dagsScanned += b.dagsScanned;       a.modelsScanned += b.modelsScanned;
-            a.gated += b.gated;                   a.h1States += b.h1States;
-            a.positives += b.positives;           a.illegalNG += b.illegalNG;
-            a.counterexamples += b.counterexamples;
-            a.circleIllegal += b.circleIllegal;   a.circleLegal += b.circleLegal;
-            a.committedIllegal += b.committedIllegal; a.committedLegal += b.committedLegal;
-            a.committedIllegalRoundtrip += b.committedIllegalRoundtrip;
-            a.committedIllegalMaximality += b.committedIllegalMaximality;
-            a.committedIllegalAcyclic += b.committedIllegalAcyclic;
-            a.committedIllegalOther += b.committedIllegalOther;
-            a.phantomXYHasSepset += b.phantomXYHasSepset;
-            a.phantomXYNoSepset += b.phantomXYNoSepset;
-            a.phantomVInSepset += b.phantomVInSepset;
-            a.totalAbstentions += b.totalAbstentions;
-            a.gatedWithAbstention += b.gatedWithAbstention;
-            a.h1WithAbstention += b.h1WithAbstention;
-            a.skipped += b.skipped;
-            a.nonGenAbstainIllegal += b.nonGenAbstainIllegal;
-            a.nonGenAbstainLegal += b.nonGenAbstainLegal;
-            a.nonGenNoAbstainIllegal += b.nonGenNoAbstainIllegal;
-            a.nonGenNoAbstainLegal += b.nonGenNoAbstainLegal;
-            a.phantomSpineDefinite += b.phantomSpineDefinite;
-            a.phantomSpineNonDefinite += b.phantomSpineNonDefinite;
-            a.wvArrowAtV += b.wvArrowAtV;   a.wvCircleAtV += b.wvCircleAtV;
-            a.wvTailAtV += b.wvTailAtV;     a.wvOtherAtV += b.wvOtherAtV;
-            a.h0WithEscape += b.h0WithEscape; a.h0Deadlock += b.h0Deadlock;
-            for (int i = 0; i < 4; i++) { a.dlGenProng[i] += b.dlGenProng[i]; a.dlNgProng[i] += b.dlNgProng[i]; }
-            a.dlAllGenuine += b.dlAllGenuine; a.dlAllNonGenuine += b.dlAllNonGenuine; a.dlMixed += b.dlMixed;
-            a.meekCounterexamples += b.meekCounterexamples;
-            a.bryanCounterexamples += b.bryanCounterexamples;
-            a.bryanUnchecked += b.bryanUnchecked;
-            a.bryanNotImap += b.bryanNotImap;
-            a.magSweepReachesTrue += b.magSweepReachesTrue;
-            a.magSweepStuck += b.magSweepStuck;
-            a.magSweepWrongPag += b.magSweepWrongPag;
-            int km = Math.min(a.meekArityHist.length, b.meekArityHist.length);
-            for (int i = 0; i < km; i++) a.meekArityHist[i] += b.meekArityHist[i];
-            for (String s : b.meekWitnesses) a.addMeekWitness(s);
-            a.meekSuppressed += b.meekSuppressed;
-            a.maxPhantomColliderLen = Math.max(a.maxPhantomColliderLen, b.maxPhantomColliderLen);
-            int n = Math.min(a.phantomLenHist.length, b.phantomLenHist.length);
-            for (int i = 0; i < n; i++) a.phantomLenHist[i] += b.phantomLenHist[i];
-            for (String s : b.witnesses) a.addWitness(s);
-            a.suppressed += b.suppressed;
-            for (String s : b.imapWitnesses) a.addImapWitness(s);
-            a.imapSuppressed += b.imapSuppressed;
-            a.pagStepBreaks += b.pagStepBreaks;
-            for (String s : b.stepBreakWitnesses) a.addStepBreakWitness(s);
-            a.stepBreakSuppressed += b.stepBreakSuppressed;
-            a.magCommitAlsoBreaks += b.magCommitAlsoBreaks;
-            a.magCommitFixed += b.magCommitFixed;
-            a.magCommitReverted += b.magCommitReverted;
-            for (String s : b.magRecheckWitnesses) a.addMagRecheckWitness(s);
-            a.magRecheckSuppressed += b.magRecheckSuppressed;
-            a.r0NonGenuineLegal += b.r0NonGenuineLegal;
-            a.r0NgAndStepBreak += b.r0NgAndStepBreak;
-            a.stepBreakNotExplainedByR0 += b.stepBreakNotExplainedByR0;
-            for (String s : b.r0NgWitnesses) a.addR0NgWitness(s);
-            a.r0NgSuppressed += b.r0NgSuppressed;
-            a.sbR0 += b.sbR0;
-            a.sbR4Shielded += b.sbR4Shielded;
-            a.sbCompletion += b.sbCompletion;
-            a.sbResidue += b.sbResidue;
-            for (String s : b.residueWitnesses) a.addResidueWitness(s);
-            a.residueSuppressed += b.residueSuppressed;
-            a.sbResponsible += b.sbResponsible;
-            a.sbNotResponsible += b.sbNotResponsible;
-            a.sbDisplaced += b.sbDisplaced;
-            for (String s : b.respResidueWitnesses) a.addRespResidueWitness(s);
-            a.respResidueSuppressed += b.respResidueSuppressed;
-            return a;
-        }
-    }
-
     private static boolean vEndCommitted(Graph h1, DiscriminatingPath dd) {
         Node v = dd.getV(), y = dd.getY();
         Edge e = h1.getEdge(v, y);
@@ -1337,10 +1223,12 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         return atV == Endpoint.TAIL || atV == Endpoint.ARROW;
     }
 
-    /** True iff every colliderPath vertex of the DDP is a DEFINITE collider in h1.
-     *  Kept as a CONTROL: established to be uniformly true on phantoms, so collider
-     *  definiteness is NOT the firing gap. colliderPath is ordered v->x, so the path
-     *  in v-first order is v, cp[0], cp[1], ..., x. */
+    /**
+     * True iff every colliderPath vertex of the DDP is a DEFINITE collider in h1.
+     * Kept as a CONTROL: established to be uniformly true on phantoms, so collider
+     * definiteness is NOT the firing gap. colliderPath is ordered v->x, so the path
+     * in v-first order is v, cp[0], cp[1], ..., x.
+     */
     private static boolean allSpineCollidersDefinite(Graph h1, DiscriminatingPath dd) {
         List<Node> cp = dd.getColliderPath();
         List<Node> path = new ArrayList<>();
@@ -1353,10 +1241,12 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         return true;
     }
 
-    /** Endpoint AT v on the (last collider)->v edge. w = colliderPath[0] (the
-     *  collider adjacent to v, equals dd.getW()). R4's discriminating-path
-     *  precondition needs an arrowhead into v here (w *-> v); the witness graphs
-     *  show a circle instead (w <-o v), which is why R4 never fires. */
+    /**
+     * Endpoint AT v on the (last collider)->v edge. w = colliderPath[0] (the
+     * collider adjacent to v, equals dd.getW()). R4's discriminating-path
+     * precondition needs an arrowhead into v here (w *-> v); the witness graphs
+     * show a circle instead (w <-o v), which is why R4 never fires.
+     */
     private static Endpoint wvEndpointAtV(Graph h1, DiscriminatingPath dd) {
         List<Node> cp = dd.getColliderPath();
         Node w = cp.isEmpty() ? dd.getX() : cp.get(0);
@@ -1374,14 +1264,16 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         return "other";
     }
 
-    // Indexed form of prong() for fast per-deadlock tallies. Indices match PRONG_NAME.
-    static final String[] PRONG_NAME = {"roundtrip", "maximality", "acyclic", "other"};
     private static int prongIdx(String reason) {
         switch (prong(reason)) {
-            case "roundtrip":  return 0;
-            case "maximality": return 1;
-            case "acyclic":    return 2;
-            default:           return 3;
+            case "roundtrip":
+                return 0;
+            case "maximality":
+                return 1;
+            case "acyclic":
+                return 2;
+            default:
+                return 3;
         }
     }
 
@@ -1437,14 +1329,6 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         return names.toString();
     }
 
-    // ── Generalized-Meek single-edge reachability over the spurious-subset lattice ──
-    private static final class MeekInfo {
-        boolean singleEdgeReachesTrue;   // is truePag reachable from H0 by legal single-edge moves?
-        int minEscapeArity = -1;         // fewest edges removable in one legal move from H0
-        int k;
-        String lattice = "";
-    }
-
     private static MeekInfo subsetReachability(Graph truePag, List<Edge> spurious, IndependenceTest oracle,
                                                SepsetMap sepsets, Knowledge knowledge,
                                                Set<Triple> initialColliders) throws InterruptedException {
@@ -1467,13 +1351,19 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         // BFS over legal single-edge removals from H0; can we reach truePag (empty)?
         boolean[] seen = new boolean[n];
         Deque<Integer> queue = new ArrayDeque<>();
-        if (legal[full]) { seen[full] = true; queue.add(full); }
+        if (legal[full]) {
+            seen[full] = true;
+            queue.add(full);
+        }
         while (!queue.isEmpty()) {
             int cur = queue.poll();
             for (int i = 0; i < k; i++) {
                 if ((cur & (1 << i)) != 0) {
                     int nxt = cur & ~(1 << i);
-                    if (!seen[nxt] && legal[nxt]) { seen[nxt] = true; queue.add(nxt); }
+                    if (!seen[nxt] && legal[nxt]) {
+                        seen[nxt] = true;
+                        queue.add(nxt);
+                    }
                 }
             }
         }
@@ -1493,7 +1383,11 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
             sb.append("      {");
             boolean first = true;
             for (int i = 0; i < k; i++) {
-                if ((m & (1 << i)) != 0) { if (!first) sb.append(","); sb.append(spurious.get(i)); first = false; }
+                if ((m & (1 << i)) != 0) {
+                    if (!first) sb.append(",");
+                    sb.append(spurious.get(i));
+                    first = false;
+                }
             }
             sb.append("} : ").append(legal[m] ? "legal" : "illegal").append('\n');
         }
@@ -1516,32 +1410,14 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         return sb.toString();
     }
 
-    // ── Bryan's generalized-Meek check ────────────────────────────────────────────
-    // Among legal PAGs that are I-maps of truePag, is truePag reachable from H0 by single-edge
-    // REMOVALS and REORIENTATIONS (the |Hi|-|Hi+1| in {0,1} move set), under the I(Hi) subset
-    // I(Hi+1) order? Only deadlocks unreachable here are genuine counterexamples to Bryan's
-    // conjecture; the single-edge canonical form (subsetReachability) is strictly weaker.
-    //
-    // A "state" is (skeleton = truePag.skel + subset of spurious, independence model). The model is
-    // the set of m-separations realised by SOME legal MAG on that skeleton; the state is admissible
-    // iff its model is a subset of truePag's model (I-map). Two flagged Tetrad calls below
-    // (isLegalMag, magOfPag) must be checked against your API.
-    private static final int BRYAN_MAX_SKELETON_EDGES = 12;   // guard on 3^edges MAG enumeration
-
-    private static final class BryanInfo {
-        boolean reachable;     // truePag reachable from H0 via Bryan moves
-        boolean checked;       // false if skipped (skeleton too large)
-        boolean imapFail;      // H0 is not an I-map of truePag -> invalid instance, excluded
-        String imapWitness;    // a CI that H0 entails but G* does not (proof I(H0) !subset I(G*))
-        int k;
-        int statesExplored;
-    }
-
     private static BryanInfo bryanReachable(Graph truePag, Graph h0, List<Edge> spurious) throws InterruptedException {
         BryanInfo bi = new BryanInfo();
         int k = spurious.size();
         bi.k = k;
-        if (truePag.getNumEdges() + k > BRYAN_MAX_SKELETON_EDGES) { bi.checked = false; return bi; }
+        if (truePag.getNumEdges() + k > BRYAN_MAX_SKELETON_EDGES) {
+            bi.checked = false;
+            return bi;
+        }
         bi.checked = true;
 
         List<Node> obs = truePag.getNodes();
@@ -1632,15 +1508,20 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         Set<String> visited = new HashSet<>();
         Deque<String> q = new ArrayDeque<>();
         String start = full + "|" + h0key;
-        visited.add(start); q.add(start);
+        visited.add(start);
+        q.add(start);
         boolean reached = false;
         int explored = 0;
         while (!q.isEmpty()) {
-            String cur = q.poll(); explored++;
+            String cur = q.poll();
+            explored++;
             int bar = cur.indexOf('|');
             int sub = Integer.parseInt(cur.substring(0, bar));
             boolean[] curModel = modelByKey.get(cur.substring(bar + 1));
-            if (sub == 0 && cur.substring(bar + 1).equals(targetKey)) { reached = true; break; }
+            if (sub == 0 && cur.substring(bar + 1).equals(targetKey)) {
+                reached = true;
+                break;
+            }
             // reorientation: same subset, to any enumerated I-map state with curModel subset of it
             for (String bk : statesBySubset.getOrDefault(sub, Collections.emptySet())) {
                 if (subsetModel(curModel, modelByKey.get(bk))) {
@@ -1674,9 +1555,15 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
             for (int e = 0; e < skel.size(); e++) {
                 Node a = skel.get(e)[0], b = skel.get(e)[1];
                 switch (orient[e]) {
-                    case 0:  mag.addDirectedEdge(a, b); break;
-                    case 1:  mag.addDirectedEdge(b, a); break;
-                    default: mag.addBidirectedEdge(a, b); break;
+                    case 0:
+                        mag.addDirectedEdge(a, b);
+                        break;
+                    case 1:
+                        mag.addDirectedEdge(b, a);
+                        break;
+                    default:
+                        mag.addBidirectedEdge(a, b);
+                        break;
                 }
             }
             if (!isLegalMag(mag)) return;
@@ -1749,11 +1636,6 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         return pag;
     }
 
-    private static final class MagSweepInfo {
-        boolean reachesTrue;   // sweep lands exactly on truePag
-        boolean stuck;         // a deletion left an illegal/non-maximal MAG (no clean projection)
-    }
-
     // Per-edge MAG sweep over the spurious list, re-canonicalizing (fresh Zhang MAG) each
     // step. Order is spurious-list order; a different order could clear a case this one
     // gets stuck on -- magSweepStuck surfaces exactly those.
@@ -1764,12 +1646,19 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         for (Edge e : spurious) {
             Graph mag = magOfPag(pag);
             Edge inMag = mag.getEdge(e.getNode1(), e.getNode2());
-            if (inMag == null) { info.stuck = true; return info; }
+            if (inMag == null) {
+                info.stuck = true;
+                return info;
+            }
             mag.removeEdge(inMag);
-            if (!isLegalMag(mag)) { info.stuck = true; return info; }
+            if (!isLegalMag(mag)) {
+                info.stuck = true;
+                return info;
+            }
             pag = pagOfMag(mag);
             if (!PagLegalityCheck.isLegalPag(pag, new HashSet<>()).isLegalPag()) {
-                info.stuck = true; return info;
+                info.stuck = true;
+                return info;
             }
         }
         info.reachesTrue = sameOrientedGraph(pag, truePag);
@@ -1787,6 +1676,7 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         }
         return true;
     }
+
     private static String formatImapViolation(long mask, Set<Integer> latSet, List<Edge> spurious,
                                               Graph dag, Graph truePag, Graph h0, BryanInfo bi) {
         StringBuilder sb = new StringBuilder();
@@ -2126,7 +2016,10 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
         for (Edge sp : spurious) {
             Node a = sp.getNode1(), b = sp.getNode2();
             Set<Node> s = null;
-            try { s = sepsets.get(a, b); } catch (Exception ignore) { }
+            try {
+                s = sepsets.get(a, b);
+            } catch (Exception ignore) {
+            }
             sb.append("      sepset(").append(a.getName()).append(",").append(b.getName()).append(") = ")
                     .append(s == null ? "(none recorded)" : s)
                     .append(sp.equals(removed) ? "   <-- removed edge" : "")
@@ -2141,7 +2034,8 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
     }
 
     private static String formatBryan(long mask, Set<Integer> latSet, List<Edge> spurious,
-                                      Graph dag, Graph truePag, Graph h0, MeekInfo mi, BryanInfo bi) {       StringBuilder sb = new StringBuilder();
+                                      Graph dag, Graph truePag, Graph h0, MeekInfo mi, BryanInfo bi) {
+        StringBuilder sb = new StringBuilder();
         sb.append("==== GENERALIZED-MEEK COUNTEREXAMPLE (Bryan full form: removals + reorientations) ====\n");
         sb.append("  A legal PAG, I-map of the true PAG, from which the true PAG is NOT reachable by any\n");
         sb.append("  sequence of legal single-edge removals and reorientations over I-map PAGs.\n");
@@ -2362,5 +2256,212 @@ private static String firstFalseCiBlocker(Graph h0, Graph h1, Graph trueMag, Gra
             }
         }
         return null;
+    }
+
+    // ── Thread-confined accumulator ────────────────────────────────────────────
+    static final class Result {
+        long dagsScanned, modelsScanned, gated, h1States, positives, illegalNG, counterexamples;
+        long circleIllegal, circleLegal, committedIllegal, committedLegal;
+        long committedIllegalRoundtrip, committedIllegalMaximality, committedIllegalAcyclic, committedIllegalOther;
+        long phantomXYHasSepset, phantomXYNoSepset, phantomVInSepset;
+        long maxPhantomColliderLen;
+        // R4 abstention instrumentation (formerly the throw-and-abort population).
+        long totalAbstentions, gatedWithAbstention, h1WithAbstention, skipped;
+        long nonGenAbstainIllegal, nonGenAbstainLegal, nonGenNoAbstainIllegal, nonGenNoAbstainLegal;
+        long phantomSpineDefinite, phantomSpineNonDefinite;
+        long wvArrowAtV, wvCircleAtV, wvTailAtV, wvOtherAtV;
+        long[] phantomLenHist = new long[Math.max(2, OBS + 2)];
+        // NOSTALL probe: gated H0 with at least one legal single-edge escape vs none (deadlock).
+        long h0WithEscape, h0Deadlock;
+        // Deadlock anatomy: per-edge illegal-deletion prong tallies, split genuine vs non-genuine,
+        // and per-deadlock composition (all-genuine = legality non-monotonicity; all-non-genuine =
+        // mutual phantom masking; mixed = both).
+        long[] dlGenProng = new long[4], dlNgProng = new long[4];
+        long dlAllGenuine, dlAllNonGenuine, dlMixed;
+        // Generalized-Meek single-edge counterexamples (each deadlock is one) + escape-arity census.
+        long meekCounterexamples;
+        long[] meekArityHist = new long[Math.max(3, OBS + 1)];
+        long bryanCounterexamples;
+        long bryanUnchecked;
+        long bryanNotImap;     // deadlocks whose H0 is not an I-map of G* (excluded from the test)
+        // MAG-sweep escape: the closed per-edge fallback (Zhang MAG, delete the adjacency,
+        // MAG->PAG, re-canonicalize each step) run over a stall's spurious set, in list order.
+        long magSweepReachesTrue;   // sweep lands exactly on truePag
+        long magSweepStuck;         // a deletion left an illegal MAG (no clean projection)
+        long magSweepWrongPag;      // sweep finished legal but not on truePag
+        List<String> meekWitnesses = new ArrayList<>();
+        long meekSuppressed;
+        List<String> witnesses = new ArrayList<>();
+        long suppressed;
+        List<String> imapWitnesses = new ArrayList<>();   // non-I-map H0 examples
+        long imapSuppressed;
+        long pagStepBreaks;                               // I-map H0 -> legal non-I-map H1 (PAG->PAG defect)
+        List<String> stepBreakWitnesses = new ArrayList<>();
+        long stepBreakSuppressed;
+        long magCommitAlsoBreaks, magCommitFixed, magCommitReverted;   // FcitMag re-commit of each step-break
+        List<String> magRecheckWitnesses = new ArrayList<>();
+        long magRecheckSuppressed;
+        long r0NonGenuineLegal;          // legal H1 with an unshielded (R0) collider on a spurious leg
+        long r0NgAndStepBreak;           // ...of those, how many are also I-map step-breaks
+        long stepBreakNotExplainedByR0;  // step-breaks with NO spurious-leg R0 collider (= R4+COMPLETION+RESIDUE)
+        List<String> r0NgWitnesses = new ArrayList<>();
+        long r0NgSuppressed;
+        long sbR0, sbR4Shielded, sbCompletion, sbResidue;   // step-break mechanism re-bin
+        List<String> residueWitnesses = new ArrayList<>();  // the all-real-edge breaks (alarming)
+        long residueSuppressed;
+        long sbResponsible;        // step-breaks fully explained by spurious-leg colliders (sufficient)
+        long sbNotResponsible;     // ...a false CI survives their neutralization (responsibility residue)
+        long sbDisplaced;          // ...of those, ones with an exhibited all-real-leg displaced unsound mark
+        List<String> respResidueWitnesses = new ArrayList<>();
+        long respResidueSuppressed;
+
+        static Result merge(Result a, Result b) {
+            a.dagsScanned += b.dagsScanned;
+            a.modelsScanned += b.modelsScanned;
+            a.gated += b.gated;
+            a.h1States += b.h1States;
+            a.positives += b.positives;
+            a.illegalNG += b.illegalNG;
+            a.counterexamples += b.counterexamples;
+            a.circleIllegal += b.circleIllegal;
+            a.circleLegal += b.circleLegal;
+            a.committedIllegal += b.committedIllegal;
+            a.committedLegal += b.committedLegal;
+            a.committedIllegalRoundtrip += b.committedIllegalRoundtrip;
+            a.committedIllegalMaximality += b.committedIllegalMaximality;
+            a.committedIllegalAcyclic += b.committedIllegalAcyclic;
+            a.committedIllegalOther += b.committedIllegalOther;
+            a.phantomXYHasSepset += b.phantomXYHasSepset;
+            a.phantomXYNoSepset += b.phantomXYNoSepset;
+            a.phantomVInSepset += b.phantomVInSepset;
+            a.totalAbstentions += b.totalAbstentions;
+            a.gatedWithAbstention += b.gatedWithAbstention;
+            a.h1WithAbstention += b.h1WithAbstention;
+            a.skipped += b.skipped;
+            a.nonGenAbstainIllegal += b.nonGenAbstainIllegal;
+            a.nonGenAbstainLegal += b.nonGenAbstainLegal;
+            a.nonGenNoAbstainIllegal += b.nonGenNoAbstainIllegal;
+            a.nonGenNoAbstainLegal += b.nonGenNoAbstainLegal;
+            a.phantomSpineDefinite += b.phantomSpineDefinite;
+            a.phantomSpineNonDefinite += b.phantomSpineNonDefinite;
+            a.wvArrowAtV += b.wvArrowAtV;
+            a.wvCircleAtV += b.wvCircleAtV;
+            a.wvTailAtV += b.wvTailAtV;
+            a.wvOtherAtV += b.wvOtherAtV;
+            a.h0WithEscape += b.h0WithEscape;
+            a.h0Deadlock += b.h0Deadlock;
+            for (int i = 0; i < 4; i++) {
+                a.dlGenProng[i] += b.dlGenProng[i];
+                a.dlNgProng[i] += b.dlNgProng[i];
+            }
+            a.dlAllGenuine += b.dlAllGenuine;
+            a.dlAllNonGenuine += b.dlAllNonGenuine;
+            a.dlMixed += b.dlMixed;
+            a.meekCounterexamples += b.meekCounterexamples;
+            a.bryanCounterexamples += b.bryanCounterexamples;
+            a.bryanUnchecked += b.bryanUnchecked;
+            a.bryanNotImap += b.bryanNotImap;
+            a.magSweepReachesTrue += b.magSweepReachesTrue;
+            a.magSweepStuck += b.magSweepStuck;
+            a.magSweepWrongPag += b.magSweepWrongPag;
+            int km = Math.min(a.meekArityHist.length, b.meekArityHist.length);
+            for (int i = 0; i < km; i++) a.meekArityHist[i] += b.meekArityHist[i];
+            for (String s : b.meekWitnesses) a.addMeekWitness(s);
+            a.meekSuppressed += b.meekSuppressed;
+            a.maxPhantomColliderLen = Math.max(a.maxPhantomColliderLen, b.maxPhantomColliderLen);
+            int n = Math.min(a.phantomLenHist.length, b.phantomLenHist.length);
+            for (int i = 0; i < n; i++) a.phantomLenHist[i] += b.phantomLenHist[i];
+            for (String s : b.witnesses) a.addWitness(s);
+            a.suppressed += b.suppressed;
+            for (String s : b.imapWitnesses) a.addImapWitness(s);
+            a.imapSuppressed += b.imapSuppressed;
+            a.pagStepBreaks += b.pagStepBreaks;
+            for (String s : b.stepBreakWitnesses) a.addStepBreakWitness(s);
+            a.stepBreakSuppressed += b.stepBreakSuppressed;
+            a.magCommitAlsoBreaks += b.magCommitAlsoBreaks;
+            a.magCommitFixed += b.magCommitFixed;
+            a.magCommitReverted += b.magCommitReverted;
+            for (String s : b.magRecheckWitnesses) a.addMagRecheckWitness(s);
+            a.magRecheckSuppressed += b.magRecheckSuppressed;
+            a.r0NonGenuineLegal += b.r0NonGenuineLegal;
+            a.r0NgAndStepBreak += b.r0NgAndStepBreak;
+            a.stepBreakNotExplainedByR0 += b.stepBreakNotExplainedByR0;
+            for (String s : b.r0NgWitnesses) a.addR0NgWitness(s);
+            a.r0NgSuppressed += b.r0NgSuppressed;
+            a.sbR0 += b.sbR0;
+            a.sbR4Shielded += b.sbR4Shielded;
+            a.sbCompletion += b.sbCompletion;
+            a.sbResidue += b.sbResidue;
+            for (String s : b.residueWitnesses) a.addResidueWitness(s);
+            a.residueSuppressed += b.residueSuppressed;
+            a.sbResponsible += b.sbResponsible;
+            a.sbNotResponsible += b.sbNotResponsible;
+            a.sbDisplaced += b.sbDisplaced;
+            for (String s : b.respResidueWitnesses) a.addRespResidueWitness(s);
+            a.respResidueSuppressed += b.respResidueSuppressed;
+            return a;
+        }
+
+        void addWitness(String s) {
+            if (witnesses.size() < WITNESS_CAP) witnesses.add(s);
+            else suppressed++;
+        }
+
+        void addImapWitness(String s) {
+            if (imapWitnesses.size() < WITNESS_CAP) imapWitnesses.add(s);
+            else imapSuppressed++;
+        }
+
+        void addStepBreakWitness(String s) {
+            if (stepBreakWitnesses.size() < WITNESS_CAP) stepBreakWitnesses.add(s);
+            else stepBreakSuppressed++;
+        }
+
+        void addMagRecheckWitness(String s) {
+            if (magRecheckWitnesses.size() < WITNESS_CAP) magRecheckWitnesses.add(s);
+            else magRecheckSuppressed++;
+        }
+
+        void addR0NgWitness(String s) {
+            if (r0NgWitnesses.size() < WITNESS_CAP) r0NgWitnesses.add(s);
+            else r0NgSuppressed++;
+        }
+
+        void addResidueWitness(String s) {
+            if (residueWitnesses.size() < WITNESS_CAP) residueWitnesses.add(s);
+            else residueSuppressed++;
+        }
+
+        void addRespResidueWitness(String s) {
+            if (respResidueWitnesses.size() < WITNESS_CAP) respResidueWitnesses.add(s);
+            else respResidueSuppressed++;
+        }
+
+        void addMeekWitness(String s) {
+            if (meekWitnesses.size() < WITNESS_CAP) meekWitnesses.add(s);
+            else meekSuppressed++;
+        }
+    }
+
+    // ── Generalized-Meek single-edge reachability over the spurious-subset lattice ──
+    private static final class MeekInfo {
+        boolean singleEdgeReachesTrue;   // is truePag reachable from H0 by legal single-edge moves?
+        int minEscapeArity = -1;         // fewest edges removable in one legal move from H0
+        int k;
+        String lattice = "";
+    }
+
+    private static final class BryanInfo {
+        boolean reachable;     // truePag reachable from H0 via Bryan moves
+        boolean checked;       // false if skipped (skeleton too large)
+        boolean imapFail;      // H0 is not an I-map of truePag -> invalid instance, excluded
+        String imapWitness;    // a CI that H0 entails but G* does not (proof I(H0) !subset I(G*))
+        int k;
+        int statesExplored;
+    }
+
+    private static final class MagSweepInfo {
+        boolean reachesTrue;   // sweep lands exactly on truePag
+        boolean stuck;         // a deletion left an illegal/non-maximal MAG (no clean projection)
     }
 }
