@@ -352,7 +352,10 @@ public final class PhantomKernelEnumerator2 {
                     nodes.get(li).setNodeType(NodeType.LATENT);
                 }
 
+//                r.modelsScanned++;
+
                 r.modelsScanned++;
+                if (!(mask == 3286L && latSet.equals(Set.of(1)))) continue;   // TEMP: 3286/X2 only
 
                 Knowledge knowledge = new Knowledge();
                 Graph truePag = GraphTransforms.dagToPag(dag, knowledge, EXCLUDE_SELECTION_BIAS, RECURSIVE_DEPTH);
@@ -448,6 +451,9 @@ public final class PhantomKernelEnumerator2 {
                         int dlGen = 0, dlNg = 0;
                         int[] dlGenProng = new int[4], dlNgProng = new int[4];
                         StringBuilder dlLog = new StringBuilder();
+                        // Full reoriented intermediate (PAG + implied MAG) for each illegal single-edge
+                        // deletion, captured on the FIRST pass so it is exactly the graph isLegalPag judged.
+                        StringBuilder dlGraphs = new StringBuilder();
 
                         // Is H0 itself an I-map of G*? Only then is "I-map H0 -> non-I-map H1" the
                         // real PAG->PAG soundness defect (vs. an invalid start we'd exclude anyway).
@@ -630,6 +636,17 @@ public final class PhantomKernelEnumerator2 {
                                 dlLog.append("    ").append(e).append(" : illegal -- ")
                                         .append(gen ? "genuine/" : "non-genuine/").append(PRONG_NAME[idx])
                                         .append(" -- ").append(ret.getReason()).append('\n');
+
+                                // h1 here is exactly the graph isLegalPag rejected. Print it and its Zhang
+                                // MAG -- the inducing path the maximality prong names lives in the MAG.
+                                dlGraphs.append("  ---- failed deletion ").append(e)
+                                        .append("  (").append(PRONG_NAME[idx]).append(") ----\n");
+                                dlGraphs.append("    reason: ").append(ret.getReason()).append('\n');
+                                dlGraphs.append("    H1 = H0 minus ").append(e)
+                                        .append(", cold-reoriented (the PAG isLegalPag rejected):\n")
+                                        .append(h1).append('\n');
+                                dlGraphs.append("    implied MAG of H1 (zhangMagFromPag) -- inducing-path witness here:\n")
+                                        .append(magOfPag(h1)).append('\n');
                             }
 
                             if (phantoms.isEmpty()) {
@@ -751,7 +768,7 @@ public final class PhantomKernelEnumerator2 {
                             if (dlNg == 0 && dlGen > 0) r.dlAllGenuine++;
                             else if (dlGen == 0 && dlNg > 0) r.dlAllNonGenuine++;
                             else if (dlGen > 0 && dlNg > 0) r.dlMixed++;
-                            r.addWitness(formatDeadlock(mask, latSet, spurious, dlLog.toString(), dag, truePag, h0));
+//                            r.addWitness(formatDeadlock(mask, latSet, spurious, dlLog.toString(), dag, truePag, h0));
 
                             // Generalized-Meek (single-edge form) reachability: a deadlock is a
                             // legal PAG denser than truth with no legal single-edge move toward it,
@@ -791,6 +808,17 @@ public final class PhantomKernelEnumerator2 {
                             if (ms.stuck) r.magSweepStuck++;
                             else if (ms.reachesTrue) r.magSweepReachesTrue++;
                             else r.magSweepWrongPag++;
+
+                            // Peter-facing exhibit: I-map start, every single deletion genuine-but-illegal,
+                            // MAG teleport reaches G*. Emit H0 + per-edge stall reasons + the teleport trace.
+                            if (!bi.imapFail && ms.reachesTrue && dlNg == 0 && dlGen > 0) {
+                                r.addWitness(formatDeadlock(mask, latSet, spurious, dlLog.toString(), dag, truePag, h0)
+                                        + "\n  --- ILLEGAL SINGLE-EDGE INTERMEDIATES "
+                                        + "(reoriented PAG + implied MAG for each failed deletion) ---\n"
+                                        + dlGraphs
+                                        + "\n  --- MAG TELEPORT (single-edge stall above; round trip below reaches G*) ---\n"
+                                        + magSweepTraced(truePag, h0, spurious));
+                            }
                         } else {
                             r.h0WithEscape++;
                         }
@@ -800,6 +828,8 @@ public final class PhantomKernelEnumerator2 {
                 r.skipped++;
                 System.err.println("model mask=" + mask + " lat=" + Arrays.toString(latChoice)
                         + " skipped: " + ex.getMessage());
+
+                ex.printStackTrace();
             }
         }
 
@@ -807,6 +837,31 @@ public final class PhantomKernelEnumerator2 {
         if ((d & 0xFFF) == 0) {
             System.err.printf("…dag %d/%d done%n", d, TOTAL_DAGS);
         }
+    }
+
+    private static String magSweepTraced(Graph truePag, Graph h0, List<Edge> spurious)
+            throws InterruptedException {
+        StringBuilder sb = new StringBuilder();
+        Graph pag = new EdgeListGraph(h0);
+        int step = 0;
+        for (Edge e : spurious) {
+            Graph mag = magOfPag(pag);
+            Edge inMag = mag.getEdge(e.getNode1(), e.getNode2());
+            sb.append("  step ").append(++step).append(": Zhang MAG of current PAG, delete ")
+                    .append(e).append('\n');
+            if (inMag == null) { sb.append("    STUCK: edge absent in MAG\n"); return sb.toString(); }
+            mag.removeEdge(inMag);
+            if (!isLegalMag(mag)) { sb.append("    STUCK: MAG illegal after deletion\n"); return sb.toString(); }
+            pag = pagOfMag(mag);
+            if (!PagLegalityCheck.isLegalPag(pag, new HashSet<>()).isLegalPag()) {
+                sb.append("    STUCK: projected PAG illegal\n"); return sb.toString();
+            }
+            sb.append("    -> legal PAG after this teleport step:\n").append(pag).append('\n');
+        }
+        sb.append(sameOrientedGraph(pag, truePag)
+                ? "  RESULT: teleport sequence reaches G* exactly.\n"
+                : "  RESULT: teleport sequence legal but != G*.\n");
+        return sb.toString();
     }
 
     //    private static String firstFalseCiBlocker(Graph h1, Graph trueMag, Graph truePag,

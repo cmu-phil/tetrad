@@ -89,6 +89,12 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      */
     private Parameters parameters = new Parameters();
 
+    /** Undo/redo history of graph states, persisted with the session so it survives editor close/reopen. */
+    private List<Graph> undoHistory = new ArrayList<>();
+
+    /** Index into undoHistory of the currently displayed state; -1 when empty. */
+    private int undoCursor = -1;
+
     //=============================CONSTRUCTORS==========================//
 
     private GraphWrapper() {
@@ -321,6 +327,56 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         //       log();
     }
 
+    public boolean hasUndoHistory() {
+        return undoHistory != null && !undoHistory.isEmpty();
+    }
+
+    public boolean canUndo() {
+        return undoHistory != null && undoCursor > 0;
+    }
+
+    public boolean canRedo() {
+        return undoHistory != null && undoCursor >= 0 && undoCursor < undoHistory.size() - 1;
+    }
+
+    /**
+     * Pushes a snapshot of the given graph as the new current undo state, discarding any
+     * redo tail. No-op if structurally equal to the current state (which also makes
+     * undo/redo refreshes that re-fire the change listener harmless).
+     */
+    public void recordGraphState(Graph graph) {
+        if (graph == null) return;
+        if (undoHistory == null) { undoHistory = new ArrayList<>(); undoCursor = -1; }
+        Graph snapshot = new EdgeListGraph(graph);
+        if (undoCursor >= 0 && undoCursor < undoHistory.size()
+                && undoHistory.get(undoCursor).equals(snapshot)) {
+            return;
+        }
+        while (undoHistory.size() > undoCursor + 1) {
+            undoHistory.remove(undoHistory.size() - 1);   // truncate redo tail
+        }
+        undoHistory.add(snapshot);
+        undoCursor = undoHistory.size() - 1;
+    }
+
+    /** Step back one state, make it current, return a copy. null if cannot. */
+    public Graph undo() {
+        if (!canUndo()) return null;
+        undoCursor--;
+        Graph g = new EdgeListGraph(undoHistory.get(undoCursor));
+        setGraph(g);
+        return g;
+    }
+
+    /** Step forward one state, make it current, return a copy. null if cannot. */
+    public Graph redo() {
+        if (!canRedo()) return null;
+        undoCursor++;
+        Graph g = new EdgeListGraph(undoHistory.get(undoCursor));
+        setGraph(g);
+        return g;
+    }
+
     /**
      * <p>allowRandomGraph.</p>
      *
@@ -467,6 +523,11 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
                                            + ", " + e.getMessage());
             throw e;
+        }
+
+        if (this.undoHistory == null) {
+            this.undoHistory = new ArrayList<>();
+            this.undoCursor = -1;
         }
     }
 
