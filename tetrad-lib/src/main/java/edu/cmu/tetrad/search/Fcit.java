@@ -66,6 +66,16 @@ public final class Fcit implements IGraphSearch {
      */
     private final IndependenceCheckCounter checkCounter = new IndependenceCheckCounter();
     /**
+     * Separators discovered for a pair during any sweep, kept across rounds.
+     * Distinct from {@link #sepsets}, which records only committed (legal-PAG)
+     * separations and is rolled back on a reverted removal. Because X _||_ Y | S
+     * is a property of the data, not the current PAG, a set that separated a pair
+     * once still separates it; reusing it keeps a pair's recorded sepset stable
+     * across rounds instead of being re-derived (and possibly differing) each time
+     * the edge is reconsidered after a reverted removal.
+     */
+    private final Map<Set<Node>, Set<Node>> foundSepsets = new ConcurrentHashMap<>();
+    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -174,18 +184,6 @@ public final class Fcit implements IGraphSearch {
      * that no specific limit is set by default.
      */
     private int maxDiscriminatingPathLength = -1;
-
-    /**
-     * Separators discovered for a pair during any sweep, kept across rounds.
-     * Distinct from {@link #sepsets}, which records only committed (legal-PAG)
-     * separations and is rolled back on a reverted removal. Because X _||_ Y | S
-     * is a property of the data, not the current PAG, a set that separated a pair
-     * once still separates it; reusing it keeps a pair's recorded sepset stable
-     * across rounds instead of being re-derived (and possibly differing) each time
-     * the edge is reconsidered after a reverted removal.
-     */
-    private final Map<Set<Node>, Set<Node>> foundSepsets = new ConcurrentHashMap<>();
-
     private long timeout = -1L;
 
     /**
@@ -750,7 +748,7 @@ public final class Fcit implements IGraphSearch {
             // PAG; nothing mutates it during this phase, so concurrent reads are safe.
             java.util.Optional<RemovalHit> hit =
                     java.util.stream.IntStream.range(start, edgeList.size())
-                            .parallel()
+//                            .parallel()
                             .mapToObj(i -> {
                                 Edge e = edgeList.get(i);
                                 Node x = e.getNode1();
@@ -807,11 +805,6 @@ public final class Fcit implements IGraphSearch {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
 
-//        Set<Node> known = sepsets.get(x, y);
-//        if (known != null) {
-//            return new IndependenceCheck(edge, known);
-//        }
-
         Set<Node> known = sepsets.get(x, y);
         if (known != null) {
             return new IndependenceCheck(edge, known);
@@ -863,25 +856,9 @@ public final class Fcit implements IGraphSearch {
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
             RecursiveBlocking.BlockingResult result = null;
 
-            if (this.depth < 0) {
-                result = RecursiveBlocking.blockPathsRecursively(
-                        pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-                        deadline);
-
-            } else {
-                int depth = 0;
-                int maxDepth = this.depth;
-
-                do {
-                    depth++;
-
-                    if (depth > maxDepth) break;
-
-                    result = RecursiveBlocking.blockPathsRecursively(
-                            pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-                            deadline);
-                } while (result.indeterminate());
-            }
+            result = RecursiveBlocking.blockPathsRecursively(
+                    pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+                    deadline);
 
             if (result == null || result.indeterminate()) {
                 continue;
@@ -890,21 +867,12 @@ public final class Fcit implements IGraphSearch {
             Set<Node> B = result.blockingSet();
 
             if (B == null) {
-                continue; // No separating set possible for this NF; try another NF
+                continue;
             }
 
-            List<Node> common = this.pag.getAdjacentNodes(x);
-            common.retainAll(this.pag.getAdjacentNodes(y));
-
-            List<Node> definitelyRemove = new ArrayList<>();
-            for (Node c : common) {
-                if (this.pag.isDefCollider(x, c, y)) {
-                    definitelyRemove.add(c);
-                }
-            }
-
+            List<Node> common = getCommon(x, y);
+            B.addAll(common);
             List<Node> removalCandidates = new ArrayList<>(common);
-            removalCandidates.removeAll(definitelyRemove);
 
             SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
             int[] cChoice;
@@ -921,20 +889,22 @@ public final class Fcit implements IGraphSearch {
 
                 IndependenceCheck probe = new IndependenceCheck(edge, S);
                 checkCounter.increment("findIndependenceCheckRecursive (test executed)");
-//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-//                if (independenceResult.isIndependent()) {
-//                    return probe;
-//                }
 
                 IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
                 if (independenceResult.isIndependent()) {
-                    foundSepsets.put(Set.of(x, y), S);   // remember the fact, survives revert
+                    foundSepsets.put(Set.of(x, y), S);
                     return probe;
                 }
             }
         }
 
         return null;
+    }
+
+    private @NotNull List<Node> getCommon(Node x, Node y) {
+        List<Node> common = this.pag.getAdjacentNodes(x);
+        common.retainAll(this.pag.getAdjacentNodes(y));
+        return common;
     }
 
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
@@ -1178,7 +1148,7 @@ public final class Fcit implements IGraphSearch {
      */
     public SepsetMap getSepsetMap() {
         return sepsets;
-    }   
+    }
 
     /// /        long deadlineMs = System.currentTimeMillis() + 500;
 //

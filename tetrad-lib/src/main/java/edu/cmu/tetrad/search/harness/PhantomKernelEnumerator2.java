@@ -333,6 +333,8 @@ public final class PhantomKernelEnumerator2 {
     private static void accumulate(Result r, long mask) {
         r.dagsScanned++;
 
+//        System.out.println("DAG mask=" + mask);
+
         SublistGenerator latGen = new SublistGenerator(N, NUM_LATENT);
         int[] latChoice;
         while ((latChoice = latGen.next()) != null) {
@@ -355,7 +357,8 @@ public final class PhantomKernelEnumerator2 {
 //                r.modelsScanned++;
 
                 r.modelsScanned++;
-                if (!(mask == 3286L && latSet.equals(Set.of(1)))) continue;   // TEMP: 3286/X2 only
+//                if (!(mask == 3286L && latSet.equals(Set.of(1)))) continue;   // TEMP: 3286/X2 only
+//                if (!(mask <= 1000L)) continue;
 
                 Knowledge knowledge = new Knowledge();
                 Graph truePag = GraphTransforms.dagToPag(dag, knowledge, EXCLUDE_SELECTION_BIAS, RECURSIVE_DEPTH);
@@ -421,20 +424,47 @@ public final class PhantomKernelEnumerator2 {
                             spurious.add(edge);
                         }
 
-                        // Now obtain the deletion/orientation sepsets the way the algorithm should:
-                        // RB on this dirty H0 skeleton, followed by oracle confirmation.
+//                        // Now obtain the deletion/orientation sepsets the way the algorithm should:
+//                        // RB on this dirty H0 skeleton, followed by oracle confirmation.
+//                        boolean rbOk = true;
+//                        for (Edge edge : spurious) {
+//                            Node a = edge.getNode1();
+//                            Node b2 = edge.getNode2();
+//                            Set<Node> sep = rbConfirmedSepset(h0, oracle, a, b2);
+//                            if (sep == null) {
+//                                rbOk = false;
+//                                break;
+//                            }
+//                            sepsets.set(a, b2, sep);
+//                        }
+//                        if (!rbOk) continue;
+
+                        // FAITHFUL-FIX sepset population (COLD). Mirrors what fixed
+                        // FCIT-from-complete carries into redoGfciOrientation:
+                        //   (1) a spanning include-common-first separator for each deletion
+                        //       (spurious) pair -- also the rbOk gate, and
+                        //   (2) a spanning separator for EVERY true non-adjacency of G*.
+                        // (2) is what the old rbConfirmedSepset population omitted; without it
+                        // adjustForExtraSepsets / R0 has no Sep(x,y) ∋ c entry to suppress the
+                        // fake x*->c<-*y collider -- the exact 3286 divergence.
                         boolean rbOk = true;
                         for (Edge edge : spurious) {
-                            Node a = edge.getNode1();
-                            Node b2 = edge.getNode2();
-                            Set<Node> sep = rbConfirmedSepset(h0, oracle, a, b2);
+                            Set<Node> sep = fcitSpanningSepset(h0, oracle, edge.getNode1(), edge.getNode2());
                             if (sep == null) {
                                 rbOk = false;
                                 break;
                             }
-                            sepsets.set(a, b2, sep);
+                            sepsets.set(edge.getNode1(), edge.getNode2(), sep);
                         }
                         if (!rbOk) continue;
+
+                        for (int[] p : nonAdj) {
+                            Node a = obs.get(p[0]), b2 = obs.get(p[1]);
+                            if (h0.isAdjacentTo(a, b2)) continue;           // spurious pair, present in H0
+                            if (sepsets.get(a, b2) != null) continue;
+                            Set<Node> sep = fcitSpanningSepset(h0, oracle, a, b2);
+                            if (sep != null) sepsets.set(a, b2, sep);       // null => fall back to strategy RB
+                        }
 
                         int abst0 = reorient(h0, oracle, sepsets, knowledge, initialColliders, EXCLUDE_SELECTION_BIAS);
                         if (!PagLegalityCheck.isLegalPag(h0, new HashSet<>()).isLegalPag()) continue;
@@ -465,21 +495,35 @@ public final class PhantomKernelEnumerator2 {
                             if (present == null) continue;
                             h1.removeEdge(present);
 
-                            // Removal soundness gate (Bryan): <X,Y> may be deleted only on the basis
-                            // of a sepset S that actually m-separates X,Y in the TRUE DAG. The operative
-                            // deletion sepset is the blocking set RB yields in the removal context (the
-                            // post-removal skeleton), NOT the separator recorded when the denser H0 was
-                            // built. For <X2,X3> here RB yields [] (the surviving X1 collider blocks the
-                            // indirect legs), and [] is not a true sepset (X1 is a fork in G*), so the
-                            // step is refused: the I-map break it would have produced is an artifact of
-                            // deleting on an unsound []-basis, not a genuine PAG->PAG defect.
-                            Set<Node> opSep = rbRawSepset(h1, e.getNode1(), e.getNode2());
+//                            // Removal soundness gate (Bryan): <X,Y> may be deleted only on the basis
+//                            // of a sepset S that actually m-separates X,Y in the TRUE DAG. The operative
+//                            // deletion sepset is the blocking set RB yields in the removal context (the
+//                            // post-removal skeleton), NOT the separator recorded when the denser H0 was
+//                            // built. For <X2,X3> here RB yields [] (the surviving X1 collider blocks the
+//                            // indirect legs), and [] is not a true sepset (X1 is a fork in G*), so the
+//                            // step is refused: the I-map break it would have produced is an artifact of
+//                            // deleting on an unsound []-basis, not a genuine PAG->PAG defect.
+//                            Set<Node> opSep = rbRawSepset(h1, e.getNode1(), e.getNode2());
+//                            if (opSep == null
+//                                    || !oracle.checkIndependence(e.getNode1(), e.getNode2(), opSep).isIndependent()) {
+//                                continue;
+//                            }
+
+                            // Deletion sepset via the SAME spanning include-common-first search,
+                            // found in the removal context (post-removal skeleton h1) and RECORDED
+                            // for e's now-non-adjacent pair, so H1's reorient stamps e's colliders
+                            // from the fixed search. Per-H1 copy so nothing leaks across iterations.
+                            Set<Node> opSep = fcitSpanningSepset(h1, oracle, e.getNode1(), e.getNode2());
                             if (opSep == null
                                     || !oracle.checkIndependence(e.getNode1(), e.getNode2(), opSep).isIndependent()) {
                                 continue;
                             }
+                            SepsetMap sepsetsH1 = copySepsets(sepsets);
+                            sepsetsH1.set(e.getNode1(), e.getNode2(), opSep);
 
-                            int abst1 = reorientStep(h1, oracle, sepsets, knowledge, initialColliders, EXCLUDE_SELECTION_BIAS);
+                            int abst1 = reorientStep(h1, oracle, sepsetsH1, knowledge, initialColliders, EXCLUDE_SELECTION_BIAS);
+
+//                            int abst1 = reorientStep(h1, oracle, sepsets, knowledge, initialColliders, EXCLUDE_SELECTION_BIAS);
                             r.h1States++;
                             r.totalAbstentions += abst1;
                             boolean abstained = abst1 > 0;
@@ -592,7 +636,7 @@ public final class PhantomKernelEnumerator2 {
 //                                            dag, truePag, h0, h1, h1break) + mech + "\n");
 
                                     r.addStepBreakWitness(formatStepBreak(mask, latSet, spurious, e,
-                                            dag, truePag, h0, h1, h1break, sepsets)
+                                            dag, truePag, h0, h1, h1break, sepsetsH1)
 //                                            + "  first blocker diagnostic: "
 //                                            + firstFalseCiBlocker(h1, trueMag, truePag, obs, h1break)
 //                                            + "\n"
@@ -602,7 +646,7 @@ public final class PhantomKernelEnumerator2 {
                                             + mech + "\n");
 
                                     // Re-commit the SAME removal through FcitMag's path: breaks too, fixes, or refuses?
-                                    Graph h1mag = magCommit(h0, e.getNode1(), e.getNode2(), sepsets);
+                                    Graph h1mag = magCommit(h0, e.getNode1(), e.getNode2(), sepsetsH1);
                                     String magBreak = null, outcome;
                                     if (h1mag == null) {
                                         r.magCommitReverted++;
@@ -826,10 +870,10 @@ public final class PhantomKernelEnumerator2 {
                 }
             } catch (Exception ex) {
                 r.skipped++;
-                System.err.println("model mask=" + mask + " lat=" + Arrays.toString(latChoice)
-                        + " skipped: " + ex.getMessage());
-
-                ex.printStackTrace();
+//                System.err.println("model mask=" + mask + " lat=" + Arrays.toString(latChoice)
+//                        + " skipped: " + ex.getMessage());
+//
+//                ex.printStackTrace();
             }
         }
 
@@ -1060,6 +1104,70 @@ public final class PhantomKernelEnumerator2 {
             return z;
         }
 
+        return null;
+    }
+
+    // Faithful to the FIXED Fcit.findIndependenceCheckRecursive under the
+    // common-spanning correction. Searches separators S = (RB blocking set ∪
+    // common(x,y)) \ C, C ⊆ common, with C enumerated from ∅ upward
+    // (INCLUDE-COMMON-FIRST). Oracle-confirmed. Returns the first passing S, null else.
+    //
+    // Include-common-first is the load-bearing property: when a valid separator
+    // CONTAINING common neighbor c exists, that is the one recorded (c ∈ Sep), so
+    // adjustForExtraSepsets/R0 find c and SKIP the x*->c<-*y stamp instead of
+    // manufacturing the fake collider RB's raw (common-undersampled) set left room for.
+    //
+    // NOTE: RB paths arg = 1, matching findIndependenceCheckRecursive (rbConfirmedSepset
+    // used 3 -- confirm which you intend; FCIT-faithful is 1).
+    private static Set<Node> fcitSpanningSepset(Graph graph, IndependenceTest oracle,
+                                                Node x, Node y) throws InterruptedException {
+        final long deadline = TIMEOUT < 0 ? Long.MAX_VALUE : System.currentTimeMillis() + TIMEOUT;
+
+        RecursiveBlocking.BlockingResult b0 = RecursiveBlocking.blockPathsRecursively(
+                graph, x, y, Collections.emptySet(), Collections.emptySet(),
+                RECURSIVE_DEPTH, DEPTH, -1, 1, true, deadline);
+
+        Set<Node> nfCandSet = new LinkedHashSet<>();
+        if (b0 != null && !b0.indeterminate() && b0.blockingSet() != null) {
+            for (Node v : b0.blockingSet()) {
+                if (graph.getAdjacentNodes(v).stream().anyMatch(
+                        w -> graph.getEndpoint(v, w) == Endpoint.CIRCLE
+                                || graph.getEndpoint(w, v) == Endpoint.CIRCLE)) {
+                    nfCandSet.add(v);
+                }
+            }
+        }
+        List<Node> nfCand = new ArrayList<>(nfCandSet);
+
+        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+        int[] nfChoice;
+        while ((nfChoice = nfGen.next()) != null) {
+            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+
+            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
+                    graph, x, y, Collections.emptySet(), notFollowed,
+                    RECURSIVE_DEPTH, DEPTH, -1, 1, true, deadline);
+
+            if (result == null || result.indeterminate() || result.blockingSet() == null) continue;
+
+            Set<Node> B = result.blockingSet();
+
+            List<Node> common = graph.getAdjacentNodes(x);
+            common.retainAll(graph.getAdjacentNodes(y));
+            B.addAll(common);
+            List<Node> removalCandidates = new ArrayList<>(common);
+
+            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
+            int[] cChoice;
+            while ((cChoice = cGen.next()) != null) {
+                Set<Node> S = new LinkedHashSet<>(B);
+                S.removeAll(GraphUtils.asSet(cChoice, removalCandidates));
+                if (DEPTH != -1 && S.size() > DEPTH) continue;
+                if (oracle.checkIndependence(x, y, S).isIndependent()) {
+                    return S;
+                }
+            }
+        }
         return null;
     }
 
