@@ -499,7 +499,7 @@ public final class FcitMag implements IGraphSearch {
                 ? "\nNo spurious edges remain."
                 : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
 
-        if (!spurious.isEmpty()) {
+        if (spurious.size() >= 2) {
             boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
             TetradLogger.getInstance().log(removed
                     ? "\nSpurious edges removed."
@@ -535,8 +535,8 @@ public final class FcitMag implements IGraphSearch {
             TetradLogger.getInstance().log(cache.cacheReport());
         }
 
-        interimPags.addLast(new MagToPag(GraphTransforms.zhangMagFromPag(interimPags.getLast()))
-                .convert(false, false));
+//        interimPags.addLast(new MagToPag(GraphTransforms.zhangMagFromPag(interimPags.getLast()))
+//                .convert(false, false));
 
         return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
     }
@@ -604,13 +604,17 @@ public final class FcitMag implements IGraphSearch {
             Node m = edge.getNode1();
             Node n = edge.getNode2();
 
-            // A recorded separator (sepsets = committed; foundSepsets = data fact,
-            // survives revert) already certifies independence; X _||_ Y | S is
-            // invariant across rounds, so no re-test — a present entry means the
-            // still-standing edge is spurious.
-            if (sepsets.get(m, n) != null || foundSepsets.get(Set.of(m, n)) != null) {
+            if (foundSepsets.get(Set.of(m, n)) != null) {
                 spuriousEdges.add(edge);
             }
+
+//            // A recorded separator (sepsets = committed; foundSepsets = data fact,
+//            // survives revert) already certifies independence; X _||_ Y | S is
+//            // invariant across rounds, so no re-test — a present entry means the
+//            // still-standing edge is spurious.
+//            if (sepsets.get(m, n) != null || foundSepsets.get(Set.of(m, n)) != null) {
+//                spuriousEdges.add(edge);
+//            }
         }
 
         return spuriousEdges;
