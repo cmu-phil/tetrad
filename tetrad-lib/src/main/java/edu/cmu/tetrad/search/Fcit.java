@@ -184,6 +184,10 @@ public final class Fcit implements IGraphSearch {
      * that no specific limit is set by default.
      */
     private int maxDiscriminatingPathLength = -1;
+    /**
+     * Specifies the duration, in milliseconds, to wait before timing out an operation.
+     * A value of -1 indicates no timeout is set, meaning the operation can run indefinitely.
+     */
     private long timeout = -1L;
 
     /**
@@ -465,6 +469,7 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
+        // TODO This does not belong here! The calling method should handle this.
         // We make all latent variables at this point measured for the duration of the
         // procedure so that the latent structure search will work.
         List<Node> latents = new ArrayList<>();
@@ -496,6 +501,7 @@ public final class Fcit implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
+        // TODO This does not belong here! The calling method should handle this.
         // Revert nodes made latent to latent.
         for (Node node : latents) {
             node.setNodeType(NodeType.LATENT);
@@ -626,47 +632,47 @@ public final class Fcit implements IGraphSearch {
         return spuriousEdges;
     }
 
-    private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache)
-            throws InterruptedException {
-        Edge edge = pag.getEdge(m, n);
-        if (edge == null) {
-            return LegVerdict.NOT_SPURIOUS;
-        }
-
-        // Cheapest signal first: a recorded separator means the pair is already
-        // known independent, so the adjacency is spurious. No blocking needed.
-// Sound positive verdicts only. A committed separator means the pair was
-        // already separated.
-        if (sepsets.get(m, n) != null) {
-            return LegVerdict.SPURIOUS;
-        }
-
-        Set<Node> key = Set.of(m, n);
-
-        // foundSepsets is never rolled back on a reverted removal, so a still-present
-        // edge with an entry is a test-confirmed separable-but-stuck adjacency (a
-        // deadlock survivor). RB's blocking set, by contrast, is only a *candidate*
-        // in skip-direct mode, so it is never promoted to a positive verdict here.
-        if (foundSepsets.get(key) != null) {
-            return LegVerdict.SPURIOUS;
-        }
-
-        LegVerdict cached = cache.get(key);
-        if (cached != null) {
-            return cached;
-        }
-
-        // RB is consulted only to flag a timed-out search as inconclusive.
-        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
-                pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
-                deadlineMs);
-
-        LegVerdict v = result.indeterminate()
-                ? LegVerdict.INDETERMINATE
-                : LegVerdict.NOT_SPURIOUS;
-        cache.put(key, v);
-        return v;
-    }
+//    private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache)
+//            throws InterruptedException {
+//        Edge edge = pag.getEdge(m, n);
+//        if (edge == null) {
+//            return LegVerdict.NOT_SPURIOUS;
+//        }
+//
+//        // Cheapest signal first: a recorded separator means the pair is already
+//        // known independent, so the adjacency is spurious. No blocking needed.
+//// Sound positive verdicts only. A committed separator means the pair was
+//        // already separated.
+//        if (sepsets.get(m, n) != null) {
+//            return LegVerdict.SPURIOUS;
+//        }
+//
+//        Set<Node> key = Set.of(m, n);
+//
+//        // foundSepsets is never rolled back on a reverted removal, so a still-present
+//        // edge with an entry is a test-confirmed separable-but-stuck adjacency (a
+//        // deadlock survivor). RB's blocking set, by contrast, is only a *candidate*
+//        // in skip-direct mode, so it is never promoted to a positive verdict here.
+//        if (foundSepsets.get(key) != null) {
+//            return LegVerdict.SPURIOUS;
+//        }
+//
+//        LegVerdict cached = cache.get(key);
+//        if (cached != null) {
+//            return cached;
+//        }
+//
+//        // RB is consulted only to flag a timed-out search as inconclusive.
+//        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
+//                pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+//                deadlineMs);
+//
+//        LegVerdict v = result.indeterminate()
+//                ? LegVerdict.INDETERMINATE
+//                : LegVerdict.NOT_SPURIOUS;
+//        cache.put(key, v);
+//        return v;
+//    }
 
     /**
      * Configures and returns a new instance of PermutationSearch using the BOSS algorithm. The method initializes the
@@ -1187,7 +1193,7 @@ public final class Fcit implements IGraphSearch {
 //        return null;
 //    }
 
-    private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
+//    private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 
     /**
      * Enumeration representing different start options.
@@ -1221,13 +1227,13 @@ public final class Fcit implements IGraphSearch {
     private record IndependenceCheck(Edge edge, Set<Node> cond) {
     }
 
-    /**
-     * Outcome of a phantom scan. `edge` is a confirmed-spurious discriminating-path
-     * leg to discharge, or null if none was confirmed. `indeterminate` is true if
-     * any pair's blocking search timed out before a verdict, so a null `edge` means
-     * "no phantom confirmed within budget" rather than "no phantom exists."
-     */
-    private record NongenuineScan(Edge edge, boolean indeterminate) {
-    }
+//    /**
+//     * Outcome of a phantom scan. `edge` is a confirmed-spurious discriminating-path
+//     * leg to discharge, or null if none was confirmed. `indeterminate` is true if
+//     * any pair's blocking search timed out before a verdict, so a null `edge` means
+//     * "no phantom confirmed within budget" rather than "no phantom exists."
+//     */
+//    private record NongenuineScan(Edge edge, boolean indeterminate) {
+//    }
 }
 
