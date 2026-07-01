@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A Markov-preserving variant of {@link FcitMag}. It is byte-for-byte the same search as FcitMag, except that every
+ * A Markov-preserving variant of {@link FcitZm}. It is byte-for-byte the same search as FcitMag, except that every
  * committed edge removal (both the single-edge and the multi-edge path) is passed through an additional
  * <em>Markov-preservation gate</em> after the legal-MAG check. A move is committed only if it introduces no spurious
  * m-separation; otherwise it is reverted exactly as an illegal-MAG move would be.

@@ -51,18 +51,18 @@ import java.util.List;
 /**
  * This class represents the FCI Targeted Testing (FCIT) algorithm, which is variant of the *-FCI algorithm for learning
  * causal structures from observational data using the BOSS algorithm as an initial CPDAG and using all score-based
- * steps afterward.
+ * steps afterward. This version does an excursion of PAG->Zhang MAG->PAG instead of the PAG->PAG of FCIT.
  *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCIT-MAG",
-        command = "FCIT-MAG",
+        name = "FCIT-ZM",
+        command = "FCIT-ZM",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class FcitMag extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
+public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
         AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -95,7 +95,7 @@ public class FcitMag extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FcitMag() {
+    public FcitZm() {
         // Used for reflection; do not delete.
     }
 
@@ -113,7 +113,7 @@ public class FcitMag extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FcitMag(IndependenceWrapper test, ScoreWrapper score) {
+    public FcitZm(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -152,7 +152,7 @@ public class FcitMag extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         }
 
         test = new CachedIndependenceQueries(test);
-        edu.cmu.tetrad.search.FcitMag search = new edu.cmu.tetrad.search.FcitMag(test, score);
+        edu.cmu.tetrad.search.FcitZm search = new edu.cmu.tetrad.search.FcitZm(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -170,13 +170,13 @@ public class FcitMag extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitMag.START_WITH.BOSS);
+            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitMag.START_WITH.GRASP);
+            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitMag.START_WITH.SP);
+            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.SP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitMag.START_WITH.COMPLETE_GRAPH);
+            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
@@ -207,7 +207,7 @@ public class FcitMag extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      */
     @Override
     public String getDescription() {
-        return "FCIT-MAG (FCI Targeted Testing with MAG Waypoints) using "+ this.test.getDescription() + " and " + this.score.getDescription();
+        return "FCIT-ZM (FCI Targeted Testing using PAG->Zhang MAG->PAG) using "+ this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**

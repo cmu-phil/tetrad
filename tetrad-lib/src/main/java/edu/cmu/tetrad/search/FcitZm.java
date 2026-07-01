@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  */
-public final class FcitMag implements IGraphSearch {
+public final class FcitZm implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -208,7 +208,7 @@ public final class FcitMag implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public FcitMag(IndependenceTest test, Score score) {
+    public FcitZm(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
