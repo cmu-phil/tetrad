@@ -945,6 +945,7 @@ public final class Fcit implements IGraphSearch {
 
     private boolean tryToModifyGraph(List<Edge> edges, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
         Graph _pag = new EdgeListGraph(pag);
+        Map<Edge, Set<Node>> sepsets = new HashMap<>();
 
         for (Edge edge : edges) {
             pag.removeEdge(edge);
@@ -952,11 +953,11 @@ public final class Fcit implements IGraphSearch {
             Node m = edge.getNode1();
             Node n = edge.getNode2();
 
-            Set<Node> z = foundSepsets.get(Set.of(m, n));
-            sepsets.set(m, n, z);
+            Set<Node> z = this.sepsets.get(m, n);
+            sepsets.put(edge, z);
         }
 
-        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
+        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, this.sepsets, excludeSelectionBias, superVerbose);
         PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
         if (!legalPagQuiet.isLegalPag()) {
             if (verbose) {
@@ -968,7 +969,7 @@ public final class Fcit implements IGraphSearch {
             this.pag = _pag;
 
             for (Edge edge : edges) {
-                sepsets.set(edge.getNode1(), edge.getNode2(), foundSepsets.get(Set.of(edge.getNode1(), edge.getNode2())));
+                this.sepsets.set(edge.getNode1(), edge.getNode2(), sepsets.get(edge));
             }
 
             return false;

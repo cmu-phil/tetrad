@@ -55,13 +55,13 @@ import java.util.List;
  *
  * @author josephramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "FCIT-MAG",
-//        command = "FCIT-MAG",
-//        algoType = AlgType.allow_latent_common_causes
-//)
-//@Bootstrapping
-//@Experimental
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "FCIT-MAG",
+        command = "FCIT-MAG",
+        algoType = AlgType.allow_latent_common_causes
+)
+@Bootstrapping
+@Experimental
 public class FcitMag extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
         AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
