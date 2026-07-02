@@ -769,7 +769,7 @@ public final class Fcit implements IGraphSearch {
                                 try {
                                     IndependenceCheck check = findIndependenceCheckRecursive(e);
                                     if (check == null) return null;
-                                    return new RemovalHit(i, e, check.cond());
+                                    return new RemovalHit(i, e, check.cond(), check.pValue());
                                 } catch (InterruptedException ie) {
                                     Thread.currentThread().interrupt();
                                     throw new RuntimeException(ie);
@@ -788,7 +788,7 @@ public final class Fcit implements IGraphSearch {
 
             // Commit against the live PAG using the sepset found during the search —
             // no re-search needed, since the winner was searched against the current PAG.
-            boolean didChange = tryToModifyGraph(x, y, h.cond, "recursive",
+            boolean didChange = tryToModifyGraph(x, y, h.cond, h.pValue, "recursive",
                     excludeSelectionBias, unshieldedTriples);
 
             if (didChange) {
@@ -813,7 +813,7 @@ public final class Fcit implements IGraphSearch {
 
         Set<Node> known = sepsets.get(x, y);
         if (known != null) {
-            return new IndependenceCheck(edge, known);
+            return new IndependenceCheck(edge, known, null);
         }
 
         // Reuse a separator already found for this pair in an earlier sweep. The
@@ -823,7 +823,7 @@ public final class Fcit implements IGraphSearch {
         // legality; if it reverts, the edge is retried next round with the same set.
         Set<Node> cached = foundSepsets.get(Set.of(x, y));
         if (cached != null) {
-            return new IndependenceCheck(edge, cached);
+            return new IndependenceCheck(edge, cached, null);
         }
 
         // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
@@ -893,13 +893,12 @@ public final class Fcit implements IGraphSearch {
 
                 if (this.depth != -1 && S.size() > this.depth) continue;
 
-                IndependenceCheck probe = new IndependenceCheck(edge, S);
                 checkCounter.increment("findIndependenceCheckRecursive (test executed)");
 
                 IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
                 if (independenceResult.isIndependent()) {
                     foundSepsets.put(Set.of(x, y), S);
-                    return probe;
+                    return new IndependenceCheck(edge, S, independenceResult.getPValue());
                 }
             }
         }
@@ -913,8 +912,7 @@ public final class Fcit implements IGraphSearch {
         return common;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
-        Edge _edge = pag.getEdge(x, y);
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, Double pValue, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {        Edge _edge = pag.getEdge(x, y);
 
         Graph _pag = new EdgeListGraph(pag);
 
@@ -937,7 +935,8 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b);
+            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+                    + (pValue != null ? String.format(", p = %.4g", pValue) : ""));
         }
 
         return true;
@@ -1222,10 +1221,10 @@ public final class Fcit implements IGraphSearch {
         COMPLETE_GRAPH
     }
 
-    private record RemovalHit(int index, Edge edge, Set<Node> cond) {
+    private record RemovalHit(int index, Edge edge, Set<Node> cond, Double pValue) {
     }
 
-    private record IndependenceCheck(Edge edge, Set<Node> cond) {
+    private record IndependenceCheck(Edge edge, Set<Node> cond, Double pValue) {
     }
 
     /**
