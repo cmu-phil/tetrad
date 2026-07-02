@@ -954,7 +954,7 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> z = this.sepsets.get(m, n);
             prev.put(edge, z);
-        }
+        }           
 
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, this.sepsets, excludeSelectionBias, superVerbose);
         PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
