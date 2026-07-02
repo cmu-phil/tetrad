@@ -26,6 +26,7 @@ import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -68,6 +69,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
+@Experimental
 public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, AcceptsKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
     @Serial
