@@ -95,6 +95,12 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
     private static final String DEDUP_BY_CPDAG = "dedupByCpdag";
 
     /**
+     * Parameter name: whether to offer every ordering visited across all branches to the top-k pool (including
+     * within-branch suboptimal orderings), rather than only each branch's converged optimum. Defaults to false.
+     */
+    private static final String OPTIMAL_ACROSS_BRANCHES = "optimalAcrossBranches";
+
+    /**
      * The score to use.
      */
     private ScoreWrapper score;
@@ -146,15 +152,11 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
 
         Score myScore = this.score.getScore(dataModel, parameters);
 
-//        int k = parameters.getInt(TOP_K, 10);
-//        double delta = parameters.getDouble(SPLIT_DELTA, 0.0);
-//        int maxRuns = parameters.getInt(MAX_RUNS, 10000);
-
-        int k = 10;// parameters.getInt(TOP_K, 10);
-        double delta = 1e-4;// parameters.getDouble(SPLIT_DELTA, 0.0);
-        int maxRuns = 10000;// parameters.getInt(MAX_RUNS, 10000);
-
-        boolean dedupByCpdag = true;// parameters.getBoolean(DEDUP_BY_CPDAG, true);
+        int k = 10;//parameters.getInt(TOP_K, 10);
+        double delta = .5;//parameters.getDouble(SPLIT_DELTA, 0.0);
+        int maxRuns = 10000;//parameters.getInt(MAX_RUNS, 10000);
+        boolean dedupByCpdag = true;//parameters.getBoolean(DEDUP_BY_CPDAG, true);
+        boolean optimalAcrossBranches = true;//parameters.getBoolean(OPTIMAL_ACROSS_BRANCHES, false);
 
         edu.cmu.tetrad.search.BossTopK boss = new edu.cmu.tetrad.search.BossTopK(myScore);
 
@@ -167,6 +169,7 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
         PermutationSearchTopK permutationSearch = new PermutationSearchTopK(boss, k, delta);
         permutationSearch.setMaxRuns(maxRuns);
         permutationSearch.setDedupByCpdag(dedupByCpdag);
+        permutationSearch.setOptimalAcrossBranches(optimalAcrossBranches);
         permutationSearch.setKnowledge(this.knowledge);
         permutationSearch.setSeed(seed);
         permutationSearch.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
@@ -286,6 +289,7 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
         params.add(SPLIT_DELTA);
         params.add(MAX_RUNS);
         params.add(DEDUP_BY_CPDAG);
+        params.add(OPTIMAL_ACROSS_BRANCHES);
 
         // Standard BOSS parameters.
         params.add(Params.USE_BES);

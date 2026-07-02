@@ -182,6 +182,12 @@ public class BossTopK implements SuborderSearchTopK {
      */
     private boolean dedupByCpdag = false;
     /**
+     * If true, every ordering visited across all branches (including orderings that are suboptimal within their own
+     * branch, i.e. non-converged intermediates) is offered to the top-k pool, not just each branch's converged
+     * optimum. If false (the default), only the converged optimum of each branch is offered.
+     */
+    private boolean optimalAcrossBranches = false;
+    /**
      * The bounded sorted set of top models, ordered by score ascending (so first() is the current worst).
      */
     private TreeSet<ScoredPermutation> topK;
@@ -361,6 +367,12 @@ public class BossTopK implements SuborderSearchTopK {
         this.runCount++;
         this.visited.add(key(fullPerm(order)));
 
+        // When collecting optima across branches, the starting ordering is itself a candidate model.
+        if (this.optimalAcrossBranches) {
+            double s0 = update(prefix, order);
+            recordTopK(order, s0);
+        }
+
         int maxIter = order.size() * order.size() + 1;
         int iter = 0;
         boolean improved;
@@ -370,8 +382,16 @@ public class BossTopK implements SuborderSearchTopK {
             for (Node x : new ArrayList<>(order)) {
                 if (this.verbose && (order.size() > 1)) TetradLogger.getInstance().log(x.toString());
 
-                if (this.numThreads == 1) improved |= betterMutation(prefix, order, x);
-                else improved |= betterMutationAsync(prefix, order, x);
+                boolean moved;
+                if (this.numThreads == 1) moved = betterMutation(prefix, order, x);
+                else moved = betterMutationAsync(prefix, order, x);
+                improved |= moved;
+
+                // When collecting optima across branches, offer each intermediate (within-branch suboptimal) ordering.
+                if (this.optimalAcrossBranches && moved) {
+                    double sMid = update(prefix, order);
+                    recordTopK(order, sMid);
+                }
             }
 
             if (this.verbose && (order.size() > 1)) {
@@ -387,7 +407,7 @@ public class BossTopK implements SuborderSearchTopK {
         if (this.bes != null) bes(prefix, order);
 
         double s = update(prefix, order); // fills this.parents for THIS order
-        recordTopK(order, s);             // snapshots this.parents into the retained record
+        recordTopK(order, s);             // snapshots this.parents into the retained record (always records the optimum)
         return s;
     }
 
@@ -552,6 +572,14 @@ public class BossTopK implements SuborderSearchTopK {
     @Override
     public void setDedupByCpdag(boolean dedupByCpdag) {
         this.dedupByCpdag = dedupByCpdag;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setOptimalAcrossBranches(boolean optimalAcrossBranches) {
+        this.optimalAcrossBranches = optimalAcrossBranches;
     }
 
     /**

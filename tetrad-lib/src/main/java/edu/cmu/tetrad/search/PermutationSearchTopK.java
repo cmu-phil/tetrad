@@ -406,6 +406,16 @@ public class PermutationSearchTopK {
         this.suborderSearch.setDedupByCpdag(dedupByCpdag);
     }
 
+    /**
+     * Sets whether every ordering visited across all branches is offered to the top-k pool (including orderings that
+     * are suboptimal within their own branch), rather than only each branch's converged optimum.
+     *
+     * @param optimalAcrossBranches True to consider all visited orderings across branches.
+     */
+    public void setOptimalAcrossBranches(boolean optimalAcrossBranches) {
+        this.suborderSearch.setOptimalAcrossBranches(optimalAcrossBranches);
+    }
+
     // ---- Top-k accessors (intended for use from Python via JPype) -----------------------------------------------
 
     /**

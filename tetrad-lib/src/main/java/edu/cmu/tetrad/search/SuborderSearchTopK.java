@@ -137,6 +137,15 @@ public interface SuborderSearchTopK {
     void setDedupByCpdag(boolean dedupByCpdag);
 
     /**
+     * Sets whether every ordering visited across all branches is offered to the top-k pool (including orderings that
+     * are suboptimal within their own branch), rather than only each branch's converged optimum. When false (the
+     * default), only converged optima are retained.
+     *
+     * @param optimalAcrossBranches True to consider all visited orderings across branches.
+     */
+    void setOptimalAcrossBranches(boolean optimalAcrossBranches);
+
+    /**
      * Returns the number of top models actually available after a search. This is at most {@code k}, but may be smaller
      * if fewer distinct models were found.
      *
