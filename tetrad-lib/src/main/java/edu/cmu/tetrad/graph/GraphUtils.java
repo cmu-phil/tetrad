@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.MagToPag;
+import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import edu.cmu.tetrad.util.TMath;
@@ -2773,31 +2774,47 @@ public final class GraphUtils {
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, excludeSelectionBias, verbose);
         } while (changed);
 
-//        MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
-//        magToPag.setRecursiveDepth(recursiveDepth);
-//        magToPag.setKnowledge(knowledge);
-//        Graph pag2 = magToPag.convert(true, excludeSelectionBias);
+// Snapshot the repaired loop state before the MAG round-trip; it is an
+        // independent legal-PAG candidate if the round-trip does not produce one.
+        Graph repaired = new EdgeListGraph(pag);
 
-//        if (pag2.equals(orig)) {
-//            if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
-//        } else {
-//            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
-//        }
+        // MagToPag.convert(true, ...) throws IllegalArgumentException when
+        // zhangMagFromPag yields an illegal MAG, so a failed round-trip shows up
+        // either as an exception here or as a pag2 that fails isLegalPag below.
+        Graph pag2 = null;
 
-        Graph pag2 = GraphTransforms.dagToPag(pag, excludeSelectionBias);
-
-        if (!pag2.paths().isLegalPag()) {
-            if (verbose) TetradLogger.getInstance().log(
-                    "guaranteePag: round-trip result is NOT a legal PAG.");
-            if (pag.paths().isLegalPag()) return pag;   // prefer the repaired loop state
-            throw new IllegalStateException("guaranteePag failed to produce a legal PAG.");
+        try {
+            MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
+            magToPag.setRecursiveDepth(recursiveDepth);
+            magToPag.setKnowledge(knowledge);
+            pag2 = magToPag.convert(true, excludeSelectionBias);
+        } catch (IllegalArgumentException e) {
+            if (verbose) {
+                TetradLogger.getInstance().log("guaranteePag: MAG round-trip failed (" + e.getMessage() + ").");
+            }
         }
 
-        if (verbose) TetradLogger.getInstance().log(
-                pag2.equals(orig) ? "NO FAULTY PAG CORRECTIONS MADE." : "Faulty PAG repaired.");
-        return pag2;
+        // Accept the round-trip result only if it is actually a legal PAG.
+        if (pag2 != null && PagLegalityCheck.isLegalPagQuiet(pag2, selection)) {
+            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
+            return pag2;
+        }
 
-//        return pag2;
+        // Round-trip did not yield a legal PAG. Revert to the repaired loop state if
+        // that is legal, rather than returning an illegal graph from a method whose
+        // contract is to guarantee one (cf. Fcit.tryToModifyGraph).
+        if (PagLegalityCheck.isLegalPagQuiet(repaired, selection)) {
+            if (verbose) {
+                TetradLogger.getInstance().log("guaranteePag: round-trip result not a legal PAG; "
+                        + "returning repaired pre-round-trip state.");
+            }
+            return repaired;
+        }
+
+        // Neither candidate is legal: the guarantee cannot be met. Fail loudly with the
+        // reason instead of silently returning an illegal graph.
+        throw new IllegalStateException("guaranteePag could not produce a legal PAG: "
+                + PagLegalityCheck.isLegalPag(repaired, selection).getReason());
     }
 
     private static boolean removeAlmostCycles(Graph pag,
