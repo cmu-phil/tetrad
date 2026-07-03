@@ -90,7 +90,7 @@ public class TestKnowledge {
         testKnowledge(dataSet, knowledge, parameters, new Pc(test));
         testKnowledge(dataSet, knowledge, parameters, new Sp(score));
 
-        testKnowledge(dataSet, knowledge, parameters, new BossFci(test, score));
+        testKnowledge(dataSet, knowledge, parameters, new Bfci(test, score));
         testKnowledge(dataSet, knowledge, parameters, new Fci(test));
         testKnowledge(dataSet, knowledge, parameters, new GraspFci(test, score));
         testKnowledge(dataSet, knowledge, parameters, new Rfci(test));

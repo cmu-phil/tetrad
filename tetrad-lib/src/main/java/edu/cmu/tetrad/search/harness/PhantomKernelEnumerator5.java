@@ -177,6 +177,13 @@ public final class PhantomKernelEnumerator5 {
 
     private static final RepScope REPRESENTATIVE_SCOPE = RepScope.LEG_ONLY;
 
+    // ── RESIDUE fault-trace ──────────────────────────────────────────────────
+    // Set true to print sepset-map record / pre-reorient / post-reorient state for
+    // the two RESIDUE exemplar masks (314672, 400048), localizing where the V2-V3
+    // sepset entry is lost between fcitSpanningSepset recording it and the reorient
+    // consuming it.  Set false for production runs.
+    private static final boolean RESIDUE_TRACE = true;
+
     /** Canonicalize dedup keys over all 120 permutations of the observed
      *  nodes (max dedup).  false = relabel-by-sorted-index only. */
     private static final boolean CANONICALIZE_PERMS = true;
@@ -662,7 +669,14 @@ public final class PhantomKernelEnumerator5 {
                     if (h0.isAdjacentTo(a, b2)) continue;
                     if (sepsets.get(a, b2) != null) continue;
                     Set<Node> sep = fcitSpanningSepset(h0, oracle, a, b2);
-                    if (sep != null) sepsets.set(a, b2, sep);
+                    // ORACLE GUARD (P2): record only separators the oracle confirms against M*,
+                    // exactly as the removed-edge path does.  RB's spanning separator is valid
+                    // for the dirty intermediate H0, but may be oracle-FALSE against M* (it can
+                    // include a node that is a true collider in G*); recording it unguarded is
+                    // what let an unconfirmed CI drive the reorientation.
+                    if (sep != null && oracle.checkIndependence(a, b2, sep).isIndependent()) {
+                        sepsets.set(a, b2, sep);
+                    }
                 }
 
                 reorient(h0, oracle, sepsets, knowledge, initialColliders);
@@ -860,12 +874,54 @@ public final class PhantomKernelEnumerator5 {
                     if (h0.isAdjacentTo(a, b2)) continue;         // spurious pair, present in H0
                     if (sepsets.get(a, b2) != null) continue;
                     Set<Node> sep = fcitSpanningSepset(h0, oracle, a, b2);
-                    if (sep != null) sepsets.set(a, b2, sep);
+                    // ORACLE GUARD (P2): record only separators the oracle confirms against M*,
+                    // exactly as the removed-edge path (line ~697) does.  RB's spanning separator
+                    // is valid on the dirty intermediate H0 but may be oracle-FALSE against M*
+                    // (it can include a node that is a true collider of G*); recording it unguarded
+                    // let an unconfirmed CI drive the reorientation and suppress the true collider.
+                    boolean oracleOk = sep != null && oracle.checkIndependence(a, b2, sep).isIndependent();
+                    if (oracleOk) sepsets.set(a, b2, sep);
+                    if (RESIDUE_TRACE && (mask == 314672L || mask == 400048L) && latSet.size() == 2 && latSet.contains(0) && latSet.contains(1)) {
+                        System.err.println("[fill] mask=" + mask + " RB Sep(" + a.getName() + ","
+                                + b2.getName() + ")=" + sep + "  oracle-ok=" + oracleOk
+                                + (oracleOk ? "  RECORDED" : "  REJECTED (unconfirmed CI, not recorded)"));
+                    }
+                }
+
+                if (RESIDUE_TRACE && (mask == 314672L || mask == 400048L) && latSet.size() == 2 && latSet.contains(0) && latSet.contains(1)) {
+                    // Dump the ENTIRE recorded map right before the H0 reorient, so we see whether
+                    // the break pair's entry is present here and lost later, or absent already.
+                    StringBuilder ks = new StringBuilder("[pre-H0-reorient] mask=" + mask + " map keys: ");
+                    for (Set<Node> k2 : sepsets.keySet()) {
+                        List<Node> kk = new ArrayList<>(k2);
+                        if (kk.size() == 2) {
+                            ks.append(kk.get(0).getName()).append("-").append(kk.get(1).getName())
+                                    .append("=").append(sepsets.get(kk.get(0), kk.get(1))).append("  ");
+                        }
+                    }
+                    System.err.println(ks);
                 }
 
                 // GATE: legal AND I-map (the population prop:stall / prop:committed-markov
                 // quantify over).  No genuineness gate.
+                // Snapshot the PRE-reorient H0 (circle-marked skeleton) before reorient
+                // mutates it in place: the RESIDUE dump queries RB on this snapshot to test
+                // the masking prediction (no oracle-true separator of the break pair is
+                // certifiable on the dirty pre-reorient graph, because the spurious circle
+                // edge forces the true-collider's descendant into every candidate set).
+                Graph h0PreReorient = new EdgeListGraph(h0);
                 reorient(h0, oracle, sepsets, knowledge, initialColliders);
+                if (RESIDUE_TRACE && (mask == 314672L || mask == 400048L) && latSet.size() == 2 && latSet.contains(0) && latSet.contains(1)) {
+                    StringBuilder ks = new StringBuilder("[post-H0-reorient] mask=" + mask + " map keys: ");
+                    for (Set<Node> k2 : sepsets.keySet()) {
+                        List<Node> kk = new ArrayList<>(k2);
+                        if (kk.size() == 2) {
+                            ks.append(kk.get(0).getName()).append("-").append(kk.get(1).getName())
+                                    .append("=").append(sepsets.get(kk.get(0), kk.get(1))).append("  ");
+                        }
+                    }
+                    System.err.println(ks);
+                }
                 if (!PagLegalityCheck.isLegalPag(h0, new HashSet<>()).isLegalPag()) {
                     r.h0IllegalPag++;
                     continue;
@@ -906,6 +962,11 @@ public final class PhantomKernelEnumerator5 {
                     }
                     SepsetMap sepsetsH1 = copySepsets(sepsets);
                     sepsetsH1.set(e.getNode1(), e.getNode2(), opSep);
+
+                    // PRE-REORIENT SNAPSHOT of the whole map fed into the H1 reorient, so the
+                    // RESIDUE provenance can compare INPUT sepsets against post-reorient state
+                    // (FciOrient/R4 may mutate the map it is given).  Cheap: a shallow key->set copy.
+                    SepsetMap sepsetsH1Input = copySepsets(sepsetsH1);
 
                     reorient(h1, oracle, sepsetsH1, knowledge, initialColliders);   // COLD, always
                     PagLegalityCheck.LegalPagRet ret = PagLegalityCheck.isLegalPag(h1, new HashSet<>());
@@ -985,6 +1046,14 @@ public final class PhantomKernelEnumerator5 {
                             if ("RESIDUE".equals(bucket)) {
                                 mb.append("  RESIDUE reading: ").append(rv.reading).append('\n');
                                 mb.append(rv.detail);
+                                // Fault-localizing sepset provenance for the break pair.
+                                Node[] bp = firstFalseCiPair(
+                                        modelOf(new MsepTest(mag1), obs, trPairs, trZ, T),
+                                        truthModel, obs, trPairs);
+                                if (bp != null) {
+                                    mb.append(sepsetProvenanceDump(bp[0], bp[1], sepsetsH1, h0, oracle, sepsetsH1Input, h0PreReorient));
+                                    mb.append(oracleVsStructureDump(bp[0], bp[1], obs, oracle, canonMag));
+                                }
                                 mb.append("  true PAG G* (canonical labels):\n").append(canonPag).append('\n');
                                 mb.append("  true MAG G* (canonical labels):\n").append(canonMag).append('\n');
                                 mb.append("  H0 (legal I-map):\n").append(h0).append('\n');
@@ -1842,6 +1911,151 @@ public final class PhantomKernelEnumerator5 {
         return null;
     }
 
+    /** The offending pair {x,y} of the first false CI (m-sep in cand, m-conn in truth),
+     *  as node objects, for sepset-provenance instrumentation.  Null if none. */
+    private static Node[] firstFalseCiPair(boolean[] cand, boolean[] truth, List<Node> obs,
+                                           List<int[]> trPairs) {
+        for (int t = 0; t < cand.length; t++) {
+            if (cand[t] && !truth[t]) {
+                return new Node[]{obs.get(trPairs.get(t)[0]), obs.get(trPairs.get(t)[1])};
+            }
+        }
+        return null;
+    }
+
+    /**
+     * FAULT-LOCALIZING DUMP for a RESIDUE break.  The break pair (x,y) is m-separated
+     * in H1 by some conditioning set the harness's reorientation encoded.  This prints
+     * the recorded Sep(x,y) actually carried into the reorientation, whether the oracle
+     * accepts it, and (by re-running RB on H0) what fcitSpanningSepset originally
+     * returned for (x,y) -- distinguishing:
+     *   (i)  BULK-FILL RECORDED AN ORACLE-FALSE SET  -- Sep(x,y) is recorded but the
+     *        oracle rejects it: the bulk sepset fill (unguarded, unlike the removed-edge
+     *        path) trusted a non-separator.  Fix: guard the fill with an oracle check.
+     *   (ii) RB RETURNED NON-MINIMAL  -- RB returns a valid-but-non-minimal set that
+     *        includes a true collider node, so stampExtraSepsetColliders reads that node
+     *        as a non-collider and suppresses the true collider.  Fix: minimize, or fix RB.
+     *   (iii) NEITHER -- recorded set is minimal and oracle-valid; the wrong non-collider
+     *        came from elsewhere (FciOrient closure).  Then it is not a sepset artifact.
+     */
+    private static String sepsetProvenanceDump(Node x, Node y, SepsetMap sepsetsH1, Graph h0,
+                                               IndependenceTest oracle, SepsetMap sepsetsH1Input,
+                                               Graph h0PreReorient) throws InterruptedException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("  --- SEPSET PROVENANCE for break pair ")
+                .append(x.getName()).append(",").append(y.getName()).append(" ---\n");
+        Set<Node> input = sepsetsH1Input.get(x, y);
+        Set<Node> post = sepsetsH1.get(x, y);
+        sb.append("    Sep(").append(x.getName()).append(",").append(y.getName())
+                .append(") FED INTO reorient: ").append(input).append('\n');
+        sb.append("    Sep(").append(x.getName()).append(",").append(y.getName())
+                .append(") AFTER reorient    : ").append(post).append('\n');
+        if (input != null) {
+            boolean ok = oracle.checkIndependence(x, y, input).isIndependent();
+            sb.append("    oracle accepts the fed-in set? ").append(ok)
+                    .append(ok ? "" : "   *** ORACLE-FALSE fed in ***").append('\n');
+        }
+        // MASKING TEST.  Prediction (rem:r0-dirty composition): on the PRE-reorient dirty
+        // H0 -- where the spurious circle edge forces the true collider's descendant into
+        // every graphical candidate -- RB can certify NO oracle-true separator (returns
+        // null, since fcitSpanningSepset oracle-confirms internally).  On the POST-reorient
+        // H0 -- where the completion happened to realize the collider -- the pair separates
+        // without the descendant, so RB certifies the clean set.  PRE=null with POST=[..]
+        // CONFIRMS the masking mechanism (the break is a genuine product of the modeled
+        // process, not a dropped entry).  PRE returning a confirmed set REFUTES it (a real
+        // recording gap exists after all).
+        Set<Node> pre = fcitSpanningSepset(h0PreReorient, oracle, x, y);
+        sb.append("    RB on PRE-reorient H0 (dirty skeleton) : ").append(pre);
+        if (pre != null) {
+            sb.append("   oracle-valid? ").append(oracle.checkIndependence(x, y, pre).isIndependent())
+                    .append("   *** REFUTES masking prediction: certifiable set existed pre-reorient ***");
+        } else {
+            sb.append("   (no oracle-true certifiable separator -- masking CONFIRMED for this pair)");
+        }
+        sb.append('\n');
+        Set<Node> fresh = fcitSpanningSepset(h0, oracle, x, y);
+        sb.append("    RB on POST-reorient H0 (collider fixed): ").append(fresh);
+        if (fresh != null) {
+            sb.append("   oracle-valid? ").append(oracle.checkIndependence(x, y, fresh).isIndependent());
+        }
+        sb.append('\n');
+        sb.append("    => PRE=null + POST=set is the masking geometry: the dirty graph demands the\n");
+        sb.append("       descendant in every candidate, the oracle forbids it, so the table is\n");
+        sb.append("       necessarily silent on exactly the pair whose collider needed stamping.\n");
+        return sb.toString();
+    }
+
+    /**
+     * Decisive cross-check for a RESIDUE break: ask the RUN'S OWN live oracle whether x,y
+     * are independent given all other observed nodes, and print canonMag's structural facts
+     * (def-colliders among common neighbors, and their descendants) that should decide it.
+     * A def-collider with a descendant in the conditioning set MUST force DEP; if the live
+     * oracle says INDEP anyway, the oracle's graph is not the printed canonMag.
+     */
+    private static String oracleVsStructureDump(Node x, Node y, List<Node> obs,
+                                                IndependenceTest oracle, Graph canonMag) throws InterruptedException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("  --- LIVE-ORACLE vs canonMag STRUCTURE for ")
+                .append(x.getName()).append(",").append(y.getName()).append(" ---\n");
+        List<Node> common = new ArrayList<>(canonMag.getAdjacentNodes(x));
+        common.retainAll(canonMag.getAdjacentNodes(y));
+        sb.append("    common neighbors in canonMag: ").append(nameList(common)).append('\n');
+        for (Node c : common) {
+            boolean coll = canonMag.isDefCollider(x, c, y);
+            sb.append("      ").append(c.getName()).append(": isDefCollider=").append(coll);
+            if (coll) {
+                List<Node> desc = new ArrayList<>();
+                for (Node d : obs) if (d != c && canonMag.paths().isAncestorOf(c, d)) desc.add(d);
+                sb.append("  descendants=").append(nameList(desc));
+            }
+            sb.append('\n');
+        }
+        Set<Node> others = new HashSet<>();
+        for (Node o : obs) if (o != x && o != y) others.add(o);
+        boolean indepAll = oracle.checkIndependence(x, y, others).isIndependent();
+        sb.append("    LIVE ORACLE ").append(x.getName()).append(" _||_ ").append(y.getName())
+                .append(" | ").append(nameList(new ArrayList<>(others)))
+                .append(" -> ").append(indepAll ? "INDEP" : "DEP").append('\n');
+        // DECISIVE: for each def-collider c among common neighbors, ask the oracle the set
+        // that conditions on a DESCENDANT of c but NOT c itself -- the exact descendant-only
+        // activation {...,descendant} that the recorded separator used.  This is the query
+        // MsepProbe found DEPENDENT on the hand-built MAG; if the live oracle says INDEP here,
+        // MsepTest is not activating the collider via its descendant on THIS graph object,
+        // isolating a graph-construction difference from the hand-built MAG.
+        for (Node c : common) {
+            if (!canonMag.isDefCollider(x, c, y)) continue;
+            for (Node d : obs) {
+                if (d == c || d == x || d == y) continue;
+                if (!canonMag.paths().isAncestorOf(c, d)) continue;   // d is a descendant of collider c
+                Set<Node> descSet = new HashSet<>();
+                descSet.add(d);
+                // include the "fork blockers" (non-collider common neighbors) so only the
+                // collider path is at issue -- mirrors the recorded {V1,V5} shape.
+                for (Node o : common) if (!canonMag.isDefCollider(x, o, y)) descSet.add(o);
+                boolean indep = oracle.checkIndependence(x, y, descSet).isIndependent();
+                sb.append("    DECISIVE oracle ").append(x.getName()).append(" _||_ ").append(y.getName())
+                        .append(" | ").append(nameList(new ArrayList<>(descSet)))
+                        .append("  (conditions on descendant ").append(d.getName())
+                        .append(" of collider ").append(c.getName()).append(", not ").append(c.getName())
+                        .append(") -> ").append(indep ? "INDEP" : "DEP")
+                        .append(indep ? "   *** WRONG: descendant must activate collider -> should be DEP;"
+                                        + " MsepTest not seeing " + d.getName() + " as descendant of " + c.getName()
+                                        + " on this graph object ***"
+                                : "   (correct)")
+                        .append('\n');
+            }
+        }
+        sb.append("    (a def-collider with a descendant in that set MUST force DEP; if the oracle\n");
+        sb.append("     says INDEP anyway, its graph != the printed canonMag.)\n");
+        return sb.toString();
+    }
+
+    private static String nameList(List<Node> ns) {
+        List<String> s = new ArrayList<>();
+        for (Node n : ns) s.add(n.getName());
+        return s.toString();
+    }
+
     private static boolean isLegalMag(Graph g) {
         return g.paths().isLegalMag();
     }
@@ -1973,8 +2187,13 @@ public final class PhantomKernelEnumerator5 {
         }
         Graph out = new EdgeListGraph(canonNodes);
         for (Edge e : g.getEdges()) {
+            // flipIfBackwards=false: the 4-arg Edge constructor silently swaps nodes AND
+            // endpoints when the edge is "pointing left" (endpoint1==ARROW).  Passing mapped
+            // nodes with original endpoints then reattaches endpoints to the swapped nodes,
+            // reversing directed edges stored arrow-first by dagToMag/dagToPag.  The 5-arg
+            // form with false stores nodes and endpoints exactly as given.
             out.addEdge(new Edge(map.get(e.getNode1().getName()), map.get(e.getNode2().getName()),
-                    e.getEndpoint1(), e.getEndpoint2()));
+                    e.getEndpoint1(), e.getEndpoint2(), false));
         }
         return out;
     }

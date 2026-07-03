@@ -55,13 +55,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-FCI",
-        command = "boss-fci",
+        name = "BFCI",
+        command = "bfci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 //@Experimental
-public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
+public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix, LatentStructureAlgorithm {
 
@@ -94,7 +94,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
     /**
      * No-arg constructor. Used for reflection; do not delete.
      */
-    public BossFci() {
+    public Bfci() {
         // Used for reflection; do not delete.
     }
 
@@ -104,7 +104,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * @param test  the independence test to use
      * @param score the score to use
      */
-    public BossFci(IndependenceWrapper test, ScoreWrapper score) {
+    public Bfci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -169,7 +169,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      */
     @Override
     public String getDescription() {
-        return "BOSS-FCI using " + this.test.getDescription() + " and " + this.score.getDescription();
+        return "BFCI using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**

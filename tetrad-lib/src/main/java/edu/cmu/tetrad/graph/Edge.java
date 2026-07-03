@@ -626,6 +626,14 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         this.highlighted = highlighted;
     }
 
+    public void setProximalEndpoint(Node node, Endpoint proximalEndpoint) {
+        if (this.node1 == node) {
+            endpoint1 = proximalEndpoint;
+        } else if (this.node2 == node) {
+            endpoint2 = proximalEndpoint;
+        }
+    }
+
     /**
      * A property of an edge.
      */
