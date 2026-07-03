@@ -144,7 +144,11 @@ public class VertexCheckEditor extends JPanel {
         modelUniformityTest.addActionListener(e -> {
             if (initializing) return;
             model.setUniformityTest(uniformityTestForIndex(modelUniformityTest.getSelectedIndex()));
-            if (repairPanel != null) repairPanel.setUseAndersonDarling(model.isUseAndersonDarling());
+            if (repairPanel != null) {
+                repairPanel.setUseAndersonDarling(model.isUseAndersonDarling());
+                repairPanel.setUseWildBootstrap(
+                        VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(model.getUniformityTest()));
+            }
             runAllAndRefresh(null, null);
         });
 
@@ -616,6 +620,8 @@ public class VertexCheckEditor extends JPanel {
         repairPanel = new VertexRepairPanelGlobalRepair(this, x);
         repairPanel.setKnowledge(knowledge);
         repairPanel.setUseAndersonDarling(model.isUseAndersonDarling());
+        repairPanel.setUseWildBootstrap(
+                VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(model.getUniformityTest()));
 
         repairTabContent.removeAll();
         repairTabContent.add(repairPanel, BorderLayout.CENTER);
