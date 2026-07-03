@@ -2773,18 +2773,31 @@ public final class GraphUtils {
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, excludeSelectionBias, verbose);
         } while (changed);
 
-        MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
-        magToPag.setRecursiveDepth(recursiveDepth);
-        magToPag.setKnowledge(knowledge);
-        Graph pag2 = magToPag.convert(true, excludeSelectionBias);
+//        MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
+//        magToPag.setRecursiveDepth(recursiveDepth);
+//        magToPag.setKnowledge(knowledge);
+//        Graph pag2 = magToPag.convert(true, excludeSelectionBias);
 
-        if (pag2.equals(orig)) {
-            if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
-        } else {
-            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
+//        if (pag2.equals(orig)) {
+//            if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
+//        } else {
+//            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
+//        }
+
+        Graph pag2 = GraphTransforms.dagToPag(pag, excludeSelectionBias);
+
+        if (!pag2.paths().isLegalPag()) {
+            if (verbose) TetradLogger.getInstance().log(
+                    "guaranteePag: round-trip result is NOT a legal PAG.");
+            if (pag.paths().isLegalPag()) return pag;   // prefer the repaired loop state
+            throw new IllegalStateException("guaranteePag failed to produce a legal PAG.");
         }
 
+        if (verbose) TetradLogger.getInstance().log(
+                pag2.equals(orig) ? "NO FAULTY PAG CORRECTIONS MADE." : "Faulty PAG repaired.");
         return pag2;
+
+//        return pag2;
     }
 
     private static boolean removeAlmostCycles(Graph pag,

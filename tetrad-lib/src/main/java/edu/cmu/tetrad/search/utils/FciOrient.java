@@ -1513,7 +1513,7 @@ public class FciOrient {
 
             // Enforce forbidden edge when selection bias is excluded.
             if (!FciOrient.isArrowheadAllowed(to, from, graph, knowledge)) {
-                return;
+                continue;
             }
 
             // Orient: to *-> from   (arrowhead at 'from')
@@ -1548,7 +1548,7 @@ public class FciOrient {
             }
 
             if (!FciOrient.isArrowheadAllowed(from, to, graph, knowledge)) {
-                return;
+                continue;
             }
 
             // Orient: from ---*> to  (tail at from, arrow at to)
