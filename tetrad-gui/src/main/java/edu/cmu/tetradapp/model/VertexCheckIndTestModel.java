@@ -373,7 +373,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double alpha = independenceTest.getAlpha(); // for score convention you’re using
 
         int tried = 0;
-        int ok = 0;
+        int ok = 0; 
 
         for (IndependenceFact fact : impliedFacts) {
             if (cancelled.getAsBoolean()) return;     // bail; store nothing partial for x

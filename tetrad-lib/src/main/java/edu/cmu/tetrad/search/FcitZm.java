@@ -310,7 +310,7 @@ public final class FcitZm implements IGraphSearch {
             nodes = new ArrayList<>(test.getVariables());
         }
 
-        TetradLogger.getInstance().log("===Starting FCIT-MAG===");
+        TetradLogger.getInstance().log("===Starting FCIT-ZM===");
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
         strategy.setSepsetMap(sepsets);
@@ -524,7 +524,7 @@ public final class FcitZm implements IGraphSearch {
                 : "\n" + r0Suspect.size() + " R0 collider(s) carry a separable leg; "
                   + "Markovness not certified: " + r0Suspect);
 
-        TetradLogger.getInstance().log("\nFCIT-MAG finished.");
+        TetradLogger.getInstance().log("\nFCIT-ZM finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
