@@ -74,6 +74,7 @@ public class VertexCheckEditor extends JPanel {
 
     private static final int TAB_CHECK = 0;
     private static final int TAB_REPAIR = 1;
+    private static final int COL_PV = 3;   // overview p-value column (label follows selected method)
 
     private final VertexCheckIndTestModel model;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -448,7 +449,7 @@ public class VertexCheckEditor extends JPanel {
         // ---- Overview table ----
         overviewModel = new AbstractTableModel() {
             private final String[] cols =
-                    {"Vertex", "CS", "#p", "KS", "AD", "Fish", "Bin", "frac≤q", "min", "med"};
+                    {"Vertex", "CS", "#p", "PV", "Fish", "Bin", "frac≤q", "min", "med"};
 
             @Override
             public int getRowCount() {
@@ -478,13 +479,12 @@ public class VertexCheckEditor extends JPanel {
                         yield (min == max) ? String.valueOf(min) : min + "-" + max;
                     }
                     case 2 -> (s == null ? "" : s.numPValuesUsed());
-                    case 3 -> (s == null ? "" : fmt(s.modelP()));
-                    case 4 -> (s == null ? "" : fmt(s.asP()));
-                    case 5 -> (s == null ? "" : fmt(s.fishP()));
-                    case 6 -> (s == null ? "" : fmt(s.binP()));
-                    case 7 -> (s == null ? "" : fmt(s.fractionReject()));
-                    case 8 -> (s == null ? "" : fmt(s.minP()));
-                    case 9 -> (s == null ? "" : fmt(s.medianP()));
+                    case 3 -> (s == null ? "" : fmt(model.selectedVertexP(s)));
+                    case 4 -> (s == null ? "" : fmt(s.fishP()));
+                    case 5 -> (s == null ? "" : fmt(s.binP()));
+                    case 6 -> (s == null ? "" : fmt(s.fractionReject()));
+                    case 7 -> (s == null ? "" : fmt(s.minP()));
+                    case 8 -> (s == null ? "" : fmt(s.medianP()));
                     default -> "";
                 };
             }
@@ -496,7 +496,7 @@ public class VertexCheckEditor extends JPanel {
         ocm.getColumn(0).setPreferredWidth(80);
         ocm.getColumn(1).setPreferredWidth(45);
         ocm.getColumn(2).setPreferredWidth(45);
-        for (int c : new int[]{3, 4, 5, 6, 7, 8, 9}) ocm.getColumn(c).setPreferredWidth(70);
+        for (int c : new int[]{3, 4, 5, 6, 7, 8}) ocm.getColumn(c).setPreferredWidth(70);
         overviewTable.setRowSorter(new TableRowSorter<>(overviewModel));
         overviewTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         overviewTable.getSelectionModel().addListSelectionListener(this::overviewSelectionChanged);
@@ -956,6 +956,7 @@ public class VertexCheckEditor extends JPanel {
             case VertexCheckIndTestModel.WILD_BOOTSTRAP -> "Wild Bootstrap (sum T^2)";
             default -> "Kolmogorov-Smirnov";
         };
+        updatePvColumnHeader(mode);
         String countLabel = wb ? "# constraints" : "# p-values";
         VertexCheckIndTestModel.ModelSummary ms = model.peekModelSummary();
         if (ms == null) {
@@ -965,6 +966,24 @@ public class VertexCheckEditor extends JPanel {
         }
         modelNpLabel.setText(countLabel + ": " + ms.numPValues());
         modelPLabel.setText(type + " Model Uniformity P: " + fmt(ms.modelP()));
+    }
+
+    /**
+     * Renames the overview p-value column header to the active method's abbreviation
+     * (KS / AD / WB) so the single column self-identifies. Cheap and idempotent.
+     */
+    private void updatePvColumnHeader(String mode) {
+        if (overviewTable == null) return;
+        String abbrev = switch (mode) {
+            case VertexCheckIndTestModel.ANDERSON_DARLING -> "AD";
+            case VertexCheckIndTestModel.WILD_BOOTSTRAP -> "WB";
+            default -> "KS";
+        };
+        var col = overviewTable.getColumnModel().getColumn(COL_PV);
+        if (!abbrev.equals(col.getHeaderValue())) {
+            col.setHeaderValue(abbrev);
+            overviewTable.getTableHeader().repaint();
+        }
     }
 
     private void showIndependenciesForSelectedRow() {

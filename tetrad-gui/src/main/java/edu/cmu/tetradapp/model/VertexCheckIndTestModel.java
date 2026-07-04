@@ -175,6 +175,22 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                 .checkFacts(facts);
     }
 
+    /**
+     * Per-vertex wild-bootstrap omnibus p-value (sum T^2) over a fact list, or NaN when the
+     * data is not a DataSet, there are fewer than two facts, or the run is interrupted. Unlike
+     * KS/AD this reads residual products from the data directly and ignores the CI test's p-values.
+     */
+    private double wildBootstrapP(List<IndependenceFact> facts) {
+        if (!(dataModel instanceof DataSet) || facts == null || facts.size() < 2) return Double.NaN;
+        try {
+            WildBootstrapMarkovCheck.Result r = runWildBootstrap(facts);
+            return (r == null) ? Double.NaN : r.pSumSquares;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Double.NaN;
+        }
+    }
+
     public CachedIndependenceQueries getCachedQueries() {
         return cachedQueries;
     }
@@ -373,7 +389,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double alpha = independenceTest.getAlpha(); // for score convention you’re using
 
         int tried = 0;
-        int ok = 0; 
+        int ok = 0;
 
         for (IndependenceFact fact : impliedFacts) {
             if (cancelled.getAsBoolean()) return;     // bail; store nothing partial for x
@@ -401,11 +417,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
             TetradLogger.getInstance().log("VertexCheck: x=" + x.getName() + " tried=" + tried + " okP=" + ok);
         }
 
+        double wbP = (!cancelled.getAsBoolean() && WILD_BOOTSTRAP.equals(getUniformityTest()))
+                ? wildBootstrapP(impliedFacts)
+                : Double.NaN;
+
         VertexSummary summary = summarizeVertex(
                 x.getName(),
                 /* csSize */ -1, // or conditioningSetSizeForSummary(impliedFacts)
                 results,
-                pvals
+                pvals,
+                wbP
         );
 
         summariesByVertex.put(x.getName(), summary);
@@ -416,7 +437,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     private VertexSummary summarizeVertex(String vertexName, int csSize,
-                                          List<IndependenceResult> results, List<Double> pvals) {
+                                          List<IndependenceResult> results, List<Double> pvals, double wbP) {
 
         int n = pvals.size();
 
@@ -440,7 +461,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         double medianP = median(pvals);
 
         return new VertexSummary(vertexName, csSize, results.size(), n, ksP, adP, binP, fishP,
-                fracReject, numReject, minP, medianP);
+                fracReject, numReject, minP, medianP, wbP);
     }
 
     /**
@@ -647,30 +668,31 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         ConditioningSetType conditioningSetType = getConditioningSetType();
         Set<IndependenceFact> impliedFacts = MarkovCheck.computeAllImpliedFacts(graph, conditioningSetType);
-
-        List<Double> pvals = new ArrayList<>();
-        for (IndependenceFact fact : impliedFacts) {
-            if (cancelled.getAsBoolean()) throw new InterruptedException("Cancelled.");
-
-            // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
-            CachedIndependenceQueries.Eval e = cachedQueries.eval(fact);
-
-            double p = e.pValue();
-            if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
-                pvals.add(p);
-            }
-        }
-
         double modelP;
         int numUsed;
         if (WILD_BOOTSTRAP.equals(getUniformityTest())) {
+            // WB reads residual products from the data directly; the CI-test p-value loop
+            // is not needed here, so skip it (it was the main wasted work in WB mode).
             WildBootstrapMarkovCheck.Result wb = runWildBootstrap(new ArrayList<>(impliedFacts));
             modelP = (wb == null) ? Double.NaN : wb.pSumSquares;   // wb.pMax also available
             numUsed = (wb == null) ? 0 : wb.numConstraints;
         } else {
+            List<Double> pvals = new ArrayList<>();
+            for (IndependenceFact fact : impliedFacts) {
+                if (cancelled.getAsBoolean()) throw new InterruptedException("Cancelled.");
+
+                // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
+                CachedIndependenceQueries.Eval e = cachedQueries.eval(fact);
+
+                double p = e.pValue();
+                if (!Double.isNaN(p) && p >= 0.0 && p <= 1.0) {
+                    pvals.add(p);
+                }
+            }
             modelP = getUniformityP(pvals);
             numUsed = pvals.size();
         }
+        
         modelSummary = new ModelSummary(numUsed, modelP);
         return modelSummary;
     }
@@ -723,6 +745,20 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         parameters.set(UNIFORMITY_TEST_PARAM, mode);
     }
 
+    /**
+     * The per-vertex uniformity p-value for the currently selected method: KS ({@code modelP}),
+     * AD ({@code asP}), or the per-vertex wild-bootstrap omnibus ({@code wbP}). This is what the
+     * overview table's single "PV" column shows. NaN if not computed / not applicable.
+     */
+    public double selectedVertexP(VertexSummary s) {
+        if (s == null) return Double.NaN;
+        return switch (getUniformityTest()) {
+            case ANDERSON_DARLING -> s.asP();
+            case WILD_BOOTSTRAP -> s.wbP();
+            default -> s.modelP();
+        };
+    }
+
     /** @deprecated use {@link #setUniformityTest(String)}. */
     @Deprecated
     public void setUseAndersonDarling(boolean useAndersonDarling) {
@@ -753,9 +789,9 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public record VertexSummary(String vertex, int conditioningSetSize, int numFactsTotal, int numPValuesUsed,
                                 double modelP, double asP, double binP, double fishP,
                                 double fractionReject, long numReject, double minP,
-                                double medianP) implements TetradSerializable {
+                                double medianP, double wbP) implements TetradSerializable {
         @Serial
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
     }
 
     public record ModelSummary(int numPValues, double modelP) implements TetradSerializable {
