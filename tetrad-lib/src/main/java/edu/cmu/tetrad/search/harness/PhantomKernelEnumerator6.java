@@ -492,6 +492,37 @@ public final class PhantomKernelEnumerator6 {
         sb.append(String.format("                 (A)-pass, (B)-FAIL: %d%n", t.zmStampBFail));
         sb.append(String.format("  bare-vs-stamped commit divergence: %d%s%n", t.zmMoveDivergence,
                 t.zmMoveDivergence > 0 ? "   (stamping changes commit verdicts -- surrogate-relevant)" : ""));
+        if (t.bfailClassified > 0) {
+            sb.append(String.format("  (B)-fail classification (ZHANG-BARE, %d witnesses):%n", t.bfailClassified));
+            sb.append(String.format("    per-witness min |Z|   : Z=0:%d  Z=1:%d  Z=2:%d  Z=3:%d%n",
+                    t.bfailMinZ[0], t.bfailMinZ[1], t.bfailMinZ[2], t.bfailMinZ[3]));
+            sb.append(String.format("    per-witness min dist  : d=0:%d  d=1:%d  d=2:%d  d>=3:%d%n",
+                    t.bfailMinDist[0], t.bfailMinDist[1], t.bfailMinDist[2], t.bfailMinDist[3]));
+            sb.append(String.format("    deleted pair itself falsely separated : %d%n", t.bfailPairIsDeleted));
+            sb.append(String.format("    false pair district-linked to f       : %d%n", t.bfailDistrictLinked));
+            sb.append(String.format("    deleted-pair-only min |Z|: Z=0:%d  Z=1:%d  Z=2:%d  Z=3:%d  none:%d%n",
+                    t.bfailDelPairMinZ[0], t.bfailDelPairMinZ[1], t.bfailDelPairMinZ[2],
+                    t.bfailDelPairMinZ[3], t.bfailDelPairMinZ[4]));
+            long fc = t.bfailClassified;
+            StringBuilder fcLine = new StringBuilder(
+                    "    deleted-pair gate ORACLE false-commits: ");
+            for (int k = 0; k < 4; k++) {
+                fc -= t.bfailDelPairMinZ[k];
+                fcLine.append("zMax=").append(k).append(":").append(fc).append(k < 3 ? "  " : "");
+            }
+            sb.append(fcLine).append('\n');
+            sb.append("    (false-refusals are structurally 0 at the oracle: the gate tests only\n");
+            sb.append("     statements the candidate entails, all true for a (B)-good commit.)\n");
+            sb.append("    truncated-gate coverage (witness caught iff SOME false CI has |Z|<=k AND dist<=d):\n");
+            sb.append("      k\\d        0        1        2      >=3\n");
+            for (int k = 0; k < 4; k++) {
+                sb.append(String.format("      %d    %7d  %7d  %7d  %7d%n", k,
+                        t.bfailCoverage[k * 4], t.bfailCoverage[k * 4 + 1],
+                        t.bfailCoverage[k * 4 + 2], t.bfailCoverage[k * 4 + 3]));
+            }
+            sb.append("    (bottom-right cell must equal the witness count; a full-coverage low (k,d)\n");
+            sb.append("     cell is a candidate truncated commit gate at this scope.)\n");
+        }
         sb.append(String.format("  Lemma B violations / API-skipped : %d / %d%s%n",
                 t.lemmaBViolations, t.lemmaBSkipped,
                 t.lemmaBViolations > 0 ? "   *** Lemma B REFUTED -- inspect audit_bfail log ***" : ""));
@@ -1700,7 +1731,7 @@ public final class PhantomKernelEnumerator6 {
                     zhangWitness = true;
                 } else {
                     r.zmBareBFail++;
-                    auditBFailLog.write(auditBFailEntry("ZHANG-BARE", mask, latSet, mapping,
+                    auditBFailLog.write(auditBFailEntry(r, "ZHANG-BARE", mask, latSet, mapping,
                             spurious, f, h0, bare, truthModel, obs, trPairs, trZ, T));
                 }
             } else if (CHECK_LEMMA_B) {
@@ -1735,7 +1766,7 @@ public final class PhantomKernelEnumerator6 {
                     r.zmStampBPass++;
                 } else {
                     r.zmStampBFail++;
-                    auditBFailLog.write(auditBFailEntry("ZHANG-STAMPED", mask, latSet, mapping,
+                    auditBFailLog.write(auditBFailEntry(r, "ZHANG-STAMPED", mask, latSet, mapping,
                             spurious, f, h0, st, truthModel, obs, trPairs, trZ, T));
                 }
             }
@@ -1861,7 +1892,7 @@ public final class PhantomKernelEnumerator6 {
                     return true;                             // witness: (A) ∧ (B)
                 } else {
                     r.legCandBFail++;
-                    auditBFailLog.write(auditBFailEntry("LEG-BARE", mask, latSet, mapping,
+                    auditBFailLog.write(auditBFailEntry(r, "LEG-BARE", mask, latSet, mapping,
                             spurious, f, h0, del, truthModel, obs, trPairs, trZ, T));
                 }
             }
@@ -1873,15 +1904,112 @@ public final class PhantomKernelEnumerator6 {
         return false;
     }
 
-    private static String auditBFailEntry(String stage, long mask, Set<Integer> latSet, String mapping,
+    /**
+     * Formats a (B)-fail witness AND classifies its false CIs for the surrogate-gate
+     * question: per false CI, the conditioning-set size |Z| and the skeleton distance
+     * from the CI's pair to the deleted edge's endpoints in the post-deletion MAG
+     * (multi-source BFS from f's endpoints; distance of the pair = min over its two
+     * vertices; disconnected binned as >=3).  Also whether the falsely separated pair
+     * IS the deleted pair, and whether it is bidirected-district-linked to f's
+     * endpoints.  A truncated commit gate that verifies statements with |Z| <= k and
+     * distance <= d catches the witness iff SOME false CI satisfies both bounds; the
+     * cumulative 4x4 coverage matrix tallied here (ZHANG-BARE witnesses only, the
+     * complete population; STAMPED entries duplicate the same deletions and LEG-BARE
+     * is until-first-witness) is therefore the gate-design table.  NOTE: at 5 observed
+     * nodes |Z| <= 3 always and distances are geometrically compressed, so read the
+     * table for SKEW, not for absolute reach.
+     */
+    private static String auditBFailEntry(Result r, String stage, long mask, Set<Integer> latSet,
+                                          String mapping,
                                           List<Edge> spurious, Edge f, Graph h0, Graph postDel,
                                           boolean[] truthModel, List<Node> obs,
                                           List<int[]> trPairs, List<Set<Node>> trZ, int T) throws InterruptedException {
         boolean[] m = modelOf(new MsepTest(postDel), obs, trPairs, trZ, T);
+
+        // Multi-source BFS distances from f's endpoints in postDel's skeleton.
+        Map<Node, Integer> dist = new HashMap<>();
+        ArrayDeque<Node> queue = new ArrayDeque<>();
+        for (Node fe : List.of(f.getNode1(), f.getNode2())) {
+            dist.put(fe, 0);
+            queue.add(fe);
+        }
+        while (!queue.isEmpty()) {
+            Node u = queue.poll();
+            for (Node w : postDel.getAdjacentNodes(u)) {
+                if (!dist.containsKey(w)) {
+                    dist.put(w, dist.get(u) + 1);
+                    queue.add(w);
+                }
+            }
+        }
+
+        // Bidirected districts of postDel containing f's endpoints.
+        Set<Node> fDistrict = new HashSet<>(List.of(f.getNode1(), f.getNode2()));
+        boolean grew = true;
+        while (grew) {
+            grew = false;
+            for (Edge e : postDel.getEdges()) {
+                if (e.getEndpoint1() == Endpoint.ARROW && e.getEndpoint2() == Endpoint.ARROW) {
+                    boolean has1 = fDistrict.contains(e.getNode1());
+                    boolean has2 = fDistrict.contains(e.getNode2());
+                    if (has1 != has2) {
+                        fDistrict.add(has1 ? e.getNode2() : e.getNode1());
+                        grew = true;
+                    }
+                }
+            }
+        }
+
+        // Walk every false CI; classify; build per-entry detail.
+        StringBuilder falseCis = new StringBuilder();
+        int falseCount = 0, minZ = Integer.MAX_VALUE, minDist = Integer.MAX_VALUE;
+        int minZDelPair = Integer.MAX_VALUE;   // min |Z| over false CIs whose pair IS the deleted pair
+        boolean pairIsDeleted = false, districtLinked = false;
+        boolean[][] caught = new boolean[4][4];        // [zBound][distBound], cumulative
+        for (int t = 0; t < m.length; t++) {
+            if (!(m[t] && !truthModel[t])) continue;
+            falseCount++;
+            Node x = obs.get(trPairs.get(t)[0]), y = obs.get(trPairs.get(t)[1]);
+            int z = trZ.get(t).size();
+            int dx = dist.getOrDefault(x, 99), dy = dist.getOrDefault(y, 99);
+            int d = Math.min(Math.min(dx, dy), 3);     // >=3 and disconnected binned together
+            minZ = Math.min(minZ, z);
+            minDist = Math.min(minDist, d);
+            boolean isDeletedPair =
+                    (x == f.getNode1() && y == f.getNode2()) || (x == f.getNode2() && y == f.getNode1());
+            pairIsDeleted |= isDeletedPair;
+            if (isDeletedPair) minZDelPair = Math.min(minZDelPair, z);
+            districtLinked |= fDistrict.contains(x) || fDistrict.contains(y);
+            for (int k = Math.min(z, 3); k < 4; k++) {
+                for (int dd = d; dd < 4; dd++) caught[k][dd] = true;
+            }
+            falseCis.append("    false CI: ").append(x.getName()).append(" _||_ ").append(y.getName())
+                    .append(" | ").append(trZ.get(t))
+                    .append("   |Z|=").append(z).append(" dist(f)=").append(d)
+                    .append(isDeletedPair ? "  [deleted pair itself]" : "").append('\n');
+        }
+
+        // Tally the complete population only (ZHANG-BARE); see javadoc.
+        // Result is a per-thread accumulator under collect(); no synchronization needed.
+        if ("ZHANG-BARE".equals(stage) && falseCount > 0) {
+            r.bfailClassified++;
+            r.bfailMinZ[Math.min(minZ, 3)]++;
+            r.bfailMinDist[Math.min(minDist, 3)]++;
+            if (pairIsDeleted) r.bfailPairIsDeleted++;
+            r.bfailDelPairMinZ[minZDelPair == Integer.MAX_VALUE ? 4 : Math.min(minZDelPair, 3)]++;
+            if (districtLinked) r.bfailDistrictLinked++;
+            for (int k = 0; k < 4; k++) {
+                for (int dd = 0; dd < 4; dd++) {
+                    if (caught[k][dd]) r.bfailCoverage[k * 4 + dd]++;
+                }
+            }
+        }
+
         return "==== (A)-PASS AND (B)-FAIL [" + stage + "] ====\n"
                 + "  mask=" + mask + " lat=" + latSet + " map=" + mapping + '\n'
                 + "  spurious=" + spurious + "  deleted=" + f + '\n'
-                + "  false CI: " + firstFalseCi(m, truthModel, obs, trPairs, trZ) + '\n'
+                + "  false CIs (" + falseCount + " total; minZ=" + minZ + " minDist=" + minDist + "):\n"
+                + falseCis
                 + "  H0 (gated legal I-map):\n" + h0 + '\n'
                 + "  post-deletion MAG (LEGAL/maximal, NOT an I-map):\n" + postDel + '\n'
                 + "==== end entry ====\n";
@@ -2766,6 +2894,12 @@ public final class PhantomKernelEnumerator6 {
         long lemmaBViolations, lemmaBSkipped;        // illegal bare deletion without inducing path / API skip
         long legStageRuns, legCandAPass, legCandBFail;
         long h0WitnessZhang, h0WitnessLegOnly, h0WitnessNone;
+        // (B)-fail witness classification (ZHANG-BARE population only; see auditBFailEntry).
+        long bfailClassified, bfailPairIsDeleted, bfailDistrictLinked;
+        long[] bfailMinZ = new long[4];        // per-witness min |Z| over its false CIs
+        long[] bfailMinDist = new long[4];     // per-witness min skeleton distance to f (3 = >=3/disc)
+        long[] bfailCoverage = new long[16];   // [k*4+d]: witnesses caught by gate |Z|<=k AND dist<=d
+        long[] bfailDelPairMinZ = new long[5]; // deleted-pair-only min |Z| (bin 4 = no deleted-pair false CI)
 
         static void merge(Result a, Result b) {
             a.add(b);
@@ -2824,6 +2958,13 @@ public final class PhantomKernelEnumerator6 {
             h0WitnessZhang += o.h0WitnessZhang;
             h0WitnessLegOnly += o.h0WitnessLegOnly;
             h0WitnessNone += o.h0WitnessNone;
+            bfailClassified += o.bfailClassified;
+            bfailPairIsDeleted += o.bfailPairIsDeleted;
+            bfailDistrictLinked += o.bfailDistrictLinked;
+            for (int i = 0; i < 4; i++) bfailMinZ[i] += o.bfailMinZ[i];
+            for (int i = 0; i < 4; i++) bfailMinDist[i] += o.bfailMinDist[i];
+            for (int i = 0; i < 16; i++) bfailCoverage[i] += o.bfailCoverage[i];
+            for (int i = 0; i < 5; i++) bfailDelPairMinZ[i] += o.bfailDelPairMinZ[i];
         }
     }
 }

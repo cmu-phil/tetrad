@@ -56,13 +56,13 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCIT-ZM",
-        command = "fcit-zm",
+        name = "FCIT-SL",
+        command = "fcit-sl",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
+public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
         AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -95,7 +95,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FcitZm() {
+    public FcitSl() {
         // Used for reflection; do not delete.
     }
 
@@ -113,7 +113,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      * @see AbstractBootstrapAlgorithm
      * @see Algorithm
      */
-    public FcitZm(IndependenceWrapper test, ScoreWrapper score) {
+    public FcitSl(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -152,7 +152,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         }
 
         test = new CachedIndependenceQueries(test);
-        edu.cmu.tetrad.search.FcitZm search = new edu.cmu.tetrad.search.FcitZm(test, score);
+        edu.cmu.tetrad.search.FcitSl search = new edu.cmu.tetrad.search.FcitSl(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -167,16 +167,19 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
         search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
 
+        search.setCommitGate(edu.cmu.tetrad.search.FcitSl.CommitGate.DELETED_PAIR_BATTERY);
+
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.BOSS);
+            search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.GRASP);
+            search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.SP);
+        } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
+            search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.SP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.COMPLETE_GRAPH);
+            search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
@@ -207,7 +210,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public String getDescription() {
-        return "FCIT-ZM (FCI Targeted Testing using PAG->Zhang MAG->PAG) using "+ this.test.getDescription() + " and " + this.score.getDescription();
+        return "FCIT-SL (FCI Targeted Testing using Step Lemma) using "+ this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
