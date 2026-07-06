@@ -200,7 +200,7 @@ public final class FcitSl implements IGraphSearch {
      * and fairness in the operation or computation. When {@code false}, selection
      * bias is not specifically excluded.
      */
-    private boolean excludeSelectionBias = false;
+    private boolean excludeSelectionBias = true;
     /**
      * Stage 2 (Step-Lemma LEG fallback) controls and telemetry.  The fallback fires only when
      * the canonical Zhang-MAG removal is MAG-illegal; these bound and report that search.
