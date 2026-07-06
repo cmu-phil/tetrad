@@ -284,9 +284,9 @@
 
         private static Graph runBossFci(SemBicScore score, IndTestFisherZ test) {
             try {
-                BossFci bossFci = new BossFci(test, score);
-                bossFci.setDepth(DEPTH);
-                return bossFci.search(); }
+                Bfci bfci = new Bfci(test, score);
+                bfci.setDepth(DEPTH);
+                return bfci.search(); }
             catch (InterruptedException e) { throw new RuntimeException(e); }
         }
 

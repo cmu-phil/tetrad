@@ -131,7 +131,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.BossFci search = new edu.cmu.tetrad.search.BossFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        edu.cmu.tetrad.search.Bfci search = new edu.cmu.tetrad.search.Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));

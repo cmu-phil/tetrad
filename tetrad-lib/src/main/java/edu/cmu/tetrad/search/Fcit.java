@@ -614,7 +614,7 @@ public final class Fcit implements IGraphSearch {
 //                    Long.MAX_VALUE);
 //
 //            // !found() => blockingSet() closes every path: a candidate sepset.
-//            if (!result.found()) {
+//            if (result.found()) {
 //                if (test.checkIndependence(m, n, result.blockingSet()).isIndependent()) {
 //                    spuriousEdges.add(edge);
 //                }
@@ -954,7 +954,7 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> z = this.sepsets.get(m, n);
             prev.put(edge, z);
-        }           
+        }
 
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, this.sepsets, excludeSelectionBias, superVerbose);
         PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));

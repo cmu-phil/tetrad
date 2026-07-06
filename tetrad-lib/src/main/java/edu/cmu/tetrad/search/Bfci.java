@@ -39,7 +39,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @see StarFci
  * @see Boss
  */
-public final class BossFci extends StarFciCheckMag {
+public final class Bfci extends StarFciCheckMag {
     /**
      * The score.
      */
@@ -52,8 +52,8 @@ public final class BossFci extends StarFciCheckMag {
      * the search algorithm will be restarted.
      * </p>
      *
-     * @see BossFci#setNumStarts(int)
-     * @see BossFci#search()
+     * @see Bfci#setNumStarts(int)
+     * @see Bfci#search()
      */
     private int numStarts = 1;
     /**
@@ -80,7 +80,7 @@ public final class BossFci extends StarFciCheckMag {
      * @see IndependenceTest
      * @see Score
      */
-    public BossFci(IndependenceTest test, Score score) {
+    public Bfci(IndependenceTest test, Score score) {
         super(test);
         if (score == null) {
             throw new NullPointerException("Score is null");

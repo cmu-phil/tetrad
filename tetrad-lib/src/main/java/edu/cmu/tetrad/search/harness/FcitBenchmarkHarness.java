@@ -392,7 +392,7 @@ public class FcitBenchmarkHarness {
 
     private static Graph runBossFci(SemBicScore score, IndTestFisherZ test) {
         try {
-            return new BossFci(test, score).search();
+            return new Bfci(test, score).search();
         } catch (InterruptedException e) { throw new RuntimeException(e); }
     }
 
