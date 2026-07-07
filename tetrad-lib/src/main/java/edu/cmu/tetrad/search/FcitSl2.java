@@ -74,7 +74,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  */
-public final class FcitSl implements IGraphSearch {
+public final class FcitSl2 implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -205,7 +205,7 @@ public final class FcitSl implements IGraphSearch {
      * Stage 2 (Step-Lemma LEG fallback) controls and telemetry.  The fallback fires only when
      * the canonical Zhang-MAG removal is MAG-illegal; these bound and report that search.
      */
-    private int maxLegCandidates = 5000;
+    private int maxLegCandidates = 1000;
     /**
      * Hard cap on recursion steps in the LEG enumeration (guards factorial ordering redundancy).
      */
@@ -214,21 +214,6 @@ public final class FcitSl implements IGraphSearch {
      * Telemetry: number of Stage-2 invocations, successes, and distinct LEG orientations tested.
      */
     private long legFallbackAttempts = 0, legFallbackRescues = 0, legCandidatesTested = 0;
-    /**
-     * Commit gate.  LEGALITY_PLUS_SEPARATOR is FCIT-ZM's gate (MAG legality plus the one
-     * test-confirmed separator for the removed pair): FCIT-SL's default, preserving the
-     * exactly-as-sound-as-FCIT-ZM contract.  DELETED_PAIR_BATTERY additionally verifies,
-     * against the independence test, EVERY separation of the removed pair that the candidate
-     * MAG entails with conditioning sets of size at most {@code batteryZMax}.  Motivation
-     * (PKE6 audit, N=7, two latents): in all 548 oracle cases where a legal deletion exited
-     * Markov space, some false statement concerned the deleted pair itself at |Z| <= 2, so
-     * this gate with zMax = 2 caught 548/548; and since it tests only statements the
-     * candidate entails, a Markov-preserving commit passes every one -- zero false refusals
-     * at the oracle.  In sample, a test rejection refuses the commit: noise costs reach,
-     * never soundness.
-     */
-    public enum CommitGate {LEGALITY_PLUS_SEPARATOR, DELETED_PAIR_BATTERY}
-
     private CommitGate commitGate = CommitGate.LEGALITY_PLUS_SEPARATOR;
     private int batteryZMax = 2;
     /**
@@ -284,7 +269,6 @@ public final class FcitSl implements IGraphSearch {
      * Test timout in milliseconds.
      */
     private long timeout = -1L;
-
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
      * object.
@@ -296,7 +280,7 @@ public final class FcitSl implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public FcitSl(IndependenceTest test, Score score) {
+    public FcitSl2(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -587,12 +571,12 @@ public final class FcitSl implements IGraphSearch {
                 ? "\nNo spurious edges remain."
                 : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
 
-        if (spurious.size() >= 2) {
-            boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
-            TetradLogger.getInstance().log(removed
-                    ? "\nSpurious edges removed."
-                    : "\nSpurious edges could not be removed.");
-        }
+//        if (spurious.size() >= 2) {
+//            boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
+//            TetradLogger.getInstance().log(removed
+//                    ? "\nSpurious edges removed."
+//                    : "\nSpurious edges could not be removed.");
+//        }
 
         NongenuineScan finalScan = findR4NongenuineEdge(interimPags.getLast());
 
@@ -884,8 +868,10 @@ public final class FcitSl implements IGraphSearch {
 
         List<Edge> edgeList = new ArrayList<>(this.interimPags.getLast().getEdges());
         edgeList.sort(Comparator
-                .comparing((Edge e) -> { String a = e.getNode1().getName(), b = e.getNode2().getName();
-                    return a.compareTo(b) <= 0 ? a + '\u0000' + b : b + '\u0000' + a; }));
+                .comparing((Edge e) -> {
+                    String a = e.getNode1().getName(), b = e.getNode2().getName();
+                    return a.compareTo(b) <= 0 ? a + '\u0000' + b : b + '\u0000' + a;
+                }));
 
         int from = 0;
 
@@ -1082,387 +1068,45 @@ public final class FcitSl implements IGraphSearch {
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias) {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
-
-        if (legFirst) {
-            // LEG-FIRST mode: skip the canonical Zhang attempt; the fallback's
-            // enumeration searches the LEGs directly (the Zhang orientation is one of
-            // them, so nothing is lost -- only the ordering changes).  Sepset semantics
-            // identical to the staged path: write before (the LEG candidates' stamping
-            // reads the live map), keep on success, revert on failure.
-            Set<Node> prevSepsetLf = sepsets.get(x, y);
-            sepsets.set(x, y, b);
-            if (tryLegFallback(_pag, Collections.singletonList(Objects.requireNonNull(_edge)),
-                    excludeSelectionBias)) {
-                if (verbose) {
-                    TetradLogger.getInstance().log("Removing " + _edge + " via LEG-first "
-                            + "search, sepset = " + b
-                            + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
-                }
-                return true;
-            }
-            sepsets.set(x, y, prevSepsetLf);
-            return false;
-        }
-
-        // MAG of the pre-removal (legal) PAG, so zhangMagFromPag's circle resolution
-        // is well defined. Then delete the edge under test.
-        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);
-        _mag.removeEdge(x, y);
-
-        Set<Node> prevSepset = sepsets.get(x, y);
-        sepsets.set(x, y, b);
-
-        // Stamp every recorded sepset's colliders onto the MAG we keep (idempotent),
-        // so the PAG we carry forward retains those arrowheads and RB sees fewer circles.
-        orientSepsetCollidersInMag(_mag, sepsets);
-
-        // Commit condition: MAG legality (cheap removed-pair pre-check, then full check)
-        // AND (if enabled) the deleted-pair battery.
         List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
-        boolean zhangCommitOk = isLegalMagChecked(_mag, _removed, "Zhang MAG")
-                && deletedPairBatteryPasses(_mag, _removed);
-
-        if (!zhangCommitOk) {
-            // STAGE 2 (FCIT-SL): the canonical Zhang MAG cannot host this deletion --
-            // either an inducing path between x,y survives in it (illegal MAG) or the
-            // commit gate refused it (an entailed separation of the pair failed the
-            // test).  The Step Lemma's witness is existential over representatives, so
-            // search the LEGs of the current class for one that can host it; the SAME
-            // gate is applied to each LEG candidate inside the fallback.  The sepset
-            // entry for (x,y) is already written; on success it stays (matching the
-            // success path), on failure we revert below exactly as FCIT-ZM does.
-            if (tryLegFallback(_pag, Collections.singletonList(Objects.requireNonNull(_edge)),
-                    excludeSelectionBias)) {
-                if (verbose) {
-                    TetradLogger.getInstance().log("Removing " + _edge + " via Stage-2 LEG "
-                            + "fallback, sepset = " + b
-                            + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
-                }
-                return true;
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("\tTried removing " + _edge
-                        + ", but no representative hosted it (Zhang MAG or any LEG;"
-                        + " legality or commit gate), sepset = " + b);
-            }
-
-            sepsets.set(x, y, prevSepset);
-            return false;
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
-                    + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
-        }
-
-        // Colliders are baked into _mag, so the PAG you carry forward keeps those
-        // arrowheads and RB sees fewer circle endpoints. Pass the real flag, not false.
-        this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
-        return true;
-    }
-
-    private boolean tryToModifyGraph(List<Edge> edges,
-                                     boolean excludeSelectionBias) {
-        Graph _pag = new EdgeListGraph(interimPags.getLast());
-        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);   // one MAG of the current legal PAG
-
-        Map<Edge, Set<Node>> prev = new LinkedHashMap<>();    // for clean rollback
-
-        for (Edge edge : edges) {
-            Node m = edge.getNode1();
-            Node n = edge.getNode2();
-
-            // Prefer a committed separator; fall back to the deadlock-survivor one.
-            Set<Node> z = sepsets.get(m, n);
-            if (z == null) z = foundSepsets.get(Set.of(m, n));
-
-            prev.put(edge, sepsets.get(m, n));
-            sepsets.set(m, n, z);
-
-            _mag.removeEdge(m, n);
-        }
-
-        if (legFirst) {
-            // LEG-FIRST mode (multi-edge): sepsets are written above; search the LEGs
-            // directly, keep the writes on success, roll back on failure.
-            if (tryLegFallback(_pag, edges, excludeSelectionBias)) {
-                if (verbose) {
-                    TetradLogger.getInstance().log("Removing " + edges
-                            + " (multi-edge) via LEG-first search, reached a PAG");
-                }
-                return true;
-            }
-            for (Edge edge : edges) {
-                sepsets.set(edge.getNode1(), edge.getNode2(), prev.get(edge));
-            }
-            return false;
-        }
-
-        // Stamp all sepset-implied colliders, then judge MAG legality once.
-        orientSepsetCollidersInMag(_mag, sepsets);
-
-        boolean zhangCommitOkMulti = isLegalMagChecked(_mag, edges, "Zhang MAG (multi)")
-                && deletedPairBatteryPasses(_mag, edges);
-
-        if (!zhangCommitOkMulti) {
-            // STAGE 2 (FCIT-SL): try the same multi-edge removal in a LEG representative
-            // (legality or commit-gate failure alike; the gate reapplies per candidate).
-            if (tryLegFallback(_pag, edges, excludeSelectionBias)) {
-                if (verbose) {
-                    TetradLogger.getInstance().log("Removing " + edges
-                            + " (multi-edge) via Stage-2 LEG fallback, reached a PAG");
-                }
-                return true;
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("\tTried removing " + edges
-                        + ", but it didn't lead to a PAG (Zhang MAG or any LEG)");
-            }
-            // No interimPags.removeLast() here — nothing was added; the add happens
-            // only on the success path below. Just roll back the sepset writes.
-            for (Edge edge : edges) {
-                sepsets.set(edge.getNode1(), edge.getNode2(), prev.get(edge));
-            }
-            return false;
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Removing " + edges + " (multi-edge), reached a PAG");
-        }
-
-        this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
-        return true;
-    }
-
-    // ────────────────────────────────────────────────────────────────────────
-    // STAGE 2: Step-Lemma LEG fallback
-    // ────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Searches the LEG representatives of the class of {@code pag} for one in which removing
-     * {@code edgesToRemove} (plus the usual recorded-separator collider stamping) yields a legal
-     * MAG, and commits the first such representative found.
-     * <p>
-     * LEG characterization used (Zhang; selection-free): a representative of the class is a LEG
-     * iff every partially oriented edge {@code o->} is resolved to {@code -->} (resolving to
-     * {@code <->} would create a non-invariant bidirected edge) and the circle-circle component
-     * is oriented as a DAG with no new unshielded collider within it.  The circle-circle
-     * component of a legal PAG is chordal, and every such orientation yields a Markov-equivalent
-     * legal MAG, so no per-candidate equivalence test is needed; {@code isLegalMag} is still run
-     * defensively.  An orientation is admissible iff every vertex's already-oriented in-component
-     * parents form a clique, which is exactly what the prefix recursion enforces.
-     * <p>
-     * Enumeration is deterministic (name-ordered choices), deduplicated by orientation signature,
-     * first-fit (stops at the first committing representative), and bounded three ways: distinct
-     * candidates by {@code maxLegCandidates}, recursion steps by {@code legWorkBudget}, and wall
-     * time by the per-edge {@code timeout}.  On any bound being hit the fallback gives up and the
-     * caller reverts, exactly as FCIT-ZM would have.
-     *
-     * @param pag           the current (legal) PAG whose class is searched
-     * @param edgesToRemove the edge(s) whose removal Stage 1 could not host
-     * @return true iff a LEG representative committed the removal (interimPags extended)
-     */
-    private boolean tryLegFallback(Graph pag, List<Edge> edgesToRemove, boolean excludeSelectionBias) {
-        legFallbackAttempts++;
 
         final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
 
-        // Collect the circle-circle component: vertices and edges with CIRCLE at both ends.
-        List<Node> ccNodes = new ArrayList<>();
-        Map<Node, Integer> ccIndex = new HashMap<>();
-        List<int[]> ccEdges = new ArrayList<>();
+        Set<Node> prevSepset = sepsets.get(x, y);
+        sepsets.set(x, y, b);                                   // candidate stamping reads the live map
 
-        for (Edge e : pag.getEdges()) {
-            if (e.getEndpoint1() == Endpoint.CIRCLE && e.getEndpoint2() == Endpoint.CIRCLE) {
-                for (Node n : List.of(e.getNode1(), e.getNode2())) {
-                    if (!ccIndex.containsKey(n)) {
-                        ccIndex.put(n, ccNodes.size());
-                        ccNodes.add(n);
-                    }
-                }
-                ccEdges.add(new int[]{ccIndex.get(e.getNode1()), ccIndex.get(e.getNode2())});
+        long tried = 0;
+
+        for (Graph mag : LegEnumerator.fromPag(_pag)) {   // canonical Zhang MAG comes first
+            if (++tried > maxLegCandidates || System.currentTimeMillis() > deadline) break;
+
+            Graph _mag = mag.copy();
+            _mag.removeEdge(x, y);
+            orientSepsetCollidersInMag(_mag, sepsets);
+
+            if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+                continue;
             }
+
+            if (!deletedPairBatteryPasses(_mag, _removed)) {
+                continue;
+            }
+
+            if (verbose) {
+                TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+                        + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
+            }
+            this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+            return true;                                   // first representative that hosts it
         }
 
-        if (ccEdges.isEmpty()) {
-            if (legFirst) {                    // Stage 1 skipped: the sole representative
-                legCandidatesTested++;         // (o-> -> -->, bidirecteds kept) is untested
-                return testLegCandidate(pag, edgesToRemove, excludeSelectionBias,
-                        Collections.emptyList(), Collections.emptyList(), new int[0]);
-            }
-            return false;                      // staged mode: Stage 1 already tried it
+        if (verbose) {
+            TetradLogger.getInstance().log("\tTried removing " + _edge
+                    + ", but no representative hosted it, sepset = " + b);
         }
 
-//        if (ccEdges.isEmpty()) {
-//            // The class has a single LEG orientation of the circle component (vacuously), so the
-//            // Zhang MAG was, up to o-> resolution, the only LEG candidate -- and it failed.
-//            return false;
-//        }
-
-        // Deterministic vertex order for the prefix recursion.
-        List<Integer> order = new ArrayList<>();
-        for (int i = 0; i < ccNodes.size(); i++) order.add(i);
-        order.sort(Comparator.comparing(i -> ccNodes.get(i).getName()));
-
-        int n = ccNodes.size();
-        boolean[][] adj = new boolean[n][n];
-        for (int[] e : ccEdges) {
-            adj[e[0]][e[1]] = true;
-            adj[e[1]][e[0]] = true;
-        }
-
-        // orientation[k]: for ccEdges.get(k) = {a,b}, 0 = a->b, 1 = b->a, -1 = unset.
-        int[] orientation = new int[ccEdges.size()];
-        Arrays.fill(orientation, -1);
-        boolean[] placed = new boolean[n];
-        Set<String> seen = new HashSet<>();
-        long[] work = {0L};
-
-        return legPrefixRecurse(pag, edgesToRemove, excludeSelectionBias, ccNodes, ccEdges, adj,
-                order, placed, 0, orientation, seen, work, deadline);
-    }
-
-    /**
-     * Prefix-ordering recursion over the circle-component vertices.  Placing vertex v orients
-     * every circle-circle edge from an already-placed neighbor INTO v; admissibility requires
-     * v's placed neighbors to be pairwise adjacent (a non-clique parent pair would be a new
-     * unshielded collider at v).  Every admissible complete orientation is generated (each AMO
-     * arises from its topological orders; duplicates are removed by signature), and each distinct
-     * orientation is tested at most once, first-fit.
-     */
-    private boolean legPrefixRecurse(Graph pag, List<Edge> edgesToRemove, boolean excludeSelectionBias,
-                                     List<Node> ccNodes, List<int[]> ccEdges, boolean[][] adj,
-                                     List<Integer> order, boolean[] placed, int depth,
-                                     int[] orientation, Set<String> seen, long[] work, long deadline) {
-        if (++work[0] > legWorkBudget) return false;
-        if (System.currentTimeMillis() > deadline) return false;
-        if (legCandidatesTested >= maxLegCandidates) return false;
-
-        int n = ccNodes.size();
-        if (depth == n) {
-            String sig = Arrays.toString(orientation);
-            if (!seen.add(sig)) return false;                    // duplicate AMO via another order
-            legCandidatesTested++;
-            return testLegCandidate(pag, edgesToRemove, excludeSelectionBias, ccNodes, ccEdges,
-                    orientation);
-        }
-
-        for (int idx : order) {
-            if (placed[idx]) continue;
-            // Admissible next vertex: its already-placed neighbors form a clique.
-            List<Integer> placedNbrs = new ArrayList<>();
-            for (int j = 0; j < n; j++) if (placed[j] && adj[idx][j]) placedNbrs.add(j);
-            boolean clique = true;
-            outer:
-            for (int a = 0; a < placedNbrs.size(); a++) {
-                for (int b = a + 1; b < placedNbrs.size(); b++) {
-                    if (!pag.isAdjacentTo(ccNodes.get(placedNbrs.get(a)),
-                            ccNodes.get(placedNbrs.get(b)))) {
-                        clique = false;
-                        break outer;
-                    }
-
-//                    if (!adj[placedNbrs.get(a)][placedNbrs.get(b)]) {
-//                        clique = false;
-//                        break outer;
-//                    }
-                }
-            }
-            if (!clique) continue;
-
-            // Place idx: orient placed-neighbor -> idx on the relevant cc edges.
-            List<Integer> touched = new ArrayList<>();
-            for (int k = 0; k < ccEdges.size(); k++) {
-                int[] e = ccEdges.get(k);
-                if (orientation[k] != -1) continue;
-                if (e[0] == idx && placed[e[1]]) {
-                    orientation[k] = 1;                          // e[1] -> e[0]=idx
-                    touched.add(k);
-                } else if (e[1] == idx && placed[e[0]]) {
-                    orientation[k] = 0;                          // e[0] -> e[1]=idx
-                    touched.add(k);
-                }
-            }
-            placed[idx] = true;
-
-            if (legPrefixRecurse(pag, edgesToRemove, excludeSelectionBias, ccNodes, ccEdges, adj,
-                    order, placed, depth + 1, orientation, seen, work, deadline)) {
-                return true;                                     // committed; unwind
-            }
-
-            placed[idx] = false;
-            for (int k : touched) orientation[k] = -1;
-
-            if (work[0] > legWorkBudget || System.currentTimeMillis() > deadline
-                    || legCandidatesTested >= maxLegCandidates) {
-                return false;
-            }
-        }
+        sepsets.set(x, y, prevSepset);                         // revert
         return false;
-    }
-
-    /**
-     * Builds the LEG MAG for one complete circle-component orientation, applies the removal(s)
-     * and the recorded-separator stamping, and commits if the result is a legal MAG.
-     */
-    private boolean testLegCandidate(Graph pag, List<Edge> edgesToRemove, boolean excludeSelectionBias,
-                                     List<Node> ccNodes, List<int[]> ccEdges, int[] orientation) {
-        Graph mag = new EdgeListGraph(pag.getNodes());
-
-        int k = 0;
-        Map<String, Integer> ccPos = new HashMap<>();
-        for (int[] e : ccEdges) {
-            // key both directions for lookup during the edge walk below
-            ccPos.put(ccNodes.get(e[0]).getName() + "~|~" + ccNodes.get(e[1]).getName(), k);
-            ccPos.put(ccNodes.get(e[1]).getName() + "~|~" + ccNodes.get(e[0]).getName(), k);
-            k++;
-        }
-
-        for (Edge e : pag.getEdges()) {
-            Node a = e.getNode1(), b = e.getNode2();
-            Endpoint ea = e.getEndpoint1(), eb = e.getEndpoint2();
-
-            if (ea == Endpoint.CIRCLE && eb == Endpoint.CIRCLE) {
-                Integer pos = ccPos.get(a.getName() + "~|~" + b.getName());
-                int[] cc = ccEdges.get(pos);
-                Node from = ccNodes.get(orientation[pos] == 0 ? cc[0] : cc[1]);
-                Node to = ccNodes.get(orientation[pos] == 0 ? cc[1] : cc[0]);
-                mag.addDirectedEdge(from, to);
-            } else if (ea == Endpoint.ARROW && eb == Endpoint.ARROW) {
-                mag.addBidirectedEdge(a, b);                     // invariant bidirected edge
-            } else if (ea == Endpoint.CIRCLE && eb == Endpoint.ARROW) {
-                mag.addDirectedEdge(a, b);                       // o-> resolves to --> in a LEG
-            } else if (ea == Endpoint.ARROW && eb == Endpoint.CIRCLE) {
-                mag.addDirectedEdge(b, a);
-            } else if (ea == Endpoint.TAIL && eb == Endpoint.ARROW) {
-                mag.addDirectedEdge(a, b);
-            } else if (ea == Endpoint.ARROW && eb == Endpoint.TAIL) {
-                mag.addDirectedEdge(b, a);
-            } else if (ea == Endpoint.CIRCLE && eb == Endpoint.TAIL) {
-                mag.addDirectedEdge(b, a);                       // selection-free: tail end is the source
-            } else if (ea == Endpoint.TAIL && eb == Endpoint.CIRCLE) {
-                mag.addDirectedEdge(a, b);
-            } else {
-                mag.addDirectedEdge(a, b);                       // defensive; should not occur selection-free
-            }
-        }
-
-        for (Edge f : edgesToRemove) {
-            Node m = f.getNode1(), nn = f.getNode2();
-            if (mag.getEdge(m, nn) == null) return false;        // class-skeleton drift; bail
-            mag.removeEdge(m, nn);
-        }
-
-        // Same stamping, legality gate (pre-check + full), and commit gate as Stage 1.
-        orientSepsetCollidersInMag(mag, sepsets);
-        if (!isLegalMagChecked(mag, edgesToRemove, "LEG candidate")) return false;
-        if (!deletedPairBatteryPasses(mag, edgesToRemove)) return false;
-
-        legFallbackRescues++;
-        this.interimPags.add(new MagToPag(mag).convert(false, excludeSelectionBias));
-        return true;
     }
 
     /**
@@ -1477,60 +1121,6 @@ public final class FcitSl implements IGraphSearch {
      * refusal -- the safe direction while the search winds down -- with the interrupt flag
      * restored.
      */
-    /**
-     * Legality gate with a cheap pre-check and verbose diagnostics.  First runs the
-     * removed-pair inducing-path test (Lemma B: deletion can break maximality only at the
-     * removed pair); if an inducing path is present the candidate is non-maximal and is
-     * rejected without the full check.  Otherwise runs full {@code isLegalMag}
-     * (ancestrality + global maximality), which remains necessary because the candidate
-     * was constructed (circle orientation + collider stamping), not merely deleted from,
-     * so illegalities can arise away from the removed pair.  Rejections are attributed and,
-     * under {@code verbose}, logged with the reason.
-     *
-     * @param mag     the constructed candidate MAG (post-deletion, post-stamping)
-     * @param removed the edge(s) just removed
-     * @param tag     a short label for the log line (e.g.\ "Zhang MAG", "LEG candidate")
-     * @return true iff the candidate is a legal MAG
-     */
-    private boolean isLegalMagChecked(Graph mag, List<Edge> removed, String tag) {
-        legalityChecks++;
-
-        // Cheap pre-check: removed-pair maximality via inducing path.
-        for (Edge f : removed) {
-            Node x = f.getNode1(), y = f.getNode2();
-            if (mag.isAdjacentTo(x, y)) continue;      // still adjacent => not a removed non-adjacency
-            boolean ip;
-            try {
-                ip = mag.paths().existsInducingPath(x, y, Set.of());
-            } catch (Throwable t) {
-                ip = false;                            // API mismatch: never reject on the pre-check;
-                // defer entirely to full isLegalMag below.
-            }
-            if (ip) {
-                ipRejects++;
-                if (verbose) {
-                    TetradLogger.getInstance().log("\tMAXIMALITY fail (" + tag + "): inducing path "
-                            + "between removed pair " + x.getName() + "," + y.getName()
-                            + " -- candidate is non-maximal, rejected (pre-check).");
-                }
-                return false;
-            }
-        }
-
-        // Full legality: ancestrality + global maximality.
-        PagLegalityCheck.LegalMagRet legal =
-                PagLegalityCheck.isLegalMag(mag, new LinkedHashSet<>(selection));
-        if (!legal.isLegalMag()) {
-            otherRejects++;
-            if (verbose) {
-                TetradLogger.getInstance().log("\tLEGAL-MAG fail (" + tag + "): removed-pair "
-                        + "maximality OK but full check failed. Reason = " + legal.getReason()
-                        + "  (ancestrality, or non-maximality elsewhere from orientation/stamping).");
-            }
-            return false;
-        }
-        return true;
-    }
 
     private boolean deletedPairBatteryPasses(Graph mag, List<Edge> removed) {
         if (commitGate != CommitGate.DELETED_PAIR_BATTERY) return true;
@@ -1801,6 +1391,21 @@ public final class FcitSl implements IGraphSearch {
     public SepsetMap getSepsetMap() {
         return sepsets;
     }
+
+    /**
+     * Commit gate.  LEGALITY_PLUS_SEPARATOR is FCIT-ZM's gate (MAG legality plus the one
+     * test-confirmed separator for the removed pair): FCIT-SL's default, preserving the
+     * exactly-as-sound-as-FCIT-ZM contract.  DELETED_PAIR_BATTERY additionally verifies,
+     * against the independence test, EVERY separation of the removed pair that the candidate
+     * MAG entails with conditioning sets of size at most {@code batteryZMax}.  Motivation
+     * (PKE6 audit, N=7, two latents): in all 548 oracle cases where a legal deletion exited
+     * Markov space, some false statement concerned the deleted pair itself at |Z| <= 2, so
+     * this gate with zMax = 2 caught 548/548; and since it tests only statements the
+     * candidate entails, a Markov-preserving commit passes every one -- zero false refusals
+     * at the oracle.  In sample, a test rejection refuses the commit: noise costs reach,
+     * never soundness.
+     */
+    public enum CommitGate {LEGALITY_PLUS_SEPARATOR, DELETED_PAIR_BATTERY}
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 
