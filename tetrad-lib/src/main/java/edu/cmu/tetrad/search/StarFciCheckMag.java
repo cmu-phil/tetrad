@@ -90,7 +90,11 @@ public abstract class StarFciCheckMag implements IGraphSearch {
      * A boolean flag indicating whether to use the maximum p-value heuristic during certain operations in the Star-FCI
      * algorithm. The default value is {@code true}, enabling the heuristic by default.
      */
-    private boolean useMaxP = false;
+    private boolean useMaxP = true;
+    /**
+     * A boolean flag indicating whether to exclude selection bias during certain operations in the Star-FCI algorithm.
+     * The default value is {@code false}, allowing selection bias by default.
+     */
     private boolean excludeSelectionBias = false;
     /**
      * When true, the extra-edge-removal step mimics FCIT: each candidate removal is committed only if the resulting
@@ -98,7 +102,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
      * original *-FCI behavior is used (greedy removal with a single final orientation). This is the one knob that
      * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
      */
-    private boolean guaranteePag = true;
+    private boolean guaranteePag = false;
     /**
      * When true, a possible-D-SEP removal pass is run after the adjacency-subset removal pass: for each remaining edge
      * (a, c), all subsets of Possible-D-SEP(a) are considered as candidate separating sets, and a removal is committed
@@ -575,22 +579,24 @@ public abstract class StarFciCheckMag implements IGraphSearch {
         // what churned the shared sepsetMap (R4 appends) and carried a non-MagToPag graph
         // forward (the maximality break). pag is NOT mutated here — all work is on `mag` —
         // so a revert needs only to undo the single sepset write.
-        Graph mag = GraphTransforms.zhangMagFromPag(pag);
-        mag.removeEdge(a, c);
+//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Graph _pag = pag.copy();
+        _pag.removeEdge(a, c);
 
         Set<Node> oldSepset = sepsetMap.get(a, c);     // may be null
         sepsetMap.set(a, c, sepset);
 
-        orientSepsetCollidersInMag(mag, sepsetMap);
+        orientSepsetColliders(_pag, sepsetMap);
 
-        PagLegalityCheck.LegalMagRet legal = PagLegalityCheck.isLegalMag(mag, new LinkedHashSet<>(selection));
+        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
 
-        if (!legal.isLegalMag()) {
+        if (!legal.isLegalPag()) {
             sepsetMap.set(a, c, oldSepset);            // revert sepset; pag untouched
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
                         + "), but it didn't lead to a legal MAG (reverted). Reason: " + legal.getReason());
             }
+
             return pag;                                // unchanged
         }
 
@@ -601,7 +607,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
         }
 
         // Carry the realized PAG forward — colliders baked into the MAG survive the round trip.
-        return new MagToPag(mag).convert(false, excludeSelectionBias);
+        return _pag;// new MagToPag(mag).convert(false, excludeSelectionBias);
     }
 
     /**
@@ -610,7 +616,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
      * this each commit removes any reliance on prior colliders persisting through the
      * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
      */
-    private static void orientSepsetCollidersInMag(Graph mag, SepsetMap sepsets) {
+    private static void orientSepsetColliders(Graph graph, SepsetMap sepsets) {
         for (Set<Node> pair : sepsets.keySet()) {
             List<Node> arr = new ArrayList<>(pair);
             Node x = arr.get(0);
@@ -618,16 +624,16 @@ public abstract class StarFciCheckMag implements IGraphSearch {
 
             Set<Node> s = sepsets.get(x, y);
             if (s == null) continue;
-            if (mag.isAdjacentTo(x, y)) continue;      // only meaningful once x–y is gone
+            if (graph.isAdjacentTo(x, y)) continue;      // only meaningful once x–y is gone
 
-            List<Node> common = mag.getAdjacentNodes(x);
-            common.retainAll(mag.getAdjacentNodes(y));
+            List<Node> common = graph.getAdjacentNodes(x);
+            common.retainAll(graph.getAdjacentNodes(y));
 
             for (Node c : common) {
                 if (s.contains(c)) continue;               // not a collider; leave it
-                if (mag.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
-                mag.setEndpoint(x, c, Endpoint.ARROW);     // arrowheads into c
-                mag.setEndpoint(y, c, Endpoint.ARROW);
+                if (graph.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
+                graph.setEndpoint(x, c, Endpoint.ARROW);     // arrowheads into c
+                graph.setEndpoint(y, c, Endpoint.ARROW);
             }
         }
     }

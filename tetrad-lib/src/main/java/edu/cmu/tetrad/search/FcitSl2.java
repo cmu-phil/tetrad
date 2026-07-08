@@ -571,13 +571,6 @@ public final class FcitSl2 implements IGraphSearch {
                 ? "\nNo spurious edges remain."
                 : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
 
-//        if (spurious.size() >= 2) {
-//            boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
-//            TetradLogger.getInstance().log(removed
-//                    ? "\nSpurious edges removed."
-//                    : "\nSpurious edges could not be removed.");
-//        }
-
         NongenuineScan finalScan = findR4NongenuineEdge(interimPags.getLast());
 
         if (finalScan.edge() != null) {
@@ -621,9 +614,6 @@ public final class FcitSl2 implements IGraphSearch {
         if (cache != null) {
             TetradLogger.getInstance().log(cache.cacheReport());
         }
-
-//        interimPags.addLast(new MagToPag(GraphTransforms.zhangMagFromPag(interimPags.getLast()))
-//                .convert(false, false));
 
         return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
     }
@@ -864,8 +854,6 @@ public final class FcitSl2 implements IGraphSearch {
 
         // Ordered snapshot of the edges for this sweep. `from` is the scan position;
         // we never go back before it, so each edge is searched at most once per sweep.
-//        List<Edge> edgeList = new ArrayList<>(this.interimPags.getLast().getEdges());
-
         List<Edge> edgeList = new ArrayList<>(this.interimPags.getLast().getEdges());
         edgeList.sort(Comparator
                 .comparing((Edge e) -> {
@@ -1084,9 +1072,13 @@ public final class FcitSl2 implements IGraphSearch {
             _mag.removeEdge(x, y);
             orientSepsetCollidersInMag(_mag, sepsets);
 
-            if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+            if (!_mag.paths().isLegalMag()) {
                 continue;
             }
+
+//            if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+//                continue;
+//            }
 
             if (!deletedPairBatteryPasses(_mag, _removed)) {
                 continue;
@@ -1121,7 +1113,6 @@ public final class FcitSl2 implements IGraphSearch {
      * refusal -- the safe direction while the search winds down -- with the interrupt flag
      * restored.
      */
-
     private boolean deletedPairBatteryPasses(Graph mag, List<Edge> removed) {
         if (commitGate != CommitGate.DELETED_PAIR_BATTERY) return true;
         batteryEvals++;
