@@ -340,7 +340,7 @@ public final class FcitSl2 implements IGraphSearch {
      * this each commit removes any reliance on prior colliders persisting through the
      * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
      */
-    private static void orientSepsetCollidersInMag(Graph mag, SepsetMap sepsets) {
+    private static void orientSepsetColliders(Graph mag, SepsetMap sepsets) {
         for (Set<Node> pair : sepsets.keySet()) {
             List<Node> arr = new ArrayList<>(pair);
             Node x = arr.get(0);
@@ -1076,14 +1076,14 @@ public final class FcitSl2 implements IGraphSearch {
                 continue;
             }
 
-            orientSepsetCollidersInMag(_mag, sepsets);
-            fciOrient.finalOrientation(_mag);
-
-            if (!_mag.paths().isLegalMag()) {
+            if (!deletedPairBatteryPasses(_mag, _removed)) {
                 continue;
             }
 
-            if (!deletedPairBatteryPasses(_mag, _removed)) {
+            orientSepsetColliders(_mag, sepsets);
+            fciOrient.finalOrientation(_mag);
+
+            if (!_mag.paths().isLegalMag()) {
                 continue;
             }
 
