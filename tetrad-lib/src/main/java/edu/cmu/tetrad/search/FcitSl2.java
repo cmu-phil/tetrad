@@ -1069,7 +1069,13 @@ public final class FcitSl2 implements IGraphSearch {
             if (++tried > maxLegCandidates || System.currentTimeMillis() > deadline) break;
 
             Graph _mag = mag.copy();
+
             _mag.removeEdge(x, y);
+
+            if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+                continue;
+            }
+
             orientSepsetCollidersInMag(_mag, sepsets);
             fciOrient.finalOrientation(_mag);
 
