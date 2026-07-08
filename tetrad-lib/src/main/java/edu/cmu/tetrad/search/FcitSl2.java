@@ -1071,14 +1071,11 @@ public final class FcitSl2 implements IGraphSearch {
             Graph _mag = mag.copy();
             _mag.removeEdge(x, y);
             orientSepsetCollidersInMag(_mag, sepsets);
+            fciOrient.finalOrientation(_mag);
 
             if (!_mag.paths().isLegalMag()) {
                 continue;
             }
-
-//            if (_mag.paths().existsInducingPath(x, y, Set.of())) {
-//                continue;
-//            }
 
             if (!deletedPairBatteryPasses(_mag, _removed)) {
                 continue;
@@ -1088,6 +1085,7 @@ public final class FcitSl2 implements IGraphSearch {
                 TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
                         + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
             }
+
             this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
             return true;                                   // first representative that hosts it
         }

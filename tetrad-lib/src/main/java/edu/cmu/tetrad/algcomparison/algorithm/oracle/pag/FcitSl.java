@@ -168,10 +168,10 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
         search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
 
-        search.setCommitGate(FcitSl2.CommitGate.LEGALITY_PLUS_SEPARATOR);
+        search.setCommitGate(FcitSl2.CommitGate.DELETED_PAIR_BATTERY);
         search.setLegFirst(false);
         search.setMaxLegCandidates(1000);
-        search.setBatteryZMax(3);
+        search.setBatteryZMax(2);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
