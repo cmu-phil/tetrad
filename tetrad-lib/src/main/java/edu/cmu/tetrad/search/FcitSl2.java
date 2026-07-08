@@ -1063,16 +1063,65 @@ public final class FcitSl2 implements IGraphSearch {
         Set<Node> prevSepset = sepsets.get(x, y);
         sepsets.set(x, y, b);                                   // candidate stamping reads the live map
 
-        long tried = 0;
+        // LegEnumerator yields the canonical Zhang MAG first, then the name-ordered LEG
+        // representatives of the current class.
+        Iterator<Graph> candidates = LegEnumerator.fromPag(_pag).iterator();
 
-        for (Graph mag : LegEnumerator.fromPag(_pag)) {   // canonical Zhang MAG comes first
-            if (++tried > maxLegCandidates || System.currentTimeMillis() > deadline) break;
+        // legFirst: de-privilege the canonical Zhang MAG. Pull it aside and try it only
+        // after every other LEG representative has failed, so a name-earlier representative
+        // may host the deletion instead. The search SPACE -- hence reach -- is unchanged
+        // (the Zhang MAG is still tried, just last); only which representative wins changes.
+        // Default (zhang-first) leaves the enumeration's hoisted order intact, so the Zhang
+        // MAG is tried first as Stage 1.
+        Graph deferredZhang = null;
+        if (legFirst && candidates.hasNext()) {
+            deferredZhang = candidates.next();
+        }
+
+        // Stage bookkeeping. In zhang-first mode the first candidate (tried == 1) is the
+        // Stage-1 Zhang MAG; any later candidate is a Stage-2 LEG-fallback orientation. In
+        // legFirst mode there is no Stage 1, so every candidate is a fallback orientation.
+        long tried = 0;
+        boolean fallbackCounted = false;
+
+        while (candidates.hasNext() || deferredZhang != null) {
+            // The deferred Zhang MAG (legFirst mode only) is drawn last.
+            Graph mag;
+            boolean isDeferredZhang = false;
+            if (candidates.hasNext()) {
+                mag = candidates.next();
+            } else {
+                mag = deferredZhang;
+                deferredZhang = null;
+                isDeferredZhang = true;
+            }
+
+            // maxLegCandidates: per-invocation candidate cap. legWorkBudget: hard loop-level
+            // ceiling on candidates examined (the literal recursion-step cap lives inside
+            // LegEnumerator and would need to be threaded into fromPag to enforce there).
+            if (++tried > maxLegCandidates || tried > legWorkBudget
+                    || System.currentTimeMillis() > deadline) {
+                break;
+            }
+
+            // A Stage-2 fallback candidate: any candidate in legFirst mode, or any
+            // non-first (or deferred-Zhang) candidate in zhang-first mode.
+            boolean stage2 = legFirst || tried > 1 || isDeferredZhang;
+            if (stage2 && !fallbackCounted) {
+                legFallbackAttempts++;                     // this invocation entered LEG fallback
+                fallbackCounted = true;
+            }
+            if (stage2) {
+                legCandidatesTested++;                     // a distinct LEG orientation tested
+            }
 
             Graph _mag = mag.copy();
 
             _mag.removeEdge(x, y);
 
+            legalityChecks++;
             if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+                ipRejects++;                               // non-maximal exactly at the deleted pair
                 continue;
             }
 
@@ -1084,12 +1133,17 @@ public final class FcitSl2 implements IGraphSearch {
             fciOrient.finalOrientation(_mag);
 
             if (!_mag.paths().isLegalMag()) {
+                otherRejects++;                            // passed pre-check, failed full legality
                 continue;
             }
 
             if (verbose) {
                 TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
                         + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
+            }
+
+            if (stage2) {
+                legFallbackRescues++;                      // fallback hosted the deletion
             }
 
             this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));

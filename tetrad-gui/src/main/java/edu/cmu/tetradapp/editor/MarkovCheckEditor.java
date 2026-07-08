@@ -400,7 +400,7 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         pane.addTab("Check Markov", indep);
-        pane.addTab("Check Dependent Distribution", dep);
+//        pane.addTab("Check Dependent Distribution", dep);
         pane.addTab("Help", new PaddingPanel(scroll));
 
         // Restore saved tab from model
