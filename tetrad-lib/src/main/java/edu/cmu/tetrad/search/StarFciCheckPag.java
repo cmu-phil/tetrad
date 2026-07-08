@@ -61,7 +61,7 @@ import static java.util.Collections.shuffle;
  * @see #getMarkovCpdag()
  * @see Knowledge
  */
-public abstract class StarFciCheckMag implements IGraphSearch {
+public abstract class StarFciCheckPag implements IGraphSearch {
     /**
      * The independence test used in search.
      */
@@ -98,7 +98,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
     private boolean excludeSelectionBias = false;
     /**
      * When true, the extra-edge-removal step mimics FCIT: each candidate removal is committed only if the resulting
-     * graph (after re-running the full *-FCI orientation) is a legal MAG; otherwise it is reverted. When false, the
+     * graph (after re-running the full *-FCI orientation) is a legal PAG; otherwise it is reverted. When false, the
      * original *-FCI behavior is used (greedy removal with a single final orientation). This is the one knob that
      * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
      */
@@ -106,7 +106,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
     /**
      * When true, a possible-D-SEP removal pass is run after the adjacency-subset removal pass: for each remaining edge
      * (a, c), all subsets of Possible-D-SEP(a) are considered as candidate separating sets, and a removal is committed
-     * only if it leaves a legal MAG (otherwise reverted). This is the step the original GFCI had that *-FCI dropped; it
+     * only if it leaves a legal PAG (otherwise reverted). This is the step the original GFCI had that *-FCI dropped; it
      * is off by default and added for parity, not because it was shown necessary. Possible-D-SEP assumes colliders are
      * already oriented as in FCI, which holds for the fully-oriented PAGs maintained here, so the pass always runs on an
      * oriented graph and is always legality-gated regardless of {@link #guaranteePag}.
@@ -118,7 +118,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
      *
      * @param test The independence test to use.
      */
-    public StarFciCheckMag(IndependenceTest test) {
+    public StarFciCheckPag(IndependenceTest test) {
         this.independenceTest = test;
     }
 
@@ -364,11 +364,11 @@ public abstract class StarFciCheckMag implements IGraphSearch {
             // when the main pass was gated (already oriented); required when it was greedy.
             // Final orientation. In the GATED path, pag is already in its last-accepted, gate-legal
             // orientation: commitRemoval ran orientPag against the sepsetMap as it stood at the moment
-            // of acceptance and verified the resulting Zhang MAG was legal. Re-running orientPag here
+            // of acceptance and verified the resulting PAG was legal. Re-running orientPag here
             // re-reads a sepsetMap that has since GROWN — the strategy appends discriminating-path
             // sepsets (R4 on) on every accepted trial — so it can stamp colliders the gated check never
             // saw, manufacture an inducing path, break maximality, and (being ungated) never revert it.
-            // Skip it; pag already resolves to the proven-legal MAG. In the UNGATED path nothing has
+            // Skip it; pag already resolves to the proven-legal PAG. In the UNGATED path nothing has
             // oriented pag yet, so this remains the sole orientation pass, exactly as before.
             if (!guaranteePag) {
                 gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
@@ -434,21 +434,21 @@ public abstract class StarFciCheckMag implements IGraphSearch {
         }
 
         // Final orientation only for the ungated greedy path. In the gated path pag is already
-        // a realized MagToPag PAG (legal + maximal); the trailing zhangMagFromPag→MagToPag round
+        // a realized PAG (legal + maximal); the trailing orient PAG round
         // trip below is then idempotent. Re-running orientPag here re-reads the grown sepsetMap
         // and breaks maximality, so skip it when gated.
         if (!guaranteePag) {
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
         }
 
-        // Only realize through MagToPag when guaranteeing a PAG. In the gated path pag is already
-        // a MagToPag PAG, so this is idempotent. In the UNGATED (old-BFCI) path pag is the raw
-        // gfciOrientPag output, which may be an illegal/non-maximal PAG — that is exactly the
-        // greedy baseline we want to A/B against, so leave it untouched.
-        if (guaranteePag) {
-            TetradLogger.getInstance().log("Orienting final graph as a PAG");
-            pag = new MagToPag(GraphTransforms.zhangMagFromPag(pag)).convert(false, false);
-        }
+//        // Only realize when guaranteeing a PAG. In the gated path pag is already
+//        // a PAG, so this is idempotent. In the UNGATED (old-BFCI) path pag is the raw
+//        // gfciOrientPag output, which may be an illegal/non-maximal PAG — that is exactly the
+//        // greedy baseline we want to A/B against, so leave it untouched.
+//        if (guaranteePag) {
+//            TetradLogger.getInstance().log("Orienting final graph as a PAG");
+//            pag = new MagToPag(GraphTransforms.zhangMagFromPag(pag)).convert(false, false);
+//        }
 
         pag = GraphUtils.replaceNodes(pag, nodes);
 
@@ -594,7 +594,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
             sepsetMap.set(a, c, oldSepset);            // revert sepset; pag untouched
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
-                        + "), but it didn't lead to a legal MAG (reverted). Reason: " + legal.getReason());
+                        + "), but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
             }
 
             return pag;                                // unchanged
@@ -603,7 +603,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
         if (verbose) {
             IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
             TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " (" + type
-                    + ", legal MAG); sepset = " + sepset + ", p-value = " + result.getPValue() + ".");
+                    + ", legal PAG); sepset = " + sepset + ", p-value = " + result.getPValue() + ".");
         }
 
         // Carry the realized PAG forward — colliders baked into the MAG survive the round trip.
@@ -611,10 +611,10 @@ public abstract class StarFciCheckMag implements IGraphSearch {
     }
 
     /**
-     * MAG-side analog of adjustForExtraSepsets over every recorded sepset. Idempotent:
+     * PAG-side analog of adjustForExtraSepsets over every recorded sepset. Idempotent:
      * re-stamping an existing collider is a no-op (the isDefCollider guard), so calling
      * this each commit removes any reliance on prior colliders persisting through the
-     * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
+     * PAG<->PAG round trip. Null sepsets and still-adjacent pairs are skipped.
      */
     private static void orientSepsetColliders(Graph graph, SepsetMap sepsets) {
         for (Set<Node> pair : sepsets.keySet()) {
@@ -763,7 +763,7 @@ public abstract class StarFciCheckMag implements IGraphSearch {
 
     /**
      * When true, the extra-edge-removal step mimics FCIT: each candidate removal is committed only if the resulting
-     * graph (after re-running the full *-FCI orientation) is a legal MAG; otherwise it is reverted. When false, the
+     * graph (after re-running the full *-FCI orientation) is a legal PAG; otherwise it is reverted. When false, the
      * original *-FCI behavior is used (greedy removal with a single final orientation). This is the one knob that
      * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
      */

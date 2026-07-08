@@ -45,7 +45,7 @@ import java.io.PrintStream;
  * @see StarFci
  * @see Sp
  */
-public final class SpFci extends StarFciCheckMag {
+public final class SpFci extends StarFciCheckPag {
 
     /**
      * The score.
