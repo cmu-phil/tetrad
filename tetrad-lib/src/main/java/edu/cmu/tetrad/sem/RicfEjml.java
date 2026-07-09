@@ -10,6 +10,8 @@ import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.NormOps_DDRM;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
@@ -46,6 +48,7 @@ public final class RicfEjml {
         private final DMatrixRMaj omegaHat;   // residual/error covariance (includes bidirected structure)
         private final int iters;
         private final double diff;
+        private final double logLik;          // Gaussian log-likelihood of the fitted model
 
         /**
          * Constructs a RicfResult object that contains the results of the Ricf algorithm.
@@ -55,13 +58,15 @@ public final class RicfEjml {
          * @param omegaHat The residual or error covariance matrix, which includes bidirected structure.
          * @param iters The number of iterations performed by the algorithm.
          * @param diff The difference or convergence metric from the algorithm.
+         * @param logLik The Gaussian log-likelihood of the fitted model.
          */
-        public RicfResult(DMatrixRMaj sigmaHat, DMatrixRMaj bHat, DMatrixRMaj omegaHat, int iters, double diff) {
+        public RicfResult(DMatrixRMaj sigmaHat, DMatrixRMaj bHat, DMatrixRMaj omegaHat, int iters, double diff, double logLik) {
             this.sigmaHat = sigmaHat;
             this.bHat = bHat;
             this.omegaHat = omegaHat;
             this.iters = iters;
             this.diff = diff;
+            this.logLik = logLik;
         }
 
         /**
@@ -101,6 +106,19 @@ public final class RicfEjml {
         public double getDiff()          { return diff; }
 
         /**
+         * Retrieves the Gaussian log-likelihood of the fitted model.
+         *
+         * <p>This is the multivariate-normal log-likelihood evaluated at the implied
+         * covariance matrix (sigmaHat), computed as
+         * {@code -(n/2) * (p*log(2*pi) + log|sigmaHat| + tr(sigmaHat^{-1} S))},
+         * where {@code n} is the sample size, {@code p} the number of variables, and
+         * {@code S} the sample covariance matrix.</p>
+         *
+         * @return The Gaussian log-likelihood as a double.
+         */
+        public double getLogLik()        { return logLik; }
+
+        /**
          * Returns a string representation of the RicfResult object.
          * The string includes the number of iterations performed and the
          * convergence difference metric resulting from the Ricf algorithm.
@@ -108,7 +126,7 @@ public final class RicfEjml {
          * @return A string representation of the object.
          */
         @Override public String toString() {
-            return "RicfResult{iters=" + iters + ", diff=" + diff + "}";
+            return "RicfResult{iters=" + iters + ", diff=" + diff + ", logLik=" + logLik + "}";
         }
     }
 
@@ -151,10 +169,12 @@ public final class RicfEjml {
 
         // S = sample covariance in cov order
         SimpleMatrix S = new SimpleMatrix(covMatrix.getMatrix().toArray());
+        int n = covMatrix.getSampleSize();
 
         if (p == 1) {
             DMatrixRMaj s = S.getDDRM().copy();
-            return new RicfResult(s, CommonOps_DDRM.identity(1), s, 1, 0.0);
+            double logLik1 = gaussianLogLikelihood(S, S, n);
+            return new RicfResult(s, CommonOps_DDRM.identity(1), s, 1, 0.0, logLik1);
         }
 
         // B starts at identity; Omega starts at diag(S)
@@ -320,10 +340,52 @@ public final class RicfEjml {
         SimpleMatrix invBt = B.transpose().invert();
         SimpleMatrix sigmaHat = invB.mult(Omega).mult(invBt);
 
-        return new RicfResult(sigmaHat.getDDRM().copy(), B.getDDRM().copy(), Omega.getDDRM().copy(), it, diff);
+        // Gaussian log-likelihood of the fitted model, evaluated at sigmaHat.
+        double logLik = gaussianLogLikelihood(sigmaHat, S, n);
+
+        return new RicfResult(sigmaHat.getDDRM().copy(), B.getDDRM().copy(), Omega.getDDRM().copy(), it, diff, logLik);
     }
 
     // ---------------- helpers ----------------
+
+    /**
+     * Multivariate-normal log-likelihood evaluated at a model-implied covariance matrix.
+     *
+     * <p>Computes {@code -(n/2) * (p*log(2*pi) + log|sigma| + tr(sigma^{-1} S))}, the standard
+     * Gaussian (maximized over the mean) log-likelihood for {@code n} i.i.d. observations with
+     * sample covariance {@code S} under a model with implied covariance {@code sigma}.</p>
+     *
+     * @param sigma model-implied covariance (p x p, symmetric positive definite).
+     * @param S     sample covariance (p x p).
+     * @param n     sample size.
+     * @return the Gaussian log-likelihood.
+     */
+    private static double gaussianLogLikelihood(SimpleMatrix sigma, SimpleMatrix S, int n) {
+        int p = sigma.numRows();
+        double logDet = logDetSPD(sigma);
+        double trace = sigma.invert().mult(S).trace();
+        return -0.5 * n * (p * Math.log(2.0 * Math.PI) + logDet + trace);
+    }
+
+    /**
+     * Stable log-determinant for a symmetric positive-definite matrix via Cholesky.
+     * Falls back to log|det| (LU) if the Cholesky decomposition fails.
+     */
+    private static double logDetSPD(SimpleMatrix A) {
+        int n = A.numRows();
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(n, true);
+        DMatrixRMaj copy = A.getDDRM().copy();
+        if (chol.decompose(copy)) {
+            DMatrixRMaj L = chol.getT(null);
+            double logDet = 0.0;
+            for (int i = 0; i < n; i++) {
+                logDet += 2.0 * Math.log(L.get(i, i));
+            }
+            return logDet;
+        }
+        // Fallback: general determinant (may be less stable / could be non-positive numerically).
+        return Math.log(Math.abs(A.determinant()));
+    }
 
     private static int[][] parentIndices(Graph g, List<Node> nodes) {
         int p = nodes.size();
