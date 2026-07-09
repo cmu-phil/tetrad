@@ -286,18 +286,10 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
         }
 
-        // Build the orientation engine up front: the legal-PAG gate re-runs the full
-        // *-FCI orientation after every candidate removal, so we need it inside the loop.
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
-        strategy.setDepth(-1);
-        strategy.setMaxLength(-1);
-        strategy.setSepsetMap(sepsetMap);
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursiveDepth(-1);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setUseR4(true);
-        fciOrient.setVerbose(false);
+        // Orientation engine for the ungated final pass, bound to the committed sepset map. The gated
+        // commit builds its own engine per trial (against a trial-local sepset copy), so R4's
+        // discriminating-path sepset appends never pollute the committed map.
+        FciOrient fciOrient = buildFciOrient(sepsetMap);
 
         // Selection nodes, needed by the PAG-legality check (mirrors FCIT).
         Set<Node> selection = new LinkedHashSet<>();
@@ -338,23 +330,18 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             }
 
             pag = commitRemoval(pag, a, c, sepset, "adjacency-subset", guaranteePag,
-                    cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient, selection);
+                    cpdag, nodes, sepsetMap, unshieldedColliders, selection);
         }
 
         // Pass 2 (optional): possible-D-SEP removal. The original GFCI step that *-FCI dropped,
         // restored here for parity. Always runs on an oriented PAG and is always legality-gated,
         // since Possible-D-SEP presupposes FCI-oriented colliders.
         if (usePossibleDsep) {
-            // Ensure colliders are oriented as in FCI before computing Possible-D-SEP. Idempotent
-            // when the main pass was gated (already oriented); required when it was greedy.
-            // Final orientation. In the GATED path, pag is already in its last-accepted, gate-legal
-            // orientation: commitRemoval ran orientPag against the sepsetMap as it stood at the moment
-            // of acceptance and verified the resulting PAG was legal. Re-running orientPag here
-            // re-reads a sepsetMap that has since GROWN — the strategy appends discriminating-path
-            // sepsets (R4 on) on every accepted trial — so it can stamp colliders the gated check never
-            // saw, manufacture an inducing path, break maximality, and (being ungated) never revert it.
-            // Skip it; pag already resolves to the proven-legal PAG. In the UNGATED path nothing has
-            // oriented pag yet, so this remains the sole orientation pass, exactly as before.
+            // Ensure colliders are oriented as in FCI before computing Possible-D-SEP. In the GATED
+            // path pag already carries the last-accepted, gate-legal full orientation (commitRemoval
+            // ran the complete gfciOrientPag on the accepted candidate), so this standalone pass is
+            // unnecessary and is skipped. In the UNGATED path nothing has oriented pag yet, so this is
+            // the sole orientation pass, exactly as before.
             if (!guaranteePag) {
                 gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
             }
@@ -403,14 +390,13 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 }
 
                 pag = commitRemoval(pag, a, c, sepset, "possible-D-SEP", true,
-                        cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient, selection);
+                        cpdag, nodes, sepsetMap, unshieldedColliders, selection);
             }
         }
 
-        // Final orientation only for the ungated greedy path. In the gated path pag is already
-        // a realized PAG (legal + maximal); the trailing orient PAG round
-        // trip below is then idempotent. Re-running orientPag here re-reads the grown sepsetMap
-        // and breaks maximality, so skip it when gated.
+        // Final orientation only for the ungated greedy path. In the gated path pag is already the
+        // last-accepted, fully oriented, proven-legal PAG (commitRemoval ran the complete
+        // gfciOrientPag on each accepted candidate), so no further orientation is applied here.
         if (!guaranteePag) {
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
         }
@@ -502,25 +488,31 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     }
 
     /**
-     * Attempts to remove edge (a, c) using the given candidate sepset. When {@code gated} is true, the removal is
-     * committed only if re-running the full *-FCI orientation yields a legal PAG; otherwise the graph and the pair's
-     * sepset are rolled back. When {@code gated} is false, the edge is removed unconditionally (original *-FCI
-     * behavior), leaving the graph for a single orientation pass later. Returns the graph to use going forward: the
-     * committed graph on success (or in the ungated case), or the restored snapshot on a reverted gated attempt.
-     */
-    /**
-     * Attempts to remove edge (a, c) using the given candidate sepset. When {@code guaranteePag} is true, this mirrors
-     * FcitMag.tryToModifyGraph: the MAG is the source of truth. The Zhang MAG of the current (legal) PAG is taken,
-     * the edge is deleted FROM the MAG, the recorded sepsets' colliders are stamped ONTO the MAG, and MAG legality
-     * is judged. On success, {@code MagToPag(mag)} — a legal, maximal PAG by construction — is carried forward; on
-     * failure the sepset write is rolled back and the unchanged graph is returned. When {@code guaranteePag} is false the
-     * edge is removed unconditionally (original greedy *-FCI), leaving the graph for the single final orientation.
-     * The only intended difference from FcitMag is upstream: {@code sepset} comes from adjacency-subset search, not
-     * recursive blocking.
+     * Attempts to remove edge (a, c) using the given candidate sepset.
+     * <p>
+     * When {@code guaranteePag} is false, the edge is removed unconditionally (original greedy *-FCI),
+     * leaving the graph for the single final orientation, and the sepset is written to the committed map.
+     * <p>
+     * When {@code guaranteePag} is true, the removal is gated on per-step PAG legality. The candidate is
+     * built on a copy: the edge is removed and the graph is re-oriented from scratch by the full GFCI
+     * orientation {@link #gfciOrientPag} — re-blank to circles, copy unshielded CPDAG colliders, stamp
+     * recorded-sepset colliders, and apply the complete FCI rules (R0–R4). The full reorient (rather than
+     * an incremental collider stamp) is required for soundness: when an edge that was a leg of an
+     * unshielded collider is removed, the arrowheads and tails it induced must be rebuilt from circles, or
+     * stale endpoints survive into the output. If the re-oriented candidate is a legal PAG it is carried
+     * forward and the sepset is committed; otherwise nothing is committed and the unchanged graph is
+     * returned.
+     * <p>
+     * Orientation runs against a trial-local <em>copy</em> of the committed sepset map, seeded with the
+     * candidate sepset. This is essential: {@link #gfciOrientPag}'s R4 (discriminating-path) rule appends
+     * sepsets to whatever map its strategy is bound to, so binding it to the committed map would let a
+     * rejected trial leave spurious sepsets behind (later read as colliders) and let accepted trials grow
+     * the map unboundedly, breaking maximality. Only the deliberate {@code (a, c) = sepset} write reaches
+     * the committed map, and only on acceptance.
      */
     private Graph commitRemoval(Graph pag, Node a, Node c, Set<Node> sepset, String type, boolean guaranteePag,
                                 Graph cpdag, List<Node> nodes, SepsetMap sepsetMap, Set<Triple> unshieldedColliders,
-                                FciOrient fciOrient, Set<Node> selection) throws InterruptedException {
+                                Set<Node> selection) throws InterruptedException {
         if (!guaranteePag) {
             pag.removeEdge(a, c);
             sepsetMap.set(a, c, sepset);
@@ -532,31 +524,31 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             return pag;
         }
 
-        // --- MAG-centric gate, mirroring FcitMag.tryToModifyGraph -------------------
-        // No orientPag: we never reorient-to-circles/re-derive/finalOrientation, which is
-        // what churned the shared sepsetMap (R4 appends) and carried a non-MagToPag graph
-        // forward (the maximality break). pag is NOT mutated here — all work is on `mag` —
-        // so a revert needs only to undo the single sepset write.
-//        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        // Gated path: work on a copy; pag is not mutated until we accept.
         Graph _pag = pag.copy();
         _pag.removeEdge(a, c);
 
-        Set<Node> oldSepset = sepsetMap.get(a, c);     // may be null
-        sepsetMap.set(a, c, sepset);
-
-        orientGfciColliders(_pag, cpdag, sepsetMap);
+        // Full GFCI reorient against a trial-local sepset map (committed sepsets + this candidate), so
+        // R4's discriminating-path sepset appends are discarded with the trial and never touch the
+        // committed map.
+        SepsetMap trialSepsets = copyOf(sepsetMap);
+        trialSepsets.set(a, c, sepset);
+        FciOrient trialOrient = buildFciOrient(trialSepsets);
+        gfciOrientPag(_pag, cpdag, nodes, trialSepsets, unshieldedColliders, trialOrient);
 
         PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
 
         if (!legal.isLegalPag()) {
-            sepsetMap.set(a, c, oldSepset);            // revert sepset; pag untouched
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
                         + "), but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
             }
 
-            return pag;                                // unchanged
+            return pag;                                // committed sepset map untouched
         }
+
+        // Accepted: commit only the deliberate sepset write and carry the reoriented PAG forward.
+        sepsetMap.set(a, c, sepset);
 
         if (verbose) {
             IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
@@ -564,58 +556,42 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                     + ", legal PAG); sepset = " + sepset + ", p-value = " + result.getPValue() + ".");
         }
 
-        // Carry the realized PAG forward — colliders baked into the MAG survive the round trip.
-        return _pag;// new MagToPag(mag).convert(false, excludeSelectionBias);
+        return _pag;
     }
 
     /**
-     * Runs GFCI's collider-orientation step (steps C'/F' of Ogarrio, Spirtes &amp; Ramsey 2016) on
-     * {@code graph}, in place, for the gated path. Unlike {@link #gfciOrientPag} it does NOT re-blank
-     * to circles or run background-knowledge/final-orientation passes: the gated path adds arrowheads
-     * incrementally and must not disturb orientations already carried forward. It reproduces both
-     * cases of F' over every triple &lt;x, y, z&gt; with x and z adjacent to apex y in {@code graph}:
-     * <ul>
-     *   <li><b>Case 1 — unshielded collider in the CPDAG (PAT):</b> {@code cpdag.isDefCollider(x, y, z)}
-     *       (which forces x, z non-adjacent in the CPDAG, hence unshielded in {@code graph}) — copy it
-     *       from BOSS/FGES as x*-&gt;y&lt;-*z.</li>
-     *   <li><b>Case 2 — shielded in the CPDAG:</b> {@code cpdag.isAdjacentTo(x, z)} (a CPDAG triangle)
-     *       whose x–z edge has since been removed — orient iff the recorded {@code Sepset(x, z)} does
-     *       not contain y.</li>
-     * </ul>
-     * Both cases are gated by {@link GraphUtils#colliderAllowed}, so background knowledge is respected
-     * exactly as in {@link #gfciOrientPag}. Idempotent: re-stamping an existing arrowhead is a no-op.
-     * This mirrors the collider loop of {@link #gfciOrientPag} verbatim, minus the reorientation.
+     * Builds a fresh FCI orientation engine (complete rules, R4 on) bound to the given sepset map, using
+     * the class's independence test, knowledge, and discriminating-path length. A fresh engine is built
+     * per gated trial so that each trial's R4 sepset appends land in its own trial-local map and are
+     * discarded with the trial.
      */
-    private void orientGfciColliders(Graph graph, Graph cpdag, SepsetMap sepsets) {
-        for (Node y : graph.getNodes()) {
-            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(y));
+    private FciOrient buildFciOrient(SepsetMap sepsetMap) {
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
+        strategy.setDepth(depth);
+        strategy.setMaxLength(-1);
+        strategy.setSepsetMap(sepsetMap);
+        strategy.setVerbose(false);
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(-1);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setUseR4(true);
+        fciOrient.setVerbose(false);
+        return fciOrient;
+    }
 
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node x = adjacentNodes.get(combination[0]);
-                Node z = adjacentNodes.get(combination[1]);
-
-                if (cpdag.isDefCollider(x, y, z)) {
-                    // Case 1: unshielded collider in PAT — copy from BOSS/FGES.
-                    if (colliderAllowed(graph, x, y, z, knowledge)) {
-                        graph.setEndpoint(x, y, Endpoint.ARROW);
-                        graph.setEndpoint(z, y, Endpoint.ARROW);
-                    }
-                } else if (cpdag.isAdjacentTo(x, z)) {
-                    // Case 2: shielded in PAT — orient iff the recorded sepset excludes y.
-                    Set<Node> sepset = sepsets.get(x, z);
-
-                    if (sepset != null && !sepset.contains(y)) {
-                        if (colliderAllowed(graph, x, y, z, knowledge)) {
-                            graph.setEndpoint(x, y, Endpoint.ARROW);
-                            graph.setEndpoint(z, y, Endpoint.ARROW);
-                        }
-                    }
-                }
-            }
+    /**
+     * Returns a copy of a sepset map: the same (unordered-pair → sepset) entries in a new map. Used to
+     * give each gated trial its own sepset map, so R4 appends during orientation cannot leak into the
+     * committed map.
+     */
+    private static SepsetMap copyOf(SepsetMap sepsetMap) {
+        SepsetMap copy = new SepsetMap();
+        for (Set<Node> pair : sepsetMap.keySet()) {
+            List<Node> arr = new ArrayList<>(pair);
+            copy.set(arr.get(0), arr.get(1), sepsetMap.get(arr.get(0), arr.get(1)));
         }
+        return copy;
     }
 
     /**
@@ -666,7 +642,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     /**
      * Indicates whether verbose output is enabled.
      *
-     * @return true if verbose output is enabled, false otherwise.
+     * @return true if verbose output is enabled, fals  e otherwise.
      */
     public boolean isVerbose() {
         return verbose;

@@ -77,6 +77,13 @@ public final class FcitSl implements IGraphSearch {
      */
     private final Map<Set<Node>, Double> foundPValues = new ConcurrentHashMap<>();
     /**
+     * The sequence of interim PAGs built during the search: index 0 is the PAG of the initial
+     * DAG, and each committed edge removal appends the PAG of the resulting MAG.
+     * {@code interimPags.getLast()} is the live PAG the search reads and mutates. Never null;
+     * non-empty after initialization.
+     */
+    private final @NotNull List<Graph> interimPags = new ArrayList<>();
+    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -126,13 +133,6 @@ public final class FcitSl implements IGraphSearch {
      * printed.
      */
     private boolean verbose = false;
-    /**
-     * The sequence of interim PAGs built during the search: index 0 is the PAG of the initial
-     * DAG, and each committed edge removal appends the PAG of the resulting MAG.
-     * {@code interimPags.getLast()} is the live PAG the search reads and mutates. Never null;
-     * non-empty after initialization.
-     */
-    private final @NotNull List<Graph> interimPags = new ArrayList<>();
     /**
      * A flag indicating whether the graph replication process is active.
      * When set to {@code true}, the graph is being replicated.
@@ -409,25 +409,19 @@ public final class FcitSl implements IGraphSearch {
 
         long start2 = System.currentTimeMillis();
 
-        TeyssierScorer scorer = null;
-
-        if (score != null) {
-            scorer = new TeyssierScorer(test, score);
-            scorer.score(best);
-            scorer.setKnowledge(knowledge);
-            scorer.setUseScore(!(score instanceof GraphScore));
-            scorer.setUseRaskuttiUhler(score instanceof GraphScore);
-            scorer.bookmark();
-        }
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+        scorer.score(best);
+        scorer.setKnowledge(knowledge);
+        scorer.setUseScore(!(score instanceof GraphScore));
+        scorer.setUseRaskuttiUhler(score instanceof GraphScore);
+        scorer.bookmark();
 
         if (verbose) {
             TetradLogger.getInstance().log("Initializing PAG to PAG of BOSS DAG.");
             TetradLogger.getInstance().log("Initializing scorer with BOSS best order.");
         }
 
-        if (scorer != null) {
-            scorer.score(best);
-        }
+        scorer.score(best);
 
         if (verbose) {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
@@ -452,7 +446,7 @@ public final class FcitSl implements IGraphSearch {
 
         this.interimPags.add(pag);
 
-        this.initialColliders = noteInitialColliders(interimPags.get(0).getNodes(), interimPags.get(0));
+        this.initialColliders = noteInitialColliders(interimPags.getFirst().getNodes(), interimPags.getFirst());
 
         int round = 0;
 
