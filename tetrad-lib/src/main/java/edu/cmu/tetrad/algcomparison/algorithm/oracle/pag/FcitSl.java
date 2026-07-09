@@ -35,7 +35,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
-import edu.cmu.tetrad.search.FcitSl2;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -153,7 +152,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         }
 
         test = new CachedIndependenceQueries(test);
-        edu.cmu.tetrad.search.FcitSl2 search = new edu.cmu.tetrad.search.FcitSl2(test, score);
+        edu.cmu.tetrad.search.FcitSl search = new edu.cmu.tetrad.search.FcitSl(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -168,22 +167,20 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
         search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
 
-        search.setCommitGate(FcitSl2.CommitGate.DELETED_PAIR_BATTERY);
-//        search.setLegFirst(false);
-        search.setMaxLegCandidates(1000);
+        search.setCommitGate(edu.cmu.tetrad.search.FcitSl.CommitGate.DELETED_PAIR_BATTERY);
         search.setBatteryZMax(2);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitSl2.START_WITH.BOSS);
+            search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitSl2.START_WITH.GRASP);
+            search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitSl2.START_WITH.SP);
+            search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.SP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitSl2.START_WITH.COMPLETE_GRAPH);
+            search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
@@ -249,7 +246,6 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.RB_RADIUS);
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.TEST_TIMEOUT);
-//        params.add(Params.EXCLUDE_SELECTION_BIAS);
 
         // General
         params.add(Params.TIME_LAG);

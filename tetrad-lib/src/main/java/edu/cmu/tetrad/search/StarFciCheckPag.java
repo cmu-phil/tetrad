@@ -544,7 +544,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         Set<Node> oldSepset = sepsetMap.get(a, c);     // may be null
         sepsetMap.set(a, c, sepset);
 
-        orientSepsetColliders(_pag, sepsetMap);
+        orientGfciColliders(_pag, cpdag, sepsetMap);
 
         PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
 
@@ -569,29 +569,51 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     }
 
     /**
-     * PAG-side analog of adjustForExtraSepsets over every recorded sepset. Idempotent:
-     * re-stamping an existing collider is a no-op (the isDefCollider guard), so calling
-     * this each commit removes any reliance on prior colliders persisting through the
-     * PAG<->PAG round trip. Null sepsets and still-adjacent pairs are skipped.
+     * Runs GFCI's collider-orientation step (steps C'/F' of Ogarrio, Spirtes &amp; Ramsey 2016) on
+     * {@code graph}, in place, for the gated path. Unlike {@link #gfciOrientPag} it does NOT re-blank
+     * to circles or run background-knowledge/final-orientation passes: the gated path adds arrowheads
+     * incrementally and must not disturb orientations already carried forward. It reproduces both
+     * cases of F' over every triple &lt;x, y, z&gt; with x and z adjacent to apex y in {@code graph}:
+     * <ul>
+     *   <li><b>Case 1 — unshielded collider in the CPDAG (PAT):</b> {@code cpdag.isDefCollider(x, y, z)}
+     *       (which forces x, z non-adjacent in the CPDAG, hence unshielded in {@code graph}) — copy it
+     *       from BOSS/FGES as x*-&gt;y&lt;-*z.</li>
+     *   <li><b>Case 2 — shielded in the CPDAG:</b> {@code cpdag.isAdjacentTo(x, z)} (a CPDAG triangle)
+     *       whose x–z edge has since been removed — orient iff the recorded {@code Sepset(x, z)} does
+     *       not contain y.</li>
+     * </ul>
+     * Both cases are gated by {@link GraphUtils#colliderAllowed}, so background knowledge is respected
+     * exactly as in {@link #gfciOrientPag}. Idempotent: re-stamping an existing arrowhead is a no-op.
+     * This mirrors the collider loop of {@link #gfciOrientPag} verbatim, minus the reorientation.
      */
-    private static void orientSepsetColliders(Graph graph, SepsetMap sepsets) {
-        for (Set<Node> pair : sepsets.keySet()) {
-            List<Node> arr = new ArrayList<>(pair);
-            Node x = arr.get(0);
-            Node y = arr.get(1);
+    private void orientGfciColliders(Graph graph, Graph cpdag, SepsetMap sepsets) {
+        for (Node y : graph.getNodes()) {
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(y));
 
-            Set<Node> s = sepsets.get(x, y);
-            if (s == null) continue;
-            if (graph.isAdjacentTo(x, y)) continue;      // only meaningful once x–y is gone
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
 
-            List<Node> common = graph.getAdjacentNodes(x);
-            common.retainAll(graph.getAdjacentNodes(y));
+            while ((combination = cg.next()) != null) {
+                Node x = adjacentNodes.get(combination[0]);
+                Node z = adjacentNodes.get(combination[1]);
 
-            for (Node c : common) {
-                if (s.contains(c)) continue;               // not a collider; leave it
-                if (graph.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
-                graph.setEndpoint(x, c, Endpoint.ARROW);     // arrowheads into c
-                graph.setEndpoint(y, c, Endpoint.ARROW);
+                if (cpdag.isDefCollider(x, y, z)) {
+                    // Case 1: unshielded collider in PAT — copy from BOSS/FGES.
+                    if (colliderAllowed(graph, x, y, z, knowledge)) {
+                        graph.setEndpoint(x, y, Endpoint.ARROW);
+                        graph.setEndpoint(z, y, Endpoint.ARROW);
+                    }
+                } else if (cpdag.isAdjacentTo(x, z)) {
+                    // Case 2: shielded in PAT — orient iff the recorded sepset excludes y.
+                    Set<Node> sepset = sepsets.get(x, z);
+
+                    if (sepset != null && !sepset.contains(y)) {
+                        if (colliderAllowed(graph, x, y, z, knowledge)) {
+                            graph.setEndpoint(x, y, Endpoint.ARROW);
+                            graph.setEndpoint(z, y, Endpoint.ARROW);
+                        }
+                    }
+                }
             }
         }
     }
