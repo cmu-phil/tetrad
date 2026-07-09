@@ -39,38 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * FCIT-SL ("Step Lemma"): FCIT-ZM extended with a Step-Lemma-guided representative search.
- * <p>
- * FCIT-ZM commits each edge removal in the ONE canonical Zhang MAG of the current PAG: delete,
- * stamp recorded-separator colliders, require a legal MAG, re-project.  The Step Lemma (the
- * reduction of the generalized Meek conjecture via the Zhang-Spirtes transformational
- * characterization, selection-free case) says the witness for a Markov-preserving single-edge
- * step is an EXISTENTIAL over Markov-equivalent representatives, not a property of the canonical
- * one.  Exhaustive enumeration at N=7, |L|=2, |Spur|&le;3 (PKE6) bears this out: of 17,825
- * reachable Markov states, 98 had no Zhang-MAG witness but every one of the 98 had a witness
- * among the LEGs (loyal equivalent graphs: all-invariant-bidirected representatives); none required
- * more, and the saturating fallback never fired.
- * <p>
- * FCIT-SL therefore stages the commit:
- * <ul>
- * <li><b>Stage 1</b> (identical to FCIT-ZM): delete in the canonical Zhang MAG; commit if the
- * stamped result is a legal MAG.</li>
- * <li><b>Stage 2</b> (new; fires only when Stage 1's MAG is illegal): enumerate the LEG
- * representatives of the current class -- by Zhang's characterization these are exactly the
- * orientations of the PAG's circle-circle component as a DAG with no unshielded collider, with
- * every partially oriented edge resolved away from a new bidirected mark -- and commit the first
- * representative in which the deletion (plus the same collider stamping) yields a legal MAG.
- * The enumeration is deterministic (name-ordered), deduplicated, and bounded by
- * {@code maxLegCandidates}, a work budget, and the per-edge {@code timeout}.</li>
- * <li><b>Stage 3</b> (unchanged): the existing revert; the multi-edge saturating-style removal
- * at the end also gains the same Stage-2 fallback.</li>
- * </ul>
- * The commit gate in this version is the same as FCIT-ZM's -- MAG legality plus the
- * test-confirmed separator for the removed pair -- so FCIT-SL is exactly as sound as FCIT-ZM and
- * strictly more able to move: any state FCIT-ZM clears, FCIT-SL clears identically at Stage 1.
- * (At the oracle, PKE6 measured maximality-only commits reaching non-I-maps in ~1.6% of Zhang
- * deletions; a stronger prong-(B) surrogate gate is an open design problem and deliberately NOT
- * included here.)  Everything assumes NO SELECTION BIAS: the transformational characterization,
- * the LEG theory, and the circle-component enumeration are all selection-free results.
  *
  * @author josephramsey
  */
@@ -87,10 +55,6 @@ public final class FcitSl implements IGraphSearch {
      * Running sepsets
      */
     private final SepsetMap sepsets = new SepsetMap();
-    /**
-     * The list of selection nodes in the graph.
-     */
-    private final List<Node> selection;
     /**
      * Counts conditional independence checks, broken down by call site, so we
      * can measure how many tests the recursive-blocking optimization saves.
@@ -137,17 +101,6 @@ public final class FcitSl implements IGraphSearch {
      */
     private boolean useBes = false;
     /**
-     * True iff verbose output should be printed.
-     */
-    private boolean superVerbose = false;
-    /**
-     * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
-     * Ancestral Graph). This variable determines how unshielded colliders, discriminating paths, and other structural
-     * elements of the PAG are identified and processed during the search. The orientation strategy implemented in this
-     * variable can influence the causal interpretation of the resulting graph.
-     */
-    private FciOrient fciOrient = null;
-    /**
      * A set representing all identified colliders in the current CPDAG (Completed Partially Directed Acyclic Graph). A
      * collider is a node in the graph where two edges converge, and the directions of the edges are both pointing into
      * the node.
@@ -174,16 +127,10 @@ public final class FcitSl implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
-     * A field representing the Partial Ancestral Graph (PAG) used during the causal discovery process. The PAG is
-     * initialized as an empty {@link EdgeListGraph} and is updated throughout the search algorithm to incorporate
-     * causal structure information.
-     * <p>
-     * This graph serves as the central data structure, reflecting the results of independence tests, edge orientations,
-     * and adjustments based on causal constraints. It is used to store and refine the causal relationships inferred by
-     * the algorithm.
-     * <p>
-     * The {@code @NotNull} annotation indicates the field cannot hold a null value. In its default state, the PAG is
-     * instantiated to an empty graph structure.
+     * The sequence of interim PAGs built during the search: index 0 is the PAG of the initial
+     * DAG, and each committed edge removal appends the PAG of the resulting MAG.
+     * {@code interimPags.getLast()} is the live PAG the search reads and mutates. Never null;
+     * non-empty after initialization.
      */
     private final @NotNull List<Graph> interimPags = new ArrayList<>();
     /**
@@ -204,26 +151,15 @@ public final class FcitSl implements IGraphSearch {
     /**
      * The type of commit gate to use, basically whether to do the pair batter or not.
      */
-    private CommitGate commitGate = CommitGate.LEGALITY_PLUS_SEPARATOR;
+    private CommitGate commitGate = CommitGate.DELETED_PAIR_BATTERY;
     /**
      * The depth of the pair battery.
      */
     private int batteryZMax = 2;
     /**
-     * Stage order.  Default (false): Stage 1 tries the canonical Zhang MAG first, Stage 2
-     * (LEG enumeration) fires only on Stage-1 failure -- the conservative extension of
-     * FCIT-ZM (trajectory-identical to it on every Zhang-witnessed commit).  legFirst
-     * (true): skip Stage 1 entirely and search the LEG representatives immediately, in the
-     * enumeration's deterministic name-first-fit order.  The search SPACE is identical
-     * either way -- the Zhang MAG is itself a LEG, generated by the enumeration -- so
-     * reach is unchanged; what changes is WHICH representative hosts each commit, hence
-     * generally the committed trajectory, class by class.  Consequences: (a) the
-     * exactly-as-FCIT-ZM contract is given up (divergence from FCIT-ZM is no longer
-     * confined to Stage-2 states); (b) the enumeration now runs on EVERY commit, so the
-     * candidate/work/timeout caps sit on the hot path -- typically the first admissible
-     * orientation hosts the deletion and the cost is one candidate build, but budget
-     * exhaustion in this mode reverts the removal outright.  Experimental switch; both
-     * modes apply the same commit gate per candidate.
+     * Deleted-pair battery telemetry: number of gate evaluations, refusals, and entailed
+     * separation statements verified against the independence test. See
+     * {@link #deletedPairBatteryPasses}.
      */
     private long batteryEvals = 0, batteryRefusals = 0, batteryStatementsTested = 0;
     /**
@@ -284,9 +220,6 @@ public final class FcitSl implements IGraphSearch {
 
         this.test = test;
         this.score = score;
-
-        this.selection = this.test.getVariables().stream()
-                .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         if (test instanceof MsepTest) {
             this.startWith = START_WITH.GRASP;
@@ -374,14 +307,6 @@ public final class FcitSl implements IGraphSearch {
         strategy.setSepsetMap(sepsets);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
-
-        fciOrient = new FciOrient(strategy);
-        fciOrient.setParallel(false); // We're doing parallel lookahead.
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursiveDepth(recursiveDepth);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setUseR4(true);
-        fciOrient.setKnowledge(knowledge);
 
         Graph dag;
         List<Node> best;
@@ -533,7 +458,7 @@ public final class FcitSl implements IGraphSearch {
 
         do {
             TetradLogger.getInstance().log("\nRound: " + (++round));
-        } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
+        } while (removeEdgesRecursively(excludeSelectionBias));
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -809,8 +734,8 @@ public final class FcitSl implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples)
-        throws InterruptedException {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias)
+            throws InterruptedException {
         if (verbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -1024,7 +949,7 @@ public final class FcitSl implements IGraphSearch {
     // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
     // found.
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias)
-        throws InterruptedException {
+            throws InterruptedException {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
         List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
@@ -1386,4 +1311,3 @@ public final class FcitSl implements IGraphSearch {
     private record NongenuineScan(Edge edge, boolean indeterminate) {
     }
 }
-
