@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.LongAdder;
  * IllegalStateException("Recursive update") if the mapping function re-enters the map for the
  * same key (which can happen if the wrapped test delegates back into this cache layer).
  */
-public final class CachedIndependenceQueries implements IndependenceTest, RowsSettable, TetradSerializable {
+public final class CachedIndependenceQueries implements IndependenceTest, TetradSerializable {
 
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 23L;
@@ -161,31 +161,31 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         if (this.test != null) this.test.setVerbose(verbose);
     }
 
-    /**
-     * Retrieves a list of row indices from the wrapped test instance if it implements the RowsSettable interface.
-     *
-     * @return a list of integers representing the row indices provided by the wrapped test instance.
-     * @throws UnsupportedOperationException if the wrapped test instance does not support retrieving rows.
-     */
-    @Override
-    public List<Integer> getRows() {
-        if (test instanceof RowsSettable rs) return rs.getRows();
-        else throw new UnsupportedOperationException("Wrapped test does not support getRows()");
-    }
+//    /**
+//     * Retrieves a list of row indices from the wrapped test instance if it implements the RowsSettable interface.
+//     *
+//     * @return a list of integers representing the row indices provided by the wrapped test instance.
+//     * @throws UnsupportedOperationException if the wrapped test instance does not support retrieving rows.
+//     */
+//    @Override
+//    public List<Integer> getRows() {
+////        if (test instanceof RowsSettable rs) return rs.getRows();
+//        throw new UnsupportedOperationException("Wrapped test does not support getRows()");
+//    }
 
-    /**
-     * Sets the rows for the wrapped test, if it supports row setting.
-     * If the wrapped test does not support setting rows, an
-     * UnsupportedOperationException is thrown.
-     *
-     * @param rows a list of integers representing the rows to be set
-     * @throws UnsupportedOperationException if the wrapped test does not support setting rows
-     */
-    @Override
-    public void setRows(List<Integer> rows) {
-        if (test instanceof RowsSettable rs) rs.setRows(rows);
-//        else throw new UnsupportedOperationException("Wrapped test does not support setRows()");
-    }
+//    /**
+//     * Sets the rows for the wrapped test, if it supports row setting.
+//     * If the wrapped test does not support setting rows, an
+//     * UnsupportedOperationException is thrown.
+//     *
+//     * @param rows a list of integers representing the rows to be set
+//     * @throws UnsupportedOperationException if the wrapped test does not support setting rows
+//     */
+//    @Override
+//    public void setRows(List<Integer> rows) {
+////        if (test instanceof RowsSettable rs) rs.setRows(rows);
+//        throw new UnsupportedOperationException("Wrapped test does not support setRows()");
+//    }
 
     /**
      * Determines whether the current independence test supports subsampling.
