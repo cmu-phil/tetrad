@@ -316,10 +316,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 break;
             }
 
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Trying to remove " + edge + " by adjacency-subset.");
-//            }
-
             Node a = edge.getNode1();
             Node c = edge.getNode2();
 
@@ -333,17 +329,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null, useMaxP);
 
                 if (sepset != null) {
-//                    RecursiveBlocking.BlockingResult blocking = RecursiveBlocking.blockPathsRecursively(
-//                            pag, a, c, Set.of(), Set.of(), -1, depth, -1, 1, true,
-//                            1000);
-//                    if (blocking != null && blocking.found()) {
-//                        IndependenceResult result = independenceTest.checkIndependence(a, c, blocking.blockingSet());
-//
-//                        if (!result.isIndependent()) {
-//                            continue;
-//                        }
-//                    }
-
                     foundSepsets.put(Set.of(a, c), sepset);
                 }
             }
@@ -408,17 +393,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 if (sepset == null) {
                     sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
 
-//                    RecursiveBlocking.BlockingResult blocking = RecursiveBlocking.blockPathsRecursively(
-//                            pag, a, c, Set.of(), Set.of(), -1, depth, -1, 1, true,
-//                            1000);
-//                    if (blocking != null && blocking.found()) {
-//                        IndependenceResult result = independenceTest.checkIndependence(a, c, blocking.blockingSet());
-//
-//                        if (!result.isIndependent()) {
-//                            continue;
-//                        }
-//                    }
-
                     if (sepset != null) {
                         foundSepsets.put(Set.of(a, c), sepset);
                     }
@@ -441,23 +415,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
         }
 
-//        // Only realize when guaranteeing a PAG. In the gated path pag is already
-//        // a PAG, so this is idempotent. In the UNGATED (old-BFCI) path pag is the raw
-//        // gfciOrientPag output, which may be an illegal/non-maximal PAG — that is exactly the
-//        // greedy baseline we want to A/B against, so leave it untouched.
-//        if (guaranteePag) {
-//            TetradLogger.getInstance().log("Orienting final graph as a PAG");
-//            pag = new MagToPag(GraphTransforms.zhangMagFromPag(pag)).convert(false, false);
-//        }
-
         pag = GraphUtils.replaceNodes(pag, nodes);
-
-//        if (verbose) {
-//            List<Edge> spurious = findSpuriousEdges(pag);
-//            TetradLogger.getInstance().log(spurious.isEmpty()
-//                    ? "No spurious edges remain."
-//                    : spurious.size() + " spurious edge(s) remain: " + spurious);
-//        }
 
         if (verbose) {
             TetradLogger.getInstance().log("*-FCI finished.");
