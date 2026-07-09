@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Edge;
