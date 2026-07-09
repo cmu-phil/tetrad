@@ -232,7 +232,7 @@ public final class FcitSl2 implements IGraphSearch {
      * exhaustion in this mode reverts the removal outright.  Experimental switch; both
      * modes apply the same commit gate per candidate.
      */
-    private boolean legFirst = false;
+//    private boolean legFirst = false;
     private long batteryEvals = 0, batteryRefusals = 0, batteryStatementsTested = 0;
     /**
      * Legality-check telemetry.  {@code ipRejects}: candidates rejected by the cheap
@@ -269,6 +269,7 @@ public final class FcitSl2 implements IGraphSearch {
      * Test timout in milliseconds.
      */
     private long timeout = -1L;
+
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
      * object.
@@ -340,26 +341,24 @@ public final class FcitSl2 implements IGraphSearch {
      * this each commit removes any reliance on prior colliders persisting through the
      * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
      */
-    private static void orientSepsetColliders(Graph mag, SepsetMap sepsets) {
-        for (Set<Node> pair : sepsets.keySet()) {
-            List<Node> arr = new ArrayList<>(pair);
-            Node x = arr.get(0);
-            Node y = arr.get(1);
+    private static void orientSepsetColliders(Graph mag, Set<Node> b, Node x, Node y) {
+//        Set<Node> pair = Set.of(x, y);
 
-            Set<Node> s = sepsets.get(x, y);
-            if (s == null) continue;
-            if (mag.isAdjacentTo(x, y)) continue;      // only meaningful once x–y is gone
+//        for (Set<Node> pair : sepsets.keySet()) {
+//            List<Node> arr = new ArrayList<>(pair);
+//            Node x = arr.get(0);
+//            Node y = arr.get(1);
 
-            List<Node> common = mag.getAdjacentNodes(x);
-            common.retainAll(mag.getAdjacentNodes(y));
+        List<Node> common = mag.getAdjacentNodes(x);
+        common.retainAll(mag.getAdjacentNodes(y));
 
-            for (Node c : common) {
-                if (s.contains(c)) continue;               // not a collider; leave it
-                if (mag.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
-                mag.setEndpoint(x, c, Endpoint.ARROW);     // arrowheads into c
-                mag.setEndpoint(y, c, Endpoint.ARROW);
-            }
+        for (Node c : common) {
+            if (b.contains(c)) continue;               // not a collider; leave it
+            if (mag.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
+            mag.setEndpoint(x, c, Endpoint.ARROW);     // arrowheads into c
+            mag.setEndpoint(y, c, Endpoint.ARROW);
         }
+//        }
     }
 
     @Override
@@ -589,7 +588,7 @@ public final class FcitSl2 implements IGraphSearch {
                 : "\n" + r0Suspect.size() + " R0 collider(s) carry a separable leg; "
                   + "Markovness not certified: " + r0Suspect);
 
-        TetradLogger.getInstance().log("\nStage order: " + (legFirst ? "LEG-FIRST" : "ZHANG-FIRST (staged)"));
+//        TetradLogger.getInstance().log("\nStage order: " + (legFirst ? "LEG-FIRST" : "ZHANG-FIRST (staged)"));
         TetradLogger.getInstance().log("Legality checks: " + legalityChecks
                 + " (" + ipRejects + " rejected by removed-pair inducing-path pre-check, "
                 + otherRejects + " passed pre-check but failed full isLegalMag "
@@ -842,7 +841,8 @@ public final class FcitSl2 implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples)
+        throws InterruptedException {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
         }
@@ -1053,87 +1053,49 @@ public final class FcitSl2 implements IGraphSearch {
         return null;
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias) {
+    // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
+    // found.
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias)
+        throws InterruptedException {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
         List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
 
         final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
 
-        Set<Node> prevSepset = sepsets.get(x, y);
-        sepsets.set(x, y, b);                                   // candidate stamping reads the live map
-
-        // LegEnumerator yields the canonical Zhang MAG first, then the name-ordered LEG
-        // representatives of the current class.
-        Iterator<Graph> candidates = LegEnumerator.fromPag(_pag).iterator();
-
-        // legFirst: de-privilege the canonical Zhang MAG. Pull it aside and try it only
-        // after every other LEG representative has failed, so a name-earlier representative
-        // may host the deletion instead. The search SPACE -- hence reach -- is unchanged
-        // (the Zhang MAG is still tried, just last); only which representative wins changes.
-        // Default (zhang-first) leaves the enumeration's hoisted order intact, so the Zhang
-        // MAG is tried first as Stage 1.
-        Graph deferredZhang = null;
-        if (legFirst && candidates.hasNext()) {
-            deferredZhang = candidates.next();
-        }
-
-        // Stage bookkeeping. In zhang-first mode the first candidate (tried == 1) is the
-        // Stage-1 Zhang MAG; any later candidate is a Stage-2 LEG-fallback orientation. In
-        // legFirst mode there is no Stage 1, so every candidate is a fallback orientation.
-        long tried = 0;
-        boolean fallbackCounted = false;
-
-        while (candidates.hasNext() || deferredZhang != null) {
-            // The deferred Zhang MAG (legFirst mode only) is drawn last.
-            Graph mag;
-            boolean isDeferredZhang = false;
-            if (candidates.hasNext()) {
-                mag = candidates.next();
-            } else {
-                mag = deferredZhang;
-                deferredZhang = null;
-                isDeferredZhang = true;
+        // Pick a MAG H; we choose a LEG.
+        for (Graph mag : LegEnumerator.fromPag(_pag)) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
             }
 
-            // maxLegCandidates: per-invocation candidate cap. legWorkBudget: hard loop-level
-            // ceiling on candidates examined (the literal recursion-step cap lives inside
-            // LegEnumerator and would need to be threaded into fromPag to enforce there).
-            if (++tried > maxLegCandidates || tried > legWorkBudget
-                    || System.currentTimeMillis() > deadline) {
+            if (System.currentTimeMillis() > deadline) {
                 break;
             }
 
-            // A Stage-2 fallback candidate: any candidate in legFirst mode, or any
-            // non-first (or deferred-Zhang) candidate in zhang-first mode.
-            boolean stage2 = legFirst || tried > 1 || isDeferredZhang;
-            if (stage2 && !fallbackCounted) {
-                legFallbackAttempts++;                     // this invocation entered LEG fallback
-                fallbackCounted = true;
-            }
-            if (stage2) {
-                legCandidatesTested++;                     // a distinct LEG orientation tested
-            }
+            legCandidatesTested++;                     // a distinct LEG orientation tested
 
             Graph _mag = mag.copy();
 
+            // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
+            // particular to orient common colliders of x and y.
+            orientSepsetColliders(_mag, b, x, y);
+
+            // We remove f = x *-* y, yielding H' - f.
             _mag.removeEdge(x, y);
 
             legalityChecks++;
+
+            // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
+            // satisfy Lemma 3.6.
             if (_mag.paths().existsInducingPath(x, y, Set.of())) {
                 ipRejects++;                               // non-maximal exactly at the deleted pair
                 continue;
             }
 
+            // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
+            // We spot-check this.
             if (!deletedPairBatteryPasses(_mag, _removed)) {
-                continue;
-            }
-
-            orientSepsetColliders(_mag, sepsets);
-            fciOrient.finalOrientation(_mag);
-
-            if (!_mag.paths().isLegalMag()) {
-                otherRejects++;                            // passed pre-check, failed full legality
                 continue;
             }
 
@@ -1142,11 +1104,9 @@ public final class FcitSl2 implements IGraphSearch {
                         + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
             }
 
-            if (stage2) {
-                legFallbackRescues++;                      // fallback hosted the deletion
-            }
-
+            // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
             this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+            sepsets.set(x, y, b);
             return true;                                   // first representative that hosts it
         }
 
@@ -1155,7 +1115,6 @@ public final class FcitSl2 implements IGraphSearch {
                     + ", but no representative hosted it, sepset = " + b);
         }
 
-        sepsets.set(x, y, prevSepset);                         // revert
         return false;
     }
 
@@ -1227,16 +1186,6 @@ public final class FcitSl2 implements IGraphSearch {
      */
     public void setCommitGate(CommitGate commitGate) {
         this.commitGate = commitGate;
-    }
-
-    /**
-     * Sets LEG-first mode; see the field documentation for the trade-offs.
-     *
-     * @param legFirst true to search LEG representatives immediately, skipping the
-     *                 canonical Zhang MAG attempt.
-     */
-    public void setLegFirst(boolean legFirst) {
-        this.legFirst = legFirst;
     }
 
     /**

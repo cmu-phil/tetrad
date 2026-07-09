@@ -169,7 +169,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
 
         search.setCommitGate(FcitSl2.CommitGate.DELETED_PAIR_BATTERY);
-        search.setLegFirst(false);
+//        search.setLegFirst(false);
         search.setMaxLegCandidates(1000);
         search.setBatteryZMax(2);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
