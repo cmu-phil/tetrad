@@ -361,6 +361,11 @@ public final class FcitSl2 implements IGraphSearch {
 //        }
     }
 
+    /**
+     * Returns the independence test used in this search.
+     *
+     * @return the independence test
+     */
     @Override
     public IndependenceTest getTest() {
         return test;
