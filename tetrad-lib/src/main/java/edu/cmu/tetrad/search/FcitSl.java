@@ -157,6 +157,11 @@ public final class FcitSl implements IGraphSearch {
      */
     private int batteryZMax = 2;
     /**
+     * Maximum number of fork nodes converted to colliders when building an out-of-class seed
+     * for a deletion the current directed class cannot host. See {@link #seedMags}.
+     */
+    private int maxForkFlips = 2;
+    /**
      * Deleted-pair battery telemetry: number of gate evaluations, refusals, and entailed
      * separation statements verified against the independence test. See
      * {@link #deletedPairBatteryPasses}.
@@ -277,6 +282,44 @@ public final class FcitSl implements IGraphSearch {
     }
 
     /**
+     * Stamp arrowheads into {@code f} from each still-adjacent node in {@code from} (edges become {@code <->}).
+     */
+    private static void makeCollider(Graph g, Node f, Set<Node> from) {
+        for (Node w : from) {
+            if (g.isAdjacentTo(w, f)) g.setEndpoint(w, f, Endpoint.ARROW);
+        }
+    }
+
+    /**
+     * True iff m is in S or is an ancestor of some node in S.
+     */
+    private static boolean ancestorInS(Graph g, Node m, Set<Node> S) {
+        for (Node z : S) {
+            if (m.equals(z) || g.paths().isAncestorOf(m, z)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Canonical edge-token key (direction-aware for -&gt;, order-independent for &lt;-&gt;) for dedup.
+     */
+    private static String magKey(Graph g) {
+        List<String> toks = new ArrayList<>();
+        for (Edge e : g.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            Endpoint ea = e.getProximalEndpoint(a), eb = e.getDistalEndpoint(a);
+            String u = a.getName(), v = b.getName();
+            if (ea == Endpoint.TAIL && eb == Endpoint.ARROW) toks.add(u + ">" + v);
+            else if (ea == Endpoint.ARROW && eb == Endpoint.TAIL) toks.add(v + ">" + u);
+            else if (ea == Endpoint.ARROW && eb == Endpoint.ARROW)
+                toks.add(u.compareTo(v) <= 0 ? u + "<>" + v : v + "<>" + u);
+            else toks.add(u.compareTo(v) <= 0 ? u + "-" + v : v + "-" + u);
+        }
+        Collections.sort(toks);
+        return String.join("|", toks);
+    }
+
+    /**
      * Returns the independence test used in this search.
      *
      * @return the independence test
@@ -302,11 +345,6 @@ public final class FcitSl implements IGraphSearch {
         }
 
         TetradLogger.getInstance().log("===Starting FCIT-SL===");
-
-        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
-        strategy.setSepsetMap(sepsets);
-        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
-        strategy.setDepth(depth);
 
         Graph dag;
         List<Node> best;
@@ -458,6 +496,19 @@ public final class FcitSl implements IGraphSearch {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
         }
 
+        // Re-derive the final orientation from the independence test. The interim PAGs inherit their
+        // marks from dagToPag / MagToPag, which faithfully render whatever MAG they are handed -- and
+        // that MAG encodes latent confounding as DIRECTED edges (GRaSP's DAG fit), so a shielded
+        // collider such as V1 (whose neighbors W1, Y are adjacent) is never oriented as a collider.
+        // When the skeleton already matches the truth, no edge is removed and nothing re-runs R4, so
+        // the DAG's tail at V1 survives. Wipe to circles and run R0 + R1-R4 with the test-based
+        // strategy: R4 fires on the discriminating path <X, W1, V1, Y> and recovers V1 <-> W1 /
+        // V1 <-> Y. On models that DO need removals this only re-confirms marks the test already implies.
+
+        Graph last = interimPags.getLast();
+        Graph finalPag = coldReorient(last);
+        interimPags.add(finalPag);
+
         long stop2 = System.currentTimeMillis();
 
         // Revert nodes made latent to latent.
@@ -510,6 +561,46 @@ public final class FcitSl implements IGraphSearch {
         }
 
         return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
+    }
+
+    private Graph coldReorient(Graph graph) {
+        Graph finalPag = graph.copy();
+        List<Node> nodes = graph.getNodes();
+
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
+        strategy.setSepsetMap(sepsets);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
+        strategy.setDepth(depth);
+
+        finalPag.reorientAllWith(Endpoint.CIRCLE);
+
+        for (Node y : nodes) {
+            List<Node> adj = graph.getAdjacentNodes(y);
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node x = adj.get(i);
+                    Node z = adj.get(j);
+
+                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z)) {
+                        finalPag.setEndpoint(x, y, Endpoint.ARROW);
+                        finalPag.setEndpoint(z, y, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setVerbose(false);
+        fciOrient.setParallel(false);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(recursiveDepth);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setUseR4(true);
+        fciOrient.setKnowledge(knowledge);
+        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
+
+        return finalPag;
     }
 
     private NongenuineScan findR4NongenuineEdge(Graph pag) throws InterruptedException {
@@ -690,6 +781,71 @@ public final class FcitSl implements IGraphSearch {
         alg.setKnowledge(knowledge);
         return alg;
     }
+
+    // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
+    // found.
+//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias)
+//            throws InterruptedException {
+//        Edge _edge = interimPags.getLast().getEdge(x, y);
+//        Graph _pag = new EdgeListGraph(interimPags.getLast());
+//        List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
+//
+//        final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
+//
+//        LegEnumerator.VERBOSE = true;
+//
+//        // Pick a MAG H; we choose a LEG.
+//        for (Graph mag : LegEnumerator.fromPag(_pag)) {
+//            if (Thread.currentThread().isInterrupted()) {
+//                throw new InterruptedException();
+//            }
+//
+//            if (System.currentTimeMillis() > deadline) {
+//                break;
+//            }
+//
+//            Graph _mag = mag.copy();
+//
+//            // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
+//            // particular to orient common colliders of x and y.
+//            orientSepsetColliders(_mag, b, x, y);
+//
+//            // We remove f = x *-* y, yielding H' - f.
+//            _mag.removeEdge(x, y);
+//
+//            legalityChecks++;
+//
+//            // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
+//            // satisfy Lemma 3.6.
+//            if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+//                ipRejects++;                               // non-maximal exactly at the deleted pair
+//                continue;
+//            }
+//
+//            // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
+//            // We spot-check this.
+//            if (!deletedPairBatteryPasses(_mag, _removed)) {
+//                continue;
+//            }
+//
+//            if (verbose) {
+//                TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+//                        + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
+//            }
+//
+//            // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
+//            this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+//            sepsets.set(x, y, b);
+//            return true;                                   // first representative that hosts it
+//        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("\tTried removing " + _edge
+//                    + ", but no representative hosted it, sepset = " + b);
+//        }
+//
+//        return false;
+//    }
 
     /**
      * Parameterizes and returns a new GRaSP search.
@@ -950,49 +1106,62 @@ public final class FcitSl implements IGraphSearch {
 
         final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
 
-        // Pick a MAG H; we choose a LEG.
-        for (Graph mag : LegEnumerator.fromPag(_pag)) {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException();
+        boolean firstTime = true;
+
+        // Pick a MAG H. Seeds start from the minimal-bidirected Zhang MAG, but may LEAVE the
+        // current directed class by turning a fork on an unblocked x..y path into a collider
+        // (fork -> <->). That is required when the initial DAG compels an orientation that
+        // contradicts the true MAG -- a latent common effect the DAG modeled as a common cause.
+        for (Graph seed : seedMags(_pag, x, y, b, deadline)) {
+            for (Graph mag : new LegEnumerator(seed)) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
+//                if (!firstTime) {
+//                    break;
+//                } else {
+//                    firstTime = false;
+//                }
+
+                if (System.currentTimeMillis() > deadline) {
+                    break;
+                }
+
+                Graph _mag = mag.copy();
+
+                // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
+                // particular to orient common colliders of x and y.
+                orientSepsetColliders(_mag, b, x, y);
+
+                // We remove f = x *-* y, yielding H' - f.
+                _mag.removeEdge(x, y);
+
+                legalityChecks++;
+
+                // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
+                // satisfy Lemma 3.6.
+                if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+                    ipRejects++;                               // non-maximal exactly at the deleted pair
+                    continue;
+                }
+
+                // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
+                // We spot-check this.
+                if (!deletedPairBatteryPasses(_mag, _removed)) {
+                    continue;
+                }
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+                            + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
+                }
+
+                // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
+                this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+                sepsets.set(x, y, b);
+                return true;                                   // first representative that hosts it
             }
-
-            if (System.currentTimeMillis() > deadline) {
-                break;
-            }
-
-            Graph _mag = mag.copy();
-
-            // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
-            // particular to orient common colliders of x and y.
-            orientSepsetColliders(_mag, b, x, y);
-
-            // We remove f = x *-* y, yielding H' - f.
-            _mag.removeEdge(x, y);
-
-            legalityChecks++;
-
-            // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
-            // satisfy Lemma 3.6.
-            if (_mag.paths().existsInducingPath(x, y, Set.of())) {
-                ipRejects++;                               // non-maximal exactly at the deleted pair
-                continue;
-            }
-
-            // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
-            // We spot-check this.
-            if (!deletedPairBatteryPasses(_mag, _removed)) {
-                continue;
-            }
-
-            if (verbose) {
-                TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
-                        + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
-            }
-
-            // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
-            this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
-            sepsets.set(x, y, b);
-            return true;                                   // first representative that hosts it
         }
 
         if (verbose) {
@@ -1001,6 +1170,110 @@ public final class FcitSl implements IGraphSearch {
         }
 
         return false;
+    }
+
+    /**
+     * Builds the seed MAGs fed to the representative ({@link LegEnumerator}) search for deleting
+     * {@code x--y} with sepset {@code S}. The first seed is the minimal-bidirected Zhang MAG, which
+     * reproduces the old behavior. If, once {@code x--y} is removed, that MAG still m-connects x and
+     * y given S, the current directed class cannot host the deletion (the initial DAG compelled a
+     * fork where the truth has a collider). We then escape the class: on each active x..y path
+     * (given S) we find the non-collider nodes not in S and, for bounded subsets of them, convert
+     * them to colliders by stamping arrowheads in from their path-neighbors (turning the incident
+     * directed edges into {@code <->}). Every augmented graph that is a legal MAG becomes an extra
+     * seed; {@link LegEnumerator} then walks that (different) class as well.
+     */
+    private List<Graph> seedMags(Graph pag, Node x, Node y, Set<Node> S, long deadline)
+            throws InterruptedException {
+        Graph base = GraphTransforms.zhangMagFromPag(pag);
+
+        LinkedHashMap<String, Graph> seeds = new LinkedHashMap<>();
+        seeds.put(magKey(base), base);
+
+        // Does base already host the deletion? If so, no out-of-class seeds are needed.
+        Graph probe = new EdgeListGraph(base);
+        probe.removeEdge(x, y);
+        if (new MsepTest(probe).checkIndependence(x, y, S).isIndependent()) {
+            return new ArrayList<>(seeds.values());
+        }
+
+        // Fork/chain nodes (non-colliders not in S) on active x..y paths, with the path-neighbors
+        // whose arrowheads-into would make them colliders.
+        Map<Node, Set<Node>> forkNbrs = new LinkedHashMap<>();
+        for (List<Node> p : activePathsGivenS(probe, x, y, S, 8)) {
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node a = p.get(i - 1), m = p.get(i), c = p.get(i + 1);
+                if (S.contains(m)) continue;
+                if (!probe.isDefCollider(a, m, c)) {
+                    forkNbrs.computeIfAbsent(m, k -> new LinkedHashSet<>()).add(a);
+                    forkNbrs.get(m).add(c);
+                }
+            }
+        }
+
+        // Try converting bounded subsets of forks to colliders; keep the legal-MAG results.
+        List<Node> forks = new ArrayList<>(forkNbrs.keySet());
+        int cap = Math.min(forks.size(), maxForkFlips);
+        SublistGenerator gen = new SublistGenerator(forks.size(), cap);
+        int[] choice;
+        while ((choice = gen.next()) != null) {
+            if (System.currentTimeMillis() > deadline) break;
+            if (choice.length == 0) continue;               // base already present
+            Graph seed = new EdgeListGraph(base);
+            for (int idx : choice) makeCollider(seed, forks.get(idx), forkNbrs.get(forks.get(idx)));
+            if (seed.paths().isLegalMag()) seeds.putIfAbsent(magKey(seed), seed);
+        }
+
+        return new ArrayList<>(seeds.values());
+    }
+
+    /**
+     * Simple x..y paths (bounded to {@code maxPaths}) that are active (m-connecting) given {@code S}.
+     * A path is active iff every non-collider on it is outside S and every collider on it is an
+     * ancestor of some node in S (or lies in S).
+     */
+    private List<List<Node>> activePathsGivenS(Graph g, Node x, Node y, Set<Node> S, int maxPaths) {
+        List<List<Node>> out = new ArrayList<>();
+        Deque<Node> path = new ArrayDeque<>();
+        Set<Node> onPath = new HashSet<>();
+        path.addLast(x);
+        onPath.add(x);
+        dfsActive(g, x, y, S, path, onPath, out, maxPaths);
+        return out;
+    }
+
+    private void dfsActive(Graph g, Node cur, Node y, Set<Node> S, Deque<Node> path,
+                           Set<Node> onPath, List<List<Node>> out, int maxPaths) {
+        if (out.size() >= maxPaths) return;
+        if (cur.equals(y)) {
+            List<Node> p = new ArrayList<>(path);
+            if (p.size() >= 3 && isActiveGivenS(g, p, S)) out.add(p);
+            return;
+        }
+        for (Node next : g.getAdjacentNodes(cur)) {
+            if (onPath.contains(next)) continue;
+            path.addLast(next);
+            onPath.add(next);
+            dfsActive(g, next, y, S, path, onPath, out, maxPaths);
+            onPath.remove(next);
+            path.removeLast();
+            if (out.size() >= maxPaths) return;
+        }
+    }
+
+    /**
+     * m-connection test for a fixed simple path given S.
+     */
+    private boolean isActiveGivenS(Graph g, List<Node> path, Set<Node> S) {
+        for (int i = 1; i < path.size() - 1; i++) {
+            Node a = path.get(i - 1), m = path.get(i), c = path.get(i + 1);
+            if (g.isDefCollider(a, m, c)) {
+                if (!ancestorInS(g, m, S)) return false;    // collider must have a descendant in S
+            } else {
+                if (S.contains(m)) return false;            // non-collider must be outside S
+            }
+        }
+        return true;
     }
 
     /**
@@ -1080,6 +1353,16 @@ public final class FcitSl implements IGraphSearch {
      */
     public void setBatteryZMax(int batteryZMax) {
         this.batteryZMax = batteryZMax;
+    }
+
+    /**
+     * Sets the maximum number of fork nodes converted to colliders when building an out-of-class
+     * seed. Bounded low (1-2) for audit-scale models. See {@link #seedMags}.
+     *
+     * @param maxForkFlips the bound.
+     */
+    public void setMaxForkFlips(int maxForkFlips) {
+        this.maxForkFlips = maxForkFlips;
     }
 
     /**

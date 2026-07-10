@@ -362,8 +362,8 @@ public class TestFci {
         }
 
         {
-            Fcit fci = new Fcit(independence, score);
-            fci.setStartWith(Fcit.START_WITH.GRASP);
+            FcitSl fci = new FcitSl(independence, score);
+            fci.setStartWith(FcitSl.START_WITH.GRASP);
             fci.setKnowledge(knowledge);
             fci.setVerbose(verbose);
 
@@ -549,10 +549,10 @@ public class TestFci {
             Graph estPag2 = graspFci.search();
             assertEquals(truePag_, estPag2);
 
-            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
-            fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setVerbose(true);
-            Graph estPag3 = fcit.search();
+            FcitSl FcitSl = new FcitSl(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            FcitSl.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.GRASP);
+            FcitSl.setVerbose(true);
+            Graph estPag3 = FcitSl.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
             System.out.println(unshieldedCollidersIdenticalPagMag(estPag3)
@@ -674,10 +674,10 @@ public class TestFci {
             Graph estPag2 = graspFci.search();
             assertEquals(truePag_, estPag2);
 
-            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
-            fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setVerbose(true);
-            Graph estPag3 = fcit.search();
+            FcitSl FcitSl = new FcitSl(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            FcitSl.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.GRASP);
+            FcitSl.setVerbose(true);
+            Graph estPag3 = FcitSl.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
             System.out.println(unshieldedCollidersIdenticalPagMag(estPag3)
@@ -761,12 +761,12 @@ public class TestFci {
             fciOrient.finalOrientation(_currentState);
             assertEquals(_oracleGraph, _currentState);
 
-            // Finally, make sure FCIT is recovering this oracle graph, which is should if all of the
+            // Finally, make sure FcitSl is recovering this oracle graph, which is should if all of the
             // discriminating path rules fire correctly.
-            Fcit fcit = new Fcit(new MsepTest(_oracleGraph), new GraphScore(_oracleGraph));
-            fcit.setDepth(-1);
-            fcit.setCompleteRuleSetUsed(true);
-            Graph pag = fcit.search();
+            FcitSl FcitSl = new FcitSl(new MsepTest(_oracleGraph), new GraphScore(_oracleGraph));
+            FcitSl.setDepth(-1);
+            FcitSl.setCompleteRuleSetUsed(true);
+            Graph pag = FcitSl.search();
             assertEquals(_oracleGraph, pag);
         } catch (Exception e) {
             e.printStackTrace();
@@ -879,7 +879,7 @@ public class TestFci {
     }
 
     //    @Test
-    public void testFcitFromOracle() {
+    public void testFcitSlFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
@@ -905,8 +905,8 @@ public class TestFci {
 //                Gfci alg = new Gfci(independence, score);
 //                GraspFci alg = new GraspFci(independence, score);
 
-                Fcit alg = new Fcit(independence, score);
-                alg.setStartWith(Fcit.START_WITH.GRASP);
+                FcitSl alg = new FcitSl(independence, score);
+                alg.setStartWith(FcitSl.START_WITH.GRASP);
                 alg.setUseBes(true); // Guarantees correct CPDAG under Faithfulness.
 
                 alg.setCompleteRuleSetUsed(true);
@@ -955,7 +955,7 @@ public class TestFci {
 
 
     //    @Test
-    public void testFcitFromData() {
+    public void testFcitSlFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
@@ -974,13 +974,13 @@ public class TestFci {
             score.setPenaltyDiscount(2.0);
 
             try {
-                Fcit fcit = new Fcit(test, score);
-                fcit.setVerbose(true);
-                fcit.setUseBes(true);
-//                fcit.setGuaranteeMag(true);
-                fcit.setDepth(-1);
-                fcit.setCompleteRuleSetUsed(true);
-                Graph pag = fcit.search();
+                FcitSl FcitSl = new FcitSl(test, score);
+                FcitSl.setVerbose(true);
+                FcitSl.setUseBes(true);
+//                FcitSl.setGuaranteeMag(true);
+                FcitSl.setDepth(-1);
+                FcitSl.setCompleteRuleSetUsed(true);
+                Graph pag = FcitSl.search();
 
                 Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
@@ -1101,15 +1101,15 @@ public class TestFci {
     }
 
     @Test
-    public void testFcitSimpleR4() {
+    public void testFcitSlSimpleR4() {
         Graph graph = GraphUtils.convert("X-->W,V-->W,V-->Y,W-->Y");
         Graph pag = GraphUtils.convert("Xo->W,Vo->W,V-->Y,W-->Y");
 
         IndependenceTest independence = new MsepTest(graph);
         Score score = new GraphScore(graph);
 
-        Fcit fci = new Fcit(independence, score);
-        fci.setStartWith(Fcit.START_WITH.GRASP);
+        FcitSl fci = new FcitSl(independence, score);
+        fci.setStartWith(FcitSl.START_WITH.GRASP);
 //        fci.setDepth(-1);
 //        fci.setPreserveMarkov(false);
         fci.setVerbose(true);
@@ -1128,6 +1128,50 @@ public class TestFci {
             throw new RuntimeException(e);
         }
 
+    }
+
+    @Test
+    public void testMagToPagRoundTripPreservesShieldedColliders() {
+        // Regression for the FcitSl-ZM bug: the PAG -> MAG -> PAG round trip must
+        // preserve discriminating-path (shielded) colliders. hd is a collider whose
+        // neighbors (cd, lc, mb) are pairwise adjacent, so its arrowheads can only be
+        // recovered by R4, not by unshielded-collider orientation. A regression shows
+        // up as hd --> lc / hd o-> cd instead of hd <-> lc / cd <-> hd.
+
+        Node cd = new GraphNode("cd");
+        Node hd = new GraphNode("hd");
+        Node lc = new GraphNode("lc");
+        Node s  = new GraphNode("s");
+        Node i  = new GraphNode("i");
+        Node ps = new GraphNode("ps");
+        Node mb = new GraphNode("mb");
+
+        List<Node> nodes = Arrays.asList(cd, hd, lc, s, i, ps, mb);
+
+        Graph pag = new EdgeListGraph(nodes);
+        pag.addBidirectedEdge(cd, hd);                                 // cd <-> hd
+        pag.addDirectedEdge(cd, lc);                                   // cd --> lc
+        pag.addDirectedEdge(cd, mb);                                   // cd --> mb
+        pag.addDirectedEdge(hd, mb);                                   // hd --> mb
+        pag.addEdge(new Edge(i, s, Endpoint.CIRCLE, Endpoint.ARROW));  // i o-> s
+        pag.addBidirectedEdge(lc, hd);                                 // lc <-> hd
+        pag.addDirectedEdge(lc, mb);                                   // lc --> mb
+        pag.addEdge(new Edge(ps, s, Endpoint.CIRCLE, Endpoint.ARROW)); // ps o-> s
+        pag.addDirectedEdge(s, cd);                                    // s --> cd
+
+        // Sanity: the fixture we typed in is itself a legal PAG. (Drop if the
+        // method name differs in your build.)
+        assertTrue("Fixture is not a legal PAG", pag.paths().isLegalPag());
+
+        // Round trip: PAG -> MAG (Zhang) -> PAG. checkMag=true also asserts the
+        // intermediate MAG is legal.
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Graph pagBack = new MagToPag(mag).convert(true, false);
+
+        assertEquals(
+                "MAG->PAG round trip changed the PAG; a shielded/discriminating-path "
+                        + "collider was lost.\n  expected: " + pag + "\n  actual:   " + pagBack,
+                pag, pagBack);
     }
 }
 

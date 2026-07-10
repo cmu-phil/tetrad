@@ -407,8 +407,51 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             TetradLogger.getInstance().log("*-FCI finished.");
         }
 
+//        return coldReorient(pag, sepsetMap);
+
         return pag;
     }
+
+//    private Graph coldReorient(Graph graph, SepsetMap sepsetMap) {
+//        Graph finalPag = graph.copy();
+//        List<Node> nodes = graph.getNodes();
+//
+//        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(independenceTest, -1);
+//        strategy.setSepsetMap(sepsetMap);
+//        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
+//        strategy.setDepth(depth);
+//
+//        finalPag.reorientAllWith(Endpoint.CIRCLE);
+//
+//        for (Node y : nodes) {
+//            List<Node> adj = graph.getAdjacentNodes(y);
+//
+//            for (int i = 0; i < adj.size(); i++) {
+//                for (int j = i + 1; j < adj.size(); j++) {
+//                    Node x = adj.get(i);
+//                    Node z = adj.get(j);
+//
+//                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z)) {
+//                        finalPag.setEndpoint(x, y, Endpoint.ARROW);
+//                        finalPag.setEndpoint(z, y, Endpoint.ARROW);
+//                    }
+//                }
+//            }
+//        }
+//
+//        FciOrient fciOrient = new FciOrient(strategy);
+//        fciOrient.setVerbose(false);
+//        fciOrient.setParallel(false);
+//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+//        fciOrient.setRecursiveDepth(-1);
+//        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+//        fciOrient.setUseR4(true);
+//        fciOrient.setKnowledge(knowledge);
+//        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
+//
+//        return finalPag;
+//    }
+
 
     private List<Edge> findSpuriousEdges(Graph pag) throws InterruptedException {
         List<Edge> spuriousEdges = new ArrayList<>();
@@ -461,7 +504,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (cpdag.isDefCollider(x, y, z)) {
+                if (cpdag.isDefCollider(x, y, z) && !cpdag.isAdjacentTo(x, z)) {
                     if (colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
@@ -531,10 +574,10 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         // Full GFCI reorient against a trial-local sepset map (committed sepsets + this candidate), so
         // R4's discriminating-path sepset appends are discarded with the trial and never touch the
         // committed map.
-        SepsetMap trialSepsets = copyOf(sepsetMap);
-        trialSepsets.set(a, c, sepset);
-        FciOrient trialOrient = buildFciOrient(trialSepsets);
-        gfciOrientPag(_pag, cpdag, nodes, trialSepsets, unshieldedColliders, trialOrient);
+//        SepsetMap trialSepsets = copyOf(sepsetMap);
+        sepsetMap.set(a, c, sepset);
+        FciOrient trialOrient = buildFciOrient(sepsetMap);
+        gfciOrientPag(_pag, cpdag, nodes, sepsetMap, unshieldedColliders, trialOrient);
 
         PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
 
@@ -567,7 +610,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     private FciOrient buildFciOrient(SepsetMap sepsetMap) {
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
-        strategy.setDepth(depth);
+        strategy.setDepth(-1);
         strategy.setMaxLength(-1);
         strategy.setSepsetMap(sepsetMap);
         strategy.setVerbose(false);
@@ -642,7 +685,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     /**
      * Indicates whether verbose output is enabled.
      *
-     * @return true if verbose output is enabled, fals  e otherwise.
+     * @return true if verbose output is enabled, false otherwise.
      */
     public boolean isVerbose() {
         return verbose;

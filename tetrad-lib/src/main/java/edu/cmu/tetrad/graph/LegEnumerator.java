@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Lazily enumerates the Loyal Equivalent Graphs (LEGs) of a directed Markov equivalence class by
@@ -64,6 +65,21 @@ import java.util.*;
  */
 public final class LegEnumerator implements Iterator<Graph>, Iterable<Graph> {
 
+    // ---------------------------------------------------------------------------------------------
+    // INSTRUMENTATION. Set LegEnumerator.VERBOSE = true (e.g. from FcitSl, tied to its own verbose
+    // flag, immediately before the enumeration loop) to trace the walk. All extra output is prefixed
+    // with "[LEG]" so it is easy to grep. Setting VERBOSE = false restores silent behavior; nothing
+    // about the iteration order or the emitted graphs changes either way.
+    // ---------------------------------------------------------------------------------------------
+    public static volatile boolean VERBOSE = false;
+
+    /** Distinguishes concurrent/successive enumerations in the log. */
+    private static final AtomicInteger ENUM_SEQ = new AtomicInteger(0);
+
+    private final int enumId = ENUM_SEQ.incrementAndGet();
+    private int emittedCount = 0;
+    private int discoveredCount = 1;   // the seed is already discovered
+
     private final Deque<Graph> queue = new ArrayDeque<>();   // discovered-but-not-yet-emitted (FIFO)
     private final Set<String> visited = new HashSet<>();     // canonical keys, one per LEG
     private Graph lookahead;
@@ -84,6 +100,16 @@ public final class LegEnumerator implements Iterator<Graph>, Iterable<Graph> {
         Graph seed = new EdgeListGraph(startLeg);           // copy: never mutate the caller's graph
         visited.add(key(seed));
         queue.add(seed);
+
+        if (VERBOSE) {
+            int nBi = 0;
+            for (Edge e : seed.getEdges()) if (Edges.isBidirectedEdge(e)) nBi++;
+            System.out.println("[LEG] === enumeration #" + enumId + " begins ===");
+            System.out.println("[LEG] seed key   : " + key(seed));
+            System.out.println("[LEG] seed edges : " + edgeString(seed));
+            System.out.println("[LEG] seed has " + nBi + " bidirected edge(s); every LEG in this "
+                    + "walk will share exactly that bidirected set (Lemma-2 reversals never change it).");
+        }
     }
 
     /**
@@ -119,23 +145,65 @@ public final class LegEnumerator implements Iterator<Graph>, Iterable<Graph> {
      * Pops the next LEG, discovers its legitimate-reversal neighbors, and enqueues the unvisited ones.
      */
     private Graph advance() {
-        if (queue.isEmpty()) return null;
+        if (queue.isEmpty()) {
+            if (VERBOSE) {
+                System.out.println("[LEG] === enumeration #" + enumId + " exhausted: "
+                        + emittedCount + " LEG(s) emitted, " + discoveredCount + " discovered ===");
+            }
+            return null;
+        }
 
         Graph g = queue.poll();
+        emittedCount++;
+
+        if (VERBOSE) {
+            System.out.println("[LEG] #" + enumId + " emit LEG " + emittedCount
+                    + " (queue after poll = " + queue.size() + "): " + key(g));
+        }
+
+        int reversibleHere = 0;
 
         for (Edge e : g.getEdges()) {
             if (!Edges.isDirectedEdge(e)) continue;
             Node tail = Edges.getDirectedEdgeTail(e);
             Node head = Edges.getDirectedEdgeHead(e);
 
-            if (!legitimateReversal(g, tail, head)) continue;
+            boolean legit = legitimateReversal(g, tail, head);
+
+            if (VERBOSE) {
+                System.out.println("[LEG]     edge " + tail.getName() + "->" + head.getName()
+                        + " : legitimateReversal = " + legit
+                        + "  [Pa(" + head.getName() + ")\\{" + tail.getName() + "} vs Pa("
+                        + tail.getName() + ") = " + names(parentsMinus(g, head, tail)) + " vs "
+                        + names(parents(g, tail)) + "; Sp(" + tail.getName() + ") vs Sp("
+                        + head.getName() + ") = " + names(spouses(g, tail)) + " vs "
+                        + names(spouses(g, head)) + "]");
+            }
+
+            if (!legit) continue;
+            reversibleHere++;
 
             Graph h = new EdgeListGraph(g);
             h.removeEdges(tail, head);
             h.addDirectedEdge(head, tail);
 
             String k = key(h);
-            if (visited.add(k)) queue.add(h);               // add() returns false if already present
+            if (visited.add(k)) {                            // add() returns false if already present
+                queue.add(h);
+                discoveredCount++;
+                if (VERBOSE) {
+                    System.out.println("[LEG]       -> new LEG discovered via reversal "
+                            + tail.getName() + "->" + head.getName() + " : " + k);
+                }
+            } else if (VERBOSE) {
+                System.out.println("[LEG]       -> reversal " + tail.getName() + "->" + head.getName()
+                        + " revisits a known LEG (skipped)");
+            }
+        }
+
+        if (VERBOSE) {
+            System.out.println("[LEG]   LEG " + emittedCount + " had " + reversibleHere
+                    + " legitimately reversible edge(s).");
         }
 
         return g;
@@ -163,6 +231,13 @@ public final class LegEnumerator implements Iterator<Graph>, Iterable<Graph> {
         return s;
     }
 
+    /** Instrumentation helper: Pa(head) \ {tail}, non-mutating, for logging the Lemma-2 test. */
+    private static Set<Node> parentsMinus(Graph m, Node head, Node tail) {
+        Set<Node> s = parents(m, head);
+        s.remove(tail);
+        return s;
+    }
+
     /** Spouses of x: nodes z with a bidirected edge z {@code <->} x. */
     private static Set<Node> spouses(Graph m, Node x) {
         Set<Node> s = new HashSet<>();
@@ -172,6 +247,22 @@ public final class LegEnumerator implements Iterator<Graph>, Iterable<Graph> {
             }
         }
         return s;
+    }
+
+    /** Instrumentation helper: sorted node names for stable, readable logging. */
+    private static String names(Collection<Node> nodes) {
+        List<String> ns = new ArrayList<>();
+        for (Node n : nodes) ns.add(n.getName());
+        Collections.sort(ns);
+        return ns.toString();
+    }
+
+    /** Instrumentation helper: a stable, readable rendering of a graph's edges. */
+    private static String edgeString(Graph m) {
+        List<String> toks = new ArrayList<>();
+        for (Edge e : m.getEdges()) toks.add(e.toString());
+        Collections.sort(toks);
+        return toks.toString();
     }
 
     /**

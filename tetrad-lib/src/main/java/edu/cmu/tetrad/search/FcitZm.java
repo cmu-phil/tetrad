@@ -538,7 +538,14 @@ public final class FcitZm implements IGraphSearch {
 //        interimPags.addLast(new MagToPag(GraphTransforms.zhangMagFromPag(interimPags.getLast()))
 //                .convert(false, false));
 
-        return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
+        // Final orientation: re-derive marks from the test on the finished skeleton, exactly as
+        // FcitSl does. Without this the output orientation comes only from the per-commit
+        // fciOrient.orient(...) in the single-edge tryToModifyGraph (empty collider set -> shielded
+        // colliders never seeded), so R4 can't recover them and arrow precision drops. coldReorient
+        // wipes to circles, stamps the unshielded colliders, then runs R1-R4 so R4 recovers the
+        // shielded colliders via discriminating paths.
+        Graph finalPag = coldReorient(interimPags.getLast());
+        return GraphUtils.replaceNodes(finalPag, nodes);
     }
 
     private NongenuineScan findR4NongenuineEdge(Graph pag) throws InterruptedException {
@@ -970,32 +977,65 @@ public final class FcitZm implements IGraphSearch {
         return null;
     }
 
+//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias) {
+//        Edge _edge = interimPags.getLast().getEdge(x, y);
+//        Graph _pag = new EdgeListGraph(interimPags.getLast());
+//
+//        // MAG of the pre-removal (legal) PAG, so zhangMagFromPag's circle resolution
+//        // is well defined. Then delete the edge under test.
+//        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);
+//        _mag.removeEdge(x, y);
+//
+//        Set<Node> prevSepset = sepsets.get(x, y);
+//        sepsets.set(x, y, b);
+//
+//        // Stamp every recorded sepset's colliders onto the MAG we keep (idempotent),
+//        // so the PAG we carry forward retains those arrowheads and RB sees fewer circles.
+//        orientSepsetCollidersInMag(_mag, sepsets);
+//
+//        PagLegalityCheck.LegalMagRet legal =
+//                PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
+//
+//        if (!legal.isLegalMag()) {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("\tTried removing " + _edge
+//                        + ", but it didn't lead to a PAG, sepset = " + b);
+//                System.out.println("\tReason = " + legal.getReason());
+//            }
+//
+//            sepsets.set(x, y, prevSepset);
+//            return false;
+//        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+//                    + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
+//        }
+//
+//        // Colliders are baked into _mag, so the PAG you carry forward keeps those
+//        // arrowheads and RB sees fewer circle endpoints. Pass the real flag, not false.
+//        this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+//        return true;
+//    }
+
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias) {
         Edge _edge = interimPags.getLast().getEdge(x, y);
-        Graph _pag = new EdgeListGraph(interimPags.getLast());
 
-        // MAG of the pre-removal (legal) PAG, so zhangMagFromPag's circle resolution
-        // is well defined. Then delete the edge under test.
-        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);
+        // --- legality gate: unchanged, still judged on the MAG ---
+        Graph _mag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(interimPags.getLast()));
         _mag.removeEdge(x, y);
 
         Set<Node> prevSepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
-
-        // Stamp every recorded sepset's colliders onto the MAG we keep (idempotent),
-        // so the PAG we carry forward retains those arrowheads and RB sees fewer circles.
         orientSepsetCollidersInMag(_mag, sepsets);
 
         PagLegalityCheck.LegalMagRet legal =
                 PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
-
         if (!legal.isLegalMag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + _edge
                         + ", but it didn't lead to a PAG, sepset = " + b);
-                System.out.println("\tReason = " + legal.getReason());
             }
-
             sepsets.set(x, y, prevSepset);
             return false;
         }
@@ -1005,9 +1045,16 @@ public final class FcitZm implements IGraphSearch {
                     + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
         }
 
-        // Colliders are baked into _mag, so the PAG you carry forward keeps those
-        // arrowheads and RB sees fewer circle endpoints. Pass the real flag, not false.
-        this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+        // --- THEORY TEST: carry the PAG forward by orienting the PAG DIRECTLY,
+        //     not by MagToPag(zhangMagFromPag(...)). hd's endpoints stay circles
+        //     until R4 fires, instead of being committed to tails by zhangMagFromPag. ---
+        Graph _pag = new EdgeListGraph(interimPags.getLast());
+        _pag.removeEdge(x, y);
+
+        _pag.reorientAllWith(Endpoint.CIRCLE);   // optional; matches a clean FCI pass
+        fciOrient.orient(_pag, new HashSet<>(), excludeSelectionBias);                  // R0 + R1–R4 via the test-based strategy
+
+        interimPags.add(_pag);
         return true;
     }
 
@@ -1058,6 +1105,106 @@ public final class FcitZm implements IGraphSearch {
 
         this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
         return true;
+    }
+
+//    private boolean tryToModifyGraph(List<Edge> edges,
+//                                     boolean excludeSelectionBias) {
+//        // --- legality gate: unchanged, still judged on the MAG ---
+//        Graph _mag = GraphTransforms.zhangMagFromPag(
+//                new EdgeListGraph(interimPags.getLast()));   // one MAG of the current legal PAG
+//
+//        Map<Edge, Set<Node>> prev = new LinkedHashMap<>();   // for clean rollback
+//
+//        for (Edge edge : edges) {
+//            Node m = edge.getNode1();
+//            Node n = edge.getNode2();
+//
+//            // Prefer a committed separator; fall back to the deadlock-survivor one.
+//            Set<Node> z = sepsets.get(m, n);
+//            if (z == null) z = foundSepsets.get(Set.of(m, n));
+//
+//            prev.put(edge, sepsets.get(m, n));
+//            sepsets.set(m, n, z);
+//
+//            _mag.removeEdge(m, n);
+//        }
+//
+//        // Stamp all sepset-implied colliders, then judge MAG legality once.
+//        orientSepsetCollidersInMag(_mag, sepsets);
+//
+//        PagLegalityCheck.LegalMagRet legal =
+//                PagLegalityCheck.isLegalMag(_mag, new LinkedHashSet<>(selection));
+//
+//        if (!legal.isLegalMag()) {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("\tTried removing " + edges
+//                        + ", but it didn't lead to a PAG");
+//                System.out.println("\tReason = " + legal.getReason());
+//            }
+//            // Nothing was added to interimPags; just roll back the sepset writes.
+//            for (Edge edge : edges) {
+//                sepsets.set(edge.getNode1(), edge.getNode2(), prev.get(edge));
+//            }
+//            return false;
+//        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("Removing " + edges + " (multi-edge), reached a PAG");
+//        }
+//
+//        // --- carry the PAG forward by orienting the PAG DIRECTLY, not by
+//        //     MagToPag(zhangMagFromPag(...)). Endpoints stay circles until R4 fires,
+//        //     instead of being committed to tails by zhangMagFromPag. ---
+//        Graph _pag = new EdgeListGraph(interimPags.getLast());
+//        for (Edge edge : edges) {
+//            _pag.removeEdge(edge.getNode1(), edge.getNode2());
+//        }
+//
+////        _pag.reorientAllWith(Endpoint.CIRCLE);   // keep iff you kept it in the single-edge version
+////        fciOrient.orient(_pag, new HashSet<>(), excludeSelectionBias);                  // R0 + R1–R4 via the test-based strategy
+//
+//        this.interimPags.add(_pag);
+//        return true;
+//    }
+
+    private Graph coldReorient(Graph graph) {
+        Graph finalPag = graph.copy();
+        List<Node> nodes = graph.getNodes();
+
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
+        strategy.setSepsetMap(sepsets);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
+        strategy.setDepth(depth);
+
+        finalPag.reorientAllWith(Endpoint.CIRCLE);
+
+        for (Node y : nodes) {
+            List<Node> adj = graph.getAdjacentNodes(y);
+
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node x = adj.get(i);
+                    Node z = adj.get(j);
+
+                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z)) {
+                        finalPag.setEndpoint(x, y, Endpoint.ARROW);
+                        finalPag.setEndpoint(z, y, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setVerbose(false);
+        fciOrient.setParallel(false);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(recursiveDepth);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setUseR4(true);
+        fciOrient.setKnowledge(knowledge);
+        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
+
+        return finalPag;
     }
 
     /**
