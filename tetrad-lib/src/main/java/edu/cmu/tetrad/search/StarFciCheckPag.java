@@ -104,12 +104,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     private boolean guaranteePag = false;
     /**
-     * When true, a possible-D-SEP removal pass is run after the adjacency-subset removal pass: for each remaining edge
-     * (a, c), all subsets of Possible-D-SEP(a) are considered as candidate separating sets, and a removal is committed
-     * only if it leaves a legal PAG (otherwise reverted). This is the step the original GFCI had that *-FCI dropped; it
-     * is off by default and added for parity, not because it was shown necessary. Possible-D-SEP assumes colliders are
-     * already oriented as in FCI, which holds for the fully-oriented PAGs maintained here, so the pass always runs on an
-     * oriented graph and is always legality-gated regardless of {@link #guaranteePag}.
+     * Whether to do the possible d-sep step; empirically we find this unnecessary, though the defiition of GFCI
+     * includes it. In the context of the check pag branch it is not expensive.
      */
     private boolean usePossibleDsep = false;
 
@@ -131,13 +127,12 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * @param containing A set of nodes that must be included in the separating set.
      * @param test       The independence test used to evaluate separation.
      * @param depth      The maximum size of subsets to be tested for independence.
-     * @param order      An optional list specifying the order of nodes for additional constraints.
      * @param useMaxP    True if the maxP method should be used.
      * @return A separating set of nodes (if found) that is a subset of the adjacency of x or y, or {@code null} if no
      * such set is found.
      */
     public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
-                                                     IndependenceTest test, int depth, List<Node> order, boolean useMaxP) {
+                                                     IndependenceTest test, int depth, boolean useMaxP) {
 
         test.setVerbose(false);
 
@@ -150,8 +145,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         adjx.removeIf(node -> node.getNodeType() == NodeType.LATENT);
         adjy.removeIf(node -> node.getNodeType() == NodeType.LATENT);
 
-        Set<Node> sepset1 = getSepset(x, y, containing, test, depth, order, adjx, useMaxP);
-        Set<Node> sepset2 = getSepset(y, x, containing, test, depth, order, adjy, useMaxP);
+        Set<Node> sepset1 = getSepset(x, y, containing, test, depth, adjx, useMaxP);
+        Set<Node> sepset2 = getSepset(y, x, containing, test, depth, adjy, useMaxP);
 
         if (sepset1 == null && sepset2 == null) {
             return null;
@@ -187,14 +182,12 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * @param containing A set of nodes that must be included in the separating set.
      * @param test       The independence test used to evaluate separation between x and y.
      * @param depth      The maximum size of subsets to be tested for independence.
-     * @param order      An optional list specifying the processing order of nodes, used to enforce additional
-     *                   constraints during the search.
      * @param adjx       The adjacency list of node x, from which subsets are generated to test for separation.
      * @return A separating set of nodes that fulfills all constraints and is a subset of adjx, or {@code null} if no
      * such set is found.
      */
     private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
-                                                 List<Node> order, List<Node> adjx, boolean useMaxP) {
+                                                 List<Node> adjx, boolean useMaxP) {
         List<Set<Node>> choices = getChoices(adjx, depth);
 
         if (useMaxP) {
@@ -318,7 +311,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             Set<Node> sepset = foundSepsets.get(Set.of(a, c));
 
             if (sepset == null) {
-                sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, null, useMaxP);
+                sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, useMaxP);
 
                 if (sepset != null) {
                     foundSepsets.put(Set.of(a, c), sepset);
@@ -378,7 +371,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 Set<Node> sepset = foundSepsets.get(Set.of(a, c));
 
                 if (sepset == null) {
-                    sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, null, possibleDsep, useMaxP);
+                    sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, possibleDsep, useMaxP);
 
                     if (sepset != null) {
                         foundSepsets.put(Set.of(a, c), sepset);
@@ -407,76 +400,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             TetradLogger.getInstance().log("*-FCI finished.");
         }
 
-//        return coldReorient(pag, sepsetMap);
-
         return pag;
-    }
-
-//    private Graph coldReorient(Graph graph, SepsetMap sepsetMap) {
-//        Graph finalPag = graph.copy();
-//        List<Node> nodes = graph.getNodes();
-//
-//        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(independenceTest, -1);
-//        strategy.setSepsetMap(sepsetMap);
-//        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
-//        strategy.setDepth(depth);
-//
-//        finalPag.reorientAllWith(Endpoint.CIRCLE);
-//
-//        for (Node y : nodes) {
-//            List<Node> adj = graph.getAdjacentNodes(y);
-//
-//            for (int i = 0; i < adj.size(); i++) {
-//                for (int j = i + 1; j < adj.size(); j++) {
-//                    Node x = adj.get(i);
-//                    Node z = adj.get(j);
-//
-//                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z)) {
-//                        finalPag.setEndpoint(x, y, Endpoint.ARROW);
-//                        finalPag.setEndpoint(z, y, Endpoint.ARROW);
-//                    }
-//                }
-//            }
-//        }
-//
-//        FciOrient fciOrient = new FciOrient(strategy);
-//        fciOrient.setVerbose(false);
-//        fciOrient.setParallel(false);
-//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-//        fciOrient.setRecursiveDepth(-1);
-//        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-//        fciOrient.setUseR4(true);
-//        fciOrient.setKnowledge(knowledge);
-//        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
-//
-//        return finalPag;
-//    }
-
-
-    private List<Edge> findSpuriousEdges(Graph pag) throws InterruptedException {
-        List<Edge> spuriousEdges = new ArrayList<>();
-
-        for (Edge edge : pag.getEdges()) {
-            Node m = edge.getNode1();
-            Node n = edge.getNode2();
-
-            long deadlineMs = 1000;//(timeout < 0L)
-//                    ? Long.MAX_VALUE
-//                    : System.currentTimeMillis() + timeout;
-
-            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
-                    pag, m, n, Set.of(), Set.of(), -1, depth, -1, 1, false,
-                    Long.MAX_VALUE);
-
-            // !found() => blockingSet() closes every path: a candidate sepset.
-            if (result.found()) {
-                if (independenceTest.checkIndependence(m, n, result.blockingSet()).isIndependent()) {
-                    spuriousEdges.add(edge);
-                }
-            }
-        }
-
-        return spuriousEdges;
     }
 
     /**
@@ -488,7 +412,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * committed graph (it is consumed only by the final guaranteePag step).
      */
     private void gfciOrientPag(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
-                               Set<Triple> unshieldedColliders, FciOrient fciOrient) throws InterruptedException {
+                               Set<Triple> unshieldedColliders, FciOrient fciOrient) {
         unshieldedColliders.clear();
 
         pag.reorientAllWith(Endpoint.CIRCLE);
@@ -574,7 +498,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         // Full GFCI reorient against a trial-local sepset map (committed sepsets + this candidate), so
         // R4's discriminating-path sepset appends are discarded with the trial and never touch the
         // committed map.
-//        SepsetMap trialSepsets = copyOf(sepsetMap);
         sepsetMap.set(a, c, sepset);
         FciOrient trialOrient = buildFciOrient(sepsetMap);
         gfciOrientPag(_pag, cpdag, nodes, sepsetMap, unshieldedColliders, trialOrient);
@@ -621,20 +544,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         fciOrient.setUseR4(true);
         fciOrient.setVerbose(false);
         return fciOrient;
-    }
-
-    /**
-     * Returns a copy of a sepset map: the same (unordered-pair → sepset) entries in a new map. Used to
-     * give each gated trial its own sepset map, so R4 appends during orientation cannot leak into the
-     * committed map.
-     */
-    private static SepsetMap copyOf(SepsetMap sepsetMap) {
-        SepsetMap copy = new SepsetMap();
-        for (Set<Node> pair : sepsetMap.keySet()) {
-            List<Node> arr = new ArrayList<>(pair);
-            copy.set(arr.get(0), arr.get(1), sepsetMap.get(arr.get(0), arr.get(1)));
-        }
-        return copy;
     }
 
     /**
@@ -727,37 +636,12 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     public abstract Graph getMarkovCpdag() throws InterruptedException;
 
     /**
-     * Sets the flag indicating whether the graph is being replicated. (Unused.)
-     *
-     * @param replicatingGraph A boolean value where {@code true} indicates that
-     *                         the graph is being replicated, and {@code false}
-     *                         otherwise.
-     * @throws UnsupportedOperationException Graph replication is not supported by this algorithm.
-     */
-    public void setReplicatingGraph(boolean replicatingGraph) {
-//        this.replicatingGraph = replicatingGraph;
-        // Unused.
-    }
-
-    /**
      * Sets whether selection bias should be excluded during the search process.
      *
      * @param excludeSelectionBias A boolean indicating whether to exclude selection bias (true) or not (false).
      */
     public void setExcludeSelectionBias(boolean excludeSelectionBias) {
         this.excludeSelectionBias = excludeSelectionBias;
-    }
-
-    /**
-     * Sets whether to run the possible-D-SEP removal pass (the original GFCI step that *-FCI dropped). False by
-     * default. When true, after the adjacency-subset pass, each remaining edge (a, c) is re-tested against all subsets
-     * of Possible-D-SEP(a), and any separating removal that keeps the graph a legal PAG is committed. The pass always
-     * runs on an oriented, legality-gated graph, so it is meaningful independently of {@link #setGuaranteePag(boolean)}.
-     *
-     * @param usePossibleDsep True to run the possible-D-SEP removal pass.
-     */
-    public void setUsePossibleDsep(boolean usePossibleDsep) {
-        this.usePossibleDsep = usePossibleDsep;
     }
 
     /**
@@ -768,6 +652,16 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;
+    }
+
+    /**
+     * Whether to do the possible d-sep step; empirically we find this unnecessary, though the defiition of GFCI
+     * includes it. In the context of the check pag branch it is not expensive.
+     *
+     * @param usePossibleDsep Whether to use the possible d-sep step.
+     */
+    public void setUsePossibleDsep(boolean usePossibleDsep) {
+        this.usePossibleDsep = usePossibleDsep;
     }
 }
 
