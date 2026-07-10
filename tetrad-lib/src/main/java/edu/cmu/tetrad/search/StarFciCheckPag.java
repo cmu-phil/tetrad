@@ -88,9 +88,9 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     private boolean verbose = false;
     /**
      * A boolean flag indicating whether to use the maximum p-value heuristic during certain operations in the Star-FCI
-     * algorithm. The default value is {@code true}, enabling the heuristic by default.
+     * algorithm. The default value is {@code false}, disabling the heuristic by default.
      */
-    private boolean useMaxP = true;
+    private boolean useMaxP = false;
     /**
      * A boolean flag indicating whether to exclude selection bias during certain operations in the Star-FCI algorithm.
      * The default value is {@code false}, allowing selection bias by default.
