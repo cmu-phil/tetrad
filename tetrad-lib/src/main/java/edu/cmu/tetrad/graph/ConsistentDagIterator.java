@@ -93,6 +93,8 @@ public final class ConsistentDagIterator implements Iterator<Graph>, Iterable<Gr
     }
 
     /**
+     * Iterates over DAGs consistent with a given CPDAG.
+     *
      * @param graph        a DAG or CPDAG.
      * @param initialOrder rank source: the first extension emitted is the one induced by
      *                     {@code getValidOrder(initialOrder, forward)}.

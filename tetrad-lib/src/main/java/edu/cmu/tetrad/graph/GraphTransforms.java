@@ -263,7 +263,7 @@ public class GraphTransforms {
         final Graph template = result.pafci();                  // stamp target; copied per MAG, never mutated
         final Iterator<Graph> dags = new ConsistentDagIterator(result.pcafci(), pag.getNodes(), false, true).iterator();
 
-        return () -> new Iterator<Graph>() {
+        return () -> new Iterator<>() {
             @Override
             public boolean hasNext() {
                 return dags.hasNext();
@@ -309,7 +309,7 @@ public class GraphTransforms {
         for (Edge e : cpdag.getEdges()) {
             Node a = e.getNode1(), b = e.getNode2();
             Node parent = pos.get(a) < pos.get(b) ? a : b;
-            Node child  = (parent == a) ? b : a;
+            Node child = (parent == a) ? b : a;
             result.pafci().removeEdges(a, b);
             result.pafci().addDirectedEdge(parent, child);
         }
@@ -317,7 +317,12 @@ public class GraphTransforms {
         return result.pafci();
     }
 
-    /** Convenience overload with a fresh {@link Random}; use the seeded overload for reproducibility. */
+    /**
+     * Convenience overload with a fresh {@link Random}; use the seeded overload for reproducibility.
+     *
+     * @param pag The PAG to find a random Zhang MAG in.
+     * @return this graph.
+     */
     public static Graph randomZhangMagFromPag(Graph pag) {
         return randomZhangMagFromPag(pag, new Random());
     }
@@ -363,9 +368,6 @@ public class GraphTransforms {
         }
         UnorientedComponentAsUndirected result = new UnorientedComponentAsUndirected(pafci, pcafci);
         return result;
-    }
-
-    private record UnorientedComponentAsUndirected(Graph pafci, Graph pcafci) {
     }
 
     /**
@@ -684,6 +686,9 @@ public class GraphTransforms {
         MagToPag magToPag = new MagToPag(mag);
         magToPag.setRecursiveDepth(recursiveDepth);
         return magToPag.convert(true, excludeSelectionBias);
+    }
+
+    private record UnorientedComponentAsUndirected(Graph pafci, Graph pcafci) {
     }
 }
 

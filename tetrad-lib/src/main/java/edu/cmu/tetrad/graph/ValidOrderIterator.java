@@ -85,6 +85,8 @@ public final class ValidOrderIterator implements Iterator<List<Node>>, Iterable<
     }
 
     /**
+     * Iterates over valid orders for a CPDAG.
+     *
      * @param graph        a DAG or CPDAG.
      * @param initialOrder orders are produced preferring to keep nodes close to this order;
      *                     the first order returned matches {@code getValidOrder(initialOrder, forward)}.

@@ -71,6 +71,10 @@ public final class LegEnumerator implements Iterator<Graph>, Iterable<Graph> {
     // with "[LEG]" so it is easy to grep. Setting VERBOSE = false restores silent behavior; nothing
     // about the iteration order or the emitted graphs changes either way.
     // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Static verbose.
+     */
     public static volatile boolean VERBOSE = false;
 
     /** Distinguishes concurrent/successive enumerations in the log. */
@@ -85,6 +89,8 @@ public final class LegEnumerator implements Iterator<Graph>, Iterable<Graph> {
     private Graph lookahead;
 
     /**
+     * Enumerates over LEGs starting wiht the given LEG.
+     *
      * @param startLeg a LEG of the class (e.g. {@code GraphTransforms.zhangMagFromPag(pag)}).
      *                 Its bidirected edges must all be invariant; if it is a genuine LEG the whole
      *                 LEG set is reached (Theorem 2). Must contain no undirected edge.

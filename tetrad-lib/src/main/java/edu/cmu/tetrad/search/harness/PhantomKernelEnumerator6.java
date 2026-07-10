@@ -165,7 +165,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.LongStream;
 
+/**
+ * Enumerator.
+ */
 public final class PhantomKernelEnumerator6 {
+
+    /**
+     * Default constructor.
+     */
+    public PhantomKernelEnumerator6() {
+
+    }
 
     // ────────────────────────────────────────────────────────────────────────
     // CONFIGURATION (all hard-coded; edit and re-run)
@@ -292,6 +302,11 @@ public final class PhantomKernelEnumerator6 {
     // MAIN
     // ────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Main method.
+     * @param args args
+     * @throws IOException if any.
+     */
     public static void main(String[] args) throws IOException {
         long numBlocks = (TOTAL_DAGS + BLOCK_SIZE - 1) / BLOCK_SIZE;
         Set<Long> doneBlocks = loadCheckpoint();

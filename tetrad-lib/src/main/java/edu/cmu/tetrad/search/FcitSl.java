@@ -1463,9 +1463,10 @@ public final class FcitSl implements IGraphSearch {
     }
 
     /**
-     * Sets the radius for RA (Recursive Association) algorithm.
+     * Sets the radius for the RB (Recursive Blocking) algorithm, which bounds the scope of the
+     * recursive path-blocking search.
      *
-     * @param rbRadius the radius for RA algorithm to be set
+     * @param rbRadius the radius to set; -1 for unlimited
      */
     public void setRbRadius(int rbRadius) {
         this.rbRadius = rbRadius;
@@ -1520,11 +1521,12 @@ public final class FcitSl implements IGraphSearch {
     }
 
     /**
-     * Represents a map for storing and managing separation sets (sepsets) used in the context of algorithms involving
-     * conditional independence or causal discovery.
-     * <p>
-     * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
-     * sets - specifically to check conditional independencies between pairs of variables given a separating set.
+     * Returns the map of committed separating sets discovered during the search. A pair {x, y}
+     * has an entry once its edge has been removed by a legal-PAG commit; the value is the
+     * conditioning set that separated it. This reflects only committed separations and is rolled
+     * back on a reverted removal.
+     *
+     * @return the separating-set map; never {@code null}, but empty before {@link #search()} runs
      */
     public SepsetMap getSepsetMap() {
         return sepsets;
@@ -1537,13 +1539,25 @@ public final class FcitSl implements IGraphSearch {
      * against the independence test, EVERY separation of the removed pair that the candidate
      * MAG entails with conditioning sets of size at most {@code batteryZMax}.  Motivation
      * (PKE6 audit, N=7, two latents): in all 548 oracle cases where a legal deletion exited
-     * Markov space, some false statement concerned the deleted pair itself at |Z| <= 2, so
+     * Markov space, some false statement concerned the deleted pair itself at |Z| &lt;= 2, so
      * this gate with zMax = 2 caught 548/548; and since it tests only statements the
      * candidate entails, a Markov-preserving commit passes every one -- zero false refusals
      * at the oracle.  In sample, a test rejection refuses the commit: noise costs reach,
      * never soundness.
      */
-    public enum CommitGate {LEGALITY_PLUS_SEPARATOR, DELETED_PAIR_BATTERY}
+    public enum CommitGate {
+        /**
+         * FCIT-ZM's gate: commit a removal on MAG legality plus the one test-confirmed separator
+         * for the removed pair. The default, preserving the exactly-as-sound-as-FCIT-ZM contract.
+         */
+        LEGALITY_PLUS_SEPARATOR,
+        /**
+         * The legality-plus-separator gate, plus verification against the independence test of
+         * every separation of the removed pair that the candidate MAG entails with conditioning
+         * sets of size at most {@code batteryZMax}. Refuses the commit on the first rejection.
+         */
+        DELETED_PAIR_BATTERY
+    }
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 

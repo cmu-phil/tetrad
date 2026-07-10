@@ -58,6 +58,13 @@
      */
     public final class PhantomKernelSampler {
 
+        /**
+         * Default constructor.
+         */
+        public PhantomKernelSampler() {
+
+        }
+
         // ── Configuration (args[0]=numModels, args[1]=dump, args[2]=minReportColliderLen) ──
         private static int NUM_MODELS = 2000;
         private static final int     NUM_NODES          = 12;
@@ -82,6 +89,10 @@
          *  already seen a thousand times. Counters/census are unaffected. */
         private static int MIN_REPORT_COLLIDER_LEN = 2;
 
+        /**
+         * Runs the sampler.
+         * @param args arguments.
+         */
         public static void main(String[] args) {
             if (args.length > 0) NUM_MODELS = Integer.parseInt(args[0]);
             String dumpPath = (args.length > 1) ? args[1] : "phantom_kernel_sampled.log";

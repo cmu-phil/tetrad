@@ -53,6 +53,11 @@ import java.util.*;
  */
 public final class PhantomCounterexampleHarness {
 
+    /**
+     * Constructor.
+     */
+    public PhantomCounterexampleHarness() {}
+
     // ── Configuration (args[0] = numModels, args[1] = dump file path) ────────
     private static int    NUM_MODELS         = 2000;
     private static final int    NUM_NODES    = 12;
@@ -77,6 +82,12 @@ public final class PhantomCounterexampleHarness {
      *  Counting/census is unaffected -- this only gates what gets written out. */
     private static final int MIN_REPORT_COLLIDER_LEN = 2;
 
+
+    /**
+     * Main
+     * @param args args
+     * @throws InterruptedException If any
+     */
     public static void main(String[] args) throws InterruptedException {
         if (args.length > 0) NUM_MODELS = Integer.parseInt(args[0]);
         String dumpPath = (args.length > 1) ? args[1] : "phantom_near_misses.log";

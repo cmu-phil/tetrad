@@ -649,6 +649,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * graph (after re-running the full *-FCI orientation) is a legal PAG; otherwise it is reverted. When false, the
      * original *-FCI behavior is used (greedy removal with a single final orientation). This is the one knob that
      * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
+     *
+     * @param guaranteePag Whether to pursue the branch that guarantees a legal PAG.
      */
     public void setGuaranteePag(boolean guaranteePag) {
         this.guaranteePag = guaranteePag;

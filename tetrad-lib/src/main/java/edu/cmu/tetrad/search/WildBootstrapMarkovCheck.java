@@ -19,7 +19,7 @@
      * approximately N(0,1), but the T_j are <em>correlated</em> (they share rX, and the non-blanket
      * variables are correlated through the rest of the graph). We therefore do NOT convert to
      * p-values and assume independence, and we do NOT flip the signs of the averaged T_j
-     * (a per-coordinate flip silently assumes the T_j are uncorrelated and badly over-rejects).
+     * (a per-coordinate flip silently assumes the T_j are uncorrelated and badly over-rejexiects).
      *
      * <p>Instead we calibrate the whole vector jointly with a per-observation
      * <b>wild / multiplier bootstrap</b>: a single sign (or Gaussian) multiplier vector e_1..e_n is
@@ -58,11 +58,18 @@
     public final class WildBootstrapMarkovCheck {
 
         /** Multiplier distribution for the wild bootstrap. */
-        public enum Multiplier { RADEMACHER, GAUSSIAN }
+        public enum Multiplier {
+            /** Signs drawn uniformly from {-1, +1}. The default; cheap and exact in the first two moments. */
+            RADEMACHER,
+            /** Standard normal multipliers. */
+            GAUSSIAN
+        }
 
         /** Pluggable residualization. Default is OLS; supply RFF/NN/mixed-data variants here. */
         public interface Residualizer {
             /**
+             * Residualizes a target column on a set of predictor columns.
+             *
              * @param target     length-n response.
              * @param predictors d predictor columns, each length n (may be empty: then residual = target - mean).
              * @return length-n residual vector.
@@ -76,15 +83,24 @@
 
         /** Outcome of a check: omnibus p-values plus per-constraint diagnostics. */
         public static final class Result {
-            public final double pMax;          // wild-bootstrap p-value for max_j |T_j|
-            public final double pSumSquares;   // wild-bootstrap p-value for sum_j T_j^2
-            public final double mObs;          // observed max_j |T_j|
-            public final double qObs;          // observed sum_j T_j^2
-            public final int n;                // sample size
-            public final int numConstraints;   // K
-            public final int numBootstraps;    // B
-            public final String[] labels;      // length-K constraint labels, "X _||_ Y"
-            public final double[] t;           // length-K observed T_j
+            /** Wild-bootstrap p-value for the omnibus statistic max_j |T_j|. */
+            public final double pMax;
+            /** Wild-bootstrap p-value for the omnibus statistic sum_j T_j^2. */
+            public final double pSumSquares;
+            /** The observed value of max_j |T_j|. */
+            public final double mObs;
+            /** The observed value of sum_j T_j^2. */
+            public final double qObs;
+            /** Sample size. */
+            public final int n;
+            /** Number of constraints tested, K. */
+            public final int numConstraints;
+            /** Number of bootstrap replicates used, B. */
+            public final int numBootstraps;
+            /** Length-K constraint labels, of the form "X _||_ Y" or "X _||_ Y | Z1,Z2". */
+            public final String[] labels;
+            /** Length-K observed standardized statistics T_j, aligned with {@link #labels}. */
+            public final double[] t;
 
             Result(double pMax, double pSumSquares, double mObs, double qObs,
                    int n, int numConstraints, int numBootstraps, String[] labels, double[] t) {
@@ -99,7 +115,12 @@
                 this.t = t;
             }
 
-            /** Constraints with the largest |T_j|, most-violated first. */
+            /**
+             * Constraints with the largest |T_j|, most-violated first.
+             *
+             * @param k the maximum number of constraints to return; fewer are returned if K &lt; k.
+             * @return formatted "label T = value" lines, sorted by decreasing |T_j|.
+             */
             public List<String> topConstraints(int k) {
                 Integer[] idx = new Integer[numConstraints];
                 for (int j = 0; j < numConstraints; j++) idx[j] = j;
@@ -112,6 +133,10 @@
                 return out;
             }
 
+            /**
+             * @return a multi-line report giving the omnibus statistics, their p-values, and the eight
+             * most-violated constraints.
+             */
             @Override
             public String toString() {
                 StringBuilder sb = new StringBuilder();
@@ -139,6 +164,8 @@
          * @param numBootstraps number of bootstrap replicates B.
          * @param seed          RNG seed (reproducibility).
          * @param mult          multiplier distribution.
+         * @return the omnibus p-values and per-constraint statistics. If K == 0 both p-values are 1.0.
+         * @throws InterruptedException if the calling thread is interrupted while the bootstrap runs.
          */
         public static Result runEngine(double[][] product, String[] labels,
                                        int numBootstraps, long seed, Multiplier mult) throws InterruptedException {
@@ -229,16 +256,59 @@
         private long seed = 0L;
         private Multiplier multiplier = Multiplier.RADEMACHER;
 
+        /**
+         * Constructs a check over the given data. Configure it with the setters, then call
+         * {@link #checkMarkovBlanket(Graph)} or {@link #checkFacts(List)}.
+         *
+         * @param data the dataset to check; columns are treated as continuous by the default residualizer.
+         */
         public WildBootstrapMarkovCheck(DataSet data) {
             this.data = data;
         }
 
+        /**
+         * Sets the residualization used to regress X and Y on the conditioning set. Default is
+         * {@link OlsResidualizer}.
+         *
+         * @param r the residualizer.
+         * @return this, for chaining.
+         */
         public WildBootstrapMarkovCheck setResidualizer(Residualizer r) { this.residualizer = r; return this; }
+
+        /**
+         * Sets the number of bootstrap replicates B. Default is 1000.
+         *
+         * @param b the number of replicates; the smallest attainable p-value is 1 / (b + 1).
+         * @return this, for chaining.
+         */
         public WildBootstrapMarkovCheck setNumBootstraps(int b)         { this.numBootstraps = b; return this; }
+
+        /**
+         * Sets the RNG seed for the bootstrap, for reproducibility. Default is 0.
+         *
+         * @param s the seed.
+         * @return this, for chaining.
+         */
         public WildBootstrapMarkovCheck setSeed(long s)                 { this.seed = s; return this; }
+
+        /**
+         * Sets the multiplier distribution for the wild bootstrap. Default is
+         * {@link Multiplier#RADEMACHER}.
+         *
+         * @param m the multiplier distribution.
+         * @return this, for chaining.
+         */
         public WildBootstrapMarkovCheck setMultiplier(Multiplier m)     { this.multiplier = m; return this; }
 
-        /** Build the stacked product matrix from the data and graph, then run the joint check. */
+        /**
+         * Build the stacked product matrix from the data and graph, then run the joint check. One
+         * constraint X _||_ Y | MB(X) is contributed for each target X and each Y outside
+         * MB(X) U {X}. Graph nodes absent from the data are skipped.
+         *
+         * @param graph the DAG or CPDAG to check.
+         * @return the omnibus p-values and per-constraint statistics.
+         * @throws InterruptedException if the calling thread is interrupted while the bootstrap runs.
+         */
         public Result checkMarkovBlanket(Graph graph) throws InterruptedException {
             final int n = data.getNumRows();
             final List<Node> vars = data.getVariables();
@@ -301,7 +371,11 @@
          * m-separation implications of a DAG / MAG / PAG. Calibration is the same joint wild
          * bootstrap, so dependence among the T_j (including redundancy among implied facts) is handled.
          *
+         * @param facts the independence facts to test; one product column each. Members of Z equal to
+         *              X or Y are ignored.
+         * @return the omnibus p-values and per-constraint statistics.
          * @throws IllegalArgumentException if a fact references an unknown variable or has X == Y.
+         * @throws InterruptedException     if the calling thread is interrupted while the bootstrap runs.
          */
         public Result checkFacts(List<IndependenceFact> facts) throws InterruptedException {
             final int n = data.getNumRows();
@@ -375,9 +449,26 @@
         /** Ordinary least squares residualization. Treats all predictors as continuous. */
         public static final class OlsResidualizer implements Residualizer {
             private final double ridge;
+
+            /** Constructs an OLS residualizer with the default ridge of 1e-10. */
             public OlsResidualizer()            { this(1e-10); }
+
+            /**
+             * Constructs an OLS residualizer with a given ridge.
+             *
+             * @param ridge added to the diagonal of X'X for numerical stability; a singular system
+             *              yields zero coefficients rather than an exception.
+             */
             public OlsResidualizer(double ridge) { this.ridge = ridge; }
 
+            /**
+             * Regresses y on the predictors (with an intercept) and returns the residuals. With no
+             * predictors this returns y minus its mean.
+             *
+             * @param y     length-n response.
+             * @param preds d predictor columns, each length n.
+             * @return length-n residual vector.
+             */
             @Override
             public double[] residuals(double[] y, double[][] preds) {
                 final int n = y.length;
@@ -447,6 +538,14 @@
         // per-coordinate sign flip over-rejects.
         // ----------------------------------------------------------------------------------------
 
+        /**
+         * Self-contained calibration demo. Simulates null data in which every constraint holds, at
+         * several levels of cross-constraint correlation rho, and prints the rejection rate of the
+         * per-observation bootstrap against that of the broken per-coordinate sign flip. The former
+         * should sit near alpha at every rho; the latter inflates as rho grows.
+         *
+         * @param args ignored.
+         */
         public static void main(String[] args) {
             try {
                 int n = 200, K = 12, B = 300, reps = 300;

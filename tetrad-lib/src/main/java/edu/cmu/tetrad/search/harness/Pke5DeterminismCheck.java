@@ -76,7 +76,17 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Checks determinism for PhantomKernelEnumerator5.
+ */
 public final class Pke5DeterminismCheck {
+
+    /**
+     * Default constructor.
+     */
+    public Pke5DeterminismCheck() {
+
+    }
 
     // ────────────────────────────────────────────────────────────────────────
     // CONFIGURATION (all hard-coded; edit and re-run)
@@ -137,6 +147,11 @@ public final class Pke5DeterminismCheck {
         String firstCodeDiff;           // human-readable first divergence
     }
 
+    /**
+     * Runs the check.
+     * @param args Arguments.
+     * @throws IOException If any.
+     */
     public static void main(String[] args) throws IOException {
         System.err.println(PhantomKernelEnumerator5.CONFIG_LINE);
         System.err.printf("Determinism check: %s | REPEATS=%d delayedPass=%b maxKeys=%d%n",

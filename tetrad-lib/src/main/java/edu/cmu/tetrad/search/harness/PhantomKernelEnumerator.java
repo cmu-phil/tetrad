@@ -61,6 +61,11 @@ import java.util.stream.LongStream;
  */
 public final class PhantomKernelEnumerator {
 
+    /**
+     * Default constructor.
+     */
+    public PhantomKernelEnumerator() {}
+
     private static int N            = 6;
     private static int NUM_LATENT   = 1;
     private static int MAX_SPURIOUS = 2;
@@ -88,6 +93,10 @@ public final class PhantomKernelEnumerator {
     private static final AtomicLong PROGRESS = new AtomicLong();
     private static final int WITNESS_CAP = 5000; // per merged Result, to bound memory
 
+    /**
+     * Main method.
+     * @param args args.
+     */
     public static void main(String[] args) {
         if (args.length > 0) N            = Integer.parseInt(args[0]);
         if (args.length > 1) NUM_LATENT   = Integer.parseInt(args[1]);

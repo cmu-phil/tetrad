@@ -52,6 +52,11 @@ import java.util.stream.LongStream;
  */
 public final class PhantomFcitReachabilityHarness {
 
+    /**
+     * Constructor.
+     */
+    public PhantomFcitReachabilityHarness() {}
+
     private static int N          = 6;
     private static int NUM_LATENT = 1;
 
@@ -68,6 +73,10 @@ public final class PhantomFcitReachabilityHarness {
     private static long TOTAL_DAGS;
     private static final int WITNESS_CAP = 5000;
 
+    /**
+     * Main.
+     * @param args args.
+     */
     public static void main(String[] args) {
         if (args.length > 0) N          = Integer.parseInt(args[0]);
         if (args.length > 1) NUM_LATENT = Integer.parseInt(args[1]);

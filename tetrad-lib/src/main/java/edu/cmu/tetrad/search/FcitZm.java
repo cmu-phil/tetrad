@@ -1371,17 +1371,6 @@ public final class FcitZm implements IGraphSearch {
         this.timeout = timeout;
     }
 
-    /**
-     * Represents a map for storing and managing separation sets (sepsets) used in the context of algorithms involving
-     * conditional independence or causal discovery.
-     * <p>
-     * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
-     * sets - specifically to check conditional independencies between pairs of variables given a separating set.
-     */
-    public SepsetMap getSepsetMap() {
-        return sepsets;
-    }
-
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 
     /**

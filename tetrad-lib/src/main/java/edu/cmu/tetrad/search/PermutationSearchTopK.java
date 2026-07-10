@@ -172,7 +172,17 @@ public class PermutationSearchTopK {
         return getGraph(nodes, parents, null, cpDag);
     }
 
-    // existing method stays, delegates to the new one with default (no replication)
+    /**
+     * Constructs a graph given a specification of the parents for each node, with graph replication
+     * disabled. Equivalent to {@link #getGraph(List, Map, Knowledge, boolean, boolean)} with the
+     * replicating flag set to {@code false}.
+     *
+     * @param nodes     The list of nodes to include in the graph.
+     * @param parents   A map from each node to its set of parent nodes.
+     * @param knowledge The knowledge object, if any, to guide edge orientation; may be {@code null}.
+     * @param cpDag     If true, a CPDAG is constructed; if false, a DAG.
+     * @return The constructed graph, a CPDAG or DAG depending on {@code cpDag}.
+     */
     public static Graph getGraph(List<Node> nodes,
                                  Map<Node, Set<Node>> parents,
                                  Knowledge knowledge,

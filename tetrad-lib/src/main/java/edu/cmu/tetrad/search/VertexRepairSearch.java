@@ -581,6 +581,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Returns the independence test backing this search (delegates to the model).
+     *
+     * @return the independence test supplied at construction
      */
     @Override
     public IndependenceTest getTest() {
@@ -601,9 +603,11 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
-     * Replaces the working graph used for repair.
+     * Replaces the working graph used for repair. A defensive copy is stored, so later
+     * mutations of the argument do not affect this search.
      *
-     * @param graph the new graph to use; may be {@code null}
+     * @param graph the new graph to use; must not be {@code null}
+     * @throws NullPointerException if {@code graph} is {@code null}
      */
     public void setGraph(Graph graph) {
         this.workingGraph = safeCopy(Objects.requireNonNull(graph, "graph"));
@@ -641,9 +645,12 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
-     * Sets the random seed used for node-traversal order.
+     * Sets the random seed used for node-traversal order during {@link #search()}. If this is
+     * never called, the seed defaults to the construction-time value of
+     * {@code System.currentTimeMillis()}, so runs are not reproducible by default; set an
+     * explicit seed to make them so. The value is used as given, including 0.
      *
-     * @param seed the random seed to use; if {@code null} or {@code 0}, a random seed is used
+     * @param seed the random seed to use
      */
     public void setSeed(long seed) {
         this.seed = seed;
@@ -1632,15 +1639,31 @@ public final class VertexRepairSearch implements IGraphSearch {
      * When true, Model-P and Node-P are the joint wild-bootstrap omnibus (sum T^2)
      * rather than KS/AD on the pooled p-values. Takes precedence over Anderson-Darling.
      * Requires the backing data to be a continuous DataSet (OLS residualization).
+     *
+     * @param useWildBootstrap true to use the joint wild bootstrap, false to use KS/AD
      */
     public void setUseWildBootstrap(boolean useWildBootstrap) {
         this.useWildBootstrap = useWildBootstrap;
     }
 
+    /**
+     * Sets the number of bootstrap replicates used when {@link #setUseWildBootstrap(boolean)}
+     * is enabled. Ignored otherwise. The default is 1000.
+     *
+     * @param wbNumBootstraps the number of replicates; the smallest attainable p-value is
+     *                        1 / (wbNumBootstraps + 1)
+     */
     public void setWbNumBootstraps(int wbNumBootstraps) {
         this.wbNumBootstraps = wbNumBootstraps;
     }
 
+    /**
+     * Sets the random seed for the wild bootstrap, for reproducibility. Ignored unless
+     * {@link #setUseWildBootstrap(boolean)} is enabled. The default is 0. This seed is
+     * separate from the node-traversal seed set by {@link #setSeed(long)}.
+     *
+     * @param wbSeed the seed for the bootstrap multipliers
+     */
     public void setWbSeed(long wbSeed) {
         this.wbSeed = wbSeed;
     }
@@ -1781,27 +1804,35 @@ public final class VertexRepairSearch implements IGraphSearch {
     public enum AdjustmentGraphType {
 
         /**
-         * A directed acyclic graph (DAG).
+         * A completed partially directed acyclic graph: the Markov-equivalence class of a DAG,
+         * with compelled edges directed and the rest left undirected. Candidate graphs are
+         * canonicalized back to a CPDAG after every edit.
          */
         CPDAG,
 
         /**
-         * A directed acyclic graph (DAG) with a special node type that represents
+         * A partially directed acyclic graph: directed and undirected edges, no directed cycle.
+         * Unlike {@link #CPDAG}, no canonicalization is applied, so the orientation of
+         * non-compelled edges is preserved as edited.
          */
         PDAG,
 
         /**
-         * A directed acyclic graph (DAG) with a special node type that represents
+         * A partial ancestral graph: the equivalence class of a MAG, admitting latent confounders
+         * and using circle endpoints for undetermined orientations. Candidate graphs are
+         * canonicalized back to a PAG after every edit.
          */
         PAG,
 
         /**
-         * A directed acyclic graph (DAG) with a special node type that represents
+         * A directed acyclic graph: every edge is directed and there is no directed cycle.
+         * Assumes causal sufficiency.
          */
         DAG,
 
         /**
-         * A directed acyclic graph (DAG) with a special node type that represents
+         * A maximal ancestral graph: directed and bidirected edges, admitting latent confounders,
+         * with an edge between every pair of vertices not m-separated by any set.
          */
         MAG
     }

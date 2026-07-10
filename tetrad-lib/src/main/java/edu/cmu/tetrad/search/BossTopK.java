@@ -51,7 +51,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * This algorithm is implemented as a "plugin-in" algorithm to a PermutationSearch object (see), which deals with
  * certain details of knowledge handling that are common to different permutation searches.
  *
- * <h3>Top-k retention</h3>
+ * Top-k retention
  * <p>
  * In addition to the single best ordering, this variant retains the top {@code k} distinct orderings (models) by
  * score. Retention is implemented with a bounded sorted set of {@code (permutation, score)} records, ordered by score
@@ -62,7 +62,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * models retained are the <i>converged local optima</i> reached by each hill-climb run (one per run), not every
  * transient ordering visited.
  *
- * <h3>Split / defer (the "delta" mechanism)</h3>
+ * Split / defer (the "delta" mechanism)
  * <p>
  * A {@code delta} &ge; 0 controls a search-splitting rule. Within a {@code betterMutation} step, BOSS already computes
  * the total permutation score for every valid insertion slot of the node being moved and then moves it to the best

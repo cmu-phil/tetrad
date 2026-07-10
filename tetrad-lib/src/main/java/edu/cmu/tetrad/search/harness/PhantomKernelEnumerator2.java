@@ -66,6 +66,11 @@ import java.util.stream.LongStream;
  */
 public final class PhantomKernelEnumerator2 {
 
+    /**
+     * Default constructor.
+     */
+    public PhantomKernelEnumerator2() {}
+
     // Indexed form of prong() for fast per-deadlock tallies. Indices match PRONG_NAME.
     static final String[] PRONG_NAME = {"roundtrip", "maximality", "acyclic", "other"};
     private static final int MAX_COND = 3;
@@ -113,6 +118,10 @@ public final class PhantomKernelEnumerator2 {
     private static int[][] PAIR;
     private static long TOTAL_DAGS;
 
+    /**
+     * Main method
+     * @param args args
+     */
     public static void main(String[] args) {
         if (args.length > 0) N = Integer.parseInt(args[0]);
         if (args.length > 1) NUM_LATENT = Integer.parseInt(args[1]);
