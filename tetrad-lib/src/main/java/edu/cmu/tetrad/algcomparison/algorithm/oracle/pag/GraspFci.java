@@ -145,7 +145,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG_DEFAULT_TRUE));
         search.setKnowledge(this.knowledge);
 
         return search.search();

@@ -953,6 +953,10 @@ public final class Params {
      */
     public static final String GUARANTEE_PAG = "guaranteePag";
     /**
+     * Constant <code>GUARANTEE_PAG_DEFAULT_TRUE="guaranteePagDefaultTrue"</code>
+     */
+    public static final String GUARANTEE_PAG_DEFAULT_TRUE = "guaranteePagDefaultTrue";
+    /**
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
