@@ -212,7 +212,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
-        params.add(Params.GUARANTEE_PAG);
+        params.add(Params.GUARANTEE_PAG_DEFAULT_TRUE);
         params.add(Params.VERBOSE);
 
         return params;
