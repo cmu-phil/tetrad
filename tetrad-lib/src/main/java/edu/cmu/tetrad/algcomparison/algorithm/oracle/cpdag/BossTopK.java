@@ -154,11 +154,17 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
 
         Score myScore = this.score.getScore(dataModel, parameters);
 
-        int k = 10;//parameters.getInt(TOP_K, 10);
-        double delta = .5;//parameters.getDouble(SPLIT_DELTA, 0.0);
-        int maxRuns = 10000;//parameters.getInt(MAX_RUNS, 10000);
-        boolean dedupByCpdag = true;//parameters.getBoolean(DEDUP_BY_CPDAG, true);
-        boolean optimalAcrossBranches = true;//parameters.getBoolean(OPTIMAL_ACROSS_BRANCHES, false);
+//        int k = 10;//parameters.getInt(TOP_K, 10);
+//        double delta = .5;//parameters.getDouble(SPLIT_DELTA, 0.0);
+//        int maxRuns = 10000;//parameters.getInt(MAX_RUNS, 10000);
+//        boolean dedupByCpdag = true;//parameters.getBoolean(DEDUP_BY_CPDAG, true);
+//        boolean optimalAcrossBranches = true;//parameters.getBoolean(OPTIMAL_ACROSS_BRANCHES, false);
+
+        int k = parameters.getInt(TOP_K, 10);
+        double delta = parameters.getDouble(SPLIT_DELTA, 0.0);
+        int maxRuns = parameters.getInt(MAX_RUNS, 10000);
+        boolean dedupByCpdag = parameters.getBoolean(DEDUP_BY_CPDAG, true);
+        boolean optimalAcrossBranches = parameters.getBoolean(OPTIMAL_ACROSS_BRANCHES, false);
 
         edu.cmu.tetrad.search.BossTopK boss = new edu.cmu.tetrad.search.BossTopK(myScore);
 

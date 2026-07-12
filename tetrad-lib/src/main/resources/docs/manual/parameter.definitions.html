@@ -5635,6 +5635,91 @@ Source:
             Type: <span id="tscPcUseBoss_value_type">Boolean</span></li>
     </ul>
 
+    === topK ===
+    <h3 class="parameter_description" id="topK">topK</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="topK_short_desc">
+                The number of top-scoring models to retain
+            </span></li>
+        <li>Long Description: <span id="topK_long_desc">
+                The maximum number of distinct top-scoring models kept and reported by the search.
+        </span></li>
+        <li>Default
+            Value: <span id="topK_default_value">10</span></li>
+        <li>Lower Bound: <span id="topK_lower_bound">1</span></li>
+        <li>Upper
+            Bound: <span id="topK_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="topK_value_type">Integer</span></li>
+    </ul>
+
+    === splitDelta ===
+    <h3 class="parameter_description" id="splitDelta">splitDelta</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="splitDelta_short_desc">
+                Score gap below which near-tied orderings are deferred and explored (0 = off)
+            </span></li>
+        <li>Long Description: <span id="splitDelta_long_desc">
+                When an improving move beats an alternative placement by less than this amount, the alternative is deferred for separate exploration.
+        </span></li>
+        <li>Default
+            Value: <span id="splitDelta_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="splitDelta_lower_bound">0.0</span></li>
+        <li>Upper
+            Bound: <span id="splitDelta_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="splitDelta_value_type">Double</span></li>
+    </ul>
+
+    === maxRuns ===
+    <h3 class="parameter_description" id="maxRuns">maxRuns</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="maxRuns_short_desc">
+                Cap on the total number of hill-climb runs (initial plus deferred)
+            </span></li>
+        <li>Long Description: <span id="maxRuns_long_desc">
+                A hard cap on the number of hill-climb runs, ensuring the search terminates regardless of the split threshold.
+        </span></li>
+        <li>Default
+            Value: <span id="maxRuns_default_value">10000</span></li>
+        <li>Lower Bound: <span id="maxRuns_lower_bound">1</span></li>
+        <li>Upper
+            Bound: <span id="maxRuns_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="maxRuns_value_type">Integer</span></li>
+    </ul>
+
+    === dedupByCpdag ===
+    <h3 class="parameter_description" id="dedupByCpdag">dedupByCpdag</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="dedupByCpdag_short_desc">
+                Yes if models are de-duplicated by CPDAG rather than by permutation
+            </span></li>
+        <li>Long Description: <span id="dedupByCpdag_long_desc">
+                When Yes, permutations in the same Markov equivalence class (same CPDAG, same score) are counted once.
+        </span></li>
+        <li>Default Value: <span id="dedupByCpdag_default_value">true</span></li>
+        <li>Lower
+            Bound: <span id="dedupByCpdag_lower_bound"></span></li>
+        <li>Upper Bound: <span id="dedupByCpdag_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="dedupByCpdag_value_type">Boolean</span></li>
+    </ul>
+
+    === optimalAcrossBranches ===
+    <h3 class="parameter_description" id="optimalAcrossBranches">optimalAcrossBranches</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="optimalAcrossBranches_short_desc">
+                Yes to consider every ordering visited across all branches, not just each branch's optimum
+            </span></li>
+        <li>Long Description: <span id="optimalAcrossBranches_long_desc">
+                When Yes, orderings that are suboptimal within their own branch are also eligible for the top-k list.
+        </span></li>
+        <li>Default Value: <span id="optimalAcrossBranches_default_value">false</span></li>
+        <li>Lower
+            Bound: <span id="optimalAcrossBranches_lower_bound"></span></li>
+        <li>Upper Bound: <span id="optimalAcrossBranches_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="optimalAcrossBranches_value_type">Boolean</span></li>
+    </ul>
+
 
     === tscSingletonPolicy ===
     <h3 class="parameter_description" id="tscSingletonPolicy">tscSingletonPolicy</h3>
