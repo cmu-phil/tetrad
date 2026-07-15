@@ -41,7 +41,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-public class CordEngine2 {
+public class CordEngine2 implements CordEngine {
 
     // ===================================================================== //
     //  Configuration  (the six Tetrad params + the hard-coded knobs)         //

@@ -70,6 +70,7 @@ public class Cord implements IndependenceWrapper {
     private static final String CORD_LEARNING_RATE = "cordLearningRate";
     private static final String CORD_MAX_LEAF_NODES = "cordMaxLeafNodes";
     private static final String CORD_SEED = "cordSeed";
+    private static final String CORD_ENGINE = "cordEngine";
 
     /**
      * Constructs a new instance of the algorithm.
@@ -92,7 +93,7 @@ public class Cord implements IndependenceWrapper {
                     "CORD requires a tabular (continuous) dataset, not a covariance matrix.");
         }
 
-        double alpha = parameters.getDouble(Params.ALPHA);
+        double alpha = parameters.getDouble(Params.ALPHA_DEFAULT_0_05);
         IndTestCord test = new IndTestCord(dataSet, alpha);
 
         // Defaults below mirror IndTestCordEric's own defaults, so an unset parameter leaves the test
@@ -137,13 +138,14 @@ public class Cord implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add(Params.ALPHA);
+        params.add(Params.ALPHA_DEFAULT_0_05);
         params.add(CORD_SYMMETRIC);
         params.add(CORD_NUM_THRESHOLDS);
         params.add(CORD_NUM_ESTIMATORS);
         params.add(CORD_LEARNING_RATE);
         params.add(CORD_MAX_LEAF_NODES);
         params.add(CORD_SEED);
+        params.add(CORD_ENGINE);
         params.add(Params.VERBOSE);
         return params;
     }

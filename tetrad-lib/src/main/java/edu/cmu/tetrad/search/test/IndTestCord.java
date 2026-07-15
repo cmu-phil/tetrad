@@ -24,6 +24,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.CordEngine;
+import edu.cmu.tetrad.search.CordEngine1;
+import edu.cmu.tetrad.search.CordEngine2;
 import edu.cmu.tetrad.search.CordEngine3;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -98,6 +101,7 @@ public final class IndTestCord implements IndependenceTest, RowsSettable {
     private volatile double learningRate = 0.1;
     private volatile int maxLeafNodes = 31;
     private volatile long seed = 0L;
+    private int cordEngine = 3;
 
     /**
      * Constructs a CORD independence test over the given (continuous or numeric) data set.
@@ -334,7 +338,7 @@ public final class IndTestCord implements IndependenceTest, RowsSettable {
     /** @param seed the base random seed for the A/B/C split. Clears the cache. */
     public void setSeed(long seed) {
         this.seed = seed ==  -1 ? RandomUtil.getInstance().nextLong() : seed;
-        cache.clear(); 
+        cache.clear();
     }
 
     /** @return the base random seed. */
@@ -403,6 +407,12 @@ public final class IndTestCord implements IndependenceTest, RowsSettable {
 
     /** Runs the score-pooled engine on one orientation; returns its one-sided p, or NaN if degenerate. */
     private double runEngine(double[][] cordX, double[] cordY, double[] cordZ, long seed) {
+        CordEngine cordEngine = switch (this.cordEngine) {
+            case 1 -> new CordEngine1();
+            case 2 -> new CordEngine2();
+            default -> new CordEngine3();
+        };
+
         CordEngine3 cord = new CordEngine3();
         cord.numThresholds = nLevels;
         cord.numEstimators = nEstimators;
@@ -433,5 +443,17 @@ public final class IndTestCord implements IndependenceTest, RowsSettable {
     private static double cauchyTan(double p) {
         double pc = Math.min(Math.max(p, 1e-15), 1.0 - 1e-15);
         return Math.tan((0.5 - pc) * Math.PI);
+    }
+
+    /**
+     * Sets the cord engine version.
+     * @param cordEngine 1, 2, or 3; defx   ault 3.
+     */
+    public void setCordEngine(int cordEngine) {
+        if (cordEngine < 1 || cordEngine > 3) {
+            throw new IllegalArgumentException("Invalid CordEngine version");
+        }
+
+        this.cordEngine = cordEngine;
     }
 }

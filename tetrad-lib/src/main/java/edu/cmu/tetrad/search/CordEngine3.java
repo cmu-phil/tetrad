@@ -29,6 +29,8 @@ package edu.cmu.tetrad.search;
  *         java Cord <file.tsv> <yCol> <zCol> <xCol1[,xCol2,...]>   # test a triple
  */
 
+import edu.cmu.tetrad.search.test.IndependenceTest;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,7 +39,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 
-public class CordEngine3 {
+public class CordEngine3 implements CordEngine {
 
     // ===================================================================== //
     //  Configuration  (the six Tetrad params + the hard-coded knobs)         //

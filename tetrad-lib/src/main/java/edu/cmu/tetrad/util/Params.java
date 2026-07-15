@@ -50,6 +50,10 @@ public final class Params {
      */
     public static final String ALPHA = "alpha";
     /**
+     * Constant <code>ALPHA_DEFAULT_0_05="alphaDefault0"</code>
+     */
+    public static final String ALPHA_DEFAULT_0_05 = "alphaDefault0.05";
+    /**
      * Constant <code>FOFC_ALPHA="fofcAlpha"</code>
      */
     public static final String FOFC_ALPHA = "fofcAlpha";

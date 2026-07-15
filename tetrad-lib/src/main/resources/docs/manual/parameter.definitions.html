@@ -93,12 +93,25 @@ Source:
         0.0)</span></li>
         <li>Long Description: <span id="alpha_long_desc">
         The cutoff, beyond which test results are judged as dependent, for a
-        statistical test of independence. Default 0.05. Higher alpha yields a
-        sparser graph.</span></li>
+        statistical test of independence. Default 0.01.</span></li>
         <li>Default Value: <span id="alpha_default_value">0.01</span></li>
         <li>Lower Bound: <span id="alpha_lower_bound">0.0</span></li>
         <li>Upper Bound: <span id="alpha_upper_bound">1.0</span></li>
         <li>Value Type: <span id="alpha_value_type">Double</span></li>
+    </ul>
+
+    === alphaDefault0.05 ===
+    <h3 class="parameter_description" id="alphaDefault0.05">alphaDefault0.05</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="alphaDefault0.05_short_desc">Cutoff for p values (alphaDefault0.05) (min =
+        0.0)</span></li>
+        <li>Long Description: <span id="alphaDefault0.05_long_desc">
+        The cutoff, beyond which test results are judged as dependent, for a
+        statistical test of independence. Default 0.05.</span></li>
+        <li>Default Value: <span id="alphaDefault0.05_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="alphaDefault0.05_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="alphaDefault0.05_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="alphaDefault0.05_value_type">Double</span></li>
     </ul>
 
     === amBetaAlpha ===
@@ -854,10 +867,25 @@ Source:
             repeated and orientation-swapped calls agree; changing it reshuffles the cross-fitting
             and boosting randomness. Determinism is always in effect (there is no "off" value).
             </span></li>
-        <li>Default Value: <span id="cordSeed_default_value">-1</span></li>
+        <li>Default Value: <span id="cordSeed_default_value">50</span></li>
         <li>Lower Bound: <span id="cordSeed_lower_bound">0</span></li>
         <li>Upper Bound: <span id="cordSeed_upper_bound">9223372036854775807</span></li>
         <li>Value Type: <span id="cordSeed_value_type">Long</span></li>
+    </ul>
+
+    === cordEngine ===
+    <h3 class="parameter_description" id="cordEngine">cordEngine</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cordEngine_short_desc">
+                Cord Engine: 1 = CORD Engine 1, 2 = CORD engine 2, 3 = CORD engine 3
+            </span></li>
+        <li>Long Description: <span id="cordEngine_long_desc">
+                Cord Engine: 1 = CORD Engine 1, 2 = CORD engine 2, 3 = CORD engine 3
+            </span></li>
+        <li>Default Value: <span id="cordEngine_default_value">3</span></li>
+        <li>Lower Bound: <span id="cordEngine_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="cordEngine_upper_bound">3</span></li>
+        <li>Value Type: <span id="cordEngine_value_type">Integer</span></li>
     </ul>
 
     === colliderOrientationStyle ===
@@ -4898,7 +4926,7 @@ Source:
                 skips setting a new seed.</span></li>
         <li>Default Value: <span id="seed_default_value">-1</span></li>
         <li>Lower Bound:
-            <span id="seed_lower_bound">-1</span></li>
+            <span id="seed_lower_bound">50</span></li>
         <li>Upper
             Bound: <span id="seed_upper_bound">9223372036854775807</span></li>
         <li>Value Type: <span id="seed_value_type">Long</span></li>
