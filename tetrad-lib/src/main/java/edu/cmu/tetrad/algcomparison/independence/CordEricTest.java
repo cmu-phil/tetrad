@@ -51,8 +51,8 @@ import java.util.List;
  * @see IndTestCordEric
  */
 @TestOfIndependence(
-        name = "CORD Test (Eric)",
-        command = "cord-eric-test",
+        name = "CORD Test (Eric3)",
+        command = "cord-eric-test3",
         dataType = {DataType.Continuous}
 )
 @General
@@ -116,7 +116,7 @@ public class CordEricTest implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "CORD (orthogonal rank-score omnibus CI test, Eric's engine)";
+        return "CORD (orthogonal rank-score omnibus CI test, Eric's engine 3)";
     }
 
     /**
