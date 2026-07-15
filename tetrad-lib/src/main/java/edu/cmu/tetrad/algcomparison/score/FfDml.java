@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.FfCordContinuous;
 import edu.cmu.tetrad.search.score.FfDmlContinuous;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -101,7 +102,7 @@ public class FfDml implements ScoreWrapper, Serializable {
                     "FF-DML requires a tabular continuous DataSet (it needs the raw sample, not a covariance matrix).");
         }
 
-        FfDmlContinuous score = new FfDmlContinuous(data);
+        FfCordContinuous score = new FfCordContinuous(data);
 
         score.setNumFeatures(256);//parameters.getInt(FFDML_NUM_FEATURES, 256));
         score.setLambda(1.0);//parameters.getDouble(FFDML_LAMBDA, 1.0));
@@ -109,22 +110,22 @@ public class FfDml implements ScoreWrapper, Serializable {
         score.setBwMaxRows(400);//parameters.getInt(FFDML_BW_MAX_ROWS, 400));
 
         int ft = 2;//parameters.getInt(FFDML_FEATURE_TYPE, 2);
-        score.setFeatureType(ft == 1
-                ? FfDmlContinuous.FeatureType.RFF
-                : FfDmlContinuous.FeatureType.ORF);
+//        score.setFeatureType(ft == 1
+//                ? FfDmlContinuous.FeatureType.RFF
+//                : FfDmlContinuous.FeatureType.ORF);
 
         // Channels first (this resets weights to 1.0), then read back the de-duplicated set so the
         // weight vector length always matches, then weights.
-        FfDmlContinuous.Channel[] channels =
-//                parseChannels(parameters.getString(FFDML_CHANNELS, "MEAN,VAR"));
-                parseChannels("MEAN,VAR");
-        score.setChannels(channels);
+//        FfDmlContinuous.Channel[] channels =
+////                parseChannels(parameters.getString(FFDML_CHANNELS, "MEAN,VAR"));
+//                parseChannels("MEAN,VAR");
+//        score.setChannels(channels);
 
-        FfDmlContinuous.Channel[] effective = score.getChannels();
-        double[] weights = parseWeights("1.0,1.0", effective.length);
+//        FfDmlContinuous.Channel[] effective = score.getChannels();
+//        double[] weights = parseWeights("1.0,1.0", effective.length);
 //                parseWeights(
 //                parameters.getString(FFDML_CHANNEL_WEIGHTS, "1.0,1.0"), effective.length);
-        score.setChannelWeights(weights);
+//        score.setChannelWeights(weights);
 
         score.setExactFfmlBaseline(false);//parameters.getBoolean(FFDML_EXACT_BASELINE, false));
 
