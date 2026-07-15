@@ -18,8 +18,14 @@ import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.PythonResource;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.JsonNode;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonProperty;  // unchanged
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

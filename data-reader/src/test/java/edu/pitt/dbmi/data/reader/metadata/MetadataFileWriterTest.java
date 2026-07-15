@@ -20,7 +20,13 @@
 
 package edu.pitt.dbmi.data.reader.metadata;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.core.JsonProcessingException;
+
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonProperty;  // unchanged
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,7 +51,7 @@ public class MetadataFileWriterTest {
     /**
      * Test of writeAsString method, of class MetadataFileWriter.
      *
-     * @throws JsonProcessingException
+     * @throws tools.jackson.core.JacksonException if any
      */
     @Test
     public void testWriteAsString() throws IOException {

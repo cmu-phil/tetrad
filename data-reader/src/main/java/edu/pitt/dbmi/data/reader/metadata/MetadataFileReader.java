@@ -20,7 +20,18 @@
 
 package edu.pitt.dbmi.data.reader.metadata;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import tools.jackson.jackson.databind.ObjectMapper;
+
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.JsonNode;              // tree model
+//import com.fasterxml.jackson.annotation.JsonProperty;        // from jackson-annotations
+//import com.fasterxml.jackson.core.type.TypeReference;        // for generics
+
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonProperty;  // unchanged
 
 import java.io.BufferedReader;
 import java.io.IOException;
