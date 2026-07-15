@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.CordEngine3;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.DecimalFormat;
@@ -331,7 +332,10 @@ public final class IndTestCord implements IndependenceTest, RowsSettable {
     public int getMaxLeafNodes() { return maxLeafNodes; }
 
     /** @param seed the base random seed for the A/B/C split. Clears the cache. */
-    public void setSeed(long seed) { this.seed = seed; cache.clear(); }
+    public void setSeed(long seed) {
+        this.seed = seed ==  -1 ? RandomUtil.getInstance().nextLong() : seed;
+        cache.clear(); 
+    }
 
     /** @return the base random seed. */
     public long getSeed() { return seed; }

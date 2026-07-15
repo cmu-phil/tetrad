@@ -102,7 +102,7 @@ public class Cord implements IndependenceWrapper {
         test.setNEstimators(parameters.getInt(CORD_NUM_ESTIMATORS, 300));
         test.setLearningRate(parameters.getDouble(CORD_LEARNING_RATE, 0.1));
         test.setMaxLeafNodes(parameters.getInt(CORD_MAX_LEAF_NODES, 31));
-        test.setSeed(parameters.getLong(CORD_SEED, 0L));
+        test.setSeed(parameters.getLong(CORD_SEED, -1L));
 
         test.setVerbose(parameters.getBoolean(Params.VERBOSE, false));
 

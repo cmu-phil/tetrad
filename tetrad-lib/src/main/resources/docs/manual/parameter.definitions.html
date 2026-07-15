@@ -847,12 +847,14 @@ Source:
     <h3 class="parameter_description" id="cordSeed">cordSeed</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="cordSeed_short_desc">
-                Base seed for the test's deterministic pseudorandom draws
+                Base seed for the test's deterministic pseudorandom draws (-1 = random)
             </span></li>
         <li>Long Description: <span id="cordSeed_long_desc">
-                CORD mixes this base seed with a canonical encoding of the (x, y, Z) fact so that repeated and orientation-swapped calls agree; changing it reshuffles the cross-fitting and boosting randomness. Determinism is always in effect (there is no "off" value).
+                CORD mixes this base seed with a canonical encoding of the (x, y, Z) fact so that
+            repeated and orientation-swapped calls agree; changing it reshuffles the cross-fitting
+            and boosting randomness. Determinism is always in effect (there is no "off" value).
             </span></li>
-        <li>Default Value: <span id="cordSeed_default_value">0</span></li>
+        <li>Default Value: <span id="cordSeed_default_value">-1</span></li>
         <li>Lower Bound: <span id="cordSeed_lower_bound">0</span></li>
         <li>Upper Bound: <span id="cordSeed_upper_bound">9223372036854775807</span></li>
         <li>Value Type: <span id="cordSeed_value_type">Long</span></li>
