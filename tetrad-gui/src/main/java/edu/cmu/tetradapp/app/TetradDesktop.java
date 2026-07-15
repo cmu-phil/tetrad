@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.app;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.editor.EditorWindow;
+import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.session.Session;
@@ -592,32 +593,16 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
      * @return the next available session name in the series untitled1.tet, untitled2.tet, etc.
      */
     private String getNewSessionName() {
-        final String base = "untitled";
-        final String suffix = ".tet";
-        int i = 0; // Sequence 1, 2, 3, ...
+        String sessionSaveLocation =
+                Preferences.userRoot().get("sessionSaveLocation", "");
 
-        loop:
-        while (true) {
-            i++;
+        String defaultName = "untitled";
 
-            String name = base + i + suffix;
-
-            if (new File(name).exists())
-                continue;
-
-            for (SessionEditor _o : this.framesMap.keySet()) {
-                if (_o != null) {
-                    SessionEditorWorkbench workbench = _o.getSessionWorkbench();
-                    SessionWrapper sessionWrapper = workbench.getSessionWrapper();
-
-                    if (sessionWrapper.getName().equals(name)) {
-                        continue loop;
-                    }
-                }
-            }
-
-            return name;
-        }
+        File file = EditorUtils.getNewSessionName(
+                defaultName, "tet",
+                JOptionUtils.centeringComp(), false, "Save Session As...",
+                sessionSaveLocation);
+        return file.getName();
     }
 
     private Map<SessionEditor, JInternalFrame> getFramesMap() {

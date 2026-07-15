@@ -25,6 +25,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.search.test.IndTestCordEric;
 import edu.cmu.tetrad.search.test.IndTestCord;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
@@ -35,19 +36,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for the CORD conditional independence test: an omnibus, orthogonal
- * rank-score test of Y &perp; Z | X that is sensitive to higher-moment, tail,
- * and co-volatility dependence which a covariance-based test (e.g., Fisher Z)
- * cannot see. CORD is nonparametric and cross-fitted, so it requires the raw
+ * Wrapper for the CORD conditional independence test backed by Eric's engine
+ * ({@link IndTestCordEric}): an omnibus, orthogonal rank-score test of Y &perp; Z | X that is
+ * sensitive to higher-moment, tail, and co-volatility dependence which a covariance-based test
+ * (e.g., Fisher Z) cannot see. CORD is nonparametric and cross-fitted, so it requires the raw
  * continuous sample rather than a covariance matrix.
+ *
+ * <p>This is the sibling of {@code Cord} that dispatches to {@link IndTestCordEric} rather than the
+ * self-contained {@code IndTestCord}. The two share identical parameters and defaults, so they use the
+ * same {@code ParamDescriptions} entries and can be A/B compared by swapping the command.
  *
  * @author josephramsey
  * @version $Id: $Id
- * @see IndTestCord
+ * @see IndTestCordEric
  */
 @TestOfIndependence(
-        name = "CORD Test (Joe)",
-        command = "cord-test-joe",
+        name = "CORD",
+        command = "cord-test",
         dataType = {DataType.Continuous}
 )
 @General
@@ -56,9 +61,9 @@ public class Cord implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
-    // CORD-specific parameter names. These are local so the wrapper compiles
-    // and runs against stock Tetrad; promote them to Params + ParamDescriptions
-    // if you want them rendered in the GUI parameter grid (see class note).
+    // CORD-specific parameter names. These are local so the wrapper compiles and runs against stock
+    // Tetrad; they match the constants used by {@code Cord}, so the same Params + ParamDescriptions
+    // entries render both tests in the GUI parameter grid.
     private static final String CORD_SYMMETRIC = "cordSymmetric";
     private static final String CORD_NUM_THRESHOLDS = "cordNumThresholds";
     private static final String CORD_NUM_ESTIMATORS = "cordNumEstimators";
@@ -73,7 +78,7 @@ public class Cord implements IndependenceWrapper {
     }
 
     /**
-     * Gets a CORD independence test for the given data model and parameters.
+     * Gets a CORD (Eric's engine) independence test for the given data model and parameters.
      *
      * @param dataModel  The data set to test independence against.
      * @param parameters The parameters of the test.
@@ -90,8 +95,8 @@ public class Cord implements IndependenceWrapper {
         double alpha = parameters.getDouble(Params.ALPHA);
         IndTestCord test = new IndTestCord(dataSet, alpha);
 
-        // Defaults below mirror IndTestCord's own defaults, so an unset parameter
-        // leaves the test exactly at its native configuration.
+        // Defaults below mirror IndTestCordEric's own defaults, so an unset parameter leaves the test
+        // exactly at its native configuration.
         test.setSymmetric(parameters.getBoolean(CORD_SYMMETRIC, true));
         test.setNLevels(parameters.getInt(CORD_NUM_THRESHOLDS, 9));
         test.setNEstimators(parameters.getInt(CORD_NUM_ESTIMATORS, 300));
@@ -111,7 +116,7 @@ public class Cord implements IndependenceWrapper {
      */
     @Override
     public String getDescription() {
-        return "CORD (orthogonal rank-score omnibus CI test, Joe's engine)";
+        return "CORD (orthogonal rank-score omnibus CI test)";
     }
 
     /**
