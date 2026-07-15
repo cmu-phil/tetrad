@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.CordEric2;
+import edu.cmu.tetrad.search.CordEngine2;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -36,11 +36,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Tetrad {@link IndependenceTest} adapter for Eric's CORD engine ({@link CordEric2}), the omnibus,
+ * Tetrad {@link IndependenceTest} adapter for Eric's CORD engine ({@link CordEngine2}), the omnibus,
  * orthogonal rank-score test of the full conditional law that keeps power against variance, tail, and
  * co-volatility dependence that covariance/mean tests (Fisher Z, GCM) miss.
  *
- * <p>This class is a thin adapter: all of the statistics live in {@link CordEric2}, which stays the single
+ * <p>This class is a thin adapter: all of the statistics live in {@link CordEngine2}, which stays the single
  * authoritative implementation. The adapter only (i) extracts the requested columns from the data set with
  * listwise deletion of missing values, (ii) maps Tetrad's {@code checkIndependence(x, y, z)} onto CORD's
  * {@code test(X, Y, Z)} roles, (iii) makes each call deterministic and cacheable, and (iv) turns CORD's
@@ -65,10 +65,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * for large searches reduce {@link #setNLevels(int) nLevels} and/or {@link #setNEstimators(int) nEstimators}.
  * Each call seeds the engine from {@link #setSeed(long) seed} mixed with the independence fact, so repeated
  * identical queries return identical results and are cached. All per-test work is done in locals and a fresh
- * {@link CordEric2} instance; configuration setters must not be called concurrently with running tests.
+ * {@link CordEngine2} instance; configuration setters must not be called concurrently with running tests.
  *
  * @author josephramsey
- * @see CordEric2
+ * @see CordEngine2
  */
 public final class IndTestCordEric implements IndependenceTest, RowsSettable {
 
@@ -365,7 +365,7 @@ public final class IndTestCordEric implements IndependenceTest, RowsSettable {
         cordZ = java.util.Arrays.copyOf(cordZ, n);
         cordX = java.util.Arrays.copyOf(cordX, n);
 
-        CordEric2 cord = new CordEric2();
+        CordEngine2 cord = new CordEngine2();
         cord.numThresholds = nLevels;
         cord.numEstimators = nEstimators;
         cord.learningRate = learningRate;
@@ -373,7 +373,7 @@ public final class IndTestCordEric implements IndependenceTest, RowsSettable {
 //        cord.symmetric = symmetric;
         cord.seed = factSeed;
 
-        CordEric2.Result r = cord.test(cordX, cordY, cordZ);
+        CordEngine2.Result r = cord.test(cordX, cordY, cordZ);
         return "ok".equals(r.status) ? r.pvalue : Double.NaN;
     }
 }

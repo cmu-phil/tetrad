@@ -41,7 +41,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-public class CordEric2 {
+public class CordEngine1 {
 
     // ===================================================================== //
     //  Configuration  (the six Tetrad params + the hard-coded knobs)         //
@@ -52,6 +52,7 @@ public class CordEric2 {
     public double learningRate = 0.1;      // (cordLearningRate)
     public int maxLeafNodes = 31;          // (cordMaxLeafNodes)
     public long seed = 0L;                 // (cordSeed); split + nuisance seeds
+    public boolean symmetric = false;      // (cordSymmetric) off = faithful single orientation
 
     // Hard-coded to match the Python reference exactly (not exposed as knobs).
     public boolean earlyStopping = true;
@@ -64,7 +65,7 @@ public class CordEric2 {
     public int nIterNoChange = 10;
     public double tol = 1e-7;
 
-    public CordEric2() {}
+    public CordEngine1() {}
 
     // ===================================================================== //
     //  Result                                                                //
@@ -101,19 +102,30 @@ public class CordEric2 {
 
     /** Full test.  x:(n,p), y:(n,), z:(n,d). */
     public Result test(double[][] x, double[] y, double[][] z) {
-        return run(x, y, z, seed);
+        if (!symmetric) return run(x, y, z, seed);
+        // Symmetric mode (opt-in): Bonferroni over both orientations.
+        Result xy = run(x, y, z, seed);
+        Result yx = run(x, columnMeans1D(z), z1(y), seed);   // test Z _||_ Y | X
+        double p = Math.min(1.0, 2.0 * Math.min(safeP(xy), safeP(yx)));
+        double t = Math.max(xy.statistic, yx.statistic);
+        String st = (xy.status.equals("ok") || yx.status.equals("ok")) ? "ok" : "degenerate";
+        return new Result(st.equals("ok") ? p : Double.NaN, t, st, y.length, x[0].length);
     }
 
-    /** Degenerate rotations count as p = 1 in the median aggregation (never toward rejection). */
     private static double safeP(Result r) { return r.status.equals("ok") ? r.pvalue : 1.0; }
+    private static double[] columnMeans1D(double[][] z) {          // collapse z:(n,d) -> (n,) for the swapped role
+        double[] o = new double[z.length];
+        for (int i = 0; i < z.length; i++) { double s = 0; for (double v : z[i]) s += v; o[i] = s; }
+        return o;
+    }
+    private static double[][] z1(double[] y) {
+        double[][] o = new double[y.length][1];
+        for (int i = 0; i < y.length; i++) o[i][0] = y[i];
+        return o;
+    }
 
     // ===================================================================== //
-    //  CORD core                                                             //
-    //  run(): three cyclic A/B/C role rotations of a SINGLE partition, each   //
-    //  fold playing train/direction/score exactly once, aggregated into one   //
-    //  valid p-value via min(1, 2*median(p1,p2,p3))  (Meinshausen & Buhlmann  //
-    //  2009, gamma=1/2 quantile aggregation; see uptodate_paper.tex:261).     //
-    //  scoreRotation(): one role assignment (port of cord.py run()).          //
+    //  CORD core  (port of cord.py run(), lines 58-82)                       //
     // ===================================================================== //
     private Result run(double[][] x, double[] y, double[][] z, long theSeed) {
         final int n = y.length;
@@ -121,106 +133,68 @@ public class CordEric2 {
         final int p = x[0].length;
         Random rng = new Random(theSeed);
 
-        // ONE A/B/C split via permutation + np.array_split(., 3); shared across the rotations.
+        // A/B/C split via permutation + np.array_split(., 3).
         int[] perm = permutation(n, rng);
         int[][] folds = arraySplit3(perm);
+        int[] A = folds[0], B = folds[1], C = folds[2];
 
-        // xz = [x | z]   (role-independent; built once)
+        // Per-model seeds (block draw, indexed like the Python `s` vector).
+        long[] s = new long[3 + K];
+        for (int i = 0; i < s.length; i++) s[i] = rng.nextLong();
+
+        // Thresholds = K quantiles of Y on fold A, at p_k = (k + 0.5)/K.
+        double[] yA = gather(y, A);
+        double[] yAsorted = yA.clone();
+        Arrays.sort(yAsorted);
+        double[] thr = new double[K];
+        for (int k = 0; k < K; k++) thr[k] = quantileType7(yAsorted, (k + 0.5) / K);
+
+        // xz = [x | z]
         double[][] xz = hstack(x, z);
 
-        // Rotation r uses train=folds[r], dir=folds[r+1], score=folds[r+2] (mod 3), so each fold
-        // plays each role exactly once, giving three p-values p1,p2,p3.
-        Result[] rot = new Result[3];
-        for (int r = 0; r < 3; r++) {
-            int[] fTrain = folds[r];
-            int[] fDir   = folds[(r + 1) % 3];
-            int[] fScore = folds[(r + 2) % 3];
-            // Fresh per-model seed block per rotation (block draw, indexed like the Python `s` vector).
-            long[] s = new long[3 + K];
-            for (int i = 0; i < s.length; i++) s[i] = rng.nextLong();
-            rot[r] = scoreRotation(x, y, xz, fTrain, fDir, fScore, s, n, p, K);
-        }
+        // p_cdf = P(Y<=t | X) on A ;  q_cdf = P(Y<=t | X,Z) on A
+        Cdf pCdf = fitCdf(rows(x, A), yA, thr, s[0]);
+        Cdf qCdf = fitCdf(rows(xz, A), yA, thr, s[1]);
 
-        // Meinshausen-Buhlmann gamma=1/2 aggregation: min(1, 2*median(p1,p2,p3)); valid under
-        // arbitrary dependence among the (same-partition) rotations. Degenerate rotation -> p = 1.
-        int okCount = 0;
-        for (Result r0 : rot) if (r0.status.equals("ok")) okCount++;
-        if (okCount == 0) return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
+        // witness g = (q - p)/max(p(1-p), varFloor) on B (target) and C (score)
+        double[][] gB = witness(pCdf.eval(rows(x, B)), qCdf.eval(rows(xz, B)));
+        double[][] gC = witness(pCdf.eval(rows(x, C)), qCdf.eval(rows(xz, C)));
 
-        double[] ps = { safeP(rot[0]), safeP(rot[1]), safeP(rot[2]) };
-        double pAgg = Math.min(1.0, 2.0 * median(ps));
-
-        // Report the studentized T of the median-p rotation (fall back to the max ok T if that
-        // rotation was degenerate, so an "ok" aggregate never carries a NaN statistic).
-        Integer[] ord = { 0, 1, 2 };
-        Arrays.sort(ord, (a, b) -> {
-            int c = Double.compare(ps[a], ps[b]);
-            return c != 0 ? c : Integer.compare(a, b);
-        });
-        double tRep = rot[ord[1]].statistic;
-        if (Double.isNaN(tRep)) {
-            double best = Double.NEGATIVE_INFINITY;
-            for (Result r0 : rot) if (r0.status.equals("ok")) best = Math.max(best, r0.statistic);
-            tRep = best;
-        }
-        return new Result(pAgg, tRep, "ok", n, p);
-    }
-
-    /** One A/B/C role assignment (port of cord.py run()): the train fold fits the CDFs, the dir
-     *  fold fits the centering regression + a fresh CDF, the score fold forms the statistic. */
-    private Result scoreRotation(double[][] x, double[] y, double[][] xz,
-                                 int[] foldTrain, int[] foldDir, int[] foldScore,
-                                 long[] s, int n, int p, int K) {
-        // Thresholds = K quantiles of Y on the TRAIN fold only, at p_k = (k + 0.5)/K.
-        double[] yTr = gather(y, foldTrain);
-        double[] yTrSorted = yTr.clone();
-        Arrays.sort(yTrSorted);
-        double[] thr = new double[K];
-        for (int k = 0; k < K; k++) thr[k] = quantileType7(yTrSorted, (k + 0.5) / K);
-
-        // p_cdf = P(Y<=t | X) ;  q_cdf = P(Y<=t | X,Z)   on the train fold
-        Cdf pCdf = fitCdf(rows(x, foldTrain), yTr, thr, s[0]);
-        Cdf qCdf = fitCdf(rows(xz, foldTrain), yTr, thr, s[1]);
-
-        // witness g = (q - p)/max(p(1-p), varFloor) on dir (target) and score (score) folds
-        double[][] gDir = witness(pCdf.eval(rows(x, foldDir)),   qCdf.eval(rows(xz, foldDir)));
-        double[][] gSc  = witness(pCdf.eval(rows(x, foldScore)), qCdf.eval(rows(xz, foldScore)));
-
-        // m_hat[:,k] = E[g_k | X], per-threshold squared-error regressor fit on dir, predicted on score.
-        double[][] xDir = rows(x, foldDir), xSc = rows(x, foldScore);
-        BinMapper bmDir = BinMapper.fit(xDir, maxBins);
-        int[][] binXDir = bmDir.transform(xDir);
-        double[][] mSc = new double[foldScore.length][K];
+        // m_hat[:,k] = E[g_k | X], per-threshold squared-error regressor fit on B, predicted on C.
+        double[][] xB = rows(x, B), xC = rows(x, C);
+        BinMapper bmB = BinMapper.fit(xB, maxBins);
+        int[][] binXB = bmB.transform(xB);
+        double[][] mC = new double[C.length][K];
         for (int k = 0; k < K; k++) {
-            double[] target = column(gDir, k);
-            GBRegressor reg = new GBRegressor(this).fit(binXDir, bmDir, target, s[3 + k]);
-            double[] pred = reg.predict(xSc);
-            for (int i = 0; i < foldScore.length; i++) mSc[i][k] = pred[i];
+            double[] target = column(gB, k);
+            GBRegressor reg = new GBRegressor(this).fit(binXB, bmB, target, s[3 + k]);
+            double[] pred = reg.predict(xC);
+            for (int i = 0; i < C.length; i++) mC[i][k] = pred[i];
         }
 
-        // e_cdf = fresh P(Y<=t | X) on the dir fold (disjoint from p_cdf on the train fold)
-        Cdf eCdf = fitCdf(xDir, gather(y, foldDir), thr, s[2]);
+        // e_cdf = fresh P(Y<=t | X) on B (disjoint from p_cdf on A)
+        Cdf eCdf = fitCdf(xB, gather(y, B), thr, s[2]);
 
-        // resid = 1{Y_s <= thr} - e_cdf(x_s)      (note: <=, vs strict < in the training bins)
-        double[][] eSc = eCdf.eval(xSc);
-        double[] ySc = gather(y, foldScore);
-        double[][] resid = new double[foldScore.length][K];
-        for (int i = 0; i < foldScore.length; i++)
+        // resid = 1{Y_c <= thr} - e_cdf(x_c)      (note: <=, vs strict < in the training bins)
+        double[][] eC = eCdf.eval(xC);
+        double[] yC = gather(y, C);
+        double[][] resid = new double[C.length][K];
+        for (int i = 0; i < C.length; i++)
             for (int k = 0; k < K; k++)
-                resid[i][k] = (ySc[i] <= thr[k] ? 1.0 : 0.0) - eSc[i][k];
+                resid[i][k] = (yC[i] <= thr[k] ? 1.0 : 0.0) - eC[i][k];
 
         // psi_i = mean_k (g - m)(1{Y<=t} - e)
-        double[] psi = new double[foldScore.length];
-        for (int i = 0; i < foldScore.length; i++) {
+        double[] psi = new double[C.length];
+        for (int i = 0; i < C.length; i++) {
             double acc = 0;
-            for (int k = 0; k < K; k++) acc += (gSc[i][k] - mSc[i][k]) * resid[i][k];
+            for (int k = 0; k < K; k++) acc += (gC[i][k] - mC[i][k]) * resid[i][k];
             psi[i] = acc / K;
         }
 
         double sd = popStd(psi);
         if (!(sd > 0.0))
             return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
-        double t = Math.sqrt(foldScore.length) * mean(psi) / sd;
+        double t = Math.sqrt(C.length) * mean(psi) / sd;
         return new Result(normSf(t), t, "ok", n, p);
     }
 
@@ -419,12 +393,12 @@ public class CordEric2 {
 
     /** Multiclass (softmax) classifier: one tree per class per boosting iteration. */
     static final class GBClassifier {
-        final CordEric2 cfg;
+        final CordEngine1 cfg;
         BinMapper bm;
         int[] classes;                 // ascending distinct labels
         double[] baseline;             // per class (log priors)
         List<List<TreeNode>> trees;    // per class
-        GBClassifier(CordEric2 cfg) { this.cfg = cfg; }
+        GBClassifier(CordEngine1 cfg) { this.cfg = cfg; }
 
         GBClassifier fit(int[][] binned, BinMapper bm, int[] labels, int K, long modelSeed, boolean es) {
             this.bm = bm;
@@ -507,11 +481,11 @@ public class CordEric2 {
 
     /** Squared-error regressor for m_hat = E[g|X]. */
     static final class GBRegressor {
-        final CordEric2 cfg;
+        final CordEngine1 cfg;
         BinMapper bm;
         double baseline;
         List<TreeNode> trees;
-        GBRegressor(CordEric2 cfg) { this.cfg = cfg; }
+        GBRegressor(CordEngine1 cfg) { this.cfg = cfg; }
 
         GBRegressor fit(int[][] binned, BinMapper bm, double[] target, long modelSeed) {
             this.bm = bm;
@@ -609,13 +583,6 @@ public class CordEric2 {
         double frac = pos - lo;
         if (lo >= N - 1) return sorted[N - 1];
         return sorted[lo] + frac * (sorted[lo + 1] - sorted[lo]);
-    }
-
-    /** Median via numpy quantile (type 7) on a defensive sorted clone; length 3 -> middle element. */
-    static double median(double[] a) {
-        double[] c = a.clone();
-        Arrays.sort(c);
-        return quantileType7(c, 0.5);
     }
 
     /** np.searchsorted(arr, v, side="left"): count of arr[i] STRICTLY LESS than v. arr ascending. */
@@ -759,7 +726,7 @@ public class CordEric2 {
             for (int j = 0; j < xcs.size(); j++) x[i][j] = rows.get(i)[xcs.get(j)];
         }
 
-        CordEric2 cord = new CordEric2();
+        CordEngine1 cord = new CordEngine1();
         Result r = cord.test(x, y, z);
         System.out.println("CORD conditional independence test");
         System.out.printf("    file = %s   n = %d%n", file, n);
@@ -789,8 +756,8 @@ public class CordEric2 {
         // (0) Determinism: same data + same seed => identical statistic.
         double[][] X0 = new double[n][p]; double[] Y0 = new double[n], Z0 = new double[n];
         genNull(new Random(42), X0, Y0, Z0);
-        double t1 = new CordEric2() {{ seed = 7; }}.test(X0, Y0, Z0).statistic;
-        double t2 = new CordEric2() {{ seed = 7; }}.test(X0, Y0, Z0).statistic;
+        double t1 = new CordEngine1() {{ seed = 7; }}.test(X0, Y0, Z0).statistic;
+        double t2 = new CordEngine1() {{ seed = 7; }}.test(X0, Y0, Z0).statistic;
         boolean deterministic = (Double.compare(t1, t2) == 0);
         System.out.printf("  [determinism] repeated run T1=%.6f  T2=%.6f  ->  %s%n%n",
                 t1, t2, deterministic ? "identical" : "DIFFER");
@@ -799,10 +766,10 @@ public class CordEric2 {
         System.out.println("  [demo] one null dataset and one higher-moment alternative:");
         double[][] Xd = new double[600][3]; double[] Yn = new double[600], Zn = new double[600];
         genNull(new Random(0), Xd, Yn, Zn);
-        System.out.println("        null : " + new CordEric2() {{ seed = 0; }}.test(Xd, Yn, Zn));
+        System.out.println("        null : " + new CordEngine1() {{ seed = 0; }}.test(Xd, Yn, Zn));
         double[] Ya = new double[600], Za = new double[600];
         genHigherMomentAlt(new Random(1), Xd, Ya, Za);
-        System.out.println("        alt  : " + new CordEric2() {{ seed = 0; }}.test(Xd, Ya, Za));
+        System.out.println("        alt  : " + new CordEngine1() {{ seed = 0; }}.test(Xd, Ya, Za));
         System.out.println();
 
         // (2) Monte-Carlo rejection rates at alpha = 0.05.
@@ -815,9 +782,7 @@ public class CordEric2 {
         System.out.printf("  [power] linear-alt rejection     = %.3f%n", linPower);
         System.out.printf("  [power] higher-moment-alt reject = %.3f   <- CORD's signature (mean/GCM tests miss this)%n%n", hmPower);
 
-        // Only an upper bound: the min(1, 2*median) aggregation is deliberately conservative, so a
-        // near-zero null rejection rate is expected and valid; the check guards anti-conservative inflation.
-        boolean sizeOk  = nullRate <= 0.14;
+        boolean sizeOk  = nullRate >= 0.005 && nullRate <= 0.14;
         boolean powerOk = linPower >= 0.80;
         boolean pass = deterministic && sizeOk && powerOk;
         System.out.println("  checks: determinism=" + deterministic + "  size_ok=" + sizeOk
@@ -838,7 +803,7 @@ public class CordEric2 {
                 case LINEAR_ALT:         genLinearAlt(rng, X, Y, Z); break;
                 case HIGHER_MOMENT_ALT:  genHigherMomentAlt(rng, X, Y, Z); break;
             }
-            CordEric2 cord = new CordEric2();
+            CordEngine1 cord = new CordEngine1();
             cord.seed = r;                        // per-rep deterministic
             Result res = cord.test(X, Y, Z);
             if (res.reject(alpha)) rej.incrementAndGet();

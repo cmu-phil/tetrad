@@ -1,5 +1,4 @@
-package edu.cmu.tetrad.search;
-/*
+package edu.cmu.tetrad.search;/*
  * Cord.java -- Faithful single-file Java port of CORD (Orthogonal Rank-Score
  * Conditional Independence Test) for  H0: Y _||_ Z | X.
  *
@@ -29,6 +28,9 @@ package edu.cmu.tetrad.search;
  *         java Cord <file.tsv> <yCol> <zCol> <xCol1[,xCol2,...]>   # test a triple
  */
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,8 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
-public class CordEric3 {
+public class CordEngine2 {
 
     // ===================================================================== //
     //  Configuration  (the six Tetrad params + the hard-coded knobs)         //
@@ -60,7 +64,7 @@ public class CordEric3 {
     public int nIterNoChange = 10;
     public double tol = 1e-7;
 
-    public CordEric3() {}
+    public CordEngine2() {}
 
     // ===================================================================== //
     //  Result                                                                //
@@ -100,19 +104,16 @@ public class CordEric3 {
         return run(x, y, z, seed);
     }
 
+    /** Degenerate rotations count as p = 1 in the median aggregation (never toward rejection). */
+    private static double safeP(Result r) { return r.status.equals("ok") ? r.pvalue : 1.0; }
+
     // ===================================================================== //
-    //  CORD core (score-pooled cross-fit)                                    //
+    //  CORD core                                                             //
     //  run(): three cyclic A/B/C role rotations of a SINGLE partition, each   //
-    //  fold playing train/direction/score exactly once. Because each fold is  //
-    //  "score" exactly once, the three score folds partition [n], so every    //
-    //  point receives exactly one honest cross-fitted score psi_i (its        //
-    //  nuisances fit on the two folds that exclude it). We POOL all n scores   //
-    //  and studentize ONCE: T = sqrt(n) * mean(psi) / sd(psi). This is the     //
-    //  standard 3-fold DML cross-fit estimator -- full-sample, directional,    //
-    //  and continuous (no atom at p = 1 that the min(1, 2*median(.)) p-level   //
-    //  aggregation of the median variant produces on a one-sided statistic).   //
-    //  scoreRotation(): one role assignment (port of cord.py run()), returns   //
-    //  that rotation's per-score-fold psi vector.                             //
+    //  fold playing train/direction/score exactly once, aggregated into one   //
+    //  valid p-value via min(1, 2*median(p1,p2,p3))  (Meinshausen & Buhlmann  //
+    //  2009, gamma=1/2 quantile aggregation; see uptodate_paper.tex:261).     //
+    //  scoreRotation(): one role assignment (port of cord.py run()).          //
     // ===================================================================== //
     private Result run(double[][] x, double[] y, double[][] z, long theSeed) {
         final int n = y.length;
@@ -127,11 +128,9 @@ public class CordEric3 {
         // xz = [x | z]   (role-independent; built once)
         double[][] xz = hstack(x, z);
 
-        // Rotation r uses train=folds[r], dir=folds[r+1], score=folds[r+2] (mod 3). The score folds
-        // over r = 0,1,2 are folds[2], folds[0], folds[1] -- a partition of [n] -- so concatenating
-        // the per-rotation psi vectors yields one honest cross-fitted score per observation.
-        double[] psiAll = new double[n];
-        int filled = 0;
+        // Rotation r uses train=folds[r], dir=folds[r+1], score=folds[r+2] (mod 3), so each fold
+        // plays each role exactly once, giving three p-values p1,p2,p3.
+        Result[] rot = new Result[3];
         for (int r = 0; r < 3; r++) {
             int[] fTrain = folds[r];
             int[] fDir   = folds[(r + 1) % 3];
@@ -139,27 +138,39 @@ public class CordEric3 {
             // Fresh per-model seed block per rotation (block draw, indexed like the Python `s` vector).
             long[] s = new long[3 + K];
             for (int i = 0; i < s.length; i++) s[i] = rng.nextLong();
-            double[] psi = scoreRotation(x, y, xz, fTrain, fDir, fScore, s, K);
-            System.arraycopy(psi, 0, psiAll, filled, psi.length);
-            filled += psi.length;
+            rot[r] = scoreRotation(x, y, xz, fTrain, fDir, fScore, s, n, p, K);
         }
-        if (filled < n) psiAll = Arrays.copyOf(psiAll, filled);
-        if (filled == 0) return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
 
-        // Pool and studentize once over all cross-fitted scores.
-        double sd = popStd(psiAll);
-        if (!(sd > 0.0))
-            return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
-        double t = Math.sqrt(filled) * mean(psiAll) / sd;
-        return new Result(normSf(t), t, "ok", n, p);
+        // Meinshausen-Buhlmann gamma=1/2 aggregation: min(1, 2*median(p1,p2,p3)); valid under
+        // arbitrary dependence among the (same-partition) rotations. Degenerate rotation -> p = 1.
+        int okCount = 0;
+        for (Result r0 : rot) if (r0.status.equals("ok")) okCount++;
+        if (okCount == 0) return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
+
+        double[] ps = { safeP(rot[0]), safeP(rot[1]), safeP(rot[2]) };
+        double pAgg = Math.min(1.0, 2.0 * median(ps));
+
+        // Report the studentized T of the median-p rotation (fall back to the max ok T if that
+        // rotation was degenerate, so an "ok" aggregate never carries a NaN statistic).
+        Integer[] ord = { 0, 1, 2 };
+        Arrays.sort(ord, (a, b) -> {
+            int c = Double.compare(ps[a], ps[b]);
+            return c != 0 ? c : Integer.compare(a, b);
+        });
+        double tRep = rot[ord[1]].statistic;
+        if (Double.isNaN(tRep)) {
+            double best = Double.NEGATIVE_INFINITY;
+            for (Result r0 : rot) if (r0.status.equals("ok")) best = Math.max(best, r0.statistic);
+            tRep = best;
+        }
+        return new Result(pAgg, tRep, "ok", n, p);
     }
 
     /** One A/B/C role assignment (port of cord.py run()): the train fold fits the CDFs, the dir
-     *  fold fits the centering regression + a fresh CDF, the score fold forms the per-point scores.
-     *  Returns the vector {psi_i : i in foldScore}. */
-    private double[] scoreRotation(double[][] x, double[] y, double[][] xz,
-                                   int[] foldTrain, int[] foldDir, int[] foldScore,
-                                   long[] s, int K) {
+     *  fold fits the centering regression + a fresh CDF, the score fold forms the statistic. */
+    private Result scoreRotation(double[][] x, double[] y, double[][] xz,
+                                 int[] foldTrain, int[] foldDir, int[] foldScore,
+                                 long[] s, int n, int p, int K) {
         // Thresholds = K quantiles of Y on the TRAIN fold only, at p_k = (k + 0.5)/K.
         double[] yTr = gather(y, foldTrain);
         double[] yTrSorted = yTr.clone();
@@ -205,7 +216,12 @@ public class CordEric3 {
             for (int k = 0; k < K; k++) acc += (gSc[i][k] - mSc[i][k]) * resid[i][k];
             psi[i] = acc / K;
         }
-        return psi;
+
+        double sd = popStd(psi);
+        if (!(sd > 0.0))
+            return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
+        double t = Math.sqrt(foldScore.length) * mean(psi) / sd;
+        return new Result(normSf(t), t, "ok", n, p);
     }
 
     // ---- witness ---------------------------------------------------------- //
@@ -392,8 +408,8 @@ public class CordEric3 {
                 if (rc < minLeaf) break;                 // accC only grows => rc only shrinks
                 double GR = sumG - accG, HR = sumH - accH;
                 double gain = 0.5 * (accG * accG / (accH + l2 + 1e-12)
-                        + GR * GR / (HR + l2 + 1e-12)
-                        - sumG * sumG / (sumH + l2 + 1e-12));
+                                   + GR * GR / (HR + l2 + 1e-12)
+                                   - sumG * sumG / (sumH + l2 + 1e-12));
                 if (gain > bestGain) { bestGain = gain; bestF = f; bestB = b; }
             }
         }
@@ -403,12 +419,12 @@ public class CordEric3 {
 
     /** Multiclass (softmax) classifier: one tree per class per boosting iteration. */
     static final class GBClassifier {
-        final CordEric3 cfg;
+        final CordEngine2 cfg;
         BinMapper bm;
         int[] classes;                 // ascending distinct labels
         double[] baseline;             // per class (log priors)
         List<List<TreeNode>> trees;    // per class
-        GBClassifier(CordEric3 cfg) { this.cfg = cfg; }
+        GBClassifier(CordEngine2 cfg) { this.cfg = cfg; }
 
         GBClassifier fit(int[][] binned, BinMapper bm, int[] labels, int K, long modelSeed, boolean es) {
             this.bm = bm;
@@ -491,11 +507,11 @@ public class CordEric3 {
 
     /** Squared-error regressor for m_hat = E[g|X]. */
     static final class GBRegressor {
-        final CordEric3 cfg;
+        final CordEngine2 cfg;
         BinMapper bm;
         double baseline;
         List<TreeNode> trees;
-        GBRegressor(CordEric3 cfg) { this.cfg = cfg; }
+        GBRegressor(CordEngine2 cfg) { this.cfg = cfg; }
 
         GBRegressor fit(int[][] binned, BinMapper bm, double[] target, long modelSeed) {
             this.bm = bm;
@@ -595,6 +611,12 @@ public class CordEric3 {
         return sorted[lo] + frac * (sorted[lo + 1] - sorted[lo]);
     }
 
+    /** Median via numpy quantile (type 7) on a defensive sorted clone; length 3 -> middle element. */
+    static double median(double[] a) {
+        double[] c = a.clone();
+        Arrays.sort(c);
+        return quantileType7(c, 0.5);
+    }
 
     /** np.searchsorted(arr, v, side="left"): count of arr[i] STRICTLY LESS than v. arr ascending. */
     static int searchsortedLeft(double[] arr, double v) {
@@ -688,9 +710,173 @@ public class CordEric3 {
     static int[] toIntArray(List<Integer> l) { int[] a = new int[l.size()]; for (int i = 0; i < a.length; i++) a[i] = l.get(i); return a; }
 
     // ===================================================================== //
-    //  main : disabled in the Tetrad build (use the IndTestCordEric3 wrapper).//
+    //  main : self-test (no args) or data-file mode (args)                   //
     // ===================================================================== //
-    public static void main(String[] args) {
-        // Self-test / data-file harness omitted in the Tetrad copy.
+    public static void main(String[] args) throws IOException {
+        if (args.length == 0) selfTest();
+        else dataMode(args);
+    }
+
+    // -------- data mode ---------------------------------------------------- //
+    static void dataMode(String[] args) throws IOException {
+        if (args.length < 4) {
+            System.err.println("usage: java Cord <file.tsv> <yCol> <zCol> <xCol1[,xCol2,...]> [more x cols]");
+            System.err.println("  columns may be header names (e.g. X1) or 0-based indices");
+            System.exit(2);
+        }
+        String file = args[0];
+        List<String> header = new ArrayList<>();
+        List<double[]> rows = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line = br.readLine();
+            for (String tok : line.trim().split("\\s+")) header.add(tok);
+            int p = header.size();
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                String[] parts = line.split("\\s+");
+                double[] row = new double[p];
+                for (int j = 0; j < p; j++) row[j] = Double.parseDouble(parts[j]);
+                rows.add(row);
+            }
+        }
+        Map<String, Integer> nameToIdx = new HashMap<>();
+        for (int j = 0; j < header.size(); j++) nameToIdx.put(header.get(j), j);
+        int n = rows.size();
+        int yc = resolveCol(args[1], nameToIdx);
+        int zc = resolveCol(args[2], nameToIdx);
+        List<Integer> xcs = new ArrayList<>();
+        for (int a = 3; a < args.length; a++)
+            for (String tok : args[a].split(","))
+                if (!tok.isEmpty()) xcs.add(resolveCol(tok, nameToIdx));
+
+        double[] y = new double[n];
+        double[] z = new double[n];
+        double[][] x = new double[n][xcs.size()];
+        for (int i = 0; i < n; i++) {
+            y[i] = rows.get(i)[yc];
+            z[i] = rows.get(i)[zc];
+            for (int j = 0; j < xcs.size(); j++) x[i][j] = rows.get(i)[xcs.get(j)];
+        }
+
+        CordEngine2 cord = new CordEngine2();
+        Result r = cord.test(x, y, z);
+        System.out.println("CORD conditional independence test");
+        System.out.printf("    file = %s   n = %d%n", file, n);
+        System.out.printf("    Y = %s   Z = %s   X = %s%n", args[1], args[2], xcs);
+        if (r.status.equals("ok")) {
+            System.out.printf("    statistic T = %.4f      p-value = %.4g%n", r.statistic, r.pvalue);
+            System.out.printf("    decision at alpha = %.3g: %s%n", cord.alpha,
+                    r.reject(cord.alpha) ? "REJECT H0 (conditional dependence detected)" : "fail to reject H0");
+        } else {
+            System.out.println("    status: degenerate (zero score variance; p-value NaN)");
+        }
+    }
+
+    static int resolveCol(String tok, Map<String, Integer> nameToIdx) {
+        Integer idx = nameToIdx.get(tok);
+        if (idx != null) return idx;
+        return Integer.parseInt(tok);
+    }
+
+    // -------- self-test (Monte-Carlo size + power + determinism) ----------- //
+    static void selfTest() {
+        final int n = 300, p = 2, reps = 120;
+        System.out.println("CORD self-test  (n=" + n + ", dim(X)=" + p + ", K=9, reps=" + reps + ")");
+        System.out.println("  cores=" + Runtime.getRuntime().availableProcessors()
+                + "  -- running, this takes a bit...\n");
+
+        // (0) Determinism: same data + same seed => identical statistic.
+        double[][] X0 = new double[n][p]; double[] Y0 = new double[n], Z0 = new double[n];
+        genNull(new Random(42), X0, Y0, Z0);
+        double t1 = new CordEngine2() {{ seed = 7; }}.test(X0, Y0, Z0).statistic;
+        double t2 = new CordEngine2() {{ seed = 7; }}.test(X0, Y0, Z0).statistic;
+        boolean deterministic = (Double.compare(t1, t2) == 0);
+        System.out.printf("  [determinism] repeated run T1=%.6f  T2=%.6f  ->  %s%n%n",
+                t1, t2, deterministic ? "identical" : "DIFFER");
+
+        // (1) Single illustrative runs.
+        System.out.println("  [demo] one null dataset and one higher-moment alternative:");
+        double[][] Xd = new double[600][3]; double[] Yn = new double[600], Zn = new double[600];
+        genNull(new Random(0), Xd, Yn, Zn);
+        System.out.println("        null : " + new CordEngine2() {{ seed = 0; }}.test(Xd, Yn, Zn));
+        double[] Ya = new double[600], Za = new double[600];
+        genHigherMomentAlt(new Random(1), Xd, Ya, Za);
+        System.out.println("        alt  : " + new CordEngine2() {{ seed = 0; }}.test(Xd, Ya, Za));
+        System.out.println();
+
+        // (2) Monte-Carlo rejection rates at alpha = 0.05.
+        double alpha = 0.05;
+        double nullRate  = monteCarlo(reps, n, p, alpha, Kind.NULL);
+        double linPower  = monteCarlo(reps, n, p, alpha, Kind.LINEAR_ALT);
+        double hmPower   = monteCarlo(reps, n, p, alpha, Kind.HIGHER_MOMENT_ALT);
+
+        System.out.printf("  [size ] null rejection rate      = %.3f   (target ~ %.2f)%n", nullRate, alpha);
+        System.out.printf("  [power] linear-alt rejection     = %.3f%n", linPower);
+        System.out.printf("  [power] higher-moment-alt reject = %.3f   <- CORD's signature (mean/GCM tests miss this)%n%n", hmPower);
+
+        // Only an upper bound: the min(1, 2*median) aggregation is deliberately conservative, so a
+        // near-zero null rejection rate is expected and valid; the check guards anti-conservative inflation.
+        boolean sizeOk  = nullRate <= 0.14;
+        boolean powerOk = linPower >= 0.80;
+        boolean pass = deterministic && sizeOk && powerOk;
+        System.out.println("  checks: determinism=" + deterministic + "  size_ok=" + sizeOk
+                + "  linear_power_ok=" + powerOk);
+        System.out.println(pass ? "\n  RESULT: PASS" : "\n  RESULT: FAIL");
+        if (!pass) System.exit(1);
+    }
+
+    enum Kind { NULL, LINEAR_ALT, HIGHER_MOMENT_ALT }
+
+    static double monteCarlo(int reps, int n, int p, double alpha, Kind kind) {
+        AtomicInteger rej = new AtomicInteger(0);
+        IntStream.range(0, reps).parallel().forEach(r -> {
+            Random rng = new Random(1000L * kind.ordinal() + r);
+            double[][] X = new double[n][p]; double[] Y = new double[n], Z = new double[n];
+            switch (kind) {
+                case NULL:               genNull(rng, X, Y, Z); break;
+                case LINEAR_ALT:         genLinearAlt(rng, X, Y, Z); break;
+                case HIGHER_MOMENT_ALT:  genHigherMomentAlt(rng, X, Y, Z); break;
+            }
+            CordEngine2 cord = new CordEngine2();
+            cord.seed = r;                        // per-rep deterministic
+            Result res = cord.test(X, Y, Z);
+            if (res.reject(alpha)) rej.incrementAndGet();
+        });
+        return rej.get() / (double) reps;
+    }
+
+    // ---- data-generating processes --------------------------------------- //
+    // Null:  Y and Z share only the common driver X  ->  Y _||_ Z | X.
+    static void genNull(Random rng, double[][] X, double[] Y, double[] Z) {
+        int n = X.length, p = X[0].length;
+        for (int i = 0; i < n; i++) {
+            double sSin = 0, sCos = 0;
+            for (int j = 0; j < p; j++) { X[i][j] = rng.nextGaussian(); sSin += Math.sin(X[i][j]); sCos += Math.cos(X[i][j]); }
+            Y[i] = sSin + rng.nextGaussian();
+            Z[i] = sCos + rng.nextGaussian();
+        }
+    }
+    // Linear alternative: a shared latent eta enters Y and Z in the mean  ->  cov(Y,Z|X) != 0.
+    static void genLinearAlt(Random rng, double[][] X, double[] Y, double[] Z) {
+        int n = X.length, p = X[0].length;
+        for (int i = 0; i < n; i++) {
+            double sSin = 0, sCos = 0;
+            for (int j = 0; j < p; j++) { X[i][j] = rng.nextGaussian(); sSin += Math.sin(X[i][j]); sCos += Math.cos(X[i][j]); }
+            double eta = rng.nextGaussian();
+            Z[i] = sCos + eta;
+            Y[i] = sSin + eta + rng.nextGaussian();
+        }
+    }
+    // Higher-moment alternative: cov(Y,Z|X)=0 but Y depends on eta^2  ->  only an omnibus test sees it.
+    static void genHigherMomentAlt(Random rng, double[][] X, double[] Y, double[] Z) {
+        int n = X.length, p = X[0].length;
+        for (int i = 0; i < n; i++) {
+            double sSin = 0, sCos = 0;
+            for (int j = 0; j < p; j++) { X[i][j] = rng.nextGaussian(); sSin += Math.sin(X[i][j]); sCos += Math.cos(X[i][j]); }
+            double eta = rng.nextGaussian();
+            Z[i] = sCos + eta;
+            Y[i] = sSin + (eta * eta - 1.0) + rng.nextGaussian();
+        }
     }
 }

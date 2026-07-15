@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.CordEric3;
+import edu.cmu.tetrad.search.CordEngine3;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -36,17 +36,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Tetrad {@link IndependenceTest} adapter for the score-pooled CORD engine ({@link CordEric3}), the
+ * Tetrad {@link IndependenceTest} adapter for the score-pooled CORD engine ({@link CordEngine3}), the
  * omnibus, orthogonal rank-score test of the full conditional law that keeps power against variance,
  * tail, and co-volatility dependence that covariance/mean tests (Fisher Z, GCM) miss.
  *
- * <p>{@link CordEric3} runs three cyclic role-rotations of one A/B/C partition and pools the resulting
+ * <p>{@link CordEngine3} runs three cyclic role-rotations of one A/B/C partition and pools the resulting
  * per-observation cross-fitted scores into a single studentized statistic (full-sample 3-fold DML
  * cross-fitting). Unlike the median-of-p aggregation, the pooled statistic is <em>continuous</em> and
  * does not deposit an atom of probability at {@code p = 1}, so its p-values spread out enough to be
  * thresholded in a constraint-based search.
  *
- * <p>This class is a thin adapter: the statistics live in {@link CordEric3}. The adapter (i) extracts the
+ * <p>This class is a thin adapter: the statistics live in {@link CordEngine3}. The adapter (i) extracts the
  * requested columns with listwise deletion of missing values, (ii) maps Tetrad's
  * {@code checkIndependence(x, y, z)} onto CORD's {@code test(X, Y, Z)} roles, (iii) makes each call
  * deterministic and cacheable, and (iv) turns the p-value into an {@link IndependenceResult}.
@@ -71,11 +71,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * heavier than Fisher Z; for large searches reduce {@link #setNLevels(int) nLevels} and/or
  * {@link #setNEstimators(int) nEstimators}. Each call seeds the engine from {@link #setSeed(long) seed}
  * mixed with the independence fact, so repeated identical queries return identical, cached results. All
- * per-test work is done in locals and fresh {@link CordEric3} instances; configuration setters must not be
+ * per-test work is done in locals and fresh {@link CordEngine3} instances; configuration setters must not be
  * called concurrently with running tests.
  *
  * @author josephramsey
- * @see CordEric3
+ * @see CordEngine3
  */
 public final class IndTestCord implements IndependenceTest, RowsSettable {
 
@@ -399,13 +399,13 @@ public final class IndTestCord implements IndependenceTest, RowsSettable {
 
     /** Runs the score-pooled engine on one orientation; returns its one-sided p, or NaN if degenerate. */
     private double runEngine(double[][] cordX, double[] cordY, double[] cordZ, long seed) {
-        CordEric3 cord = new CordEric3();
+        CordEngine3 cord = new CordEngine3();
         cord.numThresholds = nLevels;
         cord.numEstimators = nEstimators;
         cord.learningRate = learningRate;
         cord.maxLeafNodes = maxLeafNodes;
         cord.seed = seed;
-        CordEric3.Result r = cord.test(cordX, cordY, cordZ);
+        CordEngine3.Result r = cord.test(cordX, cordY, cordZ);
         return "ok".equals(r.status) ? r.pvalue : Double.NaN;
     }
 
