@@ -1,6 +1,4 @@
 // Standalone sanity check for EdgePriors, EdgePriorScore, EdgePriorTest.
-// Compiles against fakes, not against real Tetrad classes: adapt the package and
-// the FakeScore/FakeTest stubs, or lift the assertions into a JUnit test
 package edu.cmu.tetrad.search.harness;
 
 import edu.cmu.tetrad.data.DataModel;
@@ -19,11 +17,6 @@ public class EdgePriorsCheck {
         System.out.printf("  [%s] %s%n", cond ? "PASS" : "FAIL", what);
         if (!cond) fails++;
     }
-
-//    record N(String getName_) implements Node {
-//        public String getName() { return getName_; }
-//        public String toString() { return getName_; }
-//    }
 
     // Deterministic fake: localScore(y, S) = 100*y + sum(S) ; no prior inside.
     static class FakeScore implements Score {
