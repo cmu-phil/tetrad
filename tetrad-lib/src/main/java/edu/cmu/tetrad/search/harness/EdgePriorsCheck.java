@@ -1,4 +1,6 @@
 // Standalone sanity check for EdgePriors, EdgePriorScore, EdgePriorTest.
+// Compiles against fakes, not against real Tetrad classes: adapt the package and
+// the FakeScore/FakeTest stubs, or lift the assertions into a JUnit test.
 package edu.cmu.tetrad.search.harness;
 
 import edu.cmu.tetrad.data.DataModel;

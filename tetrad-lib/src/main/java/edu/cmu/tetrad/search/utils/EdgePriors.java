@@ -61,11 +61,39 @@ public final class EdgePriors {
     private final Map<String, Double> values;
     private final Semantics semantics;
     private final double defaultValue;
+    private final Origin origin;
 
-    private EdgePriors(Map<String, Double> values, Semantics semantics) {
+    private EdgePriors(Map<String, Double> values, Semantics semantics, Origin origin) {
         this.values = Collections.unmodifiableMap(new LinkedHashMap<>(values));
         this.semantics = semantics;
         this.defaultValue = semantics.neutral();
+        this.origin = origin;
+    }
+
+    /**
+     * Where a store's numbers came from. This is tracked because mean-one normalisation is
+     * coherent for some origins and destructive for others, and the difference is invisible from
+     * the numbers alone.
+     */
+    public enum Origin {
+        /**
+         * Supplied directly by the caller.
+         */
+        DECLARED,
+        /**
+         * Produced by {@link #toWeightsViaBicBridge(double, int, double)}. These weights encode an
+         * absolute operating point borrowed from a score, so they must not be renormalised.
+         */
+        BIC_BRIDGE,
+        /**
+         * Produced by {@link #toWeightsAnchoredAtAlpha(double)}. These weights are already centred
+         * at 1 by construction, so normalisation merely recentres a perturbation.
+         */
+        ANCHORED,
+        /**
+         * Already normalised to mean one.
+         */
+        NORMALIZED
     }
 
     /**
@@ -252,7 +280,7 @@ public final class EdgePriors {
             }
         }
 
-        return new EdgePriors(map, semantics);
+        return new EdgePriors(map, semantics, Origin.DECLARED);
     }
 
     /**
@@ -264,7 +292,7 @@ public final class EdgePriors {
      */
     public static EdgePriors neutral(Semantics semantics) {
         Objects.requireNonNull(semantics, "semantics");
-        return new EdgePriors(new LinkedHashMap<>(), semantics);
+        return new EdgePriors(new LinkedHashMap<>(), semantics, Origin.DECLARED);
     }
 
     private static String key(String a, String b) {
@@ -296,6 +324,15 @@ public final class EdgePriors {
      */
     public Semantics getSemantics() {
         return this.semantics;
+    }
+
+    /**
+     * Returns where this store's numbers came from.
+     *
+     * @return The origin.
+     */
+    public Origin getOrigin() {
+        return this.origin;
     }
 
     /**
@@ -418,11 +455,6 @@ public final class EdgePriors {
      * @throws IllegalArgumentException If lambda, n, or alpha are out of range.
      */
     public EdgePriors toWeightsViaBicBridge(double lambda, int n, double alpha) {
-        if (this.semantics != Semantics.LOG_ODDS) {
-            throw new IllegalStateException("The BIC bridge converts log-odds to weights, but this "
-                    + "store holds " + this.semantics + ".");
-        }
-
         if (!(lambda > 0.0) || !Double.isFinite(lambda)) {
             throw new IllegalArgumentException("lambda must be positive and finite: " + lambda);
         }
@@ -431,17 +463,63 @@ public final class EdgePriors {
             throw new IllegalArgumentException("n must be at least 2: " + n);
         }
 
+        return toWeights(lambda * Math.log(n), alpha, Origin.BIC_BRIDGE);
+    }
+
+    /**
+     * Converts prior log-odds to p-value weights anchored at a given significance level, so that
+     * beta_ij = 0 reproduces that level exactly. For each pair with a stored beta_ij, set
+     *
+     * <pre>
+     *   c_0      = Phi^-1(1 - alpha / 2)
+     *   c_ij     = sqrt(max(0, c_0^2 - 2 * beta_ij))
+     *   alpha_ij = 2 * (1 - Phi(c_ij))
+     *   w_ij     = alpha_ij / alpha
+     * </pre>
+     *
+     * <p>This is {@link #toWeightsViaBicBridge(double, int, double)} run at the penalty discount
+     * that reproduces {@code alpha}, namely lambda = c_0^2 / log(n); the two differ only in where
+     * the prior is centred. Use this one when the tuned alpha of an existing pipeline must be
+     * preserved: at beta = 0 every w_ij is exactly 1 and the test is bitwise the delegate's. Use
+     * the BIC bridge instead only when the point is to give a score and a test one shared prior
+     * scale, which costs the test its own calibration.
+     *
+     * <p>The prior saturates: beta_ij &gt;= c_0^2 / 2 gives alpha_ij = 1 and the edge becomes
+     * undeletable. At alpha = 0.01 that threshold is beta = 3.32, i.e. a prior probability of
+     * 0.965. Note that the smaller the toll c_0^2, the more a given beta buys, so beta is not
+     * comparable across algorithms sitting at different operating points.
+     *
+     * @param alpha The significance level to anchor at, and the level the test will compare
+     *              against.
+     * @return A WEIGHTS store, equal to 1 at every pair whose beta is 0.
+     * @throws IllegalStateException    If this store does not hold log-odds.
+     * @throws IllegalArgumentException If alpha is out of range.
+     */
+    public EdgePriors toWeightsAnchoredAtAlpha(double alpha) {
         if (!(alpha > 0.0 && alpha < 1.0)) {
             throw new IllegalArgumentException("alpha must be in (0, 1): " + alpha);
         }
 
-        double penalty = lambda * Math.log(n);
+        double c0 = NORMAL.inverseCumulativeProbability(1.0 - alpha / 2.0);
+        return toWeights(c0 * c0, alpha, Origin.ANCHORED);
+    }
+
+    private EdgePriors toWeights(double toll, double alpha, Origin origin) {
+        if (this.semantics != Semantics.LOG_ODDS) {
+            throw new IllegalStateException("Converting to weights requires log-odds, but this "
+                    + "store holds " + this.semantics + ".");
+        }
+
+        if (!(alpha > 0.0 && alpha < 1.0)) {
+            throw new IllegalArgumentException("alpha must be in (0, 1): " + alpha);
+        }
+
         Map<String, Double> out = new LinkedHashMap<>();
 
         for (Map.Entry<String, Double> e : this.values.entrySet()) {
-            double c2 = penalty - 2.0 * e.getValue();
+            double c2 = toll - 2.0 * e.getValue();
             double c = (c2 > 0.0) ? Math.sqrt(c2) : 0.0;
-            double alphaIj = 2.0 * (1.0 - NORMAL.cumulativeProbability(c));
+            double alphaIj = Math.min(1.0, 2.0 * (1.0 - NORMAL.cumulativeProbability(c)));
             double w = alphaIj / alpha;
 
             if (w != Semantics.WEIGHTS.neutral()) {
@@ -449,7 +527,7 @@ public final class EdgePriors {
             }
         }
 
-        return new EdgePriors(out, Semantics.WEIGHTS);
+        return new EdgePriors(out, Semantics.WEIGHTS, origin);
     }
 
     /**
@@ -476,6 +554,17 @@ public final class EdgePriors {
                     + "store holds " + this.semantics + ".");
         }
 
+        if (this.origin == Origin.BIC_BRIDGE) {
+            throw new IllegalStateException("These weights came from the BIC bridge, whose entire"
+                    + " purpose is that alpha_ij matches the threshold the"
+                    + " score would use for the same edge. Rescaling them"
+                    + " to mean one destroys that, leaving weights that are"
+                    + " neither calibration. If you want a prior centred on"
+                    + " an existing tuned alpha, use"
+                    + " toWeightsAnchoredAtAlpha(alpha) instead; those are"
+                    + " already 1 at beta = 0 and normalise coherently.");
+        }
+
         if (this.values.isEmpty()) {
             return this;
         }
@@ -498,7 +587,7 @@ public final class EdgePriors {
             out.put(e.getKey(), e.getValue() * scale);
         }
 
-        return new EdgePriors(out, Semantics.WEIGHTS);
+        return new EdgePriors(out, Semantics.WEIGHTS, Origin.NORMALIZED);
     }
 
     /**
@@ -507,6 +596,7 @@ public final class EdgePriors {
      * @return This string.
      */
     public String toString() {
-        return "EdgePriors[" + this.semantics + ", " + this.values.size() + " non-neutral pairs]";
+        return "EdgePriors[" + this.semantics + ", " + this.origin + ", " + this.values.size()
+                + " non-neutral pairs]";
     }
 }
