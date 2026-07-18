@@ -4,7 +4,7 @@ package edu.cmu.tetrad.search.harness;
 import edu.cmu.tetrad.search.utils.EdgePriors;
 import java.util.List;
 
-public class EdgePriorsAnchorCheck extends demo.EdgePriorsCheck {
+public class EdgePriorsAnchorCheck extends EdgePriorsCheck {
     static int fails = 0;
     static void ok(String w, boolean c) { System.out.printf("  [%s] %s%n", c?"PASS":"FAIL", w); if(!c) fails++; }
 
