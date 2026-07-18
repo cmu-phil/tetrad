@@ -95,8 +95,8 @@ public class SemOptimizerRicf implements SemOptimizer {
 
         // B = I - Beta, so Beta(j <- i) = -B(j,i) for i -> j
         // Omega is the error covariance (bidirected structure) in the observed-variable order.
-        Matrix bHat = new Matrix(SimpleMatrix.wrap(r.getBhat()));
-        Matrix omegaHat = new Matrix(SimpleMatrix.wrap(r.getOmegahat()));
+        Matrix bHat = new Matrix(SimpleMatrix.wrap(r.getBeta()));
+        Matrix omegaHat = new Matrix(SimpleMatrix.wrap(r.getOmegaHat()));
 
         List<Node> vars = semIm.getSemPm().getVariableNodes();
 
@@ -125,7 +125,7 @@ public class SemOptimizerRicf implements SemOptimizer {
             }
         }
 
-        TetradLogger.getInstance().log("RICF done: iters=" + r.getIters() + " diff=" + r.getDiff());
+        TetradLogger.getInstance().log("RICF done: iters=" + r.getIterations() + " diff=" + r.getDiff());
     }
 
     /**

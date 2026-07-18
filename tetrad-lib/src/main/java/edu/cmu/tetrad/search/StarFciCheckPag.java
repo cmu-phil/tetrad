@@ -111,6 +111,11 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * includes it. In the context of the check pag branch it is not expensive.
      */
     private boolean usePossibleDsep = false;
+    /**
+     * A flag indicating whether the LV-Heuristic results should be returned. If false, edges will be removed via
+     * further independence testing.
+     */
+    private boolean lvHeuristicOnly = false;
 
     /**
      * Constructs a new StarFci algorithm with the given independence test.
@@ -271,6 +276,11 @@ public abstract class StarFciCheckPag implements IGraphSearch {
 
         Graph cpdag = getMarkovCpdag();
         Graph pag = GraphTransforms.dagToPag(cpdag, false);
+
+        if (lvHeuristicOnly) {
+            return pag;
+        }
+
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
         // Reusable data facts (X _||_ Y | S), invariant across passes. Kept OUT of sepsetMap
@@ -667,6 +677,16 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     public void setUsePossibleDsep(boolean usePossibleDsep) {
         this.usePossibleDsep = usePossibleDsep;
+    }
+
+    /**
+     * A flag indicating whether the LV-Heuristic results should be returned. If false, edges will be removed via
+     * further independence testing.
+     *
+     * @param lvHeuristicOnly Whether to return the LV-Heuristic results.
+     */
+    public void setLvHeuristicOnly(boolean lvHeuristicOnly) {
+        this.lvHeuristicOnly = lvHeuristicOnly;
     }
 }
 

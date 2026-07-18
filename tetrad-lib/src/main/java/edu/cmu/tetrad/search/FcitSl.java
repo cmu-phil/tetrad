@@ -202,6 +202,11 @@ public final class FcitSl implements IGraphSearch {
      * Test timout in milliseconds.
      */
     private long timeout = -1L;
+    /**
+     * A flag indicating whether the LV-Heuristic results should be returned. If false, edges will be removed via
+     * further independence testing.
+     */
+    private boolean lvHeuristicOnly;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -480,6 +485,10 @@ public final class FcitSl implements IGraphSearch {
 
         if (replicatingGraph) {
             pag = new ReplicatingGraph(pag, new LagReplicationPolicy());
+        }
+
+        if (lvHeuristicOnly) {
+            return pag;
         }
 
         this.interimPags.add(pag);
@@ -782,71 +791,6 @@ public final class FcitSl implements IGraphSearch {
         return alg;
     }
 
-    // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
-    // found.
-//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias)
-//            throws InterruptedException {
-//        Edge _edge = interimPags.getLast().getEdge(x, y);
-//        Graph _pag = new EdgeListGraph(interimPags.getLast());
-//        List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
-//
-//        final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
-//
-//        LegEnumerator.VERBOSE = true;
-//
-//        // Pick a MAG H; we choose a LEG.
-//        for (Graph mag : LegEnumerator.fromPag(_pag)) {
-//            if (Thread.currentThread().isInterrupted()) {
-//                throw new InterruptedException();
-//            }
-//
-//            if (System.currentTimeMillis() > deadline) {
-//                break;
-//            }
-//
-//            Graph _mag = mag.copy();
-//
-//            // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
-//            // particular to orient common colliders of x and y.
-//            orientSepsetColliders(_mag, b, x, y);
-//
-//            // We remove f = x *-* y, yielding H' - f.
-//            _mag.removeEdge(x, y);
-//
-//            legalityChecks++;
-//
-//            // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
-//            // satisfy Lemma 3.6.
-//            if (_mag.paths().existsInducingPath(x, y, Set.of())) {
-//                ipRejects++;                               // non-maximal exactly at the deleted pair
-//                continue;
-//            }
-//
-//            // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
-//            // We spot-check this.
-//            if (!deletedPairBatteryPasses(_mag, _removed)) {
-//                continue;
-//            }
-//
-//            if (verbose) {
-//                TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
-//                        + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
-//            }
-//
-//            // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
-//            this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
-//            sepsets.set(x, y, b);
-//            return true;                                   // first representative that hosts it
-//        }
-//
-//        if (verbose) {
-//            TetradLogger.getInstance().log("\tTried removing " + _edge
-//                    + ", but no representative hosted it, sepset = " + b);
-//        }
-//
-//        return false;
-//    }
-
     /**
      * Parameterizes and returns a new GRaSP search.
      *
@@ -886,9 +830,6 @@ public final class FcitSl implements IGraphSearch {
      */
     private boolean removeEdgesRecursively(boolean excludeSelectionBias)
             throws InterruptedException {
-        if (verbose) {
-            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-        }
 
         // This version does parallel lookahead, so that the only time graph rebuilding is done is when
         // edge removals are attempted.
@@ -1530,6 +1471,16 @@ public final class FcitSl implements IGraphSearch {
      */
     public SepsetMap getSepsetMap() {
         return sepsets;
+    }
+
+    /**
+     * A flag indicating whether the LV-Heuristic results should be returned. If false, edges will be removed via
+     * further independence testing.
+     *
+     * @param lvHeuristicOnly Whether to return the LV-Heuristic results.
+     */
+    public void setLvHeuristicOnly(boolean lvHeuristicOnly) {
+        this.lvHeuristicOnly = lvHeuristicOnly;
     }
 
     /**

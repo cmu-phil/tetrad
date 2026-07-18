@@ -773,9 +773,6 @@ public final class FcitZm implements IGraphSearch {
      * @return true if at least one edge was removed, false otherwise
      */
     private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
-        if (superVerbose) {
-            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
-        }
 
         // This version does parallel lookahead, so that the only time graph rebuilding is done is when
         // edge removals are attempted.

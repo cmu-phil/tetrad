@@ -1242,6 +1242,9 @@ public final class Params {
      */
     public static final String EXCLUDE_SELECTION_BIAS = "excludeSelectionBias";
     /**
+     * Constant <code>LV_HEURISTIC_ONLY="lvHeuristicOnly"</code>
+     */
+    public static final String LV_HEURISTIC_ONLY = "lvHeuristicOnly";    /**
      * Constant <code>BINS_PER_CONT_XY="binsPerContXY"</code>
      */
     public static final String BINS_PER_CONT_XY = "binsPerContXY";
