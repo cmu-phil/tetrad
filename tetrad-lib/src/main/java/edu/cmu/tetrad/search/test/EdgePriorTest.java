@@ -110,8 +110,12 @@ public class EdgePriorTest implements IndependenceTest {
 
         if (!unmatched.isEmpty()) {
             throw new IllegalArgumentException("The prior mentions variables the test does not have: "
-                    + unmatched + ". This usually means the prior was built"
-                    + " against a different variable set.");
+                    + unmatched + ". If the prior was built for a larger"
+                    + " variable set on purpose -- for instance one store"
+                    + " per locus, applied to each subsample repeat --"
+                    + " narrow it first with priors.restrictTo(test"
+                    + ".getVariables()). Otherwise the prior was probably"
+                    + " built against the wrong variable set.");
         }
 
         this.weights = priors.resolve(variables);

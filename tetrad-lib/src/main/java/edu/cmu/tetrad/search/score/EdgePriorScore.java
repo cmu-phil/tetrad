@@ -104,8 +104,12 @@ public class EdgePriorScore implements Score {
 
         if (!unmatched.isEmpty()) {
             throw new IllegalArgumentException("The prior mentions variables the score does not have: "
-                    + unmatched + ". This usually means the prior was built"
-                    + " against a different variable set.");
+                    + unmatched + ". If the prior was built for a larger"
+                    + " variable set on purpose -- for instance one store"
+                    + " per locus, applied to each subsample repeat --"
+                    + " narrow it first with priors.restrictTo(score"
+                    + ".getVariables()). Otherwise the prior was probably"
+                    + " built against the wrong variable set.");
         }
 
         double[][] beta = priors.resolve(variables);

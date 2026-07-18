@@ -393,6 +393,51 @@ public final class EdgePriors {
     }
 
     /**
+     * Returns a copy of this store keeping only the pairs both of whose variables occur among the
+     * given ones.
+     *
+     * <p>This is the explicit gesture for the random-subspace case: build one store per locus over
+     * every candidate SNP, verify its names once against the full locus variable list with
+     * {@link #unmatchedNames(List)}, then restrict it to each repeat's subset before handing it to
+     * a wrapper. The wrappers deliberately reject a store mentioning variables they do not have,
+     * since that is usually a prior built against the wrong locus; calling this method is how you
+     * say that a subset is what you meant.
+     *
+     * <p>Restricting is cheap and the result is independent of this store, so it is safe to call
+     * per repeat from parallel workers.
+     *
+     * <p>Note that restricting a store already normalised by {@link #normalizedToMeanOne()} leaves
+     * the surviving weights no longer averaging one among themselves. That is correct when the
+     * family whose error rate is being controlled is the whole locus rather than the subset, but
+     * it is worth being deliberate about.
+     *
+     * @param variables The variables to keep.
+     * @return The restricted store.
+     */
+    public EdgePriors restrictTo(List<Node> variables) {
+        Objects.requireNonNull(variables, "variables");
+
+        java.util.Set<String> present = new java.util.HashSet<>();
+
+        for (Node node : variables) {
+            present.add(node.getName());
+        }
+
+        Map<String, Double> out = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Double> e : this.values.entrySet()) {
+            String k = e.getKey();
+            int cut = k.indexOf(SEP);
+
+            if (present.contains(k.substring(0, cut)) && present.contains(k.substring(cut + 1))) {
+                out.put(k, e.getValue());
+            }
+        }
+
+        return new EdgePriors(out, this.semantics, this.origin);
+    }
+
+    /**
      * Returns the names mentioned by this store that do not occur among the given variables. A
      * non-empty result usually means the prior was built against a different variable set than
      * the one it is about to be applied to, which is worth knowing about before a thousand
