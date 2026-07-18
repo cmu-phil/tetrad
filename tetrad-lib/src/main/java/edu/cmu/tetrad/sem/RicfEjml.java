@@ -6,146 +6,186 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.CommonOps_DDRM;
-import org.ejml.dense.row.NormOps_DDRM;
 import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 import org.ejml.interfaces.decomposition.CholeskyDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
- * RICF for ADMGs (directed + bidirected edges only), i.e. NO selection bias (no undirected edges / UG block).
+ * Residual Iterative Conditional Fitting (RICF) for Gaussian ADMG / MAG models
+ * (directed and bidirected edges only; no undirected/selection block).
  *
- * This version is an EJML rewrite with two key correctness fixes:
- *  1) B is inverted using a general inverse (LU), NOT an SPD/Cholesky inverse.
- *  2) Omega is symmetrized at the end and diagonals are stabilized.
+ * <p>This is a clean EJML port of Bryan Andrews' reference Python implementation
+ * ({@code ricf.py}). It follows that implementation step for step, including its
+ * variable conventions, so the two agree to machine precision on the same inputs.</p>
  *
- * Notes:
- *  - Variable order is taken from covMatrix.getVariableNames().
- *  - Graph must contain nodes with those names.
+ * <h3>Conventions (as in the Python)</h3>
+ * <ul>
+ *   <li>{@code IB} is the {@code I - Beta} matrix: it starts at the identity and its
+ *       off-diagonal entry {@code IB[v, par] = -Beta[v, par]} holds the negated
+ *       structural coefficient of parent {@code par} in the equation for {@code v}.</li>
+ *   <li>{@code Omega} is the error covariance, carrying the bidirected structure in its
+ *       off-diagonals.</li>
+ *   <li>The implied covariance is {@code Sigma = inv(IB) * Omega * inv(IB)^T}, and the
+ *       direct-effects matrix is {@code Beta = I - IB} (this is the {@code B} returned by
+ *       the Python).</li>
+ * </ul>
+ *
+ * <p><b>Note on naming:</b> the earlier version of this class exposed {@code getBhat()}
+ * which returned {@code IB} (i.e. {@code I - Beta}). Here the accessors are unambiguous:
+ * {@link RicfResult#getBeta()} returns the direct-effects matrix {@code Beta = I - IB}
+ * (matching the Python's returned {@code B}), and {@link RicfResult#getIMinusBeta()}
+ * returns {@code IB} (the matrix used to reconstruct {@code Sigma}).</p>
+ *
+ * <p>Variable order is taken from {@code covMatrix.getVariableNames()}; the graph must
+ * contain nodes with those names.</p>
  */
 public final class RicfEjml {
 
-    /**
-     * Constructs an instance of the {@code RicfEjml} class.
-     *
-     * This class contains implementations for the Residual Iterative Conditional Fitting (RICF)
-     * algorithm, which is used for parameter estimation in additive directed mixed graphs (ADMGs).
-     */
-    public RicfEjml() {}
+    /** Default convergence tolerance (matches the Python default). */
+    public static final double DEFAULT_TOL = 1e-8;
+
+    /** Default maximum number of sweeps (matches the Python default). */
+    public static final int DEFAULT_MAX_ITERS = 1000;
 
     /**
-     * Represents the result of the Residual Iterative Conditional Fitting (RICF) algorithm
-     * for additive directed mixed graphs (ADMGs). This class encapsulates the estimated
-     * structural parameters, the number of iterations performed, and a convergence metric.
+     * Constructs an instance of {@code RicfEjml}. The class is stateless; all inputs
+     * are passed to {@link #ricf(Graph, ICovarianceMatrix, double, int)}.
+     */
+    public RicfEjml() {
+    }
+
+    /**
+     * Result of RICF: the implied covariance, the error covariance, both coefficient
+     * matrices ({@code Beta} and {@code I - Beta}), the sweep count, the final
+     * convergence metric, and the Gaussian log-likelihood of the fitted model.
      */
     public static final class RicfResult {
-        private final DMatrixRMaj sigmaHat;   // implied covariance
-        private final DMatrixRMaj bHat;       // B = I - Beta
-        private final DMatrixRMaj omegaHat;   // residual/error covariance (includes bidirected structure)
+        private final DMatrixRMaj sigmaHat;   // implied covariance = inv(IB) Omega inv(IB)^T
+        private final DMatrixRMaj omegaHat;   // error covariance (bidirected structure)
+        private final DMatrixRMaj beta;       // direct-effects matrix Beta = I - IB
+        private final DMatrixRMaj iMinusBeta; // IB = I - Beta (reconstructs Sigma)
         private final int iters;
         private final double diff;
-        private final double logLik;          // Gaussian log-likelihood of the fitted model
+        private final double logLik;
 
         /**
-         * Constructs a RicfResult object that contains the results of the Ricf algorithm.
+         * Constructs a result holder.
          *
-         * @param sigmaHat The implied covariance matrix.
-         * @param bHat The matrix representing B = I - Beta.
-         * @param omegaHat The residual or error covariance matrix, which includes bidirected structure.
-         * @param iters The number of iterations performed by the algorithm.
-         * @param diff The difference or convergence metric from the algorithm.
-         * @param logLik The Gaussian log-likelihood of the fitted model.
+         * @param sigmaHat   implied covariance matrix.
+         * @param omegaHat   error covariance matrix (includes bidirected structure).
+         * @param beta       direct-effects matrix {@code Beta = I - IB}.
+         * @param iMinusBeta the {@code IB = I - Beta} matrix.
+         * @param iters      number of sweeps performed.
+         * @param diff       final convergence metric (entrywise L1 change).
+         * @param logLik     Gaussian log-likelihood of the fitted model.
          */
-        public RicfResult(DMatrixRMaj sigmaHat, DMatrixRMaj bHat, DMatrixRMaj omegaHat, int iters, double diff, double logLik) {
+        public RicfResult(DMatrixRMaj sigmaHat, DMatrixRMaj omegaHat, DMatrixRMaj beta,
+                          DMatrixRMaj iMinusBeta, int iters, double diff, double logLik) {
             this.sigmaHat = sigmaHat;
-            this.bHat = bHat;
             this.omegaHat = omegaHat;
+            this.beta = beta;
+            this.iMinusBeta = iMinusBeta;
             this.iters = iters;
             this.diff = diff;
             this.logLik = logLik;
         }
 
         /**
-         * Retrieves the implied covariance matrix (sigmaHat) resulting from the Ricf algorithm.
-         *
-         * @return The implied covariance matrix represented as a DMatrixRMaj object.
+         * @return the implied (model) covariance matrix {@code Sigma}.
          */
-        public DMatrixRMaj getSigmaHat() { return sigmaHat; }
+        public DMatrixRMaj getSigmaHat() {
+            return sigmaHat;
+        }
 
         /**
-         * Retrieves the matrix representing B = I - Beta resulting from the Ricf algorithm.
-         *
-         * @return The matrix B = I - Beta, represented as a DMatrixRMaj object.
+         * @return the error covariance matrix {@code Omega} (its off-diagonals carry the
+         * bidirected structure).
          */
-        public DMatrixRMaj getBhat()     { return bHat; }
+        public DMatrixRMaj getOmegaHat() {
+            return omegaHat;
+        }
 
         /**
-         * Retrieves the residual or error covariance matrix (omegaHat), which includes bidirected structure,
-         * resulting from the Ricf algorithm.
-         *
-         * @return The residual or error covariance matrix represented as a DMatrixRMaj object.
+         * @return the direct-effects matrix {@code Beta = I - IB}. Entry {@code Beta[i][j]}
+         * is the structural coefficient of variable {@code j} in the equation for variable
+         * {@code i} (nonzero only where {@code j} is a parent of {@code i}). This matches
+         * the {@code B} returned by the reference Python.
          */
-        public DMatrixRMaj getOmegahat() { return omegaHat; }
+        public DMatrixRMaj getBeta() {
+            return beta;
+        }
 
         /**
-         * Retrieves the number of iterations performed by the algorithm.
-         *
-         * @return The number of iterations as an integer.
+         * @return the {@code IB = I - Beta} matrix, i.e. the matrix satisfying
+         * {@code Sigma = inv(IB) * Omega * inv(IB)^T}.
          */
-        public int getIters()            { return iters; }
+        public DMatrixRMaj getIMinusBeta() {
+            return iMinusBeta;
+        }
 
         /**
-         * Retrieves the difference or convergence metric resulting from the Ricf algorithm.
-         *
-         * @return The difference or convergence metric as a double.
+         * @return the number of sweeps performed (0-based index of the last completed
+         * sweep, matching the Python's returned {@code it}).
          */
-        public double getDiff()          { return diff; }
+        public int getIterations() {
+            return iters;
+        }
 
         /**
-         * Retrieves the Gaussian log-likelihood of the fitted model.
-         *
-         * <p>This is the multivariate-normal log-likelihood evaluated at the implied
-         * covariance matrix (sigmaHat), computed as
-         * {@code -(n/2) * (p*log(2*pi) + log|sigmaHat| + tr(sigmaHat^{-1} S))},
-         * where {@code n} is the sample size, {@code p} the number of variables, and
-         * {@code S} the sample covariance matrix.</p>
-         *
-         * @return The Gaussian log-likelihood as a double.
+         * @return the final convergence metric: the entrywise L1 change in {@code IB} plus
+         * that in {@code Omega} on the last sweep.
          */
-        public double getLogLik()        { return logLik; }
+        public double getDiff() {
+            return diff;
+        }
 
         /**
-         * Returns a string representation of the RicfResult object.
-         * The string includes the number of iterations performed and the
-         * convergence difference metric resulting from the Ricf algorithm.
+         * Gaussian log-likelihood of the fitted model, evaluated at the implied covariance.
          *
-         * @return A string representation of the object.
+         * <p>Computed as {@code -(n/2) * (p*log(2*pi) + log|Sigma| + tr(Sigma^{-1} S))},
+         * where {@code n} is the sample size, {@code p} the number of variables, {@code S}
+         * the sample covariance, and {@code Sigma} the implied covariance.</p>
+         *
+         * @return the log-likelihood.
          */
-        @Override public String toString() {
+        public double getLogLik() {
+            return logLik;
+        }
+
+        @Override
+        public String toString() {
             return "RicfResult{iters=" + iters + ", diff=" + diff + ", logLik=" + logLik + "}";
         }
     }
 
     /**
-     * Implements the Residual Iterative Conditional Fitting (RICF) algorithm for additive directed mixed graphs (ADMGs).
-     * The method estimates the structural parameters (e.g., regression coefficients and variances) of a model defined on the ADMG.
+     * Runs RICF with the default tolerance and iteration cap.
      *
-     * @param admg       An instance of the {@code Graph} class representing the ADMG. It must not be {@code null}.
-     *                   Each variable in the covariance matrix must correspond to a node in this graph.
-     * @param covMatrix  An instance of the {@code ICovarianceMatrix} interface representing the sample covariance matrix.
-     *                   The dimensions of the covariance matrix must match the number of variables in the graph.
-     * @param tol        A positive threshold for the stopping criterion. The algorithm terminates when the maximum absolute difference
-     *                   in estimated parameters across successive iterations is less than this value.
-     * @param maxIters   The maximum number of iterations to perform. The algorithm terminates if this limit is reached before convergence.
-     * @return           A {@code RicfResult} containing the estimated regression coefficients, variances, covariance matrix,
-     *                   total iterations performed, and the final difference measure for the stopping criterion.
-     * @throws NullPointerException     If either {@code admg} or {@code covMatrix} is {@code null}.
-     * @throws IllegalArgumentException If the dimensions of the covariance matrix do not match the variables in the graph,
-     *                                   or if the graph is missing variables specified in the covariance matrix.
+     * @param admg      the ADMG/MAG (directed + bidirected edges only).
+     * @param covMatrix the sample covariance matrix.
+     * @return the fitted {@link RicfResult}.
+     */
+    public RicfResult ricf(Graph admg, ICovarianceMatrix covMatrix) {
+        return ricf(admg, covMatrix, DEFAULT_TOL, DEFAULT_MAX_ITERS);
+    }
+
+    /**
+     * Runs Residual Iterative Conditional Fitting for a Gaussian ADMG/MAG.
+     *
+     * @param admg      the ADMG/MAG; every variable of {@code covMatrix} must be a node here.
+     *                  Only directed and bidirected edges are used.
+     * @param covMatrix the sample covariance matrix (must be square and positive definite).
+     * @param tol       positive convergence tolerance on the entrywise L1 parameter change.
+     * @param maxIters  maximum number of sweeps.
+     * @return the fitted {@link RicfResult}.
+     * @throws NullPointerException     if {@code admg} or {@code covMatrix} is null.
+     * @throws IllegalArgumentException if dimensions mismatch, a variable is missing from the
+     *                                  graph, or {@code S} is not positive definite.
      */
     public RicfResult ricf(Graph admg, ICovarianceMatrix covMatrix, double tol, int maxIters) {
         Objects.requireNonNull(admg, "admg");
@@ -153,9 +193,11 @@ public final class RicfEjml {
 
         List<String> varNames = covMatrix.getVariableNames();
         int p = covMatrix.getDimension();
-        if (p != varNames.size()) throw new IllegalArgumentException("covMatrix dimension mismatch.");
+        if (p != varNames.size()) {
+            throw new IllegalArgumentException("RICF: covMatrix dimension does not match variable count.");
+        }
 
-        // Map names -> nodes (validate existence)
+        // Map covariance variable order -> graph nodes (validate existence).
         List<Node> nodes = new ArrayList<>(p);
         List<String> missing = new ArrayList<>();
         for (String name : varNames) {
@@ -164,198 +206,146 @@ public final class RicfEjml {
             nodes.add(v);
         }
         if (!missing.isEmpty()) {
-            throw new IllegalArgumentException("RICF: Graph is missing variables from covariance matrix: " + missing);
+            throw new IllegalArgumentException("RICF: graph is missing variables from covariance matrix: " + missing);
         }
 
-        // S = sample covariance in cov order
+        // S = sample covariance in covariance order.
         SimpleMatrix S = new SimpleMatrix(covMatrix.getMatrix().toArray());
         int n = covMatrix.getSampleSize();
 
-        if (p == 1) {
-            DMatrixRMaj s = S.getDDRM().copy();
-            double logLik1 = gaussianLogLikelihood(S, S, n);
-            return new RicfResult(s, CommonOps_DDRM.identity(1), s, 1, 0.0, logLik1);
+        if (S.numRows() != S.numCols()) {
+            throw new IllegalArgumentException("RICF: S must be square.");
+        }
+        if (!isPositiveDefinite(S)) {
+            throw new IllegalArgumentException("RICF: S must be positive definite.");
         }
 
-        // B starts at identity; Omega starts at diag(S)
-        SimpleMatrix B = SimpleMatrix.identity(p);
-        SimpleMatrix Omega = diag(diag(S));
+        int[] all = range(p);
 
-        // Precompute parents/spouses index lists in cov order
-        int[][] parents = parentIndices(admg, nodes);
-        int[][] spouses = spouseIndices(admg, nodes);
+        // Parents and spouses (siblings) in covariance order.
+        int[][] pars = parentIndices(admg, nodes);
+        int[][] sibs = spouseIndices(admg, nodes);
+
+        // IB = I - Beta starts at identity; Omega starts at diag(S).
+        SimpleMatrix IB = SimpleMatrix.identity(p);
+        SimpleMatrix Omega = new SimpleMatrix(p, p);
+        for (int i = 0; i < p; i++) Omega.set(i, i, S.get(i, i));
 
         int it = 0;
         double diff = Double.POSITIVE_INFINITY;
 
-        // Optional: one-shot initialization for nodes with no spouses (matches your Colt code spirit)
-        // (This helps convergence but isn't required for correctness.)
-        initializeNoSpouseNodesOnce(S, B, Omega, parents, spouses);
-
-        while (it < maxIters && diff > tol) {
-            it++;
-
-            SimpleMatrix Bold = B.copy();
-            SimpleMatrix OmegaOld = Omega.copy();
+        for (it = 0; it < maxIters; it++) {
+            SimpleMatrix ibOld = IB.copy();
+            SimpleMatrix omegaOld = Omega.copy();
 
             for (int v = 0; v < p; v++) {
-                int[] parv = parents[v];
-                int[] spov = spouses[v];
+                int[] par = pars[v];
+                int[] sib = sibs[v];
 
-                if (spov.length == 0) {
-                    // In ADMG RICF, if there are no spouses, Beta update is basically regression;
-                    // we already initialized; further updates are optional. Keeping it simple/stable:
+                // ---- no siblings ----
+                if (sib.length == 0) {
+                    // Regress v on its parents once, on the first sweep. With no spouses this
+                    // least-squares fit does not depend on Omega, so it never needs revisiting.
+                    if (par.length > 0 && it == 0) {
+                        SimpleMatrix Spar = submatrix(S, par, par);
+                        SimpleMatrix Svpar = submatrix(S, row(v), par);        // 1 x |par|
+                        SimpleMatrix ibRow = Svpar.mult(Spar.invert()).scale(-1.0); // -S[v,par] inv(S[par,par])
+                        for (int k = 0; k < par.length; k++) IB.set(v, par[k], ibRow.get(0, k));
+
+                        SimpleMatrix Sparv = submatrix(S, par, row(v));        // |par| x 1
+                        Omega.set(v, v, S.get(v, v) + ibRow.mult(Sparv).get(0, 0));
+                    }
                     continue;
                 }
 
-                int[] vcomp = complement(p, v);
-                int[] all = range(p);
+                // ---- some siblings ----
+                int[] mask = complement(p, v);
+                SimpleMatrix oInv = submatrix(Omega, mask, mask).invert();     // (p-1) x (p-1)
+                int[] sibPos = posInMask(sib, v);
 
-                // oInv = inv(Omega[vcomp, vcomp])
-                SimpleMatrix Omega_vc_vc = Omega.extractMatrix(vcomp[0], vcomp[vcomp.length - 1] + 1,
-                        vcomp[0], vcomp[vcomp.length - 1] + 1);
-                // NOTE: extractMatrix needs contiguous ranges; vcomp is not contiguous generally.
-                // So use explicit submatrix helper:
-                Omega_vc_vc = select(Omega, vcomp, vcomp);
+                // Z = oInv[sib, mask] * IB[mask, :]   =>  |sib| x p
+                SimpleMatrix Z = submatrix(oInv, sibPos, range(p - 1))
+                        .mult(submatrix(IB, mask, all));
 
-                SimpleMatrix oInv = safeInverseSPD(Omega_vc_vc, 1e-10);
+                double tempVar;
 
-//                // Z = oInv[spov, vcomp] * B[vcomp, all]  => |sp| x p
-//                SimpleMatrix Z = select(oInv, indexOfSub(vcomp, spov), range(vcomp.length))  // WRONG mapping
-//                        .mult(select(B, vcomp, all));                                      // too messy
-
-//                int[] all = range(B.numCols());        // B is p x p, so all is 0..p-1
-
-                int[] spovPosInVcomp = positionsIn(vcomp, spov);   // if spov are global indices
-                int[] vcompPosInVcomp = range(vcomp.length);       // 0..|vcomp|-1
-
-                SimpleMatrix Z = select(oInv, spovPosInVcomp, vcompPosInVcomp)
-                        .mult(select(B, vcomp, all));              // B uses global indices
-
-                // Z = oInv[spov, vcomp] * B[vcomp, all]  => |spov| x p
-//                SimpleMatrix Z = select(oInv, spov, vcomp)
-//                        .mult(select(B, vcomp, all));
-
-                // Better: build Z explicitly:
-                SimpleMatrix oInv_sp_vc = select(oInv, mapToVcompIndices(vcomp, spov), range(vcomp.length));
-                SimpleMatrix B_vc_all   = select(B, vcomp, all);
-                Z = oInv_sp_vc.mult(B_vc_all);
-
-                if (parv.length > 0) {
-                    // XX is block matrix:
-                    // [ S(par,par)             S(par,all) Z' ]
-                    // [ (S(par,all) Z')'       Z S Z'      ]
-                    int lpa = parv.length;
-                    int lspo = spov.length;
-
-                    SimpleMatrix XX = new SimpleMatrix(lpa + lspo, lpa + lspo);
-
-                    SimpleMatrix S_par_par = select(S, parv, parv);
-                    XX.insertIntoThis(0, 0, S_par_par);
-
-                    SimpleMatrix S_par_all = select(S, parv, all);
-                    SimpleMatrix UR = S_par_all.mult(Z.transpose());          // lpa x lspo
-                    XX.insertIntoThis(0, lpa, UR);
-                    XX.insertIntoThis(lpa, 0, UR.transpose());
-
-                    SimpleMatrix LR = Z.mult(S).mult(Z.transpose());          // lspo x lspo
-                    XX.insertIntoThis(lpa, lpa, LR);
-
-                    // YX = [ S(v,par) , S(v,all) Z' ]'  (column)
-                    SimpleMatrix YX = new SimpleMatrix(lpa + lspo, 1);
-                    SimpleMatrix S_v_par = select(S, new int[]{v}, parv).transpose();      // lpa x 1
-                    YX.insertIntoThis(0, 0, S_v_par);
-
-                    SimpleMatrix S_v_all = select(S, new int[]{v}, all);                   // 1 x p
-                    SimpleMatrix S_v_all_Zt = S_v_all.mult(Z.transpose()).transpose();     // lspo x 1
-                    YX.insertIntoThis(lpa, 0, S_v_all_Zt);
-
-                    // temp = XX^{-1} * YX
-                    SimpleMatrix temp = XX.solve(YX);
-
-                    // Update B[v,par] = -temp[0:lpa]
-                    for (int k = 0; k < lpa; k++) {
-                        B.set(v, parv[k], -temp.get(k, 0));
-                    }
-
-                    // Update Omega[v,sp] and symmetric
-                    for (int k = 0; k < lspo; k++) {
-                        double val = temp.get(lpa + k, 0);
-                        Omega.set(v, spov[k], val);
-                        Omega.set(spov[k], v, val);
-                    }
-
-                    // Variance update:
-                    // tempVar = Svv - temp' * YX
-                    double Svv = S.get(v, v);
-                    double tempDotYX = temp.transpose().mult(YX).get(0, 0);
-                    double tempVar = Svv - tempDotYX;
-
-                    // add Omega[v,sp] * oInv[sp,sp] * Omega[sp,v]
-                    SimpleMatrix Omega_v_sp = select(Omega, new int[]{v}, spov);           // 1 x lspo
-                    SimpleMatrix oInv_sp_sp  = select(oInv, mapToVcompIndices(vcomp, spov), mapToVcompIndices(vcomp, spov));
-                    SimpleMatrix Omega_sp_v  = Omega_v_sp.transpose();                     // lspo x 1
-                    double add = Omega_v_sp.mult(oInv_sp_sp).mult(Omega_sp_v).get(0, 0);
-
-                    Omega.set(v, v, tempVar + add);
-
-                } else {
-                    // par empty, spouse nonempty:
-                    // XX = Z S Z'
-                    // YX = (S(v,all) Z')'
+                if (par.length == 0) {
+                    // XX = Z S Z^T ;  YX = (S[v,:] Z^T)^T ;  coef = XX^{-1} YX
                     SimpleMatrix XX = Z.mult(S).mult(Z.transpose());
-                    SimpleMatrix YX = select(S, new int[]{v}, all).mult(Z.transpose()).transpose(); // lspo x 1
+                    SimpleMatrix YX = submatrix(S, row(v), all).mult(Z.transpose()).transpose(); // |sib| x 1
+                    SimpleMatrix coef = XX.solve(YX);
 
-                    SimpleMatrix temp = XX.solve(YX);
-
-                    for (int k = 0; k < spov.length; k++) {
-                        double val = temp.get(k, 0);
-                        Omega.set(v, spov[k], val);
-                        Omega.set(spov[k], v, val);
+                    for (int k = 0; k < sib.length; k++) {
+                        double val = coef.get(k, 0);
+                        Omega.set(v, sib[k], val);
+                        Omega.set(sib[k], v, val);
                     }
+                    tempVar = S.get(v, v) - coef.transpose().mult(YX).get(0, 0);
+                } else {
+                    int lpa = par.length;
+                    int lsib = sib.length;
 
-                    double Svv = S.get(v, v);
-                    double tempDotYX = temp.transpose().mult(YX).get(0, 0);
-                    double tempVar = Svv - tempDotYX;
+                    // XX = [ S[par,par]        S[par,:] Z^T ]
+                    //      [ (S[par,:] Z^T)^T  Z S Z^T      ]
+                    SimpleMatrix XX = new SimpleMatrix(lpa + lsib, lpa + lsib);
+                    XX.insertIntoThis(0, 0, submatrix(S, par, par));
+                    SimpleMatrix ur = submatrix(S, par, all).mult(Z.transpose()); // lpa x lsib
+                    XX.insertIntoThis(0, lpa, ur);
+                    XX.insertIntoThis(lpa, 0, ur.transpose());
+                    XX.insertIntoThis(lpa, lpa, Z.mult(S).mult(Z.transpose()));
 
-                    SimpleMatrix Omega_v_sp = select(Omega, new int[]{v}, spov);
-                    SimpleMatrix oInv_sp_sp  = select(oInv, mapToVcompIndices(vcomp, spov), mapToVcompIndices(vcomp, spov));
-                    double add = Omega_v_sp.mult(oInv_sp_sp).mult(Omega_v_sp.transpose()).get(0, 0);
+                    // YX = [ S[v,par]^T ; (S[v,:] Z^T)^T ]
+                    SimpleMatrix YX = new SimpleMatrix(lpa + lsib, 1);
+                    YX.insertIntoThis(0, 0, submatrix(S, row(v), par).transpose());
+                    YX.insertIntoThis(lpa, 0, submatrix(S, row(v), all).mult(Z.transpose()).transpose());
 
-                    Omega.set(v, v, tempVar + add);
+                    SimpleMatrix coef = XX.solve(YX);   // (lpa + lsib) x 1
+
+                    for (int k = 0; k < lpa; k++) IB.set(v, par[k], -coef.get(k, 0));
+                    for (int k = 0; k < lsib; k++) {
+                        double val = coef.get(lpa + k, 0);
+                        Omega.set(v, sib[k], val);
+                        Omega.set(sib[k], v, val);
+                    }
+                    tempVar = S.get(v, v) - coef.transpose().mult(YX).get(0, 0);
                 }
+
+                // Omega[v,v] = tempVar + Omega[v,sib] * oInv[sib,sib] * Omega[sib,v]
+                SimpleMatrix omegaVsib = submatrix(Omega, row(v), sib);        // 1 x |sib|
+                SimpleMatrix oInvSibSib = submatrix(oInv, sibPos, sibPos);
+                double add = omegaVsib.mult(oInvSibSib).mult(omegaVsib.transpose()).get(0, 0);
+                Omega.set(v, v, tempVar + add);
             }
 
-            // diff = ||Omega - OmegaOld||_1 + ||B - Bold||_1
-            diff = NormOps_DDRM.normP1(Omega.minus(OmegaOld).getDDRM())
-                    + NormOps_DDRM.normP1(B.minus(Bold).getDDRM());
+            // Entrywise L1 change (matches the Python's np.sum(np.abs(...))).
+            diff = elementL1Diff(IB, ibOld) + elementL1Diff(Omega, omegaOld);
+            if (diff < tol) break;
         }
 
-        // Symmetrize Omega and stabilize diagonal
+        // Omega is symmetric by construction; project to kill any float drift.
         Omega = symmetrize(Omega);
-        stabilizeDiagonal(Omega, 1e-8);
 
-        // sigmaHat = inv(B) * Omega * inv(B')  (GENERAL inverse, not SPD)
-        SimpleMatrix invB  = B.invert();
-        SimpleMatrix invBt = B.transpose().invert();
-        SimpleMatrix sigmaHat = invB.mult(Omega).mult(invBt);
+        SimpleMatrix invIB = IB.invert();
+        SimpleMatrix sigmaHat = invIB.mult(Omega).mult(invIB.transpose());
+        SimpleMatrix beta = SimpleMatrix.identity(p).minus(IB);
 
-        // Gaussian log-likelihood of the fitted model, evaluated at sigmaHat.
         double logLik = gaussianLogLikelihood(sigmaHat, S, n);
 
-        return new RicfResult(sigmaHat.getDDRM().copy(), B.getDDRM().copy(), Omega.getDDRM().copy(), it, diff, logLik);
+        return new RicfResult(
+                sigmaHat.getDDRM().copy(),
+                Omega.getDDRM().copy(),
+                beta.getDDRM().copy(),
+                IB.getDDRM().copy(),
+                it, diff, logLik);
     }
 
-    // ---------------- helpers ----------------
+    // ---------------- likelihood ----------------
 
     /**
-     * Multivariate-normal log-likelihood evaluated at a model-implied covariance matrix.
+     * Multivariate-normal log-likelihood at a model-implied covariance:
+     * {@code -(n/2) * (p*log(2*pi) + log|sigma| + tr(sigma^{-1} S))}.
      *
-     * <p>Computes {@code -(n/2) * (p*log(2*pi) + log|sigma| + tr(sigma^{-1} S))}, the standard
-     * Gaussian (maximized over the mean) log-likelihood for {@code n} i.i.d. observations with
-     * sample covariance {@code S} under a model with implied covariance {@code sigma}.</p>
-     *
-     * @param sigma model-implied covariance (p x p, symmetric positive definite).
+     * @param sigma implied covariance (p x p, SPD).
      * @param S     sample covariance (p x p).
      * @param n     sample size.
      * @return the Gaussian log-likelihood.
@@ -368,8 +358,7 @@ public final class RicfEjml {
     }
 
     /**
-     * Stable log-determinant for a symmetric positive-definite matrix via Cholesky.
-     * Falls back to log|det| (LU) if the Cholesky decomposition fails.
+     * Stable log-determinant of an SPD matrix via Cholesky, with an LU fallback.
      */
     private static double logDetSPD(SimpleMatrix A) {
         int n = A.numRows();
@@ -378,14 +367,19 @@ public final class RicfEjml {
         if (chol.decompose(copy)) {
             DMatrixRMaj L = chol.getT(null);
             double logDet = 0.0;
-            for (int i = 0; i < n; i++) {
-                logDet += 2.0 * Math.log(L.get(i, i));
-            }
+            for (int i = 0; i < n; i++) logDet += 2.0 * Math.log(L.get(i, i));
             return logDet;
         }
-        // Fallback: general determinant (may be less stable / could be non-positive numerically).
         return Math.log(Math.abs(A.determinant()));
     }
+
+    private static boolean isPositiveDefinite(SimpleMatrix A) {
+        int n = A.numRows();
+        CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(n, true);
+        return chol.decompose(A.getDDRM().copy());
+    }
+
+    // ---------------- graph -> index lists ----------------
 
     private static int[][] parentIndices(Graph g, List<Node> nodes) {
         int p = nodes.size();
@@ -397,7 +391,7 @@ public final class RicfEjml {
                 int i = nodes.indexOf(par);
                 if (i >= 0) pars.add(i);
             }
-            out[j] = pars.stream().mapToInt(x -> x).toArray();
+            out[j] = toSortedArray(pars);
         }
         return out;
     }
@@ -410,123 +404,29 @@ public final class RicfEjml {
             List<Integer> sp = new ArrayList<>();
             for (Edge e : g.getEdges(nv)) {
                 if (Edges.isBidirectedEdge(e)) {
-                    Node other = e.getDistalNode(nv);
-                    int idx = nodes.indexOf(other);
-                    if (idx >= 0) sp.add(idx);
+                    int idx = nodes.indexOf(e.getDistalNode(nv));
+                    if (idx >= 0 && idx != v && !sp.contains(idx)) sp.add(idx);
                 }
             }
-            out[v] = sp.stream().distinct().sorted().mapToInt(x -> x).toArray();
+            out[v] = toSortedArray(sp);
         }
         return out;
     }
 
-    private static void initializeNoSpouseNodesOnce(SimpleMatrix S, SimpleMatrix B, SimpleMatrix Omega,
-                                                    int[][] parents, int[][] spouses) {
-        int p = S.numRows();
-        for (int v = 0; v < p; v++) {
-            if (spouses[v].length != 0) continue;
-            int[] parv = parents[v];
-            if (parv.length == 0) continue;
+    // ---------------- small helpers ----------------
 
-            // beta = S(v,par) * inv(S(par,par))
-            SimpleMatrix S_par_par = select(S, parv, parv);
-            SimpleMatrix S_v_par   = select(S, new int[]{v}, parv);
-            SimpleMatrix betaRow   = S_v_par.mult(S_par_par.invert()); // 1 x |par|
-
-            for (int k = 0; k < parv.length; k++) {
-                B.set(v, parv[k], -betaRow.get(0, k));
-            }
-
-            // Omega(v,v) = S(v,v) - beta * S(par,v)
-            SimpleMatrix S_par_v = select(S, parv, new int[]{v}); // |par| x 1
-            double Svv = S.get(v, v);
-            double sub = betaRow.mult(S_par_v).get(0, 0);
-            Omega.set(v, v, TMath.max(1e-8, Svv - sub));
+    /** Submatrix by explicit (possibly non-contiguous) row and column index sets. */
+    private static SimpleMatrix submatrix(SimpleMatrix M, int[] rows, int[] cols) {
+        SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
+        for (int i = 0; i < rows.length; i++) {
+            int r = rows[i];
+            for (int j = 0; j < cols.length; j++) out.set(i, j, M.get(r, cols[j]));
         }
+        return out;
     }
 
-    private static SimpleMatrix safeInverseSPD(SimpleMatrix A, double jitter0) {
-        // Cholesky-based solve; if it fails, jitter diagonal and retry.
-        // SimpleMatrix.invert() is general (LU), but for Omega blocks we prefer SPD stability.
-        SimpleMatrix M = A.copy();
-        double jitter = jitter0;
-        for (int t = 0; t < 10; t++) {
-            try {
-                // Try Cholesky via solve(I)
-                SimpleMatrix I = SimpleMatrix.identity(M.numRows());
-                return M.solve(I);
-            } catch (RuntimeException ex) {
-                for (int i = 0; i < M.numRows(); i++) {
-                    M.set(i, i, M.get(i, i) + jitter);
-                }
-                jitter *= 10.0;
-            }
-        }
-        // Fallback to general inverse if all else fails
-        return A.invert();
-    }
-
-//    private static SimpleMatrix diag(SimpleMatrix v) {
-//        int n = v.numRows();
-//        SimpleMatrix D = new SimpleMatrix(n, n);
-//        for (int i = 0; i < n; i++) D.set(i, i, v.get(i, 0));
-//        return D;
-//    }
-//
-//    private static SimpleMatrix diag(SimpleMatrix A) {
-//        int n = A.numRows();
-//        SimpleMatrix v = new SimpleMatrix(n, 1);
-//        for (int i = 0; i < n; i++) v.set(i, 0, A.get(i, i));
-//        return v;
-//    }
-
-    /**
-     * If input is a vector (n×1 or 1×n), return an n×n diagonal matrix.
-     * If input is a square matrix (n×n), return its diagonal as an n×1 column vector.
-     */
-    private static SimpleMatrix diag(SimpleMatrix M) {
-        int rows = M.numRows();
-        int cols = M.numCols();
-
-        // Case 1: vector -> diagonal matrix
-        if (rows == 1 || cols == 1) {
-            int n = TMath.max(rows, cols);
-            SimpleMatrix D = new SimpleMatrix(n, n);
-
-            for (int i = 0; i < n; i++) {
-                double v = (rows == 1) ? M.get(0, i) : M.get(i, 0);
-                D.set(i, i, v);
-            }
-            return D;
-        }
-
-        // Case 2: square matrix -> diagonal vector
-        if (rows == cols) {
-            int n = rows;
-            SimpleMatrix v = new SimpleMatrix(n, 1);
-            for (int i = 0; i < n; i++) {
-                v.set(i, 0, M.get(i, i));
-            }
-            return v;
-        }
-
-        throw new IllegalArgumentException(
-                "diag(): input must be a vector or a square matrix, got "
-                        + rows + "×" + cols
-        );
-    }
-
-    private static SimpleMatrix diag(SimpleMatrix A, boolean dummy) { return diag(diag(A)); }
-
-    private static SimpleMatrix symmetrize(SimpleMatrix A) {
-        return A.plus(A.transpose()).scale(0.5);
-    }
-
-    private static void stabilizeDiagonal(SimpleMatrix A, double eps) {
-        for (int i = 0; i < A.numRows(); i++) {
-            double d = A.get(i, i);
-            if (!(d > 0.0)) A.set(i, i, eps);
-        }
+    private static int[] row(int v) {
+        return new int[]{v};
     }
 
     private static int[] range(int p) {
@@ -535,6 +435,7 @@ public final class RicfEjml {
         return r;
     }
 
+    /** Ascending indices 0..p-1 with v removed. */
     private static int[] complement(int p, int v) {
         int[] out = new int[p - 1];
         int k = 0;
@@ -542,78 +443,34 @@ public final class RicfEjml {
         return out;
     }
 
-    private static int[] selectIndices(int[] base, Set<Integer> keep) {
-        return keep.stream().mapToInt(Integer::intValue).toArray();
+    /**
+     * Position of a global index within the ascending complement-of-{@code v} ordering.
+     * Since the complement is {@code 0..p-1} with {@code v} removed, this is a closed form.
+     */
+    private static int posInMask(int g, int v) {
+        return g < v ? g : g - 1;
     }
 
-    private static int[] mapToVcompIndices(int[] vcomp, int[] indicesInP) {
-        // Given absolute indices (0..p-1) in indicesInP, return their positions within vcomp.
-        Map<Integer, Integer> pos = new HashMap<>();
-        for (int i = 0; i < vcomp.length; i++) pos.put(vcomp[i], i);
-
-        int[] out = new int[indicesInP.length];
-        for (int i = 0; i < indicesInP.length; i++) {
-            Integer k = pos.get(indicesInP[i]);
-            if (k == null) throw new IllegalStateException("index not in vcomp: " + indicesInP[i]);
-            out[i] = k;
-        }
+    private static int[] posInMask(int[] gs, int v) {
+        int[] out = new int[gs.length];
+        for (int i = 0; i < gs.length; i++) out[i] = posInMask(gs[i], v);
         return out;
     }
 
-//    private static SimpleMatrix select(SimpleMatrix A, int[] rows, int[] cols) {
-//        SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
-//        for (int i = 0; i < rows.length; i++) {
-//            for (int j = 0; j < cols.length; j++) {
-//                out.set(i, j, A.get(rows[i], cols[j]));
-//            }
-//        }
-//        return out;
-//    }
-
-    private static SimpleMatrix select(SimpleMatrix M, int[] rows, int[] cols) {
-        int R = M.numRows(), C = M.numCols();
-
-        for (int r : rows) {
-            if (r < 0 || r >= R) {
-                throw new IllegalArgumentException("select(): row index out of bounds r=" + r +
-                        " for matrix " + R + "x" + C + " rows=" + Arrays.toString(rows) +
-                        " cols=" + Arrays.toString(cols));
-            }
-        }
-        for (int c : cols) {
-            if (c < 0 || c >= C) {
-                throw new IllegalArgumentException("select(): col index out of bounds c=" + c +
-                        " for matrix " + R + "x" + C + " rows=" + Arrays.toString(rows) +
-                        " cols=" + Arrays.toString(cols));
-            }
-        }
-
-        SimpleMatrix out = new SimpleMatrix(rows.length, cols.length);
-        for (int i = 0; i < rows.length; i++) {
-            int r = rows[i];
-            for (int j = 0; j < cols.length; j++) {
-                out.set(i, j, M.get(r, cols[j]));
-            }
-        }
-        return out;
+    private static double elementL1Diff(SimpleMatrix A, SimpleMatrix B) {
+        double s = 0.0;
+        int r = A.numRows(), c = A.numCols();
+        for (int i = 0; i < r; i++)
+            for (int j = 0; j < c; j++)
+                s += Math.abs(A.get(i, j) - B.get(i, j));
+        return s;
     }
 
-    private static int[] positionsIn(int[] base, int[] subset) {
-        // base: e.g., vcomp (global indices)
-        // subset: e.g., spov (global indices) OR vcomp itself
-        // returns: positions of each subset element within base
-        Map<Integer, Integer> pos = new HashMap<>(base.length * 2);
-        for (int i = 0; i < base.length; i++) pos.put(base[i], i);
+    private static SimpleMatrix symmetrize(SimpleMatrix A) {
+        return A.plus(A.transpose()).scale(0.5);
+    }
 
-        int[] out = new int[subset.length];
-        for (int i = 0; i < subset.length; i++) {
-            Integer p = pos.get(subset[i]);
-            if (p == null) {
-                throw new IllegalArgumentException("positionsIn(): element " + subset[i] +
-                        " not found in base " + Arrays.toString(base));
-            }
-            out[i] = p;
-        }
-        return out;
+    private static int[] toSortedArray(List<Integer> xs) {
+        return xs.stream().distinct().sorted().mapToInt(Integer::intValue).toArray();
     }
 }

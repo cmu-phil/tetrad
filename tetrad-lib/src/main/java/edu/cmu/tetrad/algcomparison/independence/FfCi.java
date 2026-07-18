@@ -80,7 +80,7 @@ public class FfCi implements IndependenceWrapper {
         test.setFeatureType(DEFAULT_FEATURE_TYPE);
         test.setCatRho(DEFAULT_CAT_RHO);
 
-        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
+//        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         return test;
     }
 
