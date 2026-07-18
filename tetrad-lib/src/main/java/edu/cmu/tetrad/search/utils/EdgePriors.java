@@ -449,29 +449,29 @@ public final class EdgePriors {
     public List<String> unmatchedNames(List<Node> variables) {
         Objects.requireNonNull(variables, "variables");
 
-        Map<String, Boolean> present = new LinkedHashMap<>();
+        java.util.Set<String> present = new java.util.HashSet<>();
 
         for (Node node : variables) {
-            present.put(node.getName(), Boolean.TRUE);
+            present.add(node.getName());
         }
 
-        List<String> missing = new ArrayList<>();
+        java.util.Set<String> missing = new java.util.LinkedHashSet<>();
 
         for (String k : this.values.keySet()) {
             int cut = k.indexOf(SEP);
             String a = k.substring(0, cut);
             String b = k.substring(cut + 1);
 
-            if (!present.containsKey(a) && !missing.contains(a)) {
+            if (!present.contains(a)) {
                 missing.add(a);
             }
 
-            if (!present.containsKey(b) && !missing.contains(b)) {
+            if (!present.contains(b)) {
                 missing.add(b);
             }
         }
 
-        return missing;
+        return new ArrayList<>(missing);
     }
 
     /**
