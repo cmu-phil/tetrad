@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  */
-public final class FcitSl implements IGraphSearch {
+public final class FcitSl2 implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -162,28 +162,6 @@ public final class FcitSl implements IGraphSearch {
      */
     private int maxForkFlips = 2;
     /**
-     * Whether pass 3 (the out-of-class escape) may run. Fork-flip seeds are enumerated in both
-     * modes and PARTITIONED by class membership (see {@link #seedMags}): flips certified
-     * Markov-equivalent to the current class run in the within-class pass as Stage 2b, and only
-     * certified non-equivalent flips are deferred to pass 3, which this flag gates. When false,
-     * FCIT-SL runs in "Step-Lemma-pure" mode: every commit is hosted by a representative of the
-     * current class (Zhang MAG, other LEG, or in-class fork-flip), and a state none of them can
-     * serve is left alone. An oracle run that terminates at the true PAG with this false is
-     * direct evidence that the Step Lemma's within-class witness sufficed at every commit.
-     */
-    private boolean allowClassEscape = false;
-    /**
-     * Commit provenance telemetry. {@code zhangCommits}: commits hosted by the canonical
-     * Zhang MAG (Stage 1). {@code legCommits}: commits hosted by a non-canonical LEG of the
-     * current class (Stage 2). {@code inClassFlipCommits}: commits hosted by a fork-flip seed
-     * certified Markov-equivalent to the current class (Stage 2b) -- a within-class
-     * representative that is neither a LEG nor a stamped LEG (e.g. a shielded-fork flip whose
-     * bidirected edges sit outside the deleted pair's common-neighbor set). {@code
-     * escapeCommits}: commits hosted by a certified out-of-class seed (pass 3). A run with
-     * {@code escapeCommits == 0} used only Step-Lemma-form witnesses.
-     */
-    private long zhangCommits = 0, legCommits = 0, inClassFlipCommits = 0, escapeCommits = 0;
-    /**
      * Deleted-pair battery telemetry: number of gate evaluations, refusals, and entailed
      * separation statements verified against the independence test. See
      * {@link #deletedPairBatteryPasses}.
@@ -241,7 +219,7 @@ public final class FcitSl implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public FcitSl(IndependenceTest test, Score score) {
+    public FcitSl2(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -519,24 +497,9 @@ public final class FcitSl implements IGraphSearch {
 
         int round = 0;
 
-        // The within-class sweep tries, per edge: the canonical Zhang MAG (Stage 1), the other
-        // LEGs (Stage 2), and every fork-flip seed certified Markov-equivalent to the current
-        // class (Stage 2b) -- all Step-Lemma-form witnesses. It is exhausted over ALL edges
-        // before any escape is attempted: the Step Lemma's witness is existential over spurious
-        // edges as well as representatives, so another edge's within-class witness takes
-        // priority over this edge's out-of-class seed. Pass 3 (certified out-of-class seeds
-        // only) runs when a full within-class sweep commits nothing, and only if
-        // allowClassEscape; it commits at most one edge, then within-class sweeping resumes
-        // against the new state.
-        boolean changed;
         do {
             TetradLogger.getInstance().log("\nRound: " + (++round));
-            changed = removeEdgesRecursively(excludeSelectionBias, false);
-            if (!changed && allowClassEscape) {
-                TetradLogger.getInstance().log("Within-class sweep committed nothing; attempting class-escape sweep.");
-                changed = removeEdgesRecursively(excludeSelectionBias, true);
-            }
-        } while (changed);
+        } while (removeEdgesRecursively(excludeSelectionBias));
 
         if (verbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -591,14 +554,9 @@ public final class FcitSl implements IGraphSearch {
         TetradLogger.getInstance().log("Commit gate: " + commitGate
                 + (commitGate == CommitGate.DELETED_PAIR_BATTERY
                 ? " (zMax=" + batteryZMax + "): " + batteryEvals + " evaluation(s), "
-                + batteryStatementsTested + " entailed statement(s) tested, "
-                + batteryRefusals + " refusal(s)."
+                  + batteryStatementsTested + " entailed statement(s) tested, "
+                  + batteryRefusals + " refusal(s)."
                 : "."));
-        TetradLogger.getInstance().log("Commit provenance: " + zhangCommits
-                + " Zhang-MAG (Stage 1), " + legCommits + " LEG (Stage 2), "
-                + inClassFlipCommits + " in-class fork-flip (Stage 2b), "
-                + escapeCommits + " class-escape (pass 3"
-                + (allowClassEscape ? ")." : "; disabled)."));
 
         TetradLogger.getInstance().log("\nFCIT-SL finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
@@ -868,12 +826,9 @@ public final class FcitSl implements IGraphSearch {
      * If {@code guaranteePag} is true, removals that would yield an illegal MAG are reverted; otherwise, illegal PAG
      * states may persist. Verbose logging records each attempted removal and orientation.
      *
-     * @param escape whether tryToModifyGraph may use fork-flip (out-of-class) seeds; false for
-     *               the within-class passes (Stage 1: Zhang MAG; Stage 2: LEGs), true only for
-     *               the state-level pass 3 run after a full within-class sweep commits nothing
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, boolean escape)
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias)
             throws InterruptedException {
 
         // This version does parallel lookahead, so that the only time graph rebuilding is done is when
@@ -936,19 +891,10 @@ public final class FcitSl implements IGraphSearch {
             // Commit against the live PAG using the sepset found during the search —
             // no re-search needed, since the winner was searched against the current PAG.
             boolean didChange = tryToModifyGraph(x, y, h.cond, h.pValue(),
-                    excludeSelectionBias, escape);
+                    excludeSelectionBias);
 
             if (didChange) {
                 changedThisSweep = true;
-
-                // In escape mode, commit at most ONE edge per sweep and hand control back to
-                // the within-class passes: the escape is a state-level fallback, and after any
-                // commit the new state deserves a fresh Stage-1/Stage-2 sweep before further
-                // escapes.
-                if (escape) {
-                    return true;
-                }
-
                 // PAG changed; resume scanning AFTER the removed edge against the new graph.
                 from = h.index + 1;
             } else {
@@ -1092,12 +1038,8 @@ public final class FcitSl implements IGraphSearch {
     }
 
     // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
-    // found. With escape == false only within-class representatives (the canonical Zhang MAG and the LEGs of
-    // the current class) are tried -- the Step Lemma's own quantifier. With escape == true the fork-flip
-    // out-of-class seeds are also tried; this is an engineering fallback OUTSIDE the Step Lemma, invoked only
-    // at the state level after a full within-class sweep commits nothing.
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias,
-                                     boolean escape)
+    // found.
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias)
             throws InterruptedException {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
@@ -1105,20 +1047,11 @@ public final class FcitSl implements IGraphSearch {
 
         final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
 
-        // Pick a MAG H'. In within-class mode (escape == false) the only seed is the minimal-
-        // bidirected Zhang MAG, and LegEnumerator walks the current class: Stage 1 is the Zhang
-        // MAG itself, Stage 2 the other LEGs. In escape mode extra seeds may LEAVE the class by
-        // turning a fork on an unblocked x..y path into a collider (fork -> <->), required when
-        // the initial DAG compels an orientation that contradicts the true MAG -- a latent
-        // common effect the DAG modeled as a common cause.
-        List<Graph> seeds = seedMags(_pag, x, y, b, deadline, escape);
-
-        for (int seedIdx = 0; seedIdx < seeds.size(); seedIdx++) {
-            Graph seed = seeds.get(seedIdx);
-            // Within-class mode lists the Zhang MAG first, then in-class fork-flips; escape
-            // mode returns only certified out-of-class seeds, so no seed there is the base.
-            boolean baseSeed = (!escape && seedIdx == 0);
-
+        // Pick a MAG H. Seeds start from the minimal-bidirected Zhang MAG, but may LEAVE the
+        // current directed class by turning a fork on an unblocked x..y path into a collider
+        // (fork -> <->). That is required when the initial DAG compels an orientation that
+        // contradicts the true MAG -- a latent common effect the DAG modeled as a common cause.
+        for (Graph seed : seedMags(_pag, x, y, b, deadline)) {
             for (Graph mag : new LegEnumerator(seed)) {
                 if (Thread.currentThread().isInterrupted()) {
                     throw new InterruptedException();
@@ -1157,19 +1090,6 @@ public final class FcitSl implements IGraphSearch {
                             + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
                 }
 
-                // Commit provenance: canonical Zhang MAG (Stage 1), other LEG of the current
-                // class (Stage 2), certified in-class fork-flip (Stage 2b), or certified
-                // out-of-class seed (pass 3).
-                if (escape) {
-                    escapeCommits++;
-                } else if (!baseSeed) {
-                    inClassFlipCommits++;
-                } else if (magKey(mag).equals(magKey(seed))) {
-                    zhangCommits++;
-                } else {
-                    legCommits++;
-                }
-
                 // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
                 this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
                 sepsets.set(x, y, b);
@@ -1179,7 +1099,6 @@ public final class FcitSl implements IGraphSearch {
 
         if (verbose) {
             TetradLogger.getInstance().log("\tTried removing " + _edge
-                    + (escape ? " (class-escape pass)" : " (within-class pass)")
                     + ", but no representative hosted it, sepset = " + b);
         }
 
@@ -1188,47 +1107,27 @@ public final class FcitSl implements IGraphSearch {
 
     /**
      * Builds the seed MAGs fed to the representative ({@link LegEnumerator}) search for deleting
-     * {@code x--y} with sepset {@code S}. The first seed is always the minimal-bidirected Zhang
-     * MAG. Fork-flip seeds are then enumerated in BOTH modes: on each active x..y path (given S)
-     * we find the non-collider nodes not in S and, for bounded subsets of them, convert them to
-     * colliders by stamping arrowheads in from their path-neighbors (turning the incident
-     * directed edges into {@code <->}). Each legal-MAG result is CLASSIFIED by whether it remains
-     * Markov-equivalent to the current class (its PAG coincides with the base's; skeletons agree
-     * by construction, and MagToPag is canonical per class, so PAG identity is class identity).
-     * A flip at a shielded triple that disturbs no discriminating path stays in class -- a
-     * legitimate Zhang-Spirtes representative that is neither a LEG nor reachable by separator
-     * stamping (its bidirected edges can sit outside the deleted pair's common neighbors) --
-     * and is served to the within-class pass as Stage 2b. Certified non-equivalent flips are
-     * genuine class escapes and are served only to pass 3.
-     * <p>
-     * With {@code escape == false} the returned list is the base followed by the in-class flips
-     * (the Step Lemma's quantifier, approximated from below); with {@code escape == true} it is
-     * the out-of-class flips only (the within-class seeds were already exhausted by the sweep
-     * that triggered pass 3).
-     * <p>
-     * NOTE (proved-vs-conjectured ledger): a certified OUT-OF-CLASS seed is neither
-     * Markov-equivalent to the current state nor certifiably an I-map of the truth, so the
-     * technical note's exactness claims (zero oracle false refusals for the deleted-pair battery;
-     * Conjecture pairlocal) do not cover pass-3 commits. The battery remains sound to RUN on them
-     * -- it tests only statements the candidate entails -- but its guarantees are stated for
-     * within-class candidates only. In-class flips, being equivalent representatives, sit fully
-     * inside the note's scope.
+     * {@code x--y} with sepset {@code S}. The first seed is the minimal-bidirected Zhang MAG, which
+     * reproduces the old behavior. If, once {@code x--y} is removed, that MAG still m-connects x and
+     * y given S, the current directed class cannot host the deletion (the initial DAG compelled a
+     * fork where the truth has a collider). We then escape the class: on each active x..y path
+     * (given S) we find the non-collider nodes not in S and, for bounded subsets of them, convert
+     * them to colliders by stamping arrowheads in from their path-neighbors (turning the incident
+     * directed edges into {@code <->}). Every augmented graph that is a legal MAG becomes an extra
+     * seed; {@link LegEnumerator} then walks that (different) class as well.
      */
-    private List<Graph> seedMags(Graph pag, Node x, Node y, Set<Node> S, long deadline, boolean escape)
+    private List<Graph> seedMags(Graph pag, Node x, Node y, Set<Node> S, long deadline)
             throws InterruptedException {
         Graph base = GraphTransforms.zhangMagFromPag(pag);
 
-        LinkedHashMap<String, Graph> inClass = new LinkedHashMap<>();
-        LinkedHashMap<String, Graph> outOfClass = new LinkedHashMap<>();
-        inClass.put(magKey(base), base);
+        LinkedHashMap<String, Graph> seeds = new LinkedHashMap<>();
+        seeds.put(magKey(base), base);
 
+        // Does base already host the deletion? If so, no out-of-class seeds are needed.
         Graph probe = new EdgeListGraph(base);
         probe.removeEdge(x, y);
-
-        // If the bare Zhang deletion already m-separates the pair given S, no x..y path is
-        // active given S, so the fork enumeration below is empty; short-circuit the DFS.
         if (new MsepTest(probe).checkIndependence(x, y, S).isIndependent()) {
-            return new ArrayList<>((escape ? outOfClass : inClass).values());
+            return new ArrayList<>(seeds.values());
         }
 
         // Fork/chain nodes (non-colliders not in S) on active x..y paths, with the path-neighbors
@@ -1245,33 +1144,20 @@ public final class FcitSl implements IGraphSearch {
             }
         }
 
-        // Try converting bounded subsets of forks to colliders; classify the legal-MAG results
-        // by class membership against the base's PAG.
-        Graph basePag = new MagToPag(base).convert(false, this.excludeSelectionBias);
-
+        // Try converting bounded subsets of forks to colliders; keep the legal-MAG results.
         List<Node> forks = new ArrayList<>(forkNbrs.keySet());
         int cap = Math.min(forks.size(), maxForkFlips);
         SublistGenerator gen = new SublistGenerator(forks.size(), cap);
         int[] choice;
         while ((choice = gen.next()) != null) {
             if (System.currentTimeMillis() > deadline) break;
-            if (choice.length == 0) continue;               // base already present (in-class)
+            if (choice.length == 0) continue;               // base already present
             Graph seed = new EdgeListGraph(base);
             for (int idx : choice) makeCollider(seed, forks.get(idx), forkNbrs.get(forks.get(idx)));
-            if (!seed.paths().isLegalMag()) continue;
-
-            String key = magKey(seed);
-            if (inClass.containsKey(key) || outOfClass.containsKey(key)) continue;
-
-            Graph seedPag = new MagToPag(seed).convert(false, this.excludeSelectionBias);
-            if (seedPag.equals(basePag)) {
-                inClass.put(key, seed);
-            } else {
-                outOfClass.put(key, seed);
-            }
+            if (seed.paths().isLegalMag()) seeds.putIfAbsent(magKey(seed), seed);
         }
 
-        return new ArrayList<>((escape ? outOfClass : inClass).values());
+        return new ArrayList<>(seeds.values());
     }
 
     /**
@@ -1331,11 +1217,7 @@ public final class FcitSl implements IGraphSearch {
      * rejection.  Passing vacuously when the gate is LEGALITY_PLUS_SEPARATOR.  Testing only
      * entailed statements means a Markov-preserving commit can never be refused at the
      * oracle; in sample, test noise produces refusals (reach cost), never unsound commits
-     * beyond what the gate design admits.  Both the zero-false-refusal claim and the 548/548
-     * coverage figure are stated for WITHIN-CLASS candidates (H' Markov-equivalent to the
-     * current I-map state); a pass-3 fork-flip candidate is outside that scope -- the battery
-     * remains sound to run on it, but the note's exactness accounting does not cover such
-     * commits.  Interruption during testing is treated as a
+     * beyond what the gate design admits.  Interruption during testing is treated as a
      * refusal -- the safe direction while the search winds down -- with the interrupt flag
      * restored.
      */
@@ -1414,19 +1296,6 @@ public final class FcitSl implements IGraphSearch {
      */
     public void setMaxForkFlips(int maxForkFlips) {
         this.maxForkFlips = maxForkFlips;
-    }
-
-    /**
-     * Sets whether pass 3 (certified out-of-class seeds) may run; see {@link #seedMags}. False
-     * is "Step-Lemma-pure" mode: every commit is hosted by a representative of the current class
-     * -- the canonical Zhang MAG, another LEG, or a fork-flip certified Markov-equivalent -- so
-     * an oracle run that terminates at the true PAG with this false is direct Step-Lemma
-     * evidence, undiluted by the escape hatch.
-     *
-     * @param allowClassEscape true to permit the state-level escape pass (the default).
-     */
-    public void setAllowClassEscape(boolean allowClassEscape) {
-        this.allowClassEscape = allowClassEscape;
     }
 
     /**
