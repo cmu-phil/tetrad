@@ -1047,8 +1047,6 @@ public final class FcitSl implements IGraphSearch {
 
         final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
 
-        boolean firstTime = true;
-
         // Pick a MAG H. Seeds start from the minimal-bidirected Zhang MAG, but may LEAVE the
         // current directed class by turning a fork on an unblocked x..y path into a collider
         // (fork -> <->). That is required when the initial DAG compels an orientation that
@@ -1058,12 +1056,6 @@ public final class FcitSl implements IGraphSearch {
                 if (Thread.currentThread().isInterrupted()) {
                     throw new InterruptedException();
                 }
-
-//                if (!firstTime) {
-//                    break;
-//                } else {
-//                    firstTime = false;
-//                }
 
                 if (System.currentTimeMillis() > deadline) {
                     break;
