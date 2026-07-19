@@ -23,7 +23,7 @@ import java.util.Objects;
  * ({@code ricf.py}). It follows that implementation step for step, including its
  * variable conventions, so the two agree to machine precision on the same inputs.</p>
  *
- * <h3>Conventions (as in the Python)</h3>
+ * Conventions (as in the Python)
  * <ul>
  *   <li>{@code IB} is the {@code I - Beta} matrix: it starts at the identity and its
  *       off-diagonal entry {@code IB[v, par] = -Beta[v, par]} holds the negated
