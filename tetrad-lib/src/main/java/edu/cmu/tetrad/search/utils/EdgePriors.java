@@ -345,6 +345,35 @@ public final class EdgePriors {
     }
 
     /**
+     * Returns the mean of the stored weights, or 1 if none are stored. For a WEIGHTS store this is
+     * the factor by which the average significance level of the pairs carrying a prior departs
+     * from the base alpha: mean(alpha_ij) = meanWeight() * alpha over those pairs. It is 1 exactly
+     * after {@link #normalizedToMeanOne()}, and above 1 before it for a mean-zero log-odds prior
+     * (the alpha(beta) map is convex). Reporting it per tau is the honest density-drift check.
+     *
+     * @return The mean stored weight.
+     * @throws IllegalStateException If this store does not hold weights.
+     */
+    public double meanWeight() {
+        if (this.semantics != Semantics.WEIGHTS) {
+            throw new IllegalStateException("meanWeight() is for weights, but this store holds "
+                    + this.semantics + ".");
+        }
+
+        if (this.values.isEmpty()) {
+            return 1.0;
+        }
+
+        double sum = 0.0;
+
+        for (double w : this.values.values()) {
+            sum += w;
+        }
+
+        return sum / this.values.size();
+    }
+
+    /**
      * Resolves this store against a variable list into a dense symmetric matrix indexed by that
      * list's order. Pairs with no stored value take the neutral value.
      *
