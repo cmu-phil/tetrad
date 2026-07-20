@@ -60,7 +60,7 @@ import static java.util.Collections.shuffle;
  *
  * @author josephramsey
  * @author bryanandrews
- * @see #getMarkovCpdag()
+ * @see #getMarkovCpdag(boolean)
  * @see Knowledge
  */
 public abstract class StarFci implements IGraphSearch {
@@ -257,7 +257,7 @@ public abstract class StarFci implements IGraphSearch {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
-        Graph cpdag = getMarkovCpdag();
+        Graph cpdag = getMarkovCpdag(verbose);
         Graph pag = new EdgeListGraph(cpdag);
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
@@ -471,7 +471,7 @@ public abstract class StarFci implements IGraphSearch {
      * @return This CPDAG.
      * @throws InterruptedException if interrupted.
      */
-    public abstract Graph getMarkovCpdag() throws InterruptedException;
+    public abstract Graph getMarkovCpdag(boolean verbose) throws InterruptedException;
 
     /**
      * Sets the flag indicating whether the graph is being replicated. (Unused.)

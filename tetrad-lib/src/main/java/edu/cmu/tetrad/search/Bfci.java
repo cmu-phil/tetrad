@@ -97,7 +97,7 @@ public final class Bfci extends StarFciCheckPag {
      * algorithm.
      * @throws InterruptedException if the thread executing the search is interrupted.
      */
-    public Graph getMarkovCpdag() throws InterruptedException {
+    public Graph getMarkovCpdag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting BOSS.");
         }
@@ -106,7 +106,7 @@ public final class Bfci extends StarFciCheckPag {
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
         subAlg.setNumThreads(numThreads);
-//        subAlg.setVerbose(isVerbose());
+        subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(getKnowledge());
         Graph cpdag = alg.search(false);

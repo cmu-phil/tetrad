@@ -47,7 +47,7 @@ import java.io.PrintStream;
  * @see Fges
  * @see Knowledge
  */
-public final class FgesFci extends StarFci {
+public final class FgesFci extends StarFciCheckPag {
     /**
      * The score used in search.
      */
@@ -90,7 +90,7 @@ public final class FgesFci extends StarFci {
      * @return The resulting CPDAG representing the Markov equivalence class.
      * @throws InterruptedException if the operation is interrupted.
      */
-    public Graph getMarkovCpdag() throws InterruptedException {
+    public Graph getMarkovCpdag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting FGES.");
         }
@@ -102,6 +102,7 @@ public final class FgesFci extends StarFci {
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
+        fges.setVerbose(verbose);
         Graph cpdag = fges.search();
 
         if (isVerbose()) {

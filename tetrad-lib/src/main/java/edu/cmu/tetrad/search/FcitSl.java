@@ -827,7 +827,7 @@ public final class FcitSl implements IGraphSearch {
         subAlg.setUseBes(useBes);
         subAlg.setNumStarts(numStarts);
         subAlg.setNumThreads(Runtime.getRuntime().availableProcessors());
-        subAlg.setVerbose(false);
+        subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(knowledge);
         return alg;
