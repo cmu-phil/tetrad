@@ -35,19 +35,19 @@ import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
-///**
-// * Wrapper for Kernel Marginal Likelihood Score.
-// *
-// * @author josephramsey
-// * @version $Id: $Id
-// */
-//@edu.cmu.tetrad.annotation.Score(
-//        name = "KML Score",
-//        command = "kml-score",
-//        dataType = {DataType.Continuous}
-//)
-//@General
-//@Experimental
+/**
+ * Wrapper for Kernel Marginal Likelihood Score.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
+@edu.cmu.tetrad.annotation.Score(
+        name = "KML Score",
+        command = "kml-score",
+        dataType = {DataType.Continuous}
+)
+@General
+@Experimental
 public class KernelMarginalLikelihoodScore implements ScoreWrapper {
 
     @Serial

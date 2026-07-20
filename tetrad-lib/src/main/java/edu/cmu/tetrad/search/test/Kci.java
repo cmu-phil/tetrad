@@ -294,61 +294,41 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
      * Gamma-approx p-value for conditional KCI statistic. S = (1/n) * tr(RX * RY) ~ Gamma(k, theta) by moment
      * matching.
      */
-    private static double pValueGammaConditional(SimpleMatrix RX, SimpleMatrix RY, double stat, int N) {
-        if (stat <= 0.0 || N <= 1) return 1.0;
+    private static double pValueGammaConditional(SimpleMatrix RX, SimpleMatrix RY, double statIgnored, int N) {
+        if (N <= 1) return 1.0;
 
         final double[] rx = RX.getDDRM().data;
         final double[] ry = RY.getDDRM().data;
 
-        // --- 1) Estimate null mean and variance via a small number of permutations
-        final int Bmom = 500;               // 128â512 is a good range
-
-        double mean = 0.0, m2 = 0.0;
-        int[] idx = new int[N];
-        for (int i = 0; i < N; i++) idx[i] = i;
-
-        for (int b = 0; b < Bmom; b++) {
-            // FisherâYates shuffle of idx
-            for (int i = N - 1; i > 0; i--) {
-                int j = RandomUtil.getInstance().nextInt(i + 1);
-                int t = idx[i];
-                idx[i] = idx[j];
-                idx[j] = t;
+        // One pass: raw statistic + traces + squared Frobenius norms.
+        double sta = 0.0, trX = 0.0, trY = 0.0, frX = 0.0, frY = 0.0;
+        int p = 0;
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++, p++) {
+                final double vx = rx[p], vy = ry[p];
+                sta += vx * vy;
+                frX += vx * vx;
+                frY += vy * vy;
+                if (i == j) { trX += vx; trY += vy; }
             }
-            // s_b = (1/N) * sum_{i,j} RX[i,j] * RY[idx[i], idx[j]]
-            double sb = 0.0;
-            int base_i = 0;
-            for (int i = 0; i < N; i++, base_i += N) {
-                final int ii = idx[i] * N;
-                for (int j = 0; j < N; j++) {
-                    sb += rx[base_i + j] * ry[ii + idx[j]];
-                }
-            }
-            sb /= N;
-
-            // Welford update for mean/variance
-            double delta = sb - mean;
-            mean += delta / (b + 1);
-            m2 += delta * (sb - mean);
         }
-        double var = m2 / (Bmom - 1);
+        if (sta <= 0.0) return 1.0;
 
-        // --- 2) Moment-matched Gamma(k, theta) with guards
+        // Analytic moment-matched Gamma (Zhang 2011 / causal-learn get_kappa).
+        double mean = trX * trY / N;
+        double var  = 2.0 * frX * frY / ((double) N * N);
+
         final double EPS = 1e-12;
         if (!(mean > 0.0) || !Double.isFinite(mean)) mean = EPS;
-        if (!(var > 0.0) || !Double.isFinite(var)) var = EPS * mean * mean;
+        if (!(var  > 0.0) || !Double.isFinite(var))  var  = EPS * mean * mean;
 
-        double k = (mean * mean) / var;   // shape
-        double theta = var / mean;        // scale
+        double k = mean * mean / var;
+        double theta = var / mean;
         if (!Double.isFinite(k) || k <= 0.0) k = 1e-6;
         if (!Double.isFinite(theta) || theta <= 0.0) theta = EPS;
 
-        // --- 3) Right-tail p-value under fitted Gamma
-        GammaDistribution gd = new GammaDistribution(k, theta);
-        double p = 1.0 - gd.cumulativeProbability(stat);
-        if (p < 0.0) p = 0.0;
-        if (p > 1.0) p = 1.0;
-        return p;
+        double pv = 1.0 - new GammaDistribution(k, theta).cumulativeProbability(sta);
+        return Math.min(1.0, Math.max(0.0, pv));
     }
 
     /**
