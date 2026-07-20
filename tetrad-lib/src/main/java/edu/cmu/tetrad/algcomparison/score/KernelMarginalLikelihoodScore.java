@@ -44,7 +44,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Score(
         name = "KML Score",
         command = "kml-score",
-        dataType = {DataType.Continuous}
+        dataType = {DataType.Mixed}
 )
 @General
 @Experimental
@@ -84,6 +84,7 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         score.setBandwidthMultiplier(parameters.getDouble(Params.KML_BANDWIDTH_MULTIPLIER));
         score.setBwMaxRows(parameters.getInt(Params.BW_MAX_ROWS));
         score.setJitter(parameters.getDouble(Params.KML_JITTER));
+        score.setCatRho(parameters.getDouble(Params.CAT_RHO));
 
         FfMlContinuous.FeatureType[] values
                 = FfMlContinuous.FeatureType.values();
@@ -109,7 +110,7 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
      */
     @Override
     public DataType getDataType() {
-        return DataType.Continuous;
+        return DataType.Mixed;
     }
 
     /**
@@ -125,6 +126,7 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
         parameters.add(Params.BW_MAX_ROWS);
         parameters.add(Params.KML_JITTER);
+        parameters.add(Params.CAT_RHO);
 
         return parameters;
     }
