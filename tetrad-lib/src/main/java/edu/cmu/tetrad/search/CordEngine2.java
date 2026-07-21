@@ -48,7 +48,7 @@ public class CordEngine2 implements CordEngine {
     // ===================================================================== //
     public double alpha = 0.05;            // significance level for the decision
     public int numThresholds = 9;          // K  (cordNumThresholds)
-    public int numEstimators = 300;        // max_iter (cordNumEstimators)
+    public int numEstimators = 500;        // max_iter (cordNumEstimators)
     public double learningRate = 0.1;      // (cordLearningRate)
     public int maxLeafNodes = 31;          // (cordMaxLeafNodes)
     public long seed = 0L;                 // (cordSeed); split + nuisance seeds

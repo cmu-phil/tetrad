@@ -24,10 +24,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.CordEngine;
-import edu.cmu.tetrad.search.CordEngine1;
-import edu.cmu.tetrad.search.CordEngine2;
-import edu.cmu.tetrad.search.CordEngine3;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -405,22 +403,77 @@ public final class IndTestCord implements IndependenceTest, RowsSettable {
         return acatCombine(pForward, pReverse);
     }
 
-    /** Runs the score-pooled engine on one orientation; returns its one-sided p, or NaN if degenerate. */
+    /** Runs the selected score-pooled engine on one orientation; returns its one-sided p, or NaN if degenerate. */
     private double runEngine(double[][] cordX, double[] cordY, double[] cordZ, long seed) {
-        CordEngine cordEngine = switch (this.cordEngine) {
-            case 1 -> new CordEngine1();
-            case 2 -> new CordEngine2();
-            default -> new CordEngine3();
+        return switch (this.cordEngine) {
+            case 1 -> {
+                CordEngine1 cord = new CordEngine1();
+                cord.numThresholds = nLevels;
+                cord.numEstimators = nEstimators;
+                cord.learningRate = learningRate;
+                cord.maxLeafNodes = maxLeafNodes;
+                cord.seed = seed;
+                CordEngine1.Result r = cord.test(cordX, cordY, cordZ);
+                yield "ok".equals(r.status) ? r.pvalue : Double.NaN;
+            }
+            case 2 -> {
+                CordEngine2 cord = new CordEngine2();
+                cord.numThresholds = nLevels;
+                cord.numEstimators = nEstimators;
+                cord.learningRate = learningRate;
+                cord.maxLeafNodes = maxLeafNodes;
+                cord.seed = seed;
+                CordEngine2.Result r = cord.test(cordX, cordY, cordZ);
+                yield "ok".equals(r.status) ? r.pvalue : Double.NaN;
+            }
+            case 3 -> {
+                CordEngine3 cord = new CordEngine3();
+                cord.numThresholds = nLevels;
+                cord.numEstimators = nEstimators;
+                cord.learningRate = learningRate;
+                cord.maxLeafNodes = maxLeafNodes;
+                cord.seed = seed;
+                CordEngine3.Result r = cord.test(cordX, cordY, cordZ);
+                yield "ok".equals(r.status) ? r.pvalue : Double.NaN;
+            }
+            case 4 -> {
+                CordEngine4 cord = new CordEngine4();
+                cord.numThresholds = nLevels;
+                cord.numEstimators = nEstimators;
+                cord.learningRate = learningRate;
+                cord.maxLeafNodes = maxLeafNodes;
+                cord.seed = seed;
+                // Engine-4-specific knobs; wire these to test-class fields if you expose them,
+                // otherwise engine 4 uses its own defaults (S=5, M=5, B=999, min-p combine).
+                // cord.numRepeats   = cordNumRepeats;
+                // cord.numFolds     = cordNumFolds;
+                // cord.numBootstrap = cordNumBootstrap;
+                // cord.combine      = cordCombine;
+                CordEngine4.Result r = cord.test(cordX, cordY, cordZ);
+                yield "ok".equals(r.status) ? r.pvalue : Double.NaN;
+            }
+            case 5 -> {
+                CordEngine5 cord = new CordEngine5();
+                cord.numThresholds = nLevels;
+                cord.numEstimators = nEstimators;
+                cord.learningRate = learningRate;
+                cord.maxLeafNodes = maxLeafNodes;
+                cord.seed = seed;
+                // Engine-5-specific knobs; wire these to test-class fields if you expose them,
+                // otherwise engine 5 uses its own defaults (S=4, M=5, B=999, min-p combine,
+                // aggregation = "median" -- the original CORD p-value-level rule).
+                // cord.numRepeats   = cordNumRepeats;
+                // cord.numFolds     = cordNumFolds;
+                // cord.numBootstrap = cordNumBootstrap;
+                // cord.combine      = cordCombine;      // per-rotation: "minp" | "mean" | "max"
+                // cord.aggregation  = cordAggregation;  // across rotations: "median" | "adaptive" | "cauchy"
+                CordEngine5.Result r = cord.test(cordX, cordY, cordZ);
+                yield "ok".equals(r.status) ? r.pvalue : Double.NaN;
+            }
+            default -> {
+                throw new IllegalArgumentException("Invalid engine version: " + this.cordEngine);
+            }
         };
-
-        CordEngine3 cord = new CordEngine3();
-        cord.numThresholds = nLevels;
-        cord.numEstimators = nEstimators;
-        cord.learningRate = learningRate;
-        cord.maxLeafNodes = maxLeafNodes;
-        cord.seed = seed;
-        CordEngine3.Result r = cord.test(cordX, cordY, cordZ);
-        return "ok".equals(r.status) ? r.pvalue : Double.NaN;
     }
 
     /**
