@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -90,7 +91,7 @@ public final class FgesFci extends StarFciCheckPag {
      * @return The resulting CPDAG representing the Markov equivalence class.
      * @throws InterruptedException if the operation is interrupted.
      */
-    public Graph getMarkovCpdag(boolean verbose) throws InterruptedException {
+    public Graph getMarkovDag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting FGES.");
         }
@@ -103,13 +104,14 @@ public final class FgesFci extends StarFciCheckPag {
         fges.setOut(this.out);
         fges.setNumThreads(numThreads);
         fges.setVerbose(verbose);
-        Graph cpdag = fges.search();
+        Graph graph = fges.search();
+        graph = GraphTransforms.dagFromCpdag(graph);
 
         if (isVerbose()) {
             TetradLogger.getInstance().log("Finished FGES.");
         }
 
-        return cpdag;
+        return graph;
     }
 
     /**

@@ -85,7 +85,7 @@ public final class SpFci extends StarFciCheckPag {
      * @return The resulting CPDAG representing the Markov equivalence class.
      * @throws InterruptedException if the operation is interrupted.
      */
-    public Graph getMarkovCpdag(boolean verbose) throws InterruptedException {
+    public Graph getMarkovDag(boolean verbose) throws InterruptedException {
         Graph cpdag;
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting SP.");

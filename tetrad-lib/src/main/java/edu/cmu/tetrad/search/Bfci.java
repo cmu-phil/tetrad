@@ -97,7 +97,7 @@ public final class Bfci extends StarFciCheckPag {
      * algorithm.
      * @throws InterruptedException if the thread executing the search is interrupted.
      */
-    public Graph getMarkovCpdag(boolean verbose) throws InterruptedException {
+    public Graph getMarkovDag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting BOSS.");
         }

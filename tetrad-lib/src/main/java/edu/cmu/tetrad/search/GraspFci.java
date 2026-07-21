@@ -109,7 +109,7 @@ public final class GraspFci extends StarFciCheckPag {
         this.independenceTest = test;
     }
 
-    public @NotNull Graph getMarkovCpdag(boolean verbose) throws InterruptedException {
+    public @NotNull Graph getMarkovDag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }

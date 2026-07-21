@@ -61,7 +61,7 @@ import static java.util.Collections.shuffle;
  *
  * @author josephramsey
  * @author bryanandrews
- * @see #getMarkovCpdag(boolean)
+ * @see #getMarkovDag(boolean)
  * @see Knowledge
  */
 public abstract class StarFciCheckPag implements IGraphSearch {
@@ -274,7 +274,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
-        Graph cpdag = getMarkovCpdag(verbose);
+        Graph cpdag = getMarkovDag(verbose);
         Graph pag = GraphTransforms.dagToPag(cpdag, false);
 
         if (lvHeuristicOnly) {
@@ -641,12 +641,12 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     }
 
     /**
-     * Returns a Markov CPDAG to use as the initial graph in the Star-FCI search.
+     * Returns a Markov DAG to use as the initial graph in the Star-FCI search.
      *
-     * @return This CPDAG.
+     * @return This DAG.
      * @throws InterruptedException if interrupted.
      */
-    public abstract Graph getMarkovCpdag(boolean verbose) throws InterruptedException;
+    public abstract Graph getMarkovDag(boolean verbose) throws InterruptedException;
 
     /**
      * Sets whether selection bias should be excluded during the search process.
