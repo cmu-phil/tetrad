@@ -658,69 +658,6 @@ public final class FcitSl implements IGraphSearch {
         return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
     }
 
-//    private Graph coldReorient(Graph graph) throws InterruptedException {
-//        Graph finalPag = graph.copy();
-//        List<Node> nodes = graph.getNodes();
-//
-//        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
-//        strategy.setSepsetMap(sepsets);
-//        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
-//        strategy.setDepth(depth);
-//
-//        finalPag.reorientAllWith(Endpoint.CIRCLE);
-//
-//        for (Node y : nodes) {
-//            List<Node> adj = graph.getAdjacentNodes(y);
-//
-//            for (int i = 0; i < adj.size(); i++) {
-//                for (int j = i + 1; j < adj.size(); j++) {
-//                    Node x = adj.get(i);
-//                    Node z = adj.get(j);
-//
-//                    Set<Node> found = foundSepsets.get(Set.of(x, z));
-//                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z) && found != null && !found.contains(y)) {
-//                        finalPag.setEndpoint(x, y, Endpoint.ARROW);
-//                        finalPag.setEndpoint(z, y, Endpoint.ARROW);
-//                        continue;
-//                    }
-//
-//                    List<Node> common = graph.getAdjacentNodes(x);
-//                    common.retainAll(graph.getAdjacentNodes(z));
-//
-//                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z)) {
-//                        SublistGenerator gen = new SublistGenerator(common.size(), common.size());
-//                        int[] choice;
-//
-//                        while ((choice = gen.next()) != null) {
-//                            Set<Node> _choice = GraphUtils.asSet(choice, common);
-//
-//                            if (test.checkIndependence(x, z, _choice).isIndependent()) {
-//                                if (!_choice.contains(y)) {
-//                                    finalPag.setEndpoint(x, y, Endpoint.ARROW);
-//                                    finalPag.setEndpoint(z, y, Endpoint.ARROW);
-//                                    foundSepsets.put(Set.of(x, z), _choice);
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        FciOrient fciOrient = new FciOrient(strategy);
-//        fciOrient.setVerbose(false);
-//        fciOrient.setParallel(false);
-//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-//        fciOrient.setRecursiveDepth(recursiveDepth);
-//        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-//        fciOrient.setUseR4(true);
-//        fciOrient.setKnowledge(knowledge);
-//        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
-//
-//        return finalPag;
-//    }
-
     private NongenuineScan findR4NongenuineEdge(Graph pag) throws InterruptedException {
         Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
 
