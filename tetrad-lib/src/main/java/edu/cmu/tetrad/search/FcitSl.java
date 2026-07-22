@@ -157,6 +157,15 @@ public final class FcitSl implements IGraphSearch {
      */
     private int batteryZMax = 2;
     /**
+     * Maximum number of nodes that may be dropped from RB's blocking set when searching for a
+     * separator in {@link #findIndependenceCheckRecursive}; -1 (default) enumerates all subsets.
+     * The search is 2^|B| in the worst case, so a small positive bound (2-3) trades reach for
+     * time on larger graphs. Bounding it below the number of "opened" nodes in B can leave a
+     * separable pair unseparated -- exactly the failure this candidate set was widened to fix --
+     * so leave it unlimited unless the per-edge cost becomes a problem.
+     */
+    private int maxBlockingSetRemovals = -1;
+    /**
      * Maximum number of fork nodes converted to colliders when building an out-of-class seed
      * for a deletion the current directed class cannot host. See {@link #seedMags}.
      */
@@ -1028,26 +1037,48 @@ public final class FcitSl implements IGraphSearch {
                 continue; // No separating set possible for this NF; try another NF
             }
 
+            // EVERY member of the blocking set is a removal candidate, not just the common
+            // neighbours of x and y. RB returns ONE blocking set, chosen against a graph whose
+            // circles hide collider status; a node it blocks may be a collider in the truth, or
+            // a DESCENDANT of one, in which case conditioning on it OPENS a path and no superset
+            // of it can separate. Such a node need not be adjacent to both endpoints -- in the
+            // V1--V5 example B = {V2, V3} with V2 adjacent to V1 but not V5, a collider and a
+            // descendant of the collider V4 -- so restricting removals to common neighbours left
+            // the true separator {V3} untestable and the spurious edge was never separated.
+            // Subsets are enumerated smallest-removal-first and common neighbours are listed
+            // first within each size, so the previous search order is still reached first.
             List<Node> common = this.interimPags.getLast().getAdjacentNodes(x);
             common.retainAll(this.interimPags.getLast().getAdjacentNodes(y));
 
-            List<Node> definitelyRemove = new ArrayList<>();
+            // A common neighbour that is ALREADY a definite collider between x and y can never
+            // belong to a separator (conditioning on it opens x*->c<-*y), so drop it outright
+            // instead of leaving it to the subset search. (Previously these were excluded from
+            // the removal candidates, i.e. never removable -- the opposite of the name's intent.)
+            Set<Node> definitelyRemove = new LinkedHashSet<>();
             for (Node c : common) {
                 if (this.interimPags.getLast().isDefCollider(x, c, y)) {
                     definitelyRemove.add(c);
                 }
             }
 
-            List<Node> removalCandidates = new ArrayList<>(common);
-            removalCandidates.removeAll(definitelyRemove);
+            Set<Node> B0 = new LinkedHashSet<>(B);
+            B0.removeAll(definitelyRemove);
 
-            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
+            List<Node> removalCandidates = new ArrayList<>();
+            for (Node v : B0) if (common.contains(v)) removalCandidates.add(v);
+            for (Node v : B0) if (!common.contains(v)) removalCandidates.add(v);
+
+            int maxRemove = (this.maxBlockingSetRemovals < 0)
+                    ? removalCandidates.size()
+                    : Math.min(this.maxBlockingSetRemovals, removalCandidates.size());
+
+            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), maxRemove);
             int[] cChoice;
             while ((cChoice = cGen.next()) != null) {
                 if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
                 if (!this.interimPags.getLast().isAdjacentTo(x, y)) break;
 
-                Set<Node> S = new LinkedHashSet<>(B);
+                Set<Node> S = new LinkedHashSet<>(B0);
                 Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
 
                 S.removeAll(C);
@@ -1397,6 +1428,15 @@ public final class FcitSl implements IGraphSearch {
      */
     public void setBatteryZMax(int batteryZMax) {
         this.batteryZMax = batteryZMax;
+    }
+
+    /**
+     * Sets the maximum number of nodes droppable from RB's blocking set during separator search.
+     *
+     * @param maxBlockingSetRemovals the bound; -1 (default) for all subsets.
+     */
+    public void setMaxBlockingSetRemovals(int maxBlockingSetRemovals) {
+        this.maxBlockingSetRemovals = maxBlockingSetRemovals;
     }
 
     /**
