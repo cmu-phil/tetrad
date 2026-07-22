@@ -295,6 +295,10 @@ public final class FcitSl implements IGraphSearch {
      * re-stamping an existing collider is a no-op (the isDefCollider guard), so calling
      * this each commit removes any reliance on prior colliders persisting through the
      * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
+     * If stamping the new leg colliders would cause an existing unshielded noncollider
+     * to be converted on an unshielded collider, false is returned; otherwise true,
+     *
+     * @return true iff stamping yielded no new unshielded colliders.
      */
     private boolean stampLegColliders(Graph mag, Set<Node> b, Node x, Node y) throws InterruptedException {
         List<Node> common = mag.getAdjacentNodes(x);
@@ -324,37 +328,6 @@ public final class FcitSl implements IGraphSearch {
         }
 
         return true;
-    }
-
-    private boolean newUnshieldedCollider(Node y, Node c, Node d) throws InterruptedException {
-        Set<Node> f = foundSepsets.get(Set.of(d, y));
-
-        System.out.println("for <" + y + ", " + d + "> f = " + f);
-
-        if (f != null && !f.contains(c)) {
-            return true;
-        }
-
-        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
-                interimPags.getLast(), d, y,Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
-                Long.MAX_VALUE);
-
-        if (result.found()) {
-            System.out.println("for <" + y + ", " + d + "> blocking = " + result.blockingSet());
-            Set<Node> blockingSet = result.blockingSet();
-            blockingSet.remove(c);
-
-            System.out.println("for <" + y + ", " + d + " trying blocking " + blockingSet);
-
-            if (test.checkIndependence(d, y, blockingSet).isIndependent()) {
-
-//                if (!result.blockingSet().contains(c)) {
-                    return true;
-//                }
-            }
-        }
-
-        return false;
     }
 
     /**
