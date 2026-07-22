@@ -886,7 +886,13 @@ public final class FcitSl implements IGraphSearch {
             // parallel stream returns the LOWEST-index removable edge deterministically,
             // independent of which thread finishes first. Each search reads the live
             // PAG; nothing mutates it during this phase, so concurrent reads are safe.
-            Optional<RemovalHit> hit =
+            // No short-circuit: evaluate the WHOLE tail. findFirst let branches already in flight
+            // finish, so which losing edges left a cached separator behind depended on thread
+            // timing -- and since a pair can have several valid separators (V4--V5 yields {V3}
+            // against the pre-deletion PAG and {} after), that made the whole search
+            // nondeterministic. Evaluating all of them and recording in index order keeps the
+            // reach the cache provides while making it a function of the sweep, not the scheduler.
+            List<RemovalHit> hits =
                     java.util.stream.IntStream.range(start, edgeList.size())
                             .parallel()
                             .mapToObj(i -> {
@@ -910,13 +916,24 @@ public final class FcitSl implements IGraphSearch {
                                 }
                             })
                             .filter(Objects::nonNull)
-                            .findFirst();
+                            .sorted(Comparator.comparingInt(RemovalHit::index))
+                            .toList();
 
-            if (hit.isEmpty()) {
+            // Record EVERY confirmed separator, in index order. X _||_ Y | S is a fact about the
+            // data, so keeping it is sound whichever edge won; discarding the losers' facts costs
+            // reach, because the separator search can succeed against one interim PAG and fail
+            // against a later one.
+            for (RemovalHit rh : hits) {
+                Set<Node> k = Set.of(rh.edge().getNode1(), rh.edge().getNode2());
+                foundSepsets.putIfAbsent(k, rh.cond());
+                if (!Double.isNaN(rh.pValue())) foundPValues.putIfAbsent(k, rh.pValue());
+            }
+
+            if (hits.isEmpty()) {
                 break;  // no removable edge in the tail — sweep complete
             }
 
-            RemovalHit h = hit.get();
+            RemovalHit h = hits.get(0);
             Node x = h.edge.getNode1();
             Node y = h.edge.getNode2();
 
@@ -1090,8 +1107,14 @@ public final class FcitSl implements IGraphSearch {
 
                 IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
                 if (independenceResult.isIndependent()) {
-                    foundSepsets.put(Set.of(x, y), S);   // remember the fact, survives revert
-                    foundPValues.put(Set.of(x, y), independenceResult.getPValue());
+                    // NO cache write here. This method runs inside the parallel lookahead, whose
+                    // findFirst short-circuits: branches already in flight still run to completion,
+                    // so WHICH losing edges leave a cached separator behind is scheduling-dependent.
+                    // Since a pair can have several valid separators, and which one is found depends
+                    // on the PAG at search time (V4--V5 yields {V3} before V3--V5 is deleted and {}
+                    // after), a speculative write makes the whole search nondeterministic: the two
+                    // sepsets stamp differently, and one hosts the deletion while the other does not.
+                    // The winner's separator is recorded by the caller, after findFirst returns.
                     return new IndependenceCheck(edge, S, independenceResult.getPValue());
                 }
             }

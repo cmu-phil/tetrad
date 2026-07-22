@@ -55,11 +55,15 @@
 
 package edu.cmu.tetrad.search.harness;
 
+import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
+import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FcitSl;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.SublistGenerator;
 
 import java.io.BufferedReader;
@@ -101,7 +105,7 @@ public final class PhantomKernelEnumerator8 {
      *  full shipping algorithm including the fork-flip fallback. */
     private static final boolean ALLOW_CLASS_ESCAPE = false;
     /** FcitSl commit-gate battery bound. */
-    private static final int BATTERY_Z_MAX = 2;
+    private static final int BATTERY_Z_MAX = 5;
     /** FcitSl fork-flip bound (only relevant when ALLOW_CLASS_ESCAPE). */
     private static final int MAX_FORK_FLIPS = 2;
     /** Per-edge FcitSl timeout, ms; -1 = unlimited.  A positive value turns a
@@ -110,7 +114,7 @@ public final class PhantomKernelEnumerator8 {
     /** Depth / recursive-depth passed to FcitSl (-1 = unlimited). */
     private static final int DEPTH = -1;
     private static final int RECURSIVE_DEPTH = -1;
-    private static final boolean EXCLUDE_SELECTION_BIAS = true;
+    private static final boolean EXCLUDE_SELECTION_BIAS = false;
 
     /** Canonicalize dedup keys over all 120 permutations of the observed nodes. */
     private static final boolean CANONICALIZE_PERMS = true;
@@ -303,7 +307,9 @@ public final class PhantomKernelEnumerator8 {
                 }
                 r.distinctClasses++;
 
-                Graph truePag = GraphTransforms.dagToPag(dag, new Knowledge(),
+                // Fresh copy: dagToMag ran on `dag` above, and the comparison target must not
+                // depend on whether that call mutated its input.
+                Graph truePag = GraphTransforms.dagToPag(new EdgeListGraph(dag), new Knowledge(),
                         EXCLUDE_SELECTION_BIAS, RECURSIVE_DEPTH);
 
                 List<Node> canonNodes = new ArrayList<>();
@@ -333,25 +339,37 @@ public final class PhantomKernelEnumerator8 {
         // Oracle drive: MsepTest on the true MAG as both test and score basis.  FcitSl's
         // constructor flips startWith to GRASP when the test is an MsepTest, so this is the
         // Oracle GRaSP path.  A fresh graph per FcitSl (it mutates node types internally).
-        Graph magForTest = new EdgeListGraph(canonMag);
-        Graph magForScore = new EdgeListGraph(canonMag);
-        MsepTest test = new MsepTest(magForTest);
-        GraphScore scoreObj = new GraphScore(magForScore);
+//        Graph magForTest = new EdgeListGraph(canonMag);
+//        Graph magForScore = new EdgeListGraph(canonMag);
+//        MsepTest test = new MsepTest(magForTest);
+//        GraphScore scoreObj = new GraphScore(magForScore);
 
         Graph terminal;
         try {
-            FcitSl fcit = new FcitSl(test, scoreObj);
-            fcit.setKnowledge(new Knowledge());
-            fcit.setExcludeSelectionBias(EXCLUDE_SELECTION_BIAS);
-            fcit.setCompleteRuleSetUsed(true);
-            fcit.setDepth(DEPTH);
-            fcit.setRecursiveDepth(RECURSIVE_DEPTH);
-            fcit.setBatteryZMax(BATTERY_Z_MAX);
-            fcit.setMaxForkFlips(MAX_FORK_FLIPS);
-            fcit.setAllowClassEscape(ALLOW_CLASS_ESCAPE);
-            fcit.setTimeout(FCIT_TIMEOUT_MS);
-            fcit.setVerbose(false);
-            terminal = fcit.search();
+
+            edu.cmu.tetrad.algcomparison.score.MSepScore score = new edu.cmu.tetrad.algcomparison.score.MSepScore(canonMag);
+            MSeparationTest test = new MSeparationTest(canonMag);
+
+
+            edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FcitSl fcit
+                    = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FcitSl(test, score);
+
+            Parameters parameters = new Parameters();
+            parameters.set(Params.FCIT_STARTS_WITH, 2);
+
+
+//            FcitSl fcit = new FcitSl(test, scoreObj);
+////            fcit.setKnowledge(new Knowledge());
+//            fcit.setExcludeSelectionBias(EXCLUDE_SELECTION_BIAS);
+//            fcit.setCompleteRuleSetUsed(true);
+//            fcit.setDepth(DEPTH);
+//            fcit.setRecursiveDepth(RECURSIVE_DEPTH);
+//            fcit.setBatteryZMax(BATTERY_Z_MAX);
+//            fcit.setMaxForkFlips(MAX_FORK_FLIPS);
+//            fcit.setAllowClassEscape(ALLOW_CLASS_ESCAPE);
+//            fcit.setTimeout(FCIT_TIMEOUT_MS);
+//            fcit.setVerbose(false);
+            terminal = fcit.search(null, parameters);
         } catch (Throwable ex) {
             r.error++;
             violationLog.write(violationEntry("ERROR", mask, latSet, mapping, canonMag, canonPag,
@@ -515,6 +533,11 @@ public final class PhantomKernelEnumerator8 {
                                          Graph canonMag, Graph canonPag, Graph terminal, String detail) {
         StringBuilder sb = new StringBuilder();
         sb.append("==== VIOLATION [").append(bucket).append("] ====\n");
+        sb.append("  config            : escape=").append(ALLOW_CLASS_ESCAPE)
+                .append(" zMax=").append(BATTERY_Z_MAX)
+                .append(" forkFlips=").append(MAX_FORK_FLIPS)
+                .append(" depth=").append(DEPTH)
+                .append(" recursiveDepth=").append(RECURSIVE_DEPTH).append('\n');
         sb.append("  exemplar dag mask : ").append(mask).append('\n');
         sb.append("  latent set        : ").append(latSet).append('\n');
         sb.append("  relabeling        : ").append(mapping).append('\n');
@@ -641,7 +664,7 @@ public final class PhantomKernelEnumerator8 {
         private int count;
 
         StreamLog(String path, int max, String header) throws IOException {
-            this.out = new PrintWriter(new FileWriter(path, true));
+            this.out = new PrintWriter(new FileWriter(path, false));
             this.max = max;
             out.println(header);
             out.flush();

@@ -169,10 +169,12 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
 
         search.setCommitGate(edu.cmu.tetrad.search.FcitSl.CommitGate.DELETED_PAIR_BATTERY);
-        search.setBatteryZMax(2);
+        search.setBatteryZMax(4);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+
+        search.setAllowClassEscape(false);
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.BOSS);
