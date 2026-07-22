@@ -296,16 +296,65 @@ public final class FcitSl implements IGraphSearch {
      * this each commit removes any reliance on prior colliders persisting through the
      * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
      */
-    private static void orientSepsetColliders(Graph mag, Set<Node> b, Node x, Node y) {
+    private boolean stampLegColliders(Graph mag, Set<Node> b, Node x, Node y) throws InterruptedException {
         List<Node> common = mag.getAdjacentNodes(x);
         common.retainAll(mag.getAdjacentNodes(y));
 
         for (Node c : common) {
             if (b.contains(c)) continue;               // not a collider; leave it
             if (mag.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
-            mag.setEndpoint(x, c, Endpoint.ARROW);     // arrowheads into c
+
+            for (Node d : mag.getAdjacentNodes(c)) {
+                if (d == x) continue;
+                if (d == y) continue;
+
+                if (mag.getEndpoint(d, c) != Endpoint.ARROW) {
+                    if (!mag.isAdjacentTo(d, x)) {
+                        if (!mag.isDefCollider(d, c, x)) return false;
+                    }
+
+                    if (!mag.isAdjacentTo(d, y)) {
+                        if (!mag.isDefCollider(d, c, y)) return false;
+                    }
+                }
+            }
+
+            mag.setEndpoint(x, c, Endpoint.ARROW);
             mag.setEndpoint(y, c, Endpoint.ARROW);
         }
+
+        return true;
+    }
+
+    private boolean newUnshieldedCollider(Node y, Node c, Node d) throws InterruptedException {
+        Set<Node> f = foundSepsets.get(Set.of(d, y));
+
+        System.out.println("for <" + y + ", " + d + "> f = " + f);
+
+        if (f != null && !f.contains(c)) {
+            return true;
+        }
+
+        RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
+                interimPags.getLast(), d, y,Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+                Long.MAX_VALUE);
+
+        if (result.found()) {
+            System.out.println("for <" + y + ", " + d + "> blocking = " + result.blockingSet());
+            Set<Node> blockingSet = result.blockingSet();
+            blockingSet.remove(c);
+
+            System.out.println("for <" + y + ", " + d + " trying blocking " + blockingSet);
+
+            if (test.checkIndependence(d, y, blockingSet).isIndependent()) {
+
+//                if (!result.blockingSet().contains(c)) {
+                    return true;
+//                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -550,11 +599,6 @@ public final class FcitSl implements IGraphSearch {
         // the DAG's tail at V1 survives. Wipe to circles and run R0 + R1-R4 with the test-based
         // strategy: R4 fires on the discriminating path <X, W1, V1, Y> and recovers V1 <-> W1 /
         // V1 <-> Y. On models that DO need removals this only re-confirms marks the test already implies.
-
-        Graph last = interimPags.getLast();
-        Graph finalPag = coldReorient(last);
-        interimPags.add(finalPag);
-
         long stop2 = System.currentTimeMillis();
 
         // Revert nodes made latent to latent.
@@ -614,45 +658,68 @@ public final class FcitSl implements IGraphSearch {
         return GraphUtils.replaceNodes(interimPags.getLast(), nodes);
     }
 
-    private Graph coldReorient(Graph graph) {
-        Graph finalPag = graph.copy();
-        List<Node> nodes = graph.getNodes();
-
-        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
-        strategy.setSepsetMap(sepsets);
-        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
-        strategy.setDepth(depth);
-
-        finalPag.reorientAllWith(Endpoint.CIRCLE);
-
-        for (Node y : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(y);
-
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = i + 1; j < adj.size(); j++) {
-                    Node x = adj.get(i);
-                    Node z = adj.get(j);
-
-                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z)) {
-                        finalPag.setEndpoint(x, y, Endpoint.ARROW);
-                        finalPag.setEndpoint(z, y, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
-
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setVerbose(false);
-        fciOrient.setParallel(false);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursiveDepth(recursiveDepth);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setUseR4(true);
-        fciOrient.setKnowledge(knowledge);
-        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
-
-        return finalPag;
-    }
+//    private Graph coldReorient(Graph graph) throws InterruptedException {
+//        Graph finalPag = graph.copy();
+//        List<Node> nodes = graph.getNodes();
+//
+//        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
+//        strategy.setSepsetMap(sepsets);
+//        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
+//        strategy.setDepth(depth);
+//
+//        finalPag.reorientAllWith(Endpoint.CIRCLE);
+//
+//        for (Node y : nodes) {
+//            List<Node> adj = graph.getAdjacentNodes(y);
+//
+//            for (int i = 0; i < adj.size(); i++) {
+//                for (int j = i + 1; j < adj.size(); j++) {
+//                    Node x = adj.get(i);
+//                    Node z = adj.get(j);
+//
+//                    Set<Node> found = foundSepsets.get(Set.of(x, z));
+//                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z) && found != null && !found.contains(y)) {
+//                        finalPag.setEndpoint(x, y, Endpoint.ARROW);
+//                        finalPag.setEndpoint(z, y, Endpoint.ARROW);
+//                        continue;
+//                    }
+//
+//                    List<Node> common = graph.getAdjacentNodes(x);
+//                    common.retainAll(graph.getAdjacentNodes(z));
+//
+//                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z)) {
+//                        SublistGenerator gen = new SublistGenerator(common.size(), common.size());
+//                        int[] choice;
+//
+//                        while ((choice = gen.next()) != null) {
+//                            Set<Node> _choice = GraphUtils.asSet(choice, common);
+//
+//                            if (test.checkIndependence(x, z, _choice).isIndependent()) {
+//                                if (!_choice.contains(y)) {
+//                                    finalPag.setEndpoint(x, y, Endpoint.ARROW);
+//                                    finalPag.setEndpoint(z, y, Endpoint.ARROW);
+//                                    foundSepsets.put(Set.of(x, z), _choice);
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        FciOrient fciOrient = new FciOrient(strategy);
+//        fciOrient.setVerbose(false);
+//        fciOrient.setParallel(false);
+//        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+//        fciOrient.setRecursiveDepth(recursiveDepth);
+//        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+//        fciOrient.setUseR4(true);
+//        fciOrient.setKnowledge(knowledge);
+//        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
+//
+//        return finalPag;
+//    }
 
     private NongenuineScan findR4NongenuineEdge(Graph pag) throws InterruptedException {
         Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
@@ -1101,6 +1168,9 @@ public final class FcitSl implements IGraphSearch {
             throws InterruptedException {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
+
+//        System.out.println("_pag = " + _pag);
+
         List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
 
         final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
@@ -1130,18 +1200,28 @@ public final class FcitSl implements IGraphSearch {
 
                 Graph _mag = mag.copy();
 
+//                System.out.println("Chose LEG: " + _mag);
+
                 // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
                 // particular to orient common colliders of x and y.
-                orientSepsetColliders(_mag, b, x, y);
+                if (!stampLegColliders(_mag, b, x, y)) {
+                    continue;
+                }
+
+//                System.out.println("Stamped LEG: " + _mag);
 
                 // We remove f = x *-* y, yielding H' - f.
                 _mag.removeEdge(x, y);
+
+//                System.out.println("Removed " + x + " *-* " + y + ": " + _mag + " b = " + b);
 
                 legalityChecks++;
 
                 // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
                 // satisfy Lemma 3.6.
                 if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+//                    System.out.println("Rejected " + x + " *-* " + y + " because it introduces an inducing path.");
+
                     ipRejects++;                               // non-maximal exactly at the deleted pair
                     continue;
                 }
@@ -1149,6 +1229,8 @@ public final class FcitSl implements IGraphSearch {
                 // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
                 // We spot-check this.
                 if (!deletedPairBatteryPasses(_mag, _removed)) {
+//                    System.out.println("battery doesn't pass");
+
                     continue;
                 }
 
@@ -1171,7 +1253,8 @@ public final class FcitSl implements IGraphSearch {
                 }
 
                 // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
-                this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+                Graph convert = new MagToPag(_mag).convert(false, excludeSelectionBias);
+                this.interimPags.add(convert);
                 sepsets.set(x, y, b);
                 return true;                                   // first representative that hosts it
             }
