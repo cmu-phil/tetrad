@@ -191,7 +191,7 @@ public final class FcitSl implements IGraphSearch {
      * escapeCommits}: commits hosted by a certified out-of-class seed (pass 3). A run with
      * {@code escapeCommits == 0} used only Step-Lemma-form witnesses.
      */
-    private long zhangCommits = 0, legCommits = 0, inClassFlipCommits = 0, escapeCommits = 0;
+    private long zhangCommits = 0, legCommits = 0, inClassFlipCommits = 0, escapeCommits = 0, otherRejects = 0;
     /**
      * Deleted-pair battery telemetry: number of gate evaluations, refusals, and entailed
      * separation statements verified against the independence test. See
@@ -300,6 +300,44 @@ public final class FcitSl implements IGraphSearch {
     }
 
     /**
+     * Stamp arrowheads into {@code f} from each still-adjacent node in {@code from} (edges become {@code <->}).
+     */
+    private static void makeCollider(Graph g, Node f, Set<Node> from) {
+        for (Node w : from) {
+            if (g.isAdjacentTo(w, f)) g.setEndpoint(w, f, Endpoint.ARROW);
+        }
+    }
+
+    /**
+     * True iff m is in S or is an ancestor of some node in S.
+     */
+    private static boolean ancestorInS(Graph g, Node m, Set<Node> S) {
+        for (Node z : S) {
+            if (m.equals(z) || g.paths().isAncestorOf(m, z)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Canonical edge-token key (direction-aware for -&gt;, order-independent for &lt;-&gt;) for dedup.
+     */
+    private static String magKey(Graph g) {
+        List<String> toks = new ArrayList<>();
+        for (Edge e : g.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            Endpoint ea = e.getProximalEndpoint(a), eb = e.getDistalEndpoint(a);
+            String u = a.getName(), v = b.getName();
+            if (ea == Endpoint.TAIL && eb == Endpoint.ARROW) toks.add(u + ">" + v);
+            else if (ea == Endpoint.ARROW && eb == Endpoint.TAIL) toks.add(v + ">" + u);
+            else if (ea == Endpoint.ARROW && eb == Endpoint.ARROW)
+                toks.add(u.compareTo(v) <= 0 ? u + "<>" + v : v + "<>" + u);
+            else toks.add(u.compareTo(v) <= 0 ? u + "-" + v : v + "-" + u);
+        }
+        Collections.sort(toks);
+        return String.join("|", toks);
+    }
+
+    /**
      * MAG-side analog of adjustForExtraSepsets over every recorded sepset. Idempotent:
      * re-stamping an existing collider is a no-op (the isDefCollider guard), so calling
      * this each commit removes any reliance on prior colliders persisting through the
@@ -337,44 +375,6 @@ public final class FcitSl implements IGraphSearch {
         }
 
         return true;
-    }
-
-    /**
-     * Stamp arrowheads into {@code f} from each still-adjacent node in {@code from} (edges become {@code <->}).
-     */
-    private static void makeCollider(Graph g, Node f, Set<Node> from) {
-        for (Node w : from) {
-            if (g.isAdjacentTo(w, f)) g.setEndpoint(w, f, Endpoint.ARROW);
-        }
-    }
-
-    /**
-     * True iff m is in S or is an ancestor of some node in S.
-     */
-    private static boolean ancestorInS(Graph g, Node m, Set<Node> S) {
-        for (Node z : S) {
-            if (m.equals(z) || g.paths().isAncestorOf(m, z)) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Canonical edge-token key (direction-aware for -&gt;, order-independent for &lt;-&gt;) for dedup.
-     */
-    private static String magKey(Graph g) {
-        List<String> toks = new ArrayList<>();
-        for (Edge e : g.getEdges()) {
-            Node a = e.getNode1(), b = e.getNode2();
-            Endpoint ea = e.getProximalEndpoint(a), eb = e.getDistalEndpoint(a);
-            String u = a.getName(), v = b.getName();
-            if (ea == Endpoint.TAIL && eb == Endpoint.ARROW) toks.add(u + ">" + v);
-            else if (ea == Endpoint.ARROW && eb == Endpoint.TAIL) toks.add(v + ">" + u);
-            else if (ea == Endpoint.ARROW && eb == Endpoint.ARROW)
-                toks.add(u.compareTo(v) <= 0 ? u + "<>" + v : v + "<>" + u);
-            else toks.add(u.compareTo(v) <= 0 ? u + "-" + v : v + "-" + u);
-        }
-        Collections.sort(toks);
-        return String.join("|", toks);
     }
 
     /**
@@ -609,7 +609,7 @@ public final class FcitSl implements IGraphSearch {
         TetradLogger.getInstance().log(r0Suspect.isEmpty()
                 ? "\nNo R0 collider has a test-separable leg (collider-genuine on the R0 side)."
                 : "\n" + r0Suspect.size() + " R0 collider(s) carry a separable leg; "
-                  + "Markovness not certified: " + r0Suspect);
+                + "Markovness not certified: " + r0Suspect);
 
         TetradLogger.getInstance().log("Legality checks: " + legalityChecks
                 + " (" + ipRejects + " rejected by removed-pair inducing-path pre-check, "
@@ -623,8 +623,9 @@ public final class FcitSl implements IGraphSearch {
         TetradLogger.getInstance().log("Commit provenance: " + zhangCommits
                 + " Zhang-MAG (Stage 1), " + legCommits + " LEG (Stage 2), "
                 + inClassFlipCommits + " in-class fork-flip (Stage 2b), "
-                + escapeCommits + " class-escape (pass 3"
-                + (allowClassEscape ? ")." : "; disabled)."));
+                + escapeCommits + " class-escape (pass 3)"
+                + otherRejects + " other-rejects"
+                + (allowClassEscape ? "" : "; disabled)."));
 
         TetradLogger.getInstance().log("\nFCIT-SL finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
@@ -1099,38 +1100,148 @@ public final class FcitSl implements IGraphSearch {
         return null;
     }
 
+//    // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
+//    // found. With escape == false only within-class representatives (the canonical Zhang MAG and the LEGs of
+//    // the current class) are tried -- the Step Lemma's own quantifier. With escape == true the fork-flip
+//    // out-of-class seeds are also tried; this is an engineering fallback OUTSIDE the Step Lemma, invoked only
+//    // at the state level after a full within-class sweep commits nothing.
+//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias,
+//                                     boolean escape)
+//            throws InterruptedException {
+//        Edge _edge = interimPags.getLast().getEdge(x, y);
+//        Graph _pag = new EdgeListGraph(interimPags.getLast());
+//
+
+    /// /        System.out.println("_pag = " + _pag);
+//
+//        List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
+//
+//        final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
+//
+//        // Pick a MAG H'. In within-class mode (escape == false) the only seed is the minimal-
+//        // bidirected Zhang MAG, and LegEnumerator walks the current class: Stage 1 is the Zhang
+//        // MAG itself, Stage 2 the other LEGs. In escape mode extra seeds may LEAVE the class by
+//        // turning a fork on an unblocked x..y path into a collider (fork -> <->), required when
+//        // the initial DAG compels an orientation that contradicts the true MAG -- a latent
+//        // common effect the DAG modeled as a common cause.
+//        List<Graph> seeds = seedMags(_pag, x, y, b, deadline, escape);
+//
+//        for (int seedIdx = 0; seedIdx < seeds.size(); seedIdx++) {
+//            Graph seed = seeds.get(seedIdx);
+//            // Within-class mode lists the Zhang MAG first, then in-class fork-flips; escape
+//            // mode returns only certified out-of-class seeds, so no seed there is the base.
+//            boolean baseSeed = (!escape && seedIdx == 0);
+//
+//            for (Graph mag : new LegEnumerator(seed)) {
+//                if (Thread.currentThread().isInterrupted()) {
+//                    throw new InterruptedException();
+//                }
+//
+//                if (System.currentTimeMillis() > deadline) {
+//                    break;
+//                }
+//
+//                Graph _mag = mag.copy();
+//
+//                System.out.println("Chose LEG: " + _mag);
+//
+//                // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
+//                // particular to orient common colliders of x and y.
+//                if (!stampLegColliders(_mag, b, x, y)) {
+//                    continue;
+//                }
+//
+//                System.out.println("Stamped LEG: " + _mag);
+//
+//                // We remove f = x *-* y, yielding H' - f.
+//                _mag.removeEdge(x, y);
+//
+//                System.out.println("Removed " + x + " *-* " + y + ": " + _mag + " b = " + b);
+//
+//                legalityChecks++;
+//
+//                // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
+//                // satisfy Lemma 3.6.
+//                if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+//                    System.out.println("Rejected " + x + " *-* " + y + " because it introduces an inducing path.");
+//
+//                    ipRejects++;                               // non-maximal exactly at the deleted pair
+//                    continue;
+//                }
+//
+//                // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
+//                // We spot-check this.
+//                if (!deletedPairBatteryPasses(_mag, _removed)) {
+//                    System.out.println("battery doesn't pass");
+//
+//                    continue;
+//                }
+//
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+//                            + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
+//                }
+//
+//                // Commit provenance: canonical Zhang MAG (Stage 1), other LEG of the current
+//                // class (Stage 2), certified in-class fork-flip (Stage 2b), or certified
+//                // out-of-class seed (pass 3).
+//                if (escape) {
+//                    escapeCommits++;
+//                } else if (!baseSeed) {
+//                    inClassFlipCommits++;
+//                } else if (magKey(mag).equals(magKey(seed))) {
+//                    zhangCommits++;
+//                } else {
+//                    legCommits++;
+//                }
+//
+//                // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
+//                Graph convert = new MagToPag(_mag).convert(false, excludeSelectionBias);
+//                this.interimPags.add(convert);
+//                sepsets.set(x, y, b);
+//                return true;                                   // first representative that hosts it
+//            }
+//        }
+//
+//        if (verbose) {
+//            TetradLogger.getInstance().log("\tTried removing " + _edge
+//                    + (escape ? " (class-escape pass)" : " (within-class pass)")
+//                    + ", but no representative hosted it, sepset = " + b);
+//        }
+//
+//        return false;
+//    }
+
     // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
-    // found. With escape == false only within-class representatives (the canonical Zhang MAG and the LEGs of
-    // the current class) are tried -- the Step Lemma's own quantifier. With escape == true the fork-flip
-    // out-of-class seeds are also tried; this is an engineering fallback OUTSIDE the Step Lemma, invoked only
-    // at the state level after a full within-class sweep commits nothing.
+    // found. With escape == false only within-class representatives are tried -- the Step Lemma's own
+    // quantifier. Candidates per class: the canonical Zhang MAG (Stage 1), the other LEGs reached by
+    // legitimate reversal (Stage 2), and the in-class fork-flip variants OF EACH of those (Stage 2b).
+    // With escape == true the certified out-of-class seeds and their flips are tried instead; this is an
+    // engineering fallback OUTSIDE the Step Lemma, invoked only at the state level after a full
+    // within-class sweep commits nothing.
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias,
                                      boolean escape)
             throws InterruptedException {
         Edge _edge = interimPags.getLast().getEdge(x, y);
         Graph _pag = new EdgeListGraph(interimPags.getLast());
-
-//        System.out.println("_pag = " + _pag);
-
         List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
 
         final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
 
-        // Pick a MAG H'. In within-class mode (escape == false) the only seed is the minimal-
-        // bidirected Zhang MAG, and LegEnumerator walks the current class: Stage 1 is the Zhang
-        // MAG itself, Stage 2 the other LEGs. In escape mode extra seeds may LEAVE the class by
-        // turning a fork on an unblocked x..y path into a collider (fork -> <->), required when
-        // the initial DAG compels an orientation that contradicts the true MAG -- a latent
-        // common effect the DAG modeled as a common cause.
         List<Graph> seeds = seedMags(_pag, x, y, b, deadline, escape);
+
+        // Class identity reference for flip classification; same construction seedMags uses.
+        Graph basePag = new MagToPag(GraphTransforms.zhangMagFromPag(_pag))
+                .convert(false, excludeSelectionBias);
+
+        // Candidates recur across seeds and walks; test each distinct MAG once.
+        Set<String> tried = new HashSet<>();
 
         for (int seedIdx = 0; seedIdx < seeds.size(); seedIdx++) {
             Graph seed = seeds.get(seedIdx);
-            // Within-class mode lists the Zhang MAG first, then in-class fork-flips; escape
-            // mode returns only certified out-of-class seeds, so no seed there is the base.
             boolean baseSeed = (!escape && seedIdx == 0);
 
-            for (Graph mag : new LegEnumerator(seed)) {
+            for (Graph leg : new LegEnumerator(seed)) {
                 if (Thread.currentThread().isInterrupted()) {
                     throw new InterruptedException();
                 }
@@ -1139,72 +1250,84 @@ public final class FcitSl implements IGraphSearch {
                     break;
                 }
 
-                Graph _mag = mag.copy();
+                // Phase 0: the LEG itself. Phase 1: its fork-flip variants, computed ONLY if the
+                // LEG failed, so the flip enumeration costs nothing on the common path.
+                for (int phase = 0; phase < 2; phase++) {
+                    List<Graph> candidates = (phase == 0)
+                            ? Collections.singletonList(leg)
+                            : forkFlips(leg, basePag, x, y, b, deadline, escape);
 
-//                System.out.println("Chose LEG: " + _mag);
+                    for (Graph mag : candidates) {
+                        if (System.currentTimeMillis() > deadline) break;
+                        if (!tried.add(magKey(mag))) continue;
 
-                // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
-                // particular to orient common colliders of x and y.
-                if (!stampLegColliders(_mag, b, x, y)) {
-                    continue;
+                        Graph _mag = mag.copy();
+
+                        // H' must honour the stored sepsets: stamp the common colliders of x and y.
+                        // Refuses any LEG whose stamp would create a NEW unshielded collider.
+                        if (!stampLegColliders(_mag, b, x, y)) {
+                            continue;
+                        }
+
+                        // The STAMPED graph is the H' that every lemma quantifies over, so it must itself
+                        // be a legal MAG. The stamp can make an ancestral-but-NON-MAXIMAL graph: an inducing
+                        // path between a pair OTHER than {x, y}, whose ancestry certificate runs through the
+                        // edge about to be deleted. Deleting then kills the path and mints a NEW separation
+                        // at that other pair -- invisible to the deleted-pair battery, and outside the
+                        // hypotheses of deletion-locality and pair-locality (both assume H' is a MAG).
+                        // Concretely: stamping V1 for the {V3,V4} deletion on the V4<->V2 flip produced the
+                        // inducing path V3<->V1<->V4<->V2 (V4 in An(V3) via V4-->V3); deleting V4-->V3
+                        // yielded the false V3 _||_ V2 | {V1}.
+                        if (!_mag.paths().isLegalMag()) {
+                            otherRejects++;
+                            continue;
+                        }
+
+                        // We remove f = x *-* y, yielding H' - f.
+                        _mag.removeEdge(x, y);
+
+                        legalityChecks++;
+
+                        // Prong (A): H' - f must be a MAG (Lemma 3.6 localizes this to the pair).
+                        if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+                            ipRejects++;
+                            continue;
+                        }
+
+                        // Prong (B): no new CIs absent from G*. Spot-checked by the battery.
+                        if (!deletedPairBatteryPasses(_mag, _removed)) {
+                            continue;
+                        }
+
+                        if (verbose) {
+                            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+                                    + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
+                        }
+
+                        // Commit provenance: Zhang MAG (Stage 1), another LEG (Stage 2), a fork-flip
+                        // variant in class (Stage 2b), or a certified out-of-class seed (pass 3).
+                        if (escape) {
+                            escapeCommits++;
+                        } else if (phase > 0 || !baseSeed) {
+                            inClassFlipCommits++;
+                        } else if (magKey(mag).equals(magKey(seed))) {
+                            zhangCommits++;
+                        } else {
+                            legCommits++;
+                        }
+
+                        this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+                        sepsets.set(x, y, b);
+                        return true;
+                    }
                 }
-
-//                System.out.println("Stamped LEG: " + _mag);
-
-                // We remove f = x *-* y, yielding H' - f.
-                _mag.removeEdge(x, y);
-
-//                System.out.println("Removed " + x + " *-* " + y + ": " + _mag + " b = " + b);
-
-                legalityChecks++;
-
-                // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
-                // satisfy Lemma 3.6.
-                if (_mag.paths().existsInducingPath(x, y, Set.of())) {
-//                    System.out.println("Rejected " + x + " *-* " + y + " because it introduces an inducing path.");
-
-                    ipRejects++;                               // non-maximal exactly at the deleted pair
-                    continue;
-                }
-
-                // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
-                // We spot-check this.
-                if (!deletedPairBatteryPasses(_mag, _removed)) {
-//                    System.out.println("battery doesn't pass");
-
-                    continue;
-                }
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
-                            + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
-                }
-
-                // Commit provenance: canonical Zhang MAG (Stage 1), other LEG of the current
-                // class (Stage 2), certified in-class fork-flip (Stage 2b), or certified
-                // out-of-class seed (pass 3).
-                if (escape) {
-                    escapeCommits++;
-                } else if (!baseSeed) {
-                    inClassFlipCommits++;
-                } else if (magKey(mag).equals(magKey(seed))) {
-                    zhangCommits++;
-                } else {
-                    legCommits++;
-                }
-
-                // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
-                Graph convert = new MagToPag(_mag).convert(false, excludeSelectionBias);
-                this.interimPags.add(convert);
-                sepsets.set(x, y, b);
-                return true;                                   // first representative that hosts it
             }
         }
 
         if (verbose) {
             TetradLogger.getInstance().log("\tTried removing " + _edge
                     + (escape ? " (class-escape pass)" : " (within-class pass)")
-                    + ", but no representative hosted it, sepset = " + b);
+                    + ", but no representative MAG hosted it, sepset = " + b);
         }
 
         return false;
@@ -1296,6 +1419,76 @@ public final class FcitSl implements IGraphSearch {
         }
 
         return new ArrayList<>((escape ? outOfClass : inClass).values());
+    }
+
+    /**
+     * Fork-flip variants of ONE representative. Same construction as {@link #seedMags}'s flip
+     * enumeration -- on each active x..y path given S, convert non-collider path nodes to
+     * colliders by stamping arrowheads in from their path-neighbours -- but applied to an
+     * arbitrary representative and classified against {@code basePag}: within-class mode keeps
+     * only Markov-equivalent flips (Stage 2b), escape mode only non-equivalent ones (pass 3).
+     * <p>
+     * Applied to EVERY LEG the walk emits, not only the canonical Zhang MAG. The witness the
+     * Step Lemma promises can need a directed orientation reachable only by a legitimate
+     * reversal TOGETHER WITH a non-invariant bidirected edge reachable only by a flip, and
+     * flipping the base alone cannot compose the two. Concretely (V5--V4 deletion): the witness
+     * needs V3-->V1, so that stamping V5*->V3 creates no unshielded collider, AND V1<->V4, so
+     * that V3 is not an ancestor of V4 and the deletion leaves no inducing path. Flipping the
+     * Zhang MAG yields V1<->V3 with V1<->V4; walking the LEGs yields V3-->V1 with V1-->V4; only
+     * a flip OF A WALKED LEG yields both. Since the PAG has no invariant bidirected edge here,
+     * every LEG is a DAG with V1-->V4 forced, so no LEG hosts the deletion at all -- a
+     * LEG-sufficiency counterexample, not merely a search-order artifact.
+     */
+    private List<Graph> forkFlips(Graph mag, Graph basePag, Node x, Node y, Set<Node> S,
+                                  long deadline, boolean escape) throws InterruptedException {
+        List<Graph> out = new ArrayList<>();
+
+        Graph probe = new EdgeListGraph(mag);
+        probe.removeEdge(x, y);
+
+        // If this representative already hosts the deletion, no x..y path is active given S,
+        // so the fork inventory is empty; skip the DFS.
+        if (new MsepTest(probe).checkIndependence(x, y, S).isIndependent()) return out;
+
+        Map<Node, Set<Node>> forkNbrs = new LinkedHashMap<>();
+        for (List<Node> p : activePathsGivenS(probe, x, y, S, 8)) {
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node a = p.get(i - 1), m = p.get(i), c = p.get(i + 1);
+                if (S.contains(m)) continue;
+                if (!probe.isDefCollider(a, m, c)) {
+                    forkNbrs.computeIfAbsent(m, k -> new LinkedHashSet<>()).add(a);
+                    forkNbrs.get(m).add(c);
+                }
+            }
+        }
+
+        List<Node> forks = new ArrayList<>(forkNbrs.keySet());
+        int cap = Math.min(forks.size(), maxForkFlips);
+        SublistGenerator gen = new SublistGenerator(forks.size(), cap);
+        int[] choice;
+
+        while ((choice = gen.next()) != null) {
+            if (System.currentTimeMillis() > deadline) break;
+            if (choice.length == 0) continue;
+
+//            System.out.println("mag to flip: " + mag);
+
+            // the representative itself
+            Graph flip = new EdgeListGraph(mag);
+            for (int idx : choice) makeCollider(flip, forks.get(idx), forkNbrs.get(forks.get(idx)));
+            if (!flip.paths().isLegalMag()) continue;
+
+//            System.out.println("mag flipped: " + flip);
+
+            boolean inClass = new MagToPag(flip).convert(false, this.excludeSelectionBias).equals(basePag);
+            if (escape != inClass) out.add(flip);             // escape wants out-of-class, else in-class
+
+//            System.out.println("mag in/out class: " + inClass);
+        }
+
+//        System.out.println("MAGs to return = " + out);
+
+        return out;
     }
 
     /**

@@ -301,8 +301,9 @@ public final class PhantomKernelEnumerator7 {
         sb.append(String.format("             Stage 2 (other LEG)   : %d%n", t.slCommitStage2));
         sb.append(String.format("             Stage 2b (in-cls flip): %d%n", t.slCommitStage2b));
         sb.append(String.format("  edges with NO within-class commit: %d%n", t.slEdgeStalled));
-        sb.append(String.format("  pre-check (inducing-path) rejects: %d | battery refusals: %d "
-                + "(statements tested: %d)%n", t.slIpRejects, t.slBatteryRefusals, t.slBatteryStatements));
+        sb.append(String.format("  pre-check (inducing-path) rejects: %d | stamp-guard rejects: %d "
+                        + "| battery refusals: %d (statements tested: %d)%n",
+                t.slIpRejects, t.slStampGuardRejects, t.slBatteryRefusals, t.slBatteryStatements));
         sb.append(String.format("H0 verdicts -- SL-SOLVED           : %d%n", t.slSolved));
         sb.append(String.format("               SL-STALL            : %d%s%n", t.slStall,
                 t.slStall == 0 ? "" : "   (within-class move set stuck; see stall log)"));
@@ -729,30 +730,89 @@ public final class PhantomKernelEnumerator7 {
             }
         }
 
-        // ── candidates per seed: seed first, then the other LEGs of the SEED's class ──
+        // ── candidates per seed: the seed, the other LEGs of the seed's class, and the
+        //    fork-flip variants OF EACH of those.  Flipping the base alone is not enough:
+        //    a witness can require a directed orientation reachable only by a legitimate
+        //    reversal TOGETHER WITH a non-invariant bidirected edge reachable only by a
+        //    flip, and only a flip of a WALKED LEG composes the two. ──
+        Set<String> tried = new HashSet<>();
+
         for (int si = 0; si < seeds.size(); si++) {
             Graph seed = seeds.get(si);
             boolean baseSeed = !escape && si == 0;
 
-            Graph postDel = tryCandidate(r, oracle, seed, x, y, b);
-            if (postDel != null) {
-                int stage = escape ? 4 : (baseSeed ? 1 : 3);
-                return new SlCommit(stage, seed, postDel);
-            }
-
-            // Other LEGs of the seed's class (LegEnumerator mirror), enumerated lazily
-            // only after the seed itself fails.
             boolean[] seedModel = baseSeed ? h0Model
                     : modelOf(new MsepTest(seed), obs, trPairs, trZ, T);
-            for (Graph cand : otherLegReps(seed, seedModel, obs, trPairs, trZ, T)) {
-                Graph pd = tryCandidate(r, oracle, cand, x, y, b);
-                if (pd != null) {
-                    int stage = escape ? 4 : (baseSeed ? 2 : 3);
-                    return new SlCommit(stage, cand, pd);
+
+            List<Graph> walk = new ArrayList<>();
+            walk.add(seed);
+            walk.addAll(otherLegReps(seed, seedModel, obs, trPairs, trZ, T));
+
+            for (int wi = 0; wi < walk.size(); wi++) {
+                Graph leg = walk.get(wi);
+
+                if (tried.add(magKey(leg))) {
+                    Graph pd = tryCandidate(r, oracle, leg, x, y, b);
+                    if (pd != null) {
+                        int stage = escape ? 4 : (!baseSeed ? 3 : (wi == 0 ? 1 : 2));
+                        return new SlCommit(stage, leg, pd);
+                    }
+                }
+
+                // Flip variants of THIS leg, computed only after the leg itself failed.
+                for (Graph flip : forkFlips(leg, h0Model, x, y, b, obs, trPairs, trZ, T, escape)) {
+                    if (!tried.add(magKey(flip))) continue;
+                    Graph pdf = tryCandidate(r, oracle, flip, x, y, b);
+                    if (pdf != null) {
+                        return new SlCommit(escape ? 4 : 3, flip, pdf);
+                    }
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Fork-flip variants of ONE representative: on each active x..y path given b, convert
+     * non-collider path nodes to colliders by stamping arrowheads in from their path-neighbours.
+     * Classified by EXACT model equality against the state's model -- within-class flips are
+     * served to the within-class pass, non-equivalent ones only to the escape pass.
+     */
+    private static List<Graph> forkFlips(Graph mag, boolean[] h0Model, Node x, Node y, Set<Node> b,
+                                         List<Node> obs, List<int[]> trPairs, List<Set<Node>> trZ, int T,
+                                         boolean escape) throws InterruptedException {
+        List<Graph> out = new ArrayList<>();
+
+        Graph probe = new EdgeListGraph(mag);
+        probe.removeEdge(x, y);
+        if (new MsepTest(probe).checkIndependence(x, y, b).isIndependent()) return out;
+
+        Map<Node, Set<Node>> forkNbrs = new LinkedHashMap<>();
+        for (List<Node> p : activePathsGivenS(probe, x, y, b, MAX_ACTIVE_PATHS)) {
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node a = p.get(i - 1), mNode = p.get(i), c = p.get(i + 1);
+                if (b.contains(mNode)) continue;
+                if (!probe.isDefCollider(a, mNode, c)) {
+                    forkNbrs.computeIfAbsent(mNode, kk -> new LinkedHashSet<>()).add(a);
+                    forkNbrs.get(mNode).add(c);
+                }
+            }
+        }
+
+        List<Node> forks = new ArrayList<>(forkNbrs.keySet());
+        int fcap = Math.min(forks.size(), MAX_FORK_FLIPS);
+        SublistGenerator gen = new SublistGenerator(forks.size(), fcap);
+        int[] choice;
+        while ((choice = gen.next()) != null) {
+            if (choice.length == 0) continue;
+            Graph flip = new EdgeListGraph(mag);
+            for (int idx : choice) makeCollider(flip, forks.get(idx), forkNbrs.get(forks.get(idx)));
+            if (!flip.paths().isLegalMag()) continue;
+            boolean inClass = modelsEqual(modelOf(new MsepTest(flip), obs, trPairs, trZ, T), h0Model);
+            if (escape != inClass) out.add(flip);
+        }
+
+        return out;
     }
 
     /**
@@ -764,7 +824,10 @@ public final class PhantomKernelEnumerator7 {
     private static Graph tryCandidate(Result r, MsepTest oracle, Graph mag, Node x, Node y, Set<Node> b)
             throws InterruptedException {
         Graph m = new EdgeListGraph(mag);
-        orientSepsetCollidersXY(m, b, x, y);
+        if (!stampLegColliders(m, b, x, y)) {
+            r.slStampGuardRejects++;
+            return null;
+        }
         Edge fe = m.getEdge(x, y);
         if (fe == null) return null;
         m.removeEdge(fe);
@@ -776,17 +839,43 @@ public final class PhantomKernelEnumerator7 {
         return m;
     }
 
-    /** FcitSl.orientSepsetColliders, verbatim: stamp x*->c<-*y at every common
-     *  neighbor c of the pair that is excluded from b. */
-    private static void orientSepsetCollidersXY(Graph mag, Set<Node> b, Node x, Node y) {
+    /**
+     * FcitSl.stampLegColliders, verbatim: stamp x*->c<-*y at every common neighbor c of the
+     * pair excluded from b, but REFUSE the candidate if doing so would create a NEW unshielded
+     * collider. Unshielded colliders are class-invariant (ARS e2), so a stamp that manufactures
+     * one puts the candidate outside the class; equivalently, the separator of the affected pair
+     * must contain c (triple dichotomy), which the stamped collider would contradict. The
+     * dangerous neighbours are those already carrying an arrowhead AT c -- they supply the other
+     * half of the collider the stamp completes.
+     */
+    private static boolean stampLegColliders(Graph mag, Set<Node> b, Node x, Node y) {
         List<Node> common = mag.getAdjacentNodes(x);
         common.retainAll(mag.getAdjacentNodes(y));
+
         for (Node c : common) {
-            if (b.contains(c)) continue;
-            if (mag.isDefCollider(x, c, y)) continue;
+            if (b.contains(c)) continue;               // in the separator: non-collider, leave it
+            if (mag.isDefCollider(x, c, y)) continue;  // already x*->c<-*y
+
+            for (Node d : mag.getAdjacentNodes(c)) {
+                if (d == x) continue;
+                if (d == y) continue;
+
+                if (mag.getEndpoint(d, c) == Endpoint.ARROW) {
+                    if (!mag.isAdjacentTo(d, x)) {
+                        if (!mag.isDefCollider(d, c, x)) return false;
+                    }
+
+                    if (!mag.isAdjacentTo(d, y)) {
+                        if (!mag.isDefCollider(d, c, y)) return false;
+                    }
+                }
+            }
+
             mag.setEndpoint(x, c, Endpoint.ARROW);
             mag.setEndpoint(y, c, Endpoint.ARROW);
         }
+
+        return true;
     }
 
     /** FcitSl.makeCollider, verbatim. */
@@ -1086,15 +1175,31 @@ public final class PhantomKernelEnumerator7 {
 
             Set<Node> B = result.blockingSet();
 
+            // EVERY member of the blocking set is a removal candidate, not just the common
+            // neighbours of x and y: RB blocks defensively on a graph whose circles hide
+            // collider status, so a node it includes may be a collider (or a descendant of
+            // one) in the truth, and no superset of it can separate. Such a node need not be
+            // adjacent to both endpoints, so the old common-neighbour restriction could leave
+            // the true separator untestable.
             List<Node> common = graph.getAdjacentNodes(x);
             common.retainAll(graph.getAdjacentNodes(y));
             B.addAll(common);
-            List<Node> removalCandidates = new ArrayList<>(common);
+
+            Set<Node> definitelyRemove = new LinkedHashSet<>();
+            for (Node c : common) {
+                if (graph.isDefCollider(x, c, y)) definitelyRemove.add(c);
+            }
+            Set<Node> B0 = new LinkedHashSet<>(B);
+            B0.removeAll(definitelyRemove);
+
+            List<Node> removalCandidates = new ArrayList<>();
+            for (Node v : B0) if (common.contains(v)) removalCandidates.add(v);
+            for (Node v : B0) if (!common.contains(v)) removalCandidates.add(v);
 
             SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
             int[] cChoice;
             while ((cChoice = cGen.next()) != null) {
-                Set<Node> S = new LinkedHashSet<>(B);
+                Set<Node> S = new LinkedHashSet<>(B0);
                 S.removeAll(GraphUtils.asSet(cChoice, removalCandidates));
                 if (DEPTH != -1 && S.size() > DEPTH) continue;
                 if (oracle.checkIndependence(x, y, S).isIndependent()) {
@@ -1438,7 +1543,7 @@ public final class PhantomKernelEnumerator7 {
         // FCIT-SL move audit.
         long slEdgeAttempts, slEdgeNoSep, slEdgeStalled;
         long slCommitStage1, slCommitStage2, slCommitStage2b;
-        long slIpRejects, slBatteryStatements, slBatteryRefusals;
+        long slIpRejects, slStampGuardRejects, slBatteryStatements, slBatteryRefusals;
         long slSolved, slStall, slStallEscapeRescued, slStallUnrescued;
         long slCommitNotImap, slCommitIllegal;
         long slFirstFitSound, slFirstFitUnsound;
@@ -1466,6 +1571,7 @@ public final class PhantomKernelEnumerator7 {
             slCommitStage2 += o.slCommitStage2;
             slCommitStage2b += o.slCommitStage2b;
             slIpRejects += o.slIpRejects;
+            slStampGuardRejects += o.slStampGuardRejects;
             slBatteryStatements += o.slBatteryStatements;
             slBatteryRefusals += o.slBatteryRefusals;
             slSolved += o.slSolved;
