@@ -312,7 +312,7 @@ public final class FcitSl implements IGraphSearch {
                 if (d == x) continue;
                 if (d == y) continue;
 
-                if (mag.getEndpoint(d, c) != Endpoint.ARROW) {
+                if (mag.getEndpoint(d, c) == Endpoint.ARROW) {
                     if (!mag.isAdjacentTo(d, x)) {
                         if (!mag.isDefCollider(d, c, x)) return false;
                     }
