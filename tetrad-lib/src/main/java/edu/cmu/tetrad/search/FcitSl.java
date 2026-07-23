@@ -182,6 +182,51 @@ public final class FcitSl implements IGraphSearch {
      */
     private boolean allowClassEscape = false;
     /**
+     * Whether {@link #tryToModifyGraphClosure} replaces the staged representative search
+     * ({@link #seedMags} + LegEnumerator + {@link #forkFlips}) as the candidate GENERATOR.
+     * The commit gates -- stamp legality, MAG legality, the removed-pair inducing-path
+     * pre-check, and the deleted-pair battery -- are byte-for-byte the same in both paths,
+     * so flipping this flag changes only which candidates are proposed and in what order,
+     * never what is accepted. False by default so existing PKE baselines are untouched;
+     * set true for a head-to-head (e.g. PKE8, 7-2-3) against the staged search.
+     */
+    private boolean useClosureCoverSearch = false;
+    /**
+     * Bound (in nodes) on the length of the x..y skeleton paths enumerated by the
+     * closure-cover search. Paths longer than this are invisible to the covering heuristic;
+     * a candidate whose only unblocked path exceeds the bound is caught by the exact
+     * MsepTest confirmation at emission (and counted in {@code closureLongPathMisses}),
+     * never wrongly committed.
+     */
+    private int closureMaxPathLength = 8;
+    /**
+     * Bound on the number of x..y skeleton paths enumerated by the closure-cover search.
+     */
+    private int closureMaxPaths = 64;
+    /**
+     * Maximum number of cover moves (endpoint reassignments driven by an unblocked path)
+     * per candidate in the closure-cover search. The analog of {@code maxForkFlips}, but
+     * counting PATH-DIRECTED assignments rather than blind subset choices, so a small value
+     * reaches deeper: each move is spent on a path known to still be active.
+     */
+    private int maxCoverMoves = 4;
+    /**
+     * Closure-cover telemetry. {@code closureCandidatesEmitted}: assignments that separated
+     * the pair and were handed to the gates. {@code closureInClassCommits} /
+     * {@code closureEscapeCommits}: commits by class of the (pre-stamp) candidate, certified
+     * by MagToPag equality exactly as {@link #seedMags} certifies seeds.
+     * {@code closureStampPrunes}: branches abandoned because the stamp refused the partial
+     * assignment (the gate would refuse everything below). {@code closureStampObstructions}:
+     * stamp-compatibility requirements that collided with an INVARIANT arrowhead in the PAG
+     * -- evidence (not proof; see {@link #applyStampCompatPins}) that no in-class candidate
+     * can pass the stamp gate for that pair. {@code closureLongPathMisses}: candidates that
+     * blocked every enumerated path but failed the exact m-separation confirmation, i.e. an
+     * active path beyond the enumeration bounds.
+     */
+    private long closureCandidatesEmitted = 0, closureInClassCommits = 0, closureEscapeCommits = 0,
+            closureStampPrunes = 0, closureStampObstructions = 0, closureLongPathMisses = 0,
+            closureIllegalCands = 0, closureClassFiltered = 0;
+    /**
      * Commit provenance telemetry. {@code zhangCommits}: commits hosted by the canonical
      * Zhang MAG (Stage 1). {@code legCommits}: commits hosted by a non-canonical LEG of the
      * current class (Stage 2). {@code inClassFlipCommits}: commits hosted by a fork-flip seed
@@ -335,6 +380,17 @@ public final class FcitSl implements IGraphSearch {
         }
         Collections.sort(toks);
         return String.join("|", toks);
+    }
+
+    /**
+     * Canonical key for an endpoint SLOT: the mark at {@code at} on the (undirected) edge
+     * {@code from}--{@code at}. Used by the closure-cover search's pin map; the edge part is
+     * order-normalized so the slot is identified however the edge is named, while the
+     * {@code @at} suffix distinguishes the edge's two slots.
+     */
+    private static String slotKey(Node from, Node at) {
+        String u = from.getName(), v = at.getName();
+        return (u.compareTo(v) <= 0 ? u + "\u0000" + v : v + "\u0000" + u) + "@" + at.getName();
     }
 
     /**
@@ -626,6 +682,17 @@ public final class FcitSl implements IGraphSearch {
                 + escapeCommits + " class-escape (pass 3)"
                 + otherRejects + " other-rejects"
                 + (allowClassEscape ? "" : "; disabled)."));
+
+        if (useClosureCoverSearch) {
+            TetradLogger.getInstance().log("Closure-cover search: " + closureCandidatesEmitted
+                    + " candidate(s) emitted, " + closureInClassCommits + " in-class commit(s), "
+                    + closureEscapeCommits + " escape commit(s), "
+                    + closureStampPrunes + " stamp-pruned branch(es), "
+                    + closureStampObstructions + " invariant stamp obstruction(s), "
+                    + closureLongPathMisses + " beyond-bound active-path miss(es), "
+                    + closureIllegalCands + " illegal candidate(s) at emission, "
+                    + closureClassFiltered + " class-filtered candidate(s).");
+        }
 
         TetradLogger.getInstance().log("\nFCIT-SL finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
@@ -939,8 +1006,10 @@ public final class FcitSl implements IGraphSearch {
 
             // Commit against the live PAG using the sepset found during the search —
             // no re-search needed, since the winner was searched against the current PAG.
-            boolean didChange = tryToModifyGraph(x, y, h.cond, h.pValue(),
-                    excludeSelectionBias, escape);
+            // Same gates either way; only the candidate generator differs.
+            boolean didChange = useClosureCoverSearch
+                    ? tryToModifyGraphClosure(x, y, h.cond, h.pValue(), excludeSelectionBias, escape)
+                    : tryToModifyGraph(x, y, h.cond, h.pValue(), excludeSelectionBias, escape);
 
             if (didChange) {
                 changedThisSweep = true;
@@ -1563,6 +1632,737 @@ public final class FcitSl implements IGraphSearch {
         return true;
     }
 
+    // ==================== CLOSURE-COVER WITNESS SEARCH ====================
+    //
+    // A drop-in alternative CANDIDATE GENERATOR behind the SAME commit gates as the staged
+    // search (seedMags + LegEnumerator + forkFlips). Rationale: a MAG in the current class
+    // is exactly an assignment of TAIL/ARROW to the PAG's circle endpoints (the invariant
+    // marks are shared by every member), so the Zhang MAG, the LEGs, and the in-class
+    // fork-flips are all points in ONE assignment space -- and the composition the staged
+    // search reaches only by flipping every walked LEG (the V5--V4 note at forkFlips) is
+    // just another point in it. This search explores that space directly, but only on the
+    // closure of the bounded x..y skeleton paths, driven by a covering requirement: every
+    // enumerated path must be blocked by S in the candidate. Endpoints outside the closure
+    // stay frozen at the Zhang orientation, so the subproblem size is governed by local
+    // path structure, not |V|.
+    //
+    // Search structure per candidate: (Phase A) stamp-compatibility propagation pins the
+    // TAILs that stampLegColliders will demand -- this is what composes "a reversal needed
+    // for the stamp" with "a flip needed for blocking" in one pass; (Phase B) a depth-first
+    // cover search repeatedly takes the first still-active path and branches on the moves
+    // that could block it (collider-ize a non-S node, or de-collider-ize an S node); a state
+    // with no active enumerated path is confirmed EXACTLY by MsepTest on the stamped
+    // candidate minus the edge, then classified (MagToPag equality against the base PAG,
+    // pre-stamp, matching seedMags' seed-level classification) and handed to
+    // closureGateAndCommit, whose gate sequence is byte-for-byte tryToModifyGraph's.
+    //
+    // Proved-vs-conjectured ledger: nothing here changes what is CERTIFIED. Emitted
+    // candidates pass the identical gates; in-class commits sit inside the technical note's
+    // scope, and escape commits carry the same pass-3 asterisk as before. The covering
+    // heuristic and the stamp-compatibility propagation affect only which candidates are
+    // proposed, in what order, and how fast.
+
+    /**
+     * Closure-cover replacement for {@link #tryToModifyGraph}: same contract, same gates,
+     * different candidate generator. Stage 1 (the plain Zhang MAG) is preserved verbatim --
+     * and counted in {@code zhangCommits} -- so the common case costs what it costs today
+     * and the provenance ledger stays comparable across generators.
+     */
+    private boolean tryToModifyGraphClosure(Node x, Node y, Set<Node> b, double pValue,
+                                            boolean excludeSelectionBias, boolean escape)
+            throws InterruptedException {
+        Edge _edge = interimPags.getLast().getEdge(x, y);
+        Graph _pag = new EdgeListGraph(interimPags.getLast());
+        List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
+
+        final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
+
+        Graph base = GraphTransforms.zhangMagFromPag(_pag);
+
+        // Class identity reference; same round-tripped construction seedMags uses.
+        Graph basePag = new MagToPag(base).convert(false, excludeSelectionBias);
+
+        Set<String> tried = new HashSet<>();
+
+        // Stage 1: the canonical Zhang MAG, exactly as the staged search tries it first.
+        if (!escape) {
+            if (closureGateAndCommit(new EdgeListGraph(base), x, y, b, pValue, excludeSelectionBias,
+                    _removed, _edge, () -> zhangCommits++) == GateStatus.COMMITTED) {
+                return true;
+            }
+            tried.add(magKey(base));
+        }
+
+        // Phase A: stamp-compatibility propagation. Pins the TAILs the stamp gate will
+        // demand and records the stamp's own arrowheads as virtual pins so cover moves
+        // cannot contradict them.
+        Map<String, Endpoint> pins = new HashMap<>();
+        Graph cand = new EdgeListGraph(base);
+        applyStampCompatPins(_pag, cand, pins, x, y, b);
+
+        // The skeleton is class-invariant, so the paths are enumerated once, shortest first.
+        List<List<Node>> paths = boundedSkeletonPaths(_pag, x, y, closureMaxPathLength, closureMaxPaths);
+
+        boolean committed = closureCoverDfs(cand, pins, paths, maxCoverMoves, _pag, basePag,
+                x, y, b, pValue, excludeSelectionBias, _removed, _edge, escape, tried, deadline);
+
+        if (!committed && verbose) {
+            TetradLogger.getInstance().log("\tClosure-cover search: no candidate hosted " + _edge
+                    + (escape ? " (escape mode)" : " (within-class mode)") + ", sepset = " + b);
+        }
+
+        return committed;
+    }
+
+    /**
+     * Gate outcomes for the closure path; the diagnosis drives repair-move generation at
+     * separating leaves (see {@link #closureCoverDfs}).
+     */
+    private enum GateStatus {COMMITTED, STAMP_REFUSED, ILLEGAL_MAG, INDUCING_PATH, BATTERY_REFUSED}
+
+    /**
+     * The gate pipeline, factored for the closure path but IDENTICAL in content and order to
+     * the inline gates of {@link #tryToModifyGraph}: honour the stored sepsets by stamping the
+     * common colliders of the pair; require the stamped graph to be a legal MAG (the H' every
+     * lemma quantifies over -- see the inducing-path incident documented at the corresponding
+     * gate in tryToModifyGraph); remove the edge; require no inducing path at the pair (prong
+     * A, localized by Lemma 3.6); pass the deleted-pair battery (prong B); then commit and
+     * record provenance. Returns the failure kind rather than a bare boolean so the caller
+     * can target repairs at the actual obstruction.
+     */
+    private GateStatus closureGateAndCommit(Graph candidate, Node x, Node y, Set<Node> b, double pValue,
+                                            boolean excludeSelectionBias, List<Edge> removed, Edge edgeForLog,
+                                            Runnable provenance) throws InterruptedException {
+        Graph _mag = candidate.copy();
+
+        if (!stampLegColliders(_mag, b, x, y)) {
+            return GateStatus.STAMP_REFUSED;
+        }
+
+        if (!_mag.paths().isLegalMag()) {
+            otherRejects++;
+            return GateStatus.ILLEGAL_MAG;
+        }
+
+        _mag.removeEdge(x, y);
+
+        legalityChecks++;
+
+        if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+            ipRejects++;
+            return GateStatus.INDUCING_PATH;
+        }
+
+        if (!deletedPairBatteryPasses(_mag, removed)) {
+            return GateStatus.BATTERY_REFUSED;
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Removing " + edgeForLog + ", sepset = " + b
+                    + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
+        }
+
+        provenance.run();
+
+        this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+        sepsets.set(x, y, b);
+        return GateStatus.COMMITTED;
+    }
+
+    /**
+     * Stamp-compatibility propagation (Phase A). For each common neighbour c of x and y outside
+     * S, the gate will stamp x *-&gt; c &lt;-* y. {@link #stampLegColliders} refuses when some d
+     * with an arrowhead into c is unshielded from x (or y) without the triple already being a
+     * definite collider -- the stamp would mint a new unshielded collider. So wherever the
+     * current PAG leaves the mark at c on d--c FREE (a circle), pin it TAIL in the candidate:
+     * this is exactly the "reversal needed for the stamp" that the staged search can reach only
+     * by walking to the right LEG, obtained here by unit propagation before any search. Where
+     * the PAG mark is an INVARIANT arrowhead and the triple is not an invariant collider, the
+     * obstruction is recorded ({@code closureStampObstructions}) but NOT treated as a proof of
+     * non-hostability: stampLegColliders' pre-check consults the candidate's marks, and a
+     * candidate that pre-orients the x-side arrowhead at c can still satisfy it, so we leave
+     * such cases for the gate to adjudicate rather than over-prune. (An obstruction count that
+     * tracks refusals one-for-one at the oracle would be evidence the pre-check could be
+     * strengthened to a certificate; PKE can audit that.)
+     */
+    private void applyStampCompatPins(Graph pag, Graph cand, Map<String, Endpoint> pins,
+                                      Node x, Node y, Set<Node> b) {
+        List<Node> common = pag.getAdjacentNodes(x);
+        common.retainAll(pag.getAdjacentNodes(y));
+
+        for (Node c : common) {
+            if (b.contains(c)) continue;                   // not stamped; no requirement
+            if (pag.isDefCollider(x, c, y)) continue;      // stamp is a no-op here
+
+            // The stamp will force arrowheads at c from x and y; record them as virtual
+            // pins (NOT applied to cand -- the gate re-derives them, and classification is
+            // pre-stamp) so no cover move tries to tail them.
+            pins.putIfAbsent(slotKey(x, c), Endpoint.ARROW);
+            pins.putIfAbsent(slotKey(y, c), Endpoint.ARROW);
+
+            for (Node d : pag.getAdjacentNodes(c)) {
+                if (d == x || d == y) continue;
+
+                boolean unshX = !pag.isAdjacentTo(d, x);
+                boolean unshY = !pag.isAdjacentTo(d, y);
+                if (!unshX && !unshY) continue;
+
+                boolean okWithArrow = (!unshX || pag.isDefCollider(d, c, x))
+                        && (!unshY || pag.isDefCollider(d, c, y));
+                if (okWithArrow) continue;
+
+                Endpoint atC = pag.getEndpoint(d, c);
+
+                if (atC == Endpoint.ARROW) {
+                    // Invariant arrowhead: every candidate this generator freezes-and-flips
+                    // carries it, and the stamp's conservative pre-check will likely refuse.
+                    // Recorded as evidence, adjudicated by the gate.
+                    closureStampObstructions++;
+                } else if (atC == Endpoint.CIRCLE) {
+                    Endpoint prev = pins.putIfAbsent(slotKey(d, c), Endpoint.TAIL);
+                    if (prev == null) {
+                        // Legal-shape companion: a tail at c against a tail at d would make
+                        // d -- c UNDIRECTED (a selection edge, illegal here), so anticipate
+                        // the arrowhead at d when the PAG allows it; when it doesn't, the
+                        // pin is infeasible in every candidate this generator produces --
+                        // release it, record the obstruction, and let the gate adjudicate.
+                        if (cand.getEndpoint(c, d) == Endpoint.TAIL) {
+                            if (slotCanBe(pag, pins, c, d, Endpoint.ARROW)) {
+                                cand.setEndpoint(d, c, Endpoint.TAIL);
+                                cand.setEndpoint(c, d, Endpoint.ARROW);
+                                pins.put(slotKey(c, d), Endpoint.ARROW);
+                            } else {
+                                pins.remove(slotKey(d, c));
+                                closureStampObstructions++;
+                            }
+                        } else {
+                            cand.setEndpoint(d, c, Endpoint.TAIL);
+                        }
+                    }
+                    // prev == TAIL: already pinned, nothing to do. prev == ARROW cannot
+                    // happen: arrow pins live only at c's marks on x--c / y--c.
+                }
+                // atC == TAIL: invariant tail already satisfies the requirement.
+            }
+        }
+    }
+
+    /**
+     * The cover-and-repair search (Phase B). Each node: stamp the current partial assignment
+     * (a refused stamp abandons the branch -- {@code closureStampPrunes} -- since the gate
+     * would refuse every completion that leaves the obstructing marks untouched; completions
+     * that change them are reached on sibling branches), then find the first enumerated path
+     * still active given S.
+     * <p>
+     * ACTIVE PATH: branch on the COVER moves that could block it (see {@link #coverMoves}).
+     * <p>
+     * NO ACTIVE PATH: confirm exactly, classify, and hand to the gates. When the gate refuses
+     * a separating candidate, the leaf is NOT abandoned: no path-driven move can exist (there
+     * is no active path to derive one from), but OTHER representatives that also separate may
+     * survive the gate -- the staged search reaches them by walking LEGs; this search reaches
+     * them by REPAIR moves generated from the gate's own diagnosis: for a stamp-induced
+     * illegality, break the offending directed/almost-directed cycle or non-maximal inducing
+     * path (reversals first -- the LEG-style fix -- then bidirected cuts); for a prong-(A)
+     * failure, break the removed pair's inducing path. This was learned from the V3--V4
+     * five-node case, where the unique-up-to-reversal separating assignment was stamp-illegal
+     * and only a V2--V4-style reversal (a Stage-2 LEG in the staged search) hosts the
+     * deletion. Battery refusals get no repair -- they are data verdicts, terminal per
+     * candidate exactly as in the staged search. First commit wins.
+     */
+    private boolean closureCoverDfs(Graph cand, Map<String, Endpoint> pins, List<List<Node>> paths,
+                                    int movesLeft, Graph pag, Graph basePag, Node x, Node y, Set<Node> b,
+                                    double pValue, boolean excludeSelectionBias, List<Edge> removed,
+                                    Edge edgeForLog, boolean escape, Set<String> tried, long deadline)
+            throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
+
+        if (System.currentTimeMillis() > deadline) {
+            return false;
+        }
+
+        // Judge activity on what the gate will actually evaluate: the stamped candidate
+        // minus the edge.
+        Graph stamped = new EdgeListGraph(cand);
+        if (!stampLegColliders(stamped, b, x, y)) {
+            closureStampPrunes++;
+            return false;
+        }
+        Graph probe = new EdgeListGraph(stamped);
+        probe.removeEdge(x, y);
+
+        List<Node> active = firstActivePath(probe, paths, b);
+
+        List<CoverMove> moves;
+
+        if (active != null) {
+            if (movesLeft == 0) return false;
+            moves = coverMoves(pag, stamped, cand, pins, active, b);
+        } else {
+            // Every enumerated path is blocked; confirm exactly (an active path beyond the
+            // enumeration bounds would otherwise slip through the covering heuristic).
+            if (!new MsepTest(probe).checkIndependence(x, y, b).isIndependent()) {
+                closureLongPathMisses++;
+                return false;
+            }
+
+            String key = magKey(cand);
+            if (!tried.add(key)) return false;   // separating state already adjudicated
+
+            if (!cand.paths().isLegalMag()) {
+                closureIllegalCands++;
+                return false;
+            }
+
+            closureCandidatesEmitted++;
+
+            // Class membership, certified as seedMags certifies seeds: pre-stamp, by
+            // MagToPag equality against the base PAG.
+            boolean inClass = new MagToPag(new EdgeListGraph(cand))
+                    .convert(false, excludeSelectionBias).equals(basePag);
+
+            if (inClass == escape) {
+                closureClassFiltered++;
+                return false;   // no principled move targets the class boundary
+            }
+
+            GateStatus st = closureGateAndCommit(cand, x, y, b, pValue, excludeSelectionBias,
+                    removed, edgeForLog,
+                    escape ? () -> closureEscapeCommits++ : () -> closureInClassCommits++);
+
+            if (st == GateStatus.COMMITTED) return true;
+            if (movesLeft == 0) return false;
+
+            moves = switch (st) {
+                case ILLEGAL_MAG -> illegalityRepairMoves(pag, stamped, pins);
+                case INDUCING_PATH -> inducingRepairMoves(pag, probe, pins, x, y);
+                default -> List.of();   // STAMP_REFUSED cannot recur here; BATTERY is terminal
+            };
+        }
+
+        for (CoverMove mv : moves) {
+            // Skip no-op moves (every assignment already holds): they would burn budget
+            // re-deriving the same state one level deeper.
+            boolean noop = true;
+            for (Assign a : mv.assigns()) {
+                if (cand.getEndpoint(a.from(), a.at()) != a.end()) {
+                    noop = false;
+                    break;
+                }
+            }
+            if (noop) continue;
+
+            List<Endpoint> saved = new ArrayList<>();
+            List<String> addedPins = new ArrayList<>();
+            applyMove(cand, pins, mv, saved, addedPins);
+
+            boolean done = closureCoverDfs(cand, pins, paths, movesLeft - 1, pag, basePag, x, y, b,
+                    pValue, excludeSelectionBias, removed, edgeForLog, escape, tried, deadline);
+
+            undoMove(cand, pins, mv, saved, addedPins);
+
+            if (done) return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Repair moves for a stamped candidate {@code isLegalMag} rejected: locate each
+     * ancestrality violation -- a bidirected edge with a directed path between its endpoints
+     * (almost-directed cycle) or a directed edge opposed by a directed path (directed cycle)
+     * -- and each non-maximality (an inducing path over the empty set between a nonadjacent
+     * pair), and propose the assignments that break them. The bidirected edge itself is
+     * typically stamp-pinned, so {@link #slotCanBe} steers repairs at the directed path,
+     * which is exactly where the staged search's winning LEGs differ from the Zhang MAG.
+     */
+    private List<CoverMove> illegalityRepairMoves(Graph pag, Graph stamped, Map<String, Endpoint> pins) {
+        List<CoverMove> out = new ArrayList<>();
+
+        for (Edge e : stamped.getEdges()) {
+            Node u = e.getNode1(), w = e.getNode2();
+            Endpoint atU = stamped.getEndpoint(w, u), atW = stamped.getEndpoint(u, w);
+
+            if (atU == Endpoint.ARROW && atW == Endpoint.ARROW) {          // u <-> w
+                List<Node> p = firstDirectedPath(stamped, u, w, closureMaxPathLength);
+                if (p == null) p = firstDirectedPath(stamped, w, u, closureMaxPathLength);
+                if (p != null) addPathBreakMoves(pag, pins, p, out);
+            } else if (atU == Endpoint.TAIL && atW == Endpoint.ARROW) {    // u --> w
+                List<Node> p = firstDirectedPath(stamped, w, u, closureMaxPathLength);
+                if (p != null) addPathBreakMoves(pag, pins, p, out);       // w ~> u closes a cycle
+            }
+        }
+
+        // Non-maximality: an inducing path between a nonadjacent pair.
+        List<Node> nodes = stamped.getNodes();
+        for (int i = 0; i < nodes.size() && out.isEmpty(); i++) {
+            for (int j = i + 1; j < nodes.size() && out.isEmpty(); j++) {
+                Node u = nodes.get(i), w = nodes.get(j);
+                if (stamped.isAdjacentTo(u, w)) continue;
+                List<Node> ip = firstInducingPathOverEmpty(stamped, u, w, closureMaxPathLength);
+                if (ip != null) addInducingBreakMoves(pag, stamped, pins, ip, u, w, out);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Repair moves for a prong-(A) rejection: break the removed pair's inducing path in the
+     * deleted graph, by de-collider-izing an interior node or cutting its ancestry to the
+     * endpoints.
+     */
+    private List<CoverMove> inducingRepairMoves(Graph pag, Graph probe, Map<String, Endpoint> pins,
+                                                Node x, Node y) {
+        List<CoverMove> out = new ArrayList<>();
+        List<Node> ip = firstInducingPathOverEmpty(probe, x, y, closureMaxPathLength);
+        if (ip != null) addInducingBreakMoves(pag, probe, pins, ip, x, y, out);
+        return out;
+    }
+
+    /**
+     * Assignments that break one link of a directed path: for each edge p --&gt; q on it,
+     * the reversal (arrowhead at p, tail at q -- the LEG-style fix, proposed first) and the
+     * bidirected cut (arrowhead at p alone), wherever the PAG and pins allow.
+     */
+    private void addPathBreakMoves(Graph pag, Map<String, Endpoint> pins, List<Node> path,
+                                   List<CoverMove> out) {
+        for (int i = 0; i < path.size() - 1; i++) {
+            Node p = path.get(i), q = path.get(i + 1);
+            boolean arrowAtP = slotCanBe(pag, pins, q, p, Endpoint.ARROW);
+            if (arrowAtP && slotCanBe(pag, pins, p, q, Endpoint.TAIL)) {
+                out.add(new CoverMove(List.of(
+                        new Assign(q, p, Endpoint.ARROW),
+                        new Assign(p, q, Endpoint.TAIL))));
+            }
+            if (arrowAtP) {
+                out.add(new CoverMove(List.of(new Assign(q, p, Endpoint.ARROW))));
+            }
+        }
+    }
+
+    /**
+     * Assignments that break an inducing path over the empty set: de-collider-ize an interior
+     * node (tail move with its legal-shape companion), or cut its ancestry to the endpoints
+     * (individual and aggregate arrowhead cuts on its outgoing directed edges), wherever the
+     * PAG and pins allow.
+     */
+    private void addInducingBreakMoves(Graph pag, Graph g, Map<String, Endpoint> pins,
+                                       List<Node> path, Node u, Node w, List<CoverMove> out) {
+        for (int i = 1; i < path.size() - 1; i++) {
+            Node prev = path.get(i - 1), m = path.get(i), next = path.get(i + 1);
+
+            addTailMove(pag, g, pins, prev, m, out);
+            addTailMove(pag, g, pins, next, m, out);
+
+            List<Assign> quench = new ArrayList<>();
+            for (Node z : g.getAdjacentNodes(m)) {
+                if (g.getEndpoint(z, m) == Endpoint.TAIL && g.getEndpoint(m, z) == Endpoint.ARROW
+                        && slotCanBe(pag, pins, z, m, Endpoint.ARROW)) {
+                    Assign cut = new Assign(z, m, Endpoint.ARROW);
+                    out.add(new CoverMove(List.of(cut)));
+                    quench.add(cut);
+                }
+            }
+            if (quench.size() > 1) out.add(new CoverMove(List.copyOf(quench)));
+        }
+    }
+
+    /**
+     * First directed path from {@code from} to {@code to} (edges with a tail at the source and
+     * an arrowhead at the target), BFS, bounded; null if none within the bound.
+     */
+    private List<Node> firstDirectedPath(Graph g, Node from, Node to, int maxLen) {
+        Map<Node, Node> parent = new LinkedHashMap<>();
+        Deque<Node> queue = new ArrayDeque<>();
+        Map<Node, Integer> depth = new LinkedHashMap<>();
+        queue.add(from);
+        depth.put(from, 0);
+
+        while (!queue.isEmpty()) {
+            Node cur = queue.removeFirst();
+            if (depth.get(cur) >= maxLen) continue;
+            for (Node z : g.getAdjacentNodes(cur)) {
+                if (depth.containsKey(z)) continue;
+                if (g.getEndpoint(z, cur) == Endpoint.TAIL && g.getEndpoint(cur, z) == Endpoint.ARROW) {
+                    parent.put(z, cur);
+                    depth.put(z, depth.get(cur) + 1);
+                    if (z.equals(to)) {
+                        LinkedList<Node> path = new LinkedList<>();
+                        for (Node n = z; n != null; n = parent.get(n)) path.addFirst(n);
+                        return path;
+                    }
+                    queue.addLast(z);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * First inducing path over the empty conditioning set between {@code u} and {@code w}:
+     * a path on which every interior node is a collider AND an ancestor of {@code u} or
+     * {@code w}. Bounded DFS; null if none within the bound.
+     */
+    private List<Node> firstInducingPathOverEmpty(Graph g, Node u, Node w, int maxLen) {
+        Deque<Node> path = new ArrayDeque<>();
+        Set<Node> onPath = new HashSet<>();
+        path.addLast(u);
+        onPath.add(u);
+        return inducingDfs(g, u, w, maxLen, path, onPath);
+    }
+
+    private List<Node> inducingDfs(Graph g, Node cur, Node w, int maxLen,
+                                   Deque<Node> path, Set<Node> onPath) {
+        if (cur.equals(w)) {
+            return path.size() >= 3 ? new ArrayList<>(path) : null;
+        }
+        if (path.size() > maxLen) return null;
+
+        Node u = path.peekFirst();
+        List<Node> asList = new ArrayList<>(path);
+
+        for (Node next : g.getAdjacentNodes(cur)) {
+            if (onPath.contains(next)) continue;
+
+            // The node BEFORE next (i.e. cur) becomes interior once we extend; check its
+            // collider/ancestry duty on the extended path (skip for the first hop, where
+            // cur is the endpoint u).
+            if (asList.size() >= 2) {
+                Node prev = asList.get(asList.size() - 2);
+                boolean collider = g.getEndpoint(prev, cur) == Endpoint.ARROW
+                        && g.getEndpoint(next, cur) == Endpoint.ARROW;
+                if (!collider) continue;
+                if (!(g.paths().isAncestorOf(cur, u) || g.paths().isAncestorOf(cur, w))) continue;
+            }
+
+            path.addLast(next);
+            onPath.add(next);
+            List<Node> found = inducingDfs(g, next, w, maxLen, path, onPath);
+            onPath.remove(next);
+            path.removeLast();
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    /**
+     * Moves that could block the given active path, respecting the PAG's invariant marks and
+     * the current pins. Collider/ancestry STATUS is judged on the stamped view (what the gate
+     * evaluates); feasibility on the PAG and pins; assignments apply to the pre-stamp
+     * candidate. Three move families:
+     * <p>
+     * (1) COLLIDER-IZE: an interior node m outside S that is not yet a collider on its path
+     * edges gets arrowheads in from both path neighbours -- proposed only when the PAG's
+     * invariant directed edges do not already force m into An(S), since then no in-scope
+     * assignment makes the collider block.
+     * <p>
+     * (2) DESCENDANT CUT: an interior node m outside S that IS a collider but remains an
+     * ancestor of S (so the collider does not block). For each outgoing directed edge
+     * m --&gt; w whose mark at m is free, a cut converts it to m &lt;-&gt; w, severing that
+     * ancestry route; individually, and -- when several are cuttable -- as one aggregate
+     * "quench" move that severs them all at once. The quench is the closure analog of the
+     * staged search's makeCollider stamping arrowheads in from every path neighbour: the
+     * seed-9025-style witness (all of a fork's outgoing edges turned bidirected so the
+     * stamped collider stops being an ancestor and prong (A)'s inducing path dies) is
+     * reached in one step. Cuts one hop deeper (m --&gt; w fixed but w --&gt; z free) are
+     * not generated; the budget and other triples give partial reach, and PKE residue will
+     * show whether deeper cuts are ever needed.
+     * <p>
+     * (3) DE-COLLIDER-IZE: an interior node m in S sitting as a collider frees one side to a
+     * tail -- with a companion arrowhead at the far end when the far mark is a tail, since
+     * tail--tail is an undirected (selection) edge, illegal here; if the companion is not
+     * available the move is infeasible.
+     */
+    private List<CoverMove> coverMoves(Graph pag, Graph stamped, Graph cand, Map<String, Endpoint> pins,
+                                       List<Node> path, Set<Node> S) {
+        List<CoverMove> out = new ArrayList<>();
+
+        for (int i = 1; i < path.size() - 1; i++) {
+            Node a = path.get(i - 1), m = path.get(i), c = path.get(i + 1);
+
+            if (!S.contains(m)) {
+                if (!stamped.isDefCollider(a, m, c)) {
+                    if (slotCanBe(pag, pins, a, m, Endpoint.ARROW)
+                            && slotCanBe(pag, pins, c, m, Endpoint.ARROW)
+                            && !invariantAncestorOfS(pag, m, S)) {
+                        out.add(new CoverMove(List.of(
+                                new Assign(a, m, Endpoint.ARROW),
+                                new Assign(c, m, Endpoint.ARROW))));
+                    }
+                } else if (ancestorInS(stamped, m, S) && !invariantAncestorOfS(pag, m, S)) {
+                    List<Assign> quench = new ArrayList<>();
+                    for (Node w : stamped.getAdjacentNodes(m)) {
+                        if (stamped.getEndpoint(w, m) == Endpoint.TAIL          // tail at m
+                                && stamped.getEndpoint(m, w) == Endpoint.ARROW  // m --> w
+                                && slotCanBe(pag, pins, w, m, Endpoint.ARROW)) {
+                            Assign cut = new Assign(w, m, Endpoint.ARROW);
+                            out.add(new CoverMove(List.of(cut)));
+                            quench.add(cut);
+                        }
+                    }
+                    if (quench.size() > 1) {
+                        out.add(new CoverMove(List.copyOf(quench)));
+                    }
+                }
+            } else {
+                if (stamped.isDefCollider(a, m, c)) {
+                    addTailMove(pag, cand, pins, a, m, out);
+                    addTailMove(pag, cand, pins, c, m, out);
+                }
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * A de-collider-ize move: tail at m on far--m, with the legal-shape companion arrowhead
+     * at the far end when needed (see {@link #coverMoves}, family 3). Adds nothing when
+     * infeasible.
+     */
+    private void addTailMove(Graph pag, Graph cand, Map<String, Endpoint> pins, Node far, Node m,
+                             List<CoverMove> out) {
+        if (!slotCanBe(pag, pins, far, m, Endpoint.TAIL)) return;
+
+        List<Assign> assigns = new ArrayList<>();
+        assigns.add(new Assign(far, m, Endpoint.TAIL));
+
+        if (cand.getEndpoint(m, far) == Endpoint.TAIL) {
+            if (!slotCanBe(pag, pins, m, far, Endpoint.ARROW)) return;   // tail--tail: illegal shape
+            assigns.add(new Assign(m, far, Endpoint.ARROW));
+        }
+
+        out.add(new CoverMove(assigns));
+    }
+
+    /**
+     * True iff the endpoint at {@code at} on the edge {@code from}--{@code at} may be assigned
+     * {@code want}: the PAG's mark there is a circle or already {@code want}, and no pin says
+     * otherwise.
+     */
+    private boolean slotCanBe(Graph pag, Map<String, Endpoint> pins, Node from, Node at, Endpoint want) {
+        Endpoint e = pag.getEndpoint(from, at);
+        if (e != Endpoint.CIRCLE && e != want) return false;
+        Endpoint pinned = pins.get(slotKey(from, at));
+        return pinned == null || pinned == want;
+    }
+
+    /**
+     * True iff the PAG's INVARIANT directed edges alone certify m in An(S): a directed path
+     * m --&gt; ... --&gt; s for some s in S using only edges with a tail at the source and an
+     * arrowhead at the target in the PAG. Such ancestry holds in EVERY member of the class, so
+     * a collider at m can never block for any candidate this generator produces.
+     */
+    private boolean invariantAncestorOfS(Graph pag, Node m, Set<Node> S) {
+        Deque<Node> queue = new ArrayDeque<>();
+        Set<Node> seen = new HashSet<>();
+        queue.add(m);
+        seen.add(m);
+
+        while (!queue.isEmpty()) {
+            Node cur = queue.removeFirst();
+            if (!cur.equals(m) && S.contains(cur)) return true;
+
+            for (Node w : pag.getAdjacentNodes(cur)) {
+                if (seen.contains(w)) continue;
+                if (pag.getEndpoint(w, cur) == Endpoint.TAIL
+                        && pag.getEndpoint(cur, w) == Endpoint.ARROW) {   // cur --> w invariant
+                    seen.add(w);
+                    queue.addLast(w);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Applies a move: records prior endpoints for undo, sets the assignments, and pins each
+     * slot it newly pins (already-pinned slots were verified compatible by
+     * {@link #slotCanBe}).
+     */
+    private void applyMove(Graph cand, Map<String, Endpoint> pins, CoverMove mv,
+                           List<Endpoint> saved, List<String> addedPins) {
+        for (Assign a : mv.assigns()) {
+            saved.add(cand.getEndpoint(a.from(), a.at()));
+            cand.setEndpoint(a.from(), a.at(), a.end());
+
+            String k = slotKey(a.from(), a.at());
+            if (pins.putIfAbsent(k, a.end()) == null) {
+                addedPins.add(k);
+            }
+        }
+    }
+
+    /**
+     * Undoes a move in reverse order and releases only the pins it added.
+     */
+    private void undoMove(Graph cand, Map<String, Endpoint> pins, CoverMove mv,
+                          List<Endpoint> saved, List<String> addedPins) {
+        for (int i = mv.assigns().size() - 1; i >= 0; i--) {
+            Assign a = mv.assigns().get(i);
+            cand.setEndpoint(a.from(), a.at(), saved.get(i));
+        }
+        for (String k : addedPins) {
+            pins.remove(k);
+        }
+    }
+
+    /**
+     * Simple x..y paths in the (class-invariant) skeleton, bounded in length and count,
+     * shortest first so cover moves target cheap paths early. Marks-blind: whether a path is
+     * BLOCKED is a property of the candidate, so activity is judged per-candidate by
+     * {@link #firstActivePath}; the enumeration here fixes only the universe of paths the
+     * covering heuristic can see.
+     */
+    private List<List<Node>> boundedSkeletonPaths(Graph g, Node x, Node y, int maxLen, int maxPaths) {
+        List<List<Node>> out = new ArrayList<>();
+        Deque<Node> path = new ArrayDeque<>();
+        Set<Node> onPath = new HashSet<>();
+        path.addLast(x);
+        onPath.add(x);
+        skeletonDfs(g, x, y, maxLen, maxPaths, path, onPath, out);
+        out.sort(Comparator.<List<Node>>comparingInt(List::size));
+        return out;
+    }
+
+    private void skeletonDfs(Graph g, Node cur, Node y, int maxLen, int maxPaths,
+                             Deque<Node> path, Set<Node> onPath, List<List<Node>> out) {
+        if (out.size() >= maxPaths) return;
+
+        if (cur.equals(y)) {
+            if (path.size() >= 3) out.add(new ArrayList<>(path));   // exclude the direct edge
+            return;
+        }
+
+        if (path.size() > maxLen) return;
+
+        for (Node next : g.getAdjacentNodes(cur)) {
+            if (onPath.contains(next)) continue;
+            path.addLast(next);
+            onPath.add(next);
+            skeletonDfs(g, next, y, maxLen, maxPaths, path, onPath, out);
+            onPath.remove(next);
+            path.removeLast();
+            if (out.size() >= maxPaths) return;
+        }
+    }
+
+    /**
+     * The first enumerated path that is m-connecting given S in {@code probe} (the stamped
+     * candidate minus the edge), or null if all are blocked.
+     */
+    private List<Node> firstActivePath(Graph probe, List<List<Node>> paths, Set<Node> S) {
+        for (List<Node> p : paths) {
+            if (isActiveGivenS(probe, p, S)) return p;
+        }
+        return null;
+    }
+
+    // ================== END CLOSURE-COVER WITNESS SEARCH ==================
+
     /**
      * DELETED-PAIR BATTERY.  For each removed pair {x,y}: enumerate every conditioning set
      * $Z$ over the remaining variables with |Z| <= batteryZMax that the candidate MAG
@@ -1676,6 +2476,45 @@ public final class FcitSl implements IGraphSearch {
      */
     public void setAllowClassEscape(boolean allowClassEscape) {
         this.allowClassEscape = allowClassEscape;
+    }
+
+    /**
+     * Sets whether the closure-cover generator replaces the staged representative search; see
+     * {@link #useClosureCoverSearch}. Same gates either way -- flipping this changes which
+     * candidates are proposed and in what order, never what is accepted. False by default.
+     *
+     * @param useClosureCoverSearch true to use the closure-cover generator.
+     */
+    public void setUseClosureCoverSearch(boolean useClosureCoverSearch) {
+        this.useClosureCoverSearch = useClosureCoverSearch;
+    }
+
+    /**
+     * Sets the bound (in nodes) on the skeleton paths the closure-cover search enumerates.
+     *
+     * @param closureMaxPathLength the bound; see {@link #closureMaxPathLength}.
+     */
+    public void setClosureMaxPathLength(int closureMaxPathLength) {
+        this.closureMaxPathLength = closureMaxPathLength;
+    }
+
+    /**
+     * Sets the bound on the number of skeleton paths the closure-cover search enumerates.
+     *
+     * @param closureMaxPaths the bound; see {@link #closureMaxPaths}.
+     */
+    public void setClosureMaxPaths(int closureMaxPaths) {
+        this.closureMaxPaths = closureMaxPaths;
+    }
+
+    /**
+     * Sets the per-candidate move budget of the closure-cover search; the analog of
+     * {@code maxForkFlips}, but counting path-directed assignments.
+     *
+     * @param maxCoverMoves the budget; see {@link #maxCoverMoves}.
+     */
+    public void setMaxCoverMoves(int maxCoverMoves) {
+        this.maxCoverMoves = maxCoverMoves;
     }
 
     /**
@@ -1911,6 +2750,20 @@ public final class FcitSl implements IGraphSearch {
     }
 
     private record RemovalHit(int index, Edge edge, Set<Node> cond, double pValue) {
+    }
+
+    /**
+     * One endpoint assignment of the closure-cover search: the mark at {@code at} on the edge
+     * {@code from}--{@code at} becomes {@code end}.
+     */
+    private record Assign(Node from, Node at, Endpoint end) {
+    }
+
+    /**
+     * A cover move: the joint endpoint assignment that blocks (or un-opens) one triple on an
+     * active path -- two arrowheads for a collider-ization, one tail for a de-collider-ization.
+     */
+    private record CoverMove(List<Assign> assigns) {
     }
 
     private record IndependenceCheck(Edge edge, Set<Node> cond, double pValue) {

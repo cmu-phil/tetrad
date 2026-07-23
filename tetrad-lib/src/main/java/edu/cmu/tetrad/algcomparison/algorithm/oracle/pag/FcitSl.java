@@ -176,6 +176,8 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
 
         search.setAllowClassEscape(false);
 
+        search.setUseClosureCoverSearch(true);
+
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
