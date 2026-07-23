@@ -528,22 +528,22 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             return pag;                                // committed sepset map untouched
         }
 
-        try {
-            ICovarianceMatrix covarianceMatrix = getIndependenceTest().getCov();
-
-            double lik = new RicfEjml().ricf(GraphTransforms.zhangMagFromPag(pag), covarianceMatrix).getLogLik();
-            double _lik = new RicfEjml().ricf(GraphTransforms.zhangMagFromPag(_pag), covarianceMatrix).getLogLik();
-
-            if (2 * (_lik - lik) - Math.log(covarianceMatrix.getSampleSize()) < 0) {
-                if (verbose) {
-                    TetradLogger.getInstance().log("\tRejected " + a + " -- " + c + " (" + type
-                            + ") because BIC did not improve.");
-                }
-                return pag;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            ICovarianceMatrix covarianceMatrix = getIndependenceTest().getCov();
+//
+//            double lik = new RicfEjml().ricf(GraphTransforms.zhangMagFromPag(pag), covarianceMatrix).getLogLik();
+//            double _lik = new RicfEjml().ricf(GraphTransforms.zhangMagFromPag(_pag), covarianceMatrix).getLogLik();
+//
+//            if (2 * (_lik - lik) - Math.log(covarianceMatrix.getSampleSize()) < 0) {
+//                if (verbose) {
+//                    TetradLogger.getInstance().log("\tRejected " + a + " -- " + c + " (" + type
+//                            + ") because BIC did not improve.");
+//                }
+//                return pag;
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
 
         // Accepted: commit only the deliberate sepset write and carry the reoriented PAG forward.
         sepsetMap.set(a, c, sepset);
