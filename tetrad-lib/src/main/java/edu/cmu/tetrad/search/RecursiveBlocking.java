@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -627,9 +628,10 @@ public class RecursiveBlocking {
 
             if (notFollowed.contains(neighbor)) continue;
 
-            String key = x.getName() + "->" + neighbor.getName();
+            boolean head = graph.getEndpoint(x, neighbor) == Endpoint.ARROW;
+            String key = x.getName() + "->" + neighbor.getName() + "|" + head;
             if (seen.add(key)) {
-                bfsQueue.add(new PathEntry(x, neighbor));
+                bfsQueue.add(new PathEntry(x, neighbor, head));
             }
         }
 
@@ -648,11 +650,12 @@ public class RecursiveBlocking {
                 if (c == a) continue;
                 if (notFollowed.contains(c)) continue;
 
-                if (!reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) continue;
+                if (!reachable(graph, a, b, c, z, descendantsMap, entry.arrivedHead, deadlineMs)) continue;
 
-                String key = b.getName() + "->" + c.getName();
+                boolean head = nextArrivedHead(graph, entry.arrivedHead, b, c);
+                String key = b.getName() + "->" + c.getName() + "|" + head;
                 if (seen.add(key)) {
-                    bfsQueue.add(new PathEntry(b, c));
+                    bfsQueue.add(new PathEntry(b, c, head));
                 }
             }
         }
@@ -693,9 +696,10 @@ public class RecursiveBlocking {
 
             if (ignoreDirectEdge && neighbor == y) continue;
             if (notFollowed.contains(neighbor)) continue;
-            String key = x.getName() + "->" + neighbor.getName();
+            boolean head = graph.getEndpoint(x, neighbor) == Endpoint.ARROW;
+            String key = x.getName() + "->" + neighbor.getName() + "|" + head;
             if (seen.add(key)) {
-                bfsQueue.add(new PathEntry(x, neighbor));
+                bfsQueue.add(new PathEntry(x, neighbor, head));
             }
         }
 
@@ -731,7 +735,7 @@ public class RecursiveBlocking {
                     checkTimeout(deadlineMs);
 
                     if (c == a) continue;
-                    if (!graph.isDefCollider(a, b, c)) {
+                    if (!(entry.arrivedHead && graph.getEndpoint(c, b) == Endpoint.ARROW)) {
                         isNonColliderOnSomePath = true;
                         break;
                     }
@@ -746,10 +750,11 @@ public class RecursiveBlocking {
 
                 if (c == a) continue;
                 if (notFollowed.contains(c)) continue;
-                if (!reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) continue;
-                String key = b.getName() + "->" + c.getName();
+                if (!reachable(graph, a, b, c, z, descendantsMap, entry.arrivedHead, deadlineMs)) continue;
+                boolean head = nextArrivedHead(graph, entry.arrivedHead, b, c);
+                String key = b.getName() + "->" + c.getName() + "|" + head;
                 if (seen.add(key)) {
-                    bfsQueue.add(new PathEntry(b, c));
+                    bfsQueue.add(new PathEntry(b, c, head));
                 }
             }
         }
@@ -852,6 +857,11 @@ public class RecursiveBlocking {
             firstHops.remove(y);
         }
 
+        // Consistency with stepContinuationLoop, which silently drops
+        // not-followed continuations. Without this, a not-followed neighbor
+        // of x hits the ENTER guard's INDETERMINATE and poisons the call.
+        firstHops.removeAll(notFollowed);
+
         // Iteration cap: Z can grow by at most one node per outer iteration,
         // and is bounded by pool size, so pool.size() + 1 iterations suffices
         // for convergence. We add a small buffer for safety.
@@ -938,7 +948,8 @@ public class RecursiveBlocking {
 
         Deque<Frame> callStack = new ArrayDeque<>();
         callStack.push(new Frame(aInit, bInit, y,
-                depth, recursiveDepth, currentRecursiveDepth));
+                depth, recursiveDepth, currentRecursiveDepth,
+                graph.getEndpoint(aInit, bInit) == Endpoint.ARROW));
 
         // Continuation memoization cache, scoped to this single DFS call.
         // Key: (a, b, entry-z). Value: the untainted verdict for that frame.
@@ -998,7 +1009,7 @@ public class RecursiveBlocking {
                 }
 
                 // Memo lookup — a hit means zero new exploration.
-                MemoKey key = new MemoKey(f.a, f.b, z);
+                MemoKey key = new MemoKey(f.a, f.b, z, f.arrivedHead);
                 Blockable cached = memo.get(key);
                 if (cached != null) {
                     callStack.pop();
@@ -1243,7 +1254,7 @@ public class RecursiveBlocking {
 
         checkTimeout(deadlineMs);
 
-        List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap, deadlineMs);
+        List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap, f.arrivedHead, deadlineMs);
         passNodes.removeAll(notFollowed);
 
         for (Node c : passNodes) {
@@ -1255,7 +1266,8 @@ public class RecursiveBlocking {
             callStack.push(new Frame(
                     f.b, c, y,
                     f.depth, f.recursiveDepth,
-                    f.currentRecursiveDepth + 1));
+                    f.currentRecursiveDepth + 1,
+                    nextArrivedHead(graph, f.arrivedHead, f.b, c)));
             return null;
         }
 
@@ -1272,6 +1284,7 @@ public class RecursiveBlocking {
                                                 Node b,
                                                 Set<Node> z,
                                                 Map<Node, Set<Node>> descendantsMap,
+                                                boolean arrivedHead,
                                                 long deadlineMs
     )
             throws InterruptedException, TimeoutException {
@@ -1282,7 +1295,7 @@ public class RecursiveBlocking {
             checkTimeout(deadlineMs);
 
             if (c == a) continue;
-            if (reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) {
+            if (reachable(graph, a, b, c, z, descendantsMap, arrivedHead, deadlineMs)) {
                 passNodes.add(c);
             }
         }
@@ -1298,11 +1311,17 @@ public class RecursiveBlocking {
                                      Node b,
                                      Node c,
                                      Set<Node> z,
-                                     Map<Node, Set<Node>> descendantsMap, long deadlineMs)
+                                     Map<Node, Set<Node>> descendantsMap,
+                                     boolean arrivedHead, long deadlineMs)
             throws InterruptedException, TimeoutException {
         checkTimeout(deadlineMs);
 
-        boolean collider = graph.isDefCollider(a, b, c);
+        // Definite-or-forced collider at b: arrivedHead incorporates the
+        // graph's own mark at every push, so this subsumes isDefCollider;
+        // the extra strength is the forced case, which closes phantom
+        // non-collider chains like x *-> u o-o v <-* y that no consistent
+        // MAG orientation leaves open.
+        boolean collider = arrivedHead && graph.getEndpoint(c, b) == Endpoint.ARROW;
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
@@ -1323,6 +1342,18 @@ public class RecursiveBlocking {
             }
             return false;
         }
+    }
+
+    /**
+     * Arrival mark at {@code c} for the ball b -> c: the graph's own arrowhead
+     * at c, or the one FORCED by passing through b as a non-collider after
+     * arriving head-in at b. Head-in plus non-collider status forces a tail at
+     * b on the b-c edge, and a MAG edge with a tail at b is b -> c, i.e., an
+     * arrowhead at c -- even if the graph shows a circle there.
+     */
+    private static boolean nextArrivedHead(Graph graph, boolean arrivedHead, Node b, Node c) {
+        boolean colliderAtB = arrivedHead && graph.getEndpoint(c, b) == Endpoint.ARROW;
+        return (!colliderAtB && arrivedHead) || graph.getEndpoint(b, c) == Endpoint.ARROW;
     }
 
     private static void checkTimeout(long deadlineMs) throws InterruptedException, TimeoutException {
@@ -1422,10 +1453,12 @@ public class RecursiveBlocking {
     private static final class PathEntry {
         final Node predecessor;
         final Node current;
+        final boolean arrivedHead;
 
-        PathEntry(Node predecessor, Node current) {
+        PathEntry(Node predecessor, Node current, boolean arrivedHead) {
             this.predecessor = predecessor;
             this.current = current;
+            this.arrivedHead = arrivedHead;
         }
     }
 
@@ -1449,13 +1482,16 @@ public class RecursiveBlocking {
         private final Set<Node> z;
         private final int hash;
 
-        MemoKey(Node a, Node b, Set<Node> z) {
+        private final boolean arrivedHead;
+
+        MemoKey(Node a, Node b, Set<Node> z, boolean arrivedHead) {
             this.a = a;
             this.b = b;
             // Immutable snapshot; HashSet copy gives O(1) contains/equals and
             // decouples the key from later mutation of the live z.
             this.z = new HashSet<>(z);
-            this.hash = Objects.hash(a, b, this.z);
+            this.arrivedHead = arrivedHead;
+            this.hash = Objects.hash(a, b, this.z, arrivedHead);
         }
 
         @Override
@@ -1466,6 +1502,7 @@ public class RecursiveBlocking {
             return hash == other.hash
                     && a == other.a
                     && b == other.b
+                    && arrivedHead == other.arrivedHead
                     && z.equals(other.z);
         }
 
@@ -1522,6 +1559,11 @@ public class RecursiveBlocking {
         final int recursiveDepth;
         final int currentRecursiveDepth;
 
+        // Definite-or-forced arrowhead at b on the a-b edge. Part of the memo
+        // key: the same (a, b, entry-z) can carry different verdicts under
+        // different arrival marks.
+        final boolean arrivedHead;
+
         Pass pass = Pass.ENTER;
         Set<Node> zSnapshot = null;
         Blockable withoutBResult = null;
@@ -1545,13 +1587,15 @@ public class RecursiveBlocking {
         MemoKey cacheKey = null;
 
         Frame(Node a, Node b, Node y,
-              int depth, int recursiveDepth, int currentRecursiveDepth) {
+              int depth, int recursiveDepth, int currentRecursiveDepth,
+              boolean arrivedHead) {
             this.a = a;
             this.b = b;
             this.y = y;
             this.depth = depth;
             this.recursiveDepth = recursiveDepth;
             this.currentRecursiveDepth = currentRecursiveDepth;
+            this.arrivedHead = arrivedHead;
         }
     }
 }

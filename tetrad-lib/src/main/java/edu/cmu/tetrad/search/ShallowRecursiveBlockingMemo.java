@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -177,6 +178,11 @@ public final class ShallowRecursiveBlockingMemo {
         if (ignoreDirectEdge) {
             firstHops.remove(y);
         }
+        // Consistency with stepContinuationLoop, which silently drops
+        // not-followed continuations (skip = assume blocked; the data test is
+        // the safety net). Without this, a not-followed neighbor of x reaches
+        // the ENTER guard, returns INDETERMINATE, and taints the whole call.
+        firstHops.removeAll(notFollowed);
 
         int maxIterations = pool.size() + 1;
         int iterations = 0;
@@ -237,7 +243,8 @@ public final class ShallowRecursiveBlockingMemo {
             throws InterruptedException, TimeoutException {
 
         Deque<Frame> callStack = new ArrayDeque<>();
-        callStack.push(new Frame(aInit, bInit, y, depth, recursiveDepth, currentRecursiveDepth));
+        callStack.push(new Frame(aInit, bInit, y, depth, recursiveDepth, currentRecursiveDepth,
+                graph.getEndpoint(aInit, bInit) == Endpoint.ARROW));
 
         // Per-call delta-replay memo: (a, b, entry-Z) -> (verdict, Z-added).
         Map<MemoKey, MemoVal> memo = new HashMap<>();
@@ -284,7 +291,7 @@ public final class ShallowRecursiveBlockingMemo {
                 }
 
                 // Memo lookup -- a hit resolves the frame with zero exploration.
-                MemoKey key = new MemoKey(f.a, f.b, z);
+                MemoKey key = new MemoKey(f.a, f.b, z, f.arrivedHead);
                 MemoVal cached = memo.get(key);
                 if (cached != null) {
                     callStack.pop();
@@ -344,7 +351,7 @@ public final class ShallowRecursiveBlockingMemo {
                 boolean latent = f.b.getNodeType() == NodeType.LATENT;
                 boolean canAddB = !latent && pool.contains(f.b)
                         && (f.depth < 0 || z.size() < f.depth)
-                        && addingBClosesANonCollider(graph, f.a, f.b, z, notFollowed, descendantsMap, deadlineMs);
+                        && addingBClosesANonCollider(graph, f.a, f.b, z, notFollowed, descendantsMap, f.arrivedHead, deadlineMs);
 
                 if (!canAddB) {
                     path.remove(f.b);
@@ -469,17 +476,27 @@ public final class ShallowRecursiveBlockingMemo {
 
         checkTimeout(deadlineMs);
 
-        List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap, deadlineMs);
+        List<Node> passNodes = getReachableNodes(graph, f.a, f.b, z, descendantsMap, f.arrivedHead, deadlineMs);
         passNodes.removeAll(notFollowed);
 
         for (Node c : passNodes) {
             checkTimeout(deadlineMs);
             if (f.handled.contains(c)) continue;
 
+            // Arrival mark at c: the graph's own arrowhead at c, or the one
+            // FORCED by passing through b as a non-collider after arriving
+            // head-in at b. Head-in plus non-collider status forces a tail at
+            // b on the b-c edge, and a MAG edge with a tail at b is b -> c,
+            // i.e., an arrowhead at c -- even if the graph shows a circle.
+            boolean colliderAtB = f.arrivedHead && graph.getEndpoint(c, f.b) == Endpoint.ARROW;
+            boolean childArrivedHead = (!colliderAtB && f.arrivedHead)
+                    || graph.getEndpoint(f.b, c) == Endpoint.ARROW;
+
             f.pendingC = c;
             callStack.push(new Frame(
                     f.b, c, y,
-                    f.depth, f.recursiveDepth, f.currentRecursiveDepth + 1));
+                    f.depth, f.recursiveDepth, f.currentRecursiveDepth + 1,
+                    childArrivedHead));
             return null;
         }
 
@@ -506,12 +523,12 @@ public final class ShallowRecursiveBlockingMemo {
      */
     private static boolean addingBClosesANonCollider(
             Graph graph, Node a, Node b, Set<Node> z, Set<Node> notFollowed,
-            Map<Node, Set<Node>> descendantsMap, long deadlineMs)
+            Map<Node, Set<Node>> descendantsMap, boolean arrivedHead, long deadlineMs)
             throws InterruptedException, TimeoutException {
-        for (Node c : getReachableNodes(graph, a, b, z, descendantsMap, deadlineMs)) {
+        for (Node c : getReachableNodes(graph, a, b, z, descendantsMap, arrivedHead, deadlineMs)) {
             checkTimeout(deadlineMs);
             if (notFollowed.contains(c)) continue;
-            if (!graph.isDefCollider(a, b, c)) {
+            if (!(arrivedHead && graph.getEndpoint(c, b) == Endpoint.ARROW)) {
                 return true;   // open non-collider continuation; b in Z would block it
             }
         }
@@ -521,6 +538,7 @@ public final class ShallowRecursiveBlockingMemo {
     private static List<Node> getReachableNodes(Graph graph, Node a, Node b,
                                                 Set<Node> z,
                                                 Map<Node, Set<Node>> descendantsMap,
+                                                boolean arrivedHead,
                                                 long deadlineMs)
             throws InterruptedException, TimeoutException {
         checkTimeout(deadlineMs);
@@ -529,7 +547,7 @@ public final class ShallowRecursiveBlockingMemo {
         for (Node c : graph.getAdjacentNodes(b)) {
             checkTimeout(deadlineMs);
             if (c == a) continue;
-            if (reachable(graph, a, b, c, z, descendantsMap, deadlineMs)) {
+            if (reachable(graph, a, b, c, z, descendantsMap, arrivedHead, deadlineMs)) {
                 passNodes.add(c);
             }
         }
@@ -538,11 +556,17 @@ public final class ShallowRecursiveBlockingMemo {
 
     private static boolean reachable(Graph graph, Node a, Node b, Node c,
                                      Set<Node> z, Map<Node, Set<Node>> descendantsMap,
-                                     long deadlineMs)
+                                     boolean arrivedHead, long deadlineMs)
             throws InterruptedException, TimeoutException {
         checkTimeout(deadlineMs);
 
-        boolean collider = graph.isDefCollider(a, b, c);
+        // Definite-or-forced collider at b on THIS path: we arrived at b
+        // through a definite or forced arrowhead, and the b-c edge has an
+        // arrowhead at b. arrivedHead incorporates the graph's own mark at
+        // every push, so this subsumes isDefCollider; the extra strength is
+        // the forced case, which closes phantom "non-collider chains" like
+        // x *-> u o-o v <-* y that no consistent MAG orientation leaves open.
+        boolean collider = arrivedHead && graph.getEndpoint(c, b) == Endpoint.ARROW;
 
         if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
@@ -646,11 +670,14 @@ public final class ShallowRecursiveBlockingMemo {
         private final Set<Node> z;
         private final int hash;
 
-        MemoKey(Node a, Node b, Set<Node> z) {
+        private final boolean arrivedHead;
+
+        MemoKey(Node a, Node b, Set<Node> z, boolean arrivedHead) {
             this.a = a;
             this.b = b;
             this.z = new HashSet<>(z);
-            this.hash = Objects.hash(a, b, this.z);
+            this.arrivedHead = arrivedHead;
+            this.hash = Objects.hash(a, b, this.z, arrivedHead);
         }
 
         @Override
@@ -661,6 +688,7 @@ public final class ShallowRecursiveBlockingMemo {
             return hash == other.hash
                     && a == other.a
                     && b == other.b
+                    && arrivedHead == other.arrivedHead
                     && z.equals(other.z);
         }
 
@@ -689,6 +717,13 @@ public final class ShallowRecursiveBlockingMemo {
         final int recursiveDepth;
         final int currentRecursiveDepth;
 
+        // True iff the endpoint at b on the a-b edge is a definite arrowhead,
+        // OR an arrowhead forced by the parent's non-collider passage (head-in
+        // at the parent forces a tail there, hence an arrowhead here). Part of
+        // the memo key: the same (a, b, entry-Z) can carry different verdicts
+        // under different arrival marks.
+        final boolean arrivedHead;
+
         Pass pass = Pass.ENTER;
 
         Set<Node> zSnapshot = null;
@@ -711,13 +746,15 @@ public final class ShallowRecursiveBlockingMemo {
         MemoKey cacheKey = null;
 
         Frame(Node a, Node b, Node y,
-              int depth, int recursiveDepth, int currentRecursiveDepth) {
+              int depth, int recursiveDepth, int currentRecursiveDepth,
+              boolean arrivedHead) {
             this.a = a;
             this.b = b;
             this.y = y;
             this.depth = depth;
             this.recursiveDepth = recursiveDepth;
             this.currentRecursiveDepth = currentRecursiveDepth;
+            this.arrivedHead = arrivedHead;
         }
     }
 }

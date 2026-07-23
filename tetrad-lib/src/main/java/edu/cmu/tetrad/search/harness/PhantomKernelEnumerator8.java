@@ -56,7 +56,6 @@
 package edu.cmu.tetrad.search.harness;
 
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
-import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FcitSl;
@@ -118,6 +117,12 @@ public final class PhantomKernelEnumerator8 {
 
     /** Canonicalize dedup keys over all 120 permutations of the observed nodes. */
     private static final boolean CANONICALIZE_PERMS = true;
+
+    /** Visit blocks in a shuffled order rather than 0..numBlocks-1, so that stopping
+     *  early yields a representative sample instead of a corner of mask space. */
+    private static final boolean SHUFFLE_BLOCKS = true;
+    /** Seed for the visitation order.  Fixed so a run is reproducible. */
+    private static final long BLOCK_ORDER_SEED = 20260723L;
 
     // Log files.
     /** Every class whose terminal PAG != G* (any non-EXACT bucket). */
@@ -187,7 +192,10 @@ public final class PhantomKernelEnumerator8 {
         long t0 = System.currentTimeMillis();
         long blocksThisRun = 0;
 
-        for (long b = 0; b < numBlocks; b++) {
+        long[] order = blockOrder(numBlocks);
+
+        for (long idx = 0; idx < numBlocks; idx++) {
+            long b = order[(int) idx];
             if (STOP.get()) break;
             if (doneBlocks.contains(b)) continue;
 
@@ -203,11 +211,18 @@ public final class PhantomKernelEnumerator8 {
             if (STOP.get()) break;
             appendCheckpoint(b);
 
-            System.err.printf("block %d done (%d this run) | models=%d distinct=%d "
+//            System.err.printf("block %d done (%d this run) | models=%d distinct=%d "
+//                            + "| EXACT=%d EQUIV=%d ORIENT=%d SKEL=%d ERR=%d | keys=%d | %.1f min%n",
+//                    b, blocksThisRun, total.modelsScanned, total.distinctClasses,
+//                    total.exact, total.equivNotExact, total.skeletonMatchOrientDiff,
+//                    total.skeletonDiff, total.error, SEEN.size(),
+//                    (System.currentTimeMillis() - t0) / 60000.0);
+
+            System.err.printf("block %d (%d/%d visited) | new=%d | models=%d distinct=%d "
                             + "| EXACT=%d EQUIV=%d ORIENT=%d SKEL=%d ERR=%d | keys=%d | %.1f min%n",
-                    b, blocksThisRun, total.modelsScanned, total.distinctClasses,
-                    total.exact, total.equivNotExact, total.skeletonMatchOrientDiff,
-                    total.skeletonDiff, total.error, SEEN.size(),
+                    b, blocksThisRun, numBlocks, blockRes.distinctClasses, total.modelsScanned,
+                    total.distinctClasses, total.exact, total.equivNotExact,
+                    total.skeletonMatchOrientDiff, total.skeletonDiff, total.error, SEEN.size(),
                     (System.currentTimeMillis() - t0) / 60000.0);
         }
 
@@ -314,11 +329,12 @@ public final class PhantomKernelEnumerator8 {
 
                 List<Node> canonNodes = new ArrayList<>();
                 for (int q = 0; q < OBS; q++) canonNodes.add(new GraphNode("V" + (q + 1)));
+                Graph canonDag = relabelWithLatents(dag, obsSorted, canon.perm, canonNodes, latSet);
                 Graph canonMag = relabel(trueMag, obsSorted, canon.perm, canonNodes);
                 Graph canonPag = relabel(truePag, obsSorted, canon.perm, canonNodes);
                 String mapping = mappingDesc(obsSorted, canon.perm, latSet);
 
-                runFcit(r, mask, latSet, mapping, canonMag, canonPag, canonNodes);
+                runFcit(r, mask, latSet, mapping, canonDag, canonMag, canonPag, canonNodes);
             } catch (Exception ex) {
                 r.skipped++;
                 if (ERR_PRINTS.incrementAndGet() <= 5) {
@@ -335,44 +351,33 @@ public final class PhantomKernelEnumerator8 {
     // ────────────────────────────────────────────────────────────────────────
 
     private static void runFcit(Result r, long mask, Set<Integer> latSet, String mapping,
-                                Graph canonMag, Graph canonPag, List<Node> obs) {
+                                Graph canonDag, Graph canonMag, Graph canonPag, List<Node> obs) {
         // Oracle drive: MsepTest on the true MAG as both test and score basis.  FcitSl's
         // constructor flips startWith to GRASP when the test is an MsepTest, so this is the
         // Oracle GRaSP path.  A fresh graph per FcitSl (it mutates node types internally).
-//        Graph magForTest = new EdgeListGraph(canonMag);
-//        Graph magForScore = new EdgeListGraph(canonMag);
-//        MsepTest test = new MsepTest(magForTest);
-//        GraphScore scoreObj = new GraphScore(magForScore);
+        Graph magForTest = new EdgeListGraph(canonMag);
+        Graph magForScore = new EdgeListGraph(canonMag);
+        MsepTest test = new MsepTest(magForTest);
+        GraphScore scoreObj = new GraphScore(magForScore);
 
         Graph terminal;
         try {
-
-            edu.cmu.tetrad.algcomparison.score.MSepScore score = new edu.cmu.tetrad.algcomparison.score.MSepScore(canonMag);
-            MSeparationTest test = new MSeparationTest(canonMag);
-
-
-            edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FcitSl fcit
-                    = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FcitSl(test, score);
-
-            Parameters parameters = new Parameters();
-            parameters.set(Params.FCIT_STARTS_WITH, 2);
-
-
-//            FcitSl fcit = new FcitSl(test, scoreObj);
-////            fcit.setKnowledge(new Knowledge());
-//            fcit.setExcludeSelectionBias(EXCLUDE_SELECTION_BIAS);
-//            fcit.setCompleteRuleSetUsed(true);
-//            fcit.setDepth(DEPTH);
-//            fcit.setRecursiveDepth(RECURSIVE_DEPTH);
-//            fcit.setBatteryZMax(BATTERY_Z_MAX);
-//            fcit.setMaxForkFlips(MAX_FORK_FLIPS);
-//            fcit.setAllowClassEscape(ALLOW_CLASS_ESCAPE);
-//            fcit.setTimeout(FCIT_TIMEOUT_MS);
-//            fcit.setVerbose(false);
-            terminal = fcit.search(null, parameters);
+            FcitSl fcit = new FcitSl(test, scoreObj);
+            fcit.setKnowledge(new Knowledge());
+            fcit.setExcludeSelectionBias(EXCLUDE_SELECTION_BIAS);
+            fcit.setCompleteRuleSetUsed(true);
+            fcit.setDepth(DEPTH);
+            fcit.setRecursiveDepth(RECURSIVE_DEPTH);
+            fcit.setBatteryZMax(BATTERY_Z_MAX);
+            fcit.setMaxForkFlips(MAX_FORK_FLIPS);
+            fcit.setAllowClassEscape(ALLOW_CLASS_ESCAPE);
+            fcit.setTimeout(FCIT_TIMEOUT_MS);
+            fcit.setUseClosureCoverSearch(true);
+            fcit.setVerbose(false);
+            terminal = fcit.search();
         } catch (Throwable ex) {
             r.error++;
-            violationLog.write(violationEntry("ERROR", mask, latSet, mapping, canonMag, canonPag,
+            violationLog.write(violationEntry("ERROR", mask, latSet, mapping, canonDag, canonMag, canonPag,
                     null, "FcitSl threw: " + ex));
             if (ERR_PRINTS.incrementAndGet() <= 10) {
                 System.err.println("FcitSl error mask=" + mask + " lat=" + latSet + ": " + ex);
@@ -407,7 +412,7 @@ public final class PhantomKernelEnumerator8 {
             bucket = "SKELETON_MATCH_ORIENT_DIFF";
         }
 
-        violationLog.write(violationEntry(bucket, mask, latSet, mapping, canonMag, canonPag,
+        violationLog.write(violationEntry(bucket, mask, latSet, mapping, canonDag, canonMag, canonPag,
                 term, diffDetail(term, canonPag)));
     }
 
@@ -530,7 +535,7 @@ public final class PhantomKernelEnumerator8 {
     }
 
     private static String violationEntry(String bucket, long mask, Set<Integer> latSet, String mapping,
-                                         Graph canonMag, Graph canonPag, Graph terminal, String detail) {
+                                         Graph dag, Graph canonMag, Graph canonPag, Graph terminal, String detail) {
         StringBuilder sb = new StringBuilder();
         sb.append("==== VIOLATION [").append(bucket).append("] ====\n");
         sb.append("  config            : escape=").append(ALLOW_CLASS_ESCAPE)
@@ -541,6 +546,7 @@ public final class PhantomKernelEnumerator8 {
         sb.append("  exemplar dag mask : ").append(mask).append('\n');
         sb.append("  latent set        : ").append(latSet).append('\n');
         sb.append("  relabeling        : ").append(mapping).append('\n');
+        sb.append("  true DAG (canonical labels):\n").append(dag).append('\n');
         sb.append("  true MAG G* (canonical labels):\n").append(canonMag).append('\n');
         sb.append("  true PAG G* (canonical labels):\n").append(canonPag).append('\n');
         if (terminal != null) {
@@ -633,6 +639,34 @@ public final class PhantomKernelEnumerator8 {
         for (Edge e : g.getEdges()) {
             out.addEdge(new Edge(map.get(e.getNode1().getName()), map.get(e.getNode2().getName()),
                     e.getEndpoint1(), e.getEndpoint2(), false));
+        }
+        return out;
+    }
+
+    private static Graph relabelWithLatents(Graph g, List<Node> obsSorted, int[] perm,
+                                            List<Node> canonNodes, Set<Integer> latSet) {
+        Map<String, Node> map = new HashMap<>();
+        for (int i = 0; i < obsSorted.size(); i++) {
+            map.put(obsSorted.get(i).getName(), canonNodes.get(perm[i]));
+        }
+
+        List<Node> all = new ArrayList<>(canonNodes);
+        int k = 1;
+        for (int li : new TreeSet<>(latSet)) {
+            Node latent = new GraphNode("L" + k++);
+            latent.setNodeType(NodeType.LATENT);
+            map.put("X" + (li + 1), latent);
+            all.add(latent);
+        }
+
+        Graph out = new EdgeListGraph(all);
+        for (Edge e : g.getEdges()) {
+            Node u = map.get(e.getNode1().getName());
+            Node v = map.get(e.getNode2().getName());
+            if (u == null || v == null) {
+                throw new IllegalStateException("Unmapped node on edge " + e + "; map covers " + map.keySet());
+            }
+            out.addEdge(new Edge(u, v, e.getEndpoint1(), e.getEndpoint2(), false));
         }
         return out;
     }
@@ -778,6 +812,31 @@ public final class PhantomKernelEnumerator8 {
         long c = 1;
         for (int i = 0; i < k; i++) c = c * (n - i) / (i + 1);
         return c;
+    }
+
+    /**
+     * Block visitation order.  Sequential order is systematically biased: block b fixes mask
+     * bits 12..27, and the low blocks leave the high-index pairs entirely unset, so an early
+     * stop covers only models whose high-index nodes are an independent set.  A fixed-seed
+     * Fisher-Yates shuffle makes any prefix a uniform sample of blocks instead.  The checkpoint
+     * stores actual block ids, so order does not affect resume and CONFIG_LINE need not change.
+     */
+    private static long[] blockOrder(long numBlocks) {
+        if (numBlocks > Integer.MAX_VALUE) {
+            throw new IllegalStateException("numBlocks " + numBlocks + " exceeds array addressing; "
+                    + "raise BLOCK_SIZE or switch to an index-mapping shuffle.");
+        }
+        long[] order = new long[(int) numBlocks];
+        for (int i = 0; i < order.length; i++) order[i] = i;
+        if (!SHUFFLE_BLOCKS) return order;
+        Random rnd = new Random(BLOCK_ORDER_SEED);
+        for (int i = order.length - 1; i > 0; i--) {
+            int j = rnd.nextInt(i + 1);
+            long t = order[i];
+            order[i] = order[j];
+            order[j] = t;
+        }
+        return order;
     }
 
     private static final class Result {

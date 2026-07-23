@@ -192,6 +192,17 @@ public final class FcitSl implements IGraphSearch {
      */
     private boolean useClosureCoverSearch = false;
     /**
+     * Whether a pair the closure-cover search cannot host is handed to the staged generator
+     * ({@link #tryToModifyGraph}) rather than left uncommitted. True by default: the closure
+     * search's residual failures are structural (it certifies class membership at the end
+     * rather than searching within the class, so where the class is a small share of the
+     * separating assignments it can generate the right moves and still never land in one),
+     * and the staged search has no such weakness. With this on, the closure generator's reach
+     * is a superset of staged's. Set false to measure the closure search's UNAIDED reach --
+     * which is what {@code closureFallbackCommits} reports either way.
+     */
+    private boolean closureFallbackToStaged = true;
+    /**
      * Bound (in nodes) on the length of the x..y skeleton paths enumerated by the
      * closure-cover search. Paths longer than this are invisible to the covering heuristic;
      * a candidate whose only unblocked path exceeds the bound is caught by the exact
@@ -204,12 +215,28 @@ public final class FcitSl implements IGraphSearch {
      */
     private int closureMaxPaths = 64;
     /**
-     * Maximum number of cover moves (endpoint reassignments driven by an unblocked path)
-     * per candidate in the closure-cover search. The analog of {@code maxForkFlips}, but
-     * counting PATH-DIRECTED assignments rather than blind subset choices, so a small value
-     * reaches deeper: each move is spent on a path known to still be active.
+     * Maximum number of cover moves (endpoint reassignments driven by an unblocked path) per
+     * candidate in the closure-cover search. The analog of {@code maxForkFlips}, but counting
+     * PATH-DIRECTED assignments rather than blind subset choices, so a small value reaches
+     * deeper: each move is spent on a path known to still be active.
+     * <p>
+     * Negative (the default) means AUTO: the budget is derived per pair from the size of the
+     * subproblem -- the number of free (circle) endpoint slots on the closure of the
+     * enumerated x..y paths -- capped by {@link #closureAutoBudgetCap}. A FIXED budget is the
+     * wrong resource model, because the mark-distance from the Zhang MAG to a hosting
+     * representative scales with how much of the local neighbourhood is undetermined, not
+     * with a constant: PKE8's V1--V5 class needed five endpoint-changes and so read as
+     * "no candidate hosted" at a fixed budget of 4, indistinguishable in the telemetry from a
+     * genuine non-hostability, while the same search found it immediately at 6. Tying the
+     * budget to the local closure keeps that failure mode from returning as models grow --
+     * and the closure, not |V|, is what governs it.
      */
-    private int maxCoverMoves = 4;
+    private int maxCoverMoves = -1;
+    /**
+     * Ceiling on the AUTO move budget (see {@link #maxCoverMoves}), bounding DFS depth when
+     * the local closure is large.
+     */
+    private int closureAutoBudgetCap = 8;
     /**
      * Closure-cover telemetry. {@code closureCandidatesEmitted}: assignments that separated
      * the pair and were handed to the gates. {@code closureInClassCommits} /
@@ -225,7 +252,8 @@ public final class FcitSl implements IGraphSearch {
      */
     private long closureCandidatesEmitted = 0, closureInClassCommits = 0, closureEscapeCommits = 0,
             closureStampPrunes = 0, closureStampObstructions = 0, closureLongPathMisses = 0,
-            closureIllegalCands = 0, closureClassFiltered = 0;
+            closureIllegalCands = 0, closureClassFiltered = 0, closureRelaxedExpansions = 0,
+            closureRelaxedPasses = 0, closureFallbackAttempts = 0, closureFallbackCommits = 0;
     /**
      * Commit provenance telemetry. {@code zhangCommits}: commits hosted by the canonical
      * Zhang MAG (Stage 1). {@code legCommits}: commits hosted by a non-canonical LEG of the
@@ -691,7 +719,13 @@ public final class FcitSl implements IGraphSearch {
                     + closureStampObstructions + " invariant stamp obstruction(s), "
                     + closureLongPathMisses + " beyond-bound active-path miss(es), "
                     + closureIllegalCands + " illegal candidate(s) at emission, "
-                    + closureClassFiltered + " class-filtered candidate(s).");
+                    + closureClassFiltered + " class-filtered candidate(s), "
+                    + closureRelaxedExpansions + " relaxed-mark expansion(s), "
+                    + closureRelaxedPasses + " full relaxed retry pass(es).");
+            TetradLogger.getInstance().log("Closure-cover fallback: " + closureFallbackAttempts
+                    + " pair(s) handed to the staged generator, " + closureFallbackCommits
+                    + " committed there"
+                    + (closureFallbackToStaged ? "." : " (fallback DISABLED; unaided reach)."));
         }
 
         TetradLogger.getInstance().log("\nFCIT-SL finished.");
@@ -1703,8 +1737,60 @@ public final class FcitSl implements IGraphSearch {
         // The skeleton is class-invariant, so the paths are enumerated once, shortest first.
         List<List<Node>> paths = boundedSkeletonPaths(_pag, x, y, closureMaxPathLength, closureMaxPaths);
 
-        boolean committed = closureCoverDfs(cand, pins, paths, maxCoverMoves, _pag, basePag,
-                x, y, b, pValue, excludeSelectionBias, _removed, _edge, escape, tried, deadline);
+        int budget = (maxCoverMoves >= 0) ? maxCoverMoves : autoBudget(_pag, paths);
+
+        boolean committed = closureCoverDfs(cand, pins, paths, budget, _pag, basePag,
+                x, y, b, pValue, excludeSelectionBias, _removed, _edge, escape, false, tried, deadline);
+
+        if (!committed) {
+            // SECOND PASS, FULLY RELAXED. The frozen-marks assumption is only as sound as the
+            // PAG, and MagToPag can over-commit (see slotCanBe) -- when it does, the witness
+            // sits outside the frozen search space entirely and no amount of searching inside
+            // it helps. The per-node fallback above catches only the case where a node has NO
+            // frozen move; it cannot catch the case that matters more, where frozen moves exist
+            // in abundance and every one of them leads somewhere out of class. PKE8's 6-observed
+            // V6--V4 class is that case: nine free slots kept the frozen search busy for
+            // hundreds of candidates, while the hosting representative needed arrowheads at V1
+            // and V2 on edges the PAG had already called tails. So the trigger is the failure of
+            // the whole frozen search, not the emptiness of one node's move set.
+            //
+            // Correctness is unaffected: relaxation widens only move GENERATION. Class
+            // membership is still certified by MagToPag equality and every candidate still
+            // clears the same gates, so a relaxed pass can commit nothing a frozen pass would
+            // have been wrong to commit.
+            closureRelaxedPasses++;
+
+            Map<String, Endpoint> pins2 = new HashMap<>();
+            Graph cand2 = new EdgeListGraph(base);
+            applyStampCompatPins(_pag, cand2, pins2, x, y, b);
+
+            // Leaf verdicts are pass-independent, but the MOVES available at a leaf are not,
+            // so a state adjudicated frozen must be re-openable under relaxation.
+            tried.clear();
+            if (!escape) tried.add(magKey(base));
+
+            committed = closureCoverDfs(cand2, pins2, paths, budget, _pag, basePag,
+                    x, y, b, pValue, excludeSelectionBias, _removed, _edge, escape, true, tried, deadline);
+        }
+
+        if (!committed && closureFallbackToStaged) {
+            // FALLBACK TO THE STAGED GENERATOR. The closure search's weakness is structural,
+            // not a missing move: it searches MAG space and tests class membership at the end,
+            // whereas LegEnumerator only ever visits class members. Where the class is a small
+            // share of the separating assignments -- dense PAGs at 6+ observed variables -- the
+            // closure DFS can generate exactly the right moves (verified) and still never land
+            // in class. Deferring to the staged search on failure makes this generator's reach a
+            // superset of staged's while keeping its speed on the cases it does host, at the
+            // cost that such edges' provenance reads as staged. {@code closureFallbackCommits}
+            // counts them, so the ledger stays honest and the residual rate stays visible.
+            //
+            // Nothing has been mutated at this point: the closure search touches interimPags
+            // and sepsets only via closureGateAndCommit, which runs only on success. So the
+            // staged search sees exactly the state it would have seen had it run alone.
+            closureFallbackAttempts++;
+            committed = tryToModifyGraph(x, y, b, pValue, excludeSelectionBias, escape);
+            if (committed) closureFallbackCommits++;
+        }
 
         if (!committed && verbose) {
             TetradLogger.getInstance().log("\tClosure-cover search: no candidate hosted " + _edge
@@ -1719,6 +1805,29 @@ public final class FcitSl implements IGraphSearch {
      * separating leaves (see {@link #closureCoverDfs}).
      */
     private enum GateStatus {COMMITTED, STAMP_REFUSED, ILLEGAL_MAG, INDUCING_PATH, BATTERY_REFUSED}
+
+    /**
+     * AUTO move budget: the number of free (circle) endpoint slots on the closure of the
+     * enumerated x..y paths, floored at 4 so short closures still get the historical budget
+     * and capped by {@link #closureAutoBudgetCap} to bound the DFS. This is the local measure
+     * of how far the search may have to travel -- every move sets a slot that was free, so a
+     * witness cannot be further than the number of free slots, and bounding by the closure
+     * rather than by a constant is what keeps the bound meaningful as models grow.
+     */
+    private int autoBudget(Graph pag, List<List<Node>> paths) {
+        Set<Node> closure = new LinkedHashSet<>();
+        for (List<Node> p : paths) closure.addAll(p);
+
+        Set<String> free = new LinkedHashSet<>();
+        for (Node u : closure) {
+            for (Node w : pag.getAdjacentNodes(u)) {
+                if (pag.getEndpoint(w, u) == Endpoint.CIRCLE) free.add(slotKey(w, u));
+                if (pag.getEndpoint(u, w) == Endpoint.CIRCLE) free.add(slotKey(u, w));
+            }
+        }
+
+        return Math.max(4, Math.min(closureAutoBudgetCap, free.size()));
+    }
 
     /**
      * The gate pipeline, factored for the closure path but IDENTICAL in content and order to
@@ -1807,8 +1916,19 @@ public final class FcitSl implements IGraphSearch {
                 boolean unshY = !pag.isAdjacentTo(d, y);
                 if (!unshX && !unshY) continue;
 
-                boolean okWithArrow = (!unshX || pag.isDefCollider(d, c, x))
-                        && (!unshY || pag.isDefCollider(d, c, y));
+                // Positing an arrowhead at c from d: stampLegColliders' pre-check passes iff
+                // d*->c<-*x is ALREADY a definite collider, and since the stamp sets its own
+                // arrowheads only AFTER the check, that reduces to "the candidate already
+                // carries an arrowhead at c from x". Judging this on the PAG's circles
+                // instead pins TAIL far too often -- in PKE8's X1--X5 case the Zhang MAG
+                // already had X1 --> X4, so an arrowhead at X4 from X7 was perfectly legal,
+                // yet the PAG-based test pinned it TAIL and blocked the only cut that breaks
+                // X4's ancestry into S, leaving the DFS with no moves at all. Erring
+                // permissive is the safe direction: a branch the stamp would refuse is caught
+                // by the STAMP_REFUSED prune, whereas an over-tight pin silently removes the
+                // witness from the search space.
+                boolean okWithArrow = (!unshX || cand.getEndpoint(x, c) == Endpoint.ARROW)
+                        && (!unshY || cand.getEndpoint(y, c) == Endpoint.ARROW);
                 if (okWithArrow) continue;
 
                 Endpoint atC = pag.getEndpoint(d, c);
@@ -1872,7 +1992,8 @@ public final class FcitSl implements IGraphSearch {
     private boolean closureCoverDfs(Graph cand, Map<String, Endpoint> pins, List<List<Node>> paths,
                                     int movesLeft, Graph pag, Graph basePag, Node x, Node y, Set<Node> b,
                                     double pValue, boolean excludeSelectionBias, List<Edge> removed,
-                                    Edge edgeForLog, boolean escape, Set<String> tried, long deadline)
+                                    Edge edgeForLog, boolean escape, boolean relaxed,
+                                    Set<String> tried, long deadline)
             throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) {
             throw new InterruptedException();
@@ -1898,7 +2019,14 @@ public final class FcitSl implements IGraphSearch {
 
         if (active != null) {
             if (movesLeft == 0) return false;
-            moves = coverMoves(pag, stamped, cand, pins, active, b);
+            moves = coverMoves(pag, stamped, cand, pins, active, paths, b, relaxed);
+            if (moves.isEmpty() && !relaxed) {
+                // No move exists under the frozen-marks assumption. The assumption itself may
+                // be what is wrong here (see slotCanBe), so retry with the PAG's non-circle
+                // marks unfrozen; class membership and every gate still adjudicate.
+                moves = coverMoves(pag, stamped, cand, pins, active, paths, b, true);
+                if (!moves.isEmpty()) closureRelaxedExpansions++;
+            }
         } else {
             // Every enumerated path is blocked; confirm exactly (an active path beyond the
             // enumeration bounds would otherwise slip through the covering heuristic).
@@ -1911,34 +2039,48 @@ public final class FcitSl implements IGraphSearch {
             if (!tried.add(key)) return false;   // separating state already adjudicated
 
             if (!cand.paths().isLegalMag()) {
+                // A separating assignment that is not itself a MAG. The obstruction is an
+                // ancestrality violation or a non-maximality, so the SAME repair family that
+                // services a post-stamp illegality applies -- the only difference is that it
+                // is read off the candidate rather than the stamped candidate. (PKE8's
+                // 5-node V1--V5 case: de-collider-izing V3 on the V1--V3--V5 leg via the V1
+                // side closed the directed cycle V3->V1->V5->V3; breaking it is on the road
+                // to the in-class witness.)
                 closureIllegalCands++;
-                return false;
+                if (movesLeft == 0) return false;
+                moves = illegalityRepairMoves(pag, cand, pins, relaxed);
+            } else {
+                closureCandidatesEmitted++;
+
+                // Class membership, certified as seedMags certifies seeds: pre-stamp, by
+                // MagToPag equality against the base PAG.
+                boolean inClass = new MagToPag(new EdgeListGraph(cand))
+                        .convert(false, excludeSelectionBias).equals(basePag);
+
+                if (inClass == escape) {
+                    // Separating and legal, but on the wrong side of the class boundary.
+                    // The staged search never meets this state because LegEnumerator walks
+                    // only in-class representatives; this search reaches the class the other
+                    // way round, by repairing the marks that MagToPag over- or
+                    // under-determines relative to the class. See {@link #classRepairMoves}.
+                    closureClassFiltered++;
+                    if (movesLeft == 0) return false;
+                    moves = classRepairMoves(pag, cand, pins, basePag, excludeSelectionBias, relaxed);
+                } else {
+                    GateStatus st = closureGateAndCommit(cand, x, y, b, pValue, excludeSelectionBias,
+                            removed, edgeForLog,
+                            escape ? () -> closureEscapeCommits++ : () -> closureInClassCommits++);
+
+                    if (st == GateStatus.COMMITTED) return true;
+                    if (movesLeft == 0) return false;
+
+                    moves = switch (st) {
+                        case ILLEGAL_MAG -> illegalityRepairMoves(pag, stamped, pins, relaxed);
+                        case INDUCING_PATH -> inducingRepairMoves(pag, probe, pins, x, y, relaxed);
+                        default -> List.of();   // STAMP_REFUSED cannot recur; BATTERY is terminal
+                    };
+                }
             }
-
-            closureCandidatesEmitted++;
-
-            // Class membership, certified as seedMags certifies seeds: pre-stamp, by
-            // MagToPag equality against the base PAG.
-            boolean inClass = new MagToPag(new EdgeListGraph(cand))
-                    .convert(false, excludeSelectionBias).equals(basePag);
-
-            if (inClass == escape) {
-                closureClassFiltered++;
-                return false;   // no principled move targets the class boundary
-            }
-
-            GateStatus st = closureGateAndCommit(cand, x, y, b, pValue, excludeSelectionBias,
-                    removed, edgeForLog,
-                    escape ? () -> closureEscapeCommits++ : () -> closureInClassCommits++);
-
-            if (st == GateStatus.COMMITTED) return true;
-            if (movesLeft == 0) return false;
-
-            moves = switch (st) {
-                case ILLEGAL_MAG -> illegalityRepairMoves(pag, stamped, pins);
-                case INDUCING_PATH -> inducingRepairMoves(pag, probe, pins, x, y);
-                default -> List.of();   // STAMP_REFUSED cannot recur here; BATTERY is terminal
-            };
         }
 
         for (CoverMove mv : moves) {
@@ -1958,7 +2100,7 @@ public final class FcitSl implements IGraphSearch {
             applyMove(cand, pins, mv, saved, addedPins);
 
             boolean done = closureCoverDfs(cand, pins, paths, movesLeft - 1, pag, basePag, x, y, b,
-                    pValue, excludeSelectionBias, removed, edgeForLog, escape, tried, deadline);
+                    pValue, excludeSelectionBias, removed, edgeForLog, escape, relaxed, tried, deadline);
 
             undoMove(cand, pins, mv, saved, addedPins);
 
@@ -1966,6 +2108,100 @@ public final class FcitSl implements IGraphSearch {
         }
 
         return false;
+    }
+
+    /**
+     * Repair moves for a separating, legal candidate that landed OUTSIDE the current class.
+     * The class boundary is not a path property, so no cover move targets it; but it is
+     * legible as a mark-by-mark difference between the candidate's own PAG and the base PAG.
+     * For every slot where {@code MagToPag(cand)} determines a mark that the class leaves as
+     * a circle (or determines the other way), propose the assignment ON THE CANDIDATE that
+     * relaxes it: a candidate arrowhead that the class does not entail becomes a tail (with
+     * the legal-shape companion, i.e. a reversal), a candidate tail becomes an arrowhead.
+     * <p>
+     * This is the closure-side image of LegEnumerator's walk. The staged search never sees an
+     * out-of-class state because it only ever enumerates in-class representatives; this search
+     * arrives at the class from outside, and each such difference names an edge whose
+     * orientation has to change to get back in. In PKE8's 5-node V1--V5 case the candidate's
+     * PAG carried V2 o-&gt; V5 where the class has V2 o-o V5 -- V5 had become an unshielded
+     * collider -- and relaxing exactly that arrowhead is the second reversal that the staged
+     * search's winning LEG performs.
+     * <p>
+     * Purely a move generator: class membership itself is still certified by MagToPag
+     * equality, and every candidate still passes the same gates.
+     */
+    private List<CoverMove> classRepairMoves(Graph pag, Graph cand, Map<String, Endpoint> pins,
+                                             Graph basePag, boolean excludeSelectionBias, boolean relaxed)
+            throws InterruptedException {
+        List<CoverMove> out = new ArrayList<>();
+
+        Graph candPag = new MagToPag(new EdgeListGraph(cand)).convert(false, excludeSelectionBias);
+
+        for (Edge e : basePag.getEdges()) {
+            String un = e.getNode1().getName(), wn = e.getNode2().getName();
+            proposeMarkRepair(pag, cand, pins, basePag, candPag, un, wn, out, relaxed);
+            proposeMarkRepair(pag, cand, pins, basePag, candPag, wn, un, out, relaxed);
+        }
+
+        // AGGREGATE CLASS REPAIR, tried first. Class membership is a GLOBAL property of the
+        // assignment: relaxing one over-determined mark generally leaves the candidate still
+        // out of class, so repairing mark-by-mark costs one move per difference and the move
+        // budget -- not the move set -- becomes what decides whether the witness is reachable.
+        // That is a scaling trap: the number of differing marks grows with the model while the
+        // budget does not. PKE8's V1--V5 class made it concrete -- the winning representative
+        // sits five endpoint-changes from the Zhang MAG, so it was unreachable at the default
+        // budget of 4 and appeared only when the budget was raised. Applying every proposed
+        // relaxation at once puts the class one move away regardless of how many marks differ,
+        // which is the same lesson the aggregate fork-flip taught. Conflicting proposals (the
+        // same slot wanted both ways) mean no single composite exists, so only the individual
+        // moves are offered.
+        if (out.size() > 1) {
+            Map<String, Assign> union = new LinkedHashMap<>();
+            boolean conflict = false;
+            for (CoverMove mv : out) {
+                for (Assign a : mv.assigns()) {
+                    Assign prev = union.putIfAbsent(slotKey(a.from(), a.at()), a);
+                    if (prev != null && prev.end() != a.end()) {
+                        conflict = true;
+                        break;
+                    }
+                }
+                if (conflict) break;
+            }
+            if (!conflict) out.addFirst(new CoverMove(new ArrayList<>(union.values())));
+        }
+
+        return dedupMoves(out);
+    }
+
+    /**
+     * One slot of {@link #classRepairMoves}: the mark at {@code atName} on the edge
+     * {@code fromName}--{@code atName}. Nodes are resolved by NAME in each graph, since the
+     * PAGs are built by conversion and need not share node objects with the candidate.
+     */
+    private void proposeMarkRepair(Graph pag, Graph cand, Map<String, Endpoint> pins,
+                                   Graph basePag, Graph candPag, String fromName, String atName,
+                                   List<CoverMove> out, boolean relaxed) {
+        Node bf = basePag.getNode(fromName), ba = basePag.getNode(atName);
+        Node pf = candPag.getNode(fromName), pa = candPag.getNode(atName);
+        if (bf == null || ba == null || pf == null || pa == null) return;
+        if (!candPag.isAdjacentTo(pf, pa)) return;
+
+        Endpoint want = basePag.getEndpoint(bf, ba);
+        Endpoint got = candPag.getEndpoint(pf, pa);
+        if (want == got) return;
+
+        Node cf = cand.getNode(fromName), ca = cand.getNode(atName);
+        if (cf == null || ca == null || !cand.isAdjacentTo(cf, ca)) return;
+
+        // Only the candidate's own mark at this slot is movable; MagToPag may have derived
+        // the differing mark from elsewhere, in which case another slot's repair carries it.
+        if (got == Endpoint.ARROW && cand.getEndpoint(cf, ca) == Endpoint.ARROW) {
+            addTailMove(pag, cand, pins, cf, ca, out, relaxed);
+        } else if (got == Endpoint.TAIL && cand.getEndpoint(cf, ca) == Endpoint.TAIL
+                && slotCanBe(pag, pins, cf, ca, Endpoint.ARROW, relaxed)) {
+            out.add(new CoverMove(List.of(new Assign(cf, ca, Endpoint.ARROW))));
+        }
     }
 
     /**
@@ -1977,7 +2213,8 @@ public final class FcitSl implements IGraphSearch {
      * typically stamp-pinned, so {@link #slotCanBe} steers repairs at the directed path,
      * which is exactly where the staged search's winning LEGs differ from the Zhang MAG.
      */
-    private List<CoverMove> illegalityRepairMoves(Graph pag, Graph stamped, Map<String, Endpoint> pins) {
+    private List<CoverMove> illegalityRepairMoves(Graph pag, Graph stamped, Map<String, Endpoint> pins,
+                                                  boolean relaxed) {
         List<CoverMove> out = new ArrayList<>();
 
         for (Edge e : stamped.getEdges()) {
@@ -1985,12 +2222,25 @@ public final class FcitSl implements IGraphSearch {
             Endpoint atU = stamped.getEndpoint(w, u), atW = stamped.getEndpoint(u, w);
 
             if (atU == Endpoint.ARROW && atW == Endpoint.ARROW) {          // u <-> w
+                // An almost-directed cycle u <-> w with u ~> w has TWO resolutions: break the
+                // directed path, or relax the bidirected edge itself to u --> w (which is not
+                // a cycle at all). Only the first was generated, and the second is what
+                // PKE8's V4--V5 family needs -- there the winning LEG differs from the
+                // candidate purely by carrying V5 --> V3 where the search had cut to V5 <-> V3.
                 List<Node> p = firstDirectedPath(stamped, u, w, closureMaxPathLength);
-                if (p == null) p = firstDirectedPath(stamped, w, u, closureMaxPathLength);
-                if (p != null) addPathBreakMoves(pag, pins, p, out);
+                if (p != null) {
+                    addPathBreakMoves(pag, pins, p, out, relaxed);
+                    addTailMove(pag, stamped, pins, w, u, out, relaxed);       // u <-> w  ==>  u --> w
+                } else {
+                    p = firstDirectedPath(stamped, w, u, closureMaxPathLength);
+                    if (p != null) {
+                        addPathBreakMoves(pag, pins, p, out, relaxed);
+                        addTailMove(pag, stamped, pins, u, w, out, relaxed);   // u <-> w  ==>  w --> u
+                    }
+                }
             } else if (atU == Endpoint.TAIL && atW == Endpoint.ARROW) {    // u --> w
                 List<Node> p = firstDirectedPath(stamped, w, u, closureMaxPathLength);
-                if (p != null) addPathBreakMoves(pag, pins, p, out);       // w ~> u closes a cycle
+                if (p != null) addPathBreakMoves(pag, pins, p, out, relaxed);       // w ~> u closes a cycle
             }
         }
 
@@ -2001,7 +2251,7 @@ public final class FcitSl implements IGraphSearch {
                 Node u = nodes.get(i), w = nodes.get(j);
                 if (stamped.isAdjacentTo(u, w)) continue;
                 List<Node> ip = firstInducingPathOverEmpty(stamped, u, w, closureMaxPathLength);
-                if (ip != null) addInducingBreakMoves(pag, stamped, pins, ip, u, w, out);
+                if (ip != null) addInducingBreakMoves(pag, stamped, pins, ip, u, w, out, relaxed);
             }
         }
 
@@ -2014,10 +2264,10 @@ public final class FcitSl implements IGraphSearch {
      * endpoints.
      */
     private List<CoverMove> inducingRepairMoves(Graph pag, Graph probe, Map<String, Endpoint> pins,
-                                                Node x, Node y) {
+                                                Node x, Node y, boolean relaxed) {
         List<CoverMove> out = new ArrayList<>();
         List<Node> ip = firstInducingPathOverEmpty(probe, x, y, closureMaxPathLength);
-        if (ip != null) addInducingBreakMoves(pag, probe, pins, ip, x, y, out);
+        if (ip != null) addInducingBreakMoves(pag, probe, pins, ip, x, y, out, relaxed);
         return out;
     }
 
@@ -2027,11 +2277,11 @@ public final class FcitSl implements IGraphSearch {
      * bidirected cut (arrowhead at p alone), wherever the PAG and pins allow.
      */
     private void addPathBreakMoves(Graph pag, Map<String, Endpoint> pins, List<Node> path,
-                                   List<CoverMove> out) {
+                                   List<CoverMove> out, boolean relaxed) {
         for (int i = 0; i < path.size() - 1; i++) {
             Node p = path.get(i), q = path.get(i + 1);
-            boolean arrowAtP = slotCanBe(pag, pins, q, p, Endpoint.ARROW);
-            if (arrowAtP && slotCanBe(pag, pins, p, q, Endpoint.TAIL)) {
+            boolean arrowAtP = slotCanBe(pag, pins, q, p, Endpoint.ARROW, relaxed);
+            if (arrowAtP && slotCanBe(pag, pins, p, q, Endpoint.TAIL, relaxed)) {
                 out.add(new CoverMove(List.of(
                         new Assign(q, p, Endpoint.ARROW),
                         new Assign(p, q, Endpoint.TAIL))));
@@ -2049,17 +2299,18 @@ public final class FcitSl implements IGraphSearch {
      * PAG and pins allow.
      */
     private void addInducingBreakMoves(Graph pag, Graph g, Map<String, Endpoint> pins,
-                                       List<Node> path, Node u, Node w, List<CoverMove> out) {
+                                       List<Node> path, Node u, Node w, List<CoverMove> out,
+                                       boolean relaxed) {
         for (int i = 1; i < path.size() - 1; i++) {
             Node prev = path.get(i - 1), m = path.get(i), next = path.get(i + 1);
 
-            addTailMove(pag, g, pins, prev, m, out);
-            addTailMove(pag, g, pins, next, m, out);
+            addTailMove(pag, g, pins, prev, m, out, relaxed);
+            addTailMove(pag, g, pins, next, m, out, relaxed);
 
             List<Assign> quench = new ArrayList<>();
             for (Node z : g.getAdjacentNodes(m)) {
                 if (g.getEndpoint(z, m) == Endpoint.TAIL && g.getEndpoint(m, z) == Endpoint.ARROW
-                        && slotCanBe(pag, pins, z, m, Endpoint.ARROW)) {
+                        && slotCanBe(pag, pins, z, m, Endpoint.ARROW, relaxed)) {
                     Assign cut = new Assign(z, m, Endpoint.ARROW);
                     out.add(new CoverMove(List.of(cut)));
                     quench.add(cut);
@@ -2176,7 +2427,8 @@ public final class FcitSl implements IGraphSearch {
      * available the move is infeasible.
      */
     private List<CoverMove> coverMoves(Graph pag, Graph stamped, Graph cand, Map<String, Endpoint> pins,
-                                       List<Node> path, Set<Node> S) {
+                                       List<Node> path, List<List<Node>> allPaths, Set<Node> S,
+                                       boolean relaxed) {
         List<CoverMove> out = new ArrayList<>();
 
         for (int i = 1; i < path.size() - 1; i++) {
@@ -2184,8 +2436,8 @@ public final class FcitSl implements IGraphSearch {
 
             if (!S.contains(m)) {
                 if (!stamped.isDefCollider(a, m, c)) {
-                    if (slotCanBe(pag, pins, a, m, Endpoint.ARROW)
-                            && slotCanBe(pag, pins, c, m, Endpoint.ARROW)
+                    if (slotCanBe(pag, pins, a, m, Endpoint.ARROW, relaxed)
+                            && slotCanBe(pag, pins, c, m, Endpoint.ARROW, relaxed)
                             && !invariantAncestorOfS(pag, m, S)) {
                         out.add(new CoverMove(List.of(
                                 new Assign(a, m, Endpoint.ARROW),
@@ -2196,7 +2448,7 @@ public final class FcitSl implements IGraphSearch {
                     for (Node w : stamped.getAdjacentNodes(m)) {
                         if (stamped.getEndpoint(w, m) == Endpoint.TAIL          // tail at m
                                 && stamped.getEndpoint(m, w) == Endpoint.ARROW  // m --> w
-                                && slotCanBe(pag, pins, w, m, Endpoint.ARROW)) {
+                                && slotCanBe(pag, pins, w, m, Endpoint.ARROW, relaxed)) {
                             Assign cut = new Assign(w, m, Endpoint.ARROW);
                             out.add(new CoverMove(List.of(cut)));
                             quench.add(cut);
@@ -2205,15 +2457,85 @@ public final class FcitSl implements IGraphSearch {
                     if (quench.size() > 1) {
                         out.add(new CoverMove(List.copyOf(quench)));
                     }
+
+                    // ANCESTRY ROUTE BREAK. A collider blocks only if it has no descendant in
+                    // S, and the route from m into S may run several edges deep -- severing
+                    // only edges INCIDENT to m cannot reach past the first hop. So locate the
+                    // directed route and offer the same reversal/cut breaks used on cycles, at
+                    // every edge along it. PKE8's 6-observed V5--V6 class is the case that
+                    // needs this: cutting V1 --> V4 still leaves V1 --> V2 --> V4 alive, the
+                    // first hop is frozen by a Phase-A pin, and the staged winner breaks the
+                    // route at its SECOND edge, reversing V2 --> V4 to V4 --> V2.
+                    for (Node z : S) {
+                        List<Node> route = firstDirectedPath(stamped, m, z, closureMaxPathLength);
+                        if (route != null) {
+                            addPathBreakMoves(pag, pins, route, out, relaxed);
+                            break;
+                        }
+                    }
                 }
             } else {
                 if (stamped.isDefCollider(a, m, c)) {
-                    addTailMove(pag, cand, pins, a, m, out);
-                    addTailMove(pag, cand, pins, c, m, out);
+                    addTailMove(pag, cand, pins, a, m, out, relaxed);
+                    addTailMove(pag, cand, pins, c, m, out, relaxed);
                 }
             }
         }
 
+        // (4) AGGREGATE FORK-FLIP -- the Stage-2b move, ported. A fork can lie on several
+        // active paths at once, and the staged search's makeCollider stamps arrowheads in
+        // from EVERY neighbour occurring beside it on ANY of them, in a single step. The
+        // per-path move above only ever stamps the two neighbours on the path being covered,
+        // and reaching the same state pairwise means passing through intermediate assignments
+        // that are typically illegal or off-class -- so the composite is unreachable by parts
+        // and has to be generated whole. This is what PKE8's V3--V4 / V3--V5 class needs: the
+        // fork sits on two active paths, and only the simultaneous flip both blocks them and
+        // stays in class.
+        Map<Node, Set<Node>> forkNbrs = new LinkedHashMap<>();
+        for (List<Node> p : allPaths) {
+            if (!isActiveGivenS(stamped, p, S)) continue;
+            for (int i = 1; i < p.size() - 1; i++) {
+                Node a = p.get(i - 1), m = p.get(i), c = p.get(i + 1);
+                if (S.contains(m)) continue;
+                if (stamped.isDefCollider(a, m, c)) continue;
+                forkNbrs.computeIfAbsent(m, k -> new LinkedHashSet<>()).add(a);
+                forkNbrs.get(m).add(c);
+            }
+        }
+
+        for (Map.Entry<Node, Set<Node>> en : forkNbrs.entrySet()) {
+            Node m = en.getKey();
+            if (invariantAncestorOfS(pag, m, S)) continue;
+
+            List<Assign> assigns = new ArrayList<>();
+            boolean feasible = true;
+            for (Node w : en.getValue()) {
+                if (!slotCanBe(pag, pins, w, m, Endpoint.ARROW, relaxed)) {
+                    feasible = false;
+                    break;
+                }
+                assigns.add(new Assign(w, m, Endpoint.ARROW));
+            }
+            if (feasible && !assigns.isEmpty()) out.add(new CoverMove(assigns));
+        }
+
+        return dedupMoves(out);
+    }
+
+    /**
+     * Drops moves with an identical assignment set (the aggregate fork-flip coincides with the
+     * per-path collider-ization whenever the fork lies on exactly one active path); duplicates
+     * are harmless but would spend budget re-deriving the same state.
+     */
+    private List<CoverMove> dedupMoves(List<CoverMove> moves) {
+        Set<String> seen = new HashSet<>();
+        List<CoverMove> out = new ArrayList<>();
+        for (CoverMove mv : moves) {
+            List<String> toks = new ArrayList<>();
+            for (Assign a : mv.assigns()) toks.add(slotKey(a.from(), a.at()) + "=" + a.end());
+            Collections.sort(toks);
+            if (seen.add(String.join("|", toks))) out.add(mv);
+        }
         return out;
     }
 
@@ -2224,13 +2546,18 @@ public final class FcitSl implements IGraphSearch {
      */
     private void addTailMove(Graph pag, Graph cand, Map<String, Endpoint> pins, Node far, Node m,
                              List<CoverMove> out) {
-        if (!slotCanBe(pag, pins, far, m, Endpoint.TAIL)) return;
+        addTailMove(pag, cand, pins, far, m, out, false);
+    }
+
+    private void addTailMove(Graph pag, Graph cand, Map<String, Endpoint> pins, Node far, Node m,
+                             List<CoverMove> out, boolean relaxed) {
+        if (!slotCanBe(pag, pins, far, m, Endpoint.TAIL, relaxed)) return;
 
         List<Assign> assigns = new ArrayList<>();
         assigns.add(new Assign(far, m, Endpoint.TAIL));
 
         if (cand.getEndpoint(m, far) == Endpoint.TAIL) {
-            if (!slotCanBe(pag, pins, m, far, Endpoint.ARROW)) return;   // tail--tail: illegal shape
+            if (!slotCanBe(pag, pins, m, far, Endpoint.ARROW, relaxed)) return;   // tail--tail illegal
             assigns.add(new Assign(m, far, Endpoint.ARROW));
         }
 
@@ -2243,8 +2570,36 @@ public final class FcitSl implements IGraphSearch {
      * otherwise.
      */
     private boolean slotCanBe(Graph pag, Map<String, Endpoint> pins, Node from, Node at, Endpoint want) {
-        Endpoint e = pag.getEndpoint(from, at);
-        if (e != Endpoint.CIRCLE && e != want) return false;
+        return slotCanBe(pag, pins, from, at, want, false);
+    }
+
+    /**
+     * True iff the endpoint at {@code at} on the edge {@code from}--{@code at} may be assigned
+     * {@code want}. Normally the PAG's non-circle marks are treated as invariants of the class
+     * and frozen; under {@code relaxed} that restriction is lifted and only Phase A's
+     * stamp-compatibility pins constrain the slot.
+     * <p>
+     * The relaxation exists because the freeze is only as sound as the PAG. A true PAG's tails
+     * and arrowheads hold in EVERY class member, so freezing them loses nothing -- but the
+     * interim PAGs here come from {@code MagToPag}, and at least one of them over-commits: in
+     * PKE8's V3--V7 class the PAG carries V4 --&gt; V7 while a MAG verified Markov-equivalent
+     * to the Zhang MAG (zero m-separation differences over all pairs and conditioning sets)
+     * carries V7 &lt;-&gt; V4. Freezing that tail put the only witness outside the search space
+     * entirely, which is why the DFS reported no moves at all. The staged search never meets
+     * this because LegEnumerator walks MAG space from the Zhang MAG and never consults PAG
+     * marks as constraints.
+     * <p>
+     * Relaxation costs nothing in soundness: class membership is still certified by MagToPag
+     * equality at emission and every candidate still passes the same gates. It is applied only
+     * as a fallback, when the frozen search yields no move at all, so the common case keeps the
+     * smaller space.
+     */
+    private boolean slotCanBe(Graph pag, Map<String, Endpoint> pins, Node from, Node at, Endpoint want,
+                              boolean relaxed) {
+        if (!relaxed) {
+            Endpoint e = pag.getEndpoint(from, at);
+            if (e != Endpoint.CIRCLE && e != want) return false;
+        }
         Endpoint pinned = pins.get(slotKey(from, at));
         return pinned == null || pinned == want;
     }
@@ -2279,20 +2634,25 @@ public final class FcitSl implements IGraphSearch {
     }
 
     /**
-     * Applies a move: records prior endpoints for undo, sets the assignments, and pins each
-     * slot it newly pins (already-pinned slots were verified compatible by
-     * {@link #slotCanBe}).
+     * Applies a move, recording prior endpoints so {@link #undoMove} can restore them.
+     * <p>
+     * Deliberately does NOT pin the slots it assigns. The pin map carries only the HARD
+     * constraints of the subproblem -- the PAG's invariant marks (consulted directly) and
+     * Phase A's stamp-compatibility requirements -- and a move's own assignment is not one of
+     * those: it is a hypothesis the search may need to revise. Pinning moves made them
+     * irreversible within a branch and so blocked repairs from undoing them, which is exactly
+     * how PKE8's V4--V5 family stalled: a cover move cut V2--V5 to bidirected and pinned the
+     * arrowhead, the stamp then minted an inducing path over the nonadjacent pair (V2,V4),
+     * and the one repair that fixes it -- relaxing that same arrowhead to a tail, i.e. the
+     * reversal the staged search's winning LEG performs -- was refused by the move's own pin.
+     * Termination does not depend on these pins: depth is bounded by the move budget and
+     * separating states are deduplicated by {@code magKey}.
      */
     private void applyMove(Graph cand, Map<String, Endpoint> pins, CoverMove mv,
                            List<Endpoint> saved, List<String> addedPins) {
         for (Assign a : mv.assigns()) {
             saved.add(cand.getEndpoint(a.from(), a.at()));
             cand.setEndpoint(a.from(), a.at(), a.end());
-
-            String k = slotKey(a.from(), a.at());
-            if (pins.putIfAbsent(k, a.end()) == null) {
-                addedPins.add(k);
-            }
         }
     }
 
@@ -2490,6 +2850,17 @@ public final class FcitSl implements IGraphSearch {
     }
 
     /**
+     * Sets whether a pair the closure-cover search cannot host is handed to the staged
+     * generator; see {@link #closureFallbackToStaged}. True by default. Set false to measure
+     * the closure search's unaided reach.
+     *
+     * @param closureFallbackToStaged true to enable the fallback.
+     */
+    public void setClosureFallbackToStaged(boolean closureFallbackToStaged) {
+        this.closureFallbackToStaged = closureFallbackToStaged;
+    }
+
+    /**
      * Sets the bound (in nodes) on the skeleton paths the closure-cover search enumerates.
      *
      * @param closureMaxPathLength the bound; see {@link #closureMaxPathLength}.
@@ -2515,6 +2886,15 @@ public final class FcitSl implements IGraphSearch {
      */
     public void setMaxCoverMoves(int maxCoverMoves) {
         this.maxCoverMoves = maxCoverMoves;
+    }
+
+    /**
+     * Sets the ceiling on the AUTO move budget; see {@link #maxCoverMoves}.
+     *
+     * @param closureAutoBudgetCap the cap.
+     */
+    public void setClosureAutoBudgetCap(int closureAutoBudgetCap) {
+        this.closureAutoBudgetCap = closureAutoBudgetCap;
     }
 
     /**
