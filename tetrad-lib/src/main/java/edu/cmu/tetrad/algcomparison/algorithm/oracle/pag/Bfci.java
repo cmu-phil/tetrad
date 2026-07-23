@@ -142,6 +142,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
+        search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setKnowledge(knowledge);
@@ -203,6 +204,7 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.LV_HEURISTIC_ONLY);
+        params.add(Params.DO_POSSIBLE_DSEP);
         params.add(Params.VERBOSE);
 
         // Parameters

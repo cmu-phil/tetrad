@@ -823,84 +823,98 @@ public final class Fcit implements IGraphSearch {
             return new IndependenceCheck(edge, cached, null);
         }
 
-        // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
-        // shared across every RB call below. Unlimited stays unlimited without
-        // relying on Long.MAX_VALUE + now overflowing to a negative.
+        // Per-edge deadline: at most `timeout` ms spent separating THIS edge.
         final long deadline = (timeout < 0L)
                 ? Long.MAX_VALUE
                 : System.currentTimeMillis() + timeout;
 
-        // Get full blocking set with no forbidden nodes
-        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
-                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
-                deadline);
+        FcitSepsets.SepsetResult found = FcitSepsets.spanningSepset(
+                pag, test, x, y, recursiveDepth, depth, rbRadius, deadline,
+                () -> checkCounter.increment("findIndependenceCheckRecursive (test executed)"));
 
-        Set<Node> nfCandSet = new LinkedHashSet<>();
-        if (!b0result.indeterminate() && b0result.blockingSet() != null) {
-            for (Node v : b0result.blockingSet()) {
-                // Only ambiguous nodes — those with at least one circle endpoint
-                if (pag.getAdjacentNodes(v).stream().anyMatch(
-                        w -> pag.getEndpoint(v, w) == Endpoint.CIRCLE
-                                || pag.getEndpoint(w, v) == Endpoint.CIRCLE)) {
-                    nfCandSet.add(v);
-                }
-            }
-        }
+        if (found == null) return null;
 
-        List<Node> nfCand = new ArrayList<>(nfCandSet);
+        foundSepsets.put(Set.of(x, y), found.sepset());
+        return new IndependenceCheck(edge, found.sepset(), found.pValue());
 
-        // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
-        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
-        int[] nfChoice;
-        while ((nfChoice = nfGen.next()) != null) {
-            if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
-            if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
-
-            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
-            RecursiveBlocking.BlockingResult result = null;
-
-            result = RecursiveBlocking.blockPathsRecursively(
-                    pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-                    deadline);
-
-            if (result == null || result.indeterminate()) {
-                continue;
-            }
-
-            Set<Node> B = result.blockingSet();
-
-            if (B == null) {
-                continue;
-            }
-
-            List<Node> common = getCommon(x, y);
-            B.addAll(common);
-            List<Node> removalCandidates = new ArrayList<>(common);
-
-            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
-            int[] cChoice;
-            while ((cChoice = cGen.next()) != null) {
-                if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
-                if (!this.pag.isAdjacentTo(x, y)) break;
-
-                Set<Node> S = new LinkedHashSet<>(B);
-                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
-
-                S.removeAll(C);
-
-                if (this.depth != -1 && S.size() > this.depth) continue;
-
-                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
-
-                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-                if (independenceResult.isIndependent()) {
-                    foundSepsets.put(Set.of(x, y), S);
-                    return new IndependenceCheck(edge, S, independenceResult.getPValue());
-                }
-            }
-        }
-
-        return null;
+//        // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
+//        // shared across every RB call below. Unlimited stays unlimited without
+//        // relying on Long.MAX_VALUE + now overflowing to a negative.
+//        final long deadline = (timeout < 0L)
+//                ? Long.MAX_VALUE
+//                : System.currentTimeMillis() + timeout;
+//
+//        // Get full blocking set with no forbidden nodes
+//        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
+//                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+//                deadline);
+//
+//        Set<Node> nfCandSet = new LinkedHashSet<>();
+//        if (!b0result.indeterminate() && b0result.blockingSet() != null) {
+//            for (Node v : b0result.blockingSet()) {
+//                // Only ambiguous nodes — those with at least one circle endpoint
+//                if (pag.getAdjacentNodes(v).stream().anyMatch(
+//                        w -> pag.getEndpoint(v, w) == Endpoint.CIRCLE
+//                                || pag.getEndpoint(w, v) == Endpoint.CIRCLE)) {
+//                    nfCandSet.add(v);
+//                }
+//            }
+//        }
+//
+//        List<Node> nfCand = new ArrayList<>(nfCandSet);
+//
+//        // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
+//        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+//        int[] nfChoice;
+//        while ((nfChoice = nfGen.next()) != null) {
+//            if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
+//            if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
+//
+//            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+//            RecursiveBlocking.BlockingResult result = null;
+//
+//            result = RecursiveBlocking.blockPathsRecursively(
+//                    pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+//                    deadline);
+//
+//            if (result == null || result.indeterminate()) {
+//                continue;
+//            }
+//
+//            Set<Node> B = result.blockingSet();
+//
+//            if (B == null) {
+//                continue;
+//            }
+//
+//            List<Node> common = getCommon(x, y);
+//            B.addAll(common);
+//            List<Node> removalCandidates = new ArrayList<>(common);
+//
+//            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
+//            int[] cChoice;
+//            while ((cChoice = cGen.next()) != null) {
+//                if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
+//                if (!this.pag.isAdjacentTo(x, y)) break;
+//
+//                Set<Node> S = new LinkedHashSet<>(B);
+//                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
+//
+//                S.removeAll(C);
+//
+//                if (this.depth != -1 && S.size() > this.depth) continue;
+//
+//                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
+//
+//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+//                if (independenceResult.isIndependent()) {
+//                    foundSepsets.put(Set.of(x, y), S);
+//                    return new IndependenceCheck(edge, S, independenceResult.getPValue());
+//                }
+//            }
+//        }
+//
+//        return null;
     }
 
     private @NotNull List<Node> getCommon(Node x, Node y) {
@@ -919,7 +933,7 @@ public final class Fcit implements IGraphSearch {
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
         PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
-        if (!legalPagQuiet.isLegalPag()) {
+        if (!legalPagQuiet.isLegalPag() /*|| legalPagQuiet.getReason().contains("reconstituted")*/) {
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + _edge
                         + ", but it didn't lead to a PAG, sepset = " + b);
