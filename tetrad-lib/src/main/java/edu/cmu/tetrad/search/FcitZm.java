@@ -38,11 +38,36 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
- * model from observational data with latent variables. The algorithm uses the BOSS or GRaSP algorithm to get an initial
- * CPDAG. Then it uses scoring steps to infer some unshielded colliders in the graph, then finishes with a testing step
- * to remove extra edges and orient more unshielded colliders. Finally, the final FCI orientation is applied to the
- * graph.
+ * FCIT with a MAG-side legality gate. A score-based search (BOSS/GRaSP) supplies a seed
+ * CPDAG whose unshielded colliders are sound; recursive blocking then proposes single-edge
+ * deletions, each committed only when the candidate Zhang MAG is legal, and a saturating
+ * pass removes any test-separable adjacency the single-edge phase left standing.
+ *
+ * <p><b>Two commit routes.</b> The legality gate is always judged on the MAG. What differs
+ * is how the accepted state is carried forward:
+ * <ul>
+ *   <li>{@link COMMIT_ROUTE#PAG} (default) reorients the PAG directly, leaving endpoints
+ *       as circles until a rule commits them.</li>
+ *   <li>{@link COMMIT_ROUTE#MAG} projects back via {@code MagToPag(zhangMagFromPag(...))},
+ *       which is the route described as FCIT-ZM in the reachability paper and the one its
+ *       exhaustive enumeration measured.</li>
+ * </ul>
+ * Neither route is per-step Markov: over five observed variables the enumeration exhibits
+ * 1,687 legal non-Markov waypoints on the PAG route, of which the MAG re-commit breaks
+ * identically on 885 and lands back inside the I-map class on 802, refusing none. The
+ * per-step guarantee is therefore carried by the saturating pass and the terminal identity
+ * (the spurious-free skeleton forces the true PAG), not by the legality gate.
+ *
+ * <p><b>What the gate does guarantee.</b> Every committed state, and the returned graph,
+ * is a legal PAG -- a property of the reorientation referring neither to the true PAG nor
+ * to faithfulness, hence surviving the passage from oracle to finite sample. The final
+ * reorientation is itself gated (see {@code search()}); if it fails, the last gated state
+ * is returned instead.
+ *
+ * <p><b>Seed soundness.</b> The soundness argument consumes exactly one orientation
+ * premise: that the seed's unshielded colliders are sound. Every reorientation performed
+ * here therefore recalls that seed collider set rather than recomputing colliders from the
+ * current graph, which could re-derive marks stamped unsoundly at an earlier step.
  *
  * @author josephramsey
  */
@@ -196,6 +221,17 @@ public final class FcitZm implements IGraphSearch {
      * Test timout in milliseconds.
      */
     private long timeout = -1L;
+    /**
+     * How an accepted deletion is carried forward. The MAG legality gate applies to both;
+     * see the class javadoc.
+     */
+    private COMMIT_ROUTE commitRoute = COMMIT_ROUTE.MAG;
+    /**
+     * When false (default) only the current PAG is retained, since every earlier state is
+     * a full graph copy and nothing downstream reads the history. Set true to keep the
+     * whole trajectory for debugging.
+     */
+    private boolean keepInterimTrace = false;
 
     /**
      * FCIT constructor. Initializes a new object of the FCIT search algorithm with the given IndependenceTest and Score
@@ -475,13 +511,16 @@ public final class FcitZm implements IGraphSearch {
 
         this.interimPags.add(pag);
 
-        this.initialColliders = noteInitialColliders(interimPags.get(0).getNodes(), interimPags.get(0));
+        // The seed colliders: computed ONCE from the PAG of the score-based DAG, and
+        // recalled at every subsequent reorientation. Soundness of this set is the single
+        // orientation premise the argument consumes.
+        this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
         int round = 0;
 
         do {
             TetradLogger.getInstance().log("\nRound: " + (++round));
-        } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
+        } while (removeEdgesRecursively(excludeSelectionBias));
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -494,19 +533,51 @@ public final class FcitZm implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
+        // Saturating step (the unconditional finalizer): fire whenever ANY test-separable
+        // adjacency survives, not only two or more. A lone survivor means the single-edge
+        // phase proposed and REVERTED it, which is exactly the case worth re-attempting in
+        // batch; skipping it would return a graph carrying an adjacency already certified
+        // absent.
         List<Edge> spurious = findSpuriousEdges(interimPags.getLast());
         TetradLogger.getInstance().log(spurious.isEmpty()
                 ? "\nNo spurious edges remain."
                 : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
 
-        if (spurious.size() >= 2) {
+        if (!spurious.isEmpty()) {
             boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
             TetradLogger.getInstance().log(removed
-                    ? "\nSpurious edges removed."
-                    : "\nSpurious edges could not be removed.");
+                    ? "\nSaturating step: spurious edges removed."
+                    : "\nSaturating step REFUSED: deleting the confirmed-separable set together "
+                    + "does not yield a legal MAG. In the oracle limit this is a certificate of "
+                    + "unfaithfulness (a true edge was certified independent); from sample it is "
+                    + "evidence of test error. Retaining the last gated PAG.");
         }
 
-        NongenuineScan finalScan = findR4NongenuineEdge(interimPags.getLast());
+        // Final orientation: re-derive marks from the test on the finished skeleton. Without
+        // this the output orientation comes only from the per-commit reorientations, so
+        // shielded colliders are never recovered by R4 and arrow precision drops. coldReorient
+        // wipes to circles, recalls the SEED colliders, then runs R0 and R1-R4.
+        Graph finalPag = coldReorient(interimPags.getLast());
+
+        // The legality gate must cover the object we RETURN, not merely every commit en
+        // route: the practical guarantee this algorithm offers is that its OUTPUT is a legal
+        // PAG, a property referring neither to the true PAG nor to faithfulness. coldReorient
+        // is a fresh reorientation and is not otherwise checked, so verify it here and fall
+        // back to the last gated state if it fails.
+        Graph finalMag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(finalPag));
+        PagLegalityCheck.LegalMagRet finalLegal =
+                PagLegalityCheck.isLegalMag(finalMag, new LinkedHashSet<>(selection));
+
+        if (!finalLegal.isLegalMag()) {
+            TetradLogger.getInstance().log("\nFinal reorientation is not legal ("
+                    + finalLegal.getReason() + "); returning the last gated PAG instead.");
+            finalPag = interimPags.getLast();
+        }
+
+        // Diagnostics are run on the graph actually RETURNED. Running them on the last
+        // interim state would report colliders the final reorientation may have added or
+        // removed.
+        NongenuineScan finalScan = findR4NongenuineEdge(finalPag);
 
         if (finalScan.edge() != null) {
             TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
@@ -518,11 +589,7 @@ public final class FcitZm implements IGraphSearch {
             TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
         }
 
-        List<Triple> r0Suspect = findR0CollidersWithSeparableLeg(interimPags.getLast());
-        TetradLogger.getInstance().log(r0Suspect.isEmpty()
-                ? "\nNo R0 collider has a test-separable leg (collider-genuine on the R0 side)."
-                : "\n" + r0Suspect.size() + " R0 collider(s) carry a separable leg; "
-                  + "Markovness not certified: " + r0Suspect);
+        reportColliderGenuineness(finalPag);
 
         TetradLogger.getInstance().log("\nFCIT-ZM finished.");
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
@@ -535,16 +602,6 @@ public final class FcitZm implements IGraphSearch {
             TetradLogger.getInstance().log(cache.cacheReport());
         }
 
-//        interimPags.addLast(new MagToPag(GraphTransforms.zhangMagFromPag(interimPags.getLast()))
-//                .convert(false, false));
-
-        // Final orientation: re-derive marks from the test on the finished skeleton, exactly as
-        // FcitSl does. Without this the output orientation comes only from the per-commit
-        // fciOrient.orient(...) in the single-edge tryToModifyGraph (empty collider set -> shielded
-        // colliders never seeded), so R4 can't recover them and arrow precision drops. coldReorient
-        // wipes to circles, stamps the unshielded colliders, then runs R1-R4 so R4 recovers the
-        // shielded colliders via discriminating paths.
-        Graph finalPag = coldReorient(interimPags.getLast());
         return GraphUtils.replaceNodes(finalPag, nodes);
     }
 
@@ -628,51 +685,101 @@ public final class FcitZm implements IGraphSearch {
     }
 
     /**
-     * Identifies R0 colliders in a given PAG (Partial Ancestral Graph) where one or both legs are
-     * separable. An R0 collider is defined as a triple of nodes (x, c, y) such that c is a collider
-     * between x and y in the PAG but has certain structural properties. This method flags such
-     * triples based on separation criteria and graph adjacency.
+     * Collider-genuineness scan (the per-instance Markov certificate), evaluated on the
+     * canonical Zhang MAG of the given PAG.
      *
-     * @param pag the Partial Ancestral Graph (PAG) in which to search for R0 colliders
-     *            with separable legs.
-     * @return a list of triples representing the flagged R0 colliders where at least one of the legs
-     * is separable in the PAG.
-     * @throws InterruptedException if the execution is interrupted while performing the analysis.
+     * <p>This ranges over EVERY collider of the MAG, shielded and unshielded alike, rather
+     * than only the unshielded R0 sites visible in the PAG. The reason is empirical: over
+     * five observed variables the exhaustive enumeration finds the legal non-Markov
+     * waypoints to be overwhelmingly SHIELDED (1,557 of 1,687, discriminating-path type),
+     * with the unshielded-R0 bin EMPTY. A scan restricted to R0 sites therefore checks
+     * precisely the mechanism that never fires and misses the one that does.
+     *
+     * <p><b>A clean scan is not a certificate.</b> Evaluation on the canonical
+     * representative is a strict under-approximation: 130 legal non-Markov waypoints in
+     * that enumeration carry no separable-leg collider in their canonical MAG at all,
+     * having displaced the unsound mark onto legs that are real in the true PAG. The
+     * certificate is conjectured sound only when quantified over realizing MAGs, and the
+     * corrected form (an ancestral side condition) is open.
+     *
+     * @param pag      the PAG to scan.
+     * @param shielded true to report shielded colliders (R4/discriminating-path type),
+     *                 false for unshielded ones (R0 sites and MAG-completion products).
+     * @return the flagged triples, as colliders of the MAG.
+     * @throws InterruptedException if interrupted.
      */
-    private List<Triple> findR0CollidersWithSeparableLeg(Graph pag) throws InterruptedException {
+    private List<Triple> findMagCollidersWithSeparableLeg(Graph pag, boolean shielded)
+            throws InterruptedException {
         Set<Set<Node>> separable = new LinkedHashSet<>();
         for (Edge e : findSpuriousEdges(pag)) {
             separable.add(Set.of(e.getNode1(), e.getNode2()));
         }
+        for (Set<Node> pair : sepsets.keySet()) {
+            List<Node> arr = new ArrayList<>(pair);
+            if (arr.size() == 2 && sepsets.get(arr.get(0), arr.get(1)) != null) {
+                separable.add(pair);
+            }
+        }
+
+        Graph mag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(pag));
 
         List<Triple> flagged = new ArrayList<>();
         Set<Triple> seen = new LinkedHashSet<>();
 
-        for (Set<Node> pair : sepsets.keySet()) {
-            List<Node> arr = new ArrayList<>(pair);
-            if (arr.size() != 2) continue;
-            Node x = arr.get(0);
-            Node y = arr.get(1);
+        for (Node c : mag.getNodes()) {
+            List<Node> adj = mag.getAdjacentNodes(c);
 
-            Set<Node> s = sepsets.get(x, y);
-            if (s == null) continue;
-            if (interimPags.getLast().isAdjacentTo(x, y)) continue;       // R0 fires only once x-y is gone
+            for (int i = 0; i < adj.size(); i++) {
+                for (int j = i + 1; j < adj.size(); j++) {
+                    Node a = adj.get(i);
+                    Node b = adj.get(j);
 
-            List<Node> common = interimPags.getLast().getAdjacentNodes(x);
-            common.retainAll(interimPags.getLast().getAdjacentNodes(y));
+                    if (!mag.isDefCollider(a, c, b)) continue;
+                    if (mag.isAdjacentTo(a, b) != shielded) continue;
 
-            for (Node c : common) {
-                if (s.contains(c)) continue;                // c in sepset: non-collider, not R0
-                if (!interimPags.getLast().isDefCollider(x, c, y)) continue;  // collider not present in final PAG
-                Triple t = new Triple(x, c, y);
-                if (!seen.add(t)) continue;
-                if (separable.contains(Set.of(x, c)) || separable.contains(Set.of(c, y))) {
-                    flagged.add(t);
+                    Triple t = new Triple(a, c, b);
+                    if (!seen.add(t)) continue;
+
+                    if (separable.contains(Set.of(a, c)) || separable.contains(Set.of(c, b))) {
+                        flagged.add(t);
+                    }
                 }
             }
         }
 
         return flagged;
+    }
+
+    /**
+     * Logs the collider-genuineness scan, splitting shielded from unshielded so the result
+     * can be compared directly against the enumeration's mechanism breakdown. A clean scan
+     * is reported as an absence of detections, never as a certificate of Markovness -- see
+     * {@link #findMagCollidersWithSeparableLeg}.
+     *
+     * @param pag the PAG to report on (should be the graph actually returned).
+     * @throws InterruptedException if interrupted.
+     */
+    private void reportColliderGenuineness(Graph pag) throws InterruptedException {
+        List<Triple> shielded = findMagCollidersWithSeparableLeg(pag, true);
+        List<Triple> unshielded = findMagCollidersWithSeparableLeg(pag, false);
+
+        if (shielded.isEmpty() && unshielded.isEmpty()) {
+            TetradLogger.getInstance().log("\nNo collider of the canonical MAG carries a "
+                    + "test-separable leg. Markovness is NOT thereby certified: the canonical "
+                    + "representative is a strict under-approximation, and a displaced firing "
+                    + "leaves no separable leg to find.");
+            return;
+        }
+
+        TetradLogger.getInstance().log("\nCollider-genuineness scan (canonical MAG): "
+                + shielded.size() + " shielded, " + unshielded.size()
+                + " unshielded collider(s) carry a separable leg; Markovness not certified.");
+        if (!shielded.isEmpty()) {
+            TetradLogger.getInstance().log("  shielded (discriminating-path type): " + shielded);
+        }
+        if (!unshielded.isEmpty()) {
+            TetradLogger.getInstance().log("  unshielded (R0 / MAG completion): " + unshielded);
+        }
     }
 
     private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache) throws InterruptedException {
@@ -772,7 +879,9 @@ public final class FcitZm implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+    // The seed collider set is read from the `initialColliders` field by the commit step,
+    // so it is no longer threaded through here as an unused parameter.
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias) {
 
         // This version does parallel lookahead, so that the only time graph rebuilding is done is when
         // edge removals are attempted.
@@ -1042,16 +1151,28 @@ public final class FcitZm implements IGraphSearch {
                     + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
         }
 
-        // --- THEORY TEST: carry the PAG forward by orienting the PAG DIRECTLY,
-        //     not by MagToPag(zhangMagFromPag(...)). hd's endpoints stay circles
-        //     until R4 fires, instead of being committed to tails by zhangMagFromPag. ---
+        // --- Carry the accepted state forward. The MAG route projects back through the
+        //     canonical Zhang MAG (FCIT-ZM proper); the PAG route reorients the PAG
+        //     directly, leaving endpoints as circles until a rule commits them. The gate
+        //     above is identical either way. ---
+        if (commitRoute == COMMIT_ROUTE.MAG) {
+            pushPag(new MagToPag(_mag).convert(false, excludeSelectionBias));
+            return true;
+        }
+
         Graph _pag = new EdgeListGraph(interimPags.getLast());
         _pag.removeEdge(x, y);
 
-        _pag.reorientAllWith(Endpoint.CIRCLE);   // optional; matches a clean FCI pass
-        fciOrient.orient(_pag, new HashSet<>(), excludeSelectionBias);                  // R0 + R1–R4 via the test-based strategy
+        // Reset to circles and RECALL THE SEED COLLIDERS before re-closing. Seed soundness
+        // is the single orientation premise the soundness argument consumes, so the seed
+        // set must be re-supplied at every reorientation; recomputing colliders from the
+        // current graph would instead re-derive whatever was stamped earlier, unsound marks
+        // included. (Passing an empty set here also left shielded colliders unseeded, so R4
+        // could not recover them and arrow precision dropped.)
+        _pag.reorientAllWith(Endpoint.CIRCLE);
+        fciOrient.orient(_pag, new HashSet<>(initialColliders), excludeSelectionBias);
 
-        interimPags.add(_pag);
+        pushPag(_pag);
         return true;
     }
 
@@ -1100,7 +1221,21 @@ public final class FcitZm implements IGraphSearch {
             TetradLogger.getInstance().log("Removing " + edges + " (multi-edge), reached a PAG");
         }
 
-        this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+        if (commitRoute == COMMIT_ROUTE.MAG) {
+            pushPag(new MagToPag(_mag).convert(false, excludeSelectionBias));
+            return true;
+        }
+
+        // PAG route: delete the whole set, then reset and re-close from the seed colliders,
+        // exactly as the single-edge commit does.
+        Graph _next = new EdgeListGraph(interimPags.getLast());
+        for (Edge edge : edges) {
+            _next.removeEdge(edge.getNode1(), edge.getNode2());
+        }
+        _next.reorientAllWith(Endpoint.CIRCLE);
+        fciOrient.orient(_next, new HashSet<>(initialColliders), excludeSelectionBias);
+
+        pushPag(_next);
         return true;
     }
 
@@ -1164,9 +1299,15 @@ public final class FcitZm implements IGraphSearch {
 //        return true;
 //    }
 
+    /**
+     * Wipes to circles, recalls the SEED unshielded colliders, and re-closes under R0 and
+     * R1-R4 from the recorded separators. Recalling the seed set is what keeps the single
+     * orientation premise of the soundness argument in force: the earlier version recomputed
+     * colliders from the graph being reoriented, which re-derives any collider stamped
+     * unsoundly at an earlier step and so silently discharges the premise it needs.
+     */
     private Graph coldReorient(Graph graph) {
         Graph finalPag = graph.copy();
-        List<Node> nodes = graph.getNodes();
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
         strategy.setSepsetMap(sepsets);
@@ -1174,22 +1315,7 @@ public final class FcitZm implements IGraphSearch {
         strategy.setDepth(depth);
 
         finalPag.reorientAllWith(Endpoint.CIRCLE);
-
-        for (Node y : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(y);
-
-            for (int i = 0; i < adj.size(); i++) {
-                for (int j = i + 1; j < adj.size(); j++) {
-                    Node x = adj.get(i);
-                    Node z = adj.get(j);
-
-                    if (!graph.isAdjacentTo(x, z) && graph.isDefCollider(x, y, z)) {
-                        finalPag.setEndpoint(x, y, Endpoint.ARROW);
-                        finalPag.setEndpoint(z, y, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
+        GraphUtils.recallInitialColliders(finalPag, initialColliders, knowledge);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(false);
@@ -1366,6 +1492,51 @@ public final class FcitZm implements IGraphSearch {
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    /**
+     * Records a newly committed state, trimming the history unless a trace was requested.
+     */
+    private void pushPag(Graph pag) {
+        this.interimPags.add(pag);
+        if (!keepInterimTrace && this.interimPags.size() > 1) {
+            Graph last = this.interimPags.getLast();
+            this.interimPags.clear();
+            this.interimPags.add(last);
+        }
+    }
+
+    /**
+     * Sets how an accepted deletion is carried forward; the MAG legality gate applies to
+     * both routes. Defaults to {@link COMMIT_ROUTE#PAG}.
+     *
+     * @param commitRoute the commit route.
+     */
+    public void setCommitRoute(COMMIT_ROUTE commitRoute) {
+        this.commitRoute = commitRoute;
+    }
+
+    /**
+     * Sets whether the full trajectory of committed PAGs is retained. Off by default.
+     *
+     * @param keepInterimTrace true to retain every interim PAG.
+     */
+    public void setKeepInterimTrace(boolean keepInterimTrace) {
+        this.keepInterimTrace = keepInterimTrace;
+    }
+
+    /**
+     * How an accepted deletion is carried forward past the MAG legality gate.
+     */
+    public enum COMMIT_ROUTE {
+        /**
+         * Reorient the PAG directly; endpoints stay circles until a rule commits them.
+         */
+        PAG,
+        /**
+         * Project back through the canonical Zhang MAG (the route the paper calls FCIT-ZM).
+         */
+        MAG
     }
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
