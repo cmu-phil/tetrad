@@ -1,0 +1,84 @@
+==== PKE10 EXHAUSTIVE SUMMARY (PAG-space enumeration) ====
+mode=magspace observed=5 maxSpurious=3
+  source population: ALL legal MAGs on 5 observed vertices
+  (a superset of those realizable with any bounded latent count)
+distinct true PAGs analyzed      : 24259   (per labelling)
+NOTE: nonzero counts below are PER DISTINCT TRUE PAG and are NOT
+      commensurable with a per-model sweep. Zero-counts are invariant.
+legal, phantom-free seeds H0     : 160194
+single-edge waypoints classified : 300726
+waypoints genuine                : 299781
+non-genuine, illegal             : 945
+non-genuine, LEGAL               : 0  <-- CONJECTURE 1 COUNTEREXAMPLES
+PAGs skipped (residual throws)   : 0
+
+==== SEPSET COVERAGE AUDIT ====
+non-spurious non-adjacent pairs queried  : 994345
+  ...confirmed separator recorded        : 845944
+  ...no confirmed separator              : 148401
+spurious subsets skipped (no sepset)     : 86683
+  ...separable by exhaustive search      : 994345   (= queried: every pair IS separable; the unconfirmed are search misses)
+
+==== R4 ABSTENTIONS ====
+total abstentions                : 0
+                          illegal        LEGAL
+  abstained                     0            0
+  no abstention               945            0
+
+==== KERNEL CROSS-TAB (non-genuine H1) ====
+                              illegal        LEGAL
+  v-end = circle                  945            0
+  v-end = committed                 0            0
+
+==== PHANTOM SPINE CENSUS ====
+max phantom collider-path length : 1
+  length 1 : 945
+
+==== R4 FIRING-GAP PROBE ====
+spine colliders all definite : 945 / 945   (control)
+  circle at v : 945 / 945   <- the under-commit gap
+  arrow at v  : 0 / 945   <- falsifier if nonzero (dumped)
+  tail  at v  : 0 / 945
+  other       : 0 / 945
+
+==== NOSTALL PROBE ====
+seeds with >=1 legal escape      : 158815 / 160194
+seeds with NO legal escape       : 1379 / 160194   <-- deadlocks
+    all-genuine / all-non-genuine / mixed : 1242 / 0 / 137
+                       genuine  non-genuine
+    roundtrip                0          137
+    maximality            2035            0
+    acyclic                734            0
+    magconstruct           180            0
+    other                    0            0
+
+==== PAG->PAG MARKOV AUDIT ====
+non-I-map H0                                  : 1033
+I-map step-breaks (legal H1, non-I-map)       : 1687
+  mechanism R0 / R4 / COMPLETION / RESIDUE    : 0 / 1557 / 0 / 130
+  -- RESIDUE anatomy (collider-genuine yet non-Markov) --
+    real edge reversed in H1's MAG   : 130 / 130
+    no real edge reversed            : 0   <- hypothesis fails here
+    all-real-leg displaced mark      : 130 / 130
+    no displaced mark                : 0   <- investigate
+    distinct (G*,H1) structures      : 3   (of 130 instances)
+  FcitMag re-commit breaks / fixes / reverts  : 885 / 802 / 0
+R0-non-genuine detections (alsoStepBreak=0)   : 10783
+
+==== GENERALIZED-MEEK ====
+single-edge counterexamples (deadlocks)       : 1379
+    min escape arity 2 : 1331
+    min escape arity 3 : 48
+Bryan-form genuine counterexamples           : 0
+  rescued by the richer move set             : 346
+  excluded (H0 not an I-map)                 : 1033
+  unchecked (skeleton over 12 edges)          : 0
+
+==== MAG-SWEEP ESCAPE ====
+    deadlocks swept                         : 1379
+    reconstructs G* exactly                 : 301
+    stuck (illegal MAG)                     : 28
+    legal but != G*                         : 1050
+
+No legal non-genuine PAG arises over 24259 distinct true PAGs at observed size 5 with spurious<=3. Conjecture 1 holds at this scope.
+Bryan survivors (only) written to: pke10_meek.log

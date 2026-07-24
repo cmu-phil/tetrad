@@ -1,6 +1,0 @@
-# Generalized-Meek (Bryan full form) counterexamples: legal PAGs, I-maps of the
-# true PAG, from which the true PAG is NOT reachable by ANY sequence of legal
-# single-edge removals and reorientations over I-map PAGs.
-# Exhaustive over N=6 latent=1 maxSpurious=2 (COLD reorient, spanning sepsets).
-# single-edge-form deadlocks: 1023 | Bryan-form survivors: 0 | unchecked: 0
-
