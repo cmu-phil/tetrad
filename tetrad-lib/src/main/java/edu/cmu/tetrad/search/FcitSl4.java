@@ -32,7 +32,6 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -43,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  */
-public final class FcitSl implements IGraphSearch {
+public final class FcitSl4 implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -285,20 +284,6 @@ public final class FcitSl implements IGraphSearch {
      */
     private long ipRejects = 0, legalityChecks = 0;
     /**
-     * Final-orientation provenance telemetry. {@code r0SepsetBacked}: R0 triples adjudicated by
-     * a separator this search recorded (committed sepsets first, then sweep-discovered ones).
-     * {@code r0CpdagBacked}: triples over pairs nonadjacent from the start, adjudicated by
-     * copying the score-based CPDAG's collider verdict (the GFCI justification). {@code
-     * r0TestFallback}: triples with NO recorded evidence, adjudicated by a fresh test-based
-     * sepset search -- the noisy path; this should be zero or near-zero, since every
-     * nonadjacent pair is either CPDAG-nonadjacent or was removed by a commit that recorded
-     * its separator. A large fallback count means evidence is being lost somewhere upstream.
-     * {@code r4SepsetBacked} / {@code r4TestFallback}: the same split for discriminating-path
-     * (R4) verdicts, keyed by the path's endpoint pair.
-     */
-    private long r0SepsetBacked = 0, r0CpdagBacked = 0, r0TestFallback = 0,
-            r4SepsetBacked = 0, r4TestFallback = 0;
-    /**
      * Represents the maximum depth allowed for a recursive operation.
      * This variable is used to prevent excessive recursion,
      * which can lead to stack overflow errors.
@@ -338,7 +323,7 @@ public final class FcitSl implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public FcitSl(IndependenceTest test, Score score) {
+    public FcitSl4(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -619,8 +604,7 @@ public final class FcitSl implements IGraphSearch {
         scorer.score(best);
 
         if (verbose) {
-            TetradLogger.getInstance().log("Noting unshielded colliders from the CPDAG "
-                    + "(consumed by the evidence-backed final orientation).");
+            TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
         // We make all latent variables at this point measured for the duration of the
@@ -670,40 +654,23 @@ public final class FcitSl implements IGraphSearch {
         } while (changed);
 
         if (verbose) {
-            TetradLogger.getInstance().log("Final orientation: cold R0 / R1-R10, evidence-backed "
-                    + "(committed sepsets first, CPDAG colliders second, test only as fallback).");
+            TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
         }
 
-        // Re-derive the final orientation COLD -- the interim marks inherit GRaSP's DAG rendering
-        // of latent confounding, so they must be wiped -- but adjudicate R0 and R4 from the
-        // search's own RECORDED evidence rather than fresh test queries. At the oracle the two are
-        // indistinguishable (MsepTest answers every query correctly, which is why PKE audits
-        // cannot see the difference), but on finite samples a fresh per-triple sepset search has a
-        // systematic collider bias: pairs typically have many valid separators, small ones are
-        // found first, and noise admits sets excluding the middle node far more often than truth
-        // warrants. Worse, a fresh search can CONTRADICT the very separator that justified the
-        // deletion the triple rides on. So: for a pair removed by this search, the recorded
-        // separator answers the collider question (self-consistency with the deletions by
-        // construction); for a pair nonadjacent from the start, the score-based CPDAG's verdict
-        // is copied (the GFCI justification -- this is what initialColliders was harvested for);
-        // the raw test is consulted only for triples with no recorded evidence, which should be
-        // rare (see the r0TestFallback telemetry). Note ruleR0 wipes to circles and applies
-        // background knowledge internally, so no separate reorientWithCircles / fciOrientbk calls
-        // are needed here.
+        // Need to run final orientation rules to pick up remaining discriminating path orientations.
         Graph finalPag = interimPags.getLast().copy();
+        GraphUtils.reorientWithCircles(finalPag, verbose);
 
-        R0R4StrategyTestBased testStrategy = new R0R4StrategyTestBased(test);
-        testStrategy.setDepth(depth);
-        testStrategy.setKnowledge(knowledge);
-        testStrategy.setVerbose(verbose);
-
-        EvidenceBackedR0R4Strategy strategy = new EvidenceBackedR0R4Strategy(
-                testStrategy, interimPags.getFirst(), initialColliders);
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        strategy.setDepth(depth);
+        strategy.setKnowledge(knowledge);
+        strategy.setVerbose(verbose);
 
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(false);
+        fciOrient.fciOrientbk(knowledge, finalPag, finalPag.getNodes(), excludeSelectionBias);
         fciOrient.ruleR0(finalPag, new HashSet<>(), excludeSelectionBias);
         fciOrient.finalOrientation(finalPag);
         interimPags.addLast(finalPag);
@@ -753,13 +720,6 @@ public final class FcitSl implements IGraphSearch {
                 + escapeCommits + " class-escape (pass 3)"
                 + otherRejects + " other-rejects"
                 + (allowClassEscape ? "" : "; disabled)."));
-        TetradLogger.getInstance().log("Final-orientation provenance: R0 " + r0SepsetBacked
-                + " sepset-backed, " + r0CpdagBacked + " CPDAG-backed, " + r0TestFallback
-                + " test-fallback; R4 " + r4SepsetBacked + " sepset-backed, "
-                + r4TestFallback + " test-fallback."
-                + (r0TestFallback > 0
-                ? " (Nonzero R0 test-fallback: some nonadjacent pair had no recorded evidence.)"
-                : ""));
 
         if (useClosureCoverSearch) {
             TetradLogger.getInstance().log("Closure-cover search: " + closureCandidatesEmitted
@@ -3065,188 +3025,6 @@ public final class FcitSl implements IGraphSearch {
          * Starts with a complete o-o graph.
          */
         COMPLETE_GRAPH
-    }
-
-    /**
-     * R0/R4 strategy for the FINAL orientation pass that consults the search's own recorded
-     * evidence before ever re-asking the data. Priority order for an unshielded triple
-     * &lt;a, b, c&gt;:
-     * <p>
-     * (1) SEPSET-BACKED. If a separator was recorded for {a, c} -- a committed sepset first,
-     * else a sweep-discovered one from {@code foundSepsets} -- the collider verdict is membership:
-     * collider iff b is not in the recorded set. This is the original FCI R0 semantics, and it
-     * makes the final orientation consistent BY CONSTRUCTION with the deletions the skeleton is
-     * built on: the same set that removed the edge decides the triple. A fresh test-based search
-     * here could return a DIFFERENT valid separator (pairs typically have several) and orient a
-     * collider that contradicts the recorded evidence -- at the oracle the answers coincide, so
-     * PKE audits cannot distinguish the two policies, but on data the fresh search's
-     * minimality-plus-noise bias mints colliders systematically.
-     * <p>
-     * (2) CPDAG-BACKED. If {a, c} is nonadjacent in the INITIAL graph, the triple was adjudicated
-     * by the score-based CPDAG search, whose collider decisions are jointly optimized and far more
-     * stable in sample than per-triple tests; copy its verdict (the GFCI justification -- see
-     * {@link #noteInitialColliders}). This is the consumer the {@code initialColliders} field was
-     * always meant to have.
-     * <p>
-     * (3) TEST FALLBACK. Only for triples with no recorded evidence -- which should not normally
-     * occur, since every nonadjacent pair is either CPDAG-nonadjacent or was removed by a commit
-     * that recorded its separator. Counted in {@code r0TestFallback}; a nonzero count is a
-     * diagnostic that evidence is being lost upstream, not business as usual.
-     * <p>
-     * R4 gets the same split, keyed by the discriminating path's endpoint pair {x, y}: a recorded
-     * separator decides collider-vs-tail at v by membership (mirroring the delegate's guards and
-     * orientation actions exactly, minus its RB blocking search); pairs never adjudicated by this
-     * search fall through to the delegate's recursive-blocking machinery.
-     * <p>
-     * All lookups are BY NAME, so the strategy is robust to node-identity changes across the
-     * MagToPag round trips. The evidence maps are frozen at construction, which happens after the
-     * removal loop completes, so they see the final state of {@code sepsets} and
-     * {@code foundSepsets}.
-     */
-    private final class EvidenceBackedR0R4Strategy implements R0R4Strategy {
-        private final R0R4StrategyTestBased delegate;
-        private final Graph initialGraph;
-        private final Set<String> cpdagColliderKeys = new HashSet<>();
-        private final Map<String, Set<String>> recordedSepsets = new HashMap<>();
-
-        EvidenceBackedR0R4Strategy(R0R4StrategyTestBased delegate, Graph initialGraph,
-                                   Set<Triple> cpdagColliders) {
-            this.delegate = delegate;
-            this.initialGraph = initialGraph;
-
-            if (cpdagColliders != null) {
-                for (Triple t : cpdagColliders) {
-                    cpdagColliderKeys.add(tripleKey(t.getX(), t.getY(), t.getZ()));
-                }
-            }
-
-            // Committed separators first: each one justified a deletion, so it is the
-            // authoritative record for its pair.
-            for (Set<Node> key : sepsets.keySet()) {
-                List<Node> pr = new ArrayList<>(key);
-                if (pr.size() != 2) continue;
-                Set<Node> s = sepsets.get(pr.get(0), pr.get(1));
-                if (s != null) recordedSepsets.put(pairKey(pr.get(0), pr.get(1)), names(s));
-            }
-
-            // Then sweep-discovered separators, without overwriting a committed record. (These
-            // matter only for pairs somehow nonadjacent without a commit; belt and braces.)
-            for (Map.Entry<Set<Node>, Set<Node>> e : foundSepsets.entrySet()) {
-                List<Node> pr = new ArrayList<>(e.getKey());
-                if (pr.size() != 2) continue;
-                recordedSepsets.putIfAbsent(pairKey(pr.get(0), pr.get(1)), names(e.getValue()));
-            }
-        }
-
-        private Set<String> names(Set<Node> s) {
-            Set<String> out = new HashSet<>();
-            for (Node n : s) out.add(n.getName());
-            return out;
-        }
-
-        private String pairKey(Node a, Node c) {
-            String u = a.getName(), v = c.getName();
-            return u.compareTo(v) <= 0 ? u + "\u0000" + v : v + "\u0000" + u;
-        }
-
-        private String tripleKey(Node a, Node b, Node c) {
-            return pairKey(a, c) + "@" + b.getName();
-        }
-
-        @Override
-        public boolean isUnshieldedCollider(Graph graph, Node a, Node b, Node c) {
-            // (1) Sepset-backed.
-            Set<String> s = recordedSepsets.get(pairKey(a, c));
-            if (s != null) {
-                r0SepsetBacked++;
-                return !s.contains(b.getName());
-            }
-
-            // (2) CPDAG-backed.
-            Node ia = initialGraph.getNode(a.getName());
-            Node ic = initialGraph.getNode(c.getName());
-            if (ia != null && ic != null && !initialGraph.isAdjacentTo(ia, ic)) {
-                r0CpdagBacked++;
-                return cpdagColliderKeys.contains(tripleKey(a, b, c));
-            }
-
-            // (3) Test fallback -- no recorded evidence for this pair.
-            r0TestFallback++;
-            return delegate.isUnshieldedCollider(graph, a, b, c);
-        }
-
-        @Override
-        public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(
-                DiscriminatingPath discriminatingPath, int maxBlockingPathLength,
-                int maxDiscriminatingPathLength, Graph graph, Set<Node> vNodes)
-                throws InterruptedException {
-            Node x = discriminatingPath.getX();
-            Node w = discriminatingPath.getW();
-            Node v = discriminatingPath.getV();
-            Node y = discriminatingPath.getY();
-
-            Set<String> s = recordedSepsets.get(pairKey(x, y));
-
-            if (s == null) {
-                // Pair never adjudicated by this search (nonadjacent from the CPDAG); the
-                // delegate's recursive-blocking search is the right authority.
-                r4TestFallback++;
-                return delegate.doDiscriminatingPathOrientation(discriminatingPath,
-                        maxBlockingPathLength, maxDiscriminatingPathLength, graph, vNodes);
-            }
-
-            r4SepsetBacked++;
-
-            // Mirror the delegate's guards and orientation actions exactly, adjudicating by the
-            // recorded separator: v in Sepset(x, y) => noncollider (tail at v); else collider.
-
-            if (!discriminatingPath.existsIn(graph)) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            if (s.contains(v.getName())) {
-                graph.setEndpoint(y, v, Endpoint.TAIL);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("R4 (sepset-backed): oriented "
-                            + GraphUtils.pathString(graph, w, v, y) + " from recorded sepset.");
-                }
-
-                return Pair.of(discriminatingPath, true);
-            } else {
-                if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                graph.setEndpoint(w, v, Endpoint.ARROW);
-                graph.setEndpoint(y, v, Endpoint.ARROW);
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("R4 (sepset-backed): oriented "
-                            + GraphUtils.pathString(graph, w, v, y) + " from recorded sepset.");
-                }
-
-                return Pair.of(discriminatingPath, true);
-            }
-        }
-
-        @Override
-        public void setKnowledge(Knowledge knowledge) {
-            delegate.setKnowledge(knowledge);
-        }
-
-        @Override
-        public Knowledge getknowledge() {
-            return delegate.getknowledge();
-        }
     }
 
     private record RemovalHit(int index, Edge edge, Set<Node> cond, double pValue) {
