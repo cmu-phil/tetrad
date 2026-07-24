@@ -20,7 +20,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -29,7 +28,6 @@ import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.sem.RicfEjml;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -142,7 +140,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * such set is found.
      */
     public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
-                                                     IndependenceTest test, int depth, boolean useMaxP) {
+                                                     IndependenceTest test, int depth, boolean useMaxP)
+            throws InterruptedException {
 
         test.setVerbose(false);
 
@@ -197,7 +196,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * such set is found.
      */
     private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
-                                                 List<Node> adjx, boolean useMaxP) {
+                                                 List<Node> adjx, boolean useMaxP) throws InterruptedException {
         List<Set<Node>> choices = getChoices(adjx, depth);
 
         if (useMaxP) {
@@ -242,7 +241,11 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * @return A list of all possible lists of integers representing combinations of indices from the adjacency list up
      * to the given depth.
      */
-    private static @NotNull List<Set<Node>> getChoices(List<Node> adjx, int depth) {
+    private static @NotNull List<Set<Node>> getChoices(List<Node> adjx, int depth) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
+
         List<Set<Node>> choices = new ArrayList<>();
 
         if (depth < 0 || depth > adjx.size()) depth = adjx.size();
@@ -313,7 +316,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         // Pass 1: adjacency-subset removal. Candidate sepsets are subsets of adj(a) or adj(c).
         for (Edge edge : edges) {
             if (Thread.currentThread().isInterrupted()) {
-                break;
+                throw new InterruptedException();
             }
 
             Node a = edge.getNode1();
@@ -363,7 +366,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
 
             for (Edge edge : dsepEdges) {
                 if (Thread.currentThread().isInterrupted()) {
-                    break;
+                    throw new InterruptedException();
                 }
 
                 Node a = edge.getNode1();
@@ -427,19 +430,28 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * committed graph (it is consumed only by the final guaranteePag step).
      */
     private void gfciOrientPag(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
-                               Set<Triple> unshieldedColliders, FciOrient fciOrient) {
+                               Set<Triple> unshieldedColliders, FciOrient fciOrient)
+            throws InterruptedException {
         unshieldedColliders.clear();
 
         pag.reorientAllWith(Endpoint.CIRCLE);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
         for (Node y : nodes) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
 
             ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
             int[] combination;
 
             while ((combination = cg.next()) != null) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
+                }
+
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
@@ -565,8 +577,12 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     private FciOrient buildFciOrient(SepsetMap sepsetMap) {
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
-        strategy.setDepth(-1);
-        strategy.setMaxLength(-1);
+        // Respect the user's depth/length knobs instead of hardcoding unlimited. With
+        // usePossibleDsep == false the R4 discriminating-path resolution must not be the
+        // back door through which unbounded (possible-D-SEP-scale) conditioning searches
+        // re-enter after the adjacency-only pass.
+        strategy.setDepth(usePossibleDsep ? -1 : this.depth);
+        strategy.setMaxLength(usePossibleDsep ? -1 : this.maxDiscriminatingPathLength);
         strategy.setSepsetMap(sepsetMap);
         strategy.setVerbose(false);
         FciOrient fciOrient = new FciOrient(strategy);
