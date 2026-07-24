@@ -657,14 +657,24 @@ public final class FcitSl implements IGraphSearch {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
         }
 
-        // Re-derive the final orientation from the independence test. The interim PAGs inherit their
-        // marks from dagToPag / MagToPag, which faithfully render whatever MAG they are handed -- and
-        // that MAG encodes latent confounding as DIRECTED edges (GRaSP's DAG fit), so a shielded
-        // collider such as V1 (whose neighbors W1, Y are adjacent) is never oriented as a collider.
-        // When the skeleton already matches the truth, no edge is removed and nothing re-runs R4, so
-        // the DAG's tail at V1 survives. Wipe to circles and run R0 + R1-R4 with the test-based
-        // strategy: R4 fires on the discriminating path <X, W1, V1, Y> and recovers V1 <-> W1 /
-        // V1 <-> Y. On models that DO need removals this only re-confirms marks the test already implies.
+        // Need to run final orientation rules to pick up remaining discriminating path orientations.
+        Graph finalPag = interimPags.getLast().copy();
+        GraphUtils.reorientWithCircles(finalPag, verbose);
+
+        R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test);
+        strategy.setDepth(depth);
+        strategy.setKnowledge(knowledge);
+        strategy.setVerbose(verbose);
+
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setVerbose(false);
+        fciOrient.fciOrientbk(knowledge, finalPag, finalPag.getNodes(), excludeSelectionBias);
+        fciOrient.ruleR0(finalPag, new HashSet<>(), excludeSelectionBias);
+        fciOrient.finalOrientation(finalPag);
+        interimPags.addLast(finalPag);
+
         long stop2 = System.currentTimeMillis();
 
         // Revert nodes made latent to latent.
@@ -743,7 +753,7 @@ public final class FcitSl implements IGraphSearch {
     }
 
     private NongenuineScan findR4NongenuineEdge(Graph pag) throws InterruptedException {
-        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, -1, true);
+        Set<DiscriminatingPath> ddps = FciOrient.listDiscriminatingPaths(pag, maxDiscriminatingPathLength, true);
 
         // Within one pass, the same pair can appear as a leg/chord of several
         // discriminating paths. blockPathsRecursively is the expensive call, so
@@ -1225,118 +1235,6 @@ public final class FcitSl implements IGraphSearch {
 
         return null;
     }
-
-//    // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
-//    // found. With escape == false only within-class representatives (the canonical Zhang MAG and the LEGs of
-//    // the current class) are tried -- the Step Lemma's own quantifier. With escape == true the fork-flip
-//    // out-of-class seeds are also tried; this is an engineering fallback OUTSIDE the Step Lemma, invoked only
-//    // at the state level after a full within-class sweep commits nothing.
-//    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias,
-//                                     boolean escape)
-//            throws InterruptedException {
-//        Edge _edge = interimPags.getLast().getEdge(x, y);
-//        Graph _pag = new EdgeListGraph(interimPags.getLast());
-//
-
-    /// /        System.out.println("_pag = " + _pag);
-//
-//        List<Edge> _removed = Collections.singletonList(Objects.requireNonNull(_edge));
-//
-//        final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
-//
-//        // Pick a MAG H'. In within-class mode (escape == false) the only seed is the minimal-
-//        // bidirected Zhang MAG, and LegEnumerator walks the current class: Stage 1 is the Zhang
-//        // MAG itself, Stage 2 the other LEGs. In escape mode extra seeds may LEAVE the class by
-//        // turning a fork on an unblocked x..y path into a collider (fork -> <->), required when
-//        // the initial DAG compels an orientation that contradicts the true MAG -- a latent
-//        // common effect the DAG modeled as a common cause.
-//        List<Graph> seeds = seedMags(_pag, x, y, b, deadline, escape);
-//
-//        for (int seedIdx = 0; seedIdx < seeds.size(); seedIdx++) {
-//            Graph seed = seeds.get(seedIdx);
-//            // Within-class mode lists the Zhang MAG first, then in-class fork-flips; escape
-//            // mode returns only certified out-of-class seeds, so no seed there is the base.
-//            boolean baseSeed = (!escape && seedIdx == 0);
-//
-//            for (Graph mag : new LegEnumerator(seed)) {
-//                if (Thread.currentThread().isInterrupted()) {
-//                    throw new InterruptedException();
-//                }
-//
-//                if (System.currentTimeMillis() > deadline) {
-//                    break;
-//                }
-//
-//                Graph _mag = mag.copy();
-//
-//                System.out.println("Chose LEG: " + _mag);
-//
-//                // The MAG H' we pick will need to be one where the stored sepsets are honored, so we need in
-//                // particular to orient common colliders of x and y.
-//                if (!stampLegColliders(_mag, b, x, y)) {
-//                    continue;
-//                }
-//
-//                System.out.println("Stamped LEG: " + _mag);
-//
-//                // We remove f = x *-* y, yielding H' - f.
-//                _mag.removeEdge(x, y);
-//
-//                System.out.println("Removed " + x + " *-* " + y + ": " + _mag + " b = " + b);
-//
-//                legalityChecks++;
-//
-//                // Now H' - f needs to satisfy Prong (A)--i.e., it needs to be a MAG, which is to say, it needs to
-//                // satisfy Lemma 3.6.
-//                if (_mag.paths().existsInducingPath(x, y, Set.of())) {
-//                    System.out.println("Rejected " + x + " *-* " + y + " because it introduces an inducing path.");
-//
-//                    ipRejects++;                               // non-maximal exactly at the deleted pair
-//                    continue;
-//                }
-//
-//                // Also, H' - f needs to satisfy Prong (B)--i.e., it can't introduce any new CIs that aren't in G*.
-//                // We spot-check this.
-//                if (!deletedPairBatteryPasses(_mag, _removed)) {
-//                    System.out.println("battery doesn't pass");
-//
-//                    continue;
-//                }
-//
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
-//                            + (Double.isNaN(pValue) ? "" : ", p = " + pValue));
-//                }
-//
-//                // Commit provenance: canonical Zhang MAG (Stage 1), other LEG of the current
-//                // class (Stage 2), certified in-class fork-flip (Stage 2b), or certified
-//                // out-of-class seed (pass 3).
-//                if (escape) {
-//                    escapeCommits++;
-//                } else if (!baseSeed) {
-//                    inClassFlipCommits++;
-//                } else if (magKey(mag).equals(magKey(seed))) {
-//                    zhangCommits++;
-//                } else {
-//                    legCommits++;
-//                }
-//
-//                // Add the PAG of H' - f to the list of PAGs and record the sepset b for {x, y}.
-//                Graph convert = new MagToPag(_mag).convert(false, excludeSelectionBias);
-//                this.interimPags.add(convert);
-//                sepsets.set(x, y, b);
-//                return true;                                   // first representative that hosts it
-//            }
-//        }
-//
-//        if (verbose) {
-//            TetradLogger.getInstance().log("\tTried removing " + _edge
-//                    + (escape ? " (class-escape pass)" : " (within-class pass)")
-//                    + ", but no representative hosted it, sepset = " + b);
-//        }
-//
-//        return false;
-//    }
 
     // Trying to implement the Step Lemma. Here we know that x--y is a spurious edge, since a sepset b has been
     // found. With escape == false only within-class representatives are tried -- the Step Lemma's own

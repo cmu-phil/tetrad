@@ -346,7 +346,7 @@ public class TestFci {
         }
 
         {
-            FgesFci fci = new FgesFci(independence, score);
+            GfciOld fci = new GfciOld(independence, score);
             fci.setKnowledge(knowledge);
             fci.setVerbose(verbose);
 
@@ -761,12 +761,13 @@ public class TestFci {
             fciOrient.finalOrientation(_currentState);
             assertEquals(_oracleGraph, _currentState);
 
-            // Finally, make sure FcitSl is recovering this oracle graph, which is should if all of the
+            // Finally, make sure fcitSl is recovering this oracle graph, which is should if all of the
             // discriminating path rules fire correctly.
-            FcitSl FcitSl = new FcitSl(new MsepTest(_oracleGraph), new GraphScore(_oracleGraph));
-            FcitSl.setDepth(-1);
-            FcitSl.setCompleteRuleSetUsed(true);
-            Graph pag = FcitSl.search();
+            FcitSl fcitSl = new FcitSl(new MsepTest(_oracleGraph), new GraphScore(_oracleGraph));
+            fcitSl.setDepth(-1);
+            fcitSl.setCompleteRuleSetUsed(true);
+            fcitSl.setVerbose(true);
+            Graph pag = fcitSl.search();
             assertEquals(_oracleGraph, pag);
         } catch (Exception e) {
             e.printStackTrace();

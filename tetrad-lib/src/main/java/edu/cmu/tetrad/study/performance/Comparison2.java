@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.FgesFci;
+import edu.cmu.tetrad.search.Gfci;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
@@ -192,7 +192,7 @@ public class Comparison2 {
                 result.setResultGraph(search.search());
                 result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES_FCI) {
-                FgesFci search = new FgesFci(test, score);
+                Gfci search = new Gfci(test, score);
                 result.setResultGraph(search.search());
                 result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
             } else {
@@ -436,7 +436,7 @@ public class Comparison2 {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
-            FgesFci search = new FgesFci(test, score);
+            Gfci search = new Gfci(test, score);
             result.setResultGraph(search.search());
             result.setCorrectResult(GraphTransforms.dagToPag(trueDag, false));
         } else {

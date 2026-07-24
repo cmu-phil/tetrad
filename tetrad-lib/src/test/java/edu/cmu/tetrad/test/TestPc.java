@@ -349,7 +349,7 @@ public class TestPc {
                     search = new Fci(test);
                     break;
                 case 4:
-                    search = new FgesFci(test, score);
+                    search = new Gfci(test, score);
                     break;
                 case 5:
                     search = new Rfci(test);
@@ -719,7 +719,7 @@ public class TestPc {
                     }
                     break;
                 case 4:
-                    search = new FgesFci(test, score);
+                    search = new Gfci(test, score);
                     try {
                         out = search.search();
                     } catch (InterruptedException e) {

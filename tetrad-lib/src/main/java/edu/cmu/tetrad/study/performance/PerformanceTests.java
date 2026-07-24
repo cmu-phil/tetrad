@@ -862,7 +862,7 @@ public class PerformanceTests {
 
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
-        FgesFci fci = new FgesFci(independenceTest, score);
+        Gfci fci = new Gfci(independenceTest, score);
 
         fci.setVerbose(false);
         fci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
@@ -1527,7 +1527,7 @@ public class PerformanceTests {
             long ta1 = MillisecondTimes.timeMillis();
 
 //            FCI fci = new FCI(independenceTest);
-            FgesFci fci = new FgesFci(independenceTest, score);
+            Gfci fci = new Gfci(independenceTest, score);
             fci.setMaxDegree(depth);
             fci.setMaxDiscriminatingPathLength(maxPathLength);
 //            fci.setPossibleNsepSearchDone(doPossibleDsep);
