@@ -346,7 +346,7 @@ public class TestFci {
         }
 
         {
-            GfciOld fci = new GfciOld(independence, score);
+            Gfci fci = new Gfci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setVerbose(verbose);
 
