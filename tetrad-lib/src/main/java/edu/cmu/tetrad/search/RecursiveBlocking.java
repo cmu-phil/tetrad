@@ -621,7 +621,7 @@ public class RecursiveBlocking {
         Deque<PathEntry> bfsQueue = new ArrayDeque<>();
         Set<String> seen = new HashSet<>();
 
-        for (Node neighbor : graph.getAdjacentNodes(x)) {
+        for (Node neighbor : adj(graph, x)) {
             checkTimeout(deadlineMs);
 
             if (ignoreDirectEdge && neighbor == y) continue;
@@ -691,7 +691,7 @@ public class RecursiveBlocking {
         Deque<PathEntry> bfsQueue = new ArrayDeque<>();
         Set<String> seen = new HashSet<>();
 
-        for (Node neighbor : graph.getAdjacentNodes(x)) {
+        for (Node neighbor : adj(graph, x)) {
             checkTimeout(deadlineMs);
 
             if (ignoreDirectEdge && neighbor == y) continue;
@@ -731,7 +731,7 @@ public class RecursiveBlocking {
                 // Check if b acts as a non-collider on at least one
                 // continuation — if so, conditioning on it could block.
                 boolean isNonColliderOnSomePath = false;
-                for (Node c : graph.getAdjacentNodes(b)) {
+                for (Node c : adj(graph, b)) {
                     checkTimeout(deadlineMs);
 
                     if (c == a) continue;
@@ -745,7 +745,7 @@ public class RecursiveBlocking {
                 }
             }
 
-            for (Node c : graph.getAdjacentNodes(b)) {
+            for (Node c : adj(graph, b)) {
                 checkTimeout(deadlineMs);
 
                 if (c == a) continue;
@@ -788,6 +788,18 @@ public class RecursiveBlocking {
         return pool;
     }
 
+    /** Adjacency in a deterministic order. EdgeListGraph's adjacency iteration is
+     *  hash-derived, so the greedy fixed point that grows Z can converge on
+     *  different -- equally valid -- blocking sets from run to run. Every caller
+     *  below walks adjacency to decide what enters Z, so sorting here makes the
+     *  returned blocking set a function of the graph's content alone. This is a
+     *  reproducibility fix, not a correctness one: each variant Z blocks. */
+    private static List<Node> adj(Graph graph, Node node) {
+        List<Node> out = new ArrayList<>(adj(graph, node));
+        out.sort(Comparator.comparing(Node::getName));
+        return out;
+    }
+
     // -----------------------------------------------------------------------
     // PathEntry helper for BFS
     // -----------------------------------------------------------------------
@@ -812,7 +824,7 @@ public class RecursiveBlocking {
             Node u = queue.removeFirst();
             int du = dist.get(u);
             if (du >= maxRadius) continue;
-            for (Node v : graph.getAdjacentNodes(u)) {
+            for (Node v : adj(graph, u)) {
                 checkTimeout(deadlineMs);
 
                 if (visited.add(v)) {
@@ -851,7 +863,7 @@ public class RecursiveBlocking {
 
         Set<Node> z = new HashSet<>(containing);
 
-        List<Node> firstHops = new ArrayList<>(graph.getAdjacentNodes(x));
+        List<Node> firstHops = adj(graph, x);
 
         if (ignoreDirectEdge) {
             firstHops.remove(y);
@@ -1291,7 +1303,7 @@ public class RecursiveBlocking {
         checkTimeout(deadlineMs);
 
         List<Node> passNodes = new ArrayList<>();
-        for (Node c : graph.getAdjacentNodes(b)) {
+        for (Node c : adj(graph, b)) {
             checkTimeout(deadlineMs);
 
             if (c == a) continue;

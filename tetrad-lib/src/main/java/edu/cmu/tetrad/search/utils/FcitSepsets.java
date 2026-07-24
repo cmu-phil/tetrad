@@ -24,10 +24,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.SublistGenerator;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * FCIT's separator search: recursive blocking with an enumerated not-followed set,
@@ -99,6 +96,7 @@ public final class FcitSepsets {
         }
 
         List<Node> nfCand = new ArrayList<>(nfCandSet);
+        nfCand.sort(Comparator.comparing(Node::getName));
 
         // Enumerate subsets of the "not-followed" set NF subset of nfCand.
         SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
@@ -121,6 +119,7 @@ public final class FcitSepsets {
             common.retainAll(graph.getAdjacentNodes(y));
             B.addAll(common);
             List<Node> removalCandidates = new ArrayList<>(common);
+            removalCandidates.sort(Comparator.comparing(Node::getName));
 
             SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
             int[] cChoice;
