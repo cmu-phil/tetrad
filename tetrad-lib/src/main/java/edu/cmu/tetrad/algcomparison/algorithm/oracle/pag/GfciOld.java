@@ -47,12 +47,12 @@ import java.util.List;
 /**
  * The GFCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "GFCI-Old",
-        command = "gfci-old",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "GFCI-Old",
+//        command = "gfci-old",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
 public class GfciOld extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
