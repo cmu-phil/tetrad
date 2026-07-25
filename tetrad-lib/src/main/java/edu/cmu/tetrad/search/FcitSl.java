@@ -1595,9 +1595,9 @@ public final class FcitSl implements IGraphSearch {
 
             Graph seedPag = new MagToPag(seed).convert(false, this.excludeSelectionBias);
             boolean seedInClass = seedPag.equals(basePag);
-            boolean seedMsepIn = sameMsepModel(seed, base);
             if (isFocus(x, y)) {
-                focusSeedLog.add("SEED magToPagInClass=" + seedInClass + " msepInClass=" + seedMsepIn
+                focusSeedLog.add("SEED magToPagInClass=" + seedInClass
+                        + " msepInClass=" + sameMsepModel(seed, base)
                         + " bi=" + bidirectedCount(seed) + "\n" + seed);
             }
             if (seedInClass) {
@@ -1629,11 +1629,10 @@ public final class FcitSl implements IGraphSearch {
      * LEG-sufficiency counterexample, not merely a search-order artifact.
      */
     private List<Graph> forkFlips(Graph mag, Graph basePag, Node x, Node y, Set<Node> S,
-                                  long deadline, boolean escape) throws InterruptedException {
-        List<Graph> out = new ArrayList<>();
+                                  long deadline, boolean escape) throws InterruptedException {List<Graph> out = new ArrayList<>();
 
-        // Reference MAG for m-sep membership; the canonical round trip recovers seedMags's base.
-        Graph base = GraphTransforms.zhangMagFromPag(basePag);
+        // Reference MAG for the focus-only m-sep diagnostic; computed only when focusing.
+        Graph base = isFocus(x, y) ? GraphTransforms.zhangMagFromPag(basePag) : null;
 
         Graph probe = new EdgeListGraph(mag);
         probe.removeEdge(x, y);
@@ -1673,9 +1672,9 @@ public final class FcitSl implements IGraphSearch {
 //            System.out.println("mag flipped: " + flip);
 
             boolean inClass = new MagToPag(flip).convert(false, this.excludeSelectionBias).equals(basePag);
-            boolean msepIn = sameMsepModel(flip, base);
             if (isFocus(x, y)) {
-                focusSeedLog.add("FLIP magToPagInClass=" + inClass + " msepInClass=" + msepIn
+                focusSeedLog.add("FLIP magToPagInClass=" + inClass
+                        + " msepInClass=" + sameMsepModel(flip, base)
                         + " bi=" + bidirectedCount(flip) + "\n" + flip);
             }
             if (escape != inClass) out.add(flip);             // escape wants out-of-class, else in-class

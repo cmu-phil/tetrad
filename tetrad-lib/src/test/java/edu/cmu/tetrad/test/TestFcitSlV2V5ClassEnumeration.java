@@ -245,7 +245,7 @@ public class TestFcitSlV2V5ClassEnumeration {
 
             if (hostable) hostingClasses.add(pag(h).toString());
 
-            if (sameMsepModel(h, interimMag)) {   // definitional membership, not MagToPag-equality
+            if (pag(h).equals(interimPag)) {   // MagToPag PAG-equality: cheap, and agrees with m-sep now that isLegalMag is fixed
                 inClass++;
                 if (deletesLegal) {
                     legalAfterDelete++;
@@ -267,13 +267,13 @@ public class TestFcitSlV2V5ClassEnumeration {
 
         System.out.println("=== interim PAG (class identity) ===");
         System.out.println(interimPag);
-        System.out.println("=== within-class enumeration (13-skeleton, m-sep membership) ===");
-        System.out.println("in-class legal MAGs (m-sep)    : " + inClass);
+        System.out.println("=== within-class enumeration (13-skeleton, MagToPag membership) ===");
+        System.out.println("in-class legal MAGs            : " + inClass);
         System.out.println("  ...legal after deleting V2-V5: " + legalAfterDelete);
         System.out.println("  ...that HOST (no over-sep)   : " + hosts);
         System.out.println("distinct over-separating Z's   : " + distinctOverSepZ);
         System.out.println("hosting PAG-classes (MagToPag, may over-split): " + hostingClasses.size());
-        System.out.println("interim class hosts (m-sep)?   : " + interimHosts);
+        System.out.println("interim class hosts?           : " + interimHosts);
 
         assertTrue("interim class enumeration empty -- fixture/skeleton mismatch", inClass > 0);
         assertFalse("expected at least one hosting class over the skeleton", hostingClasses.isEmpty());
