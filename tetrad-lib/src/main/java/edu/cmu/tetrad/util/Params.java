@@ -1244,7 +1244,12 @@ public final class Params {
     /**
      * Constant <code>LV_HEURISTIC_ONLY="lvHeuristicOnly"</code>
      */
-    public static final String LV_HEURISTIC_ONLY = "lvHeuristicOnly";    /**
+    public static final String LV_HEURISTIC_ONLY = "lvHeuristicOnly";
+    /**
+     * Constant <code>FCITSL_ALLOW_CLASS_ESCAPE="fcitSlAllowClassEscape"</code>
+     */
+    public static final String FCITSL_ALLOW_CLASS_ESCAPE = "fcitSlAllowClassEscape";
+    /**
      * Constant <code>BINS_PER_CONT_XY="binsPerContXY"</code>
      */
     public static final String BINS_PER_CONT_XY = "binsPerContXY";

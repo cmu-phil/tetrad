@@ -284,6 +284,70 @@ public final class FcitSl implements IGraphSearch {
      * justification for an aggressive maximality-only shortcut.
      */
     private long ipRejects = 0, legalityChecks = 0;
+
+    // --- focus-pair instrumentation (temporary; remove when done) ------------
+    private String focusPair = null;
+    private final Map<String, Integer> focusTally = new LinkedHashMap<>();
+
+    /** Restrict {@link #getFocusTally} bookkeeping to the single pair {a, b}. */
+    public void setFocusPair(Node a, Node b) {
+        focusPair = a.getName().compareTo(b.getName()) <= 0
+                ? a.getName() + "\u0000" + b.getName()
+                : b.getName() + "\u0000" + a.getName();
+    }
+
+    /** Per-candidate outcome counts for the focus pair; empty if none was set. */
+    public Map<String, Integer> getFocusTally() {
+        return focusTally;
+    }
+
+    /** For the focus pair, the conditioning set Z of each entailed-but-rejected
+     *  battery statement -- one per battery-refused candidate, in encounter order. */
+    private final List<Set<String>> focusBatteryZ = new ArrayList<>();
+
+    /** Offending battery Z's for the focus pair; empty if none was set/refused. */
+    public List<Set<String>> getFocusBatteryZ() {
+        return focusBatteryZ;
+    }
+
+    /** The interim PAG (interimPags.getLast()) the generator faced for the focus pair. */
+    private String focusInterimPag = null;
+    /** The basePag the generator used as class identity for the focus pair (MagToPag of the
+     *  Zhang MAG of the interim PAG) -- if this over-commits vs focusInterimPag, that gap is
+     *  the reach bug. */
+    private String focusBasePag = null;
+    /** Every DISTINCT candidate MAG (pre-stamp) the LEG/fork-flip closure enumerated for the
+     *  focus pair. If the true host is absent here, the generator never reached it. */
+    private final List<String> focusEnumerated = new ArrayList<>();
+
+    public String getFocusInterimPag() { return focusInterimPag; }
+    public String getFocusBasePag() { return focusBasePag; }
+    public List<String> getFocusEnumerated() { return focusEnumerated; }
+
+    /** Every legal-MAG seed/flip generated for the focus pair BEFORE the in/out-class filter,
+     *  with its class verdict and bidirected-edge count. Distinguishes "host generated then
+     *  misclassified" (option 1 applies) from "host never generated" (it does not). */
+    private final List<String> focusSeedLog = new ArrayList<>();
+    public List<String> getFocusSeedLog() { return focusSeedLog; }
+
+    private static int bidirectedCount(Graph g) {
+        int n = 0;
+        for (Edge e : g.getEdges()) if (Edges.isBidirectedEdge(e)) n++;
+        return n;
+    }
+
+    private boolean isFocus(Node x, Node y) {
+        if (focusPair == null) return false;
+        String k = x.getName().compareTo(y.getName()) <= 0
+                ? x.getName() + "\u0000" + y.getName()
+                : y.getName() + "\u0000" + x.getName();
+        return k.equals(focusPair);
+    }
+
+    private void bump(String bucket) {
+        focusTally.merge(bucket, 1, Integer::sum);
+    }
+    // -------------------------------------------------------------------------
     /**
      * Final-orientation provenance telemetry. {@code r0SepsetBacked}: R0 triples adjudicated by
      * a separator this search recorded (committed sepsets first, then sweep-discovered ones).
@@ -1292,11 +1356,18 @@ public final class FcitSl implements IGraphSearch {
 
         final long deadline = (timeout < 0L) ? Long.MAX_VALUE : System.currentTimeMillis() + timeout;
 
+        final boolean f = isFocus(x, y);
+
         List<Graph> seeds = seedMags(_pag, x, y, b, deadline, escape);
 
         // Class identity reference for flip classification; same construction seedMags uses.
         Graph basePag = new MagToPag(GraphTransforms.zhangMagFromPag(_pag))
                 .convert(false, excludeSelectionBias);
+
+        if (isFocus(x, y)) {
+            focusInterimPag = _pag.toString();
+            focusBasePag = basePag.toString();
+        }
 
         // Candidates recur across seeds and walks; test each distinct MAG once.
         Set<String> tried = new HashSet<>();
@@ -1324,12 +1395,15 @@ public final class FcitSl implements IGraphSearch {
                     for (Graph mag : candidates) {
                         if (System.currentTimeMillis() > deadline) break;
                         if (!tried.add(magKey(mag))) continue;
+                        if (f) bump("candidatesTried");
+                        if (f) focusEnumerated.add(mag.toString());
 
                         Graph _mag = mag.copy();
 
                         // H' must honour the stored sepsets: stamp the common colliders of x and y.
                         // Refuses any LEG whose stamp would create a NEW unshielded collider.
                         if (!stampLegColliders(_mag, b, x, y)) {
+                            if (f) bump("stampPruned");
                             continue;
                         }
 
@@ -1343,6 +1417,7 @@ public final class FcitSl implements IGraphSearch {
                         // inducing path V3<->V1<->V4<->V2 (V4 in An(V3) via V4-->V3); deleting V4-->V3
                         // yielded the false V3 _||_ V2 | {V1}.
                         if (!_mag.paths().isLegalMag()) {
+                            if (f) bump("illegalMagAfterStamp");
                             otherRejects++;
                             continue;
                         }
@@ -1354,14 +1429,17 @@ public final class FcitSl implements IGraphSearch {
 
                         // Prong (A): H' - f must be a MAG (Lemma 3.6 localizes this to the pair).
                         if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+                            if (f) bump("inducingPathReject");
                             ipRejects++;
                             continue;
                         }
 
                         // Prong (B): no new CIs absent from G*. Spot-checked by the battery.
                         if (!deletedPairBatteryPasses(_mag, _removed)) {
+                            if (f) bump("batteryReject");
                             continue;
                         }
+                        if (f) bump("committed");
 
                         if (verbose) {
                             TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
@@ -1425,6 +1503,43 @@ public final class FcitSl implements IGraphSearch {
      * within-class candidates only. In-class flips, being equivalent representatives, sit fully
      * inside the note's scope.
      */
+    /**
+     * True iff MAGs a and b encode the SAME m-separation model -- the DEFINITION of Markov
+     * equivalence, tested directly instead of via MagToPag-canonical-PAG equality. MagToPag
+     * equality fails when MagToPag over-commits a class-variant mark (e.g. rendering a variant
+     * V6&lt;-&gt;V3 as an invariant V3--&gt;V6), splitting one class in two and rejecting genuine
+     * representatives. This test cannot: it compares the entailed independencies themselves.
+     * O(pairs * 2^{n-2}) m-sep queries -- sound at any scope, affordable at the enumerated scope.
+     * Compares by node NAME, robust to identity differences across copies.
+     */
+    private static boolean sameMsepModel(Graph a, Graph b) throws InterruptedException {
+        MsepTest ta = new MsepTest(a);
+        MsepTest tb = new MsepTest(b);
+        List<Node> nodes = a.getNodes();
+        int n = nodes.size();
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                Node ai = nodes.get(i), aj = nodes.get(j);
+                Node bi = b.getNode(ai.getName()), bj = b.getNode(aj.getName());
+                List<Node> rest = new ArrayList<>(nodes);
+                rest.remove(ai);
+                rest.remove(aj);
+                SublistGenerator gen = new SublistGenerator(rest.size(), rest.size());
+                int[] c;
+                while ((c = gen.next()) != null) {
+                    Set<Node> zA = GraphUtils.asSet(c, rest);
+                    Set<Node> zB = new HashSet<>();
+                    for (Node z : zA) zB.add(b.getNode(z.getName()));
+                    if (ta.checkIndependence(ai, aj, zA).isIndependent()
+                            != tb.checkIndependence(bi, bj, zB).isIndependent()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     private List<Graph> seedMags(Graph pag, Node x, Node y, Set<Node> S, long deadline, boolean escape)
             throws InterruptedException {
         Graph base = GraphTransforms.zhangMagFromPag(pag);
@@ -1460,6 +1575,10 @@ public final class FcitSl implements IGraphSearch {
         // by class membership against the base's PAG.
         Graph basePag = new MagToPag(base).convert(false, this.excludeSelectionBias);
 
+        if (isFocus(x, y)) {
+            focusSeedLog.add("BASE (Zhang seed) inClass=true bi=" + bidirectedCount(base) + "\n" + base);
+        }
+
         List<Node> forks = new ArrayList<>(forkNbrs.keySet());
         int cap = Math.min(forks.size(), maxForkFlips);
         SublistGenerator gen = new SublistGenerator(forks.size(), cap);
@@ -1475,7 +1594,13 @@ public final class FcitSl implements IGraphSearch {
             if (inClass.containsKey(key) || outOfClass.containsKey(key)) continue;
 
             Graph seedPag = new MagToPag(seed).convert(false, this.excludeSelectionBias);
-            if (seedPag.equals(basePag)) {
+            boolean seedInClass = seedPag.equals(basePag);
+            boolean seedMsepIn = sameMsepModel(seed, base);
+            if (isFocus(x, y)) {
+                focusSeedLog.add("SEED magToPagInClass=" + seedInClass + " msepInClass=" + seedMsepIn
+                        + " bi=" + bidirectedCount(seed) + "\n" + seed);
+            }
+            if (seedInClass) {
                 inClass.put(key, seed);
             } else {
                 outOfClass.put(key, seed);
@@ -1506,6 +1631,9 @@ public final class FcitSl implements IGraphSearch {
     private List<Graph> forkFlips(Graph mag, Graph basePag, Node x, Node y, Set<Node> S,
                                   long deadline, boolean escape) throws InterruptedException {
         List<Graph> out = new ArrayList<>();
+
+        // Reference MAG for m-sep membership; the canonical round trip recovers seedMags's base.
+        Graph base = GraphTransforms.zhangMagFromPag(basePag);
 
         Graph probe = new EdgeListGraph(mag);
         probe.removeEdge(x, y);
@@ -1545,6 +1673,11 @@ public final class FcitSl implements IGraphSearch {
 //            System.out.println("mag flipped: " + flip);
 
             boolean inClass = new MagToPag(flip).convert(false, this.excludeSelectionBias).equals(basePag);
+            boolean msepIn = sameMsepModel(flip, base);
+            if (isFocus(x, y)) {
+                focusSeedLog.add("FLIP magToPagInClass=" + inClass + " msepInClass=" + msepIn
+                        + " bi=" + bidirectedCount(flip) + "\n" + flip);
+            }
             if (escape != inClass) out.add(flip);             // escape wants out-of-class, else in-class
 
 //            System.out.println("mag in/out class: " + inClass);
@@ -2715,7 +2848,13 @@ public final class FcitSl implements IGraphSearch {
             for (int i = 0; i < k; i++) z.add(others.get(idx[i]));
             if (entails.checkIndependence(x, y, z).isIndependent()) {
                 batteryStatementsTested++;
-                return this.test.checkIndependence(x, y, z).isIndependent();
+                boolean ok = this.test.checkIndependence(x, y, z).isIndependent();
+                if (!ok && isFocus(x, y)) {
+                    Set<String> names = new TreeSet<>();
+                    for (Node n : z) names.add(n.getName());
+                    focusBatteryZ.add(names);
+                }
+                return ok;
             }
             return true;
         }

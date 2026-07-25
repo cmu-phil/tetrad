@@ -174,7 +174,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
-        search.setAllowClassEscape(false);
+        search.setAllowClassEscape(parameters.getBoolean(Params.FCITSL_ALLOW_CLASS_ESCAPE));
 
         search.setUseClosureCoverSearch(false);
 
@@ -254,6 +254,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.TEST_TIMEOUT);
         params.add(Params.LV_HEURISTIC_ONLY);
+        params.add(Params.FCITSL_ALLOW_CLASS_ESCAPE);
 
         // General
         params.add(Params.TIME_LAG);

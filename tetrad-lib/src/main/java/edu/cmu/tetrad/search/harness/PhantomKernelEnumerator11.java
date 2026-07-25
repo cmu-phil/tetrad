@@ -35,11 +35,9 @@
 //     simpler scope statement.                                                //
 //                                                                             //
 // COUNTS CHANGE UNIT (as in PKE10).  Every count here is per DISTINCT TRUE    //
-// PAG, not per model, so totals are NOT commensurable with PKE8's per-class   //
-// counts unless the populations coincide (dagsweep at PKE8's N/|L| with       //
-// MERGE_ISOMORPHS on should reproduce PKE8's class count).  Zero-counts are   //
-// unaffected: a violation present under one labelling is present under all,  //
-// so a zero here is a zero there.                                             //
+// PAG LABELLING, not per model, so totals are NOT commensurable with PKE8's   //
+// per-class counts.  Zero-counts are unaffected: a violation present under    //
+// one labelling is present under all, so a zero here is a zero there.         //
 //                                                                             //
 // ORACLE DRIVE (one uniformity change from PKE8): the true MAG for the        //
 // oracle is obtained as zhangMagFromPag(G*) in BOTH modes, rather than        //
@@ -68,22 +66,32 @@
 //   ERROR              : FcitSl threw or timed out.                           //
 // Only EXACT is a pass; every other bucket is a VIOLATION, logged in full.    //
 //                                                                             //
-// Canonicalization is PKE10's two-stage scheme.  Stage 1 keys on the          //
-// positional edge string after relabelling observed nodes to V1..VOBS in      //
-// name order.  Stage 2 (MERGE_ISOMORPHS) canonicalizes survivors under all    //
-// OBS! permutations and merges isomorphs.  FcitSl's verdict is relabelling-   //
-// invariant (the oracle, the start, and the comparison all commute with a     //
-// renaming), so stage 2 is sound; disable it for per-labelling counts.        //
+// DEDUP KEY: models are deduplicated on their CANONICAL key -- the least edge   //
+// string over all OBS! relabellings -- so FcitSl runs once per isomorphism      //
+// class (PAG up to relabelling), not once per labelling.  This is the lever     //
+// that cuts the FcitSl call count (up to OBS!-fold in the limit, less in        //
+// practice), which matters because per-model analysis is the cost that grows.   //
+// The positional key (identity order) survives only as the LOG id, naming the   //
+// specific representative that was analyzed.  FcitSl's verdict is relabelling-   //
+// invariant (oracle, start, comparison all commute with a renaming), so         //
+// collapsing isomorphs to one run misses nothing: a zero over classes is a zero //
+// over labellings.                                                             //
 //                                                                             //
-// CHECKPOINTING: the analysis phase (one FcitSl run per distinct PAG) is cheap //
-// and uncheckpointed, as PKE8's per-class work was.  The magspace ENUMERATION  //
-// phase is not: at OBS=6 it is 4^15 = 2^30 candidates, 1024x the OBS=5 sweep,  //
-// which does not finish in one sitting.  It is therefore block-checkpointed    //
-// (see MAGSPACE_BLOCK_SIZE below and args [5]/[6]) so a run can be killed and  //
-// resumed.  dagsweep's enumeration (2^p masks, 2^21 at N=7) is left            //
-// uncheckpointed, as in PKE10.  The distinct list is sorted by positional key  //
-// before analysis so PAG#i ids are stable across runs.  The violation log is   //
-// streamed and capped as in PKE8; filling it stops the analysis early.        //
+// INLINE STREAMING ANALYSIS: rather than enumerate all distinct PAGs and then //
+// analyze, PKE11 runs FcitSl on each distinct PAG the instant it is first      //
+// discovered, and writes+flushes any violation to the log immediately.  So a   //
+// long magspace run surfaces a counterexample the moment it hits one -- tail   //
+// the violation log to watch live -- instead of only at the end.               //
+//                                                                             //
+// CHECKPOINTING: the magspace ENUMERATION is block-checkpointed (see           //
+// MAGSPACE_BLOCK_SIZE and args [5]/[6]) so a run can be killed and resumed.     //
+// Because analysis is inline, a resumed run does NOT re-analyze models from     //
+// already-completed blocks (their verdicts are already in the log), so the      //
+// violation log is opened in APPEND mode and earlier runs' entries are kept.    //
+// dagsweep's enumeration (2^p masks, 2^21 at N=7) is left uncheckpointed, as    //
+// in PKE10.  The violation log is streamed and capped; filling it stops the     //
+// run early.  Model ids in the log are the PAG's positional key (stable, and    //
+// it identifies the model), rather than a PAG#i index into a sorted list.       //
 //                                                                             //
 // args: [0]=mode (dagsweep|magspace, default magspace)                        //
 //       [1]=N (dagsweep only, default 7)  [2]=numLatent (dagsweep, default 2) //
@@ -91,10 +99,16 @@
 //       [4]=violation log path (default pke11_violations.log)                 //
 //       [5]=magspace checkpoint path (default pke11_magspace_obs<OBS>_        //
 //           checkpoint.txt) -- delete to restart enumeration from scratch     //
-//       [6]=magspace distinct-PAG keys path (default pke11_magspace_obs<OBS>_ //
-//           keys.txt) -- holds every distinct PAG found so far; do not delete //
-//           this without also deleting [5], or resume will silently re-derive //
-//           only the blocks it reruns and miss the ones it skips              //
+//       [6]=magspace distinct-class keys path (default pke11_magspace_obs<OBS>_//
+//           keys.txt) -- holds the CANONICAL key of every class found so far;   //
+//           do not delete without also deleting [5], or resume will re-analyze  //
+//           only the blocks it reruns and miss the classes it skips             //
+//                                                                             //
+// Blocks are visited in a fixed-seed shuffled order (SHUFFLE_BLOCKS), so a      //
+// prefix -- or a live tail of the log -- samples across mask space rather than  //
+// a low-index corner.  Shuffling does not affect resume (the checkpoint stores  //
+// real block ids).  Changing MAGSPACE_BLOCK_SIZE changes the enum config header //
+// and so invalidates an old checkpoint/keys pair, forcing a clean restart.      //
 //                                                                             //
 // @author josephramsey (harness scaffolding by Claude)                        //
 /// ////////////////////////////////////////////////////////////////////////////
@@ -120,6 +134,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.LongStream;
 
 /**
@@ -142,12 +157,7 @@ public final class PhantomKernelEnumerator11 {
     private static String MODE       = "magspace";
     private static int    N          = 7;    // dagsweep only
     private static int    NUM_LATENT = 2;    // dagsweep only
-    private static int    OBS        = 5;
-
-    /** Stage 2: merge isomorphic PAGs under all OBS! relabellings.  FcitSl's verdict is
-     *  relabelling-invariant, so merging is sound; disable for per-labelling counts.
-     *  With dagsweep at PKE8's N/|L| and this ON, distinct count should anchor at 2,691. */
-    private static final boolean MERGE_ISOMORPHS = false;
+    private static int    OBS        = 6;
 
     // ── FcitSl configuration (verbatim PKE8; match the shipping defaults to certify) ──
     /** Step-Lemma-pure mode: no out-of-class escape.  Set false to certify the
@@ -181,15 +191,24 @@ public final class PhantomKernelEnumerator11 {
     // Two files, both gated on a config header so a parameter change is caught
     // rather than silently corrupting a resume:
     //   checkpoint file : completed block ids, one per line, for resume.
-    //   keys file       : every distinct PAG found so far, as its positional key,
-    //                      one per line, appended as discovered. A positional key
-    //                      is fully invertible (decodeGraph), so this file alone
-    //                      reconstructs the Graph objects for blocks that get
-    //                      SKIPPED on resume -- without it, resuming would only
-    //                      recover which blocks are "done", not what they found.
-    /** Candidates per checkpoint block. 2^20 -> 1024 blocks at OBS=6 (2^30 total),
-     *  1 block at OBS=5 (2^20 total), 4096 blocks at OBS=7 (2^42 total). */
-    private static final long MAGSPACE_BLOCK_SIZE = 1L << 20;
+    //   keys file       : the CANONICAL key of every distinct-up-to-relabelling PAG
+    //                      found so far, one per line, appended as discovered. Used
+    //                      purely as a dedup set on resume so already-analyzed classes
+    //                      are recognized and skipped (their verdicts are already in
+    //                      the violation log); it is not reconstructed into Graphs.
+    /** Candidates per checkpoint block. 2^16 = 65536 -> 16 blocks at OBS=5 (2^20
+     *  total), 16384 blocks at OBS=6 (2^30 total), 2^26 blocks at OBS=7. Small enough
+     *  that a shuffled prefix is a representative sample and checkpoints are frequent;
+     *  big enough that per-block overhead stays negligible. */
+    private static final long MAGSPACE_BLOCK_SIZE = 1L << 16;
+
+    /** Visit blocks in a fixed-seed shuffled order rather than 0..numBlocks-1, so that
+     *  stopping early (or watching the log) samples across mask space instead of a
+     *  low-index corner. The checkpoint stores actual block ids, so shuffling does not
+     *  affect resume and needs no config-header change. */
+    private static final boolean SHUFFLE_BLOCKS = true;
+    /** Seed for the block visitation order. Fixed so a run is reproducible. */
+    private static final long BLOCK_ORDER_SEED = 20260725L;
 
     // ────────────────────────────────────────────────────────────────────────
     // SHARED STATE
@@ -235,29 +254,27 @@ public final class PhantomKernelEnumerator11 {
         for (int i = 0; i < OBS; i++) CANON.add(new GraphNode("V" + (i + 1)));
 
         CONFIG_LINE = String.format(
-                "# PKE11 config: mode=%s N=%d latent=%d observed=%d mergeIsomorphs=%b "
+                "# PKE11 config: mode=%s N=%d latent=%d observed=%d "
                         + "escape=%b zMax=%d forkFlips=%d timeoutMs=%d depth=%d recDepth=%d "
                         + "exclSel=%b",
-                dagSweep ? "dagsweep" : "magspace", N, NUM_LATENT, OBS, MERGE_ISOMORPHS,
+                dagSweep ? "dagsweep" : "magspace", N, NUM_LATENT, OBS,
                 ALLOW_CLASS_ESCAPE, BATTERY_Z_MAX, MAX_FORK_FLIPS, FCIT_TIMEOUT_MS,
                 DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS);
 
         System.err.println(CONFIG_LINE);
         System.err.printf("threads~%d%n", Runtime.getRuntime().availableProcessors());
 
-        // ── Enumeration phase ──
-        long tEnum = System.currentTimeMillis();
-        List<Graph> distinct = dagSweep ? enumerateByDagSweep()
-                : enumerateByMagSpace(checkpointPath, keysPath);
-        // Stable PAG#i ids across runs: sort by the positional key.
-        distinct.sort(Comparator.comparing(PhantomKernelEnumerator11::positionalKey));
-        System.err.printf("enumeration: %d distinct true PAGs in %.1f s%n",
-                distinct.size(), (System.currentTimeMillis() - tEnum) / 1000.0);
-
-        // ── Analysis phase ──
+        // ── Violation log (opened BEFORE enumeration, since analysis is now inline) ──
+        // Append mode: on a resumed run, blocks already completed are skipped and their
+        // models are NOT re-analyzed, so violations from earlier runs must survive in the
+        // log rather than being truncated away.  The header is written only when the file
+        // is new.
         String header = CONFIG_LINE + "\n# run started " + new Date()
                 + "\n# VIOLATIONS: every distinct true PAG whose terminal FcitSl PAG (GRaSP start,"
-                + "\n# oracle-driven) is NOT exactly G*.  Bucket legend:"
+                + "\n# oracle-driven) is NOT exactly G*.  Analysis is INLINE: each new distinct"
+                + "\n# PAG is run through FcitSl the moment it is found, and any violation below"
+                + "\n# is written and flushed immediately -- tail this file to watch live.  Bucket"
+                + "\n# legend:"
                 + "\n#   EQUIVALENT_NOT_EXACT       -- Markov-equivalent to G* but not edge-identical"
                 + "\n#   SKELETON_MATCH_ORIENT_DIFF -- same skeleton, non-equivalent orientation error"
                 + "\n#   SKELETON_DIFF              -- adjacencies differ (extra = undeletable spurious,"
@@ -265,13 +282,18 @@ public final class PhantomKernelEnumerator11 {
                 + "\n#   ERROR                      -- FcitSl threw or timed out";
         violationLog = new StreamLog(violationLogPath, VIOLATION_LOG_MAX, header);
 
+        // ── Enumeration + inline analysis (single phase) ──
+        // FcitSl runs on each distinct PAG as it is discovered; `total` accumulates the
+        // verdicts across the parallel enumeration streams.
+        Result total = new Result();
         ANALYSIS_T0 = System.currentTimeMillis();
-        Result total = LongStream.range(0, distinct.size())
-                .parallel()
-                .collect(Result::new,
-                        (r, i) -> analyze(r, distinct.get((int) i), "PAG#" + i),
-                        Result::merge);
-        total.distinctPags = distinct.size();
+        long tEnum = System.currentTimeMillis();
+        long distinctCount = dagSweep
+                ? enumerateAndAnalyzeDagSweep(total)
+                : enumerateAndAnalyzeMagSpace(total, checkpointPath, keysPath);
+        total.distinctPags = distinctCount;
+        System.err.printf("enumeration+analysis: %d distinct true PAGs analyzed in %.1f s%n",
+                distinctCount, (System.currentTimeMillis() - tEnum) / 1000.0);
 
         String summary = summarize(total, System.currentTimeMillis() - ANALYSIS_T0,
                 violationLogPath);
@@ -281,15 +303,18 @@ public final class PhantomKernelEnumerator11 {
     }
 
     // ────────────────────────────────────────────────────────────────────────
-    // ENUMERATION PHASE: distinct true PAGs (verbatim PKE10 machinery)
+    // ENUMERATION + INLINE ANALYSIS: FcitSl runs on each distinct PAG as found
     // ────────────────────────────────────────────────────────────────────────
 
     /**
      * Mode dagsweep: every DAG on N vertices in a fixed order x every placement of
      * NUM_LATENT latents, deduplicated by true PAG.  Reproduces a DAG-sweep
-     * population exactly; the dagToPag calls dominate the run.
+     * population exactly; the dagToPag calls dominate the run.  Each PAG the first
+     * time it is seen is immediately run through FcitSl (inline analysis).
+     *
+     * @return number of distinct true PAGs discovered (= analyzed).
      */
-    private static List<Graph> enumerateByDagSweep() {
+    private static long enumerateAndAnalyzeDagSweep(Result total) {
         int p = N * (N - 1) / 2;
         int[][] pair = new int[p][2];
         for (int idx = 0, i = 0; i < N; i++) {
@@ -299,10 +324,11 @@ public final class PhantomKernelEnumerator11 {
         System.err.printf("  dagsweep: 2^%d = %d masks x C(%d,%d) latent placements%n",
                 p, totalMasks, N, NUM_LATENT);
 
-        Map<String, Graph> seen = new ConcurrentHashMap<>();
+        Map<String, Boolean> seen = new ConcurrentHashMap<>();
         AtomicLong done = new AtomicLong();
 
         LongStream.range(0, totalMasks).parallel().forEach(mask -> {
+            if (STOP.get()) return;
             SublistGenerator latGen = new SublistGenerator(N, NUM_LATENT);
             int[] latChoice;
             while ((latChoice = latGen.next()) != null) {
@@ -322,7 +348,11 @@ public final class PhantomKernelEnumerator11 {
                             EXCLUDE_SELECTION_BIAS, RECURSIVE_DEPTH);
                     Graph relabelled = relabelToCanon(pag);
                     Graph canon = canonicalEdgeOrder(relabelled);
-                    seen.putIfAbsent(positionalKey(canon), canon);
+                    // Dedup on the canonical (isomorph-invariant) key: one FcitSl run per
+                    // class up to relabelling, matching magspace.
+                    if (seen.putIfAbsent(canonicalKey(canon), Boolean.TRUE) == null) {
+                        analyzeInline(total, canon);   // new class -> run FcitSl now
+                    }
                 } catch (Exception ignore) {
                     // A model that will not project is not a true PAG; skip it.
                 }
@@ -333,7 +363,7 @@ public final class PhantomKernelEnumerator11 {
             }
         });
 
-        return mergeIsomorphs(new ArrayList<>(seen.values()));
+        return seen.size();
     }
 
     /**
@@ -345,38 +375,60 @@ public final class PhantomKernelEnumerator11 {
      * Checkpointed in blocks of {@link #MAGSPACE_BLOCK_SIZE} candidates so a run can
      * be killed and resumed: {@code checkpointPath} records completed block ids,
      * {@code keysPath} records every distinct PAG found so far as an invertible
-     * positional key. On resume, keysPath is decoded back into Graph objects BEFORE
-     * any block runs, so skipped (already-done) blocks still contribute to the
-     * returned list -- the checkpoint alone would only tell you a block is done, not
-     * what it found.
+     * positional key. On resume, keysPath is loaded into {@code seen} BEFORE any block
+     * runs, so already-analyzed models are recognized and skipped rather than
+     * re-analyzed.
+     * <p>
+     * Analysis is INLINE: the moment a candidate is confirmed a genuinely-new distinct
+     * PAG (won the {@code seen.putIfAbsent} race), FcitSl runs on it and any violation
+     * is flushed to the log immediately. Ordering within a block is: analyze -> persist
+     * key -> (after the block) flush keys -> checkpoint block. A hard crash mid-block
+     * reruns the whole block on resume; models whose keys were already flushed are in
+     * {@code seen} and skipped, so at worst a crash between analyzing a model and
+     * flushing its key causes that one model to be re-analyzed (a duplicate log entry,
+     * never a miss).
+     *
+     * @return number of distinct true PAGs discovered (= analyzed) across all runs.
      */
-    private static List<Graph> enumerateByMagSpace(String checkpointPath, String keysPath)
-            throws IOException {
+    private static long enumerateAndAnalyzeMagSpace(Result total, String checkpointPath,
+                                                    String keysPath) throws IOException {
         int m = OBS * (OBS - 1) / 2;
         int[][] pr = new int[m][2];
         for (int idx = 0, i = 0; i < OBS; i++) {
             for (int j = i + 1; j < OBS; j++, idx++) { pr[idx][0] = i; pr[idx][1] = j; }
         }
-        long total = 1L << (2 * m);   // 4^m
-        long numBlocks = (total + MAGSPACE_BLOCK_SIZE - 1) / MAGSPACE_BLOCK_SIZE;
+        long total4 = 1L << (2 * m);   // 4^m
+        long numBlocks = (total4 + MAGSPACE_BLOCK_SIZE - 1) / MAGSPACE_BLOCK_SIZE;
         String enumConfig = String.format(
                 "# PKE11 magspace-enum config: OBS=%d blockSize=%d", OBS, MAGSPACE_BLOCK_SIZE);
 
         Set<Long> doneBlocks = loadCheckpoint(checkpointPath, enumConfig);
-        Map<String, Graph> seen = new ConcurrentHashMap<>();
+        // Dedup set keyed by CANONICAL (isomorph-invariant) key: FcitSl runs once per
+        // class up to relabelling, not once per labelling. Value unused; Boolean.TRUE
+        // keeps it a simple set-map.
+        Map<String, Boolean> seen = new ConcurrentHashMap<>();
         loadPersistedKeys(keysPath, enumConfig, seen);
         KeyAppender keyOut = new KeyAppender(keysPath, enumConfig);
 
         System.err.printf("  magspace: 4^%d = %d candidate graphs on %d observed vertices | "
-                        + "%d blocks of %d, %d already complete | %d distinct loaded from disk%n",
-                m, total, OBS, numBlocks, MAGSPACE_BLOCK_SIZE, doneBlocks.size(), seen.size());
+                        + "%d blocks of %d, %d already complete | %d distinct classes loaded from disk%n",
+                m, total4, OBS, numBlocks, MAGSPACE_BLOCK_SIZE, doneBlocks.size(), seen.size());
 
-        for (long b = 0; b < numBlocks; b++) {
+        long[] order = blockOrder(numBlocks);
+
+        for (long oi = 0; oi < numBlocks; oi++) {
+            if (STOP.get()) break;
+            long b = order[(int) oi];
             if (doneBlocks.contains(b)) continue;
             long lo = b * MAGSPACE_BLOCK_SIZE;
-            long hi = Math.min(total, lo + MAGSPACE_BLOCK_SIZE);
+            long hi = Math.min(total4, lo + MAGSPACE_BLOCK_SIZE);
 
-            Map<String, Graph> blockNew = new ConcurrentHashMap<>();
+            // Keys genuinely new in this block, to be persisted after analysis. Analysis
+            // happens inline (below) the instant a key wins the putIfAbsent race, so
+            // violations surface mid-block; key persistence is deferred to block end so it
+            // pairs atomically with the checkpoint.
+            Set<String> blockNewKeys = ConcurrentHashMap.newKeySet();
+
             LongStream.range(lo, hi).parallel().forEach(code -> {
                 try {
                     Graph mag = new EdgeListGraph(CANON);
@@ -393,46 +445,39 @@ public final class PhantomKernelEnumerator11 {
                     if (!isLegalMag(mag)) return;
                     Graph pag = pagOfMag(mag);
                     Graph canon = canonicalEdgeOrder(pag);
-                    String key = positionalKey(canon);
-                    if (!seen.containsKey(key)) {
-                        blockNew.putIfAbsent(key, canon);
+                    // Dedup on the CANONICAL key (least edge string over all OBS!
+                    // relabellings), so isomorphic PAGs collapse to one FcitSl run.
+                    String key = canonicalKey(canon);
+                    if (seen.putIfAbsent(key, Boolean.TRUE) == null) {
+                        analyzeInline(total, canon);   // new class -> run FcitSl now
+                        blockNewKeys.add(key);
                     }
                 } catch (Exception ignore) {
                     // Not a legal MAG / will not project; skip.
                 }
             });
 
-            // Merge into the global map and persist newly-added keys ONLY (dedup against
-            // `seen`, which already reflects everything on disk plus every prior block
-            // this run). Flush + checkpoint the block together so a crash between the two
-            // just makes the next resume recompute this block -- idempotent, since
-            // `seen.containsKey` above skips anything already found.
-            int newCount = 0;
-            for (Map.Entry<String, Graph> e : blockNew.entrySet()) {
-                if (seen.putIfAbsent(e.getKey(), e.getValue()) == null) {
-                    keyOut.write(e.getKey());
-                    newCount++;
-                }
-            }
+            // Persist this block's new keys, flush, then checkpoint the block. The
+            // flush-before-checkpoint order means a block is marked done only after its
+            // keys are on disk, so a resume never skips a block whose keys it hasn't got.
+            for (String key : blockNewKeys) keyOut.write(key);
             keyOut.flush();
             appendCheckpoint(checkpointPath, b);
 
-            System.err.printf("  block %d/%d done | +%d new this block | %d distinct so far%n",
-                    b + 1, numBlocks, newCount, seen.size());
+            System.err.printf("  block %d (%d/%d visited) | +%d new this block | %d classes so far | "
+                            + "EXACT=%d viol=%d | %.1f min%n",
+                    b, oi + 1, numBlocks, blockNewKeys.size(), seen.size(),
+                    total.exact.sum(), violationCount(total),
+                    (System.currentTimeMillis() - ANALYSIS_T0) / 60000.0);
         }
         keyOut.close();
 
-        return mergeIsomorphs(new ArrayList<>(seen.values()));
+        return seen.size();
     }
 
-    /** Stage 2: merge isomorphs by minimizing the edge string over all OBS! permutations. */
-    private static List<Graph> mergeIsomorphs(List<Graph> stage1) {
-        if (!MERGE_ISOMORPHS) return stage1;
-        System.err.printf("  stage 1: %d distinct labellings; merging isomorphs…%n", stage1.size());
-        Map<String, Graph> byCanon = new LinkedHashMap<>();
-        for (Graph g : stage1) byCanon.putIfAbsent(canonicalKey(g), g);
-        System.err.printf("  stage 2: %d distinct up to relabelling%n", byCanon.size());
-        return new ArrayList<>(byCanon.values());
+    private static long violationCount(Result t) {
+        return t.equivNotExact.sum() + t.skeletonMatchOrientDiff.sum()
+                + t.skeletonDiff.sum() + t.error.sum();
     }
 
     /** Relabel a PAG's observed nodes to V1..VOBS in name order. */
@@ -471,12 +516,16 @@ public final class PhantomKernelEnumerator11 {
         return out;
     }
 
-    /** Edge string under the identity order: cheap, labelling-sensitive. */
+    /** Edge string under the identity order: cheap, labelling-sensitive. Used as the
+     *  log id of a model (names the specific representative that was analyzed). */
     private static String positionalKey(Graph g) {
         return encode(g, CANON);
     }
 
-    /** Lexicographically least edge string over all permutations of the vertices. */
+    /** Lexicographically least edge string over all OBS! permutations of the vertices:
+     *  an isomorph-invariant key, so two PAGs equal up to relabelling share it. This is
+     *  the dedup key, so FcitSl runs once per class up to relabelling. Cost is one OBS!
+     *  minimization per surviving candidate -- cheaper than the FcitSl run it saves. */
     private static String canonicalKey(Graph g) {
         List<Node> order = new ArrayList<>(CANON);
         String[] best = {null};
@@ -528,39 +577,8 @@ public final class PhantomKernelEnumerator11 {
     }
 
     // ────────────────────────────────────────────────────────────────────────
-    // MAGSPACE ENUMERATION CHECKPOINTING (block ids + invertible distinct-PAG keys)
+    // MAGSPACE ENUMERATION CHECKPOINTING (block ids + distinct-PAG dedup keys)
     // ────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Invert {@link #encode}: a positional key determines its graph completely (fixed
-     * pair order over CANON, one '.' per absent pair, two endpoint-mark chars per present
-     * pair), so this exactly reconstructs the Graph a key was produced from. This is what
-     * lets a resumed run recover the contribution of a block it chooses to SKIP.
-     */
-    private static Graph decodeGraph(String key) {
-        Graph g = new EdgeListGraph(CANON);
-        int pos = 0;
-        for (int i = 0; i < OBS; i++) {
-            for (int j = i + 1; j < OBS; j++) {
-                char c1 = key.charAt(pos);
-                if (c1 == '.') { pos += 1; continue; }
-                char c2 = key.charAt(pos + 1);
-                pos += 2;
-                Node a = CANON.get(i), b = CANON.get(j);
-                g.addEdge(new Edge(a, b, decodeMark(c1), decodeMark(c2)));
-            }
-        }
-        return g;
-    }
-
-    private static Endpoint decodeMark(char c) {
-        switch (c) {
-            case 'a': return Endpoint.ARROW;
-            case 't': return Endpoint.TAIL;
-            case 'c': return Endpoint.CIRCLE;
-            default: throw new IllegalArgumentException("bad endpoint mark in key: " + c);
-        }
-    }
 
     /** Append-only, flush-on-demand writer for the distinct-PAG keys file. First line is
      *  the config header (written fresh, or verified to match on an existing file). */
@@ -600,10 +618,13 @@ public final class PhantomKernelEnumerator11 {
         }
     }
 
-    /** Load every previously-discovered distinct PAG from the keys file into `into`,
-     *  decoding each key back into a Graph. No-op if the file doesn't exist yet. */
+    /** Load the canonical key of every previously-analyzed class into `into` (as a dedup
+     *  set; values are Boolean.TRUE). Classes on disk were already analyzed in the run that
+     *  discovered them -- their verdicts are already in the violation log -- so on resume
+     *  they only need to be recognized and skipped, not re-run. No-op if the file doesn't
+     *  exist yet. */
     private static void loadPersistedKeys(String path, String expectedConfig,
-                                          Map<String, Graph> into) throws IOException {
+                                          Map<String, Boolean> into) throws IOException {
         if (!Files.exists(Paths.get(path))) return;
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String first = br.readLine();
@@ -617,7 +638,7 @@ public final class PhantomKernelEnumerator11 {
             while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
-                into.put(line, decodeGraph(line));
+                into.put(line, Boolean.TRUE);
             }
         }
     }
@@ -657,13 +678,41 @@ public final class PhantomKernelEnumerator11 {
         }
     }
 
+    /** Block visitation order. Sequential order is systematically biased: block b fixes the
+     *  high bits of the candidate code, so a low-index prefix leaves the high-index pairs
+     *  unset and samples only a corner of mask space. A fixed-seed Fisher-Yates shuffle makes
+     *  any prefix a representative sample instead. The checkpoint stores actual block ids, so
+     *  order does not affect resume and the config header need not change. */
+    private static long[] blockOrder(long numBlocks) {
+        if (numBlocks > Integer.MAX_VALUE) {
+            throw new IllegalStateException("numBlocks " + numBlocks + " exceeds array addressing; "
+                    + "raise MAGSPACE_BLOCK_SIZE or switch to an index-mapping shuffle.");
+        }
+        long[] order = new long[(int) numBlocks];
+        for (int i = 0; i < order.length; i++) order[i] = i;
+        if (!SHUFFLE_BLOCKS) return order;
+        Random rnd = new Random(BLOCK_ORDER_SEED);
+        for (int i = order.length - 1; i > 0; i--) {
+            int j = rnd.nextInt(i + 1);
+            long t = order[i];
+            order[i] = order[j];
+            order[j] = t;
+        }
+        return order;
+    }
+
     // ────────────────────────────────────────────────────────────────────────
-    // ANALYSIS PHASE: PKE8's end-to-end FcitSl check, once per distinct true PAG
+    // INLINE ANALYSIS: PKE8's end-to-end FcitSl check, run the instant a PAG is found
     // ────────────────────────────────────────────────────────────────────────
 
-    private static void analyze(Result r, Graph truePag, String modelId) {
+    /** Run FcitSl on one just-discovered distinct true PAG and record the verdict.
+     *  Called from inside the enumeration streams, so it must be thread-safe: the Result
+     *  counters are LongAdders and the violation log is synchronized. The model id is the
+     *  PAG's positional key -- stable, and it identifies the model in the log. */
+    private static void analyzeInline(Result r, Graph truePag) {
         if (STOP.get()) return;
-        r.pagsScanned++;
+        String modelId = positionalKey(truePag);
+        r.pagsScanned.increment();
         try {
             // The oracle is m-separation in a MAG of G*'s equivalence class.  Any MAG
             // in the class induces the same observed m-separation model, so deriving
@@ -673,7 +722,7 @@ public final class PhantomKernelEnumerator11 {
             Graph trueMag = GraphTransforms.zhangMagFromPag(truePag);
             runFcit(r, modelId, trueMag, truePag, CANON);
         } catch (Exception ex) {
-            r.skipped++;
+            r.skipped.increment();
             if (ERR_PRINTS.incrementAndGet() <= 5) {
                 System.err.println(modelId + " skipped: " + ex);
                 ex.printStackTrace();
@@ -683,8 +732,9 @@ public final class PhantomKernelEnumerator11 {
             if (d % PROGRESS_EVERY == 0) {
                 System.err.printf("  analyzed %d PAGs | EXACT=%d EQUIV=%d ORIENT=%d SKEL=%d ERR=%d "
                                 + "| %.1f min%n",
-                        d, r.exact, r.equivNotExact, r.skeletonMatchOrientDiff, r.skeletonDiff,
-                        r.error, (System.currentTimeMillis() - ANALYSIS_T0) / 60000.0);
+                        d, r.exact.sum(), r.equivNotExact.sum(), r.skeletonMatchOrientDiff.sum(),
+                        r.skeletonDiff.sum(), r.error.sum(),
+                        (System.currentTimeMillis() - ANALYSIS_T0) / 60000.0);
             }
         }
     }
@@ -715,7 +765,7 @@ public final class PhantomKernelEnumerator11 {
             fcit.setVerbose(false);
             terminal = fcit.search();
         } catch (Throwable ex) {
-            r.error++;
+            r.error.increment();
             violationLog.write(violationEntry("ERROR", modelId, trueMag, truePag, null,
                     "FcitSl threw: " + ex));
             if (ERR_PRINTS.incrementAndGet() <= 10) {
@@ -730,7 +780,7 @@ public final class PhantomKernelEnumerator11 {
 
         // Primary verdict: exact edge+endpoint identity with G*.
         if (graphsIdentical(term, truePag)) {
-            r.exact++;
+            r.exact.increment();
             return;
         }
 
@@ -738,16 +788,16 @@ public final class PhantomKernelEnumerator11 {
         boolean sameSkeleton = sameSkeleton(term, truePag);
         String bucket;
         if (!sameSkeleton) {
-            r.skeletonDiff++;
+            r.skeletonDiff.increment();
             int[] xd = skeletonDelta(term, truePag);
-            r.skeletonExtra += (xd[0] > 0 ? 1 : 0);
-            r.skeletonMissing += (xd[1] > 0 ? 1 : 0);
+            if (xd[0] > 0) r.skeletonExtra.increment();
+            if (xd[1] > 0) r.skeletonMissing.increment();
             bucket = "SKELETON_DIFF";
         } else if (markovEquivalent(term, truePag, obs)) {
-            r.equivNotExact++;
+            r.equivNotExact.increment();
             bucket = "EQUIVALENT_NOT_EXACT";
         } else {
-            r.skeletonMatchOrientDiff++;
+            r.skeletonMatchOrientDiff.increment();
             bucket = "SKELETON_MATCH_ORIENT_DIFF";
         }
 
@@ -900,46 +950,51 @@ public final class PhantomKernelEnumerator11 {
     // ────────────────────────────────────────────────────────────────────────
 
     private static String summarize(Result t, long elapsedMs, String violationLogPath) {
-        long violations = t.equivNotExact + t.skeletonMatchOrientDiff + t.skeletonDiff + t.error;
+        long exact = t.exact.sum();
+        long equivNotExact = t.equivNotExact.sum();
+        long orientDiff = t.skeletonMatchOrientDiff.sum();
+        long skelDiff = t.skeletonDiff.sum();
+        long error = t.error.sum();
+        long violations = equivNotExact + orientDiff + skelDiff + error;
         StringBuilder sb = new StringBuilder();
         sb.append("==== PKE11 SUMMARY ====\n");
         sb.append(CONFIG_LINE).append('\n');
-        sb.append(String.format("distinct true PAGs enumerated      : %d%s%n", t.distinctPags,
-                MODE.startsWith("dag") && MERGE_ISOMORPHS
-                        ? "   (dagsweep+merge: comparable to PKE8's class count)" : ""));
-        sb.append(String.format("PAGs analyzed                      : %d%n", t.pagsScanned));
-        sb.append(String.format("  skipped on exception             : %d%n", t.skipped));
+        sb.append(String.format("distinct true PAGs (this run's view): %d%n", t.distinctPags));
+        sb.append(String.format("PAGs analyzed (FcitSl runs)        : %d%n", t.pagsScanned.sum()));
+        sb.append(String.format("  skipped on exception             : %d%n", t.skipped.sum()));
         sb.append(String.format("stopped early (log full)           : %b%n", STOP.get()));
         sb.append("---- TERMINAL-PAG IDENTITY (FcitSl from GRaSP start, oracle) ----\n");
-        sb.append(String.format("EXACT (terminal PAG == G*)         : %d%n", t.exact));
+        sb.append(String.format("EXACT (terminal PAG == G*)         : %d%n", exact));
         sb.append(String.format("VIOLATIONS (terminal PAG != G*)    : %d%s%n", violations,
                 violations == 0 ? "   *** clean: FcitSl recovers G* on every distinct PAG ***" : ""));
-        sb.append(String.format("  EQUIVALENT_NOT_EXACT             : %d%s%n", t.equivNotExact,
-                t.equivNotExact > 0 ? "   (Markov-equivalent to G*; orientation/printing nit)" : ""));
-        sb.append(String.format("  SKELETON_MATCH_ORIENT_DIFF       : %d%s%n", t.skeletonMatchOrientDiff,
-                t.skeletonMatchOrientDiff > 0 ? "   *** non-equivalent orientation error ***" : ""));
-        sb.append(String.format("  SKELETON_DIFF                    : %d%s%n", t.skeletonDiff,
-                t.skeletonDiff > 0 ? "   *** wrong adjacencies (undeletable spurious / over-deletion) ***" : ""));
-        sb.append(String.format("    of which extra edges present   : %d%n", t.skeletonExtra));
-        sb.append(String.format("    of which edges missing         : %d%n", t.skeletonMissing));
-        sb.append(String.format("  ERROR (threw / timed out)        : %d%s%n", t.error,
-                t.error > 0 ? "   *** see violation log ***" : ""));
+        sb.append(String.format("  EQUIVALENT_NOT_EXACT             : %d%s%n", equivNotExact,
+                equivNotExact > 0 ? "   (Markov-equivalent to G*; orientation/printing nit)" : ""));
+        sb.append(String.format("  SKELETON_MATCH_ORIENT_DIFF       : %d%s%n", orientDiff,
+                orientDiff > 0 ? "   *** non-equivalent orientation error ***" : ""));
+        sb.append(String.format("  SKELETON_DIFF                    : %d%s%n", skelDiff,
+                skelDiff > 0 ? "   *** wrong adjacencies (undeletable spurious / over-deletion) ***" : ""));
+        sb.append(String.format("    of which extra edges present   : %d%n", t.skeletonExtra.sum()));
+        sb.append(String.format("    of which edges missing         : %d%n", t.skeletonMissing.sum()));
+        sb.append(String.format("  ERROR (threw / timed out)        : %d%s%n", error,
+                error > 0 ? "   *** see violation log ***" : ""));
         sb.append("---- THE ANSWER ----\n");
         sb.append(violations == 0
                 ? "FcitSl (" + (ALLOW_CLASS_ESCAPE ? "escape ON" : "Step-Lemma-pure")
-                + ") recovers G* EXACTLY on all " + t.distinctPags + " distinct true PAGs at this scope ("
+                + ") recovers G* EXACTLY on all " + t.pagsScanned.sum()
+                + " distinct true PAGs analyzed this run at this scope ("
                 + (MODE.startsWith("dag")
                 ? "dagsweep N=" + N + " |L|=" + NUM_LATENT
                 : "ALL PAGs on " + OBS + " observed variables") + ").\n"
+                + (STOP.get() ? "" : "")
                 : "FcitSl did NOT recover G* on " + violations + " distinct PAG(s) -- see "
                 + violationLogPath + ".\n");
-        sb.append(String.format("elapsed (analysis phase)           : %.1f min%n", elapsedMs / 60000.0));
+        sb.append(String.format("elapsed (enumeration+analysis)     : %.1f min%n", elapsedMs / 60000.0));
         sb.append("==== END SUMMARY ====");
         return sb.toString();
     }
 
     // ────────────────────────────────────────────────────────────────────────
-    // STREAMED, CAPPED LOG (verbatim PKE8)
+    // STREAMED, CAPPED LOG (append across resumes; header written once)
     // ────────────────────────────────────────────────────────────────────────
 
     private static final class StreamLog {
@@ -948,8 +1003,14 @@ public final class PhantomKernelEnumerator11 {
         private int count;
 
         StreamLog(String path, int max, String header) throws IOException {
-            this.out = new PrintWriter(new FileWriter(path, false));
+            // Append: on a resumed run, already-completed blocks are skipped and their
+            // models are not re-analyzed, so violations logged in earlier runs must not be
+            // truncated away. The header (with a fresh run-started line) is appended each
+            // run as a separator; the cap counts THIS run's entries.
+            boolean existed = Files.exists(Paths.get(path));
+            this.out = new PrintWriter(new FileWriter(path, true));
             this.max = max;
+            if (existed) out.println();   // blank line between runs
             out.println(header);
             out.flush();
         }
@@ -960,7 +1021,7 @@ public final class PhantomKernelEnumerator11 {
             out.flush();
             count++;
             if (count == max) {
-                out.println("==== cap of " + max + " entries reached; log closed ====");
+                out.println("==== cap of " + max + " entries reached (this run); log closed ====");
                 out.flush();
                 if (STOP.compareAndSet(false, true)) {
                     System.err.println("Violation log full -- stopping analysis early.");
@@ -980,29 +1041,21 @@ public final class PhantomKernelEnumerator11 {
     }
 
     // ────────────────────────────────────────────────────────────────────────
-    // RESULT ACCUMULATOR
+    // RESULT ACCUMULATOR (thread-safe: a single shared instance across the
+    // parallel enumeration streams, so counters are LongAdders)
     // ────────────────────────────────────────────────────────────────────────
 
     private static final class Result {
-        long distinctPags, pagsScanned, skipped;
-        long exact, equivNotExact, skeletonMatchOrientDiff, skeletonDiff, error;
-        long skeletonExtra, skeletonMissing;
-
-        static void merge(Result a, Result b) {
-            a.add(b);
-        }
-
-        void add(Result o) {
-            distinctPags += o.distinctPags;
-            pagsScanned += o.pagsScanned;
-            skipped += o.skipped;
-            exact += o.exact;
-            equivNotExact += o.equivNotExact;
-            skeletonMatchOrientDiff += o.skeletonMatchOrientDiff;
-            skeletonDiff += o.skeletonDiff;
-            error += o.error;
-            skeletonExtra += o.skeletonExtra;
-            skeletonMissing += o.skeletonMissing;
-        }
+        // Set once, single-threaded, after enumeration; a plain field is fine.
+        long distinctPags;
+        final LongAdder pagsScanned = new LongAdder();
+        final LongAdder skipped = new LongAdder();
+        final LongAdder exact = new LongAdder();
+        final LongAdder equivNotExact = new LongAdder();
+        final LongAdder skeletonMatchOrientDiff = new LongAdder();
+        final LongAdder skeletonDiff = new LongAdder();
+        final LongAdder error = new LongAdder();
+        final LongAdder skeletonExtra = new LongAdder();
+        final LongAdder skeletonMissing = new LongAdder();
     }
 }
