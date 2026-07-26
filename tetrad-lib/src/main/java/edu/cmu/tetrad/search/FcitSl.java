@@ -172,6 +172,51 @@ public final class FcitSl implements IGraphSearch {
      */
     private int maxForkFlips = 2;
     /**
+     * Whether the within-class candidate generator is the CLASS WALK -- a best-first / breadth-first
+     * traversal of the current Markov equivalence class by SINGLE MARK CHANGES -- instead of the
+     * staged {@link #seedMags} + {@link LegEnumerator} + {@link #forkFlips} search.
+     * <p>
+     * Motivation (PKE11, V2--V5 at six variables). The staged search is anchored on the canonical
+     * Zhang MAG and walks LEGs; by Zhang-Spirtes Prop. 2 a LEG carries the FEWEST bidirected edges
+     * in its class, so the staged search is anchored at the bidirected-sparsest end of the class.
+     * In that fixture every representative that hosted the deletion carried 4-9 bidirected edges
+     * while the staged closure topped out at 2, and raising {@code maxForkFlips} from 2 to 5
+     * changed nothing: the fork-flip move family does not span the class. Exhaustive enumeration
+     * found 22 in-class hosts, none reachable by the staged generator, so the escape=false failure
+     * was a SEARCH-REACH gap, not a Step-Lemma class boundary.
+     * <p>
+     * The class walk closes it by construction. Zhang and Spirtes prove that Markov-equivalent
+     * DMAGs are connected by sequences of single mark changes that preserve Markov equivalence, so
+     * a walk whose move is "flip one endpoint mark" and whose filter is "still a legal MAG, still
+     * in this class" reaches every representative. Verified on the PKE11 fixture: the walk visited
+     * 711/711 class members and all 22 hosts, first host at depth 7 (six edges differ from the
+     * seed; one of them needs a reversal, which costs two mark changes through the bidirected
+     * intermediate -- precisely the direction a LEG-anchored search has no reason to travel).
+     * <p>
+     * The commit gates are unchanged, so this flag alters only which candidates are proposed and
+     * in what order, never what is accepted. True by default; set false for the legacy generator.
+     */
+    private boolean useClassWalk = true;
+    /**
+     * Ordering for {@link ClassWalk}. True (default): best-first, prioritising candidates that
+     * already satisfy the collider stamps {@link #stampLegColliders} would otherwise have to
+     * impose, then higher bidirected count, then shallower depth. False: plain breadth-first.
+     * <p>
+     * Best-first matters at scale. On the PKE11 fixture the hosts sit at the MEDIAN breadth-first
+     * depth, not near the seed -- reaching the first host by BFS meant expanding 424 of the 711
+     * class members -- so an undirected walk pays for most of the class before it succeeds. The
+     * stamp-deficit heuristic is aimed directly at the structure the deletion needs.
+     */
+    private boolean classWalkBestFirst = true;
+    /**
+     * Safety cap on how many class members {@link ClassWalk} emits for a single deletion attempt.
+     * The class is finite but grows fast, so an uncapped walk is a correctness oracle rather than
+     * a production search. Reaching the cap is recorded in {@code classWalkTruncations}: a run
+     * with a nonzero count has NOT exhausted the class, so a failure to host is inconclusive
+     * rather than evidence of a class boundary. Negative means uncapped.
+     */
+    private int classWalkMaxCandidates = 20000;
+    /**
      * Whether pass 3 (the out-of-class escape) may run. Fork-flip seeds are enumerated in both
      * modes and PARTITIONED by class membership (see {@link #seedMags}): flips certified
      * Markov-equivalent to the current class run in the within-class pass as Stage 2b, and only
@@ -266,6 +311,14 @@ public final class FcitSl implements IGraphSearch {
      * {@code escapeCommits == 0} used only Step-Lemma-form witnesses.
      */
     private long zhangCommits = 0, legCommits = 0, inClassFlipCommits = 0, escapeCommits = 0, otherRejects = 0;
+    /**
+     * Class-walk telemetry. {@code classWalkCommits}: commits hosted by a representative the walk
+     * reached. {@code classWalkVisited}: total class members emitted across all attempts.
+     * {@code classWalkTruncations}: attempts that hit {@link #classWalkMaxCandidates} or the
+     * deadline before exhausting the class -- if this is nonzero, a "no representative hosted it"
+     * outcome is INCONCLUSIVE, not a class boundary.
+     */
+    private long classWalkCommits = 0, classWalkVisited = 0, classWalkTruncations = 0;
     /**
      * Deleted-pair battery telemetry: number of gate evaluations, refusals, and entailed
      * separation statements verified against the independence test. See
@@ -814,9 +867,22 @@ public final class FcitSl implements IGraphSearch {
         TetradLogger.getInstance().log("Commit provenance: " + zhangCommits
                 + " Zhang-MAG (Stage 1), " + legCommits + " LEG (Stage 2), "
                 + inClassFlipCommits + " in-class fork-flip (Stage 2b), "
-                + escapeCommits + " class-escape (pass 3)"
+                + escapeCommits + " class-escape (pass 3), "
                 + otherRejects + " other-rejects"
-                + (allowClassEscape ? "" : "; disabled)."));
+                + (allowClassEscape ? "" : "; escape disabled."));
+
+        if (useClassWalk) {
+            TetradLogger.getInstance().log("Class walk (single mark changes): " + classWalkCommits
+                    + " commit(s), " + classWalkVisited + " class member(s) visited, "
+                    + classWalkTruncations + " truncation(s)"
+                    + (classWalkBestFirst ? ", best-first on stamp deficit" : ", breadth-first")
+                    + (classWalkMaxCandidates >= 0 ? ", cap " + classWalkMaxCandidates : ", uncapped")
+                    + "."
+                    + (classWalkTruncations > 0
+                    ? " WARNING: a truncated walk did not exhaust the class, so any \"no representative"
+                    + " hosted it\" above is inconclusive rather than a class boundary."
+                    : ""));
+        }
         TetradLogger.getInstance().log("Final-orientation provenance: R0 " + r0SepsetBacked
                 + " sepset-backed, " + r0CpdagBacked + " CPDAG-backed, " + r0TestFallback
                 + " test-fallback; R4 " + r4SepsetBacked + " sepset-backed, "
@@ -1358,11 +1424,14 @@ public final class FcitSl implements IGraphSearch {
 
         final boolean f = isFocus(x, y);
 
-        List<Graph> seeds = seedMags(_pag, x, y, b, deadline, escape);
-
-        // Class identity reference for flip classification; same construction seedMags uses.
+        // Class identity reference for membership tests; same construction seedMags uses.
         Graph basePag = new MagToPag(GraphTransforms.zhangMagFromPag(_pag))
                 .convert(false, excludeSelectionBias);
+
+        // Staged generator seeds, built only when the staged generator will actually run.
+        List<Graph> seeds = (useClassWalk && !escape)
+                ? Collections.emptyList()
+                : seedMags(_pag, x, y, b, deadline, escape);
 
         if (isFocus(x, y)) {
             focusInterimPag = _pag.toString();
@@ -1371,6 +1440,55 @@ public final class FcitSl implements IGraphSearch {
 
         // Candidates recur across seeds and walks; test each distinct MAG once.
         Set<String> tried = new HashSet<>();
+
+        // ---- Within-class pass via the class walk (default). The staged seeds/LEG/fork-flip
+        // generator is retained below for escape mode and for setUseClassWalk(false).
+        if (useClassWalk && !escape) {
+            Graph seed = GraphTransforms.zhangMagFromPag(_pag);
+            ClassWalk walk = new ClassWalk(seed, basePag, x, y, b, deadline);
+
+            while (walk.hasNext()) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+                Graph mag = walk.next();
+                if (!tried.add(magKey(mag))) continue;
+                if (f) bump("candidatesTried");
+                if (f) focusEnumerated.add(mag.toString());
+
+                Graph _mag = hostOrNull(mag, x, y, b, _removed, f);
+                if (_mag == null) continue;
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
+                            + (Double.isNaN(pValue) ? "" : ", p = " + pValue)
+                            + " [class walk: candidate " + walk.emitted()
+                            + ", depth " + walk.maxDepthSeen() + "]");
+                }
+
+                classWalkCommits++;
+                classWalkVisited += walk.emitted();
+
+                this.interimPags.add(new MagToPag(_mag).convert(false, excludeSelectionBias));
+                sepsets.set(x, y, b);
+                return true;
+            }
+
+            classWalkVisited += walk.emitted();
+            if (walk.truncated()) classWalkTruncations++;
+
+            if (verbose) {
+                TetradLogger.getInstance().log("\tTried removing " + _edge
+                        + " (class walk), but no representative MAG hosted it, sepset = " + b
+                        + "; visited " + walk.emitted() + " class member(s) to depth "
+                        + walk.maxDepthSeen()
+                        + (walk.truncated()
+                        ? " -- TRUNCATED on budget/deadline, so the class was NOT exhausted and this"
+                        + " is inconclusive rather than a class boundary."
+                        : " -- class exhausted, so no representative of this class hosts it."));
+            }
+
+            return false;
+        }
 
         for (int seedIdx = 0; seedIdx < seeds.size(); seedIdx++) {
             Graph seed = seeds.get(seedIdx);
@@ -1398,48 +1516,8 @@ public final class FcitSl implements IGraphSearch {
                         if (f) bump("candidatesTried");
                         if (f) focusEnumerated.add(mag.toString());
 
-                        Graph _mag = mag.copy();
-
-                        // H' must honour the stored sepsets: stamp the common colliders of x and y.
-                        // Refuses any LEG whose stamp would create a NEW unshielded collider.
-                        if (!stampLegColliders(_mag, b, x, y)) {
-                            if (f) bump("stampPruned");
-                            continue;
-                        }
-
-                        // The STAMPED graph is the H' that every lemma quantifies over, so it must itself
-                        // be a legal MAG. The stamp can make an ancestral-but-NON-MAXIMAL graph: an inducing
-                        // path between a pair OTHER than {x, y}, whose ancestry certificate runs through the
-                        // edge about to be deleted. Deleting then kills the path and mints a NEW separation
-                        // at that other pair -- invisible to the deleted-pair battery, and outside the
-                        // hypotheses of deletion-locality and pair-locality (both assume H' is a MAG).
-                        // Concretely: stamping V1 for the {V3,V4} deletion on the V4<->V2 flip produced the
-                        // inducing path V3<->V1<->V4<->V2 (V4 in An(V3) via V4-->V3); deleting V4-->V3
-                        // yielded the false V3 _||_ V2 | {V1}.
-                        if (!_mag.paths().isLegalMag()) {
-                            if (f) bump("illegalMagAfterStamp");
-                            otherRejects++;
-                            continue;
-                        }
-
-                        // We remove f = x *-* y, yielding H' - f.
-                        _mag.removeEdge(x, y);
-
-                        legalityChecks++;
-
-                        // Prong (A): H' - f must be a MAG (Lemma 3.6 localizes this to the pair).
-                        if (_mag.paths().existsInducingPath(x, y, Set.of())) {
-                            if (f) bump("inducingPathReject");
-                            ipRejects++;
-                            continue;
-                        }
-
-                        // Prong (B): no new CIs absent from G*. Spot-checked by the battery.
-                        if (!deletedPairBatteryPasses(_mag, _removed)) {
-                            if (f) bump("batteryReject");
-                            continue;
-                        }
-                        if (f) bump("committed");
+                        Graph _mag = hostOrNull(mag, x, y, b, _removed, f);
+                        if (_mag == null) continue;
 
                         if (verbose) {
                             TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
@@ -1538,6 +1616,257 @@ public final class FcitSl implements IGraphSearch {
             }
         }
         return true;
+    }
+
+    // ================= class walk: single-mark-change traversal of the class =================
+
+    /**
+     * Flips one endpoint mark: tail becomes arrowhead and vice versa. Returns null for a circle
+     * (a MAG has none, so a circle means the caller was handed a PAG by mistake).
+     */
+    private static Endpoint flipMark(Endpoint e) {
+        if (e == Endpoint.TAIL) return Endpoint.ARROW;
+        if (e == Endpoint.ARROW) return Endpoint.TAIL;
+        return null;
+    }
+
+    /**
+     * Copy of {@code g} with the {@code a}--{@code c} edge's marks replaced. Node objects are
+     * preserved (EdgeListGraph's copy constructor shares them), so callers may keep using the
+     * {@code x}/{@code y} references they already hold.
+     */
+    private static Graph withMarks(Graph g, Node a, Node c, Endpoint atA, Endpoint atC) {
+        Graph h = new EdgeListGraph(g);
+        Node na = h.getNode(a.getName()), nc = h.getNode(c.getName());
+        h.removeEdge(na, nc);
+        h.addEdge(new Edge(na, nc, atA, atC));
+        return h;
+    }
+
+    /**
+     * Every graph one SINGLE MARK CHANGE from {@code g}: for each edge, flip the mark at one
+     * endpoint. Note that a full reversal {@code a-->c} to {@code a<--c} is TWO mark changes and
+     * is reached through the bidirected intermediate {@code a<->c}. That is not an inefficiency
+     * to be optimised away -- it is the reason this neighbourhood reaches representatives a
+     * LEG-anchored search cannot, since the intermediate is bidirected-richer than either end.
+     * <p>
+     * The neighbourhood is proposed unconditionally; {@link ClassWalk} accepts a neighbour iff it
+     * is a legal MAG and still in the class. Zhang and Spirtes give graphical side conditions
+     * characterising exactly when a single mark change preserves Markov equivalence; testing
+     * equivalence directly yields the same neighbourhood without depending on those conditions
+     * being transcribed correctly, at the cost of one MagToPag conversion per proposal. If that
+     * conversion ever becomes the bottleneck, the side conditions are the optimisation -- and
+     * this method is the oracle to validate it against.
+     */
+    private static List<Graph> markChangeNeighbors(Graph g) {
+        List<Graph> out = new ArrayList<>();
+        for (Edge e : g.getEdges()) {
+            Node a = e.getNode1(), c = e.getNode2();
+            Endpoint atA = g.getEndpoint(c, a);
+            Endpoint atC = g.getEndpoint(a, c);
+            Endpoint fa = flipMark(atA), fc = flipMark(atC);
+            if (fa != null) out.add(withMarks(g, a, c, fa, atC));
+            if (fc != null) out.add(withMarks(g, a, c, atA, fc));
+        }
+        return out;
+    }
+
+    /**
+     * How many collider stamps {@link #stampLegColliders} would still have to impose on
+     * {@code mag} for the {@code x}--{@code y} deletion: the common neighbours outside the sepset
+     * that are not already colliders. Zero means the representative already carries the structure
+     * the deletion needs, so nothing has to be forced and the post-stamp legality check cannot
+     * fail. This is the class walk's best-first priority, and it is aimed at the observed failure
+     * mode -- in the PKE11 fixture the seed had deficit 2 and every host had deficit 0.
+     */
+    private static int stampDeficit(Graph mag, Set<Node> b, Node x, Node y) {
+        List<Node> common = mag.getAdjacentNodes(x);
+        common.retainAll(mag.getAdjacentNodes(y));
+        int deficit = 0;
+        for (Node c : common) {
+            if (b.contains(c)) continue;
+            if (!mag.isDefCollider(x, c, y)) deficit++;
+        }
+        return deficit;
+    }
+
+    /**
+     * A frontier entry: a class member, its depth in mark changes from the seed, and the two
+     * priority keys.
+     */
+    private record WalkNode(Graph g, int depth, int deficit, int bi) {
+    }
+
+    /**
+     * Lazy traversal of the Markov equivalence class of a seed MAG by single mark changes,
+     * emitting each class member exactly once. Lazy because the caller stops at the first
+     * representative that hosts the deletion; the class is enumerated only as far as it must be.
+     * <p>
+     * Completeness rests on the Zhang-Spirtes transformational characterization: Markov-equivalent
+     * DMAGs are connected by sequences of single mark changes preserving Markov equivalence, so
+     * with an unbounded budget this reaches every representative of the class. With a bounded one
+     * it does not, and {@link #truncated()} says which happened -- a distinction that matters,
+     * because "the walk found no host" is evidence about the Step Lemma only when the walk ran to
+     * exhaustion.
+     */
+    private final class ClassWalk implements Iterator<Graph> {
+
+        private final Graph basePag;
+        private final Node x, y;
+        private final Set<Node> b;
+        private final long deadline;
+
+        private final Set<String> seen = new HashSet<>();
+        private final Deque<WalkNode> fifo = new ArrayDeque<>();
+        private final PriorityQueue<WalkNode> heap = new PriorityQueue<>(
+                Comparator.<WalkNode>comparingInt(WalkNode::deficit)
+                        .thenComparingInt(w -> -w.bi())
+                        .thenComparingInt(WalkNode::depth));
+
+        private WalkNode pending;
+        private int emitted = 0;
+        private boolean truncated = false;
+        private int maxDepthSeen = 0;
+
+        ClassWalk(Graph seed, Graph basePag, Node x, Node y, Set<Node> b, long deadline) {
+            this.basePag = basePag;
+            this.x = x;
+            this.y = y;
+            this.b = b;
+            this.deadline = deadline;
+            seen.add(magKey(seed));
+            push(new WalkNode(seed, 0, stampDeficit(seed, b, x, y), bidirectedCount(seed)));
+        }
+
+        private void push(WalkNode w) {
+            if (classWalkBestFirst) heap.add(w);
+            else fifo.addLast(w);
+        }
+
+        private WalkNode pop() {
+            return classWalkBestFirst ? heap.poll() : fifo.pollFirst();
+        }
+
+        private boolean frontierEmpty() {
+            return classWalkBestFirst ? heap.isEmpty() : fifo.isEmpty();
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (pending != null) return true;
+            if (frontierEmpty()) return false;
+
+            if (classWalkMaxCandidates >= 0 && emitted >= classWalkMaxCandidates) {
+                truncated = true;
+                return false;
+            }
+            if (System.currentTimeMillis() > deadline) {
+                truncated = true;
+                return false;
+            }
+
+            WalkNode cur = pop();
+            if (cur == null) return false;
+            pending = cur;
+            maxDepthSeen = Math.max(maxDepthSeen, cur.depth());
+            expand(cur);
+            return true;
+        }
+
+        @Override
+        public Graph next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            Graph g = pending.g();
+            pending = null;
+            emitted++;
+            return g;
+        }
+
+        /**
+         * Adds the in-class legal neighbours of {@code cur} to the frontier. Neighbours are marked
+         * seen whether or not they are accepted: an illegal or out-of-class graph is not a valid
+         * waypoint, so no path through it needs revisiting.
+         */
+        private void expand(WalkNode cur) {
+            for (Graph nb : markChangeNeighbors(cur.g())) {
+                if (System.currentTimeMillis() > deadline) {
+                    truncated = true;
+                    return;
+                }
+                if (!seen.add(magKey(nb))) continue;
+                if (!nb.paths().isLegalMag()) continue;
+                if (!new MagToPag(nb).convert(false, excludeSelectionBias).equals(basePag)) continue;
+                push(new WalkNode(nb, cur.depth() + 1, stampDeficit(nb, b, x, y), bidirectedCount(nb)));
+            }
+        }
+
+        /** True iff the walk stopped on the budget or the deadline rather than exhausting the class. */
+        boolean truncated() {
+            return truncated;
+        }
+
+        int emitted() {
+            return emitted;
+        }
+
+        int maxDepthSeen() {
+            return maxDepthSeen;
+        }
+    }
+
+    /**
+     * The commit gate, shared by every candidate generator so that changing the generator cannot
+     * change what is accepted. Applies, in order: the collider stamp for the recorded sepsets;
+     * legality of the STAMPED graph; deletion of {@code x}--{@code y}; prong (A), the removed-pair
+     * inducing-path pre-check; and prong (B), the deleted-pair battery.
+     *
+     * @return the stamped, deleted MAG if the candidate hosts the deletion, else null.
+     */
+    private Graph hostOrNull(Graph mag, Node x, Node y, Set<Node> b, List<Edge> removed, boolean f)
+            throws InterruptedException {
+        Graph _mag = mag.copy();
+
+        // H' must honour the stored sepsets: stamp the common colliders of x and y.
+        // Refuses any candidate whose stamp would create a NEW unshielded collider.
+        if (!stampLegColliders(_mag, b, x, y)) {
+            if (f) bump("stampPruned");
+            return null;
+        }
+
+        // The STAMPED graph is the H' every lemma quantifies over, so it must itself be a legal
+        // MAG. The stamp can make an ancestral-but-NON-MAXIMAL graph: an inducing path between a
+        // pair OTHER than {x, y}, whose ancestry certificate runs through the edge about to be
+        // deleted. Deleting then kills the path and mints a NEW separation at that other pair --
+        // invisible to the deleted-pair battery, and outside the hypotheses of deletion-locality
+        // and pair-locality (both assume H' is a MAG). Concretely: stamping V1 for the {V3,V4}
+        // deletion on the V4<->V2 flip produced the inducing path V3<->V1<->V4<->V2 (V4 in An(V3)
+        // via V4-->V3); deleting V4-->V3 yielded the false V3 _||_ V2 | {V1}.
+        if (!_mag.paths().isLegalMag()) {
+            if (f) bump("illegalMagAfterStamp");
+            otherRejects++;
+            return null;
+        }
+
+        // We remove f = x *-* y, yielding H' - f.
+        _mag.removeEdge(x, y);
+
+        legalityChecks++;
+
+        // Prong (A): H' - f must be a MAG (Lemma 3.6 localizes this to the pair).
+        if (_mag.paths().existsInducingPath(x, y, Set.of())) {
+            if (f) bump("inducingPathReject");
+            ipRejects++;
+            return null;
+        }
+
+        // Prong (B): no new CIs absent from G*. Spot-checked by the battery.
+        if (!deletedPairBatteryPasses(_mag, removed)) {
+            if (f) bump("batteryReject");
+            return null;
+        }
+
+        if (f) bump("committed");
+        return _mag;
     }
 
     private List<Graph> seedMags(Graph pag, Node x, Node y, Set<Node> S, long deadline, boolean escape)
@@ -2892,8 +3221,41 @@ public final class FcitSl implements IGraphSearch {
     }
 
     /**
+     * Sets whether the within-class candidate generator is the class walk (single mark changes
+     * over the Markov equivalence class) rather than the staged seeds/LEG/fork-flip search. The
+     * commit gates are identical either way, so this changes which candidates are proposed and in
+     * what order, never what is accepted. See {@link #useClassWalk}.
+     *
+     * @param useClassWalk true for the class walk (default), false for the legacy generator.
+     */
+    public void setUseClassWalk(boolean useClassWalk) {
+        this.useClassWalk = useClassWalk;
+    }
+
+    /**
+     * Sets the class walk's ordering: true (default) for best-first on stamp deficit, false for
+     * plain breadth-first. See {@link #classWalkBestFirst}.
+     *
+     * @param classWalkBestFirst true for best-first ordering.
+     */
+    public void setClassWalkBestFirst(boolean classWalkBestFirst) {
+        this.classWalkBestFirst = classWalkBestFirst;
+    }
+
+    /**
+     * Sets the per-deletion cap on class members the walk may emit; negative means uncapped.
+     * Hitting the cap makes a failure to host INCONCLUSIVE -- see {@link #classWalkMaxCandidates}.
+     *
+     * @param classWalkMaxCandidates the cap, or negative for uncapped.
+     */
+    public void setClassWalkMaxCandidates(int classWalkMaxCandidates) {
+        this.classWalkMaxCandidates = classWalkMaxCandidates;
+    }
+
+    /**
      * Sets the maximum number of fork nodes converted to colliders when building an out-of-class
-     * seed. Bounded low (1-2) for audit-scale models. See {@link #seedMags}.
+     * seed. Bounded low (1-2) for audit-scale models. Applies to the staged generator and to
+     * escape mode; the class walk does not use it. See {@link #seedMags}.
      *
      * @param maxForkFlips the bound.
      */
