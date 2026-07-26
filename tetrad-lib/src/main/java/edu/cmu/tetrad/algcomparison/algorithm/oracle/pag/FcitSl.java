@@ -34,6 +34,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
@@ -169,7 +170,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
 
         search.setCommitGate(edu.cmu.tetrad.search.FcitSl.CommitGate.DELETED_PAIR_BATTERY);
-        search.setBatteryZMax(4);
+        search.setBatteryZMax(5);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
@@ -179,6 +180,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setUseClosureCoverSearch(false);
 
         search.setClosureFallbackToStaged(false);
+
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.BOSS);
@@ -196,7 +198,17 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(this.knowledge);
 
-        return search.search();
+        search.setFocusPair(new GraphNode("V2"), new GraphNode("V6"));
+
+        Graph search1 = search.search();
+
+        List<String> trace = search.getFocusSepsetLog();
+        if (!trace.isEmpty()) {
+            System.out.println("=== sepset search trace (V2,V6) ===");
+            trace.forEach(System.out::println);
+        }
+
+        return search1;
     }
 
     /**

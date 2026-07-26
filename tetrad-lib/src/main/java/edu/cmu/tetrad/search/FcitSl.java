@@ -167,6 +167,23 @@ public final class FcitSl implements IGraphSearch {
      */
     private int maxBlockingSetRemovals = -1;
     /**
+     * Maximum number of common neighbours the sepset search may ADD to RB's blocking set (phase 1
+     * of {@link #trySubsetsAround}). RB proposes a blocking set against the CURRENT orientations,
+     * and the subset search around it can only shrink that set -- so a node RB never proposed is
+     * unreachable however the removals are enumerated. When a true non-collider is shown as a
+     * collider in the interim PAG, RB reads its path as already blocked and omits exactly the node
+     * the separator needs. Negative means unbounded.
+     */
+    private int maxBlockingSetAdditions = -1;
+    /**
+     * Whether the sepset search, having failed on every oriented pass, retries with RB run against
+     * the SKELETON (every mark a circle). With no marks, no triple is a collider, no path counts as
+     * pre-blocked, and the blocking set is orientation-independent -- which recovers separators
+     * hidden by a wrong collider reading in the interim PAG. Fires only on failure, so the common
+     * path is unaffected. See {@link #findIndependenceCheckRecursive}.
+     */
+    private boolean orientationBlindFallback = true;
+    /**
      * Maximum number of fork nodes converted to colliders when building an out-of-class seed
      * for a deletion the current directed class cannot host. See {@link #seedMags}.
      */
@@ -320,6 +337,14 @@ public final class FcitSl implements IGraphSearch {
      */
     private long classWalkCommits = 0, classWalkVisited = 0, classWalkTruncations = 0;
     /**
+     * Sepset-search telemetry. {@code additionPhaseRescues}: separators found only by ADDING a
+     * common neighbour absent from RB's blocking set -- each one is a separator the removal-only
+     * search could not have tested. {@code blindFallbackAttempts}/{@code blindFallbackRescues}:
+     * orientation-blind retries run, and how many found a separator the oriented passes missed.
+     * A nonzero rescue count means the interim orientations were actively hiding separators.
+     */
+    private long additionPhaseRescues = 0, blindFallbackAttempts = 0, blindFallbackRescues = 0;
+    /**
      * Deleted-pair battery telemetry: number of gate evaluations, refusals, and entailed
      * separation statements verified against the independence test. See
      * {@link #deletedPairBatteryPasses}.
@@ -382,6 +407,17 @@ public final class FcitSl implements IGraphSearch {
      *  misclassified" (option 1 applies) from "host never generated" (it does not). */
     private final List<String> focusSeedLog = new ArrayList<>();
     public List<String> getFocusSeedLog() { return focusSeedLog; }
+
+    /**
+     * For the focus pair, the sepset search's own trace: RB's blocking set, the def-collider
+     * strip, and every candidate S actually tested (with any additions marked). Distinguishes a
+     * separator that was merely unreached from one excluded from the search space by construction.
+     * Synchronized because {@link #findIndependenceCheckRecursive} runs inside the parallel
+     * lookahead; read it only after {@link #search()} returns.
+     */
+    private final List<String> focusSepsetLog = Collections.synchronizedList(new ArrayList<>());
+
+    public List<String> getFocusSepsetLog() { return focusSepsetLog; }
 
     private static int bidirectedCount(Graph g) {
         int n = 0;
@@ -883,6 +919,14 @@ public final class FcitSl implements IGraphSearch {
                     + " hosted it\" above is inconclusive rather than a class boundary."
                     : ""));
         }
+        TetradLogger.getInstance().log("Sepset search: " + additionPhaseRescues
+                + " separator(s) found only by ADDING to RB's blocking set; "
+                + blindFallbackAttempts + " orientation-blind retry/retries, "
+                + blindFallbackRescues + " rescue(s)."
+                + ((additionPhaseRescues > 0 || blindFallbackRescues > 0)
+                ? " Nonzero means the interim orientations were hiding separators from the"
+                + " removal-only search."
+                : ""));
         TetradLogger.getInstance().log("Final-orientation provenance: R0 " + r0SepsetBacked
                 + " sepset-backed, " + r0CpdagBacked + " CPDAG-backed, " + r0TestFallback
                 + " test-fallback; R4 " + r4SepsetBacked + " sepset-backed, "
@@ -1365,31 +1409,132 @@ public final class FcitSl implements IGraphSearch {
             Set<Node> B0 = new LinkedHashSet<>(B);
             B0.removeAll(definitelyRemove);
 
-            List<Node> removalCandidates = new ArrayList<>();
-            for (Node v : B0) if (common.contains(v)) removalCandidates.add(v);
-            for (Node v : B0) if (!common.contains(v)) removalCandidates.add(v);
+            if (isFocus(x, y)) {
+                focusSepsetLog.add("NF pass: B=" + B + "  definitelyRemove=" + definitelyRemove
+                        + "  -> B0=" + new LinkedHashSet<>(B0));
+            }
 
-            int maxRemove = (this.maxBlockingSetRemovals < 0)
-                    ? removalCandidates.size()
-                    : Math.min(this.maxBlockingSetRemovals, removalCandidates.size());
+            IndependenceCheck hit = trySubsetsAround(edge, x, y, B0, common, deadline);
+            if (hit != null) return hit;
+        }
+
+        // Orientation-blind fallback. Every NF pass above searched subsets drawn from a blocking
+        // set RB computed against the CURRENT orientations, and those orientations can be wrong in
+        // exactly the way that hides the separator: a true non-collider that the interim PAG shows
+        // as a collider makes RB treat its path as already blocked, so the node never enters B, and
+        // an add/remove search around B cannot recover what RB never proposed. Observed at six
+        // variables (model aa..aaaaatatat..atatcacacc): the spurious V2--V6 edge shields the
+        // V2-V3-V6 triple, the shielded triple is oriented V2<->V3 where G* has V3-->V2, that
+        // reading makes V3 a definite collider between V2 and V6, and the separator {V3,V4,V5} --
+        // which GRaSP itself found -- was never testable. The edge protected itself.
+        // Re-running RB on the SKELETON (every mark a circle) makes no triple a collider, so no
+        // path counts as pre-blocked and the blocking set is orientation-independent. Fires only
+        // after the oriented passes have all failed, so it costs nothing on the common path.
+        if (orientationBlindFallback && this.interimPags.getLast().isAdjacentTo(x, y)
+                && System.currentTimeMillis() <= deadline) {
+            blindFallbackAttempts++;
+
+            Graph blind = new EdgeListGraph(this.interimPags.getLast());
+            for (Edge e : new ArrayList<>(blind.getEdges())) {
+                blind.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.CIRCLE);
+                blind.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.CIRCLE);
+            }
+
+            RecursiveBlocking.BlockingResult blindResult = RecursiveBlocking.blockPathsRecursively(
+                    blind, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true, deadline);
+
+            if (blindResult != null && !blindResult.indeterminate() && blindResult.blockingSet() != null) {
+                List<Node> common = this.interimPags.getLast().getAdjacentNodes(x);
+                common.retainAll(this.interimPags.getLast().getAdjacentNodes(y));
+
+                Set<Node> blindBase = new LinkedHashSet<>(blindResult.blockingSet());
+
+                if (isFocus(x, y)) {
+                    focusSepsetLog.add("BLIND pass (skeleton, no mark is a collider): B="
+                            + blindResult.blockingSet());
+                }
+
+                IndependenceCheck hit = trySubsetsAround(edge, x, y, blindBase, common, deadline);
+                if (hit != null) {
+                    blindFallbackRescues++;
+                    return hit;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Tests candidate separators drawn from {@code base} and the common neighbours of {@code x}
+     * and {@code y}, in two phases.
+     * <p>
+     * Phase 0 (additions = none) enumerates subsets of {@code base} smallest-removal-first, which
+     * is byte-for-byte the search this method replaced, so anything the old code found is still
+     * found first and in the same order. Phase 1 then ADDS common neighbours that {@code base}
+     * omits -- the nodes a wrong collider reading kept out of the blocking set, or that
+     * {@code definitelyRemove} stripped on the strength of a def-collider status that is only as
+     * trustworthy as the current orientations.
+     * <p>
+     * Not complete: a node that is neither in {@code base} nor a common neighbour of the pair is
+     * still unreachable, so a null return remains "not found", never "does not exist".
+     *
+     * @return an independence check if some candidate separates, else null.
+     */
+    private IndependenceCheck trySubsetsAround(Edge edge, Node x, Node y, Set<Node> base,
+                                               List<Node> common, long deadline)
+            throws InterruptedException {
+
+        List<Node> removalCandidates = new ArrayList<>();
+        for (Node v : base) if (common.contains(v)) removalCandidates.add(v);
+        for (Node v : base) if (!common.contains(v)) removalCandidates.add(v);
+
+        List<Node> addCandidates = new ArrayList<>();
+        for (Node c : common) if (!base.contains(c)) addCandidates.add(c);
+
+        int maxRemove = (this.maxBlockingSetRemovals < 0)
+                ? removalCandidates.size()
+                : Math.min(this.maxBlockingSetRemovals, removalCandidates.size());
+
+        int maxAdd = (this.maxBlockingSetAdditions < 0)
+                ? addCandidates.size()
+                : Math.min(this.maxBlockingSetAdditions, addCandidates.size());
+
+        SublistGenerator addGen = new SublistGenerator(addCandidates.size(), maxAdd);
+        int[] addChoice;
+
+        while ((addChoice = addGen.next()) != null) {
+            if (System.currentTimeMillis() > deadline) return null;
+            if (!this.interimPags.getLast().isAdjacentTo(x, y)) return null;
+
+            Set<Node> A = GraphUtils.asSet(addChoice, addCandidates);
 
             SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), maxRemove);
             int[] cChoice;
+
             while ((cChoice = cGen.next()) != null) {
                 if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
-                if (!this.interimPags.getLast().isAdjacentTo(x, y)) break;
+                if (!this.interimPags.getLast().isAdjacentTo(x, y)) return null;
 
-                Set<Node> S = new LinkedHashSet<>(B0);
+                Set<Node> S = new LinkedHashSet<>(base);
                 Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
 
                 S.removeAll(C);
+                S.addAll(A);
 
                 if (this.depth != -1 && S.size() > this.depth) continue;
 
                 checkCounter.increment("findIndependenceCheckRecursive (test executed)");
 
                 IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+
+                if (isFocus(x, y)) {
+                    focusSepsetLog.add("  tested S=" + S + (A.isEmpty() ? "" : "  (added " + A + ")")
+                            + " -> " + (independenceResult.isIndependent() ? "INDEPENDENT" : "dependent"));
+                }
+
                 if (independenceResult.isIndependent()) {
+                    if (!A.isEmpty()) additionPhaseRescues++;
                     // NO cache write here. This method runs inside the parallel lookahead, whose
                     // findFirst short-circuits: branches already in flight still run to completion,
                     // so WHICH losing edges leave a cached separator behind is scheduling-dependent.
@@ -3253,6 +3398,26 @@ public final class FcitSl implements IGraphSearch {
     }
 
     /**
+     * Sets the cap on common neighbours the sepset search may add to RB's blocking set; negative
+     * means unbounded. See {@link #maxBlockingSetAdditions}.
+     *
+     * @param maxBlockingSetAdditions the cap, or negative for unbounded.
+     */
+    public void setMaxBlockingSetAdditions(int maxBlockingSetAdditions) {
+        this.maxBlockingSetAdditions = maxBlockingSetAdditions;
+    }
+
+    /**
+     * Sets whether the sepset search retries with RB run against the skeleton after every oriented
+     * pass fails. See {@link #orientationBlindFallback}.
+     *
+     * @param orientationBlindFallback true to enable the fallback (default).
+     */
+    public void setOrientationBlindFallback(boolean orientationBlindFallback) {
+        this.orientationBlindFallback = orientationBlindFallback;
+    }
+
+    /**
      * Sets the maximum number of fork nodes converted to colliders when building an out-of-class
      * seed. Bounded low (1-2) for audit-scale models. Applies to the staged generator and to
      * escape mode; the class walk does not use it. See {@link #seedMags}.
@@ -3687,12 +3852,28 @@ public final class FcitSl implements IGraphSearch {
 
             Set<String> s = recordedSepsets.get(pairKey(x, y));
 
+            if (verbose) {
+                TetradLogger.getInstance().log("R4 considering DDP x=" + x.getName()
+                        + " w=" + w.getName() + " v=" + v.getName() + " y=" + y.getName()
+                        + "; recorded sepset(" + x.getName() + "," + y.getName() + ")="
+                        + (s == null ? "NONE -> delegating to test" : s)
+                        + "; existsIn=" + discriminatingPath.existsIn(graph)
+                        + "; mark at " + v.getName() + " on " + y.getName() + "--" + v.getName()
+                        + " = " + graph.getEndpoint(y, v));
+            }
+
             if (s == null) {
                 // Pair never adjudicated by this search (nonadjacent from the CPDAG); the
                 // delegate's recursive-blocking search is the right authority.
                 r4TestFallback++;
-                return delegate.doDiscriminatingPathOrientation(discriminatingPath,
-                        maxBlockingPathLength, maxDiscriminatingPathLength, graph, vNodes);
+                Pair<DiscriminatingPath, Boolean> out = delegate.doDiscriminatingPathOrientation(
+                        discriminatingPath, maxBlockingPathLength, maxDiscriminatingPathLength,
+                        graph, vNodes);
+                if (verbose) {
+                    TetradLogger.getInstance().log("    delegate returned oriented=" + out.getRight()
+                            + "; mark at " + v.getName() + " now " + graph.getEndpoint(y, v));
+                }
+                return out;
             }
 
             r4SepsetBacked++;
