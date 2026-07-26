@@ -3863,20 +3863,43 @@ public final class FcitSl implements IGraphSearch {
             }
 
             if (s == null) {
-                // Pair never adjudicated by this search (nonadjacent from the CPDAG); the
-                // delegate's recursive-blocking search is the right authority.
+                // Pair never adjudicated by the removal search (nonadjacent from the CPDAG on).
+                // Def. rb-step's provision for exactly this case: find a separator NOW, confirm
+                // it by test, RECORD it, and thereafter read it back rather than recompute. The
+                // delegate's single-shot RB+test is strictly weaker than the spanning sweep and
+                // can fail on interim marks while a confirmed separator exists (observed: DDP
+                // endpoints (V5,V1) with the run's own trace holding V5 _||_ V1 | V6, V3), so
+                // run the sweep here instead of delegating.
                 r4TestFallback++;
-                Pair<DiscriminatingPath, Boolean> out = delegate.doDiscriminatingPathOrientation(
-                        discriminatingPath, maxBlockingPathLength, maxDiscriminatingPathLength,
-                        graph, vNodes);
-                if (verbose) {
-                    TetradLogger.getInstance().log("    delegate returned oriented=" + out.getRight()
-                            + "; mark at " + v.getName() + " now " + graph.getEndpoint(y, v));
-                }
-                return out;
-            }
 
-            r4SepsetBacked++;
+                Set<Node> found = searchSepsetForPair(graph, x, y);
+
+                if (found == null) {
+                    if (verbose) {
+                        TetradLogger.getInstance().log("    R4 pair search: no separator "
+                                + "confirmed for (" + x.getName() + "," + y.getName()
+                                + "); declining to orient.");
+                    }
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                // Commit to the live sepset map (found at most once, read back thereafter --
+                // the (P1)/(P2) discipline) and to this strategy's snapshot, so later passes
+                // and any cold re-orientation read this pair sepset-backed. On a genuine DDP
+                // the apex's membership is invariant across all separators, so any confirmed
+                // set decides the branch identically.
+                sepsets.set(x, y, found);
+                s = names(found);
+                recordedSepsets.put(pairKey(x, y), s);
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("    R4 pair search: recorded sepset("
+                            + x.getName() + "," + y.getName() + ") = " + found
+                            + " (test-confirmed); adjudicating by membership.");
+                }
+            } else {
+                r4SepsetBacked++;
+            }
 
             // Mirror the delegate's guards and orientation actions exactly, adjudicating by the
             // recorded separator: v in Sepset(x, y) => noncollider (tail at v); else collider.
@@ -3927,6 +3950,132 @@ public final class FcitSl implements IGraphSearch {
         @Override
         public Knowledge getknowledge() {
             return delegate.getknowledge();
+        }
+
+        /**
+         * Pair-level spanning separator search on {@code graph}, for discriminating-path
+         * endpoint pairs never adjudicated by the removal sweep. Same family as the
+         * removal-phase search (NF enumeration over ambiguous blocking-set members;
+         * removals over the whole blocking set, common neighbours first; additions of
+         * omitted common neighbours) but self-contained on the given graph: the pair is
+         * nonadjacent, so the removal sweep's adjacency guards do not apply. Returns the
+         * first test-confirmed separator, or null for not-found / budget-exhausted.
+         */
+        private Set<Node> searchSepsetForPair(Graph graph, Node x, Node y)
+                throws InterruptedException {
+            final long deadline = (timeout < 0L)
+                    ? Long.MAX_VALUE
+                    : System.currentTimeMillis() + timeout;
+
+            // Pass 1: propose against the live, mid-orientation graph.
+            Set<Node> found = sweepOnView(graph, x, y, deadline, "oriented");
+            if (found != null) return found;
+
+            // Pass 2: orientation-blind, the same remedy findIndependenceCheckRecursive uses.
+            // R4 runs mid-FciOrient, so `graph` carries marks R0/R1-R3 have already stamped --
+            // some of them wrong in exactly the way that hides the separator. RB reads those
+            // marks, finds a path it cannot block, and returns no blocking set at all; the NF
+            // harvest then has nothing to draw on and the whole candidate family is empty (the
+            // observed failure: zero tests executed for this pair). On the all-circles skeleton
+            // no triple is a collider, nothing counts as pre-blocked, and the proposal is
+            // orientation-independent. This weakens nothing: the blind view only PROPOSES, and
+            // every candidate is still confirmed against the test before it is returned.
+            Graph blind = new EdgeListGraph(graph);
+            for (Edge e : new ArrayList<>(blind.getEdges())) {
+                blind.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.CIRCLE);
+                blind.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.CIRCLE);
+            }
+
+            return sweepOnView(blind, x, y, deadline, "blind");
+        }
+
+        /**
+         * One sweep against one view of the graph. {@code graph} supplies the proposals only;
+         * every returned set is test-confirmed.
+         */
+        private Set<Node> sweepOnView(Graph graph, Node x, Node y, long deadline, String label)
+                throws InterruptedException {
+
+            RecursiveBlocking.BlockingResult b0 = RecursiveBlocking.blockPathsRecursively(
+                    graph, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+                    deadline);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("    R4 pair search [" + label + "] RB seed: "
+                        + (b0.indeterminate() ? "INDETERMINATE"
+                        : b0.blockingSet() == null ? "UNBLOCKABLE (no blocking set -- family empty)"
+                        : "blocking set = " + b0.blockingSet()));
+            }
+
+            Set<Node> nfCandSet = new LinkedHashSet<>();
+            if (!b0.indeterminate() && b0.blockingSet() != null) {
+                for (Node n : b0.blockingSet()) {
+                    if (graph.getAdjacentNodes(n).stream().anyMatch(
+                            w -> graph.getEndpoint(n, w) == Endpoint.CIRCLE
+                                    || graph.getEndpoint(w, n) == Endpoint.CIRCLE)) {
+                        nfCandSet.add(n);
+                    }
+                }
+            }
+            List<Node> nfCand = new ArrayList<>(nfCandSet);
+
+            List<Node> common = graph.getAdjacentNodes(x);
+            common.retainAll(graph.getAdjacentNodes(y));
+
+            SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+            int[] nfChoice;
+            while ((nfChoice = nfGen.next()) != null) {
+                if (System.currentTimeMillis() > deadline) return null;
+
+                Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+
+                RecursiveBlocking.BlockingResult result = notFollowed.isEmpty()
+                        ? b0
+                        : RecursiveBlocking.blockPathsRecursively(
+                        graph, x, y, Set.of(), notFollowed, recursiveDepth, depth,
+                        rbRadius, 1, true, deadline);
+
+                if (result == null || result.indeterminate() || result.blockingSet() == null) {
+                    continue;
+                }
+
+                Set<Node> base = new LinkedHashSet<>(result.blockingSet());
+
+                List<Node> removalCandidates = new ArrayList<>();
+                for (Node n : base) if (common.contains(n)) removalCandidates.add(n);
+                for (Node n : base) if (!common.contains(n)) removalCandidates.add(n);
+
+                List<Node> addCandidates = new ArrayList<>();
+                for (Node c : common) if (!base.contains(c)) addCandidates.add(c);
+
+                SublistGenerator addGen = new SublistGenerator(addCandidates.size(), addCandidates.size());
+                int[] addChoice;
+                while ((addChoice = addGen.next()) != null) {
+                    if (System.currentTimeMillis() > deadline) return null;
+
+                    Set<Node> A = GraphUtils.asSet(addChoice, addCandidates);
+
+                    SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
+                    int[] cChoice;
+                    while ((cChoice = cGen.next()) != null) {
+                        if (System.currentTimeMillis() > deadline) return null;
+
+                        Set<Node> S = new LinkedHashSet<>(base);
+                        S.removeAll(GraphUtils.asSet(cChoice, removalCandidates));
+                        S.addAll(A);
+
+                        if (depth != -1 && S.size() > depth) continue;
+
+                        checkCounter.increment("R4 pair sepset search (test executed)");
+
+                        if (test.checkIndependence(x, y, S).isIndependent()) {
+                            return S;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
     }
 

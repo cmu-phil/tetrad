@@ -32,6 +32,7 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -75,6 +76,12 @@ public final class Fcit implements IGraphSearch {
      * the edge is reconsidered after a reverted removal.
      */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new ConcurrentHashMap<>();
+    /**
+     * R4 provenance: firings decided from a separator already recorded for the
+     * discriminating path's endpoint pair, versus firings whose separator this
+     * search had to find on demand, versus firings declined for want of one.
+     */
+    private int r4SepsetBacked = 0, r4Backfilled = 0, r4Declined = 0;
     /**
      * Pairs whose separator search returned indeterminate (budget- or cap-limited)
      * and has not since found a separator. Consulted by the final detection scan
@@ -339,7 +346,7 @@ public final class Fcit implements IGraphSearch {
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
-        fciOrient = new FciOrient(strategy);
+        fciOrient = new FciOrient(new SepsetBackfillR0R4Strategy(strategy));
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(false); // We're doing parallel lookahead.
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -551,6 +558,9 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
+        TetradLogger.getInstance().log("R4 provenance: " + r4SepsetBacked + " sepset-backed, "
+                + r4Backfilled + " backfilled by on-demand search, " + r4Declined
+                + " declined (no separator confirmed).");
         TetradLogger.getInstance().log(checkCounter.report());
 
         CachedIndependenceQueries cache = findCache();
@@ -888,10 +898,18 @@ public final class Fcit implements IGraphSearch {
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
         PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
         if (!legalPagQuiet.isLegalPag() /*|| legalPagQuiet.getReason().contains("reconstituted")*/) {
+//            if (verbose) {
+//                TetradLogger.getInstance().log("\tTried removing " + _edge
+//                        + ", but it didn't lead to a PAG, sepset = " + b);
+//                System.out.println("\tReason = " + legalPagQuiet.getReason());
+//            }
+
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + _edge
                         + ", but it didn't lead to a PAG, sepset = " + b);
                 System.out.println("\tReason = " + legalPagQuiet.getReason());
+                System.out.println("\tRejected reorientation:\n" + this.pag);
+                System.out.println("\tRecorded sepsets at this point: " + sepsets);
             }
 
             this.pag = _pag;
@@ -1132,6 +1150,118 @@ public final class Fcit implements IGraphSearch {
      */
     public SepsetMap getSepsetMap() {
         return sepsets;
+    }
+
+    /**
+     * Wraps the test-based strategy so that R4 handles a discriminating path whose endpoint
+     * pair has no recorded separator. Such a pair is typically nonadjacent in the seed and so
+     * never the subject of a deletion, leaving nothing recorded for it. The delegate's
+     * single-shot blocking search can come back empty on a partly-reoriented graph -- the marks
+     * R0/R1-R3 have already stamped need not be sound -- and R4 then declines and leaves a
+     * circle where the PAG has an arrowhead. Here the pair gets the full spanning search
+     * instead (which includes the orientation-blind pass), the confirmed separator is RECORDED,
+     * and the firing is adjudicated by membership. Found once, read back thereafter.
+     * <p>
+     * R0 and everything else delegate unchanged.
+     */
+    private final class SepsetBackfillR0R4Strategy implements R0R4Strategy {
+        private final R0R4StrategyTestBased delegate;
+
+        SepsetBackfillR0R4Strategy(R0R4StrategyTestBased delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean isUnshieldedCollider(Graph graph, Node a, Node b, Node c) {
+            return delegate.isUnshieldedCollider(graph, a, b, c);
+        }
+
+        @Override
+        public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(
+                DiscriminatingPath discriminatingPath, int maxBlockingPathLength,
+                int maxDiscriminatingPathLength, Graph graph, Set<Node> vNodes)
+                throws InterruptedException {
+            Node x = discriminatingPath.getX();
+            Node w = discriminatingPath.getW();
+            Node v = discriminatingPath.getV();
+            Node y = discriminatingPath.getY();
+
+            Set<Node> s = sepsets.get(x, y);
+
+            if (s == null) {
+                s = foundSepsets.get(Set.of(x, y));
+            }
+
+            if (s == null) {
+                final long deadline = (timeout < 0L)
+                        ? Long.MAX_VALUE
+                        : System.currentTimeMillis() + timeout;
+
+                FcitSepsets.SepsetResult found = FcitSepsets.spanningSepset(
+                        graph, test, x, y, recursiveDepth, depth, rbRadius, deadline,
+                        () -> checkCounter.increment("R4 endpoint-pair search (test executed)"));
+
+                if (found == null) {
+                    r4Declined++;
+                    System.out.println("\tR4 backfill: DDP x=" + x.getName() + " w=" + w.getName()
+                            + " v=" + v.getName() + " y=" + y.getName()
+                            + " -- no separator confirmed for (" + x.getName() + "," + y.getName() + ")");
+                    if (verbose) {
+                        TetradLogger.getInstance().log("R4: no separator confirmed for ("
+                                + x.getName() + "," + y.getName() + "); declining to orient.");
+                    }
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                s = found.sepset();
+                sepsets.set(x, y, s);
+                foundSepsets.putIfAbsent(Set.of(x, y), s);
+                r4Backfilled++;
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("R4: recorded sepset(" + x.getName() + ","
+                            + y.getName() + ") = " + s + " (test-confirmed).");
+                }
+            } else {
+                r4SepsetBacked++;
+            }
+
+            // Adjudicate by membership: v in Sep(x, y) => noncollider (tail at v), else collider.
+            if (!discriminatingPath.existsIn(graph)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (s.contains(v)) {
+                graph.setEndpoint(y, v, Endpoint.TAIL);
+                return Pair.of(discriminatingPath, true);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            graph.setEndpoint(w, v, Endpoint.ARROW);
+            graph.setEndpoint(y, v, Endpoint.ARROW);
+            return Pair.of(discriminatingPath, true);
+        }
+
+        @Override
+        public void setKnowledge(Knowledge knowledge) {
+            delegate.setKnowledge(knowledge);
+        }
+
+        @Override
+        public Knowledge getknowledge() {
+            return delegate.getknowledge();
+        }
     }
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}

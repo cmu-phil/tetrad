@@ -208,18 +208,18 @@ public class FciOrient {
      * @param w                   The starting node for the path, which must satisfy specific adjacency conditions with the target node y.
      * @param y                   The target node for which discriminating paths are being identified.
      * @param maxLen              The maximum allowable length for the paths being considered.
-     * @param checkEcNonadjacency A flag indicating whether strict adjacency conditions between the nodes w and y should be enforced
+     * @param checkXyNonadjacency A flag indicating whether strict adjacency conditions between the nodes w and y should be enforced
      *                            (true for strict adjacency checks, false for relaxed checks).
      * @return A set of discriminating paths that satisfy the required conditions, or an empty set if no such paths are found.
      */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
-            Graph graph, Node w, Node y, int maxLen, boolean checkEcNonadjacency) {
+            Graph graph, Node w, Node y, int maxLen, boolean checkXyNonadjacency) {
 
         Set<DiscriminatingPath> out = new LinkedHashSet<>();
 
         // In the strict/original setting, W must be a parent of Y,
         // since W is one of the vertices between X and V.
-        if (checkEcNonadjacency) {
+        if (checkXyNonadjacency) {
             if (!graph.isParentOf(w, y)) {
                 return out;
             }
@@ -242,14 +242,11 @@ public class FciOrient {
                 continue;
             }
 
-            // R4 applies when V o-* Y, not only V o-> Y.
-            // So the endpoint at V on edge V--Y must be a circle.
-            Endpoint endpointAtV = graph.getEndpoint(y, v); // endpoint at v
-            if (endpointAtV != Endpoint.CIRCLE) {
-                continue;
-            }
-
-            discriminatingPathBfs(w, v, y, graph, out, maxLen, checkEcNonadjacency);
+            // Zhang's definition of a discriminating path places no endpoint condition
+            // at V. The R4 trigger (V o-* Y) is a property of the rule, not the path,
+            // and is applied at the R4 call site (getDiscriminatingPathTasks), so that
+            // this method enumerates the definitional set.
+            discriminatingPathBfs(w, v, y, graph, out, maxLen, checkXyNonadjacency);
         }
 
         return out;
@@ -270,7 +267,7 @@ public class FciOrient {
                                               Graph graph,
                                               Set<DiscriminatingPath> discriminatingPaths,
                                               int maxDiscriminatingPathLength,
-                                              boolean checkEcNonadjacency) {
+                                              boolean checkXyNonadjacency) {
 
         class State {
             final Node current;           // current upstream node t
@@ -312,7 +309,7 @@ public class FciOrient {
                     continue;
                 }
 
-                if (checkEcNonadjacency) {
+                if (checkXyNonadjacency) {
                     if (!graph.isParentOf(t, y)) {
                         continue;
                     }
@@ -350,14 +347,14 @@ public class FciOrient {
                     continue;
                 }
 
-                DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, newBody, checkEcNonadjacency);
+                DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, newBody, checkXyNonadjacency);
 
                 if (dp.existsIn(graph)) {
                     discriminatingPaths.add(dp);
                 }
 
                 // Extend farther upstream only if x could itself be an interior vertex.
-                if (checkEcNonadjacency) {
+                if (checkXyNonadjacency) {
                     if (!graph.isParentOf(x, y)) {
                         continue;
                     }
@@ -914,8 +911,18 @@ public class FciOrient {
      * @return the list of tasks
      * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
      */
-    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph) {
-        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
+    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph) {Set<DiscriminatingPath> allPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
+
+        // R4 trigger: the rule fires only when V o-* Y (circle at V on the V--Y edge).
+        // This is a property of R4, not of the discriminating path definition, so it
+        // is applied here rather than in the enumerator.
+        Set<DiscriminatingPath> discriminatingPaths = new LinkedHashSet<>();
+
+        for (DiscriminatingPath discriminatingPath : allPaths) {
+            if (graph.getEndpoint(discriminatingPath.getY(), discriminatingPath.getV()) == Endpoint.CIRCLE) {
+                discriminatingPaths.add(discriminatingPath);
+            }
+        }
 
         Set<Node> vNodes = new LinkedHashSet<>();
 
@@ -926,7 +933,14 @@ public class FciOrient {
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, recursiveDepth, maxDiscriminatingPathLength, graph, vNodes));
+            tasks.add(() -> {
+                // Re-check the R4 trigger at execution time: an earlier task in this
+                // batch may have oriented the V endpoint after enumeration.
+                if (graph.getEndpoint(discriminatingPath.getY(), discriminatingPath.getV()) != Endpoint.CIRCLE) {
+                    return Pair.of(discriminatingPath, false);
+                }
+                return strategy.doDiscriminatingPathOrientation(discriminatingPath, recursiveDepth, maxDiscriminatingPathLength, graph, vNodes);
+            });
         }
 
         return tasks;

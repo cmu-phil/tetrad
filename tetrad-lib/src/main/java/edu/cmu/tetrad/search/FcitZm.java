@@ -32,6 +32,7 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -109,6 +110,12 @@ public final class FcitZm implements IGraphSearch {
      * test's p instead of NaN.
      */
     private final Map<Set<Node>, Double> foundPValues = new ConcurrentHashMap<>();
+    /**
+     * R4 provenance: firings decided from a separator already recorded for the
+     * discriminating path's endpoint pair, versus firings whose separator had to be
+     * found on demand, versus firings declined for want of one.
+     */
+    private int r4SepsetBacked = 0, r4Backfilled = 0, r4Declined = 0;
     /**
      * The background knowledge.
      */
@@ -354,7 +361,7 @@ public final class FcitZm implements IGraphSearch {
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
-        fciOrient = new FciOrient(strategy);
+        fciOrient = new FciOrient(new SepsetBackfillR0R4Strategy(strategy));
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(false); // We're doing parallel lookahead.
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -595,6 +602,9 @@ public final class FcitZm implements IGraphSearch {
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
+        TetradLogger.getInstance().log("R4 provenance: " + r4SepsetBacked + " sepset-backed, "
+                + r4Backfilled + " backfilled by on-demand search, " + r4Declined
+                + " declined (no separator confirmed).");
         TetradLogger.getInstance().log(checkCounter.report());
 
         CachedIndependenceQueries cache = findCache();
@@ -1537,6 +1547,227 @@ public final class FcitZm implements IGraphSearch {
          * Project back through the canonical Zhang MAG (the route the paper calls FCIT-ZM).
          */
         MAG
+    }
+
+    /**
+     * Wraps the test-based strategy so R4 can handle a discriminating path whose endpoint
+     * pair has no recorded separator. Such a pair is typically nonadjacent in the seed and so
+     * never the subject of a deletion, leaving nothing recorded for it; the delegate's
+     * single-shot blocking search can then come back empty on a partly-reoriented graph --
+     * the marks R0/R1-R3 have already stamped need not be sound -- and R4 declines, leaving a
+     * circle where the PAG has an arrowhead. In FCIT that circle also made the trial
+     * reorientation non-maximal (an inducing path opened by the un-oriented endpoint), so the
+     * legality gate refused a deletion whose separator had in fact been found.
+     * <p>
+     * Here the pair gets its own spanning search, including an orientation-blind pass; the
+     * confirmed separator is recorded; and the firing is adjudicated by membership. Found
+     * once, read back thereafter. R0 and everything else delegate unchanged.
+     */
+    private final class SepsetBackfillR0R4Strategy implements R0R4Strategy {
+        private final R0R4StrategyTestBased delegate;
+
+        SepsetBackfillR0R4Strategy(R0R4StrategyTestBased delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean isUnshieldedCollider(Graph graph, Node a, Node b, Node c) {
+            return delegate.isUnshieldedCollider(graph, a, b, c);
+        }
+
+        @Override
+        public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(
+                DiscriminatingPath discriminatingPath, int maxBlockingPathLength,
+                int maxDiscriminatingPathLength, Graph graph, Set<Node> vNodes)
+                throws InterruptedException {
+            Node x = discriminatingPath.getX();
+            Node w = discriminatingPath.getW();
+            Node v = discriminatingPath.getV();
+            Node y = discriminatingPath.getY();
+
+            Set<Node> s = sepsets.get(x, y);
+            if (s == null) s = foundSepsets.get(Set.of(x, y));
+
+            if (s == null) {
+                Set<Node> found = searchSepsetForPair(graph, x, y);
+
+                if (found == null) {
+                    r4Declined++;
+                    if (verbose) {
+                        TetradLogger.getInstance().log("R4 backfill: no separator confirmed for ("
+                                + x.getName() + "," + y.getName() + "); declining to orient.");
+                    }
+                    return Pair.of(discriminatingPath, false);
+                }
+
+                // A test-confirmed separator for a nonadjacent pair is a data fact, so
+                // committing it is safe even if the trial reorientation around this call is
+                // later reverted: it licenses R0 stamps on exactly the pair it separates,
+                // unlike a deletion commitment, which is graph-relative.
+                s = found;
+                sepsets.set(x, y, s);
+                foundSepsets.putIfAbsent(Set.of(x, y), s);
+                r4Backfilled++;
+
+                if (verbose) {
+                    TetradLogger.getInstance().log("R4 backfill: recorded sepset(" + x.getName()
+                            + "," + y.getName() + ") = " + s + " (test-confirmed).");
+                }
+            } else {
+                r4SepsetBacked++;
+            }
+
+            // Adjudicate by membership: v in Sep(x, y) => noncollider (tail at v), else collider.
+            // Compared by name, so a MAG/PAG round trip cannot break identity.
+            final String vName = v.getName();
+            boolean vInS = s.stream().anyMatch(n -> n.getName().equals(vName));
+
+            if (!discriminatingPath.existsIn(graph)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (vInS) {
+                graph.setEndpoint(y, v, Endpoint.TAIL);
+                return Pair.of(discriminatingPath, true);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
+                return Pair.of(discriminatingPath, false);
+            }
+
+            graph.setEndpoint(w, v, Endpoint.ARROW);
+            graph.setEndpoint(y, v, Endpoint.ARROW);
+            return Pair.of(discriminatingPath, true);
+        }
+
+        @Override
+        public void setKnowledge(Knowledge knowledge) {
+            delegate.setKnowledge(knowledge);
+        }
+
+        @Override
+        public Knowledge getknowledge() {
+            return delegate.getknowledge();
+        }
+
+        /**
+         * Spanning separator search for one nonadjacent pair, self-contained on the graph
+         * passed to R4 (not interimPags, which is a different graph at this point). Same
+         * family as the sweep in findIndependenceCheckRecursive -- not-followed enumeration
+         * over the ambiguous members of the blocking set, common neighbours forced in,
+         * removals enumerated from empty upward -- run first against the live graph and then,
+         * if that proposes nothing, against the bare skeleton.
+         */
+        private Set<Node> searchSepsetForPair(Graph graph, Node x, Node y)
+                throws InterruptedException {
+            final long deadline = (timeout < 0L)
+                    ? Long.MAX_VALUE
+                    : System.currentTimeMillis() + timeout;
+
+            Set<Node> found = sweepOnView(graph, x, y, deadline, "oriented");
+            if (found != null) return found;
+
+            // Orientation-blind pass. Mid-FciOrient the graph carries marks R0/R1-R3 have
+            // stamped, some of them unsound; recursive blocking reads those marks and can
+            // report the pair unblockable, returning no blocking set at all -- the candidate
+            // family is then empty and not one test runs. On the bare skeleton no triple is a
+            // collider, nothing counts as pre-blocked, and the proposal depends on the
+            // adjacencies alone. This weakens nothing: the blind view only PROPOSES, and every
+            // candidate is still confirmed against the test before it is returned or recorded.
+            Graph blind = new EdgeListGraph(graph);
+            for (Edge e : new ArrayList<>(blind.getEdges())) {
+                blind.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.CIRCLE);
+                blind.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.CIRCLE);
+            }
+
+            return sweepOnView(blind, x, y, deadline, "blind");
+        }
+
+        /**
+         * One sweep against one view. The view supplies proposals only.
+         */
+        private Set<Node> sweepOnView(Graph graph, Node x, Node y, long deadline, String label)
+                throws InterruptedException {
+
+            RecursiveBlocking.BlockingResult b0 = RecursiveBlocking.blockPathsRecursively(
+                    graph, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+                    deadline);
+
+            if (superVerbose) {
+                TetradLogger.getInstance().log("    R4 backfill [" + label + "] RB seed: "
+                        + (b0.indeterminate() ? "INDETERMINATE"
+                        : b0.blockingSet() == null ? "UNBLOCKABLE (no blocking set -- family empty)"
+                        : "blocking set = " + b0.blockingSet()));
+            }
+
+            Set<Node> nfCandSet = new LinkedHashSet<>();
+            if (!b0.indeterminate() && b0.blockingSet() != null) {
+                for (Node n : b0.blockingSet()) {
+                    if (graph.getAdjacentNodes(n).stream().anyMatch(
+                            w2 -> graph.getEndpoint(n, w2) == Endpoint.CIRCLE
+                                    || graph.getEndpoint(w2, n) == Endpoint.CIRCLE)) {
+                        nfCandSet.add(n);
+                    }
+                }
+            }
+
+            List<Node> nfCand = new ArrayList<>(nfCandSet);
+            nfCand.sort(Comparator.comparing(Node::getName));
+
+            List<Node> common = graph.getAdjacentNodes(x);
+            common.retainAll(graph.getAdjacentNodes(y));
+            List<Node> removalCandidates = new ArrayList<>(common);
+            removalCandidates.sort(Comparator.comparing(Node::getName));
+
+            SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+            int[] nfChoice;
+            while ((nfChoice = nfGen.next()) != null) {
+                if (System.currentTimeMillis() > deadline) return null;
+
+                Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+
+                RecursiveBlocking.BlockingResult result = notFollowed.isEmpty()
+                        ? b0
+                        : RecursiveBlocking.blockPathsRecursively(
+                        graph, x, y, Set.of(), notFollowed, recursiveDepth, depth,
+                        rbRadius, 1, true, deadline);
+
+                if (result == null || result.indeterminate() || result.blockingSet() == null) {
+                    continue;
+                }
+
+                Set<Node> B = new LinkedHashSet<>(result.blockingSet());
+                B.addAll(common);
+
+                SublistGenerator cGen = new SublistGenerator(
+                        removalCandidates.size(), removalCandidates.size());
+                int[] cChoice;
+                while ((cChoice = cGen.next()) != null) {
+                    if (System.currentTimeMillis() > deadline) return null;
+
+                    Set<Node> S = new LinkedHashSet<>(B);
+                    S.removeAll(GraphUtils.asSet(cChoice, removalCandidates));
+
+                    if (depth != -1 && S.size() > depth) continue;
+
+                    checkCounter.increment("R4 endpoint-pair search (test executed)");
+
+                    if (test.checkIndependence(x, y, S).isIndependent()) {
+                        return S;
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}

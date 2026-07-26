@@ -15,8 +15,6 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -34,9 +32,9 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public final class FcitSepsets {
+public final class FcitSepsets2 {
 
-    private FcitSepsets() {}
+    private FcitSepsets2() {}
 
     /**
      * A found separator together with the p-value of the test that confirmed it.
@@ -104,45 +102,6 @@ public final class FcitSepsets {
                                                     long deadline, Runnable onTest)
             throws InterruptedException {
 
-        // Pass 1: propose against the graph as it stands.
-        SepsetSearch oriented = sweepOnView(graph, test, x, y, recursiveDepth, depth, rbRadius,
-                deadline, onTest);
-        if (oriented.result() != null) return oriented;
-
-        // Pass 2: orientation-blind. Every proposal above came from a blocking set RB
-        // computed against the CURRENT marks, and those marks can be wrong in exactly the
-        // way that hides the separator: a true non-collider read as a collider makes RB
-        // treat its path as pre-blocked, so the node never enters B -- or, worse, makes RB
-        // report the pair unblockable and return no blocking set at all, leaving the
-        // candidate family empty and running zero tests. On the bare skeleton (every
-        // endpoint a circle) no triple is a collider, nothing counts as pre-blocked, and
-        // the proposal is a function of the adjacencies alone. This weakens nothing: the
-        // blind view only PROPOSES, and every candidate is still confirmed by the test.
-        Graph blind = new EdgeListGraph(graph);
-        for (Edge e : new ArrayList<>(blind.getEdges())) {
-            blind.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.CIRCLE);
-            blind.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.CIRCLE);
-        }
-
-        SepsetSearch blindSearch = sweepOnView(blind, test, x, y, recursiveDepth, depth, rbRadius,
-                deadline, onTest);
-        if (blindSearch.result() != null) return blindSearch;
-
-        return (oriented.indeterminate() || blindSearch.indeterminate())
-                ? SepsetSearch.INDETERMINATE
-                : SepsetSearch.NOT_FOUND;
-    }
-
-    /**
-     * One sweep against one view of the graph. The view supplies proposals only; every
-     * returned set is test-confirmed, so a blind view costs completeness nothing and
-     * soundness nothing.
-     */
-    private static SepsetSearch sweepOnView(Graph graph, IndependenceTest test, Node x, Node y,
-                                            int recursiveDepth, int depth, int rbRadius,
-                                            long deadline, Runnable onTest)
-            throws InterruptedException {
-
         // Full blocking set with no forbidden nodes, used only to harvest the
         // ambiguous nodes that seed the not-followed enumeration.
         RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
@@ -181,6 +140,8 @@ public final class FcitSepsets {
         // loop-invariant; compute them once.
         List<Node> common = graph.getAdjacentNodes(x);
         common.retainAll(graph.getAdjacentNodes(y));
+        List<Node> removalCandidates = new ArrayList<>(common);
+        removalCandidates.sort(Comparator.comparing(Node::getName));
 
         // Enumerate subsets of the "not-followed" set NF subset of nfCand.
         SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
@@ -212,31 +173,6 @@ public final class FcitSepsets {
             // is shared with the harvest above).
             Set<Node> B = new LinkedHashSet<>(result.blockingSet());
             B.addAll(common);
-
-            // Removal candidates are the WHOLE base, not just the common neighbours. RB
-            // returns ONE blocking set, chosen against a graph whose circles hide collider
-            // status; a node it blocks may be a collider in the truth, or a DESCENDANT of
-            // one, in which case conditioning on it OPENS a path and no superset of it can
-            // separate. Such a node need not be adjacent to both endpoints. (Witness, from
-            // FCIT-SL: for the pair (V1, V5), B = {V2, V3} with V2 adjacent to V1 but not
-            // V5, a descendant of the collider V4; restricting removals to common
-            // neighbours left the true separator {V3} untestable and the spurious edge was
-            // never separated.) Common neighbours are listed first, and each group is
-            // name-sorted, so the previous search order is still reached first and the
-            // first-found separator stays a deterministic function of (graph, x, y).
-            List<Node> commonFirst = new ArrayList<>();
-            List<Node> rest = new ArrayList<>();
-            for (Node n : B) {
-                if (common.contains(n)) {
-                    commonFirst.add(n);
-                } else {
-                    rest.add(n);
-                }
-            }
-            commonFirst.sort(Comparator.comparing(Node::getName));
-            rest.sort(Comparator.comparing(Node::getName));
-            List<Node> removalCandidates = new ArrayList<>(commonFirst);
-            removalCandidates.addAll(rest);
 
             SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
             int[] cChoice;

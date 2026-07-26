@@ -50,20 +50,20 @@ public class DiscriminatingPath {
      * @param v                   the middle node that forms a collider in the path.
      * @param y                   the ending node in the discriminating path.
      * @param colliderPath        the list of nodes that represents the collider path between nodes.
-     * @param checkEcNonadjacency a flag indicating whether non-adjacency between certain nodes should be checked.
+     * @param checkXyNonadjacency a flag indicating whether non-adjacency between certain nodes should be checked.
      */
     public DiscriminatingPath(Node x,
                               Node w,
                               Node v,
                               Node y,
                               LinkedList<Node> colliderPath,
-                              boolean checkEcNonadjacency) {
+                              boolean checkXyNonadjacency) {
         this.x = x;
         this.w = w;
         this.v = v;
         this.y = y;
         this.colliderPath = colliderPath;
-        this.checkXYNonadjacency = checkEcNonadjacency;
+        this.checkXYNonadjacency = checkXyNonadjacency;
     }
 
     /**
@@ -92,8 +92,9 @@ public class DiscriminatingPath {
             return false;
         }
 
-        // The path must include W among the vertices between X and V.
-        if (!colliderPath.contains(w)) {
+        // W must be the vertex adjacent to V on the path. By the storage convention
+        // [W, ..., first-after-X], W must be the first element of colliderPath.
+        if (colliderPath.isEmpty() || colliderPath.get(0) != w) {
             return false;
         }
 
@@ -148,7 +149,9 @@ public class DiscriminatingPath {
             }
         }
 
-        // Zhang's definition does NOT require V *-> W.
+        // Note: the collider check at W (last loop iteration above) requires an
+        // arrowhead at W from V, i.e., V *-> W. This is correct: W lies between
+        // X and V and so must be a collider on the path per Zhang's definition.
         return true;
     }
 
