@@ -1,5 +1,5 @@
 /// ////////////////////////////////////////////////////////////////////////////
-// PhantomKernelEnumerator11.java  (parallel, PAG-space, end-to-end Fcit)    //
+// PhantomKernelEnumerator12.java  (parallel, PAG-space, end-to-end Fcit)    //
 //                                                                             //
 // pke12 = PKE8's QUESTION over PKE10's POPULATION.                            //
 //                                                                             //
@@ -156,13 +156,6 @@ public final class PhantomKernelEnumerator12 {
     private static int    OBS        = 6;
 
     // ── Fcit configuration (verbatim PKE8; match the shipping defaults to certify) ──
-    /** Step-Lemma-pure mode: no out-of-class escape.  Set false to certify the
-     *  full shipping algorithm including the fork-flip fallback. */
-    private static final boolean ALLOW_CLASS_ESCAPE = false;
-    /** Fcit commit-gate battery bound. */
-    private static final int BATTERY_Z_MAX = 5;
-    /** Fcit fork-flip bound (only relevant when ALLOW_CLASS_ESCAPE). */
-    private static final int MAX_FORK_FLIPS = 2;
     /** Per-run Fcit timeout, ms; -1 = unlimited.  A positive value turns a
      *  hang into an ERROR verdict instead of stalling the whole run. */
     private static final long FCIT_TIMEOUT_MS = -1L;
@@ -251,10 +244,10 @@ public final class PhantomKernelEnumerator12 {
 
         CONFIG_LINE = String.format(
                 "# pke12 config: mode=%s N=%d latent=%d observed=%d "
-                        + "escape=%b zMax=%d forkFlips=%d timeoutMs=%d depth=%d recDepth=%d "
+                        + "timeoutMs=%d depth=%d recDepth=%d "
                         + "exclSel=%b",
                 dagSweep ? "dagsweep" : "magspace", N, NUM_LATENT, OBS,
-                ALLOW_CLASS_ESCAPE, BATTERY_Z_MAX, MAX_FORK_FLIPS, FCIT_TIMEOUT_MS,
+                FCIT_TIMEOUT_MS,
                 DEPTH, RECURSIVE_DEPTH, EXCLUDE_SELECTION_BIAS);
 
         System.err.println(CONFIG_LINE);
@@ -920,9 +913,6 @@ public final class PhantomKernelEnumerator12 {
         StringBuilder sb = new StringBuilder();
         sb.append("==== VIOLATION [").append(bucket).append("] ====\n");
         sb.append("  config            : mode=").append(MODE)
-                .append(" escape=").append(ALLOW_CLASS_ESCAPE)
-                .append(" zMax=").append(BATTERY_Z_MAX)
-                .append(" forkFlips=").append(MAX_FORK_FLIPS)
                 .append(" depth=").append(DEPTH)
                 .append(" recursiveDepth=").append(RECURSIVE_DEPTH).append('\n');
         sb.append("  model             : ").append(modelId)
@@ -971,8 +961,7 @@ public final class PhantomKernelEnumerator12 {
                 error > 0 ? "   *** see violation log ***" : ""));
         sb.append("---- THE ANSWER ----\n");
         sb.append(violations == 0
-                ? "Fcit (" + (ALLOW_CLASS_ESCAPE ? "escape ON" : "Step-Lemma-pure")
-                + ") recovers G* EXACTLY on all " + t.pagsScanned.sum()
+                ? "Fcit recovers G* EXACTLY on all " + t.pagsScanned.sum()
                 + " distinct true PAGs analyzed this run at this scope ("
                 + (MODE.startsWith("dag")
                 ? "dagsweep N=" + N + " |L|=" + NUM_LATENT

@@ -91,9 +91,13 @@ import java.util.concurrent.TimeoutException;
  */
 public class RecursiveBlocking {
     private static final int MAX_TOTAL_FRAMES = 50_000;
-
-    private RecursiveBlocking() {
-    }
+    /**
+     * The default strategy used for processing or executing tasks in the system.
+     * This is a globally accessible constant that indicates the
+     * predefined approach, which is set to a recursive strategy.
+     * It can be utilized wherever a default execution policy is required.
+     */
+    public static Strategy DEFAULT_STRATEGY = Strategy.SHALLOW_RECURSIVE;
 
 //    /**
 //     * Blocks paths between two specified nodes in a graph by iteratively
@@ -135,19 +139,22 @@ public class RecursiveBlocking {
     // Result type
     // -----------------------------------------------------------------------
 
+    private RecursiveBlocking() {
+    }
+
     /**
      * Recursively blocks paths in a graph between two nodes based on specified parameters and constraints.
      *
-     * @param graph           The graph in which the paths are to be blocked.
-     * @param x               The starting node of the path.
-     * @param y               The ending node of the path.
-     * @param containing      A set of nodes that must be included in the path.
-     * @param notFollowed     A set of nodes that must not be followed in the path.
-     * @param recursiveDepth  The maximum depth for recursion during the path blocking process.
-     * @param depth           The current depth of the recursive call.
-     * @param maxRadius       The maximum radius from the starting node to consider for path blocking.
+     * @param graph             The graph in which the paths are to be blocked.
+     * @param x                 The starting node of the path.
+     * @param y                 The ending node of the path.
+     * @param containing        A set of nodes that must be included in the path.
+     * @param notFollowed       A set of nodes that must not be followed in the path.
+     * @param recursiveDepth    The maximum depth for recursion during the path blocking process.
+     * @param depth             The current depth of the recursive call.
+     * @param maxRadius         The maximum radius from the starting node to consider for path blocking.
      * @param nearWhichEndpoint Determines near which endpoint of the path the restriction is to be enforced.
-     * @param ignoreDirectEdge A flag indicating whether to ignore direct edges between the starting node and ending node.
+     * @param ignoreDirectEdge  A flag indicating whether to ignore direct edges between the starting node and ending node.
      * @return A BlockingResult object containing the results of the path blocking operation.
      * @throws InterruptedException If the operation is interrupted during execution.
      */
@@ -163,14 +170,18 @@ public class RecursiveBlocking {
                                                        boolean ignoreDirectEdge)
             throws InterruptedException {
 //        try {
-            return blockPathsRecursively(graph, x, y, containing, notFollowed,
-                    recursiveDepth, depth, maxRadius, nearWhichEndpoint,
-                    ignoreDirectEdge, Long.MAX_VALUE);
+        return blockPathsRecursively(graph, x, y, containing, notFollowed,
+                recursiveDepth, depth, maxRadius, nearWhichEndpoint,
+                ignoreDirectEdge, Long.MAX_VALUE);
 //        }
 //        catch (TimeoutException e) {
 //            throw new RuntimeException(e);
 //        }
     }
+
+    // -----------------------------------------------------------------------
+    // Public entry points — Set<Node> convenience overloads (existing callers)
+    // -----------------------------------------------------------------------
 
     /**
      * Single canonical entry point for separating-set search.
@@ -207,10 +218,39 @@ public class RecursiveBlocking {
                                                        int nearWhichEndpoint,
                                                        boolean ignoreDirectEdge,
                                                        long deadlineMs)
-            throws InterruptedException {// TimeoutException {
+            throws InterruptedException {
+        return blockPathsRecursively(graph, x, y, containing, notFollowed,
+                recursiveDepth, depth, maxRadius, nearWhichEndpoint,
+                ignoreDirectEdge, deadlineMs, DEFAULT_STRATEGY);
+    }
+
+    /**
+     * As the deadline overload above, but with the dispatch strategy passed
+     * explicitly rather than read from {@link #DEFAULT_STRATEGY}. Callers whose
+     * correctness depends on a particular proposal semantics -- e.g. the
+     * FcitSepsets removal search, which enumerates subsets of the returned
+     * blocking set and therefore needs proposals that can contain interior
+     * separators -- should use this overload. The shallow strategy's near-x
+     * commit preference degenerates on circle-rich views (its non-collider
+     * guard is vacuous when no triple is a definite collider), so it must not
+     * be used to generate candidates for orientation-blind sweeps.
+     */
+    public static BlockingResult blockPathsRecursively(Graph graph,
+                                                       Node x,
+                                                       Node y,
+                                                       Set<Node> containing,
+                                                       Set<Node> notFollowed,
+                                                       int recursiveDepth,
+                                                       int depth,
+                                                       int maxRadius,
+                                                       int nearWhichEndpoint,
+                                                       boolean ignoreDirectEdge,
+                                                       long deadlineMs,
+                                                       Strategy strategy)
+            throws InterruptedException {
 
         try {
-            switch (DEFAULT_STRATEGY) {
+            switch (strategy) {
                 case Strategy.ITERATIVE_DEEPENING:
                     return blockPathsIterativeDeepening(graph, x, y, containing, notFollowed,
                             recursiveDepth, depth, maxRadius, nearWhichEndpoint,
@@ -227,15 +267,10 @@ public class RecursiveBlocking {
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        }
-        catch (TimeoutException e) {
+        } catch (TimeoutException e) {
             return new BlockingResult(null, true);
         }
     }
-
-    // -----------------------------------------------------------------------
-    // Public entry points — Set<Node> convenience overloads (existing callers)
-    // -----------------------------------------------------------------------
 
     /**
      * Full-parameter entry point returning a full {@link BlockingResult},
@@ -598,6 +633,10 @@ public class RecursiveBlocking {
         return new BlockingResult(null, true);
     }
 
+    // -----------------------------------------------------------------------
+    // BFS helpers
+    // -----------------------------------------------------------------------
+
     /**
      * Returns true iff {@code z} blocks every active path from {@code x} to
      * {@code y} in {@code graph}.
@@ -662,10 +701,6 @@ public class RecursiveBlocking {
 
         return true;
     }
-
-    // -----------------------------------------------------------------------
-    // BFS helpers
-    // -----------------------------------------------------------------------
 
     /**
      * Collects nodes that lie on active paths from {@code x} to {@code y}
@@ -788,21 +823,23 @@ public class RecursiveBlocking {
         return pool;
     }
 
-    /** Adjacency in a deterministic order. EdgeListGraph's adjacency iteration is
-     *  hash-derived, so the greedy fixed point that grows Z can converge on
-     *  different -- equally valid -- blocking sets from run to run. Every caller
-     *  below walks adjacency to decide what enters Z, so sorting here makes the
-     *  returned blocking set a function of the graph's content alone. This is a
-     *  reproducibility fix, not a correctness one: each variant Z blocks. */
-    private static List<Node> adj(Graph graph, Node node) {
-        List<Node> out = new ArrayList<>(adj(graph, node));
-        out.sort(Comparator.comparing(Node::getName));
-        return out;
-    }
-
     // -----------------------------------------------------------------------
     // PathEntry helper for BFS
     // -----------------------------------------------------------------------
+
+    /**
+     * Adjacency in a deterministic order. EdgeListGraph's adjacency iteration is
+     * hash-derived, so the greedy fixed point that grows Z can converge on
+     * different -- equally valid -- blocking sets from run to run. Every caller
+     * below walks adjacency to decide what enters Z, so sorting here makes the
+     * returned blocking set a function of the graph's content alone. This is a
+     * reproducibility fix, not a correctness one: each variant Z blocks.
+     */
+    private static List<Node> adj(Graph graph, Node node) {
+        List<Node> out = new ArrayList<>(graph.getAdjacentNodes(node));
+        out.sort(Comparator.comparing(Node::getName));
+        return out;
+    }
 
     /**
      * Standard undirected BFS up to {@code maxRadius} hops from {@code seed}.
@@ -837,6 +874,10 @@ public class RecursiveBlocking {
         visited.remove(seed);
         return visited;
     }
+
+    // -----------------------------------------------------------------------
+    // Pool construction (BFS shells)
+    // -----------------------------------------------------------------------
 
     /**
      * Core fixed-point loop. Now returns a {@link BlockingResult} so callers
@@ -941,10 +982,6 @@ public class RecursiveBlocking {
         // Iteration cap reached without convergence.
         return new BlockingResult(null, true);
     }
-
-    // -----------------------------------------------------------------------
-    // Pool construction (BFS shells)
-    // -----------------------------------------------------------------------
 
     static Blockable findPathToTargetVisit(Graph graph,
                                            Node aInit, Node bInit, Node y,
@@ -1254,6 +1291,11 @@ public class RecursiveBlocking {
         return result;
     }
 
+
+    // -----------------------------------------------------------------------
+    // Core algorithm
+    // -----------------------------------------------------------------------
+
     private static Blockable stepContinuationLoop(
             Graph graph,
             Frame f,
@@ -1286,9 +1328,8 @@ public class RecursiveBlocking {
         return Blockable.BLOCKED;
     }
 
-
     // -----------------------------------------------------------------------
-    // Core algorithm
+    // Frame definition for the explicit stack
     // -----------------------------------------------------------------------
 
     private static List<Node> getReachableNodes(Graph graph,
@@ -1313,10 +1354,6 @@ public class RecursiveBlocking {
         }
         return passNodes;
     }
-
-    // -----------------------------------------------------------------------
-    // Frame definition for the explicit stack
-    // -----------------------------------------------------------------------
 
     private static boolean reachable(Graph graph,
                                      Node a,
@@ -1368,6 +1405,10 @@ public class RecursiveBlocking {
         return (!colliderAtB && arrivedHead) || graph.getEndpoint(b, c) == Endpoint.ARROW;
     }
 
+    // -----------------------------------------------------------------------
+    // Iterative driver
+    // -----------------------------------------------------------------------
+
     private static void checkTimeout(long deadlineMs) throws InterruptedException, TimeoutException {
         if (deadlineMs > 0 && System.currentTimeMillis() > deadlineMs) {
             throw new TimeoutException("timed out");
@@ -1377,10 +1418,6 @@ public class RecursiveBlocking {
             throw new InterruptedException("interrupted");
         }
     }
-
-    // -----------------------------------------------------------------------
-    // Iterative driver
-    // -----------------------------------------------------------------------
 
     /**
      * Selects the search strategy used by {@link #blockPathsRecursively}.
@@ -1399,14 +1436,6 @@ public class RecursiveBlocking {
          */
         SHALLOW_RECURSIVE
     }
-
-    /**
-     * The default strategy used for processing or executing tasks in the system.
-     * This is a globally accessible constant that indicates the
-     * predefined approach, which is set to a recursive strategy.
-     * It can be utilized wherever a default execution policy is required.
-     */
-    public static Strategy DEFAULT_STRATEGY = Strategy.SHALLOW_RECURSIVE;
 
     // -----------------------------------------------------------------------
     // Continuation-loop stepper

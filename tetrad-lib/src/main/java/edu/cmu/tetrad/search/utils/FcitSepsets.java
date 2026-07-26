@@ -147,7 +147,7 @@ public final class FcitSepsets {
         // ambiguous nodes that seed the not-followed enumeration.
         RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
                 graph, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
-                deadline);
+                deadline, RecursiveBlocking.Strategy.RECURSIVE);
 
         boolean sawIndeterminate = false;
 
@@ -198,7 +198,7 @@ public final class FcitSepsets {
                     ? b0result
                     : RecursiveBlocking.blockPathsRecursively(
                     graph, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-                    deadline);
+                    deadline, RecursiveBlocking.Strategy.RECURSIVE);
 
             if (result == null || result.indeterminate()) {
                 // This NF branch was skipped for budget/cap reasons, not refuted.

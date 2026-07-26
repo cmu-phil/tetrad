@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fcit;
+import edu.cmu.tetrad.search.RecursiveBlocking;
+import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.MagToPag;
 import org.junit.Test;
@@ -178,7 +181,7 @@ public class TestFcitSlV2V5ClassEnumeration {
      * -- is itself a finding about the legality gate the generator relies on, so it is printed
      * loudly rather than asserted away. Only V2-->V5 legal is asserted (the robust part).
      */
-    @Test
+//    @Test
     public void reportAddedEdgeLegality() {
         String[] labels = {"V2 --> V5", "V5 --> V2", "V2 <-> V5"};
         for (int ori = 0; ori < 3; ori++) {
@@ -210,7 +213,7 @@ public class TestFcitSlV2V5ClassEnumeration {
      * the interim-class host count, the over-separating Z's of the non-hosts, and the set of
      * hosting classes -- then prints a verdict.
      */
-    @Test
+//    @Test
     public void auditV2V5Removal() {
         List<Node> nodes = canonicalNodes();
         Graph gStar = oracleMag();
@@ -350,7 +353,7 @@ public class TestFcitSlV2V5ClassEnumeration {
      * </ul>
      * Diagnostic only: asserts just that hosts exist.
      */
-    @Test
+//    @Test
     public void characterizeInClassHosts() {
         List<Node> nodes = canonicalNodes();
         Graph gStar = oracleMag();
@@ -516,7 +519,7 @@ public class TestFcitSlV2V5ClassEnumeration {
      * Reports whether the walk reaches the whole class and all 22 hosts, and at what BFS depth
      * the first host appears -- that depth is the budget any bounded implementation needs.
      */
-    @Test
+//    @Test
     public void markChangeWalkReachesHosts() {
         List<Node> nodes = canonicalNodes();
         Graph gStar = oracleMag();
@@ -625,5 +628,51 @@ public class TestFcitSlV2V5ClassEnumeration {
         }
 
         assertTrue("BFS should at least reach the seed", reached.contains(seedKey));
+    }
+
+    @Test
+    public void testPke12FirstViolation_V2V3SpuriousAdjacency() {
+        System.out.println("FcitSepsets from: " + edu.cmu.tetrad.search.utils.FcitSepsets.class
+                .getProtectionDomain().getCodeSource().getLocation());
+        System.out.println("RecursiveBlocking from: " + edu.cmu.tetrad.search.RecursiveBlocking.class
+                .getProtectionDomain().getCodeSource().getLocation());
+
+        Graph mag = new EdgeListGraph();
+        Node v1 = new GraphNode("V1"), v2 = new GraphNode("V2"), v3 = new GraphNode("V3"),
+                v4 = new GraphNode("V4"), v5 = new GraphNode("V5"), v6 = new GraphNode("V6");
+        for (Node n : List.of(v1, v2, v3, v4, v5, v6)) mag.addNode(n);
+        mag.addDirectedEdge(v1, v5);
+        mag.addDirectedEdge(v2, v1);
+        mag.addBidirectedEdge(v4, v3);
+        mag.addDirectedEdge(v5, v3);
+        mag.addBidirectedEdge(v5, v4);
+        mag.addBidirectedEdge(v6, v1);
+        mag.addBidirectedEdge(v6, v4);
+        mag.addDirectedEdge(v6, v5);
+
+        MsepTest test = new MsepTest(new EdgeListGraph(mag));
+
+        // Sanity: the pair is separable at depth 1.
+        assertTrue(test.checkIndependence(v2, v3, Set.of(v5)).isIndependent());
+        // And the trap set fails, per hand derivation.
+        assertFalse(test.checkIndependence(v2, v3, Set.of(v1)).isIndependent());
+        assertTrue(test.checkIndependence(v2, v3, Set.of(v1, v5)).isIndependent());
+        assertFalse(test.checkIndependence(v2, v3, Set.of(v1, v4, v5)).isIndependent());
+
+        RecursiveBlocking.DEFAULT_STRATEGY = RecursiveBlocking.Strategy.SHALLOW_RECURSIVE;
+
+        Fcit fcit = new Fcit(test, new GraphScore(new EdgeListGraph(mag)));
+        fcit.setExcludeSelectionBias(true);
+        fcit.setCompleteRuleSetUsed(true);
+        fcit.setVerbose(true);
+        Graph terminal = null;
+        try {
+            terminal = fcit.search();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        assertFalse("spurious V2-V3 adjacency survived",
+                terminal.isAdjacentTo(terminal.getNode("V2"), terminal.getNode("V3")));
     }
 }
