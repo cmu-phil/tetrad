@@ -76,6 +76,13 @@ public final class Fcit implements IGraphSearch {
      */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new ConcurrentHashMap<>();
     /**
+     * Pairs whose separator search returned indeterminate (budget- or cap-limited)
+     * and has not since found a separator. Consulted by the final detection scan
+     * so a budget-limited sweep is not read as proof of non-separability. Finding
+     * a separator later removes the pair.
+     */
+    private final Set<Set<Node>> indeterminatePairs = ConcurrentHashMap.newKeySet();
+    /**
      * The background knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -172,7 +179,7 @@ public final class Fcit implements IGraphSearch {
      */
     private int recursiveDepth = -1;
     /**
-     * Represents the radius for the RB (Recursive Backtracking) algorithm.
+     * Represents the radius for the RB (Recursive Blocking) search.
      * This variable is used to control the scope of the RB algorithm,
      * which can affect the performance and accuracy of the search.
      */
@@ -507,6 +514,27 @@ public final class Fcit implements IGraphSearch {
             node.setNodeType(NodeType.LATENT);
         }
 
+        // Saturating step first, so that the detection scan and the spurious-edge
+        // report below describe the graph actually returned.
+        List<Edge> spurious = findSpuriousEdges();
+        TetradLogger.getInstance().log(spurious.isEmpty()
+                ? "No spurious edges remain after the single-edge phase."
+                : spurious.size() + " spurious edge(s) remain after the single-edge phase: " + spurious);
+
+        if (spurious.size() >= 2) {
+            boolean saturated = tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
+            if (saturated) {
+                spurious = findSpuriousEdges();
+                TetradLogger.getInstance().log(spurious.isEmpty()
+                        ? "Saturating step committed; no spurious edges remain."
+                        : "Saturating step committed; " + spurious.size()
+                        + " spurious edge(s) remain: " + spurious);
+            } else {
+                TetradLogger.getInstance().log("Saturating step reverted (batch reorientation "
+                        + "not a legal PAG); returning the last legal single-edge PAG.");
+            }
+        }
+
         NongenuineScan finalScan = findNongenuineEdge();
 
         if (finalScan.edge() != null) {
@@ -517,15 +545,6 @@ public final class Fcit implements IGraphSearch {
                             + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {
             TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
-        }
-
-        List<Edge> spurious = findSpuriousEdges();
-        TetradLogger.getInstance().log(spurious.isEmpty()
-                ? "No spurious edges remain."
-                : spurious.size() + " spurious edge(s) remain: " + spurious);
-
-        if (spurious.size() >= 2) {
-            tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
         }
 
         TetradLogger.getInstance().log("\nFCIT finished.");
@@ -655,6 +674,13 @@ public final class Fcit implements IGraphSearch {
         // in skip-direct mode, so it is never promoted to a positive verdict here.
         if (foundSepsets.get(key) != null) {
             return LegVerdict.SPURIOUS;
+        }
+// A pair whose sweep-time search was budget-limited cannot be certified
+        // not-spurious: the sweep may have run out of budget before finding its
+        // separator. Report indeterminate rather than clean; findNongenuineEdge
+        // then logs the inconclusive verdict instead of "phantom-free."
+        if (indeterminatePairs.contains(key)) {
+            return LegVerdict.INDETERMINATE;
         }
 
         LegVerdict cached = cache.get(key);
@@ -828,93 +854,21 @@ public final class Fcit implements IGraphSearch {
                 ? Long.MAX_VALUE
                 : System.currentTimeMillis() + timeout;
 
-        FcitSepsets.SepsetResult found = FcitSepsets.spanningSepset(
+        FcitSepsets.SepsetSearch search = FcitSepsets.spanningSepsetSearch(
                 pag, test, x, y, recursiveDepth, depth, rbRadius, deadline,
                 () -> checkCounter.increment("findIndependenceCheckRecursive (test executed)"));
 
-        if (found == null) return null;
+        if (search.result() == null) {
+            if (search.indeterminate()) {
+                indeterminatePairs.add(Set.of(x, y));
+            }
+            return null;
+        }
 
+        FcitSepsets.SepsetResult found = search.result();
+        indeterminatePairs.remove(Set.of(x, y));
         foundSepsets.put(Set.of(x, y), found.sepset());
         return new IndependenceCheck(edge, found.sepset(), found.pValue());
-
-//        // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
-//        // shared across every RB call below. Unlimited stays unlimited without
-//        // relying on Long.MAX_VALUE + now overflowing to a negative.
-//        final long deadline = (timeout < 0L)
-//                ? Long.MAX_VALUE
-//                : System.currentTimeMillis() + timeout;
-//
-//        // Get full blocking set with no forbidden nodes
-//        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
-//                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
-//                deadline);
-//
-//        Set<Node> nfCandSet = new LinkedHashSet<>();
-//        if (!b0result.indeterminate() && b0result.blockingSet() != null) {
-//            for (Node v : b0result.blockingSet()) {
-//                // Only ambiguous nodes — those with at least one circle endpoint
-//                if (pag.getAdjacentNodes(v).stream().anyMatch(
-//                        w -> pag.getEndpoint(v, w) == Endpoint.CIRCLE
-//                                || pag.getEndpoint(w, v) == Endpoint.CIRCLE)) {
-//                    nfCandSet.add(v);
-//                }
-//            }
-//        }
-//
-//        List<Node> nfCand = new ArrayList<>(nfCandSet);
-//
-//        // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
-//        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
-//        int[] nfChoice;
-//        while ((nfChoice = nfGen.next()) != null) {
-//            if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
-//            if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
-//
-//            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
-//            RecursiveBlocking.BlockingResult result = null;
-//
-//            result = RecursiveBlocking.blockPathsRecursively(
-//                    pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-//                    deadline);
-//
-//            if (result == null || result.indeterminate()) {
-//                continue;
-//            }
-//
-//            Set<Node> B = result.blockingSet();
-//
-//            if (B == null) {
-//                continue;
-//            }
-//
-//            List<Node> common = getCommon(x, y);
-//            B.addAll(common);
-//            List<Node> removalCandidates = new ArrayList<>(common);
-//
-//            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
-//            int[] cChoice;
-//            while ((cChoice = cGen.next()) != null) {
-//                if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
-//                if (!this.pag.isAdjacentTo(x, y)) break;
-//
-//                Set<Node> S = new LinkedHashSet<>(B);
-//                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
-//
-//                S.removeAll(C);
-//
-//                if (this.depth != -1 && S.size() > this.depth) continue;
-//
-//                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
-//
-//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-//                if (independenceResult.isIndependent()) {
-//                    foundSepsets.put(Set.of(x, y), S);
-//                    return new IndependenceCheck(edge, S, independenceResult.getPValue());
-//                }
-//            }
-//        }
-//
-//        return null;
     }
 
     private @NotNull List<Node> getCommon(Node x, Node y) {
@@ -965,6 +919,20 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> z = this.sepsets.get(m, n);
             prev.put(edge, z);
+
+            // Commit the recorded separator for this pair so the from-scratch
+            // reorientation reads it: colliders exposed by deleting a spurious
+            // chord are oriented by R0 from the recorded separator (adjustFor-
+            // ExtraSepsets reads sepsets only). For a deadlock survivor the
+            // committed sepsets entry was rolled back when its single-edge
+            // removal was reverted; the data-fact separator survives in
+            // foundSepsets. The prev map restores the old entry on revert.
+            if (z == null) {
+                Set<Node> found = foundSepsets.get(Set.of(m, n));
+                if (found != null) {
+                    this.sepsets.set(m, n, found);
+                }
+            }
         }
 
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, this.sepsets, excludeSelectionBias, superVerbose);
@@ -1028,7 +996,6 @@ public final class Fcit implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-//        this.superVerbose = verbose;
     }
 
     /**
@@ -1100,9 +1067,9 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets the radius for RA (Recursive Association) algorithm.
+     * Sets the radius for the RB (Recursive Blocking) search.
      *
-     * @param rbRadius the radius for RA algorithm to be set
+     @param rbRadius the radius for the RB search
      */
     public void setRbRadius(int rbRadius) {
         this.rbRadius = rbRadius;
@@ -1166,43 +1133,6 @@ public final class Fcit implements IGraphSearch {
     public SepsetMap getSepsetMap() {
         return sepsets;
     }
-
-    /// /        long deadlineMs = System.currentTimeMillis() + 500;
-//
-//        // Match findIndependenceCheckRecursive's convention: unlimited stays
-//        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
-//        // budget of `timeout` ms. A hardcoded budget here would make a slow scan
-//        // return null — reported as "no non-genuine DDPs" — when it merely ran
-//        // out of time, silently weakening both the discharge loop and the final
-//        // detection log line.
-//        final long deadlineMs = (timeout < 0L)
-//                ? Long.MAX_VALUE
-//                : System.currentTimeMillis() + timeout;
-//
-//        for (DiscriminatingPath dd : ddps) {
-//            List<Node> colliderPath = dd.getColliderPath();
-//
-//            List<Node> spine = new ArrayList<>(colliderPath);
-//            spine.addFirst(dd.getX());
-//            spine.addLast(dd.getY());
-//
-//            for (int i = 0; i < spine.size() - 1; i++) {
-//                Edge edge = spuriousLeg(spine.get(i), spine.get(i + 1), deadlineMs, blockedCache);
-//                if (edge != null) {
-//                    return edge;
-//                }
-//            }
-//
-//            Node y = dd.getY();
-//            for (Node v : colliderPath) {
-//                Edge edge = spuriousLeg(v, y, deadlineMs, blockedCache);
-//                if (edge != null) {
-//                    return edge;
-//                }
-//            }
-//        }
-//        return null;
-//    }
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 
