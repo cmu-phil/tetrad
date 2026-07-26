@@ -90,7 +90,7 @@ public class TestFcitSlPke11V2V5 {
         FcitSl fcit = new FcitSl(test, score);
         fcit.setAllowClassEscape(allowClassEscape);
         fcit.setBatteryZMax(5);       // zMax=5
-        fcit.setMaxForkFlips(5);      // forkFlips=2
+        fcit.setMaxForkFlips(2);      // forkFlips=2
         fcit.setDepth(-1);            // depth=-1
         fcit.setRecursiveDepth(-1);   // recursiveDepth=-1
         fcit.setCompleteRuleSetUsed(true);
