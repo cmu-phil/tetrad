@@ -1203,9 +1203,6 @@ public final class Fcit implements IGraphSearch {
 
                 if (found == null) {
                     r4Declined++;
-                    System.out.println("\tR4 backfill: DDP x=" + x.getName() + " w=" + w.getName()
-                            + " v=" + v.getName() + " y=" + y.getName()
-                            + " -- no separator confirmed for (" + x.getName() + "," + y.getName() + ")");
                     if (verbose) {
                         TetradLogger.getInstance().log("R4: no separator confirmed for ("
                                 + x.getName() + "," + y.getName() + "); declining to orient.");
