@@ -1151,15 +1151,22 @@ public class RecursiveBlocking {
                 z.addAll(f.zSnapshot);
 
                 if (!pool.contains(f.b)) {
+                    // Branch B is unavailable because b lies outside the radius
+                    // pool -- a search-limit, not a graph fact. A wider radius
+                    // could block here, so the verdict is INDETERMINATE;
+                    // UNBLOCKABLE would assert that no separator exists.
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = finishFrame(f, Blockable.UNBLOCKABLE, callStack, memo);
+                    lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
                     continue;
                 }
                 if (f.depth >= 0 && z.size() >= f.depth) {
+                    // Branch B is unavailable because adding b would exceed the
+                    // conditioning-set cap -- again a search-limit. A larger cap
+                    // could block here, so INDETERMINATE, not UNBLOCKABLE.
                     path.remove(f.b);
                     callStack.pop();
-                    lastResult = finishFrame(f, Blockable.UNBLOCKABLE, callStack, memo);
+                    lastResult = finishFrame(f, Blockable.INDETERMINATE, callStack, memo);
                     continue;
                 }
 
