@@ -97,7 +97,7 @@ public class RecursiveBlocking {
      * predefined approach, which is set to a recursive strategy.
      * It can be utilized wherever a default execution policy is required.
      */
-    public static Strategy DEFAULT_STRATEGY = Strategy.SHALLOW_RECURSIVE;
+    public static Strategy DEFAULT_STRATEGY = Strategy.RECURSIVE;
 
 //    /**
 //     * Blocks paths between two specified nodes in a graph by iteratively

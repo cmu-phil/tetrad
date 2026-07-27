@@ -32,11 +32,9 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The FCI Targeted Testing (FCIT) algorithm implements a search algorithm for learning the structure of a graphical
@@ -56,6 +54,13 @@ public final class Fcit implements IGraphSearch {
      * The score.
      */
     private final Score score;
+    /**
+     * Represents a map for storing and managing separation sets (sepsets) used in the context of algorithms involving
+     * conditional independence or causal discovery.
+     * <p>
+     * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
+     * sets - specifically to check conditional independencies between pairs of variables given a separating set.
+     */
     private final SepsetMap sepsets = new SepsetMap();
     /**
      * The list of selection nodes in the graph.
@@ -66,29 +71,6 @@ public final class Fcit implements IGraphSearch {
      * can measure how many tests the recursive-blocking optimization saves.
      */
     private final IndependenceCheckCounter checkCounter = new IndependenceCheckCounter();
-    /**
-     * Separators discovered for a pair during any sweep, kept across rounds.
-     * Distinct from {@link #sepsets}, which records only committed (legal-PAG)
-     * separations and is rolled back on a reverted removal. Because X _||_ Y | S
-     * is a property of the data, not the current PAG, a set that separated a pair
-     * once still separates it; reusing it keeps a pair's recorded sepset stable
-     * across rounds instead of being re-derived (and possibly differing) each time
-     * the edge is reconsidered after a reverted removal.
-     */
-    private final Map<Set<Node>, Set<Node>> foundSepsets = new ConcurrentHashMap<>();
-    /**
-     * R4 provenance: firings decided from a separator already recorded for the
-     * discriminating path's endpoint pair, versus firings whose separator this
-     * search had to find on demand, versus firings declined for want of one.
-     */
-    private int r4SepsetBacked = 0, r4Backfilled = 0, r4Declined = 0;
-    /**
-     * Pairs whose separator search returned indeterminate (budget- or cap-limited)
-     * and has not since found a separator. Consulted by the final detection scan
-     * so a budget-limited sweep is not read as proof of non-separability. Finding
-     * a separator later removes the pair.
-     */
-    private final Set<Set<Node>> indeterminatePairs = ConcurrentHashMap.newKeySet();
     /**
      * The background knowledge.
      */
@@ -186,7 +168,7 @@ public final class Fcit implements IGraphSearch {
      */
     private int recursiveDepth = -1;
     /**
-     * Represents the radius for the RB (Recursive Blocking) search.
+     * Represents the radius for the RB (Recursive Backtracking) algorithm.
      * This variable is used to control the scope of the RB algorithm,
      * which can affect the performance and accuracy of the search.
      */
@@ -198,10 +180,18 @@ public final class Fcit implements IGraphSearch {
      * that no specific limit is set by default.
      */
     private int maxDiscriminatingPathLength = -1;
+
     /**
-     * Specifies the duration, in milliseconds, to wait before timing out an operation.
-     * A value of -1 indicates no timeout is set, meaning the operation can run indefinitely.
+     * Separators discovered for a pair during any sweep, kept across rounds.
+     * Distinct from {@link #sepsets}, which records only committed (legal-PAG)
+     * separations and is rolled back on a reverted removal. Because X _||_ Y | S
+     * is a property of the data, not the current PAG, a set that separated a pair
+     * once still separates it; reusing it keeps a pair's recorded sepset stable
+     * across rounds instead of being re-derived (and possibly differing) each time
+     * the edge is reconsidered after a reverted removal.
      */
+    private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
+
     private long timeout = -1L;
 
     /**
@@ -249,7 +239,7 @@ public final class Fcit implements IGraphSearch {
      * @return A set of triples representing the known colliders identified in the provided CPDAG.
      */
     private static Set<Triple> noteInitialColliders(List<Node> best, Graph graph) {
-        Set<Triple> initialColliders = new LinkedHashSet<>();
+        Set<Triple> initialColliders = new HashSet<>();
 
         for (Node b : best) {
             var adj = graph.getAdjacentNodes(b);
@@ -346,7 +336,7 @@ public final class Fcit implements IGraphSearch {
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
-        fciOrient = new FciOrient(new SepsetBackfillR0R4Strategy(strategy));
+        fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(superVerbose);
         fciOrient.setParallel(false); // We're doing parallel lookahead.
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -483,7 +473,6 @@ public final class Fcit implements IGraphSearch {
             TetradLogger.getInstance().log("Copying unshielded colliders from CPDAG.");
         }
 
-        // TODO This does not belong here! The calling method should handle this.
         // We make all latent variables at this point measured for the duration of the
         // procedure so that the latent structure search will work.
         List<Node> latents = new ArrayList<>();
@@ -515,31 +504,9 @@ public final class Fcit implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
-        // TODO This does not belong here! The calling method should handle this.
         // Revert nodes made latent to latent.
         for (Node node : latents) {
             node.setNodeType(NodeType.LATENT);
-        }
-
-        // Saturating step first, so that the detection scan and the spurious-edge
-        // report below describe the graph actually returned.
-        List<Edge> spurious = findSpuriousEdges();
-        TetradLogger.getInstance().log(spurious.isEmpty()
-                ? "No spurious edges remain after the single-edge phase."
-                : spurious.size() + " spurious edge(s) remain after the single-edge phase: " + spurious);
-
-        if (spurious.size() >= 2) {
-            boolean saturated = tryToModifyGraph(spurious, "multi-edge", excludeSelectionBias, initialColliders);
-            if (saturated) {
-                spurious = findSpuriousEdges();
-                TetradLogger.getInstance().log(spurious.isEmpty()
-                        ? "Saturating step committed; no spurious edges remain."
-                        : "Saturating step committed; " + spurious.size()
-                        + " spurious edge(s) remain: " + spurious);
-            } else {
-                TetradLogger.getInstance().log("Saturating step reverted (batch reorientation "
-                        + "not a legal PAG); returning the last legal single-edge PAG.");
-            }
         }
 
         NongenuineScan finalScan = findNongenuineEdge();
@@ -558,9 +525,6 @@ public final class Fcit implements IGraphSearch {
         TetradLogger.getInstance().log("BOSS/GRaSP time: " + (stop1 - start1) + " ms.");
         TetradLogger.getInstance().log("Collider orientation and _edge removal time: " + (stop2 - start2) + " ms.");
         TetradLogger.getInstance().log("Total time: " + (stop2 - start1) + " ms.");
-        TetradLogger.getInstance().log("R4 provenance: " + r4SepsetBacked + " sepset-backed, "
-                + r4Backfilled + " backfilled by on-demand search, " + r4Declined
-                + " declined (no separator confirmed).");
         TetradLogger.getInstance().log(checkCounter.report());
 
         CachedIndependenceQueries cache = findCache();
@@ -578,7 +542,7 @@ public final class Fcit implements IGraphSearch {
         // discriminating paths. blockPathsRecursively is the expensive call, so
         // memoize its verdict per unordered pair for the duration of this pass.
         // (The PAG is not mutated during findNongenuineEdge, so the verdict is stable.)
-        Map<Set<Node>, LegVerdict> verdictCache = new LinkedHashMap<>();
+        Map<Set<Node>, LegVerdict> verdictCache = new HashMap<>();
 
         // Match findIndependenceCheckRecursive's convention: unlimited stays
         // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
@@ -627,40 +591,6 @@ public final class Fcit implements IGraphSearch {
         return new NongenuineScan(null, sawIndeterminate);
     }
 
-    private List<Edge> findSpuriousEdges() throws InterruptedException {
-        List<Edge> spuriousEdges = new ArrayList<>();
-
-        for (Edge edge : pag.getEdges()) {
-            Node m = edge.getNode1();
-            Node n = edge.getNode2();
-
-//            long deadlineMs = (timeout < 0L)
-//                    ? Long.MAX_VALUE
-//                    : System.currentTimeMillis() + timeout;
-
-//            RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
-//                    pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, false,
-//                    Long.MAX_VALUE);
-//
-//            // !found() => blockingSet() closes every path: a candidate sepset.
-//            if (result.found()) {
-//                if (test.checkIndependence(m, n, result.blockingSet()).isIndependent()) {
-//                    spuriousEdges.add(edge);
-//                }
-//            }
-
-            // A pair with a recorded separator was already confirmed independent
-            // (sepsets = committed; foundSepsets = data fact, survives revert).
-            // X _||_ Y | S is invariant across rounds, so no re-test: a present
-            // entry means the still-standing edge is spurious.
-            if (sepsets.get(m, n) != null || foundSepsets.get(Set.of(m, n)) != null) {
-                spuriousEdges.add(edge);
-            }
-        }
-
-        return spuriousEdges;
-    }
-
     private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache)
             throws InterruptedException {
         Edge edge = pag.getEdge(m, n);
@@ -670,42 +600,28 @@ public final class Fcit implements IGraphSearch {
 
         // Cheapest signal first: a recorded separator means the pair is already
         // known independent, so the adjacency is spurious. No blocking needed.
-// Sound positive verdicts only. A committed separator means the pair was
-        // already separated.
         if (sepsets.get(m, n) != null) {
             return LegVerdict.SPURIOUS;
         }
 
         Set<Node> key = Set.of(m, n);
-
-        // foundSepsets is never rolled back on a reverted removal, so a still-present
-        // edge with an entry is a test-confirmed separable-but-stuck adjacency (a
-        // deadlock survivor). RB's blocking set, by contrast, is only a *candidate*
-        // in skip-direct mode, so it is never promoted to a positive verdict here.
-        if (foundSepsets.get(key) != null) {
-            return LegVerdict.SPURIOUS;
-        }
-// A pair whose sweep-time search was budget-limited cannot be certified
-        // not-spurious: the sweep may have run out of budget before finding its
-        // separator. Report indeterminate rather than clean; findNongenuineEdge
-        // then logs the inconclusive verdict instead of "phantom-free."
-        if (indeterminatePairs.contains(key)) {
-            return LegVerdict.INDETERMINATE;
-        }
-
         LegVerdict cached = cache.get(key);
         if (cached != null) {
             return cached;
         }
 
-        // RB is consulted only to flag a timed-out search as inconclusive.
         RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(
                 pag, m, n, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
                 deadlineMs);
 
-        LegVerdict v = result.indeterminate()
-                ? LegVerdict.INDETERMINATE
-                : LegVerdict.NOT_SPURIOUS;
+        LegVerdict v;
+        if (result.indeterminate()) {
+            v = LegVerdict.INDETERMINATE;
+        } else if (result.blockingSet() != null) {
+            v = LegVerdict.SPURIOUS;
+        } else {
+            v = LegVerdict.NOT_SPURIOUS;
+        }
         cache.put(key, v);
         return v;
     }
@@ -767,6 +683,9 @@ public final class Fcit implements IGraphSearch {
      * @return true if at least one edge was removed, false otherwise
      */
     private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+        if (superVerbose) {
+            TetradLogger.getInstance().log("Removing extra edges from discriminating paths.");
+        }
 
         // This version does parallel lookahead, so that the only time graph rebuilding is done is when
         // edge removals are attempted.
@@ -787,7 +706,7 @@ public final class Fcit implements IGraphSearch {
             // PAG; nothing mutates it during this phase, so concurrent reads are safe.
             java.util.Optional<RemovalHit> hit =
                     java.util.stream.IntStream.range(start, edgeList.size())
-//                            .parallel()
+                            .parallel()
                             .mapToObj(i -> {
                                 Edge e = edgeList.get(i);
                                 Node x = e.getNode1();
@@ -802,7 +721,7 @@ public final class Fcit implements IGraphSearch {
                                 try {
                                     IndependenceCheck check = findIndependenceCheckRecursive(e);
                                     if (check == null) return null;
-                                    return new RemovalHit(i, e, check.cond(), check.pValue());
+                                    return new RemovalHit(i, e, check.cond());
                                 } catch (InterruptedException ie) {
                                     Thread.currentThread().interrupt();
                                     throw new RuntimeException(ie);
@@ -821,7 +740,7 @@ public final class Fcit implements IGraphSearch {
 
             // Commit against the live PAG using the sepset found during the search —
             // no re-search needed, since the winner was searched against the current PAG.
-            boolean didChange = tryToModifyGraph(x, y, h.cond, h.pValue, "recursive",
+            boolean didChange = tryToModifyGraph(x, y, h.cond, "recursive",
                     excludeSelectionBias, unshieldedTriples);
 
             if (didChange) {
@@ -840,54 +759,293 @@ public final class Fcit implements IGraphSearch {
         return changedThisSweep;
     }
 
-    private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
-        final Node x = edge.getNode1();
-        final Node y = edge.getNode2();
+//    private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
+//        final Node x = edge.getNode1();
+//        final Node y = edge.getNode2();
+//
+////        Set<Node> known = sepsets.get(x, y);
+////        if (known != null) {
+////            return new IndependenceCheck(edge, known);
+////        }
+//
+//        Set<Node> known = sepsets.get(x, y);
+//        if (known != null) {
+//            return new IndependenceCheck(edge, known);
+//        }
+//
+//        // Reuse a separator already found for this pair in an earlier sweep. The
+//        // independence is a data fact, invariant across rounds, so re-searching the
+//        // (evolved) PAG would only risk returning a *different* valid set — which is
+//        // exactly the cross-round inconsistency. tryToModifyGraph still judges PAG
+//        // legality; if it reverts, the edge is retried next round with the same set.
+//        Set<Node> cached = foundSepsets.get(Set.of(x, y));
+//        if (cached != null) {
+//            return new IndependenceCheck(edge, cached);
+//        }
+//
+//        // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
+//        // shared across every RB call below. Unlimited stays unlimited without
+//        // relying on Long.MAX_VALUE + now overflowing to a negative.
+//        final long deadline = (timeout < 0L)
+//                ? Long.MAX_VALUE
+//                : System.currentTimeMillis() + timeout;
+//
+//        // Get full blocking set with no forbidden nodes
+//        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
+//                pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+//                deadline);
+//
+//        Set<Node> nfCandSet = new HashSet<>();
+//        if (!b0result.indeterminate() && b0result.blockingSet() != null) {
+//            for (Node v : b0result.blockingSet()) {
+//                // Only ambiguous nodes — those with at least one circle endpoint
+//                if (pag.getAdjacentNodes(v).stream().anyMatch(
+//                        w -> pag.getEndpoint(v, w) == Endpoint.CIRCLE
+//                                || pag.getEndpoint(w, v) == Endpoint.CIRCLE)) {
+//                    nfCandSet.add(v);
+//                }
+//            }
+//        }
+//
+//        List<Node> nfCand = new ArrayList<>(nfCandSet);
+//
+//        // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
+//        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+//        int[] nfChoice;
+//        while ((nfChoice = nfGen.next()) != null) {
+//            if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
+//            if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
+//
+//            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+//            RecursiveBlocking.BlockingResult result = null;
+//
+//            if (this.depth < 0) {
+//                result = RecursiveBlocking.blockPathsRecursively(
+//                        pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+//                        deadline);
+//
+//            } else {
+//                int depth = 0;
+//                int maxDepth = this.depth;
+//
+//                do {
+//                    depth++;
+//
+//                    if (depth > maxDepth) break;
+//
+//                    result = RecursiveBlocking.blockPathsRecursively(
+//                            pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+//                            deadline);
+//                } while (result.indeterminate());
+//            }
+//
+//            if (result == null || result.indeterminate()) {
+//                continue;
+//            }
+//
+//            Set<Node> B = result.blockingSet();
+//
+//            if (B == null) {
+//                continue; // No separating set possible for this NF; try another NF
+//            }
+//
+//            List<Node> common = this.pag.getAdjacentNodes(x);
+//            common.retainAll(this.pag.getAdjacentNodes(y));
+//
+//            List<Node> definitelyRemove = new ArrayList<>();
+//            for (Node c : common) {
+//                if (this.pag.isDefCollider(x, c, y)) {
+//                    definitelyRemove.add(c);
+//                }
+//            }
+//
+//            List<Node> removalCandidates = new ArrayList<>(common);
+//            removalCandidates.removeAll(definitelyRemove);
+//
+//            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
+//            int[] cChoice;
+//            while ((cChoice = cGen.next()) != null) {
+//                if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
+//                if (!this.pag.isAdjacentTo(x, y)) break;
+//
+//                Set<Node> S = new HashSet<>(B);
+//                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
+//
+//                S.removeAll(C);
+//
+//                if (this.depth != -1 && S.size() > this.depth) continue;
+//
+//                IndependenceCheck probe = new IndependenceCheck(edge, S);
+//                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
+////                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+////                if (independenceResult.isIndependent()) {
+////                    return probe;
+////                }
+//
+//                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+//                if (independenceResult.isIndependent()) {
+//                    foundSepsets.put(Set.of(x, y), S);   // remember the fact, survives revert
+//                    return probe;
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
-        Set<Node> known = sepsets.get(x, y);
-        if (known != null) {
-            return new IndependenceCheck(edge, known, null);
-        }
+private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
+    final Node x = edge.getNode1();
+    final Node y = edge.getNode2();
 
-        // Reuse a separator already found for this pair in an earlier sweep. The
-        // independence is a data fact, invariant across rounds, so re-searching the
-        // (evolved) PAG would only risk returning a *different* valid set — which is
-        // exactly the cross-round inconsistency. tryToModifyGraph still judges PAG
-        // legality; if it reverts, the edge is retried next round with the same set.
-        Set<Node> cached = foundSepsets.get(Set.of(x, y));
-        if (cached != null) {
-            return new IndependenceCheck(edge, cached, null);
-        }
-
-        // Per-edge deadline: at most `timeout` ms spent separating THIS edge.
-        final long deadline = (timeout < 0L)
-                ? Long.MAX_VALUE
-                : System.currentTimeMillis() + timeout;
-
-        FcitSepsets.SepsetSearch search = FcitSepsets.spanningSepsetSearch(
-                pag, test, x, y, recursiveDepth, depth, rbRadius, deadline,
-                () -> checkCounter.increment("findIndependenceCheckRecursive (test executed)"));
-
-        if (search.result() == null) {
-            if (search.indeterminate()) {
-                indeterminatePairs.add(Set.of(x, y));
-            }
-            return null;
-        }
-
-        FcitSepsets.SepsetResult found = search.result();
-        indeterminatePairs.remove(Set.of(x, y));
-        foundSepsets.put(Set.of(x, y), found.sepset());
-        return new IndependenceCheck(edge, found.sepset(), found.pValue());
+    Set<Node> known = sepsets.get(x, y);
+    if (known != null) {
+        return new IndependenceCheck(edge, known);
     }
 
-    private @NotNull List<Node> getCommon(Node x, Node y) {
+    // Reuse a separator already found for this pair in an earlier sweep. The
+    // independence is a data fact, invariant across rounds, so re-searching the
+    // (evolved) PAG would only risk returning a *different* valid set — which is
+    // exactly the cross-round inconsistency. tryToModifyGraph still judges PAG
+    // legality; if it reverts, the edge is retried next round with the same set.
+    Set<Node> cached = foundSepsets.get(Set.of(x, y));
+    if (cached != null) {
+        return new IndependenceCheck(edge, cached);
+    }
+
+    // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
+    // shared across every RB call below. Unlimited stays unlimited without
+    // relying on Long.MAX_VALUE + now overflowing to a negative.
+    final long deadline = (timeout < 0L)
+            ? Long.MAX_VALUE
+            : System.currentTimeMillis() + timeout;
+
+    // Candidate sets already tested for this edge. The three nested enumerations
+    // (NF, additions, removals) can arrive at the same S by different routes;
+    // without this, the same test is re-issued many times per edge.
+    Set<Set<Node>> tried = new HashSet<>();
+
+    // Get full blocking set with no forbidden nodes
+    RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
+            pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
+            deadline);
+
+    Set<Node> nfCandSet = new HashSet<>();
+    if (!b0result.indeterminate() && b0result.blockingSet() != null) {
+        for (Node v : b0result.blockingSet()) {
+            // Only ambiguous nodes — those with at least one circle endpoint
+            if (pag.getAdjacentNodes(v).stream().anyMatch(
+                    w -> pag.getEndpoint(v, w) == Endpoint.CIRCLE
+                            || pag.getEndpoint(w, v) == Endpoint.CIRCLE)) {
+                nfCandSet.add(v);
+            }
+        }
+    }
+
+    List<Node> nfCand = new ArrayList<>(nfCandSet);
+
+    // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
+    SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+    int[] nfChoice;
+    while ((nfChoice = nfGen.next()) != null) {
+        if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
+        if (!this.pag.isAdjacentTo(x, y)) break; // edge already removed upstream
+
+        Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+        RecursiveBlocking.BlockingResult result = null;
+
+        if (this.depth < 0) {
+            result = RecursiveBlocking.blockPathsRecursively(
+                    pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+                    deadline);
+
+        } else {
+            int depth = 0;
+            int maxDepth = this.depth;
+
+            do {
+                depth++;
+
+                if (depth > maxDepth) break;
+
+                result = RecursiveBlocking.blockPathsRecursively(
+                        pag, x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
+                        deadline);
+            } while (result.indeterminate());
+        }
+
+        if (result == null || result.indeterminate()) {
+            continue;
+        }
+
+        Set<Node> B = result.blockingSet();
+
+        if (B == null) {
+            continue; // No separating set possible for this NF; try another NF
+        }
+
         List<Node> common = this.pag.getAdjacentNodes(x);
         common.retainAll(this.pag.getAdjacentNodes(y));
-        return common;
+
+        // Common neighbors that are definite colliders on x *-* c *-* y. RB never
+        // conditions on these, so they are absent from B by construction. They are
+        // therefore the additive pool: the only way a needed node can be missing
+        // from every subset of B is if its collider status in the current PAG is
+        // itself an artifact of the edge we are trying to remove. Enumerating
+        // additions from this pool is what breaks that circularity.
+        List<Node> definiteColliders = new ArrayList<>();
+        for (Node c : common) {
+            if (this.pag.isDefCollider(x, c, y)) {
+                definiteColliders.add(c);
+            }
+        }
+
+        List<Node> removalCandidates = new ArrayList<>(common);
+        removalCandidates.removeAll(definiteColliders);
+
+        // Additions enumerated OUTSIDE removals so that the empty-addition pass —
+        // which SublistGenerator yields first — reproduces the previous candidate
+        // sequence exactly before any additive candidate is tried.
+        SublistGenerator aGen = new SublistGenerator(definiteColliders.size(), definiteColliders.size());
+        int[] aChoice;
+        while ((aChoice = aGen.next()) != null) {
+            if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
+            if (!this.pag.isAdjacentTo(x, y)) break;
+
+            Set<Node> A = GraphUtils.asSet(aChoice, definiteColliders);
+
+            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
+            int[] cChoice;
+            while ((cChoice = cGen.next()) != null) {
+                if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
+                if (!this.pag.isAdjacentTo(x, y)) break;
+
+                Set<Node> S = new HashSet<>(B);
+                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
+
+                S.removeAll(C);
+                S.addAll(A);
+
+                if (this.depth != -1 && S.size() > this.depth) continue;
+
+                if (!tried.add(S)) continue; // already tested this candidate for this edge
+
+                IndependenceCheck probe = new IndependenceCheck(edge, S);
+                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
+
+                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
+                if (independenceResult.isIndependent()) {
+                    foundSepsets.put(Set.of(x, y), S);   // remember the fact, survives revert
+                    return probe;
+                }
+            }
+        }
     }
 
-    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, Double pValue, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {        Edge _edge = pag.getEdge(x, y);
+    return null;
+}
+
+    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
+        Edge _edge = pag.getEdge(x, y);
 
         Graph _pag = new EdgeListGraph(pag);
 
@@ -896,20 +1054,15 @@ public final class Fcit implements IGraphSearch {
         Set<Node> sepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
         redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, sepsets, excludeSelectionBias, superVerbose);
-        PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
-        if (!legalPagQuiet.isLegalPag() /*|| legalPagQuiet.getReason().contains("reconstituted")*/) {
-//            if (verbose) {
-//                TetradLogger.getInstance().log("\tTried removing " + _edge
-//                        + ", but it didn't lead to a PAG, sepset = " + b);
-//                System.out.println("\tReason = " + legalPagQuiet.getReason());
-//            }
 
+        System.out.println("Reoriented PAG = " + this.pag);
+
+        PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new HashSet<>(selection));
+        if (!legalPagQuiet.isLegalPag()) {
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + _edge
                         + ", but it didn't lead to a PAG, sepset = " + b);
                 System.out.println("\tReason = " + legalPagQuiet.getReason());
-                System.out.println("\tRejected reorientation:\n" + this.pag);
-                System.out.println("\tRecorded sepsets at this point: " + sepsets);
             }
 
             this.pag = _pag;
@@ -918,61 +1071,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b
-                    + (pValue != null ? String.format(", p = %.4g", pValue) : ""));
-        }
-
-        return true;
-    }
-
-    private boolean tryToModifyGraph(List<Edge> edges, String type, boolean excludeSelectionBias, Set<Triple> initialColliders) {
-        Graph _pag = new EdgeListGraph(pag);
-        Map<Edge, Set<Node>> prev = new HashMap<>();
-
-        for (Edge edge : edges) {
-            pag.removeEdge(edge);
-
-            Node m = edge.getNode1();
-            Node n = edge.getNode2();
-
-            Set<Node> z = this.sepsets.get(m, n);
-            prev.put(edge, z);
-
-            // Commit the recorded separator for this pair so the from-scratch
-            // reorientation reads it: colliders exposed by deleting a spurious
-            // chord are oriented by R0 from the recorded separator (adjustFor-
-            // ExtraSepsets reads sepsets only). For a deadlock survivor the
-            // committed sepsets entry was rolled back when its single-edge
-            // removal was reverted; the data-fact separator survives in
-            // foundSepsets. The prev map restores the old entry on revert.
-            if (z == null) {
-                Set<Node> found = foundSepsets.get(Set.of(m, n));
-                if (found != null) {
-                    this.sepsets.set(m, n, found);
-                }
-            }
-        }
-
-        redoGfciOrientation(this.pag, fciOrient, knowledge, initialColliders, this.sepsets, excludeSelectionBias, superVerbose);
-        PagLegalityCheck.LegalPagRet legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new LinkedHashSet<>(selection));
-        if (!legalPagQuiet.isLegalPag()) {
-            if (verbose) {
-                TetradLogger.getInstance().log("\tTried removing " + edges
-                        + ", but it didn't lead to a PAG");
-                System.out.println("\tReason = " + legalPagQuiet.getReason());
-            }
-
-            this.pag = _pag;
-
-            for (Edge edge : edges) {
-                this.sepsets.set(edge.getNode1(), edge.getNode2(), prev.get(edge));
-            }
-
-            return false;
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Removing " + edges + "(multi-edge), reached a PAG");
+            TetradLogger.getInstance().log("Removing " + _edge + ", sepset = " + b);
         }
 
         return true;
@@ -1014,6 +1113,7 @@ public final class Fcit implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+//        this.superVerbose = verbose;
     }
 
     /**
@@ -1085,9 +1185,9 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets the radius for the RB (Recursive Blocking) search.
+     * Sets the radius for RA (Recursive Association) algorithm.
      *
-     @param rbRadius the radius for the RB search
+     * @param rbRadius the radius for RA algorithm to be set
      */
     public void setRbRadius(int rbRadius) {
         this.rbRadius = rbRadius;
@@ -1141,125 +1241,42 @@ public final class Fcit implements IGraphSearch {
         this.timeout = timeout;
     }
 
-    /**
-     * Represents a map for storing and managing separation sets (sepsets) used in the context of algorithms involving
-     * conditional independence or causal discovery.
-     * <p>
-     * This variable is an instance of {@link SepsetMap}, which provides methods to access and manipulate separation
-     * sets - specifically to check conditional independencies between pairs of variables given a separating set.
-     */
-    public SepsetMap getSepsetMap() {
-        return sepsets;
-    }
-
-    /**
-     * Wraps the test-based strategy so that R4 handles a discriminating path whose endpoint
-     * pair has no recorded separator. Such a pair is typically nonadjacent in the seed and so
-     * never the subject of a deletion, leaving nothing recorded for it. The delegate's
-     * single-shot blocking search can come back empty on a partly-reoriented graph -- the marks
-     * R0/R1-R3 have already stamped need not be sound -- and R4 then declines and leaves a
-     * circle where the PAG has an arrowhead. Here the pair gets the full spanning search
-     * instead (which includes the orientation-blind pass), the confirmed separator is RECORDED,
-     * and the firing is adjudicated by membership. Found once, read back thereafter.
-     * <p>
-     * R0 and everything else delegate unchanged.
-     */
-    private final class SepsetBackfillR0R4Strategy implements R0R4Strategy {
-        private final R0R4StrategyTestBased delegate;
-
-        SepsetBackfillR0R4Strategy(R0R4StrategyTestBased delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean isUnshieldedCollider(Graph graph, Node a, Node b, Node c) {
-            return delegate.isUnshieldedCollider(graph, a, b, c);
-        }
-
-        @Override
-        public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(
-                DiscriminatingPath discriminatingPath, int maxBlockingPathLength,
-                int maxDiscriminatingPathLength, Graph graph, Set<Node> vNodes)
-                throws InterruptedException {
-            Node x = discriminatingPath.getX();
-            Node w = discriminatingPath.getW();
-            Node v = discriminatingPath.getV();
-            Node y = discriminatingPath.getY();
-
-            Set<Node> s = sepsets.get(x, y);
-
-            if (s == null) {
-                s = foundSepsets.get(Set.of(x, y));
-            }
-
-            if (s == null) {
-                final long deadline = (timeout < 0L)
-                        ? Long.MAX_VALUE
-                        : System.currentTimeMillis() + timeout;
-
-                FcitSepsets.SepsetResult found = FcitSepsets.spanningSepset(
-                        graph, test, x, y, recursiveDepth, depth, rbRadius, deadline,
-                        () -> checkCounter.increment("R4 endpoint-pair search (test executed)"));
-
-                if (found == null) {
-                    r4Declined++;
-                    if (verbose) {
-                        TetradLogger.getInstance().log("R4: no separator confirmed for ("
-                                + x.getName() + "," + y.getName() + "); declining to orient.");
-                    }
-                    return Pair.of(discriminatingPath, false);
-                }
-
-                s = found.sepset();
-                sepsets.set(x, y, s);
-                foundSepsets.putIfAbsent(Set.of(x, y), s);
-                r4Backfilled++;
-
-                if (verbose) {
-                    TetradLogger.getInstance().log("R4: recorded sepset(" + x.getName() + ","
-                            + y.getName() + ") = " + s + " (test-confirmed).");
-                }
-            } else {
-                r4SepsetBacked++;
-            }
-
-            // Adjudicate by membership: v in Sep(x, y) => noncollider (tail at v), else collider.
-            if (!discriminatingPath.existsIn(graph)) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            if (graph.getEndpoint(y, v) != Endpoint.CIRCLE) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            if (s.contains(v)) {
-                graph.setEndpoint(y, v, Endpoint.TAIL);
-                return Pair.of(discriminatingPath, true);
-            }
-
-            if (!FciOrient.isArrowheadAllowed(w, v, graph, knowledge)) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            if (!FciOrient.isArrowheadAllowed(y, v, graph, knowledge)) {
-                return Pair.of(discriminatingPath, false);
-            }
-
-            graph.setEndpoint(w, v, Endpoint.ARROW);
-            graph.setEndpoint(y, v, Endpoint.ARROW);
-            return Pair.of(discriminatingPath, true);
-        }
-
-        @Override
-        public void setKnowledge(Knowledge knowledge) {
-            delegate.setKnowledge(knowledge);
-        }
-
-        @Override
-        public Knowledge getknowledge() {
-            return delegate.getknowledge();
-        }
-    }
+    /// /        long deadlineMs = System.currentTimeMillis() + 500;
+//
+//        // Match findIndependenceCheckRecursive's convention: unlimited stays
+//        // unlimited (no Long.MAX_VALUE + now overflow), otherwise a per-pass
+//        // budget of `timeout` ms. A hardcoded budget here would make a slow scan
+//        // return null — reported as "no non-genuine DDPs" — when it merely ran
+//        // out of time, silently weakening both the discharge loop and the final
+//        // detection log line.
+//        final long deadlineMs = (timeout < 0L)
+//                ? Long.MAX_VALUE
+//                : System.currentTimeMillis() + timeout;
+//
+//        for (DiscriminatingPath dd : ddps) {
+//            List<Node> colliderPath = dd.getColliderPath();
+//
+//            List<Node> spine = new ArrayList<>(colliderPath);
+//            spine.addFirst(dd.getX());
+//            spine.addLast(dd.getY());
+//
+//            for (int i = 0; i < spine.size() - 1; i++) {
+//                Edge edge = spuriousLeg(spine.get(i), spine.get(i + 1), deadlineMs, blockedCache);
+//                if (edge != null) {
+//                    return edge;
+//                }
+//            }
+//
+//            Node y = dd.getY();
+//            for (Node v : colliderPath) {
+//                Edge edge = spuriousLeg(v, y, deadlineMs, blockedCache);
+//                if (edge != null) {
+//                    return edge;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
 
@@ -1289,10 +1306,10 @@ public final class Fcit implements IGraphSearch {
         COMPLETE_GRAPH
     }
 
-    private record RemovalHit(int index, Edge edge, Set<Node> cond, Double pValue) {
+    private record RemovalHit(int index, Edge edge, Set<Node> cond) {
     }
 
-    private record IndependenceCheck(Edge edge, Set<Node> cond, Double pValue) {
+    private record IndependenceCheck(Edge edge, Set<Node> cond) {
     }
 
     /**

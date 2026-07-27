@@ -502,8 +502,9 @@ public class TestSepsetMethods {
 
             System.out.println("z = " + z);
 
-            Node b = graph.getNode("b");
-            Set<Node> _z = Set.of(b);
+            Node d = graph.getNode("d");
+            Node f = graph.getNode("f");
+            Set<Node> _z = Set.of(d, f);
 
             assertEquals(_z, z);
         } catch (InterruptedException e) {

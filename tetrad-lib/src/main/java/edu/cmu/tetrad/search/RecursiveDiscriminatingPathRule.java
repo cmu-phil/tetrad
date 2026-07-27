@@ -26,15 +26,15 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.DiscriminatingPath;
+import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.IndependenceCheckCounter;
 import edu.cmu.tetrad.search.utils.PreserveMarkov;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implements the R4 Discriminating Path rule in the final FCI orientation rules (Zhang 2008) using the
@@ -112,24 +112,24 @@ public class RecursiveDiscriminatingPathRule {
      * in causal discovery algorithms to identify sets of nodes that render the two input
      * nodes conditionally independent under certain assumptions.
      *
-     * @param test The independence test used to evaluate conditional independence
-     *             between nodes given a conditioning set.
-     * @param pag The partially oriented acyclic graph (PAG) that represents the causal
-     *            structure being analyzed.
-     * @param x The first node involved in the conditional independence relationship.
-     * @param y The second node involved in the conditional independence relationship.
-     * @param recursiveDepth The maximum depth for recursive blocking during the path analysis.
-     * @param maxDdpPathLength The maximum length of discriminating paths to consider.
-     * @param depth The current depth of recursion.
+     * @param test                 The independence test used to evaluate conditional independence
+     *                             between nodes given a conditioning set.
+     * @param pag                  The partially oriented acyclic graph (PAG) that represents the causal
+     *                             structure being analyzed.
+     * @param x                    The first node involved in the conditional independence relationship.
+     * @param y                    The second node involved in the conditional independence relationship.
+     * @param recursiveDepth       The maximum depth for recursive blocking during the path analysis.
+     * @param maxDdpPathLength     The maximum length of discriminating paths to consider.
+     * @param depth                The current depth of recursion.
      * @param preserveMarkovHelper A helper object used to verify Markov equivalence properties
      *                             and ensure consistent conditional independence checks (optional).
-     * @param counter A counter object used to track the number of independence tests or operations
-     *                performed (optional).
-     * @param timeout The maximum amount of time (in milliseconds) allowed for the method to execute
-     *                before terminating. A value of -1 indicates no timeout.
+     * @param counter              A counter object used to track the number of independence tests or operations
+     *                             performed (optional).
+     * @param timeout              The maximum amount of time (in milliseconds) allowed for the method to execute
+     *                             before terminating. A value of -1 indicates no timeout.
      * @return A set of nodes representing the separating set (sepset) that renders {@code x} and
-     *         {@code y} conditionally independent, or {@code null} if no such set is found.
-     * @throws InterruptedException If the execution is interrupted while running.
+     * {@code y} conditionally independent, or {@code null} if no such set is found.
+     * @throws InterruptedException     If the execution is interrupted while running.
      * @throws IllegalArgumentException If the provided nodes {@code x} and {@code y} are adjacent
      *                                  in the graph.
      */
@@ -151,12 +151,25 @@ public class RecursiveDiscriminatingPathRule {
                 pag, x, y, Set.of(), Set.of(), recursiveDepth, depth, -1,
                 1, true, deadlineMs);
 
-        Set<Node> noFollowsBlocking = result0.blockingSet();
+//        Set<Node> noFollowsBlocking = result0.blockingSet();
+//        List<Node> notFollowedSuperset = new ArrayList<>();
+//
+//        // Remove any node from the notFollowedSuperset whose orientations are already completely
+//        // determined. We don't need to consider both possibilities for these.
+//        for (Node f : noFollowsBlocking) {
+        Set<Node> noFollowsBlocking = result0.indeterminate() ? null : result0.blockingSet();
+
+        // The unconstrained pass can legitimately fail to block (not-found, or timed out),
+        // in which case there is no blocking set to mine for ambiguous nodes. Fall back to
+        // the structural candidate pool instead of dereferencing null: the not-followed
+        // enumeration is precisely what may rescue a pair the unconstrained pass cannot block.
+        Collection<Node> ambiguousPool = (noFollowsBlocking != null)
+                ? noFollowsBlocking
+                : getVNodes(pag, x, y, maxDdpPathLength);
+
         List<Node> notFollowedSuperset = new ArrayList<>();
 
-        // Remove any node from the notFollowedSuperset whose orientations are already completely
-        // determined. We don't need to consider both possibilities for these.
-        for (Node f : noFollowsBlocking) {
+        for (Node f : ambiguousPool) {
             for (Node s : pag.getAdjacentNodes(f)) {
                 if (pag.getEndpoint(s, f) == Endpoint.CIRCLE) {
                     notFollowedSuperset.add(f);
@@ -228,5 +241,29 @@ public class RecursiveDiscriminatingPathRule {
 //        TetradLogger.getInstance().log("\tRecursive DDP: No sepset found for " + x + " and " + y);
         return null;
     }
+
+    private static @NotNull List<Node> getVNodes(Graph pag, Node x, Node y, int maxDdpPathLength) {
+        // 2) List possible DiscriminatingPaths
+        Set<DiscriminatingPath> discriminatingPaths = FciOrient.listDiscriminatingPaths(pag, maxDdpPathLength, true);
+
+        // 3) Figure out which nodes might be "notFollowed"
+        Set<DiscriminatingPath> relevantPaths = new HashSet<>();
+        for (DiscriminatingPath path : discriminatingPaths) {
+            if ((path.getX() == x && path.getY() == y) || (path.getX() == y && path.getY() == x)) {
+                relevantPaths.add(path);
+            }
+        }
+
+        Set<Node> vNodes = new HashSet<>();
+        for (DiscriminatingPath path : relevantPaths) {
+            if (pag.getEndpoint(path.getY(), path.getV()) == Endpoint.CIRCLE) {
+                vNodes.add(path.getV());
+            }
+
+        }
+
+        return new ArrayList<>(vNodes);
+    }
+
 }
 

@@ -238,7 +238,10 @@ public class PagLegalityCheck {
 
                 if (!mag.isAdjacentTo(x, y)) {
                     if (mag.paths().existsInducingPath(x, y, sel)) {
-                        return new LegalMagRet(false, "Not maximal: Inducing path exists between non-adjacent " + x + " and " + y);
+                        List<Node> path = mag.paths().getInducingPath(x, y, selection);
+
+
+                        return new LegalMagRet(false, "Not maximal: Inducing path exists between non-adjacent " + x + " and " + y + " " + path);
                     }
                 }
             }

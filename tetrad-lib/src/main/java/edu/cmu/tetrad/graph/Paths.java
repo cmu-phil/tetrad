@@ -2718,7 +2718,6 @@ public class Paths implements TetradSerializable {
      */
     public boolean isAncestorOf(Node node1, Node node2) {
         return graph.isAncestorOf(node1, node2);
-//        return node1 == node2 || existsDirectedPath(node1, node2);
     }
 
     /**
