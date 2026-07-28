@@ -104,6 +104,14 @@ public final class Fcit implements IGraphSearch {
     private static final Comparator<Node> NODE_ORDER = Comparator.comparing(Node::getName);
 
     /**
+     * Whether the constructor wraps the supplied test in
+     * {@link CachedIndependenceQueries}. Static because it must be decided
+     * before construction. Set false for tests with internal randomness where
+     * repeated-query consistency is not wanted.
+     */
+    public static boolean useTestCache = true;
+
+    /**
      * Canonical edge order for the sweep scan and the saturating pass.
      */
     private static final Comparator<Edge> EDGE_ORDER =
@@ -142,12 +150,47 @@ public final class Fcit implements IGraphSearch {
      */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
     /**
+     * Monotone counter bumped on every graph-changing commit. Sweep results are
+     * a function of the graph, so a definite not-found remains valid until this
+     * changes.
+     */
+    private volatile long graphVersion = 0L;
+    /**
+     * Pairs whose two-view sweep exhausted without a separator, and the graph
+     * version at which that happened. Consulted before re-sweeping.
+     * Concurrent because {@code findIndependenceCheckRecursive} runs inside the
+     * parallel lookahead.
+     */
+    private final Map<Set<Node>, Long> sweepFailedAt = new java.util.concurrent.ConcurrentHashMap<>();
+    /**
      * Committed separation sets: one entry per pair whose edge was removed by a
      * committed (legal) deletion, plus R4-time separators recorded along the
      * committed sequence. Reassigned wholesale on commit (scratch adoption); see
      * {@link #tryToModifyGraph} and {@link #saturatingPass}.
      */
     private SepsetMap sepsets = new SepsetMap();
+    /**
+     * Memo of candidate states already found ILLEGAL, keyed by
+     * (skeleton signature, sepset signature). The from-scratch reorientation and
+     * the legality check are together a deterministic function of that pair
+     * (knowledge, seed colliders, and the test being fixed for the run), so a
+     * state that failed once fails again. Only failures are memoized: a legal
+     * candidate is committed at once and its state never recurs, and skipping
+     * its reorientation would discard the oriented graph we need.
+     *
+     * <p>Diagnostic value beyond speed: if reorientation were not in fact
+     * deterministic -- residual hash-order dependence in FciOrient, say -- this
+     * memo freezes whichever verdict arrived first, so a run that differs with
+     * the memo on and off is evidence of exactly that bug. The
+     * {@code auditLegalityMemo} flag turns the memo into such an audit.</p>
+     */
+    private final Map<String, Boolean> illegalStates = new HashMap<>();
+    /**
+     * When true, the legality memo is consulted but not trusted: every hit is
+     * recomputed and a mismatch is logged. Use to verify that reorientation is
+     * deterministic; leave false in production.
+     */
+    private boolean auditLegalityMemo = false;
     /**
      * The background knowledge.
      */
@@ -221,11 +264,77 @@ public final class Fcit implements IGraphSearch {
     /**
      * Maximum discriminating-path length (-1 unlimited).
      */
-    private int maxDiscriminatingPathLength = -1;
-    /**
+    private int maxDiscriminatingPathLength = -1;    /**
      * Per-edge (and per-pair, in detection) search budget in ms, -1 unlimited.
+     * NOTE: wall-clock, hence nondeterministic across runs under varying load.
+     * For reproducible experiments prefer {@link #maxTestsPerPair}.
      */
     private long timeout = -1L;
+    /**
+     * Cap on the size of not-followed subsets in the sweep's outer layer, -1
+     * unlimited. The outer layer is a powerset over the ambiguous nodes, so this
+     * is the strongest single lever: 2^|A| RB calls become O(|A|^k). Withholding
+     * many nodes at once is rarely what finds a separator, so small values (2-3)
+     * retain most of the reach at a fraction of the cost -- but the family is no
+     * longer the one Def. rb-step specifies, and coverage arguments over
+     * labelings of B no longer apply.
+     */
+    private int sweepNfMaxSize = -1;
+    /**
+     * Cap on the size of addition subsets in the sweep's inner layer, -1
+     * unlimited.
+     */
+    private int sweepAddMaxSize = -1;
+    /**
+     * Cap on the size of removal subsets in the sweep's inner layer, -1
+     * unlimited. Removals are enumerated common-neighbors-first, so a cap keeps
+     * the coverage-bearing candidates and discards the rest.
+     */
+    private int sweepRemoveMaxSize = -1;
+    /**
+     * Whether the bare-skeleton (blind) proposal view is searched when the
+     * marked view finds nothing. Disabling halves sweep cost and forfeits
+     * Rem. blind-proposal: separators hidden by a wrong interim mark become
+     * unreachable except through the completion layer.
+     */
+    private boolean useBlindView = true;
+    /**
+     * Deterministic per-pair budget: maximum number of independence tests
+     * executed across BOTH views for one pair, -1 unlimited. Unlike
+     * {@link #timeout} this is reproducible, so it is the budget to use in
+     * enumeration harnesses. Exhausting it yields an indeterminate sweep, not a
+     * not-found verdict.
+     */
+    private long maxTestsPerPair = -1L;
+    /**
+     * How much of the completion layer to run (Prop. completion).
+     */
+    private CompletionPolicy completionPolicy = CompletionPolicy.FULL;
+    /**
+     * Cap on conditioning-set size in the completion layer, -1 unlimited (in
+     * which case {@link #depth} still applies). The completion enumeration is by
+     * increasing size, so a cap here is a clean "separators up to size k only"
+     * restriction: sound, incomplete, and the incompleteness is legible.
+     */
+    private int completionMaxSubsetSize = -1;
+    /**
+     * Whether the final discriminating-path scan runs. OFF skips detection and
+     * the discharge it feeds, so confirmed-spurious legs that neither
+     * single-edge removal nor saturation caught are neither reported nor
+     * removed.
+     */
+    private boolean detectionEnabled = true;
+    /**
+     * Before invoking recursive blocking for a pair, test subsets of the pair's
+     * common neighborhood by increasing size up to this cap; -1 disables the
+     * pass (the default, which preserves the full algorithm's trajectory
+     * exactly). Most separators are small and lie in the common neighborhood,
+     * so a cap of 2 or 3 answers the majority of pairs in a handful of tests
+     * and leaves recursive blocking for the residue. NOT output-identical: the
+     * separators recorded are smaller, so orientations and hence trajectories
+     * change.
+     */
+    private int quickSubsetDepth = -1;
 
     /**
      * FCIT constructor.
@@ -243,7 +352,14 @@ public final class Fcit implements IGraphSearch {
             throw new NullPointerException();
         }
 
-        this.test = test;
+        // Wrap in the query cache unless the caller already did. The sweep
+        // retests the same (x, y, S) across views, rounds, and the completion
+        // layer; the cache is output-identical for a deterministic test.
+        // NOTE: for a test with internal randomness (e.g. RCIT) this is NOT a
+        // no-op -- it makes repeated queries consistent, which changes results.
+        this.test = (useTestCache && !(test instanceof CachedIndependenceQueries))
+                ? new CachedIndependenceQueries(test)
+                : test;
         this.score = score;
 
         this.selection = this.test.getVariables().stream()
@@ -357,6 +473,42 @@ public final class Fcit implements IGraphSearch {
             blind.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.CIRCLE);
         }
         return blind;
+    }
+
+    /**
+     * Canonical signature of a graph's skeleton: name-sorted adjacencies. Two
+     * graphs with the same signature reorient identically from circles.
+     */
+    private static String skeletonSignature(Graph g) {
+        List<String> pairs = new ArrayList<>();
+        for (Edge e : g.getEdges()) {
+            String a = e.getNode1().getName(), b = e.getNode2().getName();
+            pairs.add(a.compareTo(b) <= 0 ? a + "-" + b : b + "-" + a);
+        }
+        Collections.sort(pairs);
+        return String.join(",", pairs);
+    }
+
+    /**
+     * Canonical signature of a sepset map: name-sorted pairs, each with its
+     * name-sorted separator.
+     */
+    private static String sepsetSignature(SepsetMap m) {
+        List<String> entries = new ArrayList<>();
+        for (Set<Node> key : m.keySet()) {
+            List<Node> pr = new ArrayList<>(key);
+            if (pr.size() != 2) continue;
+            Set<Node> s = m.get(pr.get(0), pr.get(1));
+            if (s == null) continue;
+            String a = pr.get(0).getName(), b = pr.get(1).getName();
+            String pair = a.compareTo(b) <= 0 ? a + "-" + b : b + "-" + a;
+            List<String> members = new ArrayList<>();
+            for (Node n : s) members.add(n.getName());
+            Collections.sort(members);
+            entries.add(pair + ":" + String.join("+", members));
+        }
+        Collections.sort(entries);
+        return String.join(";", entries);
     }
 
     /**
@@ -584,12 +736,19 @@ public final class Fcit implements IGraphSearch {
                 continue;
             }
 
+            if (!detectionEnabled) {
+                lastScan = new NongenuineScan(null, false, false);
+                break;
+            }
+
             lastScan = scanNongenuineLegs();
             progressed = lastScan.newEvidence();
         } while (progressed);
 
         if (lastScan == null) {
-            lastScan = scanNongenuineLegs();
+            lastScan = detectionEnabled
+                    ? scanNongenuineLegs()
+                    : new NongenuineScan(null, false, false);
         }
 
         if (superVerbose) {
@@ -742,10 +901,16 @@ public final class Fcit implements IGraphSearch {
         // The independence is a data fact, invariant across rounds; re-searching
         // the (evolved) PAG would only risk returning a *different* valid set.
         // tryToModifyGraph still judges PAG legality; if it reverts, the edge is
-        // retried next round with the same set.
         Set<Node> cached = foundSepsets.get(Set.of(x, y));
         if (cached != null) {
             return new IndependenceCheck(edge, cached);
+        }
+
+        // The sweep is a function of the graph. If it already exhausted for this
+        // pair at the current graph version, re-running it is guaranteed waste.
+        Long failedAt = sweepFailedAt.get(Set.of(x, y));
+        if (failedAt != null && failedAt == graphVersion) {
+            return null;
         }
 
         // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
@@ -758,14 +923,36 @@ public final class Fcit implements IGraphSearch {
         // the nested enumerations can arrive at the same S by different routes.
         Set<Set<Node>> tried = new HashSet<>();
 
+        // Shortcut pass: small subsets of the common neighborhood, by increasing
+        // size. Candidates feed `tried`, so the sweep below never retests them.
+        if (quickSubsetDepth >= 0) {
+            Set<Node> quick = quickCommonSubsetSepset(x, y, deadline, tried);
+            if (quick != null) {
+                return new IndependenceCheck(edge, quick);
+            }
+        }
+
         SweepOutcome live = sweepForSepset(this.pag, x, y, deadline, tried);
         if (live.sepset() != null) {
             return new IndependenceCheck(edge, live.sepset());
         }
 
+        if (!useBlindView) {
+            if (!live.indeterminate()) {
+                sweepFailedAt.put(Set.of(x, y), graphVersion);
+            }
+            return null;
+        }
+
         SweepOutcome blindOutcome = sweepForSepset(blind, x, y, deadline, tried);
         if (blindOutcome.sepset() != null) {
             return new IndependenceCheck(edge, blindOutcome.sepset());
+        }
+
+        // Cache only a DEFINITE exhaustion. A budget-truncated failure could
+        // succeed on a later attempt with a fresh budget, so it is not cached.
+        if (!live.indeterminate() && !blindOutcome.indeterminate()) {
+            sweepFailedAt.put(Set.of(x, y), graphVersion);
         }
 
         return null;
@@ -833,7 +1020,10 @@ public final class Fcit implements IGraphSearch {
         List<Node> nfCand = new ArrayList<>(nfCandSet);
         nfCand.sort(NODE_ORDER);
 
-        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+        int nfMax = (sweepNfMaxSize < 0)
+                ? nfCand.size()
+                : Math.min(sweepNfMaxSize, nfCand.size());
+        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfMax);
         int[] nfChoice;
         while ((nfChoice = nfGen.next()) != null) {
             if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
@@ -879,14 +1069,20 @@ public final class Fcit implements IGraphSearch {
             for (Node c : common) if (!base.contains(c)) addCandidates.add(c);
             // `common` is name-sorted, so addCandidates is too.
 
-            SublistGenerator aGen = new SublistGenerator(addCandidates.size(), addCandidates.size());
+            int addMax = (sweepAddMaxSize < 0)
+                    ? addCandidates.size()
+                    : Math.min(sweepAddMaxSize, addCandidates.size());
+            SublistGenerator aGen = new SublistGenerator(addCandidates.size(), addMax);
             int[] aChoice;
             while ((aChoice = aGen.next()) != null) {
                 if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
 
                 Set<Node> A = GraphUtils.asSet(aChoice, addCandidates);
 
-                SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
+                int remMax = (sweepRemoveMaxSize < 0)
+                        ? removalCandidates.size()
+                        : Math.min(sweepRemoveMaxSize, removalCandidates.size());
+                SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), remMax);
                 int[] cChoice;
                 while ((cChoice = cGen.next()) != null) {
                     if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
@@ -898,6 +1094,12 @@ public final class Fcit implements IGraphSearch {
                     if (this.depth != -1 && S.size() > this.depth) continue;
 
                     if (!tried.add(S)) continue; // already tested this candidate
+
+                    if (maxTestsPerPair >= 0 && tried.size() > maxTestsPerPair) {
+                        // Budget exhausted: not-found within budget, which is
+                        // INDETERMINATE, not "no separator exists".
+                        return new SweepOutcome(null, true);
+                    }
 
                     checkCounter.increment("sepset sweep (test executed)");
 
@@ -923,6 +1125,42 @@ public final class Fcit implements IGraphSearch {
             }
         }
         return false;
+    }
+
+    /**
+     * Small-subset shortcut: tests subsets of the common neighborhood of
+     * {@code (x, y)} by increasing size, up to {@link #quickSubsetDepth}.
+     * Returns the first confirmed separator, or null. Every candidate is
+     * test-confirmed exactly as in the sweep, so soundness is untouched; what
+     * changes is which valid separator is found first.
+     */
+    private Set<Node> quickCommonSubsetSepset(Node x, Node y, long deadline, Set<Set<Node>> tried)
+            throws InterruptedException {
+        List<Node> common = new ArrayList<>(this.pag.getAdjacentNodes(x));
+        common.retainAll(this.pag.getAdjacentNodes(y));
+        common.sort(NODE_ORDER);
+
+        int max = Math.min(quickSubsetDepth, common.size());
+        if (this.depth >= 0) max = Math.min(max, this.depth);
+
+        SublistGenerator gen = new SublistGenerator(common.size(), max);
+        int[] choice;
+        while ((choice = gen.next()) != null) {
+            if (System.currentTimeMillis() > deadline) return null;
+
+            Set<Node> S = GraphUtils.asSet(choice, common);
+            if (!tried.add(S)) continue;
+
+            if (maxTestsPerPair >= 0 && tried.size() > maxTestsPerPair) return null;
+
+            checkCounter.increment("quick common-subset pass (test executed)");
+
+            if (this.test.checkIndependence(x, y, S).isIndependent()) {
+                return S;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -991,6 +1229,25 @@ public final class Fcit implements IGraphSearch {
 
         this.pag.removeEdge(_edge);
 
+        // Memo consult: the state is fixed once the edge is removed and the
+        // scratch sepsets are set, and both are inputs to a deterministic
+        // reorientation, so a state known illegal can be reverted without
+        // reorienting or checking.
+        final String stateKey = skeletonSignature(this.pag) + "|" + sepsetSignature(scratch);
+        final boolean memoHit = Boolean.TRUE.equals(illegalStates.get(stateKey));
+
+        if (memoHit && !auditLegalityMemo) {
+            if (verbose) {
+                TetradLogger.getInstance().log("\tTried removing " + _edge
+                        + " (memoized illegal state; no reorientation), sepset = " + b);
+            }
+            restorePag(_pag);
+            if (r0r4Strategy != null) {
+                r0r4Strategy.setSepsetMap(this.sepsets);
+            }
+            return false;
+        }
+
         boolean orientationFailed = false;
         String failureReason = null;
 
@@ -1008,6 +1265,8 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (orientationFailed || !legalPagQuiet.isLegalPag()) {
+            illegalStates.put(stateKey, Boolean.TRUE);
+
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + _edge
                         + ", but it didn't lead to a PAG, sepset = " + b);
@@ -1023,9 +1282,19 @@ public final class Fcit implements IGraphSearch {
             return false;
         }
 
+        if (memoHit) {
+            // Audit mode only: the memo said illegal, the recomputation says
+            // legal. Reorientation is not a function of (skeleton, sepsets).
+            TetradLogger.getInstance().log("LEGALITY MEMO MISMATCH at " + _edge
+                    + ": memoized ILLEGAL, recomputed LEGAL. Reorientation is "
+                    + "nondeterministic given (skeleton, sepsets); investigate before "
+                    + "trusting the memo.");
+        }
+
         // Commit: adopt the scratch map wholesale. The strategy already points
         // at it.
         this.sepsets = scratch;
+        graphVersion++;
 
         if (verbose) {
             TetradLogger.getInstance().log("Removing " + _edge + " (" + type + "), sepset = " + b);
@@ -1101,6 +1370,15 @@ public final class Fcit implements IGraphSearch {
             scratch.set(x, y, foundSepsets.get(Set.of(x, y)));
         }
 
+        final String satKey = skeletonSignature(this.pag) + "|" + sepsetSignature(scratch);
+        if (Boolean.TRUE.equals(illegalStates.get(satKey)) && !auditLegalityMemo) {
+            restorePag(backup);
+            if (r0r4Strategy != null) {
+                r0r4Strategy.setSepsetMap(this.sepsets);
+            }
+            return false;
+        }
+
         boolean orientationFailed = false;
         String failureReason = null;
 
@@ -1118,6 +1396,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         if (orientationFailed || !legal.isLegalPag()) {
+            illegalStates.put(satKey, Boolean.TRUE);
             restorePag(backup);
             if (r0r4Strategy != null) {
                 r0r4Strategy.setSepsetMap(this.sepsets);
@@ -1133,6 +1412,7 @@ public final class Fcit implements IGraphSearch {
         }
 
         this.sepsets = scratch;
+        graphVersion++;
 
         TetradLogger.getInstance().log("Saturating step committed: " + confirmed.size()
                 + " edge(s) removed.");
@@ -1171,6 +1451,10 @@ public final class Fcit implements IGraphSearch {
      * saturation)
      */
     private boolean pdsCompletionPass() throws InterruptedException {
+        if (completionPolicy == CompletionPolicy.OFF) {
+            return false;
+        }
+
         boolean any = false;
 
         List<Edge> edges = new ArrayList<>(this.pag.getEdges());
@@ -1200,7 +1484,7 @@ public final class Fcit implements IGraphSearch {
             // Escalation: all remaining nodes. Covers separators whose members
             // an unsound TAIL hid even from the permissive walk. Certified
             // complete at the oracle; deadline- and depth-capped from sample.
-            if (found == null) {
+            if (found == null && completionPolicy == CompletionPolicy.FULL) {
                 Set<Node> all = new LinkedHashSet<>(this.pag.getNodes());
                 all.remove(x);
                 all.remove(y);
@@ -1230,7 +1514,9 @@ public final class Fcit implements IGraphSearch {
         List<Node> poolList = new ArrayList<>(pool);
         poolList.sort(NODE_ORDER);
 
-        int maxSize = (this.depth < 0) ? poolList.size() : Math.min(this.depth, poolList.size());
+        int maxSize = poolList.size();
+        if (this.depth >= 0) maxSize = Math.min(maxSize, this.depth);
+        if (completionMaxSubsetSize >= 0) maxSize = Math.min(maxSize, completionMaxSubsetSize);
 
         SublistGenerator gen = new SublistGenerator(poolList.size(), maxSize);
         int[] choice;
@@ -1406,7 +1692,7 @@ public final class Fcit implements IGraphSearch {
         Set<Set<Node>> tried = new HashSet<>();
 
         SweepOutcome live = sweepForSepset(this.pag, m, n, deadlineMs, tried);
-        SweepOutcome blindOutcome = (live.sepset() != null)
+        SweepOutcome blindOutcome = (live.sepset() != null || !useBlindView)
                 ? live
                 : sweepForSepset(blind, m, n, deadlineMs, tried);
 
@@ -1612,11 +1898,110 @@ public final class Fcit implements IGraphSearch {
 
     /**
      * Sets the timeout for per-edge separator searches, or -1 for unlimited.
+     * Wall-clock, hence nondeterministic; prefer {@link #setMaxTestsPerPair} in
+     * experiments that must be reproducible.
      *
      * @param timeout the maximum time in milliseconds per edge.
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    /**
+     * Caps the size of not-followed subsets in the sweep's outer layer.
+     *
+     * @param sweepNfMaxSize the cap, or -1 for unlimited (the full family).
+     */
+    public void setSweepNfMaxSize(int sweepNfMaxSize) {
+        this.sweepNfMaxSize = sweepNfMaxSize;
+    }
+
+    /**
+     * Caps the size of addition subsets in the sweep's inner layer.
+     *
+     * @param sweepAddMaxSize the cap, or -1 for unlimited.
+     */
+    public void setSweepAddMaxSize(int sweepAddMaxSize) {
+        this.sweepAddMaxSize = sweepAddMaxSize;
+    }
+
+    /**
+     * Caps the size of removal subsets in the sweep's inner layer.
+     *
+     * @param sweepRemoveMaxSize the cap, or -1 for unlimited.
+     */
+    public void setSweepRemoveMaxSize(int sweepRemoveMaxSize) {
+        this.sweepRemoveMaxSize = sweepRemoveMaxSize;
+    }
+
+    /**
+     * Sets whether the bare-skeleton proposal view is searched when the marked
+     * view finds nothing.
+     *
+     * @param useBlindView true for both views (the default), false for the
+     *                     marked view only.
+     */
+    public void setUseBlindView(boolean useBlindView) {
+        this.useBlindView = useBlindView;
+    }
+
+    /**
+     * Sets a deterministic per-pair budget on independence tests, across both
+     * views. Exhaustion yields an indeterminate sweep.
+     *
+     * @param maxTestsPerPair the cap, or -1 for unlimited.
+     */
+    public void setMaxTestsPerPair(long maxTestsPerPair) {
+        this.maxTestsPerPair = maxTestsPerPair;
+    }
+
+    /**
+     * Sets how much of the completion layer to run.
+     *
+     * @param completionPolicy the policy; FULL by default.
+     */
+    public void setCompletionPolicy(CompletionPolicy completionPolicy) {
+        this.completionPolicy = completionPolicy;
+    }
+
+    /**
+     * Caps conditioning-set size in the completion layer.
+     *
+     * @param completionMaxSubsetSize the cap, or -1 for unlimited.
+     */
+    public void setCompletionMaxSubsetSize(int completionMaxSubsetSize) {
+        this.completionMaxSubsetSize = completionMaxSubsetSize;
+    }
+
+    /**
+     * Turns the legality memo into an audit: hits are recomputed and mismatches
+     * logged, verifying that reorientation is deterministic given
+     * (skeleton, sepsets). Slower than either memo-on or memo-off; diagnostic
+     * use only.
+     *
+     * @param auditLegalityMemo false by default.
+     */
+    public void setAuditLegalityMemo(boolean auditLegalityMemo) {
+        this.auditLegalityMemo = auditLegalityMemo;
+    }
+
+    /**
+     * Sets whether the final discriminating-path detection scan runs.
+     *
+     * @param detectionEnabled true by default.
+     */
+    public void setDetectionEnabled(boolean detectionEnabled) {
+        this.detectionEnabled = detectionEnabled;
+    }
+
+    /**
+     * Sets the cap for the small-subset shortcut pass; -1 disables it.
+     * Non-default values change trajectories and require re-validation.
+     *
+     * @param quickSubsetDepth the cap, or -1 for off (default).
+     */
+    public void setQuickSubsetDepth(int quickSubsetDepth) {
+        this.quickSubsetDepth = quickSubsetDepth;
     }
 
     /**
@@ -1635,6 +2020,29 @@ public final class Fcit implements IGraphSearch {
     // -------------------------------------------------------------------------
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
+
+    /**
+     * How much of the completion layer of Prop. completion to run. FULL is the
+     * only setting under which the oracle guarantee holds unconditionally;
+     * POOL_ONLY drops the all-nodes escalation (sound, and complete unless an
+     * unsound tail hides a pool member); OFF returns the procedure to the
+     * recursive-blocking family alone, i.e. to the out-of-B coverage condition,
+     * which is refuted at six observed variables.
+     */
+    public enum CompletionPolicy {
+        /**
+         * Possible-D-SEP stage and all-nodes escalation. Default.
+         */
+        FULL,
+        /**
+         * Possible-D-SEP stage only, no escalation.
+         */
+        POOL_ONLY,
+        /**
+         * No completion layer.
+         */
+        OFF
+    }
 
     /**
      * Enumeration representing different start options.
