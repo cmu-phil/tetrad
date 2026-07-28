@@ -268,52 +268,131 @@ public final class IndTestCordEric implements IndependenceTest, RowsSettable {
 
     /* ============================ CORD configuration ========================= */
 
-    /** @param symmetric whether to symmetrise over the two orientations (default true). Clears the cache. */
+    /**
+     * Sets the symmetric property and clears the cache.
+     *
+     * @param symmetric a boolean value indicating whether the property should be set to symmetric (true) or not (false)
+     */
     public void setSymmetric(boolean symmetric) { this.symmetric = symmetric; cache.clear(); }
 
-    /** @return whether the test is symmetrised over both orientations. */
+    /**
+     * Determines whether the test is symmetric with respect to two orientations.
+     * Symmetry implies that the independence test treats the two orientations of
+     * variables equivalently.
+     *
+     * @return true if the test is symmetric; false otherwise.
+     */
     public boolean isSymmetric() { return symmetric; }
 
-    /** @param nLevels number of Y-threshold levels K (the CDF grid). Clears the cache. */
+    /**
+     * Sets the number of Y-threshold levels (nLevels) used in the testing process.
+     * The Y-threshold levels represent the grid of cumulative distribution function (CDF)
+     * thresholds for partitioning Y-variable values during the test.
+     * The value must be at least 2 to allow proper partitioning.
+     * Changes to this parameter clear the result cache.
+     *
+     * @param nLevels the new number of Y-threshold levels; must be greater than or equal to 2.
+     * @throws IllegalArgumentException if {@code nLevels} is less than 2.
+     */
     public void setNLevels(int nLevels) {
         if (nLevels < 2) throw new IllegalArgumentException("nLevels must be >= 2");
         this.nLevels = nLevels; cache.clear();
     }
 
-    /** @return the number of threshold levels K. */
+    /**
+     * Retrieves the number of Y-threshold levels (nLevels) used in the testing process.
+     * The Y-threshold levels represent the grid of cumulative distribution function (CDF) thresholds
+     * for partitioning Y-variable values during the test.
+     *
+     * @return the number of Y-threshold levels (nLevels).
+     */
     public int getNLevels() { return nLevels; }
 
-    /** @param nEstimators boosting iterations per nuisance model. Clears the cache. */
+    /**
+     * Sets the number of boosting iterations (nEstimators) used per nuisance model.
+     * Boosting involves combining multiple weak models into a stronger predictive model.
+     * This parameter controls how many iterations are performed during the boosting process.
+     * A minimum of 1 iteration is required.
+     * Changes to this parameter clear the result cache.
+     *
+     * @param nEstimators the new number of boosting iterations; must be greater than or equal to 1.
+     * @throws IllegalArgumentException if {@code nEstimators} is less than 1.
+     */
     public void setNEstimators(int nEstimators) {
         if (nEstimators < 1) throw new IllegalArgumentException("nEstimators must be >= 1");
         this.nEstimators = nEstimators; cache.clear();
     }
 
-    /** @return the boosting iterations per nuisance model. */
+    /**
+     * Retrieves the number of boosting iterations used per nuisance model.
+     * Boosting involves combining multiple weak models into a stronger predictive model,
+     * and this parameter controls the number of iterations performed.
+     *
+     * @return the number of boosting iterations (nEstimators).
+     */
     public int getNEstimators() { return nEstimators; }
 
-    /** @param learningRate the nuisance learning rate. Clears the cache. */
+    /**
+     * Sets the nuisance learning rate for the testing process.
+     * The learning rate controls the magnitude of weight updates during
+     * the training of nuisance models and influences the convergence speed
+     * and stability of the boosting algorithm. A positive learning rate is required.
+     * Changing this value clears the result cache.
+     *
+     * @param learningRate the new learning rate; must be greater than 0.
+     * @throws IllegalArgumentException if {@code learningRate} is less than or equal to 0.
+     */
     public void setLearningRate(double learningRate) {
         if (learningRate <= 0) throw new IllegalArgumentException("learningRate must be > 0");
         this.learningRate = learningRate; cache.clear();
     }
 
-    /** @return the nuisance learning rate. */
+    /**
+     * Retrieves the nuisance learning rate used in the testing process.
+     * The learning rate controls the magnitude of weight updates during
+     * the training of nuisance models and influences the convergence
+     * speed and stability of the boosting algorithm.
+     *
+     * @return the nuisance learning rate.
+     */
     public double getLearningRate() { return learningRate; }
 
-    /** @param maxLeafNodes the nuisance tree size. Clears the cache. */
+    /**
+     * Sets the maximum number of leaf nodes allowed for the decision trees used in the testing process.
+     * This parameter controls the complexity of the trees and influences the model's balance between
+     * bias and variance. A minimum of 2 leaf nodes is required to ensure meaningful tree structure.
+     * Changing this value clears the result cache.
+     *
+     * @param maxLeafNodes the maximum number of leaf nodes; must be greater than or equal to 2.
+     * @throws IllegalArgumentException if {@code maxLeafNodes} is less than 2.
+     */
     public void setMaxLeafNodes(int maxLeafNodes) {
         if (maxLeafNodes < 2) throw new IllegalArgumentException("maxLeafNodes must be >= 2");
         this.maxLeafNodes = maxLeafNodes; cache.clear();
     }
 
-    /** @return the nuisance tree size. */
+    /**
+     * Retrieves the maximum number of leaf nodes allowed for the nuisance decision trees.
+     * This parameter controls the complexity of the trees used in the testing process.
+     *
+     * @return the maximum number of leaf nodes.
+     */
     public int getMaxLeafNodes() { return maxLeafNodes; }
 
-    /** @param seed the base random seed for the A/B/C split. Clears the cache. */
+    /**
+     * Sets the base random seed for the internal pseudo-random processes of this test.
+     * Adjusting the seed modifies the behavior of random operations for reproducibility.
+     * Clearing the cache ensures results are recalculated with the new seed.
+     *
+     * @param seed the new base random seed to set.
+     */
     public void setSeed(long seed) { this.seed = seed; cache.clear(); }
 
-    /** @return the base random seed. */
+    /**
+     * Retrieves the base random seed for the A/B/C split.
+     *
+     * @return the base random seed.
+     */
     public long getSeed() { return seed; }
 
     /* ============================== internals =============================== */

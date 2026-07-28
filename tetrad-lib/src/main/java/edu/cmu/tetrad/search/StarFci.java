@@ -469,6 +469,7 @@ public abstract class StarFci implements IGraphSearch {
      * Returns a Markov CPDAG to use as the initial graph in the Star-FCI search.
      *
      * @return This CPDAG.
+     * @param verbose A boolean value indicating whether to print verbose output.
      * @throws InterruptedException if interrupted.
      */
     public abstract Graph getMarkovCpdag(boolean verbose) throws InterruptedException;

@@ -367,14 +367,25 @@ public final class FcitSl implements IGraphSearch {
     private String focusPair = null;
     private final Map<String, Integer> focusTally = new LinkedHashMap<>();
 
-    /** Restrict {@link #getFocusTally} bookkeeping to the single pair {a, b}. */
+    /**
+     * Sets the focus pair by combining the names of the given nodes in a specific order.
+     * The names are concatenated with a null character separator, ensuring the names
+     * are ordered lexicographically.
+     *
+     * @param a the first node whose name will be used in determining the focus pair
+     * @param b the second node whose name will be used in determining the focus pair
+     */
     public void setFocusPair(Node a, Node b) {
         focusPair = a.getName().compareTo(b.getName()) <= 0
                 ? a.getName() + "\u0000" + b.getName()
                 : b.getName() + "\u0000" + a.getName();
     }
 
-    /** Per-candidate outcome counts for the focus pair; empty if none was set. */
+    /**
+     * Retrieves the current focus tally, which is a mapping of keys to their corresponding integer values.
+     *
+     * @return a map containing the focus tally, where the keys are strings and the values are integers.
+     */
     public Map<String, Integer> getFocusTally() {
         return focusTally;
     }
@@ -383,7 +394,11 @@ public final class FcitSl implements IGraphSearch {
      *  battery statement -- one per battery-refused candidate, in encounter order. */
     private final List<Set<String>> focusBatteryZ = new ArrayList<>();
 
-    /** Offending battery Z's for the focus pair; empty if none was set/refused. */
+    /**
+     * Retrieves the focus battery data structured as a list of sets of strings.
+     *
+     * @return a list where each element is a set of strings representing focus battery information.
+     */
     public List<Set<String>> getFocusBatteryZ() {
         return focusBatteryZ;
     }
@@ -398,14 +413,37 @@ public final class FcitSl implements IGraphSearch {
      *  focus pair. If the true host is absent here, the generator never reached it. */
     private final List<String> focusEnumerated = new ArrayList<>();
 
+    /**
+     * Retrieves the value of the focusInterimPag property.
+     *
+     * @return the current value of the focusInterimPag as a String.
+     */
     public String getFocusInterimPag() { return focusInterimPag; }
+
+    /**
+     * Retrieves the value of the focusBasePag property.
+     *
+     * @return the current value of the focusBasePag as a String.
+     */
     public String getFocusBasePag() { return focusBasePag; }
+
+    /**
+     * Retrieves the value of the focusEnumerated property.
+     *
+     * @return a list of strings representing the focus enumerated MAGs.
+     */
     public List<String> getFocusEnumerated() { return focusEnumerated; }
 
     /** Every legal-MAG seed/flip generated for the focus pair BEFORE the in/out-class filter,
      *  with its class verdict and bidirected-edge count. Distinguishes "host generated then
      *  misclassified" (option 1 applies) from "host never generated" (it does not). */
     private final List<String> focusSeedLog = new ArrayList<>();
+
+    /**
+     * Retrieves the log of focus seed activities.
+     *
+     * @return a list of strings representing the focus seed log entries.
+     */
     public List<String> getFocusSeedLog() { return focusSeedLog; }
 
     /**
@@ -417,6 +455,11 @@ public final class FcitSl implements IGraphSearch {
      */
     private final List<String> focusSepsetLog = Collections.synchronizedList(new ArrayList<>());
 
+    /**
+     * Retrieves the log of focus separation sets.
+     *
+     * @return A list of strings representing the focus separation set log.
+     */
     public List<String> getFocusSepsetLog() { return focusSepsetLog; }
 
     private static int bidirectedCount(Graph g) {

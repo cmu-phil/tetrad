@@ -23,38 +23,81 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.EdgePriors;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
+/**
+ * The {@code EdgePriorsUsage} class provides a sequence of computational steps for
+ * exploring the effects of priors on edge decisions in genomic data analysis. This class
+ * integrates SNP loci prioritization, annotation standardization, and subsequent analysis
+ * methods for evaluating the role of biological annotations on edge priors.
+ * <p>
+ * Class Overview
+ * <p>
+ * This class contains:
+ * <p>
+ * 1. A custom {@code SubTest} IndependenceTest implementation.
+ * <p>
+ * 2. Logic for generating annotation scores, applying priors, validating locus inputs,
+ * and performing repeat experiments.
+ * <p>
+ * 3. Execution of the main computational flow in the {@code main} method.
+ * <p>
+ * The workflow simulates a computational pipeline for applying and assessing
+ * edge-specific priors in a genomic trait analysis using annotated data.
+ * <p>
+ * Inner Classes
+ * <ul>
+ * <li>{@code SubTest} is a stand-in for the {@code IndTestFisherZ} class that
+ * implements the {@code IndependenceTest} interface. It allows producing a fixed
+ * p-value to investigate the effects of edge priors.
+ * </ul>
+ * <p>
+ * Algorithm Description
+ * The program follows these steps:
+ * <p>
+ * 1. **Standardization of Annotation Scores**:
+ *    Biological annotations are standardized (mean zero) to avoid introducing artifacts
+ *    into thresholds when scaling by tau.
+ * <p>
+ * 2. **Construct Priors with Beta Values**:
+ *    Beta values for SNP-trait pairs are generated based on scaled standardized annotations.
+ *    Additional logic ensures that SNP-SNP and trait-trait pairs remain unaltered.
+ * <p>
+ * 3. **Weight Anchoring**:
+ *    A prior is constructed for locus-specific SNP-trait pairs and anchored at the pre-tuned
+ *    alpha value (ALPHA).
+ * <p>
+ * 4. **Locus Matching and Validation**:
+ *    Name validation ensures priors align with locus variables.
+ * <p>
+ * 5. **Per-Repeat Restriction and Testing**:
+ *    Priors are shared across repeats. For each repeat, they are restricted to
+ *    the active subset, wrapped, and tested against baseline independence results.
+ *
+ * <h2>Usage</h2>
+ * This class is intended for research pipelines focusing on edge prior analysis in genomic data.
+ * The results of the analysis can quantify the role of various prior configurations on the
+ * robustness of edge decisions in probabilistic independence tests.
+ */
 public class EdgePriorsUsage {
+
+    /**
+     * Default constructor for the EdgePriorsUsage class.
+     */
+    public EdgePriorsUsage() {
+    }
 
     // ---- stand-ins -------------------------------------------------------
 
     /**
-     * Stands in for IndTestFisherZ on a (K + T) principal submatrix. Returns a FIXED p-value,
-     * chosen to straddle the per-edge thresholds so that the prior's effect on the decision is
-     * visible rather than merely its effect on the threshold.
+     * The entry point of the application. This method sets up and executes a series of computational steps
+     * focusing on SNP loci prioritization for genomic analysis. The methodology includes generating annotation
+     * scores, applying priors, verifying locus consistency, and performing search and assessment tests.
+     * The results are computed and assessed for consistency across repeats to verify the robustness of the
+     * pipeline.
+     *
+     * @param args Command-line arguments passed to the program. These arguments are not utilized in this implementation.
      */
-    static class SubTest implements IndependenceTest {
-        final List<Node> vars;
-        final double p;
-        boolean verbose;
-        SubTest(List<Node> vars, double p) { this.vars = vars; this.p = p; }
-        public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-            return new IndependenceResult(new IndependenceFact(x, y, z), p > 0.01, p, 0.01 - p);
-        }
-        public List<Node> getVariables() { return vars; }
-        public DataModel getData() { return null; }
-        public boolean isVerbose() { return verbose; }
-        public void setVerbose(boolean v) { verbose = v; }
-        public String toString() { return "IndTestFisherZ(sub)"; }
-    }
-
-    // ---- the flow --------------------------------------------------------
-
     public static void main(String[] args) {
         final double ALPHA = 0.01;     // the tuned value; unchanged
         final double P = 0.012;        // a p-value that straddles the primed thresholds
@@ -163,7 +206,9 @@ public class EdgePriorsUsage {
                             != wrapped.checkIndependence(x, y, java.util.Collections.emptySet()).isIndependent()) {
                         identical = false;
                     }
-                } catch (InterruptedException e) { throw new RuntimeException(e); }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         System.out.println("\ntau = 0 reproduces the bare test on all "
@@ -207,7 +252,11 @@ public class EdgePriorsUsage {
         System.out.println("\nR would be " + R + " repeats for this locus (m/K * 50).");
     }
 
-    /** Reports what the test decides for a pair, and hence whether the edge survives. */
+    // ---- the flow --------------------------------------------------------
+
+    /**
+     * Reports what the test decides for a pair, and hence whether the edge survives.
+     */
     private static String verdict(EdgePriorTest t, Node x, Node y) {
         try {
             return t.checkIndependence(x, y, java.util.Collections.emptySet()).isIndependent()
@@ -241,7 +290,9 @@ public class EdgePriorsUsage {
         return s;
     }
 
-    /** K SNPs drawn without replacement, plus every trait, as each repeat does. */
+    /**
+     * K SNPs drawn without replacement, plus every trait, as each repeat does.
+     */
     private static List<Node> sampleSubset(List<Node> locusVars, int m, int k, Node y1, Node y2, Random rng) {
         Set<Integer> picked = new LinkedHashSet<>();
         while (picked.size() < k) picked.add(rng.nextInt(m));
@@ -250,5 +301,45 @@ public class EdgePriorsUsage {
         sub.add(y1);
         sub.add(y2);
         return sub;
+    }
+
+    /**
+     * Stands in for IndTestFisherZ on a (K + T) principal submatrix. Returns a FIXED p-value,
+     * chosen to straddle the per-edge thresholds so that the prior's effect on the decision is
+     * visible rather than merely its effect on the threshold.
+     */
+    static class SubTest implements IndependenceTest {
+        final List<Node> vars;
+        final double p;
+        boolean verbose;
+
+        SubTest(List<Node> vars, double p) {
+            this.vars = vars;
+            this.p = p;
+        }
+
+        public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
+            return new IndependenceResult(new IndependenceFact(x, y, z), p > 0.01, p, 0.01 - p);
+        }
+
+        public List<Node> getVariables() {
+            return vars;
+        }
+
+        public DataModel getData() {
+            return null;
+        }
+
+        public boolean isVerbose() {
+            return verbose;
+        }
+
+        public void setVerbose(boolean v) {
+            verbose = v;
+        }
+
+        public String toString() {
+            return "IndTestFisherZ(sub)";
+        }
     }
 }

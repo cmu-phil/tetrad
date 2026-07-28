@@ -291,55 +291,120 @@ public final class IndTestCord implements IndependenceTest, RowsSettable {
 
     /* ============================ CORD configuration ========================= */
 
-    /** @param symmetric whether to combine both orientations via ACAT (default true). Clears the cache. */
+    /**
+     * Sets the symmetry property of the object and clears the cache.
+     *
+     * @param symmetric a boolean value indicating whether the object should be symmetric.
+     */
     public void setSymmetric(boolean symmetric) { this.symmetric = symmetric; cache.clear(); }
 
-    /** @return whether the test is symmetrised over both orientations. */
+    /**
+     * Indicates whether the independence test is symmetric.
+     * In symmetric mode, both orientations are run and their
+     * p-values are combined using a combination rule.
+     * Symmetry ensures that the test's results are invariant
+     * to the order in which variables are assessed.
+     *
+     * @return true if the test is symmetric, false otherwise.
+     */
     public boolean isSymmetric() { return symmetric; }
 
-    /** @param nLevels number of Y-threshold levels K (the CDF grid). Clears the cache. */
+    /**
+     * Sets the number of threshold levels (nLevels) used in the computation.
+     * The number of levels must be greater than or equal to 2. Updating this value
+     * clears the internal result cache to reflect the new parameter.
+     *
+     * @param nLevels the number of threshold levels; must be >= 2
+     * @throws IllegalArgumentException if nLevels is less than 2
+     */
     public void setNLevels(int nLevels) {
         if (nLevels < 2) throw new IllegalArgumentException("nLevels must be >= 2");
         this.nLevels = nLevels; cache.clear();
     }
 
-    /** @return the number of threshold levels K. */
+    /**
+     * Retrieves the number of Y-threshold levels (K) used in the CDF grid.
+     *
+     * @return the number of Y-threshold levels.
+     */
     public int getNLevels() { return nLevels; }
 
-    /** @param nEstimators boosting iterations per nuisance model. Clears the cache. */
+    /**
+     * Sets the number of estimators (boosting iterations) used per nuisance model during training.
+     * The provided value must be greater than or equal to 1. Setting this value clears the internal
+     * result cache to ensure that training occurs with the updated parameter.
+     *
+     * @param nEstimators the number of boosting iterations; must be >= 1.
+     * @throws IllegalArgumentException if {@code nEstimators} is less than 1.
+     */
     public void setNEstimators(int nEstimators) {
         if (nEstimators < 1) throw new IllegalArgumentException("nEstimators must be >= 1");
         this.nEstimators = nEstimators; cache.clear();
     }
 
-    /** @return the boosting iterations per nuisance model. */
+    /**
+     * Retrieves the number of boosting iterations per nuisance model.
+     *
+     * @return the number of boosting iterations.
+     */
     public int getNEstimators() { return nEstimators; }
 
-    /** @param learningRate the nuisance learning rate. Clears the cache. */
+    /**
+     * Sets the learning rate used for training nuisance models. The provided learning rate
+     * must be greater than 0. Setting the learning rate clears the internal result cache.
+     *
+     * @param learningRate the learning rate as a positive double; must be greater than 0.
+     * @throws IllegalArgumentException if the specified learning rate is less than or equal to 0.
+     */
     public void setLearningRate(double learningRate) {
         if (learningRate <= 0) throw new IllegalArgumentException("learningRate must be > 0");
         this.learningRate = learningRate; cache.clear();
     }
 
-    /** @return the nuisance learning rate. */
+    /**
+     * Retrieves the learning rate used for training nuisance models.
+     *
+     * @return the learning rate as a double.
+     */
     public double getLearningRate() { return learningRate; }
 
-    /** @param maxLeafNodes the nuisance tree size. Clears the cache. */
+    /**
+     * Sets the maximum number of leaf nodes for the nuisance tree used in the test.
+     * The value must be greater than or equal to 2. Setting the maximum number
+     * of leaf nodes clears the internal result cache.
+     *
+     * @param maxLeafNodes the maximum number of leaf nodes in the nuisance tree; must be >= 2.
+     * @throws IllegalArgumentException if maxLeafNodes is less than 2.
+     */
     public void setMaxLeafNodes(int maxLeafNodes) {
         if (maxLeafNodes < 2) throw new IllegalArgumentException("maxLeafNodes must be >= 2");
         this.maxLeafNodes = maxLeafNodes; cache.clear();
     }
 
-    /** @return the nuisance tree size. */
+    /**
+     * Retrieves the maximum number of leaf nodes in the nuisance tree.
+     *
+     * @return the maximum number of leaf nodes.
+     */
     public int getMaxLeafNodes() { return maxLeafNodes; }
 
-    /** @param seed the base random seed for the A/B/C split. Clears the cache. */
+    /**
+     * Sets the base random seed for the test. If the specified seed is {@code -1},
+     * a random seed is generated using the {@link RandomUtil} utility. Setting the
+     * seed clears the result cache to ensure consistent behavior in subsequent operations.
+     *
+     * @param seed the random seed as a long value, or {@code -1} to generate a random seed.
+     */
     public void setSeed(long seed) {
         this.seed = seed ==  -1 ? RandomUtil.getInstance().nextLong() : seed;
         cache.clear();
     }
 
-    /** @return the base random seed. */
+    /**
+     * Retrieves the base random seed for the A/B/C split.
+     *
+     * @return the random seed as a long value.
+     */
     public long getSeed() { return seed; }
 
     /* ============================== internals =============================== */

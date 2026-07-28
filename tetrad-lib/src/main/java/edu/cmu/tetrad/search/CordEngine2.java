@@ -31,330 +31,211 @@ package edu.cmu.tetrad.search;/*
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+/**
+ * The CordEngine2 class acts as an implementation of the Cord statistical engine, which is
+ * designed for causal inference and related statistical procedures. This class provides methods
+ * and utilities that support statistical testing, robust aggregation, and computation of
+ * distributional properties. It is tailored for applications in machine learning, causal
+ * discovery, and large-scale data analysis, leveraging efficient computational strategies.
+ *
+ * The class includes mechanisms for tree-based predictions, gradient/hessian-based tree growth,
+ * stratified data splitting, statistical quantile estimations, permutation utilities, and
+ * statistical result aggregation. Furthermore, it provides tools for Monte Carlo-based self-tests
+ * and data simulation under different alternative hypotheses.
+ *
+ * Fields:
+ * - alpha: Significance level for statistical tests.
+ * - numThresholds: Number of thresholds for binning continuous data.
+ * - numEstimators: Total number of estimators used in computations.
+ * - learningRate: Learning rate parameter for optimization methods.
+ * - maxLeafNodes: Maximum number of leaf nodes in decision trees.
+ * - seed: Random seed for reproducibility and random processes.
+ * - earlyStopping: Flag to enable or disable early stopping in iterative processes.
+ * - validationFraction: Fraction of data to be used for validation in training.
+ * - cdfClip: Clip bound for CDF values to prevent extreme probabilities.
+ * - varFloor: Minimum floor value for variance in calculations.
+ * - minSamplesLeaf: Minimum number of samples required for a tree leaf.
+ * - l2Regularization: L2 regularization parameter to prevent overfitting.
+ * - maxBins: Maximum number of bins for feature binning.
+ * - nIterNoChange: Maximum number of iterations with no improvement before stopping.
+ * - tol: Tolerance threshold for stopping criteria.
+ */
 public class CordEngine2 implements CordEngine {
 
     // ===================================================================== //
     //  Configuration  (the six Tetrad params + the hard-coded knobs)         //
     // ===================================================================== //
+
+    /**
+     * Significance level used for statistical hypothesis testing in decision-making processes.
+     * Determines the threshold below which the null hypothesis is rejected.
+     * Commonly used in hypothesis testing to control the probability of Type I errors.
+     * Default value is 0.05, indicating a 5% significance level.
+     */
     public double alpha = 0.05;            // significance level for the decision
+
+    /**
+     * The number of thresholds (or partitions) used in the analysis process.
+     * This parameter determines the granularity of threshold-based operations
+     * or partitions within the algorithm. Higher values increase the resolution,
+     * while lower values reduce computational overhead.
+     */
     public int numThresholds = 9;          // K  (cordNumThresholds)
+    /**
+     * Specifies the number of estimators (trees) to be used in a tree-based model.
+     * This variable determines the maximum number of iterations for fitting the model.
+     * A higher value typically leads to a more accurate ensemble at the cost of increased computation time.
+     */
     public int numEstimators = 500;        // max_iter (cordNumEstimators)
+    /**
+     * Represents the learning rate parameter used in optimization algorithms
+     * within the CordEngine2 class. This parameter controls the step size
+     * at each iteration during training, influencing the convergence
+     * speed and stability of the model.
+     * <p>
+     * A smaller value of the learning rate can lead to more stable
+     * convergence but may require more iterations, while a larger
+     * value can speed up convergence but risks overshooting the optimal solution.
+     */
     public double learningRate = 0.1;      // (cordLearningRate)
+    /**
+     * The maximum number of leaf nodes allowed when growing decision trees.
+     * This parameter acts as a constraint to limit the complexity of the tree,
+     * helping prevent overfitting by capping the number of leaves.
+     * A smaller value constrains the model to a lower level of complexity,
+     * while a larger value allows more intricate tree structures.
+     */
     public int maxLeafNodes = 31;          // (cordMaxLeafNodes)
+    /**
+     * Seed value used for random operations in the CordEngine2 class.
+     * This variable serves as the base seed for generating reproducible results
+     * during runtime and is configured with split and nuisance seeds as needed.
+     */
     public long seed = 0L;                 // (cordSeed); split + nuisance seeds
 
     // Hard-coded to match the Python reference exactly (not exposed as knobs).
+
+    /**
+     * Indicates whether early stopping is enabled for iterative model training processes.
+     * When set to true, the training process can terminate early if certain criteria
+     * (e.g., no significant improvement in performance after a specified number of iterations)
+     * are met, potentially reducing computation time and preventing overfitting.
+     */
     public boolean earlyStopping = true;
+    /**
+     * Proportion of the training data to set aside for validation during model training.
+     * <p>
+     * This variable is utilized during the training phase to split the dataset into training
+     * and validation subsets. The value represents the fraction of the training data that will
+     * be allocated to the validation set. It is typically used to monitor the model's performance
+     * on unseen data and facilitate mechanisms like early stopping.
+     * <p>
+     * The value must be in the range [0.0, 1.0]. For example:
+     * <p>
+     * - A value of 0.15 means that 15% of the data will be used for validation.
+     * <p>
+     * - A value of 0.0 means that no data is reserved for validation.
+     * <p>
+     * - A value of 1.0 implies that the entire dataset is used for validation, leaving none for training.
+     * <p>
+     * Care should be taken to ensure compatibility of the chosen value with the dataset size and
+     * problem requirements for effective model training and evaluation.
+     */
     public double validationFraction = 0.15;
+    /**
+     * The minimum allowable value for the cumulative distribution function (CDF) to prevent
+     * numerical issues during calculations. This value ensures stability when handling very
+     * small probabilities that might otherwise lead to computational underflows.
+     * <p>
+     * The value is used as a lower bound to "clip" the CDF estimates, preventing them from falling
+     * below the specified threshold. It is often used in tree-based algorithms or other statistical
+     * models where CDF values are computed as part of the process.
+     * <p>
+     * Default value: 1e-3.
+     */
     public double cdfClip = 1e-3;
+    /**
+     * Minimum allowed value for variance during calculations to prevent
+     * numerical instability or division by zero errors. This acts as a
+     * safeguard to ensure that variance values used in the algorithm do
+     * not fall below this threshold.
+     */
     public double varFloor = 0.02;
+    /**
+     * Specifies the minimum number of samples that a leaf node must have
+     * during the construction of decision trees. This parameter is used to
+     * control the granularity of the splits and helps avoid overfitting by
+     * ensuring that overly small leaves are not created.
+     * <p>
+     * A higher value may result in simpler trees with potentially reduced
+     * overfitting, while a lower value may create more complex trees but
+     * could risk overfitting to noise in the data.
+     */
     public int minSamplesLeaf = 20;
+    /**
+     * L2 regularization parameter used to penalize large coefficients in model training.
+     * This term helps to prevent overfitting by adding a penalty proportional to the
+     * square of the magnitude of the coefficients. A higher value of this parameter
+     * increases the strength of the regularization, encouraging simpler models
+     * with smaller coefficients, while a value of 0.0 disables L2 regularization.
+     */
     public double l2Regularization = 0.0;
+    /**
+     * The maximum number of discrete bins allowed for feature discretization or histogram-based computations.
+     * This value directly influences the granularity of data representations and can impact model performance
+     * and computational efficiency in tasks that involve histogram aggregation or categorical feature processing.
+     */
     public int maxBins = 255;
+    /**
+     * Specifies the number of iterations with no improvement in the early
+     * stopping criterion before the model stops training. This value is
+     * used to determine convergence during the optimization process.
+     */
     public int nIterNoChange = 10;
+    /**
+     * Tolerance value used as a threshold for numerical convergence and stopping criteria.
+     * This variable represents the minimum difference between consecutive iterations
+     * below which an optimization or iterative algorithm is considered to have converged.
+     * Commonly used in ensuring stability and efficiency in machine learning algorithms.
+     */
     public double tol = 1e-7;
 
-    public CordEngine2() {}
+    /**
+     * Default constructor for the CordEngine2 class. Initializes an instance of the CordEngine2 engine
+     * which implements core components of the Cord statistical framework for causal discovery.
+     * <p>
+     * The CordEngine2 class is a statistical engine that supports various computational utilities
+     * and methodologies in the context of causal inference, statistical testing, and robust
+     * aggregation methods based on distributional properties. Its implementation includes
+     * optimizations for performance in large-scale data analysis while adhering to the principles
+     * of machine learning and robust testing frameworks.
+     */
+    public CordEngine2() {
+    }
 
-    // ===================================================================== //
-    //  Result                                                                //
-    // ===================================================================== //
-    public static final class Result {
-        public final double pvalue;      // one-sided upper, 1 - Phi(T)
-        public final double statistic;   // studentized score T
-        public final String status;      // "ok" or "degenerate"
-        public final int n;
-        public final int dimX;
-        Result(double pvalue, double statistic, String status, int n, int dimX) {
-            this.pvalue = pvalue; this.statistic = statistic;
-            this.status = status; this.n = n; this.dimX = dimX;
-        }
-        public boolean reject(double a) { return status.equals("ok") && pvalue < a; }
-        @Override public String toString() {
-            String verdict = "degenerate (zero score variance)";
-            if (status.equals("ok"))
-                verdict = String.format("T = %.4f   p = %.4g", statistic, pvalue);
-            return "CORD  H0: Y _||_ Z | X   [" + verdict + "]";
-        }
+    /**
+     * Degenerate rotations count as p = 1 in the median aggregation (never toward rejection).
+     */
+    private static double safeP(Result r) {
+        return r.status.equals("ok") ? r.pvalue : 1.0;
     }
 
     // ===================================================================== //
     //  Public API : test(x, y, z)  (argument order mirrors cord.py fit)      //
     // ===================================================================== //
 
-    /** z given as a single column. */
-    public Result test(double[][] x, double[] y, double[] z) {
-        double[][] zm = new double[z.length][1];
-        for (int i = 0; i < z.length; i++) zm[i][0] = z[i];
-        return test(x, y, zm);
-    }
-
-    /** Full test.  x:(n,p), y:(n,), z:(n,d). */
-    public Result test(double[][] x, double[] y, double[][] z) {
-        return run(x, y, z, seed);
-    }
-
-    /** Degenerate rotations count as p = 1 in the median aggregation (never toward rejection). */
-    private static double safeP(Result r) { return r.status.equals("ok") ? r.pvalue : 1.0; }
-
-    // ===================================================================== //
-    //  CORD core                                                             //
-    //  run(): three cyclic A/B/C role rotations of a SINGLE partition, each   //
-    //  fold playing train/direction/score exactly once, aggregated into one   //
-    //  valid p-value via min(1, 2*median(p1,p2,p3))  (Meinshausen & Buhlmann  //
-    //  2009, gamma=1/2 quantile aggregation; see uptodate_paper.tex:261).     //
-    //  scoreRotation(): one role assignment (port of cord.py run()).          //
-    // ===================================================================== //
-    private Result run(double[][] x, double[] y, double[][] z, long theSeed) {
-        final int n = y.length;
-        final int K = numThresholds;
-        final int p = x[0].length;
-        Random rng = new Random(theSeed);
-
-        // ONE A/B/C split via permutation + np.array_split(., 3); shared across the rotations.
-        int[] perm = permutation(n, rng);
-        int[][] folds = arraySplit3(perm);
-
-        // xz = [x | z]   (role-independent; built once)
-        double[][] xz = hstack(x, z);
-
-        // Rotation r uses train=folds[r], dir=folds[r+1], score=folds[r+2] (mod 3), so each fold
-        // plays each role exactly once, giving three p-values p1,p2,p3.
-        Result[] rot = new Result[3];
-        for (int r = 0; r < 3; r++) {
-            int[] fTrain = folds[r];
-            int[] fDir   = folds[(r + 1) % 3];
-            int[] fScore = folds[(r + 2) % 3];
-            // Fresh per-model seed block per rotation (block draw, indexed like the Python `s` vector).
-            long[] s = new long[3 + K];
-            for (int i = 0; i < s.length; i++) s[i] = rng.nextLong();
-            rot[r] = scoreRotation(x, y, xz, fTrain, fDir, fScore, s, n, p, K);
-        }
-
-        // Meinshausen-Buhlmann gamma=1/2 aggregation: min(1, 2*median(p1,p2,p3)); valid under
-        // arbitrary dependence among the (same-partition) rotations. Degenerate rotation -> p = 1.
-        int okCount = 0;
-        for (Result r0 : rot) if (r0.status.equals("ok")) okCount++;
-        if (okCount == 0) return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
-
-        double[] ps = { safeP(rot[0]), safeP(rot[1]), safeP(rot[2]) };
-        double pAgg = Math.min(1.0, 2.0 * median(ps));
-
-        // Report the studentized T of the median-p rotation (fall back to the max ok T if that
-        // rotation was degenerate, so an "ok" aggregate never carries a NaN statistic).
-        Integer[] ord = { 0, 1, 2 };
-        Arrays.sort(ord, (a, b) -> {
-            int c = Double.compare(ps[a], ps[b]);
-            return c != 0 ? c : Integer.compare(a, b);
-        });
-        double tRep = rot[ord[1]].statistic;
-        if (Double.isNaN(tRep)) {
-            double best = Double.NEGATIVE_INFINITY;
-            for (Result r0 : rot) if (r0.status.equals("ok")) best = Math.max(best, r0.statistic);
-            tRep = best;
-        }
-        return new Result(pAgg, tRep, "ok", n, p);
-    }
-
-    /** One A/B/C role assignment (port of cord.py run()): the train fold fits the CDFs, the dir
-     *  fold fits the centering regression + a fresh CDF, the score fold forms the statistic. */
-    private Result scoreRotation(double[][] x, double[] y, double[][] xz,
-                                 int[] foldTrain, int[] foldDir, int[] foldScore,
-                                 long[] s, int n, int p, int K) {
-        // Thresholds = K quantiles of Y on the TRAIN fold only, at p_k = (k + 0.5)/K.
-        double[] yTr = gather(y, foldTrain);
-        double[] yTrSorted = yTr.clone();
-        Arrays.sort(yTrSorted);
-        double[] thr = new double[K];
-        for (int k = 0; k < K; k++) thr[k] = quantileType7(yTrSorted, (k + 0.5) / K);
-
-        // p_cdf = P(Y<=t | X) ;  q_cdf = P(Y<=t | X,Z)   on the train fold
-        Cdf pCdf = fitCdf(rows(x, foldTrain), yTr, thr, s[0]);
-        Cdf qCdf = fitCdf(rows(xz, foldTrain), yTr, thr, s[1]);
-
-        // witness g = (q - p)/max(p(1-p), varFloor) on dir (target) and score (score) folds
-        double[][] gDir = witness(pCdf.eval(rows(x, foldDir)),   qCdf.eval(rows(xz, foldDir)));
-        double[][] gSc  = witness(pCdf.eval(rows(x, foldScore)), qCdf.eval(rows(xz, foldScore)));
-
-        // m_hat[:,k] = E[g_k | X], per-threshold squared-error regressor fit on dir, predicted on score.
-        double[][] xDir = rows(x, foldDir), xSc = rows(x, foldScore);
-        BinMapper bmDir = BinMapper.fit(xDir, maxBins);
-        int[][] binXDir = bmDir.transform(xDir);
-        double[][] mSc = new double[foldScore.length][K];
-        for (int k = 0; k < K; k++) {
-            double[] target = column(gDir, k);
-            GBRegressor reg = new GBRegressor(this).fit(binXDir, bmDir, target, s[3 + k]);
-            double[] pred = reg.predict(xSc);
-            for (int i = 0; i < foldScore.length; i++) mSc[i][k] = pred[i];
-        }
-
-        // e_cdf = fresh P(Y<=t | X) on the dir fold (disjoint from p_cdf on the train fold)
-        Cdf eCdf = fitCdf(xDir, gather(y, foldDir), thr, s[2]);
-
-        // resid = 1{Y_s <= thr} - e_cdf(x_s)      (note: <=, vs strict < in the training bins)
-        double[][] eSc = eCdf.eval(xSc);
-        double[] ySc = gather(y, foldScore);
-        double[][] resid = new double[foldScore.length][K];
-        for (int i = 0; i < foldScore.length; i++)
-            for (int k = 0; k < K; k++)
-                resid[i][k] = (ySc[i] <= thr[k] ? 1.0 : 0.0) - eSc[i][k];
-
-        // psi_i = mean_k (g - m)(1{Y<=t} - e)
-        double[] psi = new double[foldScore.length];
-        for (int i = 0; i < foldScore.length; i++) {
-            double acc = 0;
-            for (int k = 0; k < K; k++) acc += (gSc[i][k] - mSc[i][k]) * resid[i][k];
-            psi[i] = acc / K;
-        }
-
-        double sd = popStd(psi);
-        if (!(sd > 0.0))
-            return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
-        double t = Math.sqrt(foldScore.length) * mean(psi) / sd;
-        return new Result(normSf(t), t, "ok", n, p);
-    }
-
-    // ---- witness ---------------------------------------------------------- //
-    private double[][] witness(double[][] pm, double[][] qm) {
-        int n = pm.length, K = pm[0].length;
-        double[][] g = new double[n][K];
-        for (int i = 0; i < n; i++)
-            for (int k = 0; k < K; k++) {
-                double pp = pm[i][k];
-                double v = Math.max(pp * (1.0 - pp), varFloor);
-                g[i][k] = (qm[i][k] - pp) / v;
-            }
-        return g;
-    }
-
-    // ===================================================================== //
-    //  Conditional CDF  (port of cord.py _cdf / _fit_cdf)                     //
-    // ===================================================================== //
-    interface Cdf { double[][] eval(double[][] f); }
-
-    private Cdf fitCdf(double[][] feat, double[] y, double[] thr, long modelSeed) {
-        final int K = thr.length;
-        final double clip = cdfClip;
-        int[] bins = new int[y.length];
-        int mn = Integer.MAX_VALUE, mx = Integer.MIN_VALUE;
-        for (int i = 0; i < y.length; i++) {
-            bins[i] = searchsortedLeft(thr, y[i]);         // #{t_k < y}  in {0,...,K}
-            mn = Math.min(mn, bins[i]); mx = Math.max(mx, bins[i]);
-        }
-        if (mn == mx) {                                    // all fold-Y in one bin: constant CDF
-            final double[] cst = new double[K];
-            for (int j = 0; j < K; j++)
-                cst[j] = clamp(j >= bins[0] ? 1.0 : 0.0, clip, 1.0 - clip);
-            return f -> {
-                double[][] out = new double[f.length][K];
-                for (int i = 0; i < f.length; i++) System.arraycopy(cst, 0, out[i], 0, K);
-                return out;
-            };
-        }
-        BinMapper bm = BinMapper.fit(feat, maxBins);
-        int[][] binned = bm.transform(feat);
-        GBClassifier clf;
-        try {
-            clf = new GBClassifier(this).fit(binned, bm, bins, K, modelSeed, true);
-        } catch (StratifyException e) {                     // a bin too small to stratify -> es off
-            clf = new GBClassifier(this).fit(binned, bm, bins, K, modelSeed, false);
-        }
-        final GBClassifier model = clf;
-        final int[] classes = clf.classes;                 // ascending subset of {0..K}
-        return f -> {
-            double[][] proba = model.predictProba(f);       // (n, C) in `classes` order
-            double[][] out = new double[f.length][K];
-            for (int i = 0; i < f.length; i++) {
-                double[] full = new double[K + 1];
-                for (int c = 0; c < classes.length; c++) full[classes[c]] = proba[i][c];
-                double acc = 0;
-                for (int j = 0; j < K; j++) {               // cumsum, drop last col, clip
-                    acc += full[j];
-                    out[i][j] = clamp(acc, clip, 1.0 - clip);
-                }
-            }
-            return out;
-        };
-    }
-
-    // ===================================================================== //
-    //  Histogram gradient-boosted trees  (embedded, mirrors sklearn HGB)     //
-    // ===================================================================== //
-
-    static final class StratifyException extends RuntimeException {}
-
-    /** Feature binner: per-feature quantile bin edges, <= maxBins bins. */
-    static final class BinMapper {
-        final double[][] thr;   // per feature, ascending edges
-        final int[] nBins;      // per feature = thr[f].length + 1
-        private BinMapper(double[][] thr, int[] nBins) { this.thr = thr; this.nBins = nBins; }
-
-        static BinMapper fit(double[][] X, int maxBins) {
-            int p = X[0].length, n = X.length;
-            double[][] edges = new double[p][];
-            int[] nb = new int[p];
-            for (int f = 0; f < p; f++) {
-                double[] col = new double[n];
-                for (int i = 0; i < n; i++) col[i] = X[i][f];
-                double[] sorted = col.clone();
-                Arrays.sort(sorted);
-                double[] uniq = unique(sorted);
-                double[] e;
-                if (uniq.length <= maxBins) {                  // midpoints between distinct values
-                    e = new double[Math.max(0, uniq.length - 1)];
-                    for (int i = 0; i + 1 < uniq.length; i++) e[i] = 0.5 * (uniq[i] + uniq[i + 1]);
-                } else {                                        // maxBins-1 quantile edges
-                    e = new double[maxBins - 1];
-                    for (int i = 1; i < maxBins; i++) e[i - 1] = quantileType7(sorted, (double) i / maxBins);
-                    e = unique(e);                              // guard against ties collapsing edges
-                }
-                edges[f] = e;
-                nb[f] = e.length + 1;
-            }
-            return new BinMapper(edges, nb);
-        }
-
-        int binOf(int f, double v) { return searchsortedLeft(thr[f], v); }
-
-        int[][] transform(double[][] X) {
-            int n = X.length, p = X[0].length;
-            int[][] out = new int[n][p];
-            for (int i = 0; i < n; i++)
-                for (int f = 0; f < p; f++) out[i][f] = searchsortedLeft(thr[f], X[i][f]);
-            return out;
-        }
-    }
-
-    /** A single boosted tree (leaf-wise / best-first). Leaf values include the shrinkage. */
-    static final class TreeNode {
-        boolean leaf = true;
-        int feature = -1, binThr = -1;
-        TreeNode left, right;
-        double value;
-    }
-
     static double predictTree(TreeNode nd, int[] row) {
         while (!nd.leaf) nd = (row[nd.feature] <= nd.binThr) ? nd.left : nd.right;
         return nd.value;
     }
 
-    /** Node under construction, carrying its samples, stats, and best candidate split. */
-    static final class BuildNode {
-        int[] samples; double sumG, sumH; TreeNode node;
-        double gain = 0.0; int feature = -1, binThr = -1;
-    }
-
-    /** Grow one tree by best-first splitting on gradient/hessian histograms. */
+    /**
+     * Grow one tree by best-first splitting on gradient/hessian histograms.
+     */
     static TreeNode growTree(int[][] binned, int[] nBins, double[] grad, double[] hess,
                              int[] rootSamples, int maxLeaves, int minLeaf, double l2, double lr) {
         int p = nBins.length;
@@ -370,12 +251,18 @@ public class CordEngine2 implements CordEngine {
             for (int idx : bn.samples) if (binned[idx][f] <= tb) cntL++;
             int[] left = new int[cntL], right = new int[bn.samples.length - cntL];
             int li = 0, ri = 0;
-            for (int idx : bn.samples) { if (binned[idx][f] <= tb) left[li++] = idx; else right[ri++] = idx; }
+            for (int idx : bn.samples) {
+                if (binned[idx][f] <= tb) left[li++] = idx;
+                else right[ri++] = idx;
+            }
             TreeNode nd = bn.node;
-            nd.leaf = false; nd.feature = f; nd.binThr = tb;
+            nd.leaf = false;
+            nd.feature = f;
+            nd.binThr = tb;
             BuildNode L = makeNode(left, binned, nBins, grad, hess, p, minLeaf, l2, lr);
             BuildNode R = makeNode(right, binned, nBins, grad, hess, p, minLeaf, l2, lr);
-            nd.left = L.node; nd.right = R.node;
+            nd.left = L.node;
+            nd.right = R.node;
             leaves++;
             if (L.gain > 0) pq.add(L);
             if (R.gain > 0) pq.add(R);
@@ -386,185 +273,57 @@ public class CordEngine2 implements CordEngine {
     static BuildNode makeNode(int[] samples, int[][] binned, int[] nBins, double[] grad, double[] hess,
                               int p, int minLeaf, double l2, double lr) {
         double sumG = 0, sumH = 0;
-        for (int idx : samples) { sumG += grad[idx]; sumH += hess[idx]; }
+        for (int idx : samples) {
+            sumG += grad[idx];
+            sumH += hess[idx];
+        }
         BuildNode bn = new BuildNode();
-        bn.samples = samples; bn.sumG = sumG; bn.sumH = sumH;
+        bn.samples = samples;
+        bn.sumG = sumG;
+        bn.sumH = sumH;
         TreeNode nd = new TreeNode();
         nd.leaf = true;
         nd.value = lr * (-sumG / (sumH + l2 + 1e-12));
         bn.node = nd;
 
         int total = samples.length;
-        double bestGain = 0; int bestF = -1, bestB = -1;
+        double bestGain = 0;
+        int bestF = -1, bestB = -1;
         for (int f = 0; f < p; f++) {
             int nb = nBins[f];
-            double[] hg = new double[nb]; double[] hh = new double[nb]; int[] hc = new int[nb];
-            for (int idx : samples) { int b = binned[idx][f]; hg[b] += grad[idx]; hh[b] += hess[idx]; hc[b]++; }
-            double accG = 0, accH = 0; int accC = 0;
+            double[] hg = new double[nb];
+            double[] hh = new double[nb];
+            int[] hc = new int[nb];
+            for (int idx : samples) {
+                int b = binned[idx][f];
+                hg[b] += grad[idx];
+                hh[b] += hess[idx];
+                hc[b]++;
+            }
+            double accG = 0, accH = 0;
+            int accC = 0;
             for (int b = 0; b < nb - 1; b++) {
-                accG += hg[b]; accH += hh[b]; accC += hc[b];
+                accG += hg[b];
+                accH += hh[b];
+                accC += hc[b];
                 if (accC < minLeaf) continue;
                 int rc = total - accC;
                 if (rc < minLeaf) break;                 // accC only grows => rc only shrinks
                 double GR = sumG - accG, HR = sumH - accH;
                 double gain = 0.5 * (accG * accG / (accH + l2 + 1e-12)
-                                   + GR * GR / (HR + l2 + 1e-12)
-                                   - sumG * sumG / (sumH + l2 + 1e-12));
-                if (gain > bestGain) { bestGain = gain; bestF = f; bestB = b; }
+                        + GR * GR / (HR + l2 + 1e-12)
+                        - sumG * sumG / (sumH + l2 + 1e-12));
+                if (gain > bestGain) {
+                    bestGain = gain;
+                    bestF = f;
+                    bestB = b;
+                }
             }
         }
-        bn.gain = bestGain; bn.feature = bestF; bn.binThr = bestB;
+        bn.gain = bestGain;
+        bn.feature = bestF;
+        bn.binThr = bestB;
         return bn;
-    }
-
-    /** Multiclass (softmax) classifier: one tree per class per boosting iteration. */
-    static final class GBClassifier {
-        final CordEngine2 cfg;
-        BinMapper bm;
-        int[] classes;                 // ascending distinct labels
-        double[] baseline;             // per class (log priors)
-        List<List<TreeNode>> trees;    // per class
-        GBClassifier(CordEngine2 cfg) { this.cfg = cfg; }
-
-        GBClassifier fit(int[][] binned, BinMapper bm, int[] labels, int K, long modelSeed, boolean es) {
-            this.bm = bm;
-            int n = binned.length;
-            classes = unique(labels);                 // sorted ascending
-            int C = classes.length;
-            Map<Integer, Integer> toIdx = new HashMap<>();
-            for (int c = 0; c < C; c++) toIdx.put(classes[c], c);
-            int[] cls = new int[n];
-            for (int i = 0; i < n; i++) cls[i] = toIdx.get(labels[i]);
-
-            // train / validation split
-            int[] train, val;
-            if (es) {
-                int[][] tv = stratifiedSplit(cls, C, cfg.validationFraction, modelSeed);
-                train = tv[0]; val = tv[1];
-            } else {
-                train = iota(n); val = new int[0];
-            }
-            int nTr = train.length;
-
-            // binned train / val matrices and mapped classes
-            int[][] bTr = new int[nTr][]; int[] clsTr = new int[nTr];
-            for (int i = 0; i < nTr; i++) { bTr[i] = binned[train[i]]; clsTr[i] = cls[train[i]]; }
-            int nVal = val.length;
-            int[][] bVal = new int[nVal][]; int[] clsVal = new int[nVal];
-            for (int i = 0; i < nVal; i++) { bVal[i] = binned[val[i]]; clsVal[i] = cls[val[i]]; }
-
-            // baseline = log class proportions on train
-            int[] cnt = new int[C];
-            for (int t : clsTr) cnt[t]++;
-            baseline = new double[C];
-            for (int c = 0; c < C; c++) baseline[c] = Math.log(Math.max(cnt[c], 1) / (double) nTr);
-
-            trees = new ArrayList<>();
-            for (int c = 0; c < C; c++) trees.add(new ArrayList<>());
-
-            double[][] rawTr = new double[nTr][C];
-            double[][] rawVal = new double[nVal][C];
-            for (int i = 0; i < nTr; i++) System.arraycopy(baseline, 0, rawTr[i], 0, C);
-            for (int i = 0; i < nVal; i++) System.arraycopy(baseline, 0, rawVal[i], 0, C);
-
-            int[] rootSamples = iota(nTr);
-            List<Double> scores = new ArrayList<>();
-            for (int iter = 0; iter < cfg.numEstimators; iter++) {
-                double[][] pTr = softmaxRows(rawTr);
-                for (int c = 0; c < C; c++) {
-                    double[] grad = new double[nTr], hess = new double[nTr];
-                    for (int i = 0; i < nTr; i++) {
-                        double pik = pTr[i][c];
-                        grad[i] = pik - (clsTr[i] == c ? 1.0 : 0.0);
-                        hess[i] = pik * (1.0 - pik);
-                    }
-                    TreeNode tree = growTree(bTr, bm.nBins, grad, hess, rootSamples,
-                            cfg.maxLeafNodes, cfg.minSamplesLeaf, cfg.l2Regularization, cfg.learningRate);
-                    trees.get(c).add(tree);
-                    for (int i = 0; i < nTr; i++) rawTr[i][c] += predictTree(tree, bTr[i]);
-                    for (int i = 0; i < nVal; i++) rawVal[i][c] += predictTree(tree, bVal[i]);
-                }
-                if (es) {
-                    scores.add(-multiLogLoss(rawVal, clsVal));
-                    if (shouldStop(scores, cfg.nIterNoChange, cfg.tol)) break;
-                }
-            }
-            return this;
-        }
-
-        double[][] predictProba(double[][] F) {
-            int[][] bF = bm.transform(F);
-            int C = classes.length;
-            double[][] raw = new double[F.length][C];
-            for (int i = 0; i < F.length; i++) {
-                System.arraycopy(baseline, 0, raw[i], 0, C);
-                for (int c = 0; c < C; c++)
-                    for (TreeNode t : trees.get(c)) raw[i][c] += predictTree(t, bF[i]);
-            }
-            return softmaxRows(raw);
-        }
-    }
-
-    /** Squared-error regressor for m_hat = E[g|X]. */
-    static final class GBRegressor {
-        final CordEngine2 cfg;
-        BinMapper bm;
-        double baseline;
-        List<TreeNode> trees;
-        GBRegressor(CordEngine2 cfg) { this.cfg = cfg; }
-
-        GBRegressor fit(int[][] binned, BinMapper bm, double[] target, long modelSeed) {
-            this.bm = bm;
-            int n = binned.length;
-            boolean es = cfg.earlyStopping && n >= 4;
-            int[] train, val;
-            if (es) {
-                int[] perm = permutation(n, new Random(modelSeed));
-                int nVal = Math.max(1, (int) Math.floor(cfg.validationFraction * n));
-                val = Arrays.copyOfRange(perm, 0, nVal);
-                train = Arrays.copyOfRange(perm, nVal, n);
-            } else {
-                train = iota(n); val = new int[0];
-            }
-            int nTr = train.length, nVal = val.length;
-            int[][] bTr = new int[nTr][]; double[] yTr = new double[nTr];
-            for (int i = 0; i < nTr; i++) { bTr[i] = binned[train[i]]; yTr[i] = target[train[i]]; }
-            int[][] bVal = new int[nVal][]; double[] yVal = new double[nVal];
-            for (int i = 0; i < nVal; i++) { bVal[i] = binned[val[i]]; yVal[i] = target[val[i]]; }
-
-            baseline = mean(yTr);
-            trees = new ArrayList<>();
-            double[] rawTr = new double[nTr]; Arrays.fill(rawTr, baseline);
-            double[] rawVal = new double[nVal]; Arrays.fill(rawVal, baseline);
-            int[] rootSamples = iota(nTr);
-            List<Double> scores = new ArrayList<>();
-            for (int iter = 0; iter < cfg.numEstimators; iter++) {
-                double[] grad = new double[nTr], hess = new double[nTr];
-                for (int i = 0; i < nTr; i++) { grad[i] = rawTr[i] - yTr[i]; hess[i] = 1.0; }
-                TreeNode tree = growTree(bTr, bm.nBins, grad, hess, rootSamples,
-                        cfg.maxLeafNodes, cfg.minSamplesLeaf, cfg.l2Regularization, cfg.learningRate);
-                trees.add(tree);
-                for (int i = 0; i < nTr; i++) rawTr[i] += predictTree(tree, bTr[i]);
-                for (int i = 0; i < nVal; i++) rawVal[i] += predictTree(tree, bVal[i]);
-                if (es) {
-                    double mse = 0; for (int i = 0; i < nVal; i++) { double d = rawVal[i] - yVal[i]; mse += d * d; }
-                    scores.add(-(nVal > 0 ? mse / nVal : 0.0));
-                    if (shouldStop(scores, cfg.nIterNoChange, cfg.tol)) break;
-                }
-            }
-            return this;
-        }
-
-        double[] predict(double[][] F) {
-            int[][] bF = bm.transform(F);
-            double[] out = new double[F.length];
-            for (int i = 0; i < F.length; i++) {
-                double v = baseline;
-                for (TreeNode t : trees) v += predictTree(t, bF[i]);
-                out[i] = v;
-            }
-            return out;
-        }
     }
 
     // ---- early-stopping criterion (sklearn _should_stop) ------------------ //
@@ -593,14 +352,12 @@ public class CordEngine2 implements CordEngine {
             for (int i = 0; i < idx.size(); i++)
                 (i < nVal ? valL : trainL).add(idx.get(i));
         }
-        return new int[][]{ toIntArray(trainL), toIntArray(valL) };
+        return new int[][]{toIntArray(trainL), toIntArray(valL)};
     }
 
-    // ===================================================================== //
-    //  Numeric helpers (match numpy/scipy semantics used by cord.py)         //
-    // ===================================================================== //
-
-    /** numpy np.quantile default: linear / Hyndman-Fan type 7.  `sorted` ascending. */
+    /**
+     * numpy np.quantile default: linear / Hyndman-Fan type 7.  `sorted` ascending.
+     */
     static double quantileType7(double[] sorted, double q) {
         int N = sorted.length;
         if (N == 1) return sorted[0];
@@ -611,21 +368,35 @@ public class CordEngine2 implements CordEngine {
         return sorted[lo] + frac * (sorted[lo + 1] - sorted[lo]);
     }
 
-    /** Median via numpy quantile (type 7) on a defensive sorted clone; length 3 -> middle element. */
+    /**
+     * Median via numpy quantile (type 7) on a defensive sorted clone; length 3 -> middle element.
+     */
     static double median(double[] a) {
         double[] c = a.clone();
         Arrays.sort(c);
         return quantileType7(c, 0.5);
     }
 
-    /** np.searchsorted(arr, v, side="left"): count of arr[i] STRICTLY LESS than v. arr ascending. */
+    /**
+     * np.searchsorted(arr, v, side="left"): count of arr[i] STRICTLY LESS than v. arr ascending.
+     */
     static int searchsortedLeft(double[] arr, double v) {
         int lo = 0, hi = arr.length;
-        while (lo < hi) { int mid = (lo + hi) >>> 1; if (arr[mid] < v) lo = mid + 1; else hi = mid; }
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (arr[mid] < v) lo = mid + 1;
+            else hi = mid;
+        }
         return lo;
     }
 
-    /** np.array_split(perm, 3): first (n%3) chunks get one extra element. */
+    // ===================================================================== //
+    //  Histogram gradient-boosted trees  (embedded, mirrors sklearn HGB)     //
+    // ===================================================================== //
+
+    /**
+     * np.array_split(perm, 3): first (n%3) chunks get one extra element.
+     */
     static int[][] arraySplit3(int[] perm) {
         int n = perm.length, q = n / 3, r = n % 3;
         int sA = q + (r >= 1 ? 1 : 0), sB = q + (r >= 2 ? 1 : 0), sC = q;
@@ -635,8 +406,12 @@ public class CordEngine2 implements CordEngine {
         return new int[][]{A, B, C};
     }
 
-    /** One-sided upper p-value  1 - Phi(t) = 0.5*erfc(t/sqrt2).  erfc via NR (frac err < 1.2e-7). */
-    static double normSf(double t) { return 0.5 * erfc(t / Math.sqrt(2.0)); }
+    /**
+     * One-sided upper p-value  1 - Phi(t) = 0.5*erfc(t/sqrt2).  erfc via NR (frac err < 1.2e-7).
+     */
+    static double normSf(double t) {
+        return 0.5 * erfc(t / Math.sqrt(2.0));
+    }
 
     static double erfc(double x) {
         double z = Math.abs(x);
@@ -649,7 +424,12 @@ public class CordEngine2 implements CordEngine {
 
     static int[] permutation(int n, Random rng) {           // Fisher-Yates
         int[] a = iota(n);
-        for (int i = n - 1; i > 0; i--) { int j = rng.nextInt(i + 1); int tmp = a[i]; a[i] = a[j]; a[j] = tmp; }
+        for (int i = n - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            int tmp = a[i];
+            a[i] = a[j];
+            a[j] = tmp;
+        }
         return a;
     }
 
@@ -660,7 +440,10 @@ public class CordEngine2 implements CordEngine {
             double mx = Double.NEGATIVE_INFINITY;
             for (int c = 0; c < C; c++) mx = Math.max(mx, raw[i][c]);
             double sum = 0;
-            for (int c = 0; c < C; c++) { out[i][c] = Math.exp(raw[i][c] - mx); sum += out[i][c]; }
+            for (int c = 0; c < C; c++) {
+                out[i][c] = Math.exp(raw[i][c] - mx);
+                sum += out[i][c];
+            }
             for (int c = 0; c < C; c++) out[i][c] /= sum;
         }
         return out;
@@ -675,43 +458,108 @@ public class CordEngine2 implements CordEngine {
     }
 
     // ---- small array utilities ------------------------------------------- //
-    static int[] iota(int n) { int[] a = new int[n]; for (int i = 0; i < n; i++) a[i] = i; return a; }
-    static double clamp(double v, double lo, double hi) { return v < lo ? lo : (v > hi ? hi : v); }
-    static double mean(double[] a) { double s = 0; for (double v : a) s += v; return a.length == 0 ? 0 : s / a.length; }
+    static int[] iota(int n) {
+        int[] a = new int[n];
+        for (int i = 0; i < n; i++) a[i] = i;
+        return a;
+    }
+
+    static double clamp(double v, double lo, double hi) {
+        return v < lo ? lo : (v > hi ? hi : v);
+    }
+
+    static double mean(double[] a) {
+        double s = 0;
+        for (double v : a) s += v;
+        return a.length == 0 ? 0 : s / a.length;
+    }
+
     static double popStd(double[] a) {
         double m = mean(a), s = 0;
-        for (double v : a) { double d = v - m; s += d * d; }
+        for (double v : a) {
+            double d = v - m;
+            s += d * d;
+        }
         return Math.sqrt(s / a.length);
     }
-    static double[] gather(double[] y, int[] idx) { double[] o = new double[idx.length]; for (int i = 0; i < idx.length; i++) o[i] = y[idx[i]]; return o; }
-    static double[][] rows(double[][] m, int[] idx) { double[][] o = new double[idx.length][]; for (int i = 0; i < idx.length; i++) o[i] = m[idx[i]]; return o; }
-    static double[] column(double[][] m, int k) { double[] o = new double[m.length]; for (int i = 0; i < m.length; i++) o[i] = m[i][k]; return o; }
+
+    static double[] gather(double[] y, int[] idx) {
+        double[] o = new double[idx.length];
+        for (int i = 0; i < idx.length; i++) o[i] = y[idx[i]];
+        return o;
+    }
+
+    // ===================================================================== //
+    //  Numeric helpers (match numpy/scipy semantics used by cord.py)         //
+    // ===================================================================== //
+
+    static double[][] rows(double[][] m, int[] idx) {
+        double[][] o = new double[idx.length][];
+        for (int i = 0; i < idx.length; i++) o[i] = m[idx[i]];
+        return o;
+    }
+
+    static double[] column(double[][] m, int k) {
+        double[] o = new double[m.length];
+        for (int i = 0; i < m.length; i++) o[i] = m[i][k];
+        return o;
+    }
+
     static double[][] hstack(double[][] a, double[][] b) {
         int n = a.length, pa = a[0].length, pb = b[0].length;
         double[][] o = new double[n][pa + pb];
-        for (int i = 0; i < n; i++) { System.arraycopy(a[i], 0, o[i], 0, pa); System.arraycopy(b[i], 0, o[i], pa, pb); }
+        for (int i = 0; i < n; i++) {
+            System.arraycopy(a[i], 0, o[i], 0, pa);
+            System.arraycopy(b[i], 0, o[i], pa, pb);
+        }
         return o;
     }
+
     static double[] unique(double[] sortedAsc) {
         if (sortedAsc.length == 0) return sortedAsc;
-        double[] tmp = new double[sortedAsc.length]; int m = 0;
+        double[] tmp = new double[sortedAsc.length];
+        int m = 0;
         for (double v : sortedAsc) if (m == 0 || v != tmp[m - 1]) tmp[m++] = v;
         return Arrays.copyOf(tmp, m);
     }
+
     static int[] unique(int[] a) {
-        int[] c = a.clone(); Arrays.sort(c);
-        int[] tmp = new int[c.length]; int m = 0;
+        int[] c = a.clone();
+        Arrays.sort(c);
+        int[] tmp = new int[c.length];
+        int m = 0;
         for (int v : c) if (m == 0 || v != tmp[m - 1]) tmp[m++] = v;
         return Arrays.copyOf(tmp, m);
     }
+
     static void shuffle(List<Integer> list, Random rng) {
-        for (int i = list.size() - 1; i > 0; i--) { int j = rng.nextInt(i + 1); int t = list.get(i); list.set(i, list.get(j)); list.set(j, t); }
+        for (int i = list.size() - 1; i > 0; i--) {
+            int j = rng.nextInt(i + 1);
+            int t = list.get(i);
+            list.set(i, list.get(j));
+            list.set(j, t);
+        }
     }
-    static int[] toIntArray(List<Integer> l) { int[] a = new int[l.size()]; for (int i = 0; i < a.length; i++) a[i] = l.get(i); return a; }
+
+    static int[] toIntArray(List<Integer> l) {
+        int[] a = new int[l.size()];
+        for (int i = 0; i < a.length; i++) a[i] = l.get(i);
+        return a;
+    }
 
     // ===================================================================== //
     //  main : self-test (no args) or data-file mode (args)                   //
     // ===================================================================== //
+
+    /**
+     * Entry point for the CordEngine2 application. Based on the provided arguments,
+     * this method either runs the self-test mode or operates in data mode.
+     *
+     * @param args Command-line arguments. If no arguments are provided, the application
+     *             runs in self-test mode. If arguments are provided, the application
+     *             executes in data mode, where the arguments define the specifics of the operation.
+     * @throws IOException If an I/O error occurs during processing.
+     */
     public static void main(String[] args) throws IOException {
         if (args.length == 0) selfTest();
         else dataMode(args);
@@ -787,29 +635,39 @@ public class CordEngine2 implements CordEngine {
                 + "  -- running, this takes a bit...\n");
 
         // (0) Determinism: same data + same seed => identical statistic.
-        double[][] X0 = new double[n][p]; double[] Y0 = new double[n], Z0 = new double[n];
+        double[][] X0 = new double[n][p];
+        double[] Y0 = new double[n], Z0 = new double[n];
         genNull(new Random(42), X0, Y0, Z0);
-        double t1 = new CordEngine2() {{ seed = 7; }}.test(X0, Y0, Z0).statistic;
-        double t2 = new CordEngine2() {{ seed = 7; }}.test(X0, Y0, Z0).statistic;
+        double t1 = new CordEngine2() {{
+            seed = 7;
+        }}.test(X0, Y0, Z0).statistic;
+        double t2 = new CordEngine2() {{
+            seed = 7;
+        }}.test(X0, Y0, Z0).statistic;
         boolean deterministic = (Double.compare(t1, t2) == 0);
         System.out.printf("  [determinism] repeated run T1=%.6f  T2=%.6f  ->  %s%n%n",
                 t1, t2, deterministic ? "identical" : "DIFFER");
 
         // (1) Single illustrative runs.
         System.out.println("  [demo] one null dataset and one higher-moment alternative:");
-        double[][] Xd = new double[600][3]; double[] Yn = new double[600], Zn = new double[600];
+        double[][] Xd = new double[600][3];
+        double[] Yn = new double[600], Zn = new double[600];
         genNull(new Random(0), Xd, Yn, Zn);
-        System.out.println("        null : " + new CordEngine2() {{ seed = 0; }}.test(Xd, Yn, Zn));
+        System.out.println("        null : " + new CordEngine2() {{
+            seed = 0;
+        }}.test(Xd, Yn, Zn));
         double[] Ya = new double[600], Za = new double[600];
         genHigherMomentAlt(new Random(1), Xd, Ya, Za);
-        System.out.println("        alt  : " + new CordEngine2() {{ seed = 0; }}.test(Xd, Ya, Za));
+        System.out.println("        alt  : " + new CordEngine2() {{
+            seed = 0;
+        }}.test(Xd, Ya, Za));
         System.out.println();
 
         // (2) Monte-Carlo rejection rates at alpha = 0.05.
         double alpha = 0.05;
-        double nullRate  = monteCarlo(reps, n, p, alpha, Kind.NULL);
-        double linPower  = monteCarlo(reps, n, p, alpha, Kind.LINEAR_ALT);
-        double hmPower   = monteCarlo(reps, n, p, alpha, Kind.HIGHER_MOMENT_ALT);
+        double nullRate = monteCarlo(reps, n, p, alpha, Kind.NULL);
+        double linPower = monteCarlo(reps, n, p, alpha, Kind.LINEAR_ALT);
+        double hmPower = monteCarlo(reps, n, p, alpha, Kind.HIGHER_MOMENT_ALT);
 
         System.out.printf("  [size ] null rejection rate      = %.3f   (target ~ %.2f)%n", nullRate, alpha);
         System.out.printf("  [power] linear-alt rejection     = %.3f%n", linPower);
@@ -817,7 +675,7 @@ public class CordEngine2 implements CordEngine {
 
         // Only an upper bound: the min(1, 2*median) aggregation is deliberately conservative, so a
         // near-zero null rejection rate is expected and valid; the check guards anti-conservative inflation.
-        boolean sizeOk  = nullRate <= 0.14;
+        boolean sizeOk = nullRate <= 0.14;
         boolean powerOk = linPower >= 0.80;
         boolean pass = deterministic && sizeOk && powerOk;
         System.out.println("  checks: determinism=" + deterministic + "  size_ok=" + sizeOk
@@ -826,17 +684,22 @@ public class CordEngine2 implements CordEngine {
         if (!pass) System.exit(1);
     }
 
-    enum Kind { NULL, LINEAR_ALT, HIGHER_MOMENT_ALT }
-
     static double monteCarlo(int reps, int n, int p, double alpha, Kind kind) {
         AtomicInteger rej = new AtomicInteger(0);
         IntStream.range(0, reps).parallel().forEach(r -> {
             Random rng = new Random(1000L * kind.ordinal() + r);
-            double[][] X = new double[n][p]; double[] Y = new double[n], Z = new double[n];
+            double[][] X = new double[n][p];
+            double[] Y = new double[n], Z = new double[n];
             switch (kind) {
-                case NULL:               genNull(rng, X, Y, Z); break;
-                case LINEAR_ALT:         genLinearAlt(rng, X, Y, Z); break;
-                case HIGHER_MOMENT_ALT:  genHigherMomentAlt(rng, X, Y, Z); break;
+                case NULL:
+                    genNull(rng, X, Y, Z);
+                    break;
+                case LINEAR_ALT:
+                    genLinearAlt(rng, X, Y, Z);
+                    break;
+                case HIGHER_MOMENT_ALT:
+                    genHigherMomentAlt(rng, X, Y, Z);
+                    break;
             }
             CordEngine2 cord = new CordEngine2();
             cord.seed = r;                        // per-rep deterministic
@@ -852,31 +715,631 @@ public class CordEngine2 implements CordEngine {
         int n = X.length, p = X[0].length;
         for (int i = 0; i < n; i++) {
             double sSin = 0, sCos = 0;
-            for (int j = 0; j < p; j++) { X[i][j] = rng.nextGaussian(); sSin += Math.sin(X[i][j]); sCos += Math.cos(X[i][j]); }
+            for (int j = 0; j < p; j++) {
+                X[i][j] = rng.nextGaussian();
+                sSin += Math.sin(X[i][j]);
+                sCos += Math.cos(X[i][j]);
+            }
             Y[i] = sSin + rng.nextGaussian();
             Z[i] = sCos + rng.nextGaussian();
         }
     }
+
     // Linear alternative: a shared latent eta enters Y and Z in the mean  ->  cov(Y,Z|X) != 0.
     static void genLinearAlt(Random rng, double[][] X, double[] Y, double[] Z) {
         int n = X.length, p = X[0].length;
         for (int i = 0; i < n; i++) {
             double sSin = 0, sCos = 0;
-            for (int j = 0; j < p; j++) { X[i][j] = rng.nextGaussian(); sSin += Math.sin(X[i][j]); sCos += Math.cos(X[i][j]); }
+            for (int j = 0; j < p; j++) {
+                X[i][j] = rng.nextGaussian();
+                sSin += Math.sin(X[i][j]);
+                sCos += Math.cos(X[i][j]);
+            }
             double eta = rng.nextGaussian();
             Z[i] = sCos + eta;
             Y[i] = sSin + eta + rng.nextGaussian();
         }
     }
+
     // Higher-moment alternative: cov(Y,Z|X)=0 but Y depends on eta^2  ->  only an omnibus test sees it.
     static void genHigherMomentAlt(Random rng, double[][] X, double[] Y, double[] Z) {
         int n = X.length, p = X[0].length;
         for (int i = 0; i < n; i++) {
             double sSin = 0, sCos = 0;
-            for (int j = 0; j < p; j++) { X[i][j] = rng.nextGaussian(); sSin += Math.sin(X[i][j]); sCos += Math.cos(X[i][j]); }
+            for (int j = 0; j < p; j++) {
+                X[i][j] = rng.nextGaussian();
+                sSin += Math.sin(X[i][j]);
+                sCos += Math.cos(X[i][j]);
+            }
             double eta = rng.nextGaussian();
             Z[i] = sCos + eta;
             Y[i] = sSin + (eta * eta - 1.0) + rng.nextGaussian();
+        }
+    }
+
+    /**
+     * Tests the relationships between the given datasets x, y, and z by performing statistical
+     * computations and returning a result based on the analysis. This method internally converts
+     * the one-dimensional array z into a two-dimensional array before delegation to another method.
+     *
+     * @param x A two-dimensional array representing the primary data matrix, where rows correspond
+     *          to observations and columns correspond to features.
+     * @param y A one-dimensional array representing the dependent variable or response vector, where
+     *          each element corresponds to an observation in x.
+     * @param z A one-dimensional array representing the independent variable or covariate vector,
+     *          where each element corresponds to an observation in x.
+     * @return A {@code Result} object containing the outcome of the statistical test, which may
+     *         include computed test statistics or other relevant information.
+     */
+    public Result test(double[][] x, double[] y, double[] z) {
+        double[][] zm = new double[z.length][1];
+        for (int i = 0; i < z.length; i++) zm[i][0] = z[i];
+        return test(x, y, zm);
+    }
+
+    /**
+     * Tests the relationships between the provided datasets by performing statistical
+     * computations and returns the results based on the analysis.
+     *
+     * @param x A two-dimensional array representing the primary data matrix, where rows
+     *          correspond to observations and columns correspond to features.
+     * @param y A one-dimensional array representing the dependent variable or response
+     *          vector, where each element corresponds to an observation in x.
+     * @param z A two-dimensional array representing additional variables or covariates,
+     *          where rows correspond to observations and columns to features.
+     * @return A {@code Result} object containing the outcome of the statistical test,
+     *         which may include computed test statistics or other relevant information.
+     */
+    public Result test(double[][] x, double[] y, double[][] z) {
+        return run(x, y, z, seed);
+    }
+
+    // ===================================================================== //
+    //  CORD core                                                             //
+    //  run(): three cyclic A/B/C role rotations of a SINGLE partition, each   //
+    //  fold playing train/direction/score exactly once, aggregated into one   //
+    //  valid p-value via min(1, 2*median(p1,p2,p3))  (Meinshausen & Buhlmann  //
+    //  2009, gamma=1/2 quantile aggregation; see uptodate_paper.tex:261).     //
+    //  scoreRotation(): one role assignment (port of cord.py run()).          //
+    // ===================================================================== //
+    private Result run(double[][] x, double[] y, double[][] z, long theSeed) {
+        final int n = y.length;
+        final int K = numThresholds;
+        final int p = x[0].length;
+        Random rng = new Random(theSeed);
+
+        // ONE A/B/C split via permutation + np.array_split(., 3); shared across the rotations.
+        int[] perm = permutation(n, rng);
+        int[][] folds = arraySplit3(perm);
+
+        // xz = [x | z]   (role-independent; built once)
+        double[][] xz = hstack(x, z);
+
+        // Rotation r uses train=folds[r], dir=folds[r+1], score=folds[r+2] (mod 3), so each fold
+        // plays each role exactly once, giving three p-values p1,p2,p3.
+        Result[] rot = new Result[3];
+        for (int r = 0; r < 3; r++) {
+            int[] fTrain = folds[r];
+            int[] fDir = folds[(r + 1) % 3];
+            int[] fScore = folds[(r + 2) % 3];
+            // Fresh per-model seed block per rotation (block draw, indexed like the Python `s` vector).
+            long[] s = new long[3 + K];
+            for (int i = 0; i < s.length; i++) s[i] = rng.nextLong();
+            rot[r] = scoreRotation(x, y, xz, fTrain, fDir, fScore, s, n, p, K);
+        }
+
+        // Meinshausen-Buhlmann gamma=1/2 aggregation: min(1, 2*median(p1,p2,p3)); valid under
+        // arbitrary dependence among the (same-partition) rotations. Degenerate rotation -> p = 1.
+        int okCount = 0;
+        for (Result r0 : rot) if (r0.status.equals("ok")) okCount++;
+        if (okCount == 0) return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
+
+        double[] ps = {safeP(rot[0]), safeP(rot[1]), safeP(rot[2])};
+        double pAgg = Math.min(1.0, 2.0 * median(ps));
+
+        // Report the studentized T of the median-p rotation (fall back to the max ok T if that
+        // rotation was degenerate, so an "ok" aggregate never carries a NaN statistic).
+        Integer[] ord = {0, 1, 2};
+        Arrays.sort(ord, (a, b) -> {
+            int c = Double.compare(ps[a], ps[b]);
+            return c != 0 ? c : Integer.compare(a, b);
+        });
+        double tRep = rot[ord[1]].statistic;
+        if (Double.isNaN(tRep)) {
+            double best = Double.NEGATIVE_INFINITY;
+            for (Result r0 : rot) if (r0.status.equals("ok")) best = Math.max(best, r0.statistic);
+            tRep = best;
+        }
+        return new Result(pAgg, tRep, "ok", n, p);
+    }
+
+    /**
+     * One A/B/C role assignment (port of cord.py run()): the train fold fits the CDFs, the dir
+     * fold fits the centering regression + a fresh CDF, the score fold forms the statistic.
+     */
+    private Result scoreRotation(double[][] x, double[] y, double[][] xz,
+                                 int[] foldTrain, int[] foldDir, int[] foldScore,
+                                 long[] s, int n, int p, int K) {
+        // Thresholds = K quantiles of Y on the TRAIN fold only, at p_k = (k + 0.5)/K.
+        double[] yTr = gather(y, foldTrain);
+        double[] yTrSorted = yTr.clone();
+        Arrays.sort(yTrSorted);
+        double[] thr = new double[K];
+        for (int k = 0; k < K; k++) thr[k] = quantileType7(yTrSorted, (k + 0.5) / K);
+
+        // p_cdf = P(Y<=t | X) ;  q_cdf = P(Y<=t | X,Z)   on the train fold
+        Cdf pCdf = fitCdf(rows(x, foldTrain), yTr, thr, s[0]);
+        Cdf qCdf = fitCdf(rows(xz, foldTrain), yTr, thr, s[1]);
+
+        // witness g = (q - p)/max(p(1-p), varFloor) on dir (target) and score (score) folds
+        double[][] gDir = witness(pCdf.eval(rows(x, foldDir)), qCdf.eval(rows(xz, foldDir)));
+        double[][] gSc = witness(pCdf.eval(rows(x, foldScore)), qCdf.eval(rows(xz, foldScore)));
+
+        // m_hat[:,k] = E[g_k | X], per-threshold squared-error regressor fit on dir, predicted on score.
+        double[][] xDir = rows(x, foldDir), xSc = rows(x, foldScore);
+        BinMapper bmDir = BinMapper.fit(xDir, maxBins);
+        int[][] binXDir = bmDir.transform(xDir);
+        double[][] mSc = new double[foldScore.length][K];
+        for (int k = 0; k < K; k++) {
+            double[] target = column(gDir, k);
+            GBRegressor reg = new GBRegressor(this).fit(binXDir, bmDir, target, s[3 + k]);
+            double[] pred = reg.predict(xSc);
+            for (int i = 0; i < foldScore.length; i++) mSc[i][k] = pred[i];
+        }
+
+        // e_cdf = fresh P(Y<=t | X) on the dir fold (disjoint from p_cdf on the train fold)
+        Cdf eCdf = fitCdf(xDir, gather(y, foldDir), thr, s[2]);
+
+        // resid = 1{Y_s <= thr} - e_cdf(x_s)      (note: <=, vs strict < in the training bins)
+        double[][] eSc = eCdf.eval(xSc);
+        double[] ySc = gather(y, foldScore);
+        double[][] resid = new double[foldScore.length][K];
+        for (int i = 0; i < foldScore.length; i++)
+            for (int k = 0; k < K; k++)
+                resid[i][k] = (ySc[i] <= thr[k] ? 1.0 : 0.0) - eSc[i][k];
+
+        // psi_i = mean_k (g - m)(1{Y<=t} - e)
+        double[] psi = new double[foldScore.length];
+        for (int i = 0; i < foldScore.length; i++) {
+            double acc = 0;
+            for (int k = 0; k < K; k++) acc += (gSc[i][k] - mSc[i][k]) * resid[i][k];
+            psi[i] = acc / K;
+        }
+
+        double sd = popStd(psi);
+        if (!(sd > 0.0))
+            return new Result(Double.NaN, Double.NaN, "degenerate", n, p);
+        double t = Math.sqrt(foldScore.length) * mean(psi) / sd;
+        return new Result(normSf(t), t, "ok", n, p);
+    }
+
+    // ---- witness ---------------------------------------------------------- //
+    private double[][] witness(double[][] pm, double[][] qm) {
+        int n = pm.length, K = pm[0].length;
+        double[][] g = new double[n][K];
+        for (int i = 0; i < n; i++)
+            for (int k = 0; k < K; k++) {
+                double pp = pm[i][k];
+                double v = Math.max(pp * (1.0 - pp), varFloor);
+                g[i][k] = (qm[i][k] - pp) / v;
+            }
+        return g;
+    }
+
+    private Cdf fitCdf(double[][] feat, double[] y, double[] thr, long modelSeed) {
+        final int K = thr.length;
+        final double clip = cdfClip;
+        int[] bins = new int[y.length];
+        int mn = Integer.MAX_VALUE, mx = Integer.MIN_VALUE;
+        for (int i = 0; i < y.length; i++) {
+            bins[i] = searchsortedLeft(thr, y[i]);         // #{t_k < y}  in {0,...,K}
+            mn = Math.min(mn, bins[i]);
+            mx = Math.max(mx, bins[i]);
+        }
+        if (mn == mx) {                                    // all fold-Y in one bin: constant CDF
+            final double[] cst = new double[K];
+            for (int j = 0; j < K; j++)
+                cst[j] = clamp(j >= bins[0] ? 1.0 : 0.0, clip, 1.0 - clip);
+            return f -> {
+                double[][] out = new double[f.length][K];
+                for (int i = 0; i < f.length; i++) System.arraycopy(cst, 0, out[i], 0, K);
+                return out;
+            };
+        }
+        BinMapper bm = BinMapper.fit(feat, maxBins);
+        int[][] binned = bm.transform(feat);
+        GBClassifier clf;
+        try {
+            clf = new GBClassifier(this).fit(binned, bm, bins, K, modelSeed, true);
+        } catch (StratifyException e) {                     // a bin too small to stratify -> es off
+            clf = new GBClassifier(this).fit(binned, bm, bins, K, modelSeed, false);
+        }
+        final GBClassifier model = clf;
+        final int[] classes = clf.classes;                 // ascending subset of {0..K}
+        return f -> {
+            double[][] proba = model.predictProba(f);       // (n, C) in `classes` order
+            double[][] out = new double[f.length][K];
+            for (int i = 0; i < f.length; i++) {
+                double[] full = new double[K + 1];
+                for (int c = 0; c < classes.length; c++) full[classes[c]] = proba[i][c];
+                double acc = 0;
+                for (int j = 0; j < K; j++) {               // cumsum, drop last col, clip
+                    acc += full[j];
+                    out[i][j] = clamp(acc, clip, 1.0 - clip);
+                }
+            }
+            return out;
+        };
+    }
+
+    enum Kind {NULL, LINEAR_ALT, HIGHER_MOMENT_ALT}
+
+    // ===================================================================== //
+    //  Conditional CDF  (port of cord.py _cdf / _fit_cdf)                     //
+    // ===================================================================== //
+    interface Cdf {
+        double[][] eval(double[][] f);
+    }
+
+    /**
+     * Encapsulates the result of a statistical hypothesis test, storing the relevant test metrics
+     * and providing methods to evaluate the test outcome. This class represents key test parameters,
+     * including the p-value, test statistic, test status, sample size, and the dimensionality of the
+     * conditioning variable. It also provides utility functions for hypothesis testing and result
+     * summarization.
+     */
+    public static final class Result {
+        /**
+         * Represents the p-value of a statistical hypothesis test, corresponding to the
+         * one-sided upper probability (1 - Phi(T)), where Phi is the cumulative distribution
+         * function (CDF) of the standard normal distribution, and T is the test statistic.
+         *
+         * The p-value quantifies the probability of observing a test statistic as extreme as,
+         * or more extreme than, the one calculated under the null hypothesis. Smaller p-values
+         * provide stronger evidence against the null hypothesis.
+         */
+        public final double pvalue;      // one-sided upper, 1 - Phi(T)
+        /**
+         * Represents the test statistic value (studentized score T) calculated
+         * from the data during a hypothesis test. The statistic is used to
+         * measure the degree of standardization of the observed difference from
+         * the null hypothesis, relative to its expected variability under the
+         * null hypothesis.
+         */
+        public final double statistic;   // studentized score T
+        /**
+         * Represents the status of the statistical test result.
+         *
+         * The value can be one of the following:
+         * - "ok": Indicates that the test result is valid and interpretable.
+         * - "degenerate": Indicates that the test is degenerate, typically caused by
+         *   situations such as zero variance in the test statistic, making the result unreliable.
+         */
+        public final String status;      // "ok" or "degenerate"
+        /**
+         * The sample size used in the hypothesis test.
+         *
+         * Represents the number of data points included in the statistical analysis
+         * conducted within the enclosing class. This value is crucial for calculating
+         * test statistics and determining the significance of the test results.
+         */
+        public final int n;
+        /**
+         * Represents the dimensionality of the conditioning variable X in a statistical test.
+         *
+         * This variable defines the number of dimensions or explanatory factors
+         * that are conditioned on during the hypothesis test. It can influence
+         * the test result by altering the dependency structure between other
+         * variables being analyzed.
+         */
+        public final int dimX;
+
+        /**
+         * Constructs a new Result instance with the provided statistical test details.
+         *
+         * @param pvalue The p-value of the hypothesis test, representing the probability of observing
+         *               a test statistic as extreme as, or more extreme than, the one calculated under
+         *               the null hypothesis.
+         * @param statistic The test statistic value (studentized score T) calculated from the data.
+         * @param status The status of the test, indicating whether the result is valid ("ok") or degenerate.
+         * @param n The sample size used in the hypothesis test.
+         * @param dimX The dimensionality of the conditioning variable X.
+         */
+        Result(double pvalue, double statistic, String status, int n, int dimX) {
+            this.pvalue = pvalue;
+            this.statistic = statistic;
+            this.status = status;
+            this.n = n;
+            this.dimX = dimX;
+        }
+
+        /**
+         * Determines whether a null hypothesis can be rejected based on the p-value and a given significance level.
+         *
+         * @param a The significance level to compare the p-value against.
+         * @return {@code true} if the status is "ok" and the p-value is less than the given significance level; {@code false} otherwise.
+         */
+        public boolean reject(double a) {
+            return status.equals("ok") && pvalue < a;
+        }
+
+        /**
+         * Generates a string representation of the result, including the hypothesis test details
+         * and the test verdict based on the status and calculated values.
+         *
+         * @return A string summarizing the hypothesis test in the format:
+         *         "CORD  H0: Y _||_ Z | X   [verdict]", where the verdict is either
+         *         "degenerate (zero score variance)" or a formatted output of the test statistic
+         *         and p-value when the status is "ok".
+         */
+        @Override
+        public String toString() {
+            String verdict = "degenerate (zero score variance)";
+            if (status.equals("ok"))
+                verdict = String.format("T = %.4f   p = %.4g", statistic, pvalue);
+            return "CORD  H0: Y _||_ Z | X   [" + verdict + "]";
+        }
+    }
+
+    static final class StratifyException extends RuntimeException {
+    }
+
+    /**
+     * Feature binner: per-feature quantile bin edges, <= maxBins bins.
+     */
+    static final class BinMapper {
+        final double[][] thr;   // per feature, ascending edges
+        final int[] nBins;      // per feature = thr[f].length + 1
+
+        private BinMapper(double[][] thr, int[] nBins) {
+            this.thr = thr;
+            this.nBins = nBins;
+        }
+
+        static BinMapper fit(double[][] X, int maxBins) {
+            int p = X[0].length, n = X.length;
+            double[][] edges = new double[p][];
+            int[] nb = new int[p];
+            for (int f = 0; f < p; f++) {
+                double[] col = new double[n];
+                for (int i = 0; i < n; i++) col[i] = X[i][f];
+                double[] sorted = col.clone();
+                Arrays.sort(sorted);
+                double[] uniq = unique(sorted);
+                double[] e;
+                if (uniq.length <= maxBins) {                  // midpoints between distinct values
+                    e = new double[Math.max(0, uniq.length - 1)];
+                    for (int i = 0; i + 1 < uniq.length; i++) e[i] = 0.5 * (uniq[i] + uniq[i + 1]);
+                } else {                                        // maxBins-1 quantile edges
+                    e = new double[maxBins - 1];
+                    for (int i = 1; i < maxBins; i++) e[i - 1] = quantileType7(sorted, (double) i / maxBins);
+                    e = unique(e);                              // guard against ties collapsing edges
+                }
+                edges[f] = e;
+                nb[f] = e.length + 1;
+            }
+            return new BinMapper(edges, nb);
+        }
+
+        int binOf(int f, double v) {
+            return searchsortedLeft(thr[f], v);
+        }
+
+        int[][] transform(double[][] X) {
+            int n = X.length, p = X[0].length;
+            int[][] out = new int[n][p];
+            for (int i = 0; i < n; i++)
+                for (int f = 0; f < p; f++) out[i][f] = searchsortedLeft(thr[f], X[i][f]);
+            return out;
+        }
+    }
+
+    /**
+     * A single boosted tree (leaf-wise / best-first). Leaf values include the shrinkage.
+     */
+    static final class TreeNode {
+        boolean leaf = true;
+        int feature = -1, binThr = -1;
+        TreeNode left, right;
+        double value;
+    }
+
+    /**
+     * Node under construction, carrying its samples, stats, and best candidate split.
+     */
+    static final class BuildNode {
+        int[] samples;
+        double sumG, sumH;
+        TreeNode node;
+        double gain = 0.0;
+        int feature = -1, binThr = -1;
+    }
+
+    /**
+     * Multiclass (softmax) classifier: one tree per class per boosting iteration.
+     */
+    static final class GBClassifier {
+        final CordEngine2 cfg;
+        BinMapper bm;
+        int[] classes;                 // ascending distinct labels
+        double[] baseline;             // per class (log priors)
+        List<List<TreeNode>> trees;    // per class
+
+        GBClassifier(CordEngine2 cfg) {
+            this.cfg = cfg;
+        }
+
+        GBClassifier fit(int[][] binned, BinMapper bm, int[] labels, int K, long modelSeed, boolean es) {
+            this.bm = bm;
+            int n = binned.length;
+            classes = unique(labels);                 // sorted ascending
+            int C = classes.length;
+            Map<Integer, Integer> toIdx = new HashMap<>();
+            for (int c = 0; c < C; c++) toIdx.put(classes[c], c);
+            int[] cls = new int[n];
+            for (int i = 0; i < n; i++) cls[i] = toIdx.get(labels[i]);
+
+            // train / validation split
+            int[] train, val;
+            if (es) {
+                int[][] tv = stratifiedSplit(cls, C, cfg.validationFraction, modelSeed);
+                train = tv[0];
+                val = tv[1];
+            } else {
+                train = iota(n);
+                val = new int[0];
+            }
+            int nTr = train.length;
+
+            // binned train / val matrices and mapped classes
+            int[][] bTr = new int[nTr][];
+            int[] clsTr = new int[nTr];
+            for (int i = 0; i < nTr; i++) {
+                bTr[i] = binned[train[i]];
+                clsTr[i] = cls[train[i]];
+            }
+            int nVal = val.length;
+            int[][] bVal = new int[nVal][];
+            int[] clsVal = new int[nVal];
+            for (int i = 0; i < nVal; i++) {
+                bVal[i] = binned[val[i]];
+                clsVal[i] = cls[val[i]];
+            }
+
+            // baseline = log class proportions on train
+            int[] cnt = new int[C];
+            for (int t : clsTr) cnt[t]++;
+            baseline = new double[C];
+            for (int c = 0; c < C; c++) baseline[c] = Math.log(Math.max(cnt[c], 1) / (double) nTr);
+
+            trees = new ArrayList<>();
+            for (int c = 0; c < C; c++) trees.add(new ArrayList<>());
+
+            double[][] rawTr = new double[nTr][C];
+            double[][] rawVal = new double[nVal][C];
+            for (int i = 0; i < nTr; i++) System.arraycopy(baseline, 0, rawTr[i], 0, C);
+            for (int i = 0; i < nVal; i++) System.arraycopy(baseline, 0, rawVal[i], 0, C);
+
+            int[] rootSamples = iota(nTr);
+            List<Double> scores = new ArrayList<>();
+            for (int iter = 0; iter < cfg.numEstimators; iter++) {
+                double[][] pTr = softmaxRows(rawTr);
+                for (int c = 0; c < C; c++) {
+                    double[] grad = new double[nTr], hess = new double[nTr];
+                    for (int i = 0; i < nTr; i++) {
+                        double pik = pTr[i][c];
+                        grad[i] = pik - (clsTr[i] == c ? 1.0 : 0.0);
+                        hess[i] = pik * (1.0 - pik);
+                    }
+                    TreeNode tree = growTree(bTr, bm.nBins, grad, hess, rootSamples,
+                            cfg.maxLeafNodes, cfg.minSamplesLeaf, cfg.l2Regularization, cfg.learningRate);
+                    trees.get(c).add(tree);
+                    for (int i = 0; i < nTr; i++) rawTr[i][c] += predictTree(tree, bTr[i]);
+                    for (int i = 0; i < nVal; i++) rawVal[i][c] += predictTree(tree, bVal[i]);
+                }
+                if (es) {
+                    scores.add(-multiLogLoss(rawVal, clsVal));
+                    if (shouldStop(scores, cfg.nIterNoChange, cfg.tol)) break;
+                }
+            }
+            return this;
+        }
+
+        double[][] predictProba(double[][] F) {
+            int[][] bF = bm.transform(F);
+            int C = classes.length;
+            double[][] raw = new double[F.length][C];
+            for (int i = 0; i < F.length; i++) {
+                System.arraycopy(baseline, 0, raw[i], 0, C);
+                for (int c = 0; c < C; c++)
+                    for (TreeNode t : trees.get(c)) raw[i][c] += predictTree(t, bF[i]);
+            }
+            return softmaxRows(raw);
+        }
+    }
+
+    /**
+     * Squared-error regressor for m_hat = E[g|X].
+     */
+    static final class GBRegressor {
+        final CordEngine2 cfg;
+        BinMapper bm;
+        double baseline;
+        List<TreeNode> trees;
+
+        GBRegressor(CordEngine2 cfg) {
+            this.cfg = cfg;
+        }
+
+        GBRegressor fit(int[][] binned, BinMapper bm, double[] target, long modelSeed) {
+            this.bm = bm;
+            int n = binned.length;
+            boolean es = cfg.earlyStopping && n >= 4;
+            int[] train, val;
+            if (es) {
+                int[] perm = permutation(n, new Random(modelSeed));
+                int nVal = Math.max(1, (int) Math.floor(cfg.validationFraction * n));
+                val = Arrays.copyOfRange(perm, 0, nVal);
+                train = Arrays.copyOfRange(perm, nVal, n);
+            } else {
+                train = iota(n);
+                val = new int[0];
+            }
+            int nTr = train.length, nVal = val.length;
+            int[][] bTr = new int[nTr][];
+            double[] yTr = new double[nTr];
+            for (int i = 0; i < nTr; i++) {
+                bTr[i] = binned[train[i]];
+                yTr[i] = target[train[i]];
+            }
+            int[][] bVal = new int[nVal][];
+            double[] yVal = new double[nVal];
+            for (int i = 0; i < nVal; i++) {
+                bVal[i] = binned[val[i]];
+                yVal[i] = target[val[i]];
+            }
+
+            baseline = mean(yTr);
+            trees = new ArrayList<>();
+            double[] rawTr = new double[nTr];
+            Arrays.fill(rawTr, baseline);
+            double[] rawVal = new double[nVal];
+            Arrays.fill(rawVal, baseline);
+            int[] rootSamples = iota(nTr);
+            List<Double> scores = new ArrayList<>();
+            for (int iter = 0; iter < cfg.numEstimators; iter++) {
+                double[] grad = new double[nTr], hess = new double[nTr];
+                for (int i = 0; i < nTr; i++) {
+                    grad[i] = rawTr[i] - yTr[i];
+                    hess[i] = 1.0;
+                }
+                TreeNode tree = growTree(bTr, bm.nBins, grad, hess, rootSamples,
+                        cfg.maxLeafNodes, cfg.minSamplesLeaf, cfg.l2Regularization, cfg.learningRate);
+                trees.add(tree);
+                for (int i = 0; i < nTr; i++) rawTr[i] += predictTree(tree, bTr[i]);
+                for (int i = 0; i < nVal; i++) rawVal[i] += predictTree(tree, bVal[i]);
+                if (es) {
+                    double mse = 0;
+                    for (int i = 0; i < nVal; i++) {
+                        double d = rawVal[i] - yVal[i];
+                        mse += d * d;
+                    }
+                    scores.add(-(nVal > 0 ? mse / nVal : 0.0));
+                    if (shouldStop(scores, cfg.nIterNoChange, cfg.tol)) break;
+                }
+            }
+            return this;
+        }
+
+        double[] predict(double[][] F) {
+            int[][] bF = bm.transform(F);
+            double[] out = new double[F.length];
+            for (int i = 0; i < F.length; i++) {
+                double v = baseline;
+                for (TreeNode t : trees) v += predictTree(t, bF[i]);
+                out[i] = v;
+            }
+            return out;
         }
     }
 }

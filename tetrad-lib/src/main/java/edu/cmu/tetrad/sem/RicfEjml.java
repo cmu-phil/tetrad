@@ -96,49 +96,55 @@ public final class RicfEjml {
         }
 
         /**
-         * @return the implied (model) covariance matrix {@code Sigma}.
+         * Retrieves the implied covariance matrix associated with the model.
+         *
+         * @return the {@code sigmaHat} matrix, representing the implied covariance in the model.
          */
         public DMatrixRMaj getSigmaHat() {
             return sigmaHat;
         }
 
         /**
-         * @return the error covariance matrix {@code Omega} (its off-diagonals carry the
-         * bidirected structure).
+         * Retrieves the error covariance matrix, which includes the bidirected structure.
+         *
+         * @return the {@code omegaHat} matrix, representing the error covariance in the model.
          */
         public DMatrixRMaj getOmegaHat() {
             return omegaHat;
         }
 
         /**
-         * @return the direct-effects matrix {@code Beta = I - IB}. Entry {@code Beta[i][j]}
-         * is the structural coefficient of variable {@code j} in the equation for variable
-         * {@code i} (nonzero only where {@code j} is a parent of {@code i}). This matches
-         * the {@code B} returned by the reference Python.
+         * Retrieves the direct-effects matrix {@code Beta}, which is a key component in the model
+         * ({@code Beta = I - IB} where {@code IB = I - Beta}).
+         *
+         * @return the {@code Beta} matrix, representing the direct effects in the model.
          */
         public DMatrixRMaj getBeta() {
             return beta;
         }
 
         /**
-         * @return the {@code IB = I - Beta} matrix, i.e. the matrix satisfying
-         * {@code Sigma = inv(IB) * Omega * inv(IB)^T}.
+         * Retrieves the matrix {@code IB} where {@code IB = I - Beta}.
+         *
+         * @return the {@code IB} matrix, which is calculated as the identity matrix minus the {@code Beta} matrix.
          */
         public DMatrixRMaj getIMinusBeta() {
             return iMinusBeta;
         }
 
         /**
-         * @return the number of sweeps performed (0-based index of the last completed
-         * sweep, matching the Python's returned {@code it}).
+         * Retrieves the number of sweeps performed during the iterative fitting process.
+         *
+         * @return the number of iterations executed.
          */
         public int getIterations() {
             return iters;
         }
 
         /**
-         * @return the final convergence metric: the entrywise L1 change in {@code IB} plus
-         * that in {@code Omega} on the last sweep.
+         * Retrieves the final convergence metric (entrywise L1 change).
+         *
+         * @return the difference value representing the final convergence metric.
          */
         public double getDiff() {
             return diff;

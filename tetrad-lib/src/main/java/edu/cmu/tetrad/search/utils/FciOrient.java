@@ -1605,7 +1605,9 @@ public class FciOrient {
     }
 
     /**
-     * The number of abstentions that have occurred during the FCI orientation process.
+     * Retrieves the count of R4 abstentions.
+     *
+     * @return the number of R4 abstentions.
      */
     public int getR4AbstentionCount() {
         return r4AbstentionCount;

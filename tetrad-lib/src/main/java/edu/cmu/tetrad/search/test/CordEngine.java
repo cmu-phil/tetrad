@@ -10,6 +10,12 @@ import java.util.*;
  */
 public class CordEngine {
 
+    /**
+     * Constructs a new CordEngine instance.
+     */
+    public CordEngine() {
+    }
+
     // ============================== Gbrt =================================== //
 
     /** Histogram gradient-boosted regression trees, least-squares loss, leaf-wise growth. */
@@ -461,6 +467,13 @@ public class CordEngine {
     static double rowSin(double[] row) { double s = 0; for (double v : row) s += Math.sin(v); return s; }
     static double rowCos(double[] row) { double s = 0; for (double v : row) s += Math.cos(v); return s; }
 
+    /**
+     * Main method that serves as the entry point for executing the statistical calibration,
+     * power sweep, and single-run tests. This method evaluates the null and alternative hypotheses
+     * using a Monte Carlo simulation across multiple seeds.
+     *
+     * @param args Command-line arguments (not utilized in this implementation).
+     */
     public static void main(String[] args) {
         // Single runs mirroring the Python __main__.
         runOnce(0, false);

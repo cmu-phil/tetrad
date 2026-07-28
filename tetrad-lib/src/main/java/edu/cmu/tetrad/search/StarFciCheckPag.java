@@ -142,6 +142,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * @param useMaxP    True if the maxP method should be used.
      * @return A separating set of nodes (if found) that is a subset of the adjacency of x or y, or {@code null} if no
      * such set is found.
+     * @throws InterruptedException if the process is interrupted during execution.
      */
     public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
                                                      IndependenceTest test, int depth, boolean useMaxP)
@@ -793,10 +794,15 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     }
 
     /**
-     * Returns a Markov DAG to use as the initial graph in the Star-FCI search.
+     * Constructs and returns the Markov Directed Acyclic Graph (DAG) representing the
+     * probabilistic relationships between variables. The Markov DAG is derived from
+     * the underlying data or structural constraints.
      *
-     * @return This DAG.
-     * @throws InterruptedException if interrupted.
+     * @param verbose a boolean flag indicating whether detailed progress
+     *                or debugging information should be printed during the
+     *                construction process.
+     * @return a Graph object representing the Markov Directed Acyclic Graph (DAG).
+     * @throws InterruptedException if the process is interrupted during execution.
      */
     public abstract Graph getMarkovDag(boolean verbose) throws InterruptedException;
 

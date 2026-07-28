@@ -225,15 +225,22 @@ public class RecursiveBlocking {
     }
 
     /**
-     * As the deadline overload above, but with the dispatch strategy passed
-     * explicitly rather than read from {@link #DEFAULT_STRATEGY}. Callers whose
-     * correctness depends on a particular proposal semantics -- e.g. the
-     * FcitSepsets removal search, which enumerates subsets of the returned
-     * blocking set and therefore needs proposals that can contain interior
-     * separators -- should use this overload. The shallow strategy's near-x
-     * commit preference degenerates on circle-rich views (its non-collider
-     * guard is vacuous when no triple is a definite collider), so it must not
-     * be used to generate candidates for orientation-blind sweeps.
+     * Blocks paths in a graph recursively based on the given parameters and strategy.
+     *
+     * @param graph the graph in which paths are to be blocked
+     * @param x the starting node for path blocking
+     * @param y the ending node for path blocking
+     * @param containing the set of nodes that paths must contain
+     * @param notFollowed the set of nodes that paths must not include
+     * @param recursiveDepth the current recursive depth of the process
+     * @param depth the depth of the search
+     * @param maxRadius the maximum radius for path blocking consideration
+     * @param nearWhichEndpoint specifies which endpoint (x or y) the operation is near, influencing behavior
+     * @param ignoreDirectEdge whether to ignore the direct edge between x and y
+     * @param deadlineMs the time limit in milliseconds for the operation
+     * @param strategy the strategy to use for blocking paths (e.g., ITERATIVE_DEEPENING, SHALLOW_RECURSIVE, RECURSIVE)
+     * @return a BlockingResult object containing the result of the blocking operation and associated metadata
+     * @throws InterruptedException if the blocking operation is interrupted
      */
     public static BlockingResult blockPathsRecursively(Graph graph,
                                                        Node x,
