@@ -1085,6 +1085,19 @@ public final class FcitSl implements IGraphSearch {
         return flagged;
     }
 
+    /**
+     * True iff {@code v} carries at least one circle endpoint on some incident
+     * edge -- the ambiguity criterion for NF-candidate harvesting.
+     */
+    private static boolean hasCircleEndpoint(Graph g, Node v) {
+        for (Node w : g.getAdjacentNodes(v)) {
+            if (g.getEndpoint(v, w) == Endpoint.CIRCLE || g.getEndpoint(w, v) == Endpoint.CIRCLE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache) throws InterruptedException {
         Edge edge = interimPags.getLast().getEdge(m, n);
         if (edge == null) {
@@ -1328,19 +1341,44 @@ public final class FcitSl implements IGraphSearch {
                 interimPags.getLast(), x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
                 deadline);
 
+        // NF candidates: ambiguous nodes -- those carrying at least one circle
+        // endpoint -- drawn from the seed run's blocking set UNIONED WITH the
+        // common neighbours of the pair.
+        //
+        // The union is load-bearing. Harvesting from the seed run alone leaves
+        // nfCand EMPTY whenever that run returns no blocking set, which happens
+        // precisely when a wrong interim mark forces conditioning that activates
+        // a collider route to y. The outer layer then collapses to NF = {} and
+        // the live view contributes nothing, leaving only the blind fallback --
+        // and the blind view is ACTIVATION-BLIND: with every mark a circle it
+        // displays no colliders, so its fixed point never sees a collider opened
+        // by a node it just conditioned on and never walks to the blocker that
+        // activation requires. Observed in FCIT at six variables: a spurious pair
+        // whose unique separator had a member outside the common neighbourhood,
+        // reachable only on the live view and only after an ambiguous common
+        // neighbour was withheld from traversal.
+        Graph pagNow = interimPags.getLast();
+
         Set<Node> nfCandSet = new LinkedHashSet<>();
         if (!b0result.indeterminate() && b0result.blockingSet() != null) {
             for (Node v : b0result.blockingSet()) {
-                // Only ambiguous nodes — those with at least one circle endpoint
-                if (interimPags.getLast().getAdjacentNodes(v).stream().anyMatch(
-                        w -> interimPags.getLast().getEndpoint(v, w) == Endpoint.CIRCLE
-                                || interimPags.getLast().getEndpoint(w, v) == Endpoint.CIRCLE)) {
+                if (hasCircleEndpoint(pagNow, v)) {
                     nfCandSet.add(v);
                 }
             }
         }
 
+        List<Node> commonNf = new ArrayList<>(pagNow.getAdjacentNodes(x));
+        commonNf.retainAll(pagNow.getAdjacentNodes(y));
+        for (Node c : commonNf) {
+            if (hasCircleEndpoint(pagNow, c)) {
+                nfCandSet.add(c);
+            }
+        }
+
         List<Node> nfCand = new ArrayList<>(nfCandSet);
+        nfCand.sort(Comparator.comparing(Node::getName));
+
 
         // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
         SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
@@ -1399,9 +1437,27 @@ public final class FcitSl implements IGraphSearch {
             // belong to a separator (conditioning on it opens x*->c<-*y), so drop it outright
             // instead of leaving it to the subset search. (Previously these were excluded from
             // the removal candidates, i.e. never removable -- the opposite of the name's intent.)
+            // Drop a common neighbour that is a definite collider between x and y
+            // ONLY when the reading does not depend on a mark that could itself be
+            // an artifact of the edge under test. A displaced unsound arrowhead
+            // can land on all-real edges and make an all-real triple a false
+            // definite collider; excluding the node then removes the true
+            // separator's member from every candidate on this view, and since the
+            // same false collider blocks the proposing walk, no NF choice recovers
+            // it. (Observed in FCIT at six variables, twice.) Requiring both legs
+            // to be free of circles keeps the optimization on triples the search
+            // has actually settled and declines it elsewhere; excluded-no-longer
+            // nodes are simply subject to the ordinary removal enumeration.
             Set<Node> definitelyRemove = new LinkedHashSet<>();
+            Graph pagHere = this.interimPags.getLast();
             for (Node c : common) {
-                if (this.interimPags.getLast().isDefCollider(x, c, y)) {
+                if (!pagHere.isDefCollider(x, c, y)) continue;
+
+                boolean legsSettled =
+                        pagHere.getEndpoint(c, x) != Endpoint.CIRCLE
+                                && pagHere.getEndpoint(c, y) != Endpoint.CIRCLE;
+
+                if (legsSettled) {
                     definitelyRemove.add(c);
                 }
             }
@@ -1441,7 +1497,8 @@ public final class FcitSl implements IGraphSearch {
             }
 
             RecursiveBlocking.BlockingResult blindResult = RecursiveBlocking.blockPathsRecursively(
-                    blind, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true, deadline);
+                    blind, x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true, deadline,
+                    RecursiveBlocking.Strategy.RECURSIVE);
 
             if (blindResult != null && !blindResult.indeterminate() && blindResult.blockingSet() != null) {
                 List<Node> common = this.interimPags.getLast().getAdjacentNodes(x);
@@ -1485,12 +1542,29 @@ public final class FcitSl implements IGraphSearch {
                                                List<Node> common, long deadline)
             throws InterruptedException {
 
-        List<Node> removalCandidates = new ArrayList<>();
-        for (Node v : base) if (common.contains(v)) removalCandidates.add(v);
-        for (Node v : base) if (!common.contains(v)) removalCandidates.add(v);
+        // Canonical order: common neighbours before the rest (preserving the
+        // historical search order), name-sorted within each block, so the
+        // recorded separator is a function of the search state and not of
+        // adjacency storage order.
+        Comparator<Node> byName = Comparator.comparing(Node::getName);
+
+        List<Node> commonSorted = new ArrayList<>(common);
+        commonSorted.sort(byName);
+
+        List<Node> inCommon = new ArrayList<>();
+        List<Node> notInCommon = new ArrayList<>();
+        for (Node v : base) {
+            if (commonSorted.contains(v)) inCommon.add(v);
+            else notInCommon.add(v);
+        }
+        inCommon.sort(byName);
+        notInCommon.sort(byName);
+
+        List<Node> removalCandidates = new ArrayList<>(inCommon);
+        removalCandidates.addAll(notInCommon);
 
         List<Node> addCandidates = new ArrayList<>();
-        for (Node c : common) if (!base.contains(c)) addCandidates.add(c);
+        for (Node c : commonSorted) if (!base.contains(c)) addCandidates.add(c);
 
         int maxRemove = (this.maxBlockingSetRemovals < 0)
                 ? removalCandidates.size()
