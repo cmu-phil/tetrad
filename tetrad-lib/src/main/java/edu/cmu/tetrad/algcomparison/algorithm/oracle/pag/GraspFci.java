@@ -143,6 +143,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -210,6 +211,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
+        params.add(Params.DO_POSSIBLE_DSEP);
 
         // General
         params.add(Params.TIME_LAG);
