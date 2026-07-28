@@ -860,7 +860,7 @@ public class FciOrient {
                         return task.call();
 //                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                         return null;
                     }
                 }).toList();

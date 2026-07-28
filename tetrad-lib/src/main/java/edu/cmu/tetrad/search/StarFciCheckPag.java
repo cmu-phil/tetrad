@@ -29,6 +29,7 @@ import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +38,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
-import static java.util.Collections.shuffle;
 
 /**
  * *-FCI implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to
@@ -310,39 +310,49 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             }
         }
 
-        List<Edge> edges = new ArrayList<>(pag.getEdges());
-        shuffle(edges);
+        // Pass 1: adjacency-subset removal, iterated to a FIXPOINT. Gated commits are
+        // order-dependent: a correct removal can be rejected because other spurious edges
+        // still present make the trial graph illegal. Re-sweeping after each productive
+        // pass retries those rejections against the improved graph; edge count strictly
+        // decreases each iteration, so this terminates in <= |E| sweeps. Failed sepset
+        // searches are deliberately not cached in foundSepsets, so shrunken adjacencies
+        // are re-searched on later sweeps.
+        int edgesBefore;
+        do {
+            edgesBefore = pag.getNumEdges();
+            List<Edge> edges = new ArrayList<>(pag.getEdges());
+            RandomUtil.shuffle(edges);
 
-        // Pass 1: adjacency-subset removal. Candidate sepsets are subsets of adj(a) or adj(c).
-        for (Edge edge : edges) {
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException();
-            }
-
-            Node a = edge.getNode1();
-            Node c = edge.getNode2();
-
-            if (!pag.isAdjacentTo(a, c)) {
-                continue;
-            }
-
-            Set<Node> sepset = foundSepsets.get(Set.of(a, c));
-
-            if (sepset == null) {
-                sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, useMaxP);
-
-                if (sepset != null) {
-                    foundSepsets.put(Set.of(a, c), sepset);
+            for (Edge edge : edges) {
+                if (Thread.currentThread().isInterrupted()) {
+                    throw new InterruptedException();
                 }
-            }
 
-            if (sepset == null) {
-                continue;
-            }
+                Node a = edge.getNode1();
+                Node c = edge.getNode2();
 
-            pag = commitRemoval(pag, a, c, sepset, "adjacency-subset", guaranteePag,
-                    cpdag, nodes, sepsetMap, unshieldedColliders, selection);
-        }
+                if (!pag.isAdjacentTo(a, c)) {
+                    continue;
+                }
+
+                Set<Node> sepset = foundSepsets.get(Set.of(a, c));
+
+                if (sepset == null) {
+                    sepset = sepsetSubsetOfAdjxOrAdjy(pag, a, c, new HashSet<>(), independenceTest, depth, useMaxP);
+
+                    if (sepset != null) {
+                        foundSepsets.put(Set.of(a, c), sepset);
+                    }
+                }
+
+                if (sepset == null) {
+                    continue;
+                }
+
+                pag = commitRemoval(pag, a, c, sepset, "adjacency-subset", guaranteePag,
+                        cpdag, nodes, sepsetMap, unshieldedColliders, selection);
+            }
+        } while (pag.getNumEdges() < edgesBefore);
 
         // Pass 2 (optional): possible-D-SEP removal. The original GFCI step that *-FCI dropped,
         // restored here for parity. Always runs on an oriented PAG and is always legality-gated,
@@ -362,7 +372,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             }
 
             List<Edge> dsepEdges = new ArrayList<>(pag.getEdges());
-            shuffle(dsepEdges);
+            RandomUtil.shuffle(dsepEdges);
+//            shuffle(dsepEdges);
 
             for (Edge edge : dsepEdges) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -403,6 +414,13 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 pag = commitRemoval(pag, a, c, sepset, "possible-D-SEP", true,
                         cpdag, nodes, sepsetMap, unshieldedColliders, selection);
             }
+        }
+
+        // Saturating step (gated path only): clears deadlocks of the single-edge gated
+        // fixpoint by trying the surviving test-confirmed removals JOINTLY. See the
+        // saturatingRemoval javadoc for the witness case and the escalation ladder.
+        if (guaranteePag) {
+            pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets);
         }
 
         // Final orientation only for the ungated greedy path. In the gated path pag is already the
@@ -525,9 +543,10 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         // Full GFCI reorient against a trial-local sepset map (committed sepsets + this candidate), so
         // R4's discriminating-path sepset appends are discarded with the trial and never touch the
         // committed map.
-        sepsetMap.set(a, c, sepset);
-        FciOrient trialOrient = buildFciOrient(sepsetMap);
-        gfciOrientPag(_pag, cpdag, nodes, sepsetMap, unshieldedColliders, trialOrient);
+        SepsetMap trialMap = new SepsetMap(sepsetMap);
+        trialMap.set(a, c, sepset);
+        FciOrient trialOrient = buildFciOrient(trialMap);
+        gfciOrientPag(_pag, cpdag, nodes, trialMap, unshieldedColliders, trialOrient);
 
         PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
 
@@ -567,6 +586,101 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         }
 
         return _pag;
+    }
+
+    /**
+     * Saturating step for the gated path, run once after the single-edge machinery has stalled.
+     * <p>
+     * The single-edge gated fixpoint can deadlock: a Markov state can carry several spurious edges,
+     * each individually separable (test-confirmed sepset in hand), where deleting any ONE of them and
+     * re-running the fixed reorientation yields an illegal PAG while the others still stand. The
+     * OBS=6 witness cc...cc..ta.aaat.aaacat has exactly two such edges, pairwise shielding triples
+     * at a shared separator vertex; deleting them JOINTLY lands on the true PAG, which is legal by
+     * construction. This is the RB paper's saturating fallback in its engineering role.
+     * <p>
+     * Mechanics: R = all still-adjacent pairs with a cached test-confirmed sepset in
+     * {@code foundSepsets} (covers stalls from both the adjacency-subset and possible-D-SEP passes).
+     * Trial 1 removes all of R on a copy, seeds every sepset into a trial-local map, runs the one
+     * full reorientation, and gates once on PAG legality. If that fails, one leave-one-out rung is
+     * tried (each subset of size |R|-1, first legal wins) before reverting to the stalled graph.
+     * Soundness is unchanged: the same legality gate is applied to the committed candidate, and every
+     * removal is individually test-confirmed, so noise costs reach, never soundness. If PKE-style
+     * certification still finds stalls, the next rungs are (a) deeper subset descent and (b) an outer
+     * fixpoint over {single-edge pass, saturating step}, since a successful saturation shrinks
+     * adjacencies and can make previously unseparable pairs separable.
+     */
+    private Graph saturatingRemoval(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
+                                    Set<Triple> unshieldedColliders, Set<Node> selection,
+                                    Map<Set<Node>, Set<Node>> foundSepsets) throws InterruptedException {
+        // R: still-present edges with a test-confirmed sepset in hand.
+        List<Set<Node>> stalled = new ArrayList<>();
+        for (Set<Node> pair : foundSepsets.keySet()) {
+            List<Node> pn = new ArrayList<>(pair);
+            if (pag.isAdjacentTo(pn.get(0), pn.get(1))) {
+                stalled.add(pair);
+            }
+        }
+
+        if (stalled.isEmpty()) {
+            return pag;
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Saturating step: " + stalled.size()
+                    + " separable edge(s) survived the single-edge fixpoint; trying joint removal.");
+        }
+
+        // Trial 1: full saturation; then one leave-one-out rung. (A singleton R retries the
+        // single-edge trial that just failed and will fail again; harmless, and it keeps the
+        // control flow uniform.)
+        List<List<Set<Node>>> batches = new ArrayList<>();
+        batches.add(stalled);
+        if (stalled.size() > 1) {
+            for (int skip = 0; skip < stalled.size(); skip++) {
+                List<Set<Node>> sub = new ArrayList<>(stalled);
+                sub.remove(skip);
+                batches.add(sub);
+            }
+        }
+
+        for (List<Set<Node>> batch : batches) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            Graph trial = pag.copy();
+            SepsetMap trialMap = new SepsetMap(sepsetMap);
+            for (Set<Node> pair : batch) {
+                List<Node> pn = new ArrayList<>(pair);
+                trial.removeEdge(pn.get(0), pn.get(1));
+                trialMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
+            }
+            FciOrient trialOrient = buildFciOrient(trialMap);
+            gfciOrientPag(trial, cpdag, nodes, trialMap, unshieldedColliders, trialOrient);
+
+            PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(trial, new LinkedHashSet<>(selection));
+
+            if (legal.isLegalPag()) {
+                // Accepted: commit exactly this batch's sepsets and carry the reoriented PAG forward.
+                for (Set<Node> pair : batch) {
+                    List<Node> pn = new ArrayList<>(pair);
+                    sepsetMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
+                }
+                if (verbose) {
+                    TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
+                            + stalled.size() + " edge(s) jointly (legal PAG).");
+                }
+                return trial;
+            } else if (verbose) {
+                TetradLogger.getInstance().log("\tSaturating step: joint removal of " + batch.size()
+                        + " edge(s) not legal (reverted). Reason: " + legal.getReason());
+            }
+        }
+
+        if (verbose) {
+            TetradLogger.getInstance().log("Saturating step: no joint removal was legal; stalled graph kept.");
+        }
+        return pag;
     }
 
     /**

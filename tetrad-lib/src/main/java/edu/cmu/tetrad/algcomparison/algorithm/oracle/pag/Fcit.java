@@ -285,7 +285,30 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // completion-layer firing rate as well as the runtime. Compare violation counts AND "PDS COMPLETION" log
         // counts against a default run.
         //
-//         search.setQuickSubsetDepth(2);      // default -1 (off)
+        // search.setQuickSubsetDepth(2);      // default -1 (off)
+
+        // --- Recursive-blocking sweep, i.e. completion-only mode (NOT output-identical) ---------------------
+        //
+        // Turns the sweep off entirely. The completion layer then becomes the sole source of separators: it
+        // records them in foundSepsets, the legality-gated removal loop and the saturating pass discharge them
+        // from there, and no recursive blocking runs anywhere. What is left is FCI-style subset enumeration with
+        // a legality gate and a saturating close -- unconditionally complete at the oracle (Prop. completion),
+        // since the guarantee never depended on the sweep in the first place.
+        //
+        // Counterintuitively this may be FASTER at small p, not slower: a pair admits at most 2^(p-2) candidate
+        // sets, while the sweep runs a powerset of not-followed sets with a recursive-blocking call apiece. At
+        // six observed variables that is 16 candidates against a considerably larger family, so completion-only
+        // is a serious contender for enumeration harnesses. The trade inverts sharply as p grows, which is the
+        // whole reason recursive blocking exists and why the sweep is the default.
+        //
+        // Recorded separators become minimal, since completion enumerates by increasing size, so orientations
+        // and trajectories change and PKE12 must be re-run to bless it -- the same caveat as the shortcut pass
+        // above, and the same reason to be curious: minimal separators may lower the displacement firing rate.
+        //
+        // Do not combine with CompletionPolicy.OFF: that configuration has no separator-finding machinery left
+        // and will remove no edges at all.
+        //
+        // search.setUseRecursiveBlockingSweep(false);  // default true
 
         // --- Legality memo audit ----------------------------------------------------------------------------
         //

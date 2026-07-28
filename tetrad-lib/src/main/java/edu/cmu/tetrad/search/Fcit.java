@@ -335,6 +335,21 @@ public final class Fcit implements IGraphSearch {
      * change.
      */
     private int quickSubsetDepth = -1;
+    /**
+     * Whether the recursive-blocking sweep runs at all. When false, no separator
+     * is proposed by recursive blocking; the completion layer
+     * (Prop. completion) becomes the sole source of separators, feeding
+     * {@code foundSepsets}, from which the legality-gated removal loop and the
+     * saturating pass then work. The result is FCI-style subset enumeration with
+     * a legality gate: complete at the oracle, and at small p often cheaper than
+     * the sweep it replaces, since a pair admits at most 2^(p-2) candidate sets
+     * while the sweep runs a powerset of not-followed sets with a recursive
+     * blocking call apiece. At large p the trade inverts sharply, which is why
+     * the sweep is the default. Setting this false with
+     * {@code completionPolicy == OFF} leaves no separator-finding machinery at
+     * all; the search will remove nothing.
+     */
+    private boolean useRecursiveBlockingSweep = true;
 
     /**
      * FCIT constructor.
@@ -922,6 +937,13 @@ public final class Fcit implements IGraphSearch {
         // Candidate sets already tested for this edge, shared across both views:
         // the nested enumerations can arrive at the same S by different routes.
         Set<Set<Node>> tried = new HashSet<>();
+
+        if (!useRecursiveBlockingSweep) {
+            // No proposal machinery here; the completion layer supplies
+            // separators, and they arrive via the foundSepsets fast path above
+            // on the next pass of the outer loop.
+            return null;
+        }
 
         // Shortcut pass: small subsets of the common neighborhood, by increasing
         // size. Candidates feed `tried`, so the sweep below never retests them.
@@ -1691,6 +1713,39 @@ public final class Fcit implements IGraphSearch {
 
         Set<Set<Node>> tried = new HashSet<>();
 
+        if (!useRecursiveBlockingSweep) {
+            // Confirm by the completion enumeration instead, so detection keeps
+            // its "test-confirmed or nothing" contract.
+            Set<Node> byCompletion = null;
+
+            if (completionPolicy != CompletionPolicy.OFF) {
+                Set<Node> pool = new LinkedHashSet<>(permissivePossibleDsep(m, n));
+                pool.addAll(permissivePossibleDsep(n, m));
+                byCompletion = enumeratePoolSubsets(m, n, pool, deadlineMs, tried);
+
+                if (byCompletion == null && completionPolicy == CompletionPolicy.FULL) {
+                    Set<Node> all = new LinkedHashSet<>(this.pag.getNodes());
+                    all.remove(m);
+                    all.remove(n);
+                    byCompletion = enumeratePoolSubsets(m, n, all, deadlineMs, tried);
+                }
+            }
+
+            LegVerdict vc;
+            if (byCompletion != null) {
+                foundSepsets.put(key, byCompletion);
+                vc = LegVerdict.SPURIOUS;
+            } else if (completionPolicy == CompletionPolicy.OFF) {
+                // Nothing left that can confirm; do not report NOT_SPURIOUS.
+                vc = LegVerdict.INDETERMINATE;
+            } else {
+                vc = LegVerdict.NOT_SPURIOUS;
+            }
+
+            cache.put(key, vc);
+            return vc;
+        }
+
         SweepOutcome live = sweepForSepset(this.pag, m, n, deadlineMs, tried);
         SweepOutcome blindOutcome = (live.sepset() != null || !useBlindView)
                 ? live
@@ -2002,6 +2057,16 @@ public final class Fcit implements IGraphSearch {
      */
     public void setQuickSubsetDepth(int quickSubsetDepth) {
         this.quickSubsetDepth = quickSubsetDepth;
+    }
+
+    /**
+     * Sets whether the recursive-blocking sweep runs. False makes the completion
+     * layer the sole source of separators.
+     *
+     * @param useRecursiveBlockingSweep true by default.
+     */
+    public void setUseRecursiveBlockingSweep(boolean useRecursiveBlockingSweep) {
+        this.useRecursiveBlockingSweep = useRecursiveBlockingSweep;
     }
 
     /**
