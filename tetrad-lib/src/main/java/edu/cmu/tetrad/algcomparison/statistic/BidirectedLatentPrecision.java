@@ -63,7 +63,7 @@ public class BidirectedLatentPrecision implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Percent of bidirected edges for which a latent confounder exists (an latent L such that X <- (L) -> Y).";
+        return "Percent of bidirected edges for which a latent confounder exists (a latent L such that X <- (L) -> Y).";
     }
 
     /**

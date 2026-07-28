@@ -390,6 +390,10 @@ public final class Params {
      */
     public static final String MAX_DISCRIMINATING_PATH_LENGTH = "maxDiscriminatingPathLength";
     /**
+     * Constant <code>MAX_POSSIBLE_SEP_PATH_LENGTH="maxPossibleSepPathLength"</code>
+     */
+    public static final String MAX_POSSIBLE_SEP_PATH_LENGTH = "maxPossibleSepPathLength";
+    /**
      * Constant <code>MAXIT="maxit"</code>
      */
     public static final String MAXIT = "maxit";

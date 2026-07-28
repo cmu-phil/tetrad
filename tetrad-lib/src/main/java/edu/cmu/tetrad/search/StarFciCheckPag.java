@@ -116,6 +116,10 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * further independence testing.
      */
     private boolean lvHeuristicOnly = false;
+    /**
+     * Maximum path length for possible d-sep.
+     */
+    private int maxPossibleDsepPathLength = -1;
 
     /**
      * Constructs a new StarFci algorithm with the given independence test.
@@ -367,9 +371,9 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
             }
 
-            if (verbose) {
-                TetradLogger.getInstance().log("*-FCI finished.");
-            }
+                                    //            if (verbose) {
+                                    //                TetradLogger.getInstance().log("*-FCI finished.");
+                                    //            }
 
             List<Edge> dsepEdges = new ArrayList<>(pag.getEdges());
             RandomUtil.shuffle(dsepEdges);
@@ -389,8 +393,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
 
                 // One endpoint suffices (per JR); change `a` to `c`, or union the two, if parity
                 // ever turns out to need both ends.
-                int maxPathLength = -1; // unlimited path length
-                List<Node> possibleDsep = pag.paths().possibleDsep(a, maxPathLength);
+                List<Node> possibleDsep = pag.paths().possibleDsep(a, maxPossibleDsepPathLength);
                 possibleDsep.remove(a);
                 possibleDsep.remove(c);
                 possibleDsep.removeIf(node -> node.getNodeType() == NodeType.LATENT);
@@ -695,8 +698,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         // usePossibleDsep == false the R4 discriminating-path resolution must not be the
         // back door through which unbounded (possible-D-SEP-scale) conditioning searches
         // re-enter after the adjacency-only pass.
-        strategy.setDepth(usePossibleDsep ? -1 : this.depth);
-        strategy.setMaxLength(usePossibleDsep ? -1 : this.maxDiscriminatingPathLength);
+        strategy.setDepth(this.depth);
+        strategy.setMaxLength(this.maxDiscriminatingPathLength);
         strategy.setSepsetMap(sepsetMap);
         strategy.setVerbose(false);
         FciOrient fciOrient = new FciOrient(strategy);
@@ -836,6 +839,18 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     public void setLvHeuristicOnly(boolean lvHeuristicOnly) {
         this.lvHeuristicOnly = lvHeuristicOnly;
+    }
+
+    /**
+     * Maximum path length for possible d-sep.
+     *
+     * @param maxPossibleDsepPathLength Maximum path length for possible d-sep.
+     */
+    public void setMaxPossibleDsepPathLength(int maxPossibleDsepPathLength) {
+        if (maxPossibleDsepPathLength < -1) {
+            throw new IllegalArgumentException("Maximum path length for possible d-sep must be >= -1 (-1 = unlimited).");
+        }
+        this.maxPossibleDsepPathLength = maxPossibleDsepPathLength;
     }
 }
 

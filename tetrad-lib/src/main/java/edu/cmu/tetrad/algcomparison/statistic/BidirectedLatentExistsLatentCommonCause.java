@@ -63,7 +63,7 @@ public class BidirectedLatentExistsLatentCommonCause implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Percent of bidirected edges for which a latent common cause exists (an latent L such that X <~~ (L) ~~> Y).";
+        return "Percent of bidirected edges for which a latent common cause exists (a latent L such that X <~~ (L) ~~> Y).";
     }
 
     /**
