@@ -5,10 +5,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.sem.RandomMlpSupport.RandomMlp;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.CommonOps_DDRM;
 
 import java.util.*;
 import java.util.function.Function;
@@ -32,8 +31,17 @@ import java.util.function.Function;
  *
  * <p>
  * Root nodes are generated as pure noise. For non-root nodes, each parent
- * contributes through its own learned random subnet, preserving additivity
+ * contributes through its own random subnet, preserving additivity
  * across parent effects.
+ * </p>
+ *
+ * <p>
+ * NOTE: When input standardization is enabled (the default), each parent column
+ * is z-scored using the <em>realized sample's</em> mean and standard deviation
+ * before entering its subnet. This couples rows within a dataset: strictly, the
+ * effective structural functions depend (weakly, and vanishingly as the sample
+ * size grows) on the sampled data, so the simulator is not "SCM-pure." Disable
+ * standardization via {@link #setInputStandardize(boolean)} if this matters.
  * </p>
  *
  * <p>
@@ -79,77 +87,6 @@ public final class GeneralAdditiveModel {
     // Configuration
     // --------------------------------------------------------------------
 
-    private static boolean looksLikeTanh(Function<Double, Double> f) {
-        double[] xs = {-2.0, -1.0, -0.5, 0.5, 1.0, 2.0};
-        for (double x : xs) {
-            double fx = f.apply(x);
-            if (!Double.isFinite(fx)) return false;
-            if (TMath.abs(fx) > 1.000001) return false;
-        }
-
-        double a = f.apply(0.5), b = f.apply(-0.5);
-        double c = f.apply(1.0), d = f.apply(-1.0);
-        return TMath.abs(a + b) < 1e-6 && TMath.abs(c + d) < 1e-6;
-    }
-
-    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
-        final int n = A.numRows;
-        final int m = A.numCols;
-        int k = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++, k++) {
-                A.data[k] += b[j];
-            }
-        }
-    }
-
-    private static void applyActivationInPlace(DMatrixRMaj A, Function<Double, Double> f, boolean fastTanh) {
-        final int n = A.getNumElements();
-        if (fastTanh) {
-            for (int i = 0; i < n; i++) {
-                A.data[i] = TMath.tanh(A.data[i]);
-            }
-        } else {
-            for (int i = 0; i < n; i++) {
-                A.data[i] = f.apply(A.data[i]);
-            }
-        }
-    }
-
-    /**
-     * Z-scores each column of A in place.
-     * Columns with near-zero variance are left unchanged.
-     */
-    private static void zScoreColumnsInPlace(DMatrixRMaj A) {
-        final int n = A.numRows;
-        final int d = A.numCols;
-
-        for (int j = 0; j < d; j++) {
-            double mean = 0.0;
-            int k = j;
-            for (int i = 0; i < n; i++, k += d) {
-                mean += A.data[k];
-            }
-            mean /= n;
-
-            double var = 0.0;
-            k = j;
-            for (int i = 0; i < n; i++, k += d) {
-                double diff = A.data[k] - mean;
-                var += diff * diff;
-            }
-            var /= n;
-
-            if (var < 1e-12) continue;
-
-            double invSd = 1.0 / TMath.sqrt(var);
-            k = j;
-            for (int i = 0; i < n; i++, k += d) {
-                A.data[k] = (A.data[k] - mean) * invSd;
-            }
-        }
-    }
-
     /**
      * Sets the hidden dimensions for the model. Hidden dimensions represent the sizes
      * of the hidden layers used within the model. All dimensions must be greater than or equal to 1.
@@ -168,10 +105,6 @@ public final class GeneralAdditiveModel {
         return this;
     }
 
-    // --------------------------------------------------------------------
-    // Main generation
-    // --------------------------------------------------------------------
-
     /**
      * Sets the input scale for the model. The input scale must be a finite, positive value.
      *
@@ -187,15 +120,12 @@ public final class GeneralAdditiveModel {
         return this;
     }
 
-    // --------------------------------------------------------------------
-    // Utilities
-    // --------------------------------------------------------------------
-
     /**
      * Sets whether the input data should be standardized for the model.
      * Standardizing inputs typically involves scaling them to have a mean of
      * zero and a standard deviation of one, which can improve model performance
-     * and stability in certain cases.
+     * and stability in certain cases. See the class javadoc for the
+     * row-coupling caveat this introduces.
      *
      * @param inputStandardize a boolean indicating whether input standardization
      *                         should be applied (true for standardization, false otherwise)
@@ -210,8 +140,8 @@ public final class GeneralAdditiveModel {
     /**
      * Sets the activation function for the generalized additive model. The activation function
      * transforms data through a specified mapping, typically used within neural networks or
-     * simulation frameworks. If the specified activation function resembles a hyperbolic tangent
-     * function, an optimization flag is set to use a faster implementation.
+     * simulation frameworks. If the specified activation function is exactly the hyperbolic
+     * tangent function, an optimization flag is set to use a faster implementation.
      *
      * @param activationFunction the function to be used as the activation function, must be non-null
      * @return the updated GeneralAdditiveModel instance with the specified activation function
@@ -220,15 +150,22 @@ public final class GeneralAdditiveModel {
     public GeneralAdditiveModel setActivationFunction(Function<Double, Double> activationFunction) {
         Objects.requireNonNull(activationFunction, "activationFunction");
         this.activationFunction = activationFunction;
-        this.useFastTanh = looksLikeTanh(activationFunction);
+        this.useFastTanh = RandomMlpSupport.isTanhLike(activationFunction);
         return this;
     }
+
+    // --------------------------------------------------------------------
+    // Main generation
+    // --------------------------------------------------------------------
 
     /**
      * Generates a simulated dataset according to the structure of the graph and the specified parameters
      * of the General Additive Model. The dataset is created by sampling noise, combining contributions
      * from parent nodes in the graph using subnet evaluations, and optionally applying input standardization
      * and activation functions.
+     * <p>
+     * Note: the returned dataset's columns are in topological order, not
+     * {@code graph.getNodes()} order.
      *
      * @return a DataSet object containing the simulated data and associated graph node ordering
      */
@@ -256,7 +193,8 @@ public final class GeneralAdditiveModel {
 
         // Reusable buffers for one-parent subnet evaluations.
         DMatrixRMaj xCol = new DMatrixRMaj(n, 1);
-        DMatrixRMaj scratch = new DMatrixRMaj(n, 1);
+        DMatrixRMaj scratch1 = new DMatrixRMaj(n, 1);
+        DMatrixRMaj scratch2 = new DMatrixRMaj(n, 1);
         DMatrixRMaj out = new DMatrixRMaj(n, 1);
 
         final double[] noise = new double[n];
@@ -285,21 +223,22 @@ public final class GeneralAdditiveModel {
             // Sum separate subnet contributions f_jk(X_k) over parents.
             for (int parentIndex : pj) {
                 // Build 1-column input from this parent.
-                xCol.reshape(n, 1, false);
                 for (int i = 0; i < n; i++) {
                     xCol.data[i] = raw[i][parentIndex];
                 }
 
                 if (inputStandardize) {
-                    zScoreColumnsInPlace(xCol);
+                    RandomMlpSupport.zScoreColumnsInPlace(xCol);
                 }
 
-                // Optional pre-activation on raw input, matching the ANM style a bit.
-                applyActivationInPlace(xCol, activationFunction, useFastTanh);
+                // Bound the (standardized) parent value before the subnet,
+                // matching the ANM style.
+                RandomMlpSupport.applyActivationInPlace(xCol, activationFunction, useFastTanh);
 
-                RandomUnivariateMLP subnet = new RandomUnivariateMLP(hiddenDimensions, inputScale, activationFunction, useFastTanh);
+                RandomMlp subnet = new RandomMlp(1, hiddenDimensions, 1, inputScale,
+                        0.0, activationFunction, useFastTanh);
 
-                out = subnet.forward(xCol, scratch, out);
+                out = subnet.forward(xCol, scratch1, scratch2, out);
 
                 for (int i = 0; i < n; i++) {
                     raw[i][j] += out.data[i];
@@ -308,72 +247,5 @@ public final class GeneralAdditiveModel {
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
-    }
-
-    // --------------------------------------------------------------------
-    // Random univariate MLP
-    // --------------------------------------------------------------------
-
-    /**
-     * A 1-input random MLP used to generate one parent contribution f_jk(X_k).
-     */
-    private static final class RandomUnivariateMLP {
-        private final int[] hidden;
-        private final DMatrixRMaj[] W; // (out x in)
-        private final double[][] b;
-        private final Function<Double, Double> activationFunction;
-        private final boolean useFastTanh;
-
-        RandomUnivariateMLP(int[] hidden, double inputScale, Function<Double, Double> activationFunction, boolean useFastTanh) {
-            this.hidden = hidden == null ? new int[0] : hidden.clone();
-            this.activationFunction = activationFunction;
-            this.useFastTanh = useFastTanh;
-
-            int L = this.hidden.length + 1;
-            this.W = new DMatrixRMaj[L];
-            this.b = new double[L][];
-
-            int prev = 1; // univariate input
-            for (int l = 0; l < this.hidden.length; l++) {
-                W[l] = new DMatrixRMaj(this.hidden[l], prev);
-                b[l] = new double[this.hidden[l]];
-                xavierLikeInit(W[l], inputScale, true);
-                prev = this.hidden[l];
-            }
-
-            W[L - 1] = new DMatrixRMaj(1, prev);
-            b[L - 1] = new double[1];
-            xavierLikeInit(W[L - 1], 0.5 * inputScale, true);
-        }
-
-        private static void xavierLikeInit(DMatrixRMaj W, double scale, boolean tanhLike) {
-            double base = tanhLike ? 1.0 : 2.0;
-            double s = scale * TMath.sqrt(base / TMath.max(1, W.numCols));
-            for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = RandomUtil.getInstance().nextGaussian() * s;
-            }
-        }
-
-        DMatrixRMaj forward(DMatrixRMaj X, DMatrixRMaj scratch1, DMatrixRMaj out) {
-            DMatrixRMaj cur = X;
-            DMatrixRMaj bufA = scratch1;
-            DMatrixRMaj bufB = new DMatrixRMaj(1, 1);
-
-            for (int l = 0; l < hidden.length; l++) {
-                int h = hidden[l];
-                DMatrixRMaj dest = (cur == bufA) ? bufB : bufA;
-                dest.reshape(X.numRows, h, false);
-
-                CommonOps_DDRM.multTransB(cur, W[l], dest);
-                addBiasRowsInPlace(dest, b[l]);
-                applyActivationInPlace(dest, activationFunction, useFastTanh);
-                cur = dest;
-            }
-
-            out.reshape(X.numRows, 1, false);
-            CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
-            addBiasRowsInPlace(out, b[b.length - 1]);
-            return out;
-        }
     }
 }

@@ -125,7 +125,7 @@ public class SepsetComparisonPagHarness {
                             if (x == y || pag.paths().markovBlanket(x).contains(y)) continue;
 
                             long t1 = System.nanoTime();
-                            RbResult rb = iterativeDeepeningRb(x, y, pag, oracle);
+                            RbResult rb = rbResult(x, y, pag, oracle);
                             long rbNs = System.nanoTime() - t1;
 
                             totalRbMs += rbNs / 1_000_000;
@@ -210,13 +210,13 @@ public class SepsetComparisonPagHarness {
     // Iterative-deepening recursive blocking
     // -----------------------------------------------------------------------
 
-    private static RbResult iterativeDeepeningRb(
+    private static RbResult rbResult(
             Node x, Node y, Graph pag, MsepTest oracle) {
 
         int ceiling = RB_RECURSION_DEPTH;
 
         try {
-            for (int recursionDepth = 0; recursionDepth <= ceiling; recursionDepth++) {
+//            for (int recursiveDepth = 0; recursiveDepth <= ceiling; recursiveDepth++) {
 
                 if (Thread.currentThread().isInterrupted()) {
                     return new RbResult(0, -1, false);
@@ -224,11 +224,11 @@ public class SepsetComparisonPagHarness {
 
                 long deadlineMs = System.currentTimeMillis() + PAIR_TIMEOUT_MS;
 
-                RecursiveBlocking.BlockingResult result =
-                        RecursiveBlocking.blockPathsRecursivelyFull(
+                RecursiveBlocking.BlockingResult result =   
+                        RecursiveBlocking.blockPathsRecursively(
                                 pag, x, y,
                                 Set.of(), Set.of(),
-                                recursionDepth,
+                                RB_RECURSION_DEPTH,
                                 RB_DEPTH,
                                 RB_MAX_RADIUS,
                                 RB_NEAR_ENDPOINT,
@@ -252,7 +252,7 @@ public class SepsetComparisonPagHarness {
                 }
 
                 // INDETERMINATE — recursion depth cap was hit; try next depth.
-            }
+//            }
 
             // Ceiling reached without finding a separator or proving impossibility.
             return new RbResult(0, -1, false);
@@ -260,9 +260,10 @@ public class SepsetComparisonPagHarness {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return new RbResult(0, -1, false);
-        } catch (TimeoutException e) {
-            return new RbResult(0, -1, false);
         }
+//        catch (TimeoutException e) {
+//            return new RbResult(0, -1, false);
+//        }
     }
 
     // -----------------------------------------------------------------------
@@ -270,14 +271,14 @@ public class SepsetComparisonPagHarness {
     // -----------------------------------------------------------------------
 
     private static Graph generateRandomPag(int numNodes, int numLatents,
-                                           int numEdges, int recursionDepth) {
+                                           int numEdges, int recursiveDepth) {
         while (true) {
             System.out.println("Generating random graph...");
 
             Graph graph = RandomGraph.randomGraph(
                     numNodes, numLatents, numEdges, 100, 100, 100, false);
             MagToPag magToPag = new MagToPag(GraphTransforms.dagToMag(graph));
-            magToPag.setRecursionDepth(recursionDepth);
+            magToPag.setRecursiveDepth(recursiveDepth);
 
             ExecutorService executor = Executors.newSingleThreadExecutor();
             Future<Graph> future = executor.submit(() -> magToPag.convert(false, false));

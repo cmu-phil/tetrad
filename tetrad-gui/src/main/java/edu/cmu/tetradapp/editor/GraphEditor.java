@@ -107,6 +107,16 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
      * Flag to indicate if editing is enabled.
      */
     private boolean enableEditing = true;
+    /** Tracks which tab we're leaving, so edits to the Text pane can be committed on exit. */
+    private int prevTabIndex = 0;
+    /** Reentrancy guard: set while we programmatically force the selected tab back to Text. */
+    private boolean handlingTabChange = false;
+    /** Canonical text shown when the Text tab was last entered; the change-detection baseline. */
+    private String taBaseline = "";
+    /** The model that now owns the undo/redo history. */
+    private GraphWrapper graphWrapper;
+    /** Set while applying an undo/redo so the change listener doesn't re-record it. */
+    private boolean suppressUndoRecording = false;
 
     //===========================CONSTRUCTOR========================//
 
@@ -278,6 +288,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
     //===========================PRIVATE METHODS========================//
     private void initUI(GraphWrapper graphWrapper) {
+        this.graphWrapper = graphWrapper;
         Graph graph = graphWrapper.getGraph();
 
         this.workbench = new GraphWorkbench(graph);
@@ -288,6 +299,10 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             if (GraphEditor.EVENTS.contains(propertyName)) {
                 if (getWorkbench() != null) {
                     Graph targetGraph = getWorkbench().getGraph();
+
+                    if (!suppressUndoRecording && this.graphWrapper != null) {
+                        this.graphWrapper.recordGraphState(targetGraph);
+                    }
 
                     SwingUtilities.invokeLater(() -> {
                         graphWrapper.setGraph(new EdgeListGraph(targetGraph));
@@ -345,42 +360,144 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         tabbedPane.addTab("Edges", edgeTableBox);
 
         ta = new JTextArea(String.valueOf(graph));
-        ta.setEditable(false);
+        ta.setEditable(true);
         ta.setCaretPosition(0);
+        this.taBaseline = String.valueOf(graph);
         JScrollPane textScroll = new JScrollPane(ta);
-        tabbedPane.addTab("Text", textScroll);
+
+        JButton applyTextButton = new JButton("Apply Text as Graph");
+        applyTextButton.addActionListener(ev -> applyTextGraph());
+        Box textButtonBox = Box.createHorizontalBox();
+        textButtonBox.add(applyTextButton);
+        textButtonBox.add(Box.createHorizontalGlue());
+
+        Box textBox = Box.createVerticalBox();
+        textBox.add(textScroll);
+        textBox.add(textButtonBox);
+        tabbedPane.addTab("Text", textBox);
 
         updateBootstrapTable(graph);
         this.edgeTypeTable.update(graph);
 
         tabbedPane.addChangeListener(e -> {
-            if (tabbedPane.getSelectedIndex() == 1) {
+            if (handlingTabChange) return;
+
+            int newIndex = tabbedPane.getSelectedIndex();
+
+            // Leaving the Text tab: try to commit any edits before moving on.
+            if (prevTabIndex == 2 && newIndex != 2) {
+                boolean okToLeave = commitTextIfChanged();
+                if (!okToLeave) {
+                    // Invalid text, user chose to keep editing: snap back to Text.
+                    handlingTabChange = true;
+                    tabbedPane.setSelectedIndex(2);
+                    handlingTabChange = false;
+                    return;   // prevTabIndex stays 2
+                }
+            }
+
+            if (newIndex == 1) {
                 updateBootstrapTable(workbench.getGraph());
                 this.edgeTypeTable.update(workbench.getGraph());
             }
 
-            if (tabbedPane.getSelectedIndex() == 2) {
+            if (newIndex == 2) {
+                // Entering Text: refresh from the live graph and reset the baseline.
                 ta.setText(String.valueOf(workbench.getGraph()));
+                ta.setCaretPosition(0);
+                this.taBaseline = ta.getText();
             }
+
+            prevTabIndex = newIndex;
         });
 
         // Add to parent container
         add(menuBar, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
 
+        if (!graphWrapper.hasUndoHistory()) {
+            graphWrapper.recordGraphState(graph);
+        }
+
         validate();
+    }
+
+    /**
+     * If the Text pane has been edited, parse it and (with confirmation) apply it to the
+     * workbench. Returns true if it is safe to leave the Text tab (nothing changed, change
+     * applied, or change discarded); false if the text is invalid and the user chose to
+     * keep editing, in which case the caller should remain on the Text tab.
+     */
+    private boolean commitTextIfChanged() {
+        if (ta.getText().equals(this.taBaseline)) {
+            return true;   // untouched — no prompt
+        }
+
+        int choice = JOptionPane.showConfirmDialog(
+                this,
+                "The graph text has been edited. Apply it as the new graph?\n"
+                        + "(No discards your changes.)",
+                "Apply graph changes",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (choice == JOptionPane.YES_OPTION) {
+            if (applyTextGraph()) {
+                return true;          // applied
+            }
+            return false;             // parse failed — stay on Text to fix it
+        } else if (choice == JOptionPane.NO_OPTION) {
+            ta.setText(this.taBaseline);   // discard
+            ta.setCaretPosition(0);
+            return true;
+        } else {
+            return false;             // Cancel — stay on Text, text intact
+        }
+    }
+
+    /**
+     * Parses the Text pane and, on confirmation, applies it to the workbench. Returns
+     * true iff a graph was successfully parsed and applied; false on parse failure or
+     * user cancel. On parse failure shows the error and leaves the user's text intact.
+     */
+    private boolean applyTextGraph() {
+        String text = ta.getText();
+
+        Graph parsed;
+        try {
+            parsed = GraphSaveLoadUtils.readerToGraphTxt(new java.io.StringReader(text));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "The text isn't a valid graph:\n" + ex.getMessage(),
+                    "Invalid graph text",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        LayoutUtil.defaultLayout(parsed);
+        workbench.setGraph(parsed);
+        this.edgeTypeTable.update(parsed);
+        this.taBaseline = String.valueOf(parsed);
+        ta.setText(this.taBaseline);
+        ta.setCaretPosition(0);
+        return true;
     }
 
     /**
      * Updates the graph in workbench when changing graph model
      */
     private void updateGraphWorkbench(Graph graph) {
-        this.workbench.setGraph(graph);// = new GraphWorkbench(graph);
-        this.workbench.setEnableEditing(this.enableEditing);
-        this.graphEditorScroll.setViewportView(this.workbench);
-        this.edgeTypeTable.update(graph);
-        this.ta.setText(String.valueOf(graph));
-
+        suppressUndoRecording = true;
+        try {
+            this.workbench.setGraph(graph);
+            this.workbench.setEnableEditing(this.enableEditing);
+            this.graphEditorScroll.setViewportView(this.workbench);
+            this.edgeTypeTable.update(graph);
+            this.ta.setText(String.valueOf(graph));
+        } finally {
+            suppressUndoRecording = false;
+        }
         validate();
     }
 
@@ -482,8 +599,12 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         JMenuItem cut = new JMenuItem(new CutSubgraphAction(this));
         JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
         JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
-        JMenuItem undoLast = new JMenuItem(new UndoLastAction(workbench));
-        JMenuItem redoLast = new JMenuItem(new RedoLastAction(workbench));
+        JMenuItem undoLast = new JMenuItem(new AbstractAction("Undo") {
+            @Override public void actionPerformed(ActionEvent e) { doUndo(); }
+        });
+        JMenuItem redoLast = new JMenuItem(new AbstractAction("Redo") {
+            @Override public void actionPerformed(ActionEvent e) { doRedo(); }
+        });
         JMenuItem setToOriginal = new JMenuItem(new ResetGraph(workbench));
 
         cut.setAccelerator(
@@ -509,6 +630,31 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         edit.add(setToOriginal);
 
         return edit;
+    }
+
+    private void doUndo() {
+        if (!graphWrapper.canUndo()) { Toolkit.getDefaultToolkit().beep(); return; }
+        refreshAfterUndoRedo(graphWrapper.undo());
+    }
+
+    private void doRedo() {
+        if (!graphWrapper.canRedo()) { Toolkit.getDefaultToolkit().beep(); return; }
+        refreshAfterUndoRedo(graphWrapper.redo());
+    }
+
+    private void refreshAfterUndoRedo(Graph g) {
+        if (g == null) return;
+        suppressUndoRecording = true;
+        try {
+            workbench.setGraph(g);
+            edgeTypeTable.update(g);
+            if (ta != null) {
+                ta.setText(String.valueOf(g));
+                taBaseline = ta.getText();
+            }
+        } finally {
+            suppressUndoRecording = false;
+        }
     }
 
     private JMenu createGraphMenu() {

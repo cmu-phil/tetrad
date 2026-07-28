@@ -70,7 +70,7 @@ public class PagCacheTest {
     private static Graph referencePagFromDag(Graph dag, int referenceDepth) {
         Graph mag = GraphTransforms.dagToMag(dag);
         MagToPag magToPag = new MagToPag(mag);
-        magToPag.setRecursionDepth(referenceDepth);
+        magToPag.setRecursiveDepth(referenceDepth);
         return magToPag.convert(false, false);
     }
 

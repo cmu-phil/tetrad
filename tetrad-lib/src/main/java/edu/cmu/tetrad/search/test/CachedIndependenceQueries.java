@@ -3,13 +3,14 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Shared cache + utilities for independence testing keyed by (X,Y|Z) using variable NAMES
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentMap;
  * IllegalStateException("Recursive update") if the mapping function re-enters the map for the
  * same key (which can happen if the wrapped test delegates back into this cache layer).
  */
-public final class CachedIndependenceQueries implements IndependenceTest, RowsSettable, TetradSerializable {
+public final class CachedIndependenceQueries implements IndependenceTest, TetradSerializable {
 
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 23L;
@@ -36,6 +37,18 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
      * Cache keyed by structured QueryKey.
      */
     private final ConcurrentMap<QueryKey, Eval> evalCache = new ConcurrentHashMap<>();
+    /**
+     * Counts cache hits and misses so callers can see how many *distinct*
+     * queries actually reached the underlying test versus were served from
+     * cache. distinctQueries == misses == size of evalCache at steady state.
+     */
+    private final LongAdder cacheHits = new LongAdder();
+    /**
+     * Counts cache misses so callers can see how many *distinct*
+     * queries actually reached the underlying test versus were served from
+     * cache. distinctQueries == misses == size of evalCache at steady state.
+     */
+    private final LongAdder cacheMisses = new LongAdder();
     private transient volatile IndependenceTest test;
     /**
      * Map name -> Node instance used by the test (rebuilt on setTest()).
@@ -148,31 +161,31 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         if (this.test != null) this.test.setVerbose(verbose);
     }
 
-    /**
-     * Retrieves a list of row indices from the wrapped test instance if it implements the RowsSettable interface.
-     *
-     * @return a list of integers representing the row indices provided by the wrapped test instance.
-     * @throws UnsupportedOperationException if the wrapped test instance does not support retrieving rows.
-     */
-    @Override
-    public List<Integer> getRows() {
-        if (test instanceof RowsSettable rs) return rs.getRows();
-        else throw new UnsupportedOperationException("Wrapped test does not support getRows()");
-    }
+//    /**
+//     * Retrieves a list of row indices from the wrapped test instance if it implements the RowsSettable interface.
+//     *
+//     * @return a list of integers representing the row indices provided by the wrapped test instance.
+//     * @throws UnsupportedOperationException if the wrapped test instance does not support retrieving rows.
+//     */
+//    @Override
+//    public List<Integer> getRows() {
+////        if (test instanceof RowsSettable rs) return rs.getRows();
+//        throw new UnsupportedOperationException("Wrapped test does not support getRows()");
+//    }
 
-    /**
-     * Sets the rows for the wrapped test, if it supports row setting.
-     * If the wrapped test does not support setting rows, an
-     * UnsupportedOperationException is thrown.
-     *
-     * @param rows a list of integers representing the rows to be set
-     * @throws UnsupportedOperationException if the wrapped test does not support setting rows
-     */
-    @Override
-    public void setRows(List<Integer> rows) {
-        if (test instanceof RowsSettable rs) rs.setRows(rows);
-//        else throw new UnsupportedOperationException("Wrapped test does not support setRows()");
-    }
+//    /**
+//     * Sets the rows for the wrapped test, if it supports row setting.
+//     * If the wrapped test does not support setting rows, an
+//     * UnsupportedOperationException is thrown.
+//     *
+//     * @param rows a list of integers representing the rows to be set
+//     * @throws UnsupportedOperationException if the wrapped test does not support setting rows
+//     */
+//    @Override
+//    public void setRows(List<Integer> rows) {
+////        if (test instanceof RowsSettable rs) rs.setRows(rows);
+//        throw new UnsupportedOperationException("Wrapped test does not support setRows()");
+//    }
 
     /**
      * Determines whether the current independence test supports subsampling.
@@ -348,10 +361,23 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
             return new Eval(true, Double.NaN);
         }
 
+//        // IMPORTANT: avoid computeIfAbsent (can throw "Recursive update" under re-entrancy).
+//        Eval cached = evalCache.get(key);
+//        if (cached != null) return cached;
+//
+//        Eval computed = computeEval(local, fact);
+//
+//        Eval raced = evalCache.putIfAbsent(key, computed);
+//        return raced != null ? raced : computed;
+
         // IMPORTANT: avoid computeIfAbsent (can throw "Recursive update" under re-entrancy).
         Eval cached = evalCache.get(key);
-        if (cached != null) return cached;
+        if (cached != null) {
+            cacheHits.increment();
+            return cached;
+        }
 
+        cacheMisses.increment();
         Eval computed = computeEval(local, fact);
 
         Eval raced = evalCache.putIfAbsent(key, computed);
@@ -668,6 +694,57 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
     }
 
     /**
+     * Number of eval() calls served from cache.
+     *
+     * @return Number of eval() calls served from cache.
+     */
+    public long getCacheHits() {
+        return cacheHits.sum();
+    }
+
+    /**
+     * Number of eval() calls that reached the underlying test (cache misses).
+     *
+     * @return Number of eval() calls that reached the underlying test (cache misses).
+     */
+    public long getCacheMisses() {
+        return cacheMisses.sum();
+    }
+
+    // ------------------------ evaluation ------------------------
+
+    /**
+     * Distinct cached queries currently held (authoritative distinct-key count).
+     *
+     * @return Distinct cached queries currently held (authoritative distinct-key count).
+     */
+    public long getDistinctQueries() {
+        return evalCache.size();
+    }
+
+    /**
+     * Human-readable cache statistics.
+     *
+     * @return Human-readable cache statistics.
+     */
+    public String cacheReport() {
+        long hits = cacheHits.sum();
+        long misses = cacheMisses.sum();
+        long total = hits + misses;
+        double hitRate = total == 0 ? 0.0 : (double) hits / total;
+        return String.format(
+                "Cached independence queries:%n" +
+                        "  eval() calls (total)      %,d%n" +
+                        "  cache hits                %,d%n" +
+                        "  cache misses (test calls) %,d%n" +
+                        "  distinct keys cached      %,d%n" +
+                        "  hit rate                  %.1f%%%n",
+                total, hits, misses, evalCache.size(), hitRate * 100.0);
+    }
+
+    // ------------------------ map rebuild ------------------------
+
+    /**
      * ErrorPolicy represents the policies that can be applied to handle errors
      * encountered during the execution of a process or task. This enum defines
      * various strategies, allowing for flexible management of errors based on
@@ -731,8 +808,6 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         BY_CACHE_KEY
     }
 
-    // ------------------------ evaluation ------------------------
-
     /**
      * Functional interface representing a provider responsible for generating implied facts
      * associated with a given vertex in a graph-like data structure.
@@ -767,8 +842,6 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         private static final long serialVersionUID = 23L;
     }
 
-    // ------------------------ map rebuild ------------------------
-
     /**
      * Structured key for (X,Y|Z) with X,Y unordered and Z sorted.
      * Immutable and safe for use as a CHM key. Hash is precomputed.
@@ -783,6 +856,13 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
         final int[] z;      // sorted
         final int hash;     // precomputed
 
+        /**
+         * Constructs a new QueryKey instance with the specified parameters.
+         *
+         * @param a the first integer value, representing the minimum of xId and yId
+         * @param b the second integer value, representing the maximum of xId and yId
+         * @param z the array of integers, representing a sorted set of values; if null or empty, it will be replaced with an empty array
+         */
         QueryKey(int a, int b, int[] z) {
             this.a = a;
             this.b = b;
@@ -799,11 +879,29 @@ public final class CachedIndependenceQueries implements IndependenceTest, RowsSe
             return h;
         }
 
+        /**
+         * Returns the precomputed hash code value for this QueryKey instance.
+         * The hash code is calculated during the construction of the object
+         * and is based on the values of the fields in the QueryKey.
+         *
+         * @return the hash code value for this QueryKey instance
+         */
         @Override
         public int hashCode() {
             return hash;
         }
 
+        /**
+         * Compares this QueryKey instance with the specified object for equality.
+         * Two QueryKey instances are considered equal if:
+         * - They are the same object reference.
+         * - The other object is also a QueryKey instance.
+         * - The values of {@code a} and {@code b} are equal in both instances.
+         * - The arrays {@code z} in both instances are equal.
+         *
+         * @param o the object to be compared for equality with this QueryKey
+         * @return {@code true} if the specified object is equal to this QueryKey; {@code false} otherwise
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

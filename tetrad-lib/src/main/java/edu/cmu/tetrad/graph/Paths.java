@@ -574,8 +574,8 @@ public class Paths implements TetradSerializable {
      */
     public boolean isLegalMag() {
         List<Node> selection = graph.getNodes().stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
-
-        return PagLegalityCheck.isLegalMag(graph, new HashSet<>(selection)).isLegalMag();
+        PagLegalityCheck.LegalMagRet legalMag = PagLegalityCheck.isLegalMag(graph, new HashSet<>(selection));
+        return legalMag.isLegalMag();
     }
 
     /**
@@ -2067,8 +2067,11 @@ public class Paths implements TetradSerializable {
      */
     public Set<Node> getSepsetContaining(Node x, Node y, Set<Node> containing, int maxPathLength)
             throws InterruptedException, TimeoutException {
-        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength,
-                System.currentTimeMillis() + 5000L);
+//        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(graph, x, y, containing, Set.of(), maxPathLength,
+//                );System.currentTimeMillis() + 5000L
+        Set<Node> blocking = RecursiveBlocking.blockPathsRecursively(
+                graph, x, y, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true, System.currentTimeMillis() + 5000L).blockingSet();
+
 
         // TODO - should allow the user to determine whether this is a PAG.
         if (isMSeparatedFrom(x, y, blocking, false)) {
@@ -2715,7 +2718,6 @@ public class Paths implements TetradSerializable {
      */
     public boolean isAncestorOf(Node node1, Node node2) {
         return graph.isAncestorOf(node1, node2);
-//        return node1 == node2 || existsDirectedPath(node1, node2);
     }
 
     /**

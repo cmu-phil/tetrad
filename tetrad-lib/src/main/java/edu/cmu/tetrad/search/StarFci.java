@@ -60,7 +60,7 @@ import static java.util.Collections.shuffle;
  *
  * @author josephramsey
  * @author bryanandrews
- * @see #getMarkovCpdag()
+ * @see #getMarkovCpdag(boolean)
  * @see Knowledge
  */
 public abstract class StarFci implements IGraphSearch {
@@ -257,7 +257,7 @@ public abstract class StarFci implements IGraphSearch {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
-        Graph cpdag = getMarkovCpdag();
+        Graph cpdag = getMarkovCpdag(verbose);
         Graph pag = new EdgeListGraph(cpdag);
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
@@ -301,7 +301,7 @@ public abstract class StarFci implements IGraphSearch {
         strategy.setMaxLength(-1);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursionDepth(-1);
+        fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(verbose);
 
@@ -365,6 +365,8 @@ public abstract class StarFci implements IGraphSearch {
 
 //            pag = new DagToPag(pag).convert();
         }
+
+//        GraphUtils.applyForbiddenCircleResolution(pag, knowledge);
 
         if (verbose) {
             TetradLogger.getInstance().log("*-FCI finished.");
@@ -467,9 +469,10 @@ public abstract class StarFci implements IGraphSearch {
      * Returns a Markov CPDAG to use as the initial graph in the Star-FCI search.
      *
      * @return This CPDAG.
+     * @param verbose A boolean value indicating whether to print verbose output.
      * @throws InterruptedException if interrupted.
      */
-    public abstract Graph getMarkovCpdag() throws InterruptedException;
+    public abstract Graph getMarkovCpdag(boolean verbose) throws InterruptedException;
 
     /**
      * Sets the flag indicating whether the graph is being replicated. (Unused.)

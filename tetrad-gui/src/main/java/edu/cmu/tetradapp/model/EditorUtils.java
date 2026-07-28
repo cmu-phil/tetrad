@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetradapp.model;
 
@@ -31,9 +31,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.prefs.Preferences;
 
 /**
@@ -136,6 +134,7 @@ public class EditorUtils {
         } else {
             fileSaveLocation = saveLocation;
         }
+
         File dir = new File(fileSaveLocation);
         chooser.setCurrentDirectory(dir);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -159,6 +158,14 @@ public class EditorUtils {
             outfile = chooser.getSelectedFile();
 
             if (outfile.exists()) {
+                // Re-saving the suggested file (e.g. a session under its own name) with
+                // overwrite requested: skip the redundant prompt.
+                boolean isSuggested = selectedFile != null
+                        && outfile.getAbsoluteFile().equals(selectedFile.getAbsoluteFile());
+                if (overwrite && isSuggested) {
+                    break;
+                }
+
                 int ret2 = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
                         "Overwrite existing file?", "", JOptionPane.YES_NO_OPTION);
                 if (ret2 == JOptionPane.YES_OPTION) {
@@ -184,6 +191,19 @@ public class EditorUtils {
         }
 
         return outfile;
+    }
+
+    public static File getNewSessionName(String prefix, String suffix,
+                                         Component parent, boolean overwrite, String dialogName, String saveLocation) {
+        String fileSaveLocation;
+        if (saveLocation == null) {
+            fileSaveLocation = Preferences.userRoot().get(
+                    "fileSaveLocation", Preferences.userRoot().absolutePath());
+        } else {
+            fileSaveLocation = saveLocation;
+        }
+
+        return EditorUtils.nextFile(fileSaveLocation, prefix, suffix, overwrite);
     }
 
     private static void renameButton(Container container, String originalText, String newText) {

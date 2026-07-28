@@ -39,7 +39,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @see StarFci
  * @see Boss
  */
-public final class BossFci extends StarFci {
+public final class Bfci extends StarFciCheckPag {
     /**
      * The score.
      */
@@ -52,8 +52,8 @@ public final class BossFci extends StarFci {
      * the search algorithm will be restarted.
      * </p>
      *
-     * @see BossFci#setNumStarts(int)
-     * @see BossFci#search()
+     * @see Bfci#setNumStarts(int)
+     * @see Bfci#search()
      */
     private int numStarts = 1;
     /**
@@ -80,7 +80,7 @@ public final class BossFci extends StarFci {
      * @see IndependenceTest
      * @see Score
      */
-    public BossFci(IndependenceTest test, Score score) {
+    public Bfci(IndependenceTest test, Score score) {
         super(test);
         if (score == null) {
             throw new NullPointerException("Score is null");
@@ -97,7 +97,7 @@ public final class BossFci extends StarFci {
      * algorithm.
      * @throws InterruptedException if the thread executing the search is interrupted.
      */
-    public Graph getMarkovCpdag() throws InterruptedException {
+    public Graph getMarkovDag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting BOSS.");
         }
@@ -106,10 +106,10 @@ public final class BossFci extends StarFci {
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
         subAlg.setNumThreads(numThreads);
-        subAlg.setVerbose(isVerbose());
+        subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(getKnowledge());
-        Graph cpdag = alg.search();
+        Graph cpdag = alg.search(false);
 
         if (isVerbose()) {
             TetradLogger.getInstance().log("Finished BOSS.");

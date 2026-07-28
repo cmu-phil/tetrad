@@ -43,6 +43,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.reflections.Reflections;
 
 import java.io.*;
@@ -646,6 +647,392 @@ public class Comparison implements TetradSerializable {
 //        for (int i = 0; i < simulations.getSimulations().size(); i++) {
 //            saveToFiles(resultsPath + "/simulation" + (i + 1), simulations.getSimulations().get(i), parameters);
 //        }
+
+        close();
+    }
+
+    /**
+     * Re-runs statistics computation against saved graphs from a previous run,
+     * without re-running any algorithms. Useful when you need to change the
+     * comparison graph type (e.g. from CPDAG to PAG) after a long run.
+     *
+     * @param savedResultsPath  Path to the results directory from the previous run
+     *                          (the one containing "results/", "elapsed/", and
+     *                          "simulation1/save/..." subdirectories).
+     * @param newResultsPath    Path to write the new comparison output.
+     * @param simulations       The same Simulations object used in the original run.
+     * @param algorithms        The same Algorithms object used in the original run.
+     * @param statistics        The statistics to compute (may differ from original run).
+     * @param ps1               PrintStream for detailed output, or null for no output.
+     * @param ps2               PrintStream for summary output, or null for no output.
+     * @param parameters        The parameters object (numRuns etc. must match original).
+     */
+    public void compareFromSavedResults(String savedResultsPath,
+                                        String newResultsPath,
+                                        Simulations simulations,
+                                        Algorithms algorithms,
+                                        Statistics statistics,
+                                        Parameters parameters,
+                                        PrintStream ps1,
+                                        PrintStream ps2){
+
+        this.resultsPath = newResultsPath;
+
+        // ----------------------------------------------------------------
+        // 1. Mirror the wrapper setup from compareFromSimulations exactly,
+        //    but call createData with newModel=false so no new data is
+        //    generated -- we just need the wrapper structure and true graphs.
+        // ----------------------------------------------------------------
+//        PrintStream stdout = System.out;
+        PrintStream stdout = (ps2 != null) ? ps2 : System.out;
+
+//        try {
+//            File dir = new File(newResultsPath);
+//            dir.mkdirs();
+//            File file = new File(dir, "Comparison.txt");
+//            this.out = new PrintStream(Files.newOutputStream(file.toPath()));
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+
+        // WITH this:
+        if (ps1 != null) this.localOut = ps1;
+
+        try {
+            File dir = new File(newResultsPath);
+            dir.mkdirs();
+            File file = new File(dir, "Comparison.txt");
+            this.out = new PrintStream(Files.newOutputStream(file.toPath()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        println(new Date().toString());
+        println("Re-running statistics from saved graphs in: " + savedResultsPath);
+        println("Results are being saved to: " + newResultsPath);
+
+        int numRuns = parameters.getInt("numRuns");
+
+        // Build simulation wrappers (newModel=false: reuse existing data/graphs)
+        List<SimulationWrapper> simulationWrappers = new ArrayList<>();
+        for (Simulation simulation : simulations.getSimulations()) {
+            List<SimulationWrapper> wrappers = getSimulationWrappers(simulation, parameters);
+            for (SimulationWrapper wrapper : wrappers) {
+//                wrapper.createData(wrapper.getSimulationSpecificParameters(), false);
+                simulationWrappers.add(wrapper);
+            }
+        }
+
+        // Build algorithm wrappers (identical logic to compareFromSimulations)
+        List<AlgorithmWrapper> algorithmWrappers = new ArrayList<>();
+        for (Algorithm algorithm : algorithms.getAlgorithms()) {
+            List<Integer> _dims = new ArrayList<>();
+            List<String> varyingParameters = new ArrayList<>();
+
+            List<String> parameters1 = new ArrayList<>(Params.getAlgorithmParameters(algorithm));
+            parameters1.addAll(Params.getTestParameters(algorithm));
+            parameters1.addAll(Params.getScoreParameters(algorithm));
+
+            for (String name : parameters1) {
+                if (parameters.getNumValues(name) > 1) {
+                    _dims.add(parameters.getNumValues(name));
+                    varyingParameters.add(name);
+                }
+            }
+
+            if (varyingParameters.isEmpty()) {
+                algorithmWrappers.add(new AlgorithmWrapper(algorithm, parameters));
+            } else {
+                int[] dims = new int[_dims.size()];
+                for (int i = 0; i < _dims.size(); i++) dims[i] = _dims.get(i);
+
+                CombinationGenerator gen = new CombinationGenerator(dims);
+                int[] choice;
+                while ((choice = gen.next()) != null) {
+                    AlgorithmWrapper wrapper = new AlgorithmWrapper(algorithm, parameters);
+                    for (int h = 0; h < dims.length; h++) {
+                        String parameter = varyingParameters.get(h);
+                        Object[] values = parameters.getValues(parameter);
+                        wrapper.setValue(parameter, values[choice[h]]);
+                    }
+                    algorithmWrappers.add(wrapper);
+                }
+            }
+        }
+
+        // Build algorithm-simulation wrappers
+        List<AlgorithmSimulationWrapper> algorithmSimulationWrappers = new ArrayList<>();
+        for (SimulationWrapper simulationWrapper : simulationWrappers) {
+            for (AlgorithmWrapper algorithmWrapper : algorithmWrappers) {
+                algorithmSimulationWrappers.add(
+                        new AlgorithmSimulationWrapper(algorithmWrapper, simulationWrapper));
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // 2. Load saved graphs + timing; compute stats without re-running
+        //    any algorithms.
+        // ----------------------------------------------------------------
+        final int numGraphTypes = 4;
+        this.graphTypeUsed = new boolean[4];
+
+        double[][][][] allStats =
+                new double[numGraphTypes][algorithmSimulationWrappers.size()][statistics.size() + 1][numRuns];
+
+        for (int algSimIndex = 0; algSimIndex < algorithmSimulationWrappers.size(); algSimIndex++) {
+            AlgorithmSimulationWrapper algSimWrapper = algorithmSimulationWrappers.get(algSimIndex);
+            SimulationWrapper simulationWrapper = algSimWrapper.getSimulationWrapper();
+            AlgorithmWrapper algorithmWrapper = algSimWrapper.getAlgorithmWrapper();
+
+            int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
+            int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
+
+            for (int runIndex = 0; runIndex < numRuns; runIndex++) {
+
+                // -- Load estimated graph --
+                File estGraphFile = new File(savedResultsPath,
+                        "results/" + simIndex + "." + algIndex + "/graph." + (runIndex + 1) + ".txt");
+
+                if (!estGraphFile.exists()) {
+                    stdout.println("WARNING: missing estimated graph: " + estGraphFile);
+                    continue;
+                }
+
+                Graph graphOut = GraphSaveLoadUtils.loadGraphTxt(estGraphFile);
+
+                // -- Load elapsed time (stored in microseconds as a plain long) --
+                long taskCpuTime = 0L;
+                File elapsedFile = new File(savedResultsPath,
+                        "elapsed/" + simIndex + "." + algIndex + "/graph." + (runIndex + 1) + ".txt");
+
+                if (elapsedFile.exists()) {
+                    try (BufferedReader br = new BufferedReader(new FileReader(elapsedFile))) {
+                        String line = br.readLine();
+                        if (line != null) taskCpuTime = Long.parseLong(line.trim());
+                    } catch (Exception e) {
+                        stdout.println("WARNING: could not read elapsed time from " + elapsedFile + ": " + e.getMessage());
+                    }
+                }
+
+                // -- Get true graph from simulation wrapper --
+//                Graph trueGraph = simulationWrapper.getTrueGraph(runIndex);
+//
+//                if (trueGraph == null) {
+//                    stdout.println("WARNING: no true graph for sim=" + simIndex + " run=" + (runIndex + 1));
+//                    continue;
+//                }
+
+                File trueGraphFile = new File(savedResultsPath,
+                        "simulation1/save/" + simIndex + "/graph/graph." + (runIndex + 1) + ".txt");
+
+                if (!trueGraphFile.exists()) {
+                    stdout.println("WARNING: missing true graph: " + trueGraphFile);
+                    continue;
+                }
+
+                Graph trueGraph = GraphSaveLoadUtils.loadGraphTxt(trueGraphFile);
+
+                if (trueGraph == null) {
+                    stdout.println("WARNING: could not load true graph: " + trueGraphFile);
+                    continue;
+                }
+
+                // -- Build comparison graph (PAG this time) --
+                graphOut = GraphUtils.replaceNodes(graphOut, trueGraph.getNodes());
+
+                Graph comparisonGraph;
+                if (this.comparisonGraph == ComparisonGraph.true_DAG) {
+                    comparisonGraph = new EdgeListGraph(trueGraph);
+                } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
+                    comparisonGraph = GraphTransforms.dagToCpdag(trueGraph);
+                } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
+                    comparisonGraph = GraphTransforms.dagToPag(trueGraph, false);
+                } else {
+                    throw new IllegalArgumentException("Unrecognized comparison graph type.");
+                }
+
+                // -- Fill allStats exactly as doRun() does --
+                Graph[] est   = new Graph[numGraphTypes];
+                Graph[] truth = new Graph[numGraphTypes];
+
+//                DataModel data = simulationWrapper.getDataModel(runIndex);
+
+                File dataFile = new File(savedResultsPath,
+                        "simulation1/save/" + simIndex + "/data/data." + (runIndex + 1) + ".txt");
+
+                DataModel data = null;
+                if (dataFile.exists()) {
+                    try {
+                        data = SimpleDataLoader.loadContinuousData(dataFile, "//", '\"',
+                                "*", true, Delimiter.TAB, false);
+                    } catch (Exception e) {
+                        stdout.println("WARNING: could not load data file: " + dataFile + ": " + e.getMessage());
+                    }
+                }
+
+                est[0]   = new EdgeListGraph(graphOut);
+                truth[0] = new EdgeListGraph(comparisonGraph);
+                this.graphTypeUsed[0] = true;
+
+                if (data.isMixed()) {
+                    est[1] = getSubgraph(est[0], true,  true,  data);
+                    est[2] = getSubgraph(est[0], true,  false, data);
+                    est[3] = getSubgraph(est[0], false, false, data);
+
+                    truth[1] = getSubgraph(comparisonGraph, true,  true,  data);
+                    truth[2] = getSubgraph(comparisonGraph, true,  false, data);
+                    truth[3] = getSubgraph(comparisonGraph, false, false, data);
+
+                    this.graphTypeUsed[1] = true;
+                    this.graphTypeUsed[2] = true;
+                    this.graphTypeUsed[3] = true;
+                }
+
+                for (int u = 0; u < numGraphTypes; u++) {
+                    if (!this.graphTypeUsed[u]) continue;
+
+                    int statIndex = -1;
+
+                    for (Statistic _stat : statistics.getStatistics()) {
+                        statIndex++;
+
+                        if (_stat instanceof ParameterColumn) continue;
+
+                        if (_stat instanceof AcceptsKnowledge) {
+                            ((AcceptsKnowledge) _stat).setKnowledge(knowledge);
+                        }
+
+                        double stat;
+                        if (_stat instanceof ElapsedCpuTime) {
+                            stat = taskCpuTime / 1000.0;   // microseconds -> milliseconds, same as doRun()
+                        } else {
+                            stat = _stat.getValue(trueGraph, truth[u], est[u], data, new Parameters());
+                        }
+
+                        allStats[u][algSimIndex][statIndex][runIndex] = stat;
+                    }
+                }
+            }
+        }
+
+        println();
+        println("Simulations:");
+        println();
+
+        int i = 0;
+
+        for (SimulationWrapper simulation : simulationWrappers) {
+            println("Simulation " + (++i) + ": ");
+            println(simulation.getDescription());
+            println();
+
+            printParameters(simulation.getParameters(), simulation.getSimulationSpecificParameters());
+
+            println();
+        }
+
+        println("Algorithms:");
+        println();
+
+        for (int t = 0; t < algorithmSimulationWrappers.size(); t++) {
+            AlgorithmSimulationWrapper wrapper = algorithmSimulationWrappers.get(t);
+
+            if (wrapper.getSimulationWrapper() == simulationWrappers.get(0)) {
+                println((t + 1) + ". " + wrapper.getAlgorithmWrapper().getDescription());
+            }
+        }
+
+
+        // Print out the preliminary information for statistics types, etc.
+        println();
+        println("Statistics:");
+        println();
+
+        for (Statistic stat : statistics.getStatistics()) {
+            println(stat.getAbbreviation() + " = " + stat.getDescription());
+        }
+
+        println();
+
+        if (isSortByUtility()) {
+            println();
+            println("Sorting by utility, high to low.");
+        }
+
+        if (isShowUtilities()) {
+            println();
+            println("Weighting of statistics:");
+            println();
+            println("U = ");
+
+            for (Statistic stat : statistics.getStatistics()) {
+                String statName = stat.getAbbreviation();
+                double weight = statistics.getWeight(stat);
+                if (weight != 0.0) {
+                    println("    " + weight + " * f(" + statName + ")");
+                }
+            }
+
+            println();
+            println("...normed to range between 0 and 1.");
+
+            println();
+            println("Note that f for each statistic is a function that maps the statistic to the ");
+            println("interval [0, 1], with higher being better.");
+        }
+
+        // ----------------------------------------------------------------
+        // 3. Everything below is identical to compareFromSimulations() --
+        //    just the table-building and printing pipeline.
+        // ----------------------------------------------------------------
+        int numTables = allStats.length;
+        int numStats;
+        try {
+            numStats = allStats[0][0].length - 1;
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "No results were recorded. Check that the saved graph files exist at: " + savedResultsPath);
+        }
+
+        double[][][] statTables = calcStatTables(allStats, Mode.Average, numTables,
+                algorithmSimulationWrappers, numStats, statistics);
+        double[] utilities = calcUtilities(statistics, algorithmSimulationWrappers, statTables[0]);
+
+        for (int u = 0; u < numTables; u++)
+            for (int t = 0; t < algorithmSimulationWrappers.size(); t++)
+                statTables[u][t][numStats] = utilities[t];
+
+        int[] newOrder;
+        if (isSortByUtility()) {
+            newOrder = sort(algorithmSimulationWrappers, utilities);
+        } else {
+            newOrder = new int[algorithmSimulationWrappers.size()];
+            for (int q = 0; q < algorithmSimulationWrappers.size(); q++) newOrder[q] = q;
+        }
+
+        println();
+        println("Graphs are being compared to the "
+                + this.comparisonGraph.toString().replace("_", " ") + ".");
+        println("All statistics are individually summarized over " + numRuns
+                + " runs using the indicated statistic.");
+        println("(Algorithm runs were loaded from saved results; no algorithms were re-run.)");
+        println();
+
+        // Print Average, SD, Min, Max, Median tables -- same as compareFromSimulations()
+        for (Mode mode : new Mode[]{
+                Mode.Average, Mode.StandardDeviation,
+                Mode.MinValue, Mode.MaxValue, Mode.MedianValue}) {
+
+            statTables = calcStatTables(allStats, mode, numTables,
+                    algorithmSimulationWrappers, numStats, statistics);
+            for (int u = 0; u < numTables; u++)
+                for (int t = 0; t < algorithmSimulationWrappers.size(); t++)
+                    statTables[u][t][numStats] = utilities[t];
+
+            printStats(statTables, statistics, mode, newOrder,
+                    algorithmSimulationWrappers, algorithmWrappers,
+                    simulationWrappers, utilities, parameters);
+        }
 
         close();
     }

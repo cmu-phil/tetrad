@@ -76,6 +76,13 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     private volatile JDialog watchDialog;
     private boolean useAndersonDarling = false;
 
+    private boolean useWildBootstrap = false;
+
+    public void setUseWildBootstrap(boolean useWildBootstrap) {
+        this.useWildBootstrap = useWildBootstrap;
+        repairSearch.setUseWildBootstrap(useWildBootstrap);
+    }
+
     // =========================================================================
     // Construction
     // =========================================================================
@@ -100,6 +107,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         this.repairSearch = new VertexRepairSearch(editor.getIndTestModel().getGraph(), editor.getIndTestModel().getIndependenceTest(),
                 editor.getIndTestModel().getConditioningSetType());
         this.repairSearch.setUseAndersonDarling(useAndersonDarling);
+        this.repairSearch.setUseWildBootstrap(useWildBootstrap);
         this.repairSearch.addRepairListener(new PanelRepairListener(resultsModel));
 
         // Resolve the initial node inside the working graph

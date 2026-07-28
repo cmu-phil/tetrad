@@ -50,6 +50,10 @@ public final class Params {
      */
     public static final String ALPHA = "alpha";
     /**
+     * Constant <code>ALPHA_DEFAULT_0_05="alphaDefault0"</code>
+     */
+    public static final String ALPHA_DEFAULT_0_05 = "alphaDefault0.05";
+    /**
      * Constant <code>FOFC_ALPHA="fofcAlpha"</code>
      */
     public static final String FOFC_ALPHA = "fofcAlpha";
@@ -385,6 +389,10 @@ public final class Params {
      * Constant <code>MAX_PATH_LENGTH="maxPathLength"</code>
      */
     public static final String MAX_DISCRIMINATING_PATH_LENGTH = "maxDiscriminatingPathLength";
+    /**
+     * Constant <code>MAX_POSSIBLE_SEP_PATH_LENGTH="maxPossibleSepPathLength"</code>
+     */
+    public static final String MAX_POSSIBLE_SEP_PATH_LENGTH = "maxPossibleSepPathLength";
     /**
      * Constant <code>MAXIT="maxit"</code>
      */
@@ -953,6 +961,10 @@ public final class Params {
      */
     public static final String GUARANTEE_PAG = "guaranteePag";
     /**
+     * Constant <code>GUARANTEE_PAG_DEFAULT_TRUE="guaranteePagDefaultTrue"</code>
+     */
+    public static final String GUARANTEE_PAG_DEFAULT_TRUE = "guaranteePagDefaultTrue";
+    /**
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";
@@ -1037,9 +1049,9 @@ public final class Params {
      */
     public static final String RB_RADIUS = "rbRadius";
     /**
-     * Constant <code>MAX_SEPSET_SIZE="maxSepsetSize"</code>
+     * Constant <code>RECURSIVE_DEPTH="recursiveDepth"</code>
      */
-    public static final String MAX_SEPSET_SIZE = "maxSepsetSize";
+    public static final String RECURSIVE_DEPTH = "recursiveDepth";
     /**
      * Constant <code>MNAR_NUM_EXTRA_INFLUENCES="mnarNumExtraInfluences"</code>
      */
@@ -1233,6 +1245,14 @@ public final class Params {
      * Constant <code>EXCLUDE_SELECTION_BIAS="excludeSelectionBias"</code>
      */
     public static final String EXCLUDE_SELECTION_BIAS = "excludeSelectionBias";
+    /**
+     * Constant <code>LV_HEURISTIC_ONLY="lvHeuristicOnly"</code>
+     */
+    public static final String LV_HEURISTIC_ONLY = "lvHeuristicOnly";
+    /**
+     * Constant <code>FCITSL_ALLOW_CLASS_ESCAPE="fcitSlAllowClassEscape"</code>
+     */
+    public static final String FCITSL_ALLOW_CLASS_ESCAPE = "fcitSlAllowClassEscape";
     /**
      * Constant <code>BINS_PER_CONT_XY="binsPerContXY"</code>
      */

@@ -126,8 +126,9 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Take
         edu.cmu.tetrad.search.SpFci search = new edu.cmu.tetrad.search.SpFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
         search.setKnowledge(this.knowledge);
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG_DEFAULT_TRUE));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -179,10 +180,11 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Take
         List<String> params = new ArrayList<>();
 
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        params.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
-        params.add(Params.GUARANTEE_PAG);
+        params.add(Params.GUARANTEE_PAG_DEFAULT_TRUE);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.VERBOSE);

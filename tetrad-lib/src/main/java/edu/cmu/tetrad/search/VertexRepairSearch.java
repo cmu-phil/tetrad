@@ -262,6 +262,9 @@ public final class VertexRepairSearch implements IGraphSearch {
     private volatile boolean cancelRequested = false;
     private PriorityQueue<QueueEntry> globalQueue = new PriorityQueue<>();
     private boolean useAndersonDarling = false;
+    private boolean useWildBootstrap = false;
+    private int wbNumBootstraps = 1000;
+    private long wbSeed = 0L;
     private boolean verbose = false;
 
     // =========================================================================
@@ -578,6 +581,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Returns the independence test backing this search (delegates to the model).
+     *
+     * @return the independence test supplied at construction
      */
     @Override
     public IndependenceTest getTest() {
@@ -598,9 +603,11 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
-     * Replaces the working graph used for repair.
+     * Replaces the working graph used for repair. A defensive copy is stored, so later
+     * mutations of the argument do not affect this search.
      *
-     * @param graph the new graph to use; may be {@code null}
+     * @param graph the new graph to use; must not be {@code null}
+     * @throws NullPointerException if {@code graph} is {@code null}
      */
     public void setGraph(Graph graph) {
         this.workingGraph = safeCopy(Objects.requireNonNull(graph, "graph"));
@@ -638,9 +645,12 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
-     * Sets the random seed used for node-traversal order.
+     * Sets the random seed used for node-traversal order during {@link #search()}. If this is
+     * never called, the seed defaults to the construction-time value of
+     * {@code System.currentTimeMillis()}, so runs are not reproducible by default; set an
+     * explicit seed to make them so. The value is used as given, including 0.
      *
-     * @param seed the random seed to use; if {@code null} or {@code 0}, a random seed is used
+     * @param seed the random seed to use
      */
     public void setSeed(long seed) {
         this.seed = seed;
@@ -980,7 +990,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     private List<ScoredCandidate> scoreCandidates(Graph base, Node node, List<CandidateEdit> candidates) {
         GlobalEvalCache baseCache = buildBaselineCache(base);
         int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
-        double mpBefore = evalGraphLocality(baseCache, base, Set.of()).modelP();
+        double mpBefore = evalModelPLocality(baseCache, base, Set.of());
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
@@ -1079,7 +1089,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         GlobalEvalCache baseCache = buildBaselineCache(base);
         Set<String> affected = affectedVertices(base, node, g2);
 
-        double mpBefore = evalGraphLocality(baseCache, base, Set.of()).modelP();
+        double mpBefore = evalModelPLocality(baseCache, base, Set.of());
         double mpAfter = evalModelPLocality(baseCache, g2, affected);
         int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
         int after = usesLocality()
@@ -1427,7 +1437,45 @@ public final class VertexRepairSearch implements IGraphSearch {
 
 
     private double evalModelPLocality(GlobalEvalCache baseCache, Graph g, Set<String> affected) {
+        if (useWildBootstrap) return wildBootstrapModelP(g);
         return evalGraphLocality(baseCache, g, affected).modelP();
+    }
+
+    /**
+     * Whole-graph Model-P via the joint wild bootstrap. Unlike KS/AD this cannot be
+     * reassembled from cached per-vertex p-values — the wild bootstrap is a joint
+     * statistic over the full implied-fact set with a shared multiplier — so it is
+     * recomputed from all implied facts of {@code g}. NaN if <2 facts or data is not
+     * a DataSet.
+     */
+    private double wildBootstrapModelP(Graph g) {
+        if (g == null) return Double.NaN;
+        Set<IndependenceFact> facts = MarkovCheck.computeAllImpliedFacts(g, type);
+        if (facts == null || facts.size() < 2) return Double.NaN;
+        return wildBootstrapP(new ArrayList<>(facts));
+    }
+
+    /**
+     * Joint wild-bootstrap Markov check over an explicit fact list against the data set
+     * backing the independence test; returns the sum-T^2 omnibus p-value (pMax is also
+     * on the Result). Residualization is OLS on Z, independent of the configured test.
+     * NaN if the data is not a DataSet, there are <2 facts, or the run is interrupted.
+     */
+    private double wildBootstrapP(List<IndependenceFact> facts) {
+        if (facts == null || facts.size() < 2) return Double.NaN;
+        if (Q == null || Q.getTest() == null) return Double.NaN;
+        Object dm = Q.getTest().getData();
+        if (!(dm instanceof DataSet ds)) return Double.NaN;
+        try {
+            WildBootstrapMarkovCheck.Result r = new WildBootstrapMarkovCheck(ds)
+                    .setNumBootstraps(wbNumBootstraps)
+                    .setSeed(wbSeed)
+                    .checkFacts(facts);
+            return (r == null) ? Double.NaN : r.pSumSquares;
+        } catch (Exception e) {
+            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            return Double.NaN;
+        }
     }
 
     private int evalViolationsOnly(Graph g) {
@@ -1447,6 +1495,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (v == null) return Double.NaN;
         List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
         if (facts.isEmpty()) return Double.NaN;
+        if (useWildBootstrap) return wildBootstrapP(facts);
         List<Double> pvals = Q.pValuesForFacts(facts, CachedIndependenceQueries.Dedup.WITHIN_INPUT);
         return getUniformityP(pvals);
     }
@@ -1587,6 +1636,39 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
+     * When true, Model-P and Node-P are the joint wild-bootstrap omnibus (sum T^2)
+     * rather than KS/AD on the pooled p-values. Takes precedence over Anderson-Darling.
+     * Requires the backing data to be a continuous DataSet (OLS residualization).
+     *
+     * @param useWildBootstrap true to use the joint wild bootstrap, false to use KS/AD
+     */
+    public void setUseWildBootstrap(boolean useWildBootstrap) {
+        this.useWildBootstrap = useWildBootstrap;
+    }
+
+    /**
+     * Sets the number of bootstrap replicates used when {@link #setUseWildBootstrap(boolean)}
+     * is enabled. Ignored otherwise. The default is 1000.
+     *
+     * @param wbNumBootstraps the number of replicates; the smallest attainable p-value is
+     *                        1 / (wbNumBootstraps + 1)
+     */
+    public void setWbNumBootstraps(int wbNumBootstraps) {
+        this.wbNumBootstraps = wbNumBootstraps;
+    }
+
+    /**
+     * Sets the random seed for the wild bootstrap, for reproducibility. Ignored unless
+     * {@link #setUseWildBootstrap(boolean)} is enabled. The default is 0. This seed is
+     * separate from the node-traversal seed set by {@link #setSeed(long)}.
+     *
+     * @param wbSeed the seed for the bootstrap multipliers
+     */
+    public void setWbSeed(long wbSeed) {
+        this.wbSeed = wbSeed;
+    }
+
+    /**
      * Sets the prune alpha value, which must be within the range [0, 1].
      * The prune alpha is used to control pruning false positice edges froem the starting graph.
      *
@@ -1722,27 +1804,35 @@ public final class VertexRepairSearch implements IGraphSearch {
     public enum AdjustmentGraphType {
 
         /**
-         * A directed acyclic graph (DAG).
+         * A completed partially directed acyclic graph: the Markov-equivalence class of a DAG,
+         * with compelled edges directed and the rest left undirected. Candidate graphs are
+         * canonicalized back to a CPDAG after every edit.
          */
         CPDAG,
 
         /**
-         * A directed acyclic graph (DAG) with a special node type that represents
+         * A partially directed acyclic graph: directed and undirected edges, no directed cycle.
+         * Unlike {@link #CPDAG}, no canonicalization is applied, so the orientation of
+         * non-compelled edges is preserved as edited.
          */
         PDAG,
 
         /**
-         * A directed acyclic graph (DAG) with a special node type that represents
+         * A partial ancestral graph: the equivalence class of a MAG, admitting latent confounders
+         * and using circle endpoints for undetermined orientations. Candidate graphs are
+         * canonicalized back to a PAG after every edit.
          */
         PAG,
 
         /**
-         * A directed acyclic graph (DAG) with a special node type that represents
+         * A directed acyclic graph: every edge is directed and there is no directed cycle.
+         * Assumes causal sufficiency.
          */
         DAG,
 
         /**
-         * A directed acyclic graph (DAG) with a special node type that represents
+         * A maximal ancestral graph: directed and bidirected edges, admitting latent confounders,
+         * with an edge between every pair of vertices not m-separated by any set.
          */
         MAG
     }

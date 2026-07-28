@@ -96,7 +96,7 @@ public class FciOrient {
      * <p>
      * This variable represents the maximum length of a blocking path, or -1 if no maximum length is set.
      */
-    private int recursionDepth = -1;
+    private int recursiveDepth = -1;
     /**
      * The maximum path length variable.
      * <p>
@@ -124,6 +124,10 @@ public class FciOrient {
      * Indicates whether to run R4 or not.
      */
     private boolean useR4 = true;
+    /**
+     * The number of R4 abstentions that have occurred during the FCI orientation process.
+     */
+    private int r4AbstentionCount = 0;
 
     /**
      * Initializes a new instance of the FciOrient class with the specified R4Strategy.
@@ -186,7 +190,7 @@ public class FciOrient {
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
             Graph graph, int maxLen, boolean checkXyNonadjacency) {
 
-        Set<DiscriminatingPath> out = new HashSet<>();
+        Set<DiscriminatingPath> out = new LinkedHashSet<>();
         for (Node w : graph.getNodes()) {
             for (Node y : graph.getAdjacentNodes(w)) {
                 out.addAll(listDiscriminatingPaths(graph, w, y, maxLen, checkXyNonadjacency));
@@ -204,18 +208,18 @@ public class FciOrient {
      * @param w                   The starting node for the path, which must satisfy specific adjacency conditions with the target node y.
      * @param y                   The target node for which discriminating paths are being identified.
      * @param maxLen              The maximum allowable length for the paths being considered.
-     * @param checkEcNonadjacency A flag indicating whether strict adjacency conditions between the nodes w and y should be enforced
+     * @param checkXyNonadjacency A flag indicating whether strict adjacency conditions between the nodes w and y should be enforced
      *                            (true for strict adjacency checks, false for relaxed checks).
      * @return A set of discriminating paths that satisfy the required conditions, or an empty set if no such paths are found.
      */
     public static Set<DiscriminatingPath> listDiscriminatingPaths(
-            Graph graph, Node w, Node y, int maxLen, boolean checkEcNonadjacency) {
+            Graph graph, Node w, Node y, int maxLen, boolean checkXyNonadjacency) {
 
-        Set<DiscriminatingPath> out = new HashSet<>();
+        Set<DiscriminatingPath> out = new LinkedHashSet<>();
 
         // In the strict/original setting, W must be a parent of Y,
         // since W is one of the vertices between X and V.
-        if (checkEcNonadjacency) {
+        if (checkXyNonadjacency) {
             if (!graph.isParentOf(w, y)) {
                 return out;
             }
@@ -230,7 +234,7 @@ public class FciOrient {
         }
 
         // Candidate V must be adjacent to both W and Y.
-        Set<Node> vset = new HashSet<>(graph.getAdjacentNodes(w));
+        Set<Node> vset = new LinkedHashSet<>(graph.getAdjacentNodes(w));
         vset.retainAll(graph.getAdjacentNodes(y));
 
         for (Node v : vset) {
@@ -238,14 +242,11 @@ public class FciOrient {
                 continue;
             }
 
-            // R4 applies when V o-* Y, not only V o-> Y.
-            // So the endpoint at V on edge V--Y must be a circle.
-            Endpoint endpointAtV = graph.getEndpoint(y, v); // endpoint at v
-            if (endpointAtV != Endpoint.CIRCLE) {
-                continue;
-            }
-
-            discriminatingPathBfs(w, v, y, graph, out, maxLen, checkEcNonadjacency);
+            // Zhang's definition of a discriminating path places no endpoint condition
+            // at V. The R4 trigger (V o-* Y) is a property of the rule, not the path,
+            // and is applied at the R4 call site (getDiscriminatingPathTasks), so that
+            // this method enumerates the definitional set.
+            discriminatingPathBfs(w, v, y, graph, out, maxLen, checkXyNonadjacency);
         }
 
         return out;
@@ -266,7 +267,7 @@ public class FciOrient {
                                               Graph graph,
                                               Set<DiscriminatingPath> discriminatingPaths,
                                               int maxDiscriminatingPathLength,
-                                              boolean checkEcNonadjacency) {
+                                              boolean checkXyNonadjacency) {
 
         class State {
             final Node current;           // current upstream node t
@@ -308,7 +309,7 @@ public class FciOrient {
                     continue;
                 }
 
-                if (checkEcNonadjacency) {
+                if (checkXyNonadjacency) {
                     if (!graph.isParentOf(t, y)) {
                         continue;
                     }
@@ -346,14 +347,14 @@ public class FciOrient {
                     continue;
                 }
 
-                DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, newBody, checkEcNonadjacency);
+                DiscriminatingPath dp = new DiscriminatingPath(x, w, v, y, newBody, checkXyNonadjacency);
 
                 if (dp.existsIn(graph)) {
                     discriminatingPaths.add(dp);
                 }
 
                 // Extend farther upstream only if x could itself be an interior vertex.
-                if (checkEcNonadjacency) {
+                if (checkXyNonadjacency) {
                     if (!graph.isParentOf(x, y)) {
                         continue;
                     }
@@ -532,12 +533,14 @@ public class FciOrient {
      * Iteratively applies rules (in place) to orient the Spirtes final orientation rules in the graph. These are arrow
      * complete.
      *
-     * @param graph The graph containing the sprites.
+     * @param graph             The graph containing the sprites.
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
     private void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
+
+        r4AbstentionCount = 0;
 
         while (this.changeFlag) {
             if (Thread.currentThread().isInterrupted()) {
@@ -550,8 +553,12 @@ public class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4(graph);
-                firstTime = false;
+                try {
+                    ruleR4(graph);
+                    firstTime = false;
+                } catch (IllegalStateException e) {
+                    r4AbstentionCount++;
+                }
             }
 
             if (this.verbose) {
@@ -571,6 +578,7 @@ public class FciOrient {
     private void zhangFinalOrientation(Graph graph, boolean excludeSelectionBias) {
         this.changeFlag = true;
         boolean firstTime = true;
+        r4AbstentionCount = 0;
 
         while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
             this.changeFlag = false;
@@ -579,8 +587,12 @@ public class FciOrient {
 
             // R4 requires an arrow orientation.
             if (this.changeFlag || (firstTime && !this.knowledge.isEmpty())) {
-                ruleR4(graph);
-                firstTime = false;
+                try {
+                    ruleR4(graph);
+                    firstTime = false;
+                } catch (IllegalStateException e) {
+                    r4AbstentionCount++;
+                }
             }
 
             if (this.verbose) {
@@ -591,19 +603,7 @@ public class FciOrient {
         if (isCompleteRuleSetUsed()) {
 
             if (!excludeSelectionBias) {
-                // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
-                // R5 once.
-                ruleR5(graph);
-
-                // Now, by a further remark on page 102, we apply R6,R7 as many times
-                // as possible.
-                this.changeFlag = true;
-
-                while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
-                    this.changeFlag = false;
-                    ruleR6(graph);
-                    ruleR7(graph);
-                }
+                rulesR5R6R7(graph);
             }
 
             // Finally, we apply R8-R10 as many times as possible.
@@ -613,6 +613,30 @@ public class FciOrient {
                 this.changeFlag = false;
                 rulesR8R9R10(graph);
             }
+        }
+    }
+
+    /**
+     * Applies transformation rules R5, R6, and R7 to the provided graph.
+     * Rule R5 is applied once, followed by iterative applications of
+     * rules R6 and R7 until no further changes are detected or the thread
+     * is interrupted.
+     *
+     * @param graph the graph to which the transformation rules are applied
+     */
+    public void rulesR5R6R7(Graph graph) {
+        // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
+        // R5 once.
+        ruleR5(graph);
+
+        // Now, by a further remark on page 102, we apply R6,R7 as many times
+        // as possible.
+        this.changeFlag = true;
+
+        while (this.changeFlag && !Thread.currentThread().isInterrupted()) {
+            this.changeFlag = false;
+            ruleR6(graph);
+            ruleR7(graph);
         }
     }
 
@@ -786,7 +810,7 @@ public class FciOrient {
      * or non-collider on the triple ⟨α, β, γ⟩, refining orientations in the presence of
      * potential latent confounding.</p>
      *
-     * @param graph The {@link edu.cmu.tetrad.graph.Graph} being oriented.
+     * @param graph The {@link Graph} being oriented.
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
     public void ruleR4(Graph graph) {
@@ -806,7 +830,7 @@ public class FciOrient {
         // Not parallel is the default.
         if (parallel) {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.parallelStream().map(task -> GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS)).toList();
 
@@ -828,7 +852,7 @@ public class FciOrient {
 
         } else {
             while (true) {
-                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph, null);
+                List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = getDiscriminatingPathTasks(graph);
                 if (tasks.isEmpty()) break;
 
                 List<Pair<DiscriminatingPath, Boolean>> results = tasks.stream().map(task -> {
@@ -836,6 +860,7 @@ public class FciOrient {
                         return task.call();
 //                        return GraphSearchUtils.runWithTimeout(task, testTimeout, TimeUnit.MILLISECONDS);
                     } catch (Exception e) {
+//                        e.printStackTrace();
                         return null;
                     }
                 }).toList();
@@ -883,15 +908,24 @@ public class FciOrient {
     /**
      * Makes a list of tasks for the discriminating path orientation step based on the current graph.
      *
-     * @param graph            the graph
-     * @param allowedColliders the allowed colliders
+     * @param graph the graph
      * @return the list of tasks
      * @throws IllegalStateException if a discriminating path cannot be found. (This can only be because a path length
      */
-    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph, Set<Triple> allowedColliders) {
-        Set<DiscriminatingPath> discriminatingPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
+    private @NotNull List<Callable<Pair<DiscriminatingPath, Boolean>>> getDiscriminatingPathTasks(Graph graph) {Set<DiscriminatingPath> allPaths = listDiscriminatingPaths(graph, maxDiscriminatingPathLength, true);
 
-        Set<Node> vNodes = new HashSet<>();
+        // R4 trigger: the rule fires only when V o-* Y (circle at V on the V--Y edge).
+        // This is a property of R4, not of the discriminating path definition, so it
+        // is applied here rather than in the enumerator.
+        Set<DiscriminatingPath> discriminatingPaths = new LinkedHashSet<>();
+
+        for (DiscriminatingPath discriminatingPath : allPaths) {
+            if (graph.getEndpoint(discriminatingPath.getY(), discriminatingPath.getV()) == Endpoint.CIRCLE) {
+                discriminatingPaths.add(discriminatingPath);
+            }
+        }
+
+        Set<Node> vNodes = new LinkedHashSet<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
             vNodes.add(discriminatingPath.getV());
@@ -900,7 +934,14 @@ public class FciOrient {
         List<Callable<Pair<DiscriminatingPath, Boolean>>> tasks = new ArrayList<>();
 
         for (DiscriminatingPath discriminatingPath : discriminatingPaths) {
-            tasks.add(() -> strategy.doDiscriminatingPathOrientation(discriminatingPath, recursionDepth, maxDiscriminatingPathLength, graph, vNodes));
+            tasks.add(() -> {
+                // Re-check the R4 trigger at execution time: an earlier task in this
+                // batch may have oriented the V endpoint after enumeration.
+                if (graph.getEndpoint(discriminatingPath.getY(), discriminatingPath.getV()) != Endpoint.CIRCLE) {
+                    return Pair.of(discriminatingPath, false);
+                }
+                return strategy.doDiscriminatingPathOrientation(discriminatingPath, recursiveDepth, maxDiscriminatingPathLength, graph, vNodes);
+            });
         }
 
         return tasks;
@@ -1487,7 +1528,7 @@ public class FciOrient {
 
             // Enforce forbidden edge when selection bias is excluded.
             if (!FciOrient.isArrowheadAllowed(to, from, graph, knowledge)) {
-                return;
+                continue;
             }
 
             // Orient: to *-> from   (arrowhead at 'from')
@@ -1522,7 +1563,7 @@ public class FciOrient {
             }
 
             if (!FciOrient.isArrowheadAllowed(from, to, graph, knowledge)) {
-                return;
+                continue;
             }
 
             // Orient: from ---*> to  (tail at from, arrow at to)
@@ -1557,10 +1598,19 @@ public class FciOrient {
     /**
      * Sets the maximum allowed blocking path length.
      *
-     * @param recursionDepth the maximum length of the blocking path, specified as an integer
+     * @param recursiveDepth the maximum length of the blocking path, specified as an integer
      */
-    public void setRecursionDepth(int recursionDepth) {
-        this.recursionDepth = recursionDepth;
+    public void setRecursiveDepth(int recursiveDepth) {
+        this.recursiveDepth = recursiveDepth;
+    }
+
+    /**
+     * Retrieves the count of R4 abstentions.
+     *
+     * @return the number of R4 abstentions.
+     */
+    public int getR4AbstentionCount() {
+        return r4AbstentionCount;
     }
 
     /**

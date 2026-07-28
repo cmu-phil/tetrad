@@ -93,12 +93,25 @@ Source:
         0.0)</span></li>
         <li>Long Description: <span id="alpha_long_desc">
         The cutoff, beyond which test results are judged as dependent, for a
-        statistical test of independence. Default 0.05. Higher alpha yields a
-        sparser graph.</span></li>
+        statistical test of independence. Default 0.01.</span></li>
         <li>Default Value: <span id="alpha_default_value">0.01</span></li>
         <li>Lower Bound: <span id="alpha_lower_bound">0.0</span></li>
         <li>Upper Bound: <span id="alpha_upper_bound">1.0</span></li>
         <li>Value Type: <span id="alpha_value_type">Double</span></li>
+    </ul>
+
+    === alphaDefault0.05 ===
+    <h3 class="parameter_description" id="alphaDefault0.05">alphaDefault0.05</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="alphaDefault0.05_short_desc">Cutoff for p values (alphaDefault0.05) (min =
+        0.0)</span></li>
+        <li>Long Description: <span id="alphaDefault0.05_long_desc">
+        The cutoff, beyond which test results are judged as dependent, for a
+        statistical test of independence. Default 0.05.</span></li>
+        <li>Default Value: <span id="alphaDefault0.05_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="alphaDefault0.05_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="alphaDefault0.05_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="alphaDefault0.05_value_type">Double</span></li>
     </ul>
 
     === amBetaAlpha ===
@@ -768,6 +781,112 @@ Source:
             Type: <span id="colliderDiscoveryRule_value_type">Integer</span></li>
     </ul>
 
+    === cordSymmetric ===
+    <h3 class="parameter_description" id="cordSymmetric">cordSymmetric</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cordSymmetric_short_desc">
+                Yes, if both orientations of Y _||_ Z | X are tested and combined; No for a single orientation
+            </span></li>
+        <li>Long Description: <span id="cordSymmetric_long_desc">
+                CORD is asymmetric: testing Y _||_ Z | X is not identical to testing Z _||_ Y | X. When Yes, both orientations are evaluated and combined by Bonferroni as p = min(1, 2 * min(p_xy, p_yx)); when No, the exact single-orientation statistic is reported. Symmetric mode roughly doubles the cost.
+            </span></li>
+        <li>Default Value: <span id="cordSymmetric_default_value">false</span></li>
+        <li>Lower Bound: <span id="cordSymmetric_lower_bound"></span></li>
+        <li>Upper Bound: <span id="cordSymmetric_upper_bound"></span></li>
+        <li>Value Type: <span id="cordSymmetric_value_type">Boolean</span></li>
+    </ul>
+
+    === cordNumThresholds ===
+    <h3 class="parameter_description" id="cordNumThresholds">cordNumThresholds</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cordNumThresholds_short_desc">
+                Number of response quantile thresholds K used to estimate the conditional CDF
+            </span></li>
+        <li>Long Description: <span id="cordNumThresholds_long_desc">
+                The conditional distribution P(Y &le; t | X) is estimated at K threshold levels placed at quantiles of the response, and the omnibus statistic aggregates the resulting rank scores across those levels. Larger K resolves finer distributional (higher-moment and tail) structure at proportionally greater computational cost.
+            </span></li>
+        <li>Default Value: <span id="cordNumThresholds_default_value">9</span></li>
+        <li>Lower Bound: <span id="cordNumThresholds_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="cordNumThresholds_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="cordNumThresholds_value_type">Integer</span></li>
+    </ul>
+
+    === cordNumEstimators ===
+    <h3 class="parameter_description" id="cordNumEstimators">cordNumEstimators</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cordNumEstimators_short_desc">
+                Number of gradient-boosting rounds (trees) per conditional-CDF regression
+            </span></li>
+        <li>Long Description: <span id="cordNumEstimators_long_desc">
+                Each threshold-indicator regression is fit by a histogram gradient-boosted tree ensemble with this many boosting rounds. More rounds sharpen the conditional-distribution estimate up to a point, at higher runtime; smaller learning rates generally require more rounds.
+            </span></li>
+        <li>Default Value: <span id="cordNumEstimators_default_value">300</span></li>
+        <li>Lower Bound: <span id="cordNumEstimators_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="cordNumEstimators_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="cordNumEstimators_value_type">Integer</span></li>
+    </ul>
+
+    === cordLearningRate ===
+    <h3 class="parameter_description" id="cordLearningRate">cordLearningRate</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cordLearningRate_short_desc">
+                Shrinkage (learning rate) applied to each gradient-boosting round
+            </span></li>
+        <li>Long Description: <span id="cordLearningRate_long_desc">
+                The step-size shrinkage multiplying each boosting round's contribution to the conditional-CDF regression. Smaller values regularize more strongly and usually need more rounds (see number of estimators); typical values lie in (0, 1].
+            </span></li>
+        <li>Default Value: <span id="cordLearningRate_default_value">0.1</span></li>
+        <li>Lower Bound: <span id="cordLearningRate_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="cordLearningRate_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="cordLearningRate_value_type">Double</span></li>
+    </ul>
+
+    === cordMaxLeafNodes ===
+    <h3 class="parameter_description" id="cordMaxLeafNodes">cordMaxLeafNodes</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cordMaxLeafNodes_short_desc">
+                Maximum number of leaf nodes per boosted tree
+            </span></li>
+        <li>Long Description: <span id="cordMaxLeafNodes_long_desc">
+                Controls the complexity (effective interaction depth) of each tree in the boosting ensemble. Larger values permit more flexible conditional-distribution fits at higher risk of overfitting and greater cost.
+            </span></li>
+        <li>Default Value: <span id="cordMaxLeafNodes_default_value">31</span></li>
+        <li>Lower Bound: <span id="cordMaxLeafNodes_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="cordMaxLeafNodes_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="cordMaxLeafNodes_value_type">Integer</span></li>
+    </ul>
+
+    === cordSeed ===
+    <h3 class="parameter_description" id="cordSeed">cordSeed</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cordSeed_short_desc">
+                Base seed for the test's deterministic pseudorandom draws (-1 = random)
+            </span></li>
+        <li>Long Description: <span id="cordSeed_long_desc">
+                CORD mixes this base seed with a canonical encoding of the (x, y, Z) fact so that
+            repeated and orientation-swapped calls agree; changing it reshuffles the cross-fitting
+            and boosting randomness. Determinism is always in effect (there is no "off" value).
+            </span></li>
+        <li>Default Value: <span id="cordSeed_default_value">50</span></li>
+        <li>Lower Bound: <span id="cordSeed_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="cordSeed_upper_bound">9223372036854775807</span></li>
+        <li>Value Type: <span id="cordSeed_value_type">Long</span></li>
+    </ul>
+
+    === cordEngine ===
+    <h3 class="parameter_description" id="cordEngine">cordEngine</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cordEngine_short_desc">
+                Cord Engine: 1, 2, 3,...
+            </span></li>
+        <li>Long Description: <span id="cordEngine_long_desc">
+                Cord Engine: 1, 2, 3...
+            </span></li>
+        <li>Default Value: <span id="cordEngine_default_value">2</span></li>
+        <li>Lower Bound: <span id="cordEngine_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="cordEngine_upper_bound">10</span></li>
+        <li>Value Type: <span id="cordEngine_value_type">Integer</span></li>
+    </ul>
 
     === colliderOrientationStyle ===
     <h3 class="parameter_description" id="colliderOrientationStyle">colliderOrientationStyle</h3>
@@ -1371,6 +1490,41 @@ Source:
         <li>Value Type: <span id="excludeSelectionBias_value_type">Boolean</span></li>
     </ul>
 
+    === lvHeuristicOnly ===
+    <h3 class="parameter_description" id="lvHeuristicOnly">
+        lvHeuristicOnly</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lvHeuristicOnly_short_desc">
+        Yes if the LV-Heuristic result only should be returned; no if further tests
+        are to be done.
+        </span></li>
+        <li>Long Description: <span id="lvHeuristicOnly_long_desc">
+        Yes if the Lv-Heuristic result only should be returned; no if further tests
+        are to be done.
+        </span></li>
+        <li>Default Value: <span id="lvHeuristicOnly_default_value">false</span></li>
+        <li>Lower Bound: <span id="lvHeuristicOnly_lower_bound"></span></li>
+        <li>Upper Bound: <span id="lvHeuristicOnly_upper_bound"></span></li>
+        <li>Value Type: <span id="lvHeuristicOnly_value_type">Boolean</span></li>
+    </ul>
+
+    === fcitSlAllowClassEscape ===
+    <h3 class="parameter_description" id="fcitSlAllowClassEscape">
+        fcitSlAllowClassEscape</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fcitSlAllowClassEscape_short_desc">
+        Yes the MAG iteration in permitted to escape the Markov equivalence class
+        </span></li>
+        <li>Long Description: <span id="fcitSlAllowClassEscape_long_desc">
+        The Step Lemma for FCIT-SL requires iteration of MAGs only within the Markov
+        equivalent class of the initial MAG; this allows escape.
+        </span></li>
+        <li>Default Value: <span id="fcitSlAllowClassEscape_default_value">false</span></li>
+        <li>Lower Bound: <span id="fcitSlAllowClassEscape_lower_bound"></span></li>
+        <li>Upper Bound: <span id="fcitSlAllowClassEscape_upper_bound"></span></li>
+        <li>Value Type: <span id="fcitSlAllowClassEscape_value_type">Boolean</span></li>
+    </ul>
+
     === extraEdgeRemovalStep ===
     <h3 class="parameter_description" id="extraEdgeRemovalStep">extraEdgeRemovalStep</h3>
     <ul class="parameter_description_list">
@@ -1564,15 +1718,15 @@ Source:
     <h3 class="parameter_description" id="fcitStartsWith">fcitStartsWith</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="fcitStartsWith_short_desc">
-                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP, 3 = SP
+                    Initial Markov PAG: 1 = BOSS, 2 = GRaSP, 3 = SP, 4 = Complete PAG
         </span></li>
         <li>Long Description: <span id="fcitStartsWith_long_desc">
-                    The algorithm to find the initial CPDAG: 1 = BOSS, 2 = GRaSP, 3 = SP
+                    Initial Markov PAG: 1 = BOSS, 2 = GRaSP, 3 = SP, 4 = Complete PAG
         </span></li>
         <li>Default Value: <span id="fcitStartsWith_default_value">1</span></li>
         <li>Lower Bound: <span id="fcitStartsWith_lower_bound">1</span></li>
         <li>Upper
-            Bound: <span id="fcitStartsWith_upper_bound">3</span></li>
+            Bound: <span id="fcitStartsWith_upper_bound">4</span></li>
         <li>Value
             Type: <span id="fcitStartsWith_value_type">Integer</span></li>
     </ul>
@@ -2054,7 +2208,7 @@ Source:
                     This comes with a certain risk; errors in PAGs indicate that the PAG
                     assumptions were not met; the user may wish to consider why before
                     selecting this <option class="" value=""></option>
-</span></li>
+     </span></li>
         <li>Default Value: <span id="guaranteePag_default_value">false</span></li>
         <li>Lower Bound: <span id="guaranteePag_lower_bound"></span></li>
         <li>Upper
@@ -2063,6 +2217,22 @@ Source:
             Type: <span id="guaranteePag_value_type">Boolean</span></li>
     </ul>
 
+    === guaranteePagDefaultTrue ===
+    <h3 class="parameter_description" id="guaranteePagDefaultTrue">guaranteePagDefaultTrue</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="guaranteePagDefaultTrue_short_desc">
+                    Yes if the output should be guaranteed to be a legal PAG
+        </span></li>
+        <li>Long Description: <span id="guaranteePagDefaultTrue_long_desc">
+                    Yes if the output should be guaranteed to be a legal PAG <option class="" value=""></option>
+     </span></li>
+        <li>Default Value: <span id="guaranteePagDefaultTrue_default_value">true</span></li>
+        <li>Lower Bound: <span id="guaranteePagDefaultTrue_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="guaranteePagDefaultTrue_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="guaranteePagDefaultTrue_value_type">Boolean</span></li>
+    </ul>
 
     === henckelPruning ===
     <h3 class="parameter_description" id="henckelPruning">henckelPruning</h3>
@@ -2116,7 +2286,7 @@ Source:
             expression language.
         </span></li>
 
-        <li>Default Value: <span id="noiseExpression_default_value">N(0,1)</span></li>
+        <li>Default Value: <span id="noiseExpression_default_value">N(0, Uniform(1, 3))</span></li>
         <li>Lower Bound: <span id="noiseExpression_lower_bound"></span></li>
         <li>Upper Bound: <span id="noiseExpression_upper_bound"></span></li>
         <li>Value Type: <span id="noiseExpression_value_type">String</span></li>
@@ -2133,7 +2303,7 @@ Source:
              Custom exogenous noise distribution expression
         </span></li>
 
-        <li>Default Value: <span id="customNoiseExpression_default_value">N(0,1)</span></li>
+        <li>Default Value: <span id="customNoiseExpression_default_value">N(0, Uniform(1, 3))</span></li>
         <li>Lower Bound: <span id="customNoiseExpression_lower_bound"></span></li>
         <li>Upper Bound: <span id="customNoiseExpression_upper_bound"></span></li>
         <li>Value Type: <span id="customNoiseExpression_value_type">String</span></li>
@@ -2770,6 +2940,23 @@ Source:
         <li>Value Type: <span id="rbRadius_value_type">Integer</span></li>
     </ul>
 
+    === recursiveDepth ===
+    <h3 class="parameter_description" id="recursiveDepth">recursiveDepth</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="recursiveDepth_short_desc">
+                Depth of recursive operations (-1 = no limit)
+            </span></li>
+        <li>Long Description: <span id="recursiveDepth_long_desc">
+                Depth of recursive operations (-1 = no limit)
+        </span></li>
+        <li>Default
+            Value: <span id="recursiveDepth_default_value">-1</span></li>
+        <li>Lower Bound: <span id="recursiveDepth_lower_bound">-1</span></li>
+        <li>Upper
+            Bound: <span id="recursiveDepth_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="recursiveDepth_value_type">Integer</span></li>
+    </ul>
+
     === maxCategories ===
     <h3 class="parameter_description" id="maxCategories">maxCategories</h3>
     <ul class="parameter_description_list">
@@ -2840,6 +3027,23 @@ Source:
             Type: <span id="maxDiscriminatingPathLength_value_type">Integer</span></li>
     </ul>
 
+    === maxPossibleSepPathLength ===
+    <h3 class="parameter_description" id="maxPossibleSepPathLength">maxPossibleSepPathLength</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="maxPossibleSepPathLength_short_desc">
+        The maximum length for searching for possible d-sep sets. -1 if unlimited (min = -1)</span></li>
+        <li>Long Description: <span id="maxPossibleSepPathLength_long_desc">
+        The maximum length for searching for possible d-sep sets. -1 if unlimited (min = -1)
+        </span>
+        </li>
+        <li>Default Value: <span id="maxPossibleSepPathLength_default_value">-1</span></li>
+        <li>Lower Bound:
+            <span id="maxPossibleSepPathLength_lower_bound">-1</span></li>
+        <li>Upper Bound:
+            <span id="maxPossibleSepPathLength_upper_bound">2147483647</span></li>
+        <li>Value
+            Type: <span id="maxPossibleSepPathLength_value_type">Integer</span></li>
+    </ul>
 
     === maxDistinctValuesDiscrete ===
     <h3 class="parameter_description" id="maxDistinctValuesDiscrete">maxDistinctValuesDiscrete</h3>
@@ -4774,7 +4978,7 @@ Source:
                 skips setting a new seed.</span></li>
         <li>Default Value: <span id="seed_default_value">-1</span></li>
         <li>Lower Bound:
-            <span id="seed_lower_bound">-1</span></li>
+            <span id="seed_lower_bound">50</span></li>
         <li>Upper
             Bound: <span id="seed_upper_bound">9223372036854775807</span></li>
         <li>Value Type: <span id="seed_value_type">Long</span></li>
@@ -5600,6 +5804,91 @@ Source:
             Bound: <span id="tscPcUseBoss_upper_bound"></span></li>
         <li>Value
             Type: <span id="tscPcUseBoss_value_type">Boolean</span></li>
+    </ul>
+
+    === topK ===
+    <h3 class="parameter_description" id="topK">topK</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="topK_short_desc">
+                The number of top-scoring models to retain
+            </span></li>
+        <li>Long Description: <span id="topK_long_desc">
+                The maximum number of distinct top-scoring models kept and reported by the search.
+        </span></li>
+        <li>Default
+            Value: <span id="topK_default_value">10</span></li>
+        <li>Lower Bound: <span id="topK_lower_bound">1</span></li>
+        <li>Upper
+            Bound: <span id="topK_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="topK_value_type">Integer</span></li>
+    </ul>
+
+    === splitDelta ===
+    <h3 class="parameter_description" id="splitDelta">splitDelta</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="splitDelta_short_desc">
+                Score gap below which near-tied orderings are deferred and explored (0 = off)
+            </span></li>
+        <li>Long Description: <span id="splitDelta_long_desc">
+                When an improving move beats an alternative placement by less than this amount, the alternative is deferred for separate exploration.
+        </span></li>
+        <li>Default
+            Value: <span id="splitDelta_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="splitDelta_lower_bound">0.0</span></li>
+        <li>Upper
+            Bound: <span id="splitDelta_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="splitDelta_value_type">Double</span></li>
+    </ul>
+
+    === maxRuns ===>
+    <h3 class="parameter_description" id="maxRuns">maxRuns</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="maxRuns_short_desc">
+                Cap on the total number of hill-climb runs (initial plus deferred)
+            </span></li>
+        <li>Long Description: <span id="maxRuns_long_desc">
+                A hard cap on the number of hill-climb runs, ensuring the search terminates regardless of the split threshold.
+        </span></li>
+        <li>Default
+            Value: <span id="maxRuns_default_value">10000</span></li>
+        <li>Lower Bound: <span id="maxRuns_lower_bound">1</span></li>
+        <li>Upper
+            Bound: <span id="maxRuns_upper_bound">1000000</span></li>
+        <li>Value Type: <span id="maxRuns_value_type">Integer</span></li>
+    </ul>
+
+    === dedupByCpdag ===
+    <h3 class="parameter_description" id="dedupByCpdag">dedupByCpdag</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="dedupByCpdag_short_desc">
+                Yes if models are de-duplicated by CPDAG rather than by permutation
+            </span></li>
+        <li>Long Description: <span id="dedupByCpdag_long_desc">
+                When Yes, permutations in the same Markov equivalence class (same CPDAG, same score) are counted once.
+        </span></li>
+        <li>Default Value: <span id="dedupByCpdag_default_value">true</span></li>
+        <li>Lower
+            Bound: <span id="dedupByCpdag_lower_bound"></span></li>
+        <li>Upper Bound: <span id="dedupByCpdag_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="dedupByCpdag_value_type">Boolean</span></li>
+    </ul>
+
+    === optimalAcrossBranches ===
+    <h3 class="parameter_description" id="optimalAcrossBranches">optimalAcrossBranches</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="optimalAcrossBranches_short_desc">
+                Yes to consider every ordering visited across all branches, not just each branch's optimum
+            </span></li>
+        <li>Long Description: <span id="optimalAcrossBranches_long_desc">
+                When Yes, orderings that are suboptimal within their own branch are also eligible for the top-k list.
+        </span></li>
+        <li>Default Value: <span id="optimalAcrossBranches_default_value">false</span></li>
+        <li>Lower
+            Bound: <span id="optimalAcrossBranches_lower_bound"></span></li>
+        <li>Upper Bound: <span id="optimalAcrossBranches_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="optimalAcrossBranches_value_type">Boolean</span></li>
     </ul>
 
 

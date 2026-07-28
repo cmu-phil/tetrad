@@ -1626,6 +1626,12 @@ public class GridSearchEditor extends JPanel {
 
         DataType datatype = getDataTypeForGridSearch();
 
+        // --- Capture current selections BEFORE clearing ---
+        IndependenceTestModel previousTest = (IndependenceTestModel) indTestComboBox.getSelectedItem();
+        ScoreModel previousScore = (ScoreModel) scoreModelComboBox.getSelectedItem();
+        String previousTestName = (previousTest != null) ? previousTest.getName() : model.getLastIndependenceTest();
+        String previousScoreName = (previousScore != null) ? previousScore.getName() : model.getLastScore();
+
         indTestComboBox.removeAllItems();
         if (selectedItem != null && selectedItem.isRequiredTest()) {
             List<IndependenceTestModel> indTestModels = switch (datatype) {
@@ -1647,6 +1653,32 @@ public class GridSearchEditor extends JPanel {
             for (IndependenceTestModel m : indTestModels) indTestComboBox.addItem(m);
         }
 
+        // --- Restore previous test selection, fall back to default ---
+        if (previousTestName != null) {
+            boolean restored = false;
+            for (int i = 0; i < indTestComboBox.getItemCount(); i++) {
+                IndependenceTestModel m = indTestComboBox.getItemAt(i);
+                if (m != null && previousTestName.equals(m.getName())) {
+                    indTestComboBox.setSelectedIndex(i);
+                    restored = true;
+                    break;
+                }
+            }
+            if (!restored && indTestComboBox.getItemCount() > 0) {
+                // Previous selection not available for this algorithm; fall back to default
+                String defaultTest = getDefaultTest();
+                for (int i = 0; i < indTestComboBox.getItemCount(); i++) {
+                    IndependenceTestModel m = indTestComboBox.getItemAt(i);
+                    if (m != null && m.getName().equals(defaultTest)) {
+                        indTestComboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+        } else if (indTestComboBox.getItemCount() > 0) {
+            indTestComboBox.setSelectedIndex(0);
+        }
+
         scoreModelComboBox.removeAllItems();
         if (selectedItem != null && selectedItem.isRequiredScore()) {
             List<ScoreModel> scoreModelsList = switch (datatype) {
@@ -1666,6 +1698,31 @@ public class GridSearchEditor extends JPanel {
                 default -> new ArrayList<>();
             };
             for (ScoreModel m : scoreModelsList) scoreModelComboBox.addItem(m);
+        }
+
+        // --- Restore previous score selection, fall back to default ---
+        if (previousScoreName != null) {
+            boolean restored = false;
+            for (int i = 0; i < scoreModelComboBox.getItemCount(); i++) {
+                ScoreModel m = scoreModelComboBox.getItemAt(i);
+                if (m != null && previousScoreName.equals(m.getName())) {
+                    scoreModelComboBox.setSelectedIndex(i);
+                    restored = true;
+                    break;
+                }
+            }
+            if (!restored && scoreModelComboBox.getItemCount() > 0) {
+                String defaultScore = getDefaultScore();
+                for (int i = 0; i < scoreModelComboBox.getItemCount(); i++) {
+                    ScoreModel m = scoreModelComboBox.getItemAt(i);
+                    if (m != null && m.getName().equals(defaultScore)) {
+                        scoreModelComboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+        } else if (scoreModelComboBox.getItemCount() > 0) {
+            scoreModelComboBox.setSelectedIndex(0);
         }
     }
 
@@ -1805,9 +1862,17 @@ public class GridSearchEditor extends JPanel {
         JComponent comparisonSetupPanel = buildComparisonSetupPanel();
 
         // Bottom action row (keep simple)
+//        Box comparisonSelectionBox = Box.createHorizontalBox();
+//        comparisonSelectionBox.add(Box.createHorizontalGlue());
+//        comparisonSelectionBox.add(runComparison);
+//        comparisonSelectionBox.add(createEditutilitiesButton());
+//        comparisonSelectionBox.add(editOtherComparisonParameters);
+//        comparisonSelectionBox.add(Box.createHorizontalGlue());
+
         Box comparisonSelectionBox = Box.createHorizontalBox();
         comparisonSelectionBox.add(Box.createHorizontalGlue());
         comparisonSelectionBox.add(runComparison);
+        comparisonSelectionBox.add(recomputeFromSavedRunButton());  // <-- new
         comparisonSelectionBox.add(createEditutilitiesButton());
         comparisonSelectionBox.add(editOtherComparisonParameters);
         comparisonSelectionBox.add(Box.createHorizontalGlue());
@@ -2252,6 +2317,104 @@ public class GridSearchEditor extends JPanel {
             new MyWatchedProcess();
         });
         return runComparison;
+    }
+
+    @NotNull
+    private JButton recomputeFromSavedRunButton() {
+        JButton button = new JButton("Recompute from Saved Run");
+        button.setForeground(new Color(96, 80, 30));  // distinguish from Run Comparison
+
+        button.addActionListener(e -> {
+            // Ask the user to pick a prior comparison-N directory
+            JFileChooser chooser = new JFileChooser(
+                    new File(System.getProperty("user.home") + "/comparison-results"));
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setDialogTitle("Select a previous comparison run directory");
+
+            int result = chooser.showOpenDialog(this);
+            if (result != JFileChooser.APPROVE_OPTION) return;
+
+            File chosen = chooser.getSelectedFile();
+            if (chosen == null || !chosen.exists()) return;
+
+            // Sanity check: does it look like a valid run directory?
+            if (!new File(chosen, "results").exists()) {
+                JOptionPane.showMessageDialog(this,
+                        "The selected directory does not appear to contain a prior run.\n" +
+                                "(No 'results/' subdirectory found.)\n\n" +
+                                "Please select a comparison-N directory.",
+                        "Invalid Directory",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String savedResultsPath = chosen.getAbsolutePath();
+
+            class MyWatchedProcess extends WatchedProcess {
+                public void watch() {
+                    SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(1));
+
+                    ByteArrayOutputStream baos = new BufferedListeningByteArrayOutputStream();
+                    PrintStream ps1 = new PrintStream(baos);
+
+                    verboseOutputTextArea.setText("");
+                    TextAreaOutputStream baos2 = new TextAreaOutputStream(verboseOutputTextArea);
+                    PrintStream ps2 = new PrintStream(baos2);
+
+                    TetradLogger.getInstance().addOutputStream(baos2);
+
+                    try {
+                        model.recomputeFromSavedRun(savedResultsPath, ps1, ps2);
+
+                        // Write the same auxiliary files as runComparison does
+                        String resultsPath = model.getResultsPath();
+                        if (resultsPath != null) {
+                            writeTextAreaToFile(simulationChoiceTextArea,   resultsPath + "/simulation.txt");
+                            writeTextAreaToFile(algorithmChoiceTextArea,    resultsPath + "/algorithm.txt");
+                            writeTextAreaToFile(tableColumnsChoiceTextArea, resultsPath + "/tableColumns.txt");
+                            writeTextAreaToFile(verboseOutputTextArea,      resultsPath + "/verboseOutput.txt");
+                        }
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                    ps1.flush();
+                    comparisonTextArea.setText(baos.toString());
+                    TetradLogger.getInstance().removeOutputStream(baos2);
+
+                    SwingUtilities.invokeLater(() -> {
+                        try {
+                            scrollToWord(comparisonTextArea, comparisonScroll, "AVERAGE VALUE");
+                        } catch (BadLocationException ex) {
+                            System.out.println("Scrolling operation failed.");
+                        }
+                    });
+
+                    SwingUtilities.invokeLater(() -> comparisonTabbedPane.setSelectedIndex(0));
+
+                    model.setLastComparisonText(comparisonTextArea.getText());
+                    if (verboseOutputTextArea != null)
+                        model.setLastVerboseOutputText(verboseOutputTextArea.getText());
+                }
+            }
+
+            new MyWatchedProcess();
+        });
+
+        return button;
+    }
+
+    /**
+     * Writes the text content of a JTextArea to a file, swallowing errors
+     * gracefully so one bad write doesn't abort the whole post-run save.
+     */
+    private void writeTextAreaToFile(JTextArea area, String path) {
+        if (area == null) return;
+        try (PrintWriter writer = new PrintWriter(path)) {
+            writer.println(area.getText());
+        } catch (FileNotFoundException ex) {
+            System.err.println("Could not write to " + path + ": " + ex.getMessage());
+        }
     }
 
     /**

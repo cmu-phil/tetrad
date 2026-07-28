@@ -43,7 +43,7 @@ import java.util.List;
  * @see StarFci
  * @see Grasp
  */
-public final class GraspFci extends StarFci {
+public final class GraspFci extends StarFciCheckPag {
 
     /**
      * The conditional independence test.
@@ -109,7 +109,7 @@ public final class GraspFci extends StarFci {
         this.independenceTest = test;
     }
 
-    public @NotNull Graph getMarkovCpdag() throws InterruptedException {
+    public @NotNull Graph getMarkovDag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting GRaSP.");
         }
@@ -125,14 +125,14 @@ public final class GraspFci extends StarFci {
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setVerbose(isVerbose());
+        alg.setVerbose(verbose);
         alg.setKnowledge(getKnowledge());
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
         alg.bestOrder(variables);
-        Graph cpdag = alg.getGraph(true);
+        Graph cpdag = alg.getGraph(false);
 
         if (isVerbose()) {
             TetradLogger.getInstance().log("Finished GRaSP.");

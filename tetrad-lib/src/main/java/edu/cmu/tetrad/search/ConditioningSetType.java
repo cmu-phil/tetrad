@@ -55,6 +55,14 @@ public enum ConditioningSetType {
      */
     RECURSIVE_BLOCKING("Recursive Blocking"),
     /**
+     * Recursive blocking with graphoid closure.
+     */
+    RECURSIVE_BLOCKING_WITH_GRAPHOID_CLOSURE("Recursive Blocking, Graphoid Closure"),
+    /**
+     * Recursive blocking with compositional graphoid closure.
+     */
+    RECURSIVE_BLOCKING_WITH_COMPOSITIONAL_GRAPHOID_CLOSURE("Recursive Blocking, Compositional Graphoid Closure"),
+    /**
      * Local Markov property, conditioning on the parents of the target variable.
      */
     LOCAL_MARKOV("Local Markov (Parents)"),

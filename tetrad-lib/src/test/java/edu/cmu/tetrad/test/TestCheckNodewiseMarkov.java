@@ -297,9 +297,9 @@ public class TestCheckNodewiseMarkov {
 
                 switch (methodName) {
                     case "BossFCI":
-                        BossFci bossFCI = new BossFci(fisherZTest, score);
-                        bossFCI.setGuaranteePag(true);
-                        estimatedPAG = bossFCI.search();
+                        Bfci bfci = new Bfci(fisherZTest, score);
+                        bfci.setGuaranteePag(true);
+                        estimatedPAG = bfci.search();
                         break;
                     case "GraspFCI":
                         GraspFci graspFCI = new GraspFci(fisherZTest, score);

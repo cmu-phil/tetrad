@@ -120,7 +120,7 @@ public class GraphTransforms {
      * @param verbose   Whether to print verbose output.
      */
     public static void transformCpdagIntoDag(Graph graph, Knowledge knowledge, boolean verbose) {
-        Graph _graph = new EdgeListGraph(graph);
+//        Graph _graph = new EdgeListGraph(graph);
 
         List<Edge> undirectedEdges = new ArrayList<>();
 
@@ -144,7 +144,6 @@ public class GraphTransforms {
 
         // Replacing with this method.
         List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
-
 
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(true);
@@ -179,6 +178,55 @@ public class GraphTransforms {
         }
     }
 
+//    /**
+//     * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem 2.
+//     *
+//     * @param pag The partially ancestral graph to transform.
+//     * @return The maximally ancestral graph obtained from the PAG.
+//     */
+//    public static Graph zhangMagFromPag(Graph pag) {
+//        Graph pafci = new EdgeListGraph(pag);
+//
+//        for (Edge e : pafci.getEdges()) {
+//            Node x = e.getNode1();
+//            Node y = e.getNode2();
+//            Endpoint endx = e.getEndpoint1();
+//            Endpoint endy = e.getEndpoint2();
+//
+//            if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
+//                pafci.removeEdge(e);
+//                pafci.addDirectedEdge(x, y);
+//            } else if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
+//                pafci.removeEdge(e);
+//                pafci.addDirectedEdge(y, x);
+//            } else if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
+//                pafci.removeEdge(e);
+//                pafci.addDirectedEdge(x, y);
+//            } else if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
+//                pafci.removeEdge(e);
+//                pafci.addDirectedEdge(y, x);
+//            }
+//        }
+//
+//        // pcafci is the graph with only the circle-circle edges
+//        Graph pcafci = new EdgeListGraph(pafci.getNodes());
+//
+//        for (Edge e : pafci.getEdges()) {
+//            if (Edges.isNondirectedEdge(e)) {
+//                pcafci.addUndirectedEdge(e.getNode1(), e.getNode2());
+//            }
+//        }
+//
+//        pcafci = GraphTransforms.dagFromCpdag(pcafci, new Knowledge(), false);
+//
+//        for (Edge e : pcafci.getEdges()) {
+//            pafci.removeEdges(e.getNode1(), e.getNode2());
+//            pafci.addEdge(e);
+//        }
+//
+//        return pafci;
+//    }
+
     /**
      * Transforms a partial ancestral graph (PAG) into a maximal ancestral graph (MAG) using Zhang's 2008 Theorem 2.
      *
@@ -186,6 +234,100 @@ public class GraphTransforms {
      * @return The maximally ancestral graph obtained from the PAG.
      */
     public static Graph zhangMagFromPag(Graph pag) {
+        UnorientedComponentAsUndirected result = getGetUnorientedComponentAsUndirected(pag);
+        Graph pcafci;
+
+        pcafci = GraphTransforms.dagFromCpdag(result.pcafci(), new Knowledge(), false);
+
+        for (Edge e : pcafci.getEdges()) {
+            result.pafci().removeEdges(e.getNode1(), e.getNode2());
+            result.pafci().addEdge(e);
+        }
+
+        return result.pafci();
+    }
+
+    /**
+     * Lazily enumerates the Zhang MAGs of a PAG: one MAG per consistent DAG orientation of the
+     * PAG's unoriented component. Identical to {@link #zhangMagFromPag} except that
+     * {@link ConsistentDagIterator} supplies EVERY no-unshielded-collider orientation of
+     * {@code result.pcafci()} in place of the single {@code dagFromCpdag} extension. Each MAG is a
+     * fresh copy of the component-stripped PAG with one orientation stamped in, so the shared
+     * template is never mutated.
+     *
+     * @param pag the PAG to transform (assumed a valid, completed PAG).
+     * @return a lazy iterable over the Zhang MAGs reachable from {@code pag}.
+     */
+    public static Iterable<Graph> zhangMagsFromPag(Graph pag) {
+        UnorientedComponentAsUndirected result = getGetUnorientedComponentAsUndirected(pag);
+        final Graph template = result.pafci();                  // stamp target; copied per MAG, never mutated
+        final Iterator<Graph> dags = new ConsistentDagIterator(result.pcafci(), pag.getNodes(), false, true).iterator();
+
+        return () -> new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return dags.hasNext();
+            }
+
+            @Override
+            public Graph next() {
+                Graph dag = dags.next();                        // one orientation of the component
+                Graph mag = new EdgeListGraph(template);        // fresh; template stays the o-o PAG
+                for (Edge e : dag.getEdges()) {
+                    mag.removeEdges(e.getNode1(), e.getNode2());
+                    mag.addEdge(e);
+                }
+                return mag;
+            }
+        };
+    }
+
+    /**
+     * Returns a random Zhang MAG of a PAG. A uniformly shuffled seed order is passed through
+     * {@code getValidOrder} to get a random valid causal order of the PAG's unoriented component;
+     * that order orients the component into a consistent DAG; and, exactly as in
+     * {@link #zhangMagFromPag}, those directed edges are stamped onto the component-stripped PAG.
+     *
+     * @param pag    the PAG to transform (assumed a valid, completed PAG).
+     * @param random source of randomness (seed it for reproducibility).
+     * @return a random Zhang MAG obtained from {@code pag}.
+     */
+    public static Graph randomZhangMagFromPag(Graph pag, Random random) {
+        UnorientedComponentAsUndirected result = getGetUnorientedComponentAsUndirected(pag);
+        Graph cpdag = result.pcafci();
+
+        // A random valid causal order of the component.
+        List<Node> order = new ArrayList<>(cpdag.getNodes());
+        Collections.shuffle(order, random);
+        order = cpdag.paths().getValidOrder(order, true);   // the getValidOrder you pasted
+
+        // Orient the component by that order: parent = earlier in the order. The valid-sink clique
+        // condition guarantees this introduces no unshielded collider, i.e. it's a consistent extension.
+        Map<Node, Integer> pos = new HashMap<>();
+        for (int i = 0; i < order.size(); i++) pos.put(order.get(i), i);
+
+        for (Edge e : cpdag.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            Node parent = pos.get(a) < pos.get(b) ? a : b;
+            Node child = (parent == a) ? b : a;
+            result.pafci().removeEdges(a, b);
+            result.pafci().addDirectedEdge(parent, child);
+        }
+
+        return result.pafci();
+    }
+
+    /**
+     * Convenience overload with a fresh {@link Random}; use the seeded overload for reproducibility.
+     *
+     * @param pag The PAG to find a random Zhang MAG in.
+     * @return this graph.
+     */
+    public static Graph randomZhangMagFromPag(Graph pag) {
+        return randomZhangMagFromPag(pag, new Random());
+    }
+
+    private static @NotNull GraphTransforms.UnorientedComponentAsUndirected getGetUnorientedComponentAsUndirected(Graph pag) {
         Graph pafci = new EdgeListGraph(pag);
 
         for (Edge e : pafci.getEdges()) {
@@ -194,22 +336,29 @@ public class GraphTransforms {
             Endpoint endx = e.getEndpoint1();
             Endpoint endy = e.getEndpoint2();
 
+            // o-> : circle becomes tail, so x --> y
             if (endx == Endpoint.CIRCLE && endy == Endpoint.ARROW) {
                 pafci.removeEdge(e);
                 pafci.addDirectedEdge(x, y);
+                // <-o : circle becomes tail, so y --> x
             } else if (endx == Endpoint.ARROW && endy == Endpoint.CIRCLE) {
                 pafci.removeEdge(e);
                 pafci.addDirectedEdge(y, x);
+                // --o : circle becomes tail, so x --- y (undirected)
             } else if (endx == Endpoint.TAIL && endy == Endpoint.CIRCLE) {
                 pafci.removeEdge(e);
-                pafci.addDirectedEdge(x, y);
+                pafci.addUndirectedEdge(x, y);
+                // o-- : circle becomes tail, so x --- y (undirected)
             } else if (endx == Endpoint.CIRCLE && endy == Endpoint.TAIL) {
                 pafci.removeEdge(e);
-                pafci.addDirectedEdge(y, x);
+                pafci.addUndirectedEdge(x, y);
             }
+            // o-o, -->, <--, <-> : left as-is
         }
 
-        // pcafci is the graph with only the circle-circle edges
+        // Collect all o-o edges (now undirected after circle replacement above,
+        // but original o-o edges are still nondirected) into a CPDAG-like graph
+        // and orient them via dagFromCpdag.
         Graph pcafci = new EdgeListGraph(pafci.getNodes());
 
         for (Edge e : pafci.getEdges()) {
@@ -217,15 +366,8 @@ public class GraphTransforms {
                 pcafci.addUndirectedEdge(e.getNode1(), e.getNode2());
             }
         }
-
-        pcafci = GraphTransforms.dagFromCpdag(pcafci, new Knowledge(), false);
-
-        for (Edge e : pcafci.getEdges()) {
-            pafci.removeEdges(e.getNode1(), e.getNode2());
-            pafci.addEdge(e);
-        }
-
-        return pafci;
+        UnorientedComponentAsUndirected result = new UnorientedComponentAsUndirected(pafci, pcafci);
+        return result;
     }
 
     /**
@@ -393,12 +535,12 @@ public class GraphTransforms {
      * @param graph                The input Directed Acyclic Graph (DAG) to be converted.
      * @param knowledge            Background knowledge used to guide the conversion process.
      * @param excludeSelectionBias True to exclude selection bias, false otherwise.
-     * @param recursionDepth       Recursion depth to consider during PAG computation.
+     * @param recursiveDepth       Recursion depth to consider during PAG computation.
      * @return The resulting Partial Ancestral Graph (PAG) obtained from the input DAG and knowledge.
      * @throws IllegalStateException if a discriminating path cannot be found.
      */
-    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int recursionDepth) {
-        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, recursionDepth);
+    public static Graph dagToPag(Graph graph, Knowledge knowledge, boolean excludeSelectionBias, int recursiveDepth) {
+        return PagCache.getInstance().getPag(graph, knowledge, excludeSelectionBias, recursiveDepth);
     }
 
     /**
@@ -427,7 +569,7 @@ public class GraphTransforms {
 
         List<Node> allNodes = dag.getNodes();
 
-        Set<Node> selection = new HashSet<>(allNodes.stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList());
+        Set<Node> selection = new LinkedHashSet<>(allNodes.stream().filter(node -> node.getNodeType() == NodeType.SELECTION).toList());
 
         graph.reorientAllWith(Endpoint.TAIL);
 
@@ -472,7 +614,7 @@ public class GraphTransforms {
                 Node n1 = measured.get(i);
                 Node n2 = measured.get(j);
 
-                if (dag.paths().existsInducingPath(n1, n2, new HashSet<>(selection))) {
+                if (dag.paths().existsInducingPath(n1, n2, new LinkedHashSet<>(selection))) {
                     graph.addEdge(Edges.nondirectedEdge(n1, n2));
                 }
             }
@@ -537,13 +679,16 @@ public class GraphTransforms {
      *
      * @param mag                  the maximal ancestral graph (MAG) to be converted
      * @param excludeSelectionBias whether to exclude selection bias
-     * @param recursionDepth       the maximum current depth of recursion in the conversion process
+     * @param recursiveDepth       the maximum current depth of recursion in the conversion process
      * @return the resulting partial ancestral graph (PAG)
      */
-    public static Graph magToPag(Graph mag, boolean excludeSelectionBias, int recursionDepth) {
+    public static Graph magToPag(Graph mag, boolean excludeSelectionBias, int recursiveDepth) {
         MagToPag magToPag = new MagToPag(mag);
-        magToPag.setRecursionDepth(recursionDepth);
+        magToPag.setRecursiveDepth(recursiveDepth);
         return magToPag.convert(true, excludeSelectionBias);
+    }
+
+    private record UnorientedComponentAsUndirected(Graph pafci, Graph pcafci) {
     }
 }
 

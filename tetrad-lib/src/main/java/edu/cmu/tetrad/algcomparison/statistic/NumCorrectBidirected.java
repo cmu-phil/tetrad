@@ -83,7 +83,7 @@ public class NumCorrectBidirected implements Statistic {
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (GraphUtils.isCorrectBidirectedEdge(edge, trueGraph)) {
+                if (GraphUtils.bidirectedExistsLatentConfounder(edge, trueGraph)) {
                     tp++;
                 }
             }

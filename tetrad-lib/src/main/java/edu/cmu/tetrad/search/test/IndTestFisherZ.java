@@ -40,43 +40,73 @@ import java.util.concurrent.ConcurrentHashMap;
 import static edu.cmu.tetrad.util.TMath.*;
 
 /**
- * Fisher's Z CI test with shrinkage (RIDGE/LedoitâWolf) and optional pseudoinverse fallback.
+ * Fisher's Z CI test with shrinkage (RIDGE/Ledoit-Wolf) and optional pseudoinverse fallback.
+ *
+ * <h2>Thread-safety contract</h2>
+ * A single instance of this class may be shared by multiple threads that call
+ * {@link #checkIndependence(Node, Node, Set)}, {@link #getPValue(Node, Node, Set)} or
+ * {@link #getResult(Node, Node, Set)} concurrently, <em>provided</em> that the instance is
+ * fully configured before the parallel region begins and is <strong>not reconfigured</strong>
+ * while tests are running. The following are configuration mutators and must not be called
+ * concurrently with any test: {@link #setAlpha(double)}, {@link #setRidge(double)},
+ * {@link #setShrinkageMode(ShrinkageMode)}, {@link #setUsePseudoinverse(boolean)},
+ * {@link #setPinvTolerance(double)}, {@link #setLambda(double)},
+ * {@link #setEffectiveSampleSize(int)}, {@link #setVariables(List)} and {@link #setRows(List)}.
+ *
+ * <p>No per-test result is stored in shared instance state. Each test computes its partial
+ * correlation, p-value, BIC and Ledoit-Wolf delta in locals and returns them in an immutable
+ * {@link Result}. The deprecated convenience getters {@link #getLastR()}, {@link #getRho()} and
+ * {@link #getBic()} remain available but are backed by a {@link ThreadLocal}, so under a shared
+ * instance they report the calling thread's most recent test rather than some other thread's.
+ * New code should read these values directly from the {@link Result} returned by
+ * {@link #getResult(Node, Node, Set)} and avoid the shared-state getters entirely.
  */
 public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSizeSettable, RowsSettable, RawMarginalIndependenceTest {
 
+    /**
+     * Standard normal used for the two-sided p-value. {@code cumulativeProbability} is a
+     * stateless computation (the distribution's RandomGenerator is only touched by sampling,
+     * which we never do), so a single shared instance is safe for concurrent reads.
+     */
+    private static final NormalDistribution NORMAL = new NormalDistribution(0, 1);
+
     private final Map<String, Integer> indexMap;
     private final Map<String, Node> nameMap;
-    private final NormalDistribution normal = new NormalDistribution(0, 1);
     private final int sampleSize;
-    private ICovarianceMatrix cor = null;
-    private List<Node> variables;
-    private double alpha;
-    private DataSet dataSet;
-    private boolean verbose = false;
-    private double r = Double.NaN;                 // last partial correlation
-    private List<Integer> rows = null;
+
+    /**
+     * Per-thread snapshot of the most recent {@link Result}, used only to back the deprecated
+     * {@link #getLastR()}/{@link #getRho()}/{@link #getBic()} getters and the {@code toString()}
+     * Ledoit-Wolf label. This is intentionally <em>not</em> shared state: reads and writes are
+     * confined to the calling thread. Backed by a fixed-size worker pool (as Tetrad searches use)
+     * this holds at most one Result per worker thread and does not leak.
+     */
+    private final ThreadLocal<Result> lastResult = new ThreadLocal<>();
+
+    private volatile ICovarianceMatrix cor = null;
+    private volatile List<Node> variables;
+    private volatile double alpha;
+    private volatile DataSet dataSet;
+    private volatile boolean verbose = false;
+    private volatile List<Integer> rows = null;
     /**
      * Kept for back-compat only (ignored in new path).
      */
-    private double lambda = 0.0;
+    private volatile double lambda = 0.0;
     /**
      * Ridge amount for RIDGE mode.
      */
-    private double ridge = 0.0;
+    private volatile double ridge = 0.0;
     /**
-     * LedoitâWolf / Ridge / None.
+     * Ledoit-Wolf / Ridge / None.
      */
-    private ShrinkageMode shrinkageMode = ShrinkageMode.NONE;
-    /**
-     * Last LW delta used (debugging only).
-     */
-    private double lastLedoitWolfDelta = Double.NaN;
+    private volatile ShrinkageMode shrinkageMode = ShrinkageMode.NONE;
     /**
      * Pseudoinverse controls (OFF by default).
      */
-    private boolean usePseudoinverse = false;
-    private double pinvTolerance = 1e-7;
-    private int nEff;
+    private volatile boolean usePseudoinverse = false;
+    private volatile double pinvTolerance = 1e-7;
+    private volatile int nEff;
 
     /**
      * Constructs an independence test using the Fisher Z test statistic.
@@ -193,7 +223,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Compute partial corr between index 0 (x) and 1 (y) from precision Î©.
+     * Compute partial corr between index 0 (x) and 1 (y) from precision Omega.
      */
     private static double partialFromPrecision(RealMatrix P) {
         double w11 = P.getEntry(0, 0);
@@ -207,6 +237,18 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
     private static RealMatrix toReal(Matrix m) {
         return new Array2DRowRealMatrix(m.toArray(), true);
+    }
+
+    /**
+     * Computes the Fisher-Z BIC contribution for a partial correlation and effective sample size.
+     * This is a pure function (no instance state), so it is safe to call from any thread.
+     *
+     * @param r    the partial correlation
+     * @param nEff the effective sample size
+     * @return the BIC value
+     */
+    public static double bic(double r, int nEff) {
+        return -nEff * log(1.0 - r * r) - log(nEff);
     }
 
     /**
@@ -248,6 +290,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     /**
      * Checks the independence of two nodes given a conditioning set and returns the result.
      *
+     * <p>Thread-safe: all computation is performed in locals and the returned
+     * {@link IndependenceResult} is freshly allocated. See the class-level thread-safety contract.
+     *
      * @param x the first node to be tested for independence
      * @param y the second node to be tested for independence
      * @param z the set of nodes conditioning the independence test
@@ -258,9 +303,11 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     @Override
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        double p;
+        final double alpha = this.alpha; // snapshot for a consistent decision + margin
+        final Result res;
+
         try {
-            p = getPValue(x, y, z);
+            res = computeResult(x, y, z);
         } catch (SingularMatrixException e) {
             IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), false, 0.0, alpha);
             if (this.verbose) {
@@ -269,21 +316,26 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             return result;
         }
 
-        boolean independent = p > this.alpha;
+        final double p = res.pValue();
 
         if (Double.isNaN(p)) {
             throw new RuntimeException("Undefined p-value for test: " + LogUtilsSearch.independenceFact(x, y, z));
-        } else {
-            IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
-            if (this.verbose && independent) {
-                TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, p));
-            }
-            return result;
         }
+
+        boolean independent = p > alpha;
+        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
+        if (this.verbose && independent) {
+            TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, p));
+        }
+        return result;
     }
 
     /**
      * Calculates the p-value for the partial correlation between two nodes conditioned on a set of other nodes.
+     *
+     * <p>Thread-safe: no shared instance state is written on the result path. To also obtain the
+     * partial correlation and BIC for this test without relying on thread-local getters, use
+     * {@link #getResult(Node, Node, Set)} instead.
      *
      * @param x the first node involved in the correlation.
      * @param y the second node involved in the correlation.
@@ -293,30 +345,66 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * @throws IllegalArgumentException if the degrees of freedom (df) are non-positive.
      */
     public double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
-        double r;
-        int n;
-        if (covMatrix() != null) {
-            r = partialCorrelation(x, y, z, rows);
+        return computeResult(x, y, z).pValue();
+    }
+
+    /**
+     * Computes the full result (partial correlation, p-value, degrees of freedom, BIC, and
+     * Ledoit-Wolf delta) for a single conditional-independence test. This is the preferred,
+     * fully thread-safe entry point when callers need more than just the p-value.
+     *
+     * @param x the first node involved in the correlation.
+     * @param y the second node involved in the correlation.
+     * @param z the set of conditioning nodes.
+     * @return an immutable {@link Result} for this test.
+     * @throws SingularMatrixException if the covariance matrix inversion fails during computation.
+     * @throws IllegalArgumentException if the degrees of freedom (df) are non-positive.
+     */
+    public Result getResult(Node x, Node y, Set<Node> z) throws SingularMatrixException {
+        return computeResult(x, y, z);
+    }
+
+    /**
+     * Core computation shared by {@link #checkIndependence}, {@link #getPValue} and
+     * {@link #getResult}. Everything here is computed in locals; the only side effect is updating
+     * the calling thread's {@link #lastResult} to back the deprecated convenience getters.
+     */
+    private Result computeResult(Node x, Node y, Set<Node> z) throws SingularMatrixException {
+        // Snapshot the covariance matrix and rows once so a concurrent (mis)configuration cannot
+        // change which branch we take mid-computation. (Reconfiguration during search is
+        // disallowed by contract; this is defensive.)
+        final ICovarianceMatrix cov = this.cor;
+
+        final PartialCorr pc;
+        final int n;
+        if (cov != null) {
+            pc = partialCorrelation(x, y, z, cov, this.rows);
             n = getEffectiveSampleSize();
         } else {
             List<Integer> rows = listRows();
-            r = partialCorrelation(x, y, z, rows);
+            pc = partialCorrelation(x, y, z, null, rows);
             n = rows.size();
         }
 
-        this.r = r;
+        final double r = pc.r();
+        final double df = n - 3.0 - z.size();
 
+        final double p;
         if (abs(r) >= 1.0) {
-            return 0.0;
+            p = 0.0;
+        } else {
+            if (df < 1) {
+                throw new IllegalArgumentException("Nonpositive df for " + x + " _||_ " + y + " | " + z
+                        + " (n=" + n + ", df=" + df + ")");
+            }
+            double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
+            double fisherZ = sqrt(df) * q;
+            p = 2 * (1.0 - NORMAL.cumulativeProbability(fisherZ));
         }
 
-        double q = .5 * (log(1.0 + abs(r)) - log(1.0 - abs(r)));
-        double df = n - 3. - z.size();
-        if (df < 1) {
-            throw new IllegalArgumentException("Nonpositive df for " + x + " _||_ " + y + " | " + z + " (n=" + n + ", df=" + df + ")");
-        }
-        double fisherZ = sqrt(df) * q;
-        return 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
+        final Result result = new Result(r, p, df, bic(r, n), pc.ledoitWolfDelta());
+        this.lastResult.set(result); // thread-confined; backs deprecated getters only
+        return result;
     }
 
     /**
@@ -332,6 +420,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * Sets the effective sample size. If the provided effective sample size is negative,
      * it will default to the sample size.
      *
+     * <p>Configuration mutator: do not call concurrently with running tests.
+     *
      * @param effectiveSampleSize the effective sample size to set;
      *                            if negative, the sample size will be used instead.
      */
@@ -341,13 +431,18 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Computes and returns the Bayesian Information Criterion (BIC) value.
+     * Computes and returns the Bayesian Information Criterion (BIC) value for the most recent test
+     * <em>on the calling thread</em>.
      *
-     * @return the BIC value as a double calculated based on the effective sample size
-     *         and the correlation coefficient squared.
+     * @return the BIC value as a double, or NaN if this thread has not yet run a test.
+     * @deprecated This reflects thread-local per-call state. Prefer
+     * {@link #getResult(Node, Node, Set)} and {@link Result#bic()}, or the pure
+     * {@link #bic(double, int)}.
      */
+    @Deprecated
     public double getBic() {
-        return -getEffectiveSampleSize() * log(1.0 - this.r * this.r) - log(getEffectiveSampleSize());
+        Result last = this.lastResult.get();
+        return last == null ? Double.NaN : last.bic();
     }
 
     /**
@@ -362,6 +457,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     /**
      * Sets the significance level.
      * Validates that the provided significance level is within the valid range (0.0 to 1.0).
+     *
+     * <p>Configuration mutator: do not call concurrently with running tests.
      *
      * @param alpha This level.
      */
@@ -383,6 +480,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * Sets the list of variables for the instance.
      * Validates that the size of the provided variable list matches the current size
      * of the instance's internal variable list, and updates internal state accordingly.
+     *
+     * <p>Configuration mutator: do not call concurrently with running tests.
      *
      * @param variables the list of variables to set; must match the size of the current variable list
      * @throws IllegalArgumentException if the size of the provided variable list does not match the current variable list size
@@ -466,6 +565,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     /**
      * Returns a string representation of this instance, including details about the test configuration.
      *
+     * <p>The Ledoit-Wolf delta shown (if any) reflects the calling thread's most recent test.
+     *
      * @return a string representation of this instance
      */
     @Override
@@ -475,8 +576,11 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         String base = "Fisher Z, alpha = " + f1.format(getAlpha());
         base += ", shrinkage=" + shrinkageMode;
         if (shrinkageMode == ShrinkageMode.RIDGE && ridge > 0.0) base += "(ridge=" + f2.format(ridge) + ")";
-        if (shrinkageMode == ShrinkageMode.LEDOIT_WOLF && !Double.isNaN(lastLedoitWolfDelta))
-            base += "(delta=" + f2.format(lastLedoitWolfDelta) + ")";
+        if (shrinkageMode == ShrinkageMode.LEDOIT_WOLF) {
+            Result last = this.lastResult.get();
+            if (last != null && !Double.isNaN(last.ledoitWolfDelta()))
+                base += "(delta=" + f2.format(last.ledoitWolfDelta()) + ")";
+        }
         if (usePseudoinverse) base += ", pinv tol=" + f2.format(pinvTolerance);
         return base;
     }
@@ -508,7 +612,13 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         return false;
     }
 
-    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
+    /**
+     * Computes the partial correlation of x and y given z. All state is local: the covariance
+     * matrix and rows are passed in (snapshotted by the caller), and the Ledoit-Wolf delta is
+     * returned rather than stashed in a field. Safe to call concurrently.
+     */
+    private PartialCorr partialCorrelation(Node x, Node y, Set<Node> _z, ICovarianceMatrix cov, List<Integer> rows)
+            throws SingularMatrixException {
         List<Node> z = new ArrayList<>(_z);
 
         int[] indices = new int[z.size() + 2];
@@ -517,12 +627,14 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i).getName());
 
         Matrix corSub;
-        if (this.cor != null) {
-            corSub = this.cor.getSelection(indices, indices); // correlation submatrix
+        if (cov != null) {
+            corSub = cov.getSelection(indices, indices); // correlation submatrix
         } else {
-            Matrix cov = SemBicScore.getCov(rows, indices, indices, this.dataSet, null);
-            corSub = edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr(cov);
+            Matrix covM = SemBicScore.getCov(rows, indices, indices, this.dataSet, null);
+            corSub = edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr(covM);
         }
+
+        double ledoitWolfDelta = Double.NaN;
 
         // Apply shrinkage
         switch (this.shrinkageMode) {
@@ -537,7 +649,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             }
             case LEDOIT_WOLF -> {
                 int p = corSub.getNumRows();
-                int n = (this.cor != null ? getEffectiveSampleSize() : (rows == null ? getSampleSize() : rows.size()));
+                int n = (cov != null ? getEffectiveSampleSize() : (rows == null ? getSampleSize() : rows.size()));
                 if (p >= 2 && n > 1) {
                     double denom = 0.0, num = 0.0;
                     for (int i = 0; i < p; i++) {
@@ -553,27 +665,27 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
                     }
                     double delta = 0.0;
                     if (denom > 0.0) delta = TMath.min(1.0, TMath.max(0.0, num / denom));
-                    this.lastLedoitWolfDelta = delta;
+                    ledoitWolfDelta = delta;
                     if (delta > 0.0) {
                         Matrix I = Matrix.identity(p);
                         Matrix shrunk = corSub.copy().scalarMult(1.0 - delta).plus(I.scalarMult(delta));
                         corSub = shrunk;
                     }
                 } else {
-                    this.lastLedoitWolfDelta = Double.NaN;
+                    ledoitWolfDelta = Double.NaN;
                 }
             }
             case NONE -> { /* no-op */ }
         }
 
         try {
-            return partialViaCholesky(corSub);
+            return new PartialCorr(partialViaCholesky(corSub), ledoitWolfDelta);
         } catch (SingularMatrixException | NonPositiveDefiniteMatrixException | NonSquareMatrixException e) {
             if (!usePseudoinverse) {
                 // Mirror previous behavior: surface as singular unless pinv allowed
                 throw new SingularMatrixException();
             }
-            return partialViaEigenPinv(corSub, pinvTolerance);
+            return new PartialCorr(partialViaEigenPinv(corSub, pinvTolerance), ledoitWolfDelta);
         }
     }
 
@@ -587,7 +699,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
                 return r > 0 ? 1.0 : -1.0;
             }
         }
-        
+
         RealMatrix A = toReal(corSub);
 
         if (TMath.abs(new LUDecomposition(A).getDeterminant()) < 1e-16) {
@@ -647,10 +759,11 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     private List<Integer> listRows() {
-        if (this.rows != null) return this.rows;
-        List<Integer> rows = new ArrayList<>();
-        for (int k = 0; k < this.dataSet.getNumRows(); k++) rows.add(k);
-        return rows;
+        List<Integer> rows = this.rows;
+        if (rows != null) return rows;
+        List<Integer> all = new ArrayList<>();
+        for (int k = 0; k < this.dataSet.getNumRows(); k++) all.add(k);
+        return all;
     }
 
     /**
@@ -669,6 +782,9 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * all elements are non-negative and non-null. Resets internal correlation state
      * if the rows are updated.
      *
+     * <p>Configuration mutator: do not call concurrently with running tests. Setting non-null
+     * rows also clears the cached correlation matrix, forcing recomputation from the rows.
+     *
      * @param rows the list of row indices to set. Each element must be non-null and non-negative.
      *             If the provided list is null, the current row list is set to null.
      * @throws NullPointerException if any element in the rows list is null.
@@ -683,7 +799,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
                 if (rows.get(i) == null) throw new NullPointerException("Row " + i + " is null.");
                 if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
             }
-            this.rows = rows;
+            // Defensive copy so external mutation of the caller's list cannot race with reads.
+            this.rows = List.copyOf(rows);
             cor = null; // recompute from rows
         }
     }
@@ -692,6 +809,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * Sets the value of the lambda parameter for this instance. Lambda is used
      * for regularization or other purposes within the class, depending on the
      * context of its implementation.
+     *
+     * <p>Configuration mutator: do not call concurrently with running tests.
      *
      * @param lambda the value to set for the lambda parameter
      */
@@ -712,6 +831,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * Sets the value of the ridge parameter for this instance.
      * The ridge parameter is commonly used for regularization purposes.
      * The provided value must be non-negative.
+     *
+     * <p>Configuration mutator: do not call concurrently with running tests.
      *
      * @param ridge the value to set for the ridge parameter; must be greater than or equal to 0
      * @throws IllegalArgumentException if the ridge parameter is negative
@@ -736,6 +857,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * regularization or adjustment applied during calculations, if any. If the provided mode
      * is null, the shrinkage mode defaults to {@code ShrinkageMode.NONE}.
      *
+     * <p>Configuration mutator: do not call concurrently with running tests.
+     *
      * @param mode the shrinkage mode to set, represented as a {@code ShrinkageMode} enum value.
      *             It can be {@code ShrinkageMode.NONE}, {@code ShrinkageMode.RIDGE}, or
      *             {@code ShrinkageMode.LEDOIT_WOLF}.
@@ -757,6 +880,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     /**
      * Sets whether to use the pseudoinverse in computations.
      *
+     * <p>Configuration mutator: do not call concurrently with running tests.
+     *
      * @param use true to enable pseudoinverse, false to disable
      */
     public void setUsePseudoinverse(boolean use) {
@@ -775,6 +900,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     /**
      * Sets the tolerance for the pseudoinverse computation.
      *
+     * <p>Configuration mutator: do not call concurrently with running tests.
+     *
      * @param tol the tolerance value
      */
     public void setPinvTolerance(double tol) {
@@ -783,25 +910,34 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     }
 
     /**
-     * Gets the last computed partial correlation.
+     * Gets the last computed partial correlation <em>on the calling thread</em>.
      *
-     * @return the last computed partial correlation
+     * @return the last computed partial correlation, or NaN if this thread has not yet run a test.
+     * @deprecated This reflects thread-local per-call state. Prefer
+     * {@link #getResult(Node, Node, Set)} and {@link Result#r()}.
      */
+    @Deprecated
     public double getLastR() {
-        return this.r;
+        Result last = this.lastResult.get();
+        return last == null ? Double.NaN : last.r();
     }
 
     /**
-     * Gets the last computed partial correlation.
+     * Gets the last computed partial correlation <em>on the calling thread</em>.
      *
-     * @return the last computed partial correlation
+     * @return the last computed partial correlation, or NaN if this thread has not yet run a test.
+     * @deprecated This reflects thread-local per-call state. Prefer
+     * {@link #getResult(Node, Node, Set)} and {@link Result#r()}.
      */
+    @Deprecated
     public double getRho() {
-        return r;
+        return getLastR();
     }
 
     /**
      * Computes the p-value for the statistical test of independence between two variables.
+     *
+     * <p>Thread-safe: constructs and uses a throwaway local test instance.
      *
      * @param x the array of values representing the first variable
      * @param y the array of values representing the second variable
@@ -828,6 +964,27 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         test.setPinvTolerance(this.pinvTolerance);
 
         return test.getPValue(_x, _y, new HashSet<>());
+    }
+
+    /**
+     * Immutable, self-contained result of a single conditional-independence test. Because every
+     * value is captured here at computation time, callers can safely read a test's outputs even
+     * when many tests run concurrently on a shared {@link IndTestFisherZ}.
+     *
+     * @param r               the partial correlation of x and y given z
+     * @param pValue          the two-sided Fisher-Z p-value
+     * @param df              the degrees of freedom used
+     * @param bic             the Fisher-Z BIC contribution, {@code -nEff*log(1-r^2) - log(nEff)}
+     * @param ledoitWolfDelta the Ledoit-Wolf shrinkage intensity used (NaN if not applicable)
+     */
+    public record Result(double r, double pValue, double df, double bic, double ledoitWolfDelta) {
+    }
+
+    /**
+     * Internal carrier for the partial-correlation computation: the correlation itself plus the
+     * Ledoit-Wolf delta that was applied (NaN when not in LEDOIT_WOLF mode).
+     */
+    private record PartialCorr(double r, double ledoitWolfDelta) {
     }
 
     /**

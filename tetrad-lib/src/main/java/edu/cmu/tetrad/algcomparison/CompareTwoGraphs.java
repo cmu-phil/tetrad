@@ -361,9 +361,12 @@ public class CompareTwoGraphs {
         statistics.add(new NumPartiallyOrientedEdges());
         statistics.add(new NumNondirectedEdges());
         statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new AncestorPrecision());
+        statistics.add(new AncestorRecall());
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
+//        statistics.add(new BidirectedLatentExistsLatentCommonCause());
         statistics.add(new LegalCpdag());
         statistics.add(new LegalPag());
         statistics.add(new Maximal());

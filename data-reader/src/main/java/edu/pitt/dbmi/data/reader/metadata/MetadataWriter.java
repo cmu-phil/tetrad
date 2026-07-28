@@ -20,7 +20,13 @@
 
 package edu.pitt.dbmi.data.reader.metadata;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.core.JsonProcessingException;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonProperty;  // unchanged
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,9 +44,9 @@ public interface MetadataWriter {
      *
      * @param metadata The metadata.
      * @return the metadata as a string.
-     * @throws com.fasterxml.jackson.core.JsonProcessingException if an error occurs while processing the JSON.
+     * @throws tools.jackson.core.JacksonException if an error occurs while processing the JSON.
      */
-    String writeAsString(Metadata metadata) throws JsonProcessingException;
+    String writeAsString(Metadata metadata) throws JacksonException;
 
     /**
      * Writes the metadata to the output file.

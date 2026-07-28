@@ -24,7 +24,9 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.harness.GraphoidClosureHarness;
 import edu.cmu.tetrad.search.test.*;
+import edu.cmu.tetrad.search.utils.GraphoidAxioms;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
@@ -279,25 +281,27 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 } else if (graph.paths().isLegalCpdag() || graph.paths().isLegalPdag()) {
                     Graph dag = GraphTransforms.dagFromCpdag(graph);
                     mag = GraphTransforms.dagToMag(dag);
-                } else if (graph.paths().isLegalMag()) {
-                    mag = graph;
-//                } else if (graph.paths().isLegalPag()) {
-//                    mag = GraphTransforms.zhangMagFromPag(graph);
                 } else {
-                    boolean hasCircle = false;
-
-                    for (Edge e : graph.getEdges()) {
-                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
-                            hasCircle = true;
-                            break;
-                        }
-                    }
-
-                    if (hasCircle) {
-                        mag = GraphTransforms.zhangMagFromPag(graph);
-                    } else {
-                        mag = graph;
-                    }
+//                else if (graph.paths().isLegalMag()) {
+//                    mag = graph;
+////                } else if (graph.paths().isLegalPag()) {
+////                    mag = GraphTransforms.zhangMagFromPag(graph);
+//                }
+//                else {
+//                    boolean hasCircle = false;
+//
+//                    for (Edge e : graph.getEdges()) {     j                   
+//                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+//                            hasCircle = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (hasCircle) {
+                    mag = GraphTransforms.zhangMagFromPag(graph);
+//                    } else {
+//                        mag = graph;
+//                    }
                 }
 
                 Node _x = mag.getNode(x.getName());
@@ -309,32 +313,31 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             case ORDERED_LOCAL_MARKOV_PROPERTY: {
                 Graph mag;
 
-                    if (graph.paths().isLegalDag()) {
+                if (graph.paths().isLegalDag()) {
                     mag = GraphTransforms.dagToMag(graph);
                 } else if (graph.paths().isLegalCpdag() || graph.paths().isLegalPdag()) {
                     Graph dag = GraphTransforms.dagFromCpdag(graph);
                     mag = GraphTransforms.dagToMag(dag);
-                } else if (graph.paths().isLegalMag()) {
-                    mag = graph;
-//                }
-//                    else if (graph.paths().isLegalPag()) {
-//                    mag = GraphTransforms.zhangMagFromPag(graph);
-                }
-                    else {
-                    boolean hasCircle = false;
-
-                    for (Edge e : graph.getEdges()) {
-                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
-                            hasCircle = true;
-                            break;
-                        }
-                    }
-
-                    if (hasCircle) {
-                        mag = GraphTransforms.zhangMagFromPag(graph);
-                    } else {
-                        mag = graph;
-                    }
+//                } else if (graph.paths().isLegalMag()) {
+//                    mag = graph;
+////                }
+////                    else if (graph.paths().isLegalPag()) {
+////                    mag = GraphTransforms.zhangMagFromPag(graph);
+                } else {
+//                    boolean hasCircle = false;
+//
+//                    for (Edge e : graph.getEdges()) {
+//                        if (e.getEndpoint1() == Endpoint.CIRCLE || e.getEndpoint2() == Endpoint.CIRCLE) {
+//                            hasCircle = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (hasCircle) {
+                    mag = GraphTransforms.zhangMagFromPag(graph);
+//                    } else {
+//                        mag = graph;
+//                    }
                 }
 
                 Node _x = mag.getNode(x.getName());
@@ -395,7 +398,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
                         RecursiveBlocking.BlockingResult result;
 
-                        result = RecursiveBlocking.blockPathsRecursivelyFull(graph, x, w,
+                        result = RecursiveBlocking.blockPathsRecursively(graph, x, w,
                                 Set.of(), Set.of(), recursiveDepth, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge,
                                 System.currentTimeMillis() + 5000L);
 
@@ -406,10 +409,88 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                         }
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
-                    } catch (TimeoutException e) {
-                        throw new RuntimeException("Recursive blocking timed out", e);
                     }
+//                    catch (TimeoutException e) {
+//                        throw new RuntimeException("Recursive blocking timed out", e);
+//                    }
                 }
+
+                return new ArrayList<>(facts);
+            }
+
+            case RECURSIVE_BLOCKING_WITH_GRAPHOID_CLOSURE: {
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node w : graph.getNodes()) {
+                    if (x.equals(w)) continue;
+                    if (graph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        int depth = -1;
+                        int maxRadius = -1;
+                        int nearWhichEndpoint = 1;
+                        int recursiveDepth = 15;
+
+                        boolean ignoreDirectEdge = false;
+
+                        RecursiveBlocking.BlockingResult result;
+
+                        result = RecursiveBlocking.blockPathsRecursively(graph, x, w,
+                                Set.of(), Set.of(), recursiveDepth, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge,
+                                System.currentTimeMillis() + 5000L);
+
+                        Set<Node> blocking = result.blockingSet();
+
+                        if (blocking != null) {
+                            facts.add(new IndependenceFact(x, w, blocking));
+                        }
+
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+//                    catch (TimeoutException e) {
+//                        throw new RuntimeException("Recursive blocking timed out", e);
+//                    }
+
+                    facts = GraphoidClosureHarness.computeClosure(facts, graph.getNodes(), GraphoidClosureHarness.ClosureType.GRAPHOID);
+                }
+
+                return new ArrayList<>(facts);
+            }
+
+            case RECURSIVE_BLOCKING_WITH_COMPOSITIONAL_GRAPHOID_CLOSURE: {
+                Set<IndependenceFact> facts = new HashSet<>();
+                for (Node w : graph.getNodes()) {
+                    if (x.equals(w)) continue;
+                    if (graph.isAdjacentTo(w, x)) continue;
+
+                    try {
+                        int depth = -1;
+                        int maxRadius = -1;
+                        int nearWhichEndpoint = 1;
+                        int recursiveDepth = 15;
+
+                        boolean ignoreDirectEdge = false;
+
+                        RecursiveBlocking.BlockingResult result;
+
+                        result = RecursiveBlocking.blockPathsRecursively(graph, x, w,
+                                Set.of(), Set.of(), recursiveDepth, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge,
+                                System.currentTimeMillis() + 5000L);
+
+                        Set<Node> blocking = result.blockingSet();
+
+                        if (blocking != null) {
+                            facts.add(new IndependenceFact(x, w, blocking));
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+//                    catch (TimeoutException e) {
+//                        throw new RuntimeException("Recursive blocking timed out", e);
+//                    }
+                }
+
+                facts = GraphoidClosureHarness.computeClosure(facts, graph.getNodes(), GraphoidClosureHarness.ClosureType.COMPOSITIONAL_GRAPHOID);
 
                 return new ArrayList<>(facts);
             }
@@ -1996,7 +2077,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
             IndCheckTask(int index, List<IndependenceFact> facts, IndependenceTest test) {
                 this.index = index;
                 this.facts = facts;
-                this.independenceTest = test;
+//                this.independenceTest = test;
+
+                if (test instanceof CachingIndependenceTest) {
+                    this.independenceTest = ((CachingIndependenceTest) test).getBaseTest();
+                } else {
+                    this.independenceTest = test;
+                }
             }
 
             @Override

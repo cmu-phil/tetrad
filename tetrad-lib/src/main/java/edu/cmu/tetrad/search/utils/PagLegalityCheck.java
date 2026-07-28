@@ -90,10 +90,10 @@ public class PagLegalityCheck {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-        // Checking paths in the discriminiting path check of length up to 20.... TODO... is this restriction OK?
-        Graph pag2 = null;
+        Graph pag2;
         try {
-            pag2 = GraphTransforms.dagToPag(mag, new Knowledge(), false, 15);
+            MagToPag magToPag = new MagToPag(mag);
+            pag2 = magToPag.convert(false, false);
         } catch (IllegalStateException e) {
             String reason = "Legal PAG status could not be determined";
             return new LegalPagRet(false, reason);
@@ -185,6 +185,7 @@ public class PagLegalityCheck {
             }
 
             if (!(Edges.isDirectedEdge(edge) || Edges.isBidirectedEdge(edge) || Edges.isUndirectedEdge(edge))) {
+//                throw new IllegalArgumentException("Edge " + edge + " should be directed, bidirected, or undirected");
                 return new LegalMagRet(false, "Edge " + edge + " should be directed, bidirected, or undirected");
             }
         }
@@ -199,15 +200,31 @@ public class PagLegalityCheck {
             Node x = e.getNode1();
             Node y = e.getNode2();
 
+//            if (Edges.isBidirectedEdge(e)) {
+//                Set<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, -1);
+//                if (!forwardPaths.isEmpty()) {
+//                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.iterator().next(), false));
+//                }
+//
+//                Set<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, -1);
+//                if (!backwardPaths.isEmpty()) {
+//                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.iterator().next(), false));
+//                }
+//            }
+
             if (Edges.isBidirectedEdge(e)) {
-                Set<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, 1);
-                if (!forwardPaths.isEmpty()) {
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.iterator().next(), false));
+                if (mag.paths().existsDirectedPath(x, y)) {
+                    Set<List<Node>> ex = mag.paths().directedPaths(x, y, nodes.size());
+                    String path = ex.isEmpty() ? "(direct ancestral path)"
+                            : GraphUtils.pathString(mag, ex.iterator().next(), false);
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + path);
                 }
 
-                Set<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, 1);
-                if (!backwardPaths.isEmpty()) {
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.iterator().next(), false));
+                if (mag.paths().existsDirectedPath(y, x)) {
+                    Set<List<Node>> ex = mag.paths().directedPaths(y, x, nodes.size());
+                    String path = ex.isEmpty() ? "(direct ancestral path)"
+                            : GraphUtils.pathString(mag, ex.iterator().next(), false);
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + path);
                 }
             }
         }
@@ -221,7 +238,10 @@ public class PagLegalityCheck {
 
                 if (!mag.isAdjacentTo(x, y)) {
                     if (mag.paths().existsInducingPath(x, y, sel)) {
-                        return new LegalMagRet(false, "Not maximal: Inducing path exists between non-adjacent " + x + " and " + y);
+                        List<Node> path = mag.paths().getInducingPath(x, y, selection);
+
+
+                        return new LegalMagRet(false, "Not maximal: Inducing path exists between non-adjacent " + x + " and " + y + " " + path);
                     }
                 }
             }
@@ -270,8 +290,9 @@ public class PagLegalityCheck {
         if (!isLegalMagQuiet(mag, selection)) return false;
 
         // 3) Reconstitute PAG from the implied MAG.
-        Graph pag2 = GraphTransforms.dagToPag(mag, false);
-
+        MagToPag magToPag = new MagToPag(mag);
+        Graph pag2 = magToPag.convert(false, false);
+    
         // Mirror verbose logic:
         // If graphs differ, only fail if there exists an original edge that doesn't match.
         if (!pag.equals(pag2)) {
@@ -358,8 +379,11 @@ public class PagLegalityCheck {
             if (!Edges.isBidirectedEdge(e)) continue;
             Node x = e.getNode1();
             Node y = e.getNode2();
-            if (!mag.paths().directedPaths(x, y, 1).isEmpty()) return false;
-            if (!mag.paths().directedPaths(y, x, 1).isEmpty()) return false;
+//            if (!mag.paths().directedPaths(x, y, -1).isEmpty()) return false;
+//            if (!mag.paths().directedPaths(y, x, -1).isEmpty()) return false;
+
+            if (mag.paths().existsDirectedPath(x, y)) return false;
+            if (mag.paths().existsDirectedPath(y, x)) return false;
         }
 
         // Maximality: no inducing path between non-adjacent nodes given selection.

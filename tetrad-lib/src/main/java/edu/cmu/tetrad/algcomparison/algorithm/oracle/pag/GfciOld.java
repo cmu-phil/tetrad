@@ -26,6 +26,8 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -43,15 +45,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The Fges-FCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
+ * The GFCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
  */
 //@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "FGES-FCI",
-//        command = "fges-fci",
+//        name = "GFCI-Old",
+//        command = "gfci-old",
 //        algoType = AlgType.allow_latent_common_causes
 //)
 //@Bootstrapping
-public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper,
+public class GfciOld extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -73,18 +75,18 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ac
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The FGES-FCI class represents the Greedy Fast Causal Inference algorithm.
+     * The GFCI class represents the Greedy Fast Causal Inference algorithm.
      */
-    public FgesFci() {
+    public GfciOld() {
     }
 
     /**
-     * Constructs a new instance of FGES-FCI with the given IndependenceWrapper and ScoreWrapper.
+     * Constructs a new instance of GFCI with the given IndependenceWrapper and ScoreWrapper.
      *
-     * @param test  The IndependenceWrapper object to associate with this FGES-FCI instance.
-     * @param score The ScoreWrapper object to associate with this FGES-FCI instance.
+     * @param test  The IndependenceWrapper object to associate with this GFCI instance.
+     * @param score The ScoreWrapper object to associate with this GFCI instance.
      */
-    public FgesFci(IndependenceWrapper test, ScoreWrapper score) {
+    public GfciOld(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -112,7 +114,8 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ac
 
         IndependenceTest test1 = this.test.getTest(dataModel, parameters);
         test1 = new CachedIndependenceQueries(test1);
-        edu.cmu.tetrad.search.FgesFci search = new edu.cmu.tetrad.search.FgesFci(test1, this.score.getScore(dataModel, parameters));
+        edu.cmu.tetrad.search.GfciOld search = new edu.cmu.tetrad.search.GfciOld(test1, this.score.getScore(dataModel, parameters));
+//        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
@@ -120,8 +123,10 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ac
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-        search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setOut(System.out);
 
         return search.search();
@@ -140,14 +145,14 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ac
     }
 
     /**
-     * Returns a description of the FGES-FCI algorithm using the description of the independence test and score
-     * associated with it.
+     * Returns a description of the GFCI algorithm using the description of the independence test and score associated
+     * with it.
      *
      * @return The description of the algorithm.
      */
     @Override
     public String getDescription() {
-        return "FGES-FCI using " + this.test.getDescription() + " and " + this.score.getDescription();
+        return "GFCI-Old using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
@@ -174,9 +179,12 @@ public class FgesFci extends AbstractBootstrapAlgorithm implements Algorithm, Ac
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.REMOVE_ALMOST_CYCLES);
-        parameters.add(Params.NUM_THREADS);
+//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
+        parameters.add(Params.GUARANTEE_PAG);
         parameters.add(Params.USE_MAX_P_HEURISTIC);
+        parameters.add(Params.NUM_THREADS);
+        parameters.add(Params.START_FROM_COMPLETE_GRAPH);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
 
         parameters.add(Params.VERBOSE);
         return parameters;

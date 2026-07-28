@@ -1,0 +1,8744 @@
+# Step-breaks binned by false-collider mechanism.  mode=magspace observed=5 maxSpurious=3 distinctTruePags=24259 (per labelling)
+# R0: 0 | R4 shielded: 1557 | COMPLETION: 0 | RESIDUE: 130
+# RESIDUE anatomy -- real edge reversed: 130/130 | displaced mark: 130/130 | distinct (G*,H1) structures: 3
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#137
+  extra (spurious) edges: [V2 o-o V3, V4 o-o V5]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 <-> V1
+3. V2 --> V5
+4. V3 o-> V1
+5. V4 o-> V2
+6. V4 o-o V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V1 <-> V5
+3. V2 --> V5
+4. V3 o-> V1
+5. V3 o-> V2
+6. V4 o-> V2
+7. V4 o-o V3
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V1
+3. V4 o-> V2
+4. V4 o-o V3
+5. V4 o-o V5
+6. V5 --> V1
+7. V5 o-> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V1
+3. V3 --> V4
+4. V4 --> V2
+5. V4 --> V5
+6. V5 --> V1
+7. V5 --> V2
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#175
+  extra (spurious) edges: [V1 o-o V4, V3 o-o V4, V3 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 <-> V1
+3. V2 <-> V5
+4. V3 o-> V1
+5. V4 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 o-> V1
+5. V3 o-o V4
+6. V3 --> V5
+7. V4 o-> V1
+8. V4 o-> V2
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 o-> V1
+3. V3 o-o V4
+4. V3 o-o V5
+5. V4 --> V2
+6. V5 o-> V1
+7. V5 --> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V1
+3. V3 --> V4
+4. V3 --> V5
+5. V4 --> V2
+6. V5 --> V1
+7. V5 --> V2
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#210
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V4, V2 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V3 <-> V1
+4. V3 <-> V5
+5. V4 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V2 o-o V4
+4. V2 --> V5
+5. V3 <-> V1
+6. V3 <-> V5
+7. V4 o-> V1
+8. V4 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-> V1
+2. V2 o-o V4
+3. V2 o-o V5
+4. V3 <-> V1
+5. V4 --> V3
+6. V5 o-> V1
+7. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V4
+3. V2 --> V5
+4. V3 <-> V1
+5. V4 --> V3
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#405
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V5, V2 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V3 --> V2
+3. V4 <-> V2
+4. V4 <-> V3
+5. V5 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-> V4
+3. V1 o-o V5
+4. V3 --> V2
+5. V4 <-> V2
+6. V4 <-> V3
+7. V5 --> V2
+8. V5 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 o-o V5
+3. V2 o-> V3
+4. V2 --> V4
+5. V4 <-> V3
+6. V5 o-o V2
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V4
+5. V4 <-> V3
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V3 --> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V3 -- V2 -- V4  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#489
+  extra (spurious) edges: [V1 o-o V4, V1 o-o V5, V2 o-o V4]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V3 <-> V2
+3. V3 <-> V5
+4. V4 o-> V5
+5. V5 --> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V1 o-> V5
+4. V3 <-> V2
+5. V4 --> V2
+6. V4 o-> V5
+7. V5 --> V2
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V4
+3. V2 --> V3
+4. V2 o-> V5
+5. V4 o-o V2
+6. V4 o-> V5
+7. V5 <-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V2 --> V3
+4. V2 --> V5
+5. V4 --> V2
+6. V4 --> V5
+7. V5 <-> V3
+
+
+  reversed real edge  : V3 <-> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V3 -- V2 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1]   (m-separated here, m-connected in G*)
+  model                 : PAG#677
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V3]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V3 --> V2
+2. V4 o-> V1
+3. V4 o-> V3
+4. V5 o-> V1
+5. V5 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V3
+3. V3 --> V2
+4. V4 o-> V1
+5. V4 o-> V3
+6. V5 o-> V1
+7. V5 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V2 --> V3
+3. V4 o-> V1
+4. V4 --> V3
+5. V5 o-> V1
+6. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V2 --> V3
+3. V4 --> V1
+4. V4 --> V3
+5. V5 --> V1
+6. V5 --> V3
+
+
+  reversed real edge  : V3 --> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#833
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V2 o-> V4
+4. V3 <-> V5
+5. V4 <-> V3
+6. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-> V4
+4. V2 o-> V4
+5. V2 --> V5
+6. V3 <-> V4
+7. V3 <-> V5
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V3
+3. V2 o-> V4
+4. V2 o-o V5
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V2 --> V4
+4. V2 --> V5
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V3 <-> V5 in G*'s MAG, but V3 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#1016
+  extra (spurious) edges: [V1 o-o V5, V3 o-o V4]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V2 <-> V3
+4. V4 o-> V5
+5. V5 <-> V2
+6. V5 --> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V1 o-> V5
+4. V2 <-> V3
+5. V2 <-> V5
+6. V4 --> V3
+7. V4 o-> V5
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V4
+3. V2 <-> V5
+4. V3 --> V2
+5. V3 o-> V5
+6. V4 o-o V3
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 <-> V5
+4. V3 --> V2
+5. V3 --> V5
+6. V4 --> V3
+7. V4 --> V5
+
+
+  reversed real edge  : V2 <-> V3 in G*'s MAG, but V2 <-- V3 in H1's MAG
+  displaced mark      : V2 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1]   (m-separated here, m-connected in G*)
+  model                 : PAG#1021
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V5]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-> V1
+2. V2 o-> V5
+3. V4 o-> V1
+4. V4 o-> V5
+5. V5 --> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V5
+3. V2 o-> V1
+4. V2 o-> V5
+5. V4 o-> V1
+6. V4 o-> V5
+7. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 o-> V1
+3. V2 --> V5
+4. V3 --> V5
+5. V4 o-> V1
+6. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 --> V1
+3. V2 --> V5
+4. V3 --> V5
+5. V4 --> V1
+6. V4 --> V5
+
+
+  reversed real edge  : V5 --> V3 in G*'s MAG, but V5 <-- V3 in H1's MAG
+  displaced mark      : V3 *-> V5 <-* V2  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#1047
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V4, V2 o-o V3]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V3 o-> V4
+3. V4 --> V2
+4. V5 <-> V2
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V1 o-> V5
+4. V3 --> V2
+5. V3 o-> V4
+6. V4 --> V2
+7. V4 <-> V5
+8. V5 <-> V2
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V5
+3. V2 o-> V4
+4. V2 --> V5
+5. V3 o-o V2
+6. V3 o-> V4
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 --> V4
+4. V2 --> V5
+5. V3 --> V2
+6. V3 --> V4
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 --> V2 in G*'s MAG, but V4 <-- V2 in H1's MAG
+  displaced mark      : V4 -- V2 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#1116
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V4]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V4
+2. V1 o-> V5
+3. V3 --> V2
+4. V4 o-> V3
+5. V5 <-> V2
+6. V5 <-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V1 o-> V5
+4. V3 --> V2
+5. V4 --> V2
+6. V4 o-> V3
+7. V5 <-> V2
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V4
+2. V1 --> V5
+3. V2 o-> V3
+4. V2 --> V5
+5. V4 o-o V2
+6. V4 o-> V3
+7. V5 <-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V5
+5. V4 --> V2
+6. V4 --> V3
+7. V5 <-> V3
+
+
+  reversed real edge  : V3 --> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V3 -- V2 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#1551
+  extra (spurious) edges: [V1 o-o V5, V2 o-o V3]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V2 --> V5
+4. V3 o-> V4
+5. V4 <-> V2
+6. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 --> V5
+4. V2 --> V5
+5. V3 o-> V2
+6. V3 o-> V4
+7. V4 <-> V2
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-o V5
+4. V3 --> V4
+5. V4 <-> V2
+6. V5 o-> V2
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V5
+4. V3 --> V4
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 --> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#1850
+  extra (spurious) edges: [V2 o-o V3, V3 o-o V4, V4 o-o V5]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 <-> V1
+3. V2 --> V5
+4. V3 o-> V1
+5. V4 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V1 <-> V5
+3. V2 --> V5
+4. V3 o-> V1
+5. V3 o-> V2
+6. V3 o-o V4
+7. V4 o-> V2
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V1
+3. V3 o-o V4
+4. V4 o-> V2
+5. V4 o-o V5
+6. V5 --> V1
+7. V5 o-> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V1
+3. V3 --> V4
+4. V4 --> V2
+5. V4 --> V5
+6. V5 --> V1
+7. V5 --> V2
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#1909
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V5, V2 o-o V3]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V2 o-> V5
+3. V4 <-> V3
+4. V5 --> V3
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V1 o-> V5
+4. V2 --> V3
+5. V2 o-> V5
+6. V4 <-> V3
+7. V4 <-> V5
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V4
+3. V2 o-o V3
+4. V2 o-> V5
+5. V3 --> V4
+6. V3 o-> V5
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 --> V3
+4. V2 --> V5
+5. V3 --> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 <-> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V4 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#2050
+  extra (spurious) edges: [V1 o-o V2, V2 o-o V5, V3 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 o-> V4
+3. V4 <-> V1
+4. V4 <-> V3
+5. V5 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 o-> V1
+3. V2 o-> V4
+4. V2 o-o V5
+5. V4 <-> V1
+6. V4 <-> V3
+7. V5 o-> V1
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V4
+2. V2 o-o V5
+3. V3 o-> V1
+4. V3 --> V4
+5. V4 <-> V1
+6. V5 o-> V1
+7. V5 o-o V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V4
+2. V2 --> V5
+3. V3 --> V1
+4. V3 --> V4
+5. V4 <-> V1
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 --> V3 in G*'s MAG, but V1 <-- V3 in H1's MAG
+  displaced mark      : V4 *-> V1 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#2101
+  extra (spurious) edges: [V1 o-o V5, V2 o-o V4]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V2 o-> V5
+4. V3 <-> V4
+5. V5 <-> V3
+6. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-> V5
+4. V2 --> V4
+5. V2 o-> V5
+6. V3 <-> V4
+7. V5 <-> V3
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V3
+3. V2 o-o V4
+4. V2 o-> V5
+5. V4 --> V3
+6. V4 o-> V5
+7. V5 <-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V2 --> V4
+4. V2 --> V5
+5. V4 --> V3
+6. V4 --> V5
+7. V5 <-> V3
+
+
+  reversed real edge  : V3 <-> V4 in G*'s MAG, but V3 <-- V4 in H1's MAG
+  displaced mark      : V3 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#2127
+  extra (spurious) edges: [V1 o-o V5, V2 o-o V4]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V2 o-> V3
+4. V3 <-> V5
+5. V4 <-> V3
+6. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V1 --> V5
+4. V2 o-> V3
+5. V2 o-> V4
+6. V3 <-> V4
+7. V3 <-> V5
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V1 o-o V5
+4. V2 --> V3
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V1 --> V5
+4. V2 --> V3
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V3 <-> V5 in G*'s MAG, but V3 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#2176
+  extra (spurious) edges: [V1 o-o V2, V3 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V2 --> V5
+4. V3 o-> V2
+5. V4 <-> V2
+6. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-> V4
+4. V2 --> V5
+5. V3 o-> V2
+6. V3 --> V5
+7. V4 <-> V2
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V4
+3. V3 o-> V2
+4. V3 o-o V5
+5. V4 <-> V2
+6. V5 o-> V2
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V3 --> V2
+4. V3 --> V5
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 --> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V3 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#2463
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V5, V3 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V2 --> V3
+3. V4 <-> V2
+4. V4 <-> V3
+5. V5 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V4
+3. V1 o-o V5
+4. V2 --> V3
+5. V2 <-> V4
+6. V4 <-> V3
+7. V5 o-> V2
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 o-o V5
+3. V2 <-> V4
+4. V3 o-> V2
+5. V3 --> V4
+6. V5 o-> V2
+7. V5 o-o V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 --> V5
+3. V2 <-> V4
+4. V3 --> V2
+5. V3 --> V4
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 --> V3 in G*'s MAG, but V2 <-- V3 in H1's MAG
+  displaced mark      : V4 *-> V2 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#2864
+  extra (spurious) edges: [V2 o-o V4, V3 o-o V4, V3 o-o V5]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 <-> V1
+3. V2 --> V5
+4. V3 o-> V2
+5. V4 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 <-> V1
+3. V2 --> V5
+4. V3 o-> V2
+5. V3 o-o V4
+6. V3 --> V5
+7. V4 o-> V1
+8. V4 o-> V2
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 o-> V2
+3. V3 o-o V4
+4. V3 o-o V5
+5. V4 --> V1
+6. V5 --> V1
+7. V5 o-> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V2
+3. V3 --> V4
+4. V3 --> V5
+5. V4 --> V1
+6. V5 --> V1
+7. V5 --> V2
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#2973
+  extra (spurious) edges: [V1 o-o V3, V3 o-o V5, V4 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 <-> V1
+3. V2 <-> V4
+4. V3 o-> V2
+5. V5 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V1 --> V4
+3. V2 <-> V4
+4. V3 o-> V1
+5. V3 o-> V2
+6. V3 o-o V5
+7. V5 o-> V1
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V2
+3. V3 o-o V5
+4. V4 o-> V1
+5. V4 --> V2
+6. V5 o-> V1
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V2
+3. V3 --> V5
+4. V4 --> V1
+5. V4 --> V2
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 --> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#2997
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V5, V2 o-o V4]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V2 o-> V3
+3. V3 <-> V5
+4. V4 <-> V3
+5. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V1 --> V5
+4. V2 o-> V3
+5. V2 o-> V4
+6. V3 <-> V4
+7. V3 <-> V5
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V1 o-o V5
+4. V2 --> V3
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V1 --> V5
+4. V2 --> V3
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V3 <-> V5 in G*'s MAG, but V3 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#3061
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V5, V2 o-o V4]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V2 o-> V5
+3. V3 <-> V4
+4. V5 <-> V3
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-> V5
+4. V2 --> V4
+5. V2 o-> V5
+6. V3 <-> V4
+7. V5 <-> V3
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V3
+3. V2 o-o V4
+4. V2 o-> V5
+5. V4 --> V3
+6. V4 o-> V5
+7. V5 <-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V2 --> V4
+4. V2 --> V5
+5. V4 --> V3
+6. V4 --> V5
+7. V5 <-> V3
+
+
+  reversed real edge  : V3 <-> V4 in G*'s MAG, but V3 <-- V4 in H1's MAG
+  displaced mark      : V3 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#3153
+  extra (spurious) edges: [V1 o-o V2, V2 o-o V4, V3 o-o V4]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 o-> V5
+3. V4 o-> V1
+4. V5 <-> V1
+5. V5 <-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V4
+5. V2 o-> V5
+6. V4 o-> V1
+7. V4 --> V3
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V4
+3. V2 --> V5
+4. V3 o-> V1
+5. V3 --> V5
+6. V4 o-> V1
+7. V4 o-o V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V4
+3. V2 --> V5
+4. V3 --> V1
+5. V3 --> V5
+6. V4 --> V1
+7. V4 --> V3
+
+
+  reversed real edge  : V1 --> V3 in G*'s MAG, but V1 <-- V3 in H1's MAG
+  displaced mark      : V4 *-> V1 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#3381
+  extra (spurious) edges: [V2 o-o V3, V2 o-o V4, V3 o-o V5]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V1
+3. V3 o-> V4
+4. V4 <-> V1
+5. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 o-> V4
+6. V3 o-> V4
+7. V3 --> V5
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 o-o V3
+4. V3 o-> V4
+5. V3 o-o V5
+6. V5 --> V1
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 --> V3
+4. V3 --> V4
+5. V3 --> V5
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#3406
+  extra (spurious) edges: [V1 o-o V2, V3 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V1 o-o V5
+3. V2 --> V3
+4. V4 <-> V2
+5. V4 <-> V3
+6. V5 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V4
+3. V1 o-o V5
+4. V2 --> V3
+5. V2 <-> V4
+6. V4 <-> V3
+7. V5 o-> V2
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 o-o V5
+3. V2 <-> V4
+4. V3 o-> V2
+5. V3 --> V4
+6. V5 o-> V2
+7. V5 o-o V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 --> V5
+3. V2 <-> V4
+4. V3 --> V2
+5. V3 --> V4
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 --> V3 in G*'s MAG, but V2 <-- V3 in H1's MAG
+  displaced mark      : V4 *-> V2 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#3496
+  extra (spurious) edges: [V1 o-o V4, V3 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V5
+3. V3 o-o V1
+4. V3 o-> V4
+5. V4 <-> V2
+6. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V4
+3. V2 <-> V5
+4. V3 o-o V1
+5. V3 o-> V4
+6. V3 --> V5
+7. V4 <-> V2
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V3 o-o V1
+3. V3 o-> V4
+4. V3 o-o V5
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V3 --> V4
+4. V3 --> V5
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 <-> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#3616
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V4, V3 o-o V4]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V2 --> V3
+3. V4 o-> V2
+4. V5 <-> V2
+5. V5 <-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V1 o-> V5
+4. V2 --> V3
+5. V2 <-> V5
+6. V4 o-> V2
+7. V4 --> V3
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V4
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 o-> V2
+5. V3 --> V5
+6. V4 o-> V2
+7. V4 o-o V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 --> V2
+5. V3 --> V5
+6. V4 --> V2
+7. V4 --> V3
+
+
+  reversed real edge  : V2 --> V3 in G*'s MAG, but V2 <-- V3 in H1's MAG
+  displaced mark      : V4 *-> V2 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#3619
+  extra (spurious) edges: [V2 o-o V4, V3 o-o V5]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V3
+2. V2 o-> V1
+3. V2 o-o V5
+4. V4 <-> V1
+5. V4 --> V3
+6. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V3
+2. V1 <-> V4
+3. V2 o-> V1
+4. V2 o-> V4
+5. V2 o-o V5
+6. V4 --> V3
+7. V5 --> V3
+8. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 o-o V5
+4. V3 --> V1
+5. V3 o-> V4
+6. V5 o-o V3
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 --> V5
+4. V3 --> V1
+5. V3 --> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V3 in G*'s MAG, but V1 <-- V3 in H1's MAG
+  displaced mark      : V1 -- V3 -- V4  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1]   (m-separated here, m-connected in G*)
+  model                 : PAG#3757
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V5]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V3 o-> V1
+2. V3 o-> V5
+3. V4 o-> V1
+4. V4 o-> V5
+5. V5 --> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V5
+3. V3 o-> V1
+4. V3 o-> V5
+5. V4 o-> V1
+6. V4 o-> V5
+7. V5 --> V2
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V2 --> V5
+3. V3 o-> V1
+4. V3 --> V5
+5. V4 o-> V1
+6. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V2 --> V5
+3. V3 --> V1
+4. V3 --> V5
+5. V4 --> V1
+6. V4 --> V5
+
+
+  reversed real edge  : V5 --> V2 in G*'s MAG, but V5 <-- V2 in H1's MAG
+  displaced mark      : V2 *-> V5 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#3982
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V1 o-o V5
+3. V3 --> V2
+4. V4 <-> V2
+5. V4 <-> V3
+6. V5 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-> V4
+3. V1 o-o V5
+4. V3 --> V2
+5. V4 <-> V2
+6. V4 <-> V3
+7. V5 --> V2
+8. V5 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 o-o V5
+3. V2 o-> V3
+4. V2 --> V4
+5. V4 <-> V3
+6. V5 o-o V2
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V4
+5. V4 <-> V3
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V3 --> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V3 -- V2 -- V4  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#4057
+  extra (spurious) edges: [V1 o-o V2, V2 o-o V5, V4 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-> V3
+3. V3 <-> V1
+4. V3 <-> V4
+5. V5 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-> V1
+3. V2 o-> V3
+4. V2 o-o V5
+5. V3 <-> V1
+6. V3 <-> V4
+7. V5 o-> V1
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 o-o V5
+3. V3 <-> V1
+4. V4 o-> V1
+5. V4 --> V3
+6. V5 o-> V1
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V5
+3. V3 <-> V1
+4. V4 --> V1
+5. V4 --> V3
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 --> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V3 *-> V1 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#4206
+  extra (spurious) edges: [V1 o-o V5, V3 o-o V4]
+  edge removed from H0  : V3 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V2 <-> V5
+4. V3 o-> V2
+5. V4 <-> V2
+6. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V1 --> V5
+4. V2 <-> V5
+5. V3 o-> V2
+6. V3 o-> V4
+7. V4 <-> V2
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V1 o-o V5
+4. V3 --> V2
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V1 --> V5
+4. V3 --> V2
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 <-> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#4454
+  extra (spurious) edges: [V1 o-o V2, V4 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V2 --> V5
+4. V3 <-> V2
+5. V3 <-> V5
+6. V4 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V3
+3. V1 o-o V4
+4. V2 --> V5
+5. V3 <-> V2
+6. V3 <-> V5
+7. V4 o-> V2
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V4
+3. V3 <-> V2
+4. V4 o-> V2
+5. V4 o-o V5
+6. V5 o-> V2
+7. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V3 <-> V2
+4. V4 --> V2
+5. V4 --> V5
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 --> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V3 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#4459
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V4, V2 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V2 o-> V4
+3. V3 <-> V5
+4. V4 <-> V3
+5. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-> V4
+4. V2 o-> V4
+5. V2 --> V5
+6. V3 <-> V4
+7. V3 <-> V5
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V3
+3. V2 o-> V4
+4. V2 o-o V5
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V2 --> V4
+4. V2 --> V5
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V3 <-> V5 in G*'s MAG, but V3 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#4512
+  extra (spurious) edges: [V2 o-o V5, V3 o-o V4]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V3
+2. V2 o-> V1
+3. V2 o-o V4
+4. V4 o-> V5
+5. V5 <-> V1
+6. V5 --> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V3
+2. V2 o-> V1
+3. V2 o-o V4
+4. V2 o-> V5
+5. V4 --> V3
+6. V4 o-> V5
+7. V5 <-> V1
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 o-o V4
+3. V3 --> V1
+4. V3 o-> V5
+5. V4 o-o V3
+6. V4 o-> V5
+7. V5 <-> V1
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V4
+3. V3 --> V1
+4. V3 --> V5
+5. V4 --> V3
+6. V4 --> V5
+7. V5 <-> V1
+
+
+  reversed real edge  : V1 <-> V3 in G*'s MAG, but V1 <-- V3 in H1's MAG
+  displaced mark      : V1 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#4615
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V3]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V2 --> V4
+4. V3 o-> V5
+5. V5 <-> V2
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 --> V4
+4. V2 --> V4
+5. V3 o-> V2
+6. V3 o-> V5
+7. V5 <-> V2
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-o V4
+4. V3 --> V5
+5. V4 o-> V2
+6. V4 --> V5
+7. V5 <-> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V4
+4. V3 --> V5
+5. V4 --> V2
+6. V4 --> V5
+7. V5 <-> V2
+
+
+  reversed real edge  : V2 --> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#4670
+  extra (spurious) edges: [V1 o-o V4, V1 o-o V5, V2 o-o V4]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 --> V5
+3. V3 <-> V2
+4. V3 <-> V5
+5. V4 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V1 --> V5
+4. V2 <-> V3
+5. V2 --> V5
+6. V3 <-> V5
+7. V4 o-> V2
+8. V4 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V1 o-o V5
+4. V2 <-> V3
+5. V4 --> V3
+6. V5 o-> V2
+7. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V1 --> V5
+4. V2 <-> V3
+5. V4 --> V3
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 --> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1]   (m-separated here, m-connected in G*)
+  model                 : PAG#4928
+  extra (spurious) edges: [V1 o-o V4, V1 o-o V5]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-> V1
+2. V2 o-> V5
+3. V3 o-> V1
+4. V3 o-> V5
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 o-o V5
+3. V2 o-> V1
+4. V2 o-> V5
+5. V3 o-> V1
+6. V3 o-> V5
+7. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-> V1
+3. V2 --> V5
+4. V3 o-> V1
+5. V3 --> V5
+6. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 --> V1
+3. V2 --> V5
+4. V3 --> V1
+5. V3 --> V5
+6. V4 --> V5
+
+
+  reversed real edge  : V5 --> V4 in G*'s MAG, but V5 <-- V4 in H1's MAG
+  displaced mark      : V4 *-> V5 <-* V2  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#4992
+  extra (spurious) edges: [V2 o-o V4, V2 o-o V5, V3 o-o V4]
+  edge removed from H0  : V3 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V3
+3. V3 <-> V1
+4. V3 --> V5
+5. V4 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V3
+3. V2 o-o V4
+4. V2 --> V5
+5. V3 <-> V1
+6. V3 --> V5
+7. V4 o-> V1
+8. V4 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-> V3
+2. V2 o-o V4
+3. V2 o-o V5
+4. V3 <-> V1
+5. V4 --> V1
+6. V5 --> V1
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V4
+3. V2 --> V5
+4. V3 <-> V1
+5. V4 --> V1
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#5510
+  extra (spurious) edges: [V2 o-o V3, V2 o-o V4, V4 o-o V5]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V1
+3. V3 <-> V1
+4. V3 --> V5
+5. V4 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V1
+3. V2 o-> V3
+4. V2 o-o V4
+5. V3 <-> V1
+6. V3 --> V5
+7. V4 o-> V3
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 o-o V4
+3. V3 <-> V1
+4. V4 o-> V3
+5. V4 o-o V5
+6. V5 --> V1
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V4
+3. V3 <-> V1
+4. V4 --> V3
+5. V4 --> V5
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#5539
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V4, V2 o-o V3]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V2 o-> V5
+3. V3 --> V4
+4. V5 <-> V3
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 --> V4
+4. V2 o-> V3
+5. V2 o-> V5
+6. V3 --> V4
+7. V5 <-> V3
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-o V4
+4. V2 --> V5
+5. V4 o-> V3
+6. V4 --> V5
+7. V5 <-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V4
+4. V2 --> V5
+5. V4 --> V3
+6. V4 --> V5
+7. V5 <-> V3
+
+
+  reversed real edge  : V3 --> V4 in G*'s MAG, but V3 <-- V4 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#5709
+  extra (spurious) edges: [V1 o-o V2, V3 o-o V4]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-o V3
+3. V2 o-> V5
+4. V3 o-> V1
+5. V5 <-> V1
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 o-> V5
+6. V3 o-> V1
+7. V3 --> V4
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V3
+3. V2 --> V5
+4. V3 o-> V1
+5. V3 o-o V4
+6. V4 o-> V1
+7. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V3
+3. V2 --> V5
+4. V3 --> V1
+5. V3 --> V4
+6. V4 --> V1
+7. V4 --> V5
+
+
+  reversed real edge  : V1 --> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V3 *-> V1 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#5803
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V4, V2 o-o V3]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V2 o-> V4
+3. V4 --> V3
+4. V5 <-> V3
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V1 o-> V5
+4. V2 --> V3
+5. V2 o-> V4
+6. V4 --> V3
+7. V4 <-> V5
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V5
+3. V2 o-o V3
+4. V2 o-> V4
+5. V3 o-> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V4
+5. V3 --> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 --> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V4 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#6105
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V4, V2 o-o V3]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 --> V4
+3. V3 o-> V5
+4. V5 <-> V2
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 --> V4
+4. V2 --> V4
+5. V3 o-> V2
+6. V3 o-> V5
+7. V5 <-> V2
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-o V4
+4. V3 --> V5
+5. V4 o-> V2
+6. V4 --> V5
+7. V5 <-> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V4
+4. V3 --> V5
+5. V4 --> V2
+6. V4 --> V5
+7. V5 <-> V2
+
+
+  reversed real edge  : V2 --> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#6534
+  extra (spurious) edges: [V1 o-o V2, V3 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 o-> V4
+3. V2 o-o V5
+4. V4 <-> V1
+5. V4 <-> V3
+6. V5 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 o-> V1
+3. V2 o-> V4
+4. V2 o-o V5
+5. V4 <-> V1
+6. V4 <-> V3
+7. V5 o-> V1
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V4
+2. V2 o-o V5
+3. V3 o-> V1
+4. V3 --> V4
+5. V4 <-> V1
+6. V5 o-> V1
+7. V5 o-o V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V4
+2. V2 --> V5
+3. V3 --> V1
+4. V3 --> V4
+5. V4 <-> V1
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 --> V3 in G*'s MAG, but V1 <-- V3 in H1's MAG
+  displaced mark      : V4 *-> V1 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#6982
+  extra (spurious) edges: [V2 o-o V5, V3 o-o V4]
+  edge removed from H0  : V3 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V3
+3. V2 o-> V4
+4. V3 o-> V1
+5. V4 <-> V1
+6. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V3
+3. V2 o-> V4
+4. V2 --> V5
+5. V3 o-> V1
+6. V3 o-> V4
+7. V4 <-> V1
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-o V3
+2. V2 o-> V4
+3. V2 o-o V5
+4. V3 --> V1
+5. V4 <-> V1
+6. V5 --> V1
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V4
+3. V2 --> V5
+4. V3 --> V1
+5. V4 <-> V1
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#7287
+  extra (spurious) edges: [V1 o-o V5, V2 o-o V3]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V3 o-> V5
+4. V4 <-> V2
+5. V5 --> V2
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V1 o-> V5
+4. V3 --> V2
+5. V3 o-> V5
+6. V4 <-> V2
+7. V5 --> V2
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V4
+3. V2 --> V4
+4. V2 o-> V5
+5. V3 o-o V2
+6. V3 o-> V5
+7. V5 <-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V2 --> V4
+4. V2 --> V5
+5. V3 --> V2
+6. V3 --> V5
+7. V5 <-> V4
+
+
+  reversed real edge  : V4 <-> V2 in G*'s MAG, but V4 <-- V2 in H1's MAG
+  displaced mark      : V4 -- V2 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#7289
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V5]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V5
+3. V2 o-> V4
+4. V4 <-> V3
+5. V5 --> V3
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V3
+3. V1 o-> V5
+4. V2 o-> V4
+5. V2 o-> V5
+6. V4 <-> V3
+7. V4 <-> V5
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-o V3
+3. V1 o-> V5
+4. V2 --> V4
+5. V3 --> V4
+6. V3 o-> V5
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V5
+4. V2 --> V4
+5. V3 --> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 <-> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V4 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#7609
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V5
+3. V3 <-> V2
+4. V3 <-> V4
+5. V4 --> V2
+6. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-> V4
+3. V1 o-o V5
+4. V3 <-> V2
+5. V4 --> V2
+6. V4 <-> V3
+7. V5 --> V2
+8. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V5
+3. V2 --> V3
+4. V2 o-> V4
+5. V4 <-> V3
+6. V5 o-o V2
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V4
+5. V4 <-> V3
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V3 <-> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V3 -- V2 -- V4  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#7858
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V5, V2 o-o V3]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V3 o-> V5
+3. V4 <-> V2
+4. V5 --> V2
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V1 o-> V5
+4. V3 --> V2
+5. V3 o-> V5
+6. V4 <-> V2
+7. V5 --> V2
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V4
+3. V2 --> V4
+4. V2 o-> V5
+5. V3 o-o V2
+6. V3 o-> V5
+7. V5 <-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V2 --> V4
+4. V2 --> V5
+5. V3 --> V2
+6. V3 --> V5
+7. V5 <-> V4
+
+
+  reversed real edge  : V4 <-> V2 in G*'s MAG, but V4 <-- V2 in H1's MAG
+  displaced mark      : V4 -- V2 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1]   (m-separated here, m-connected in G*)
+  model                 : PAG#8079
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V4]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-> V1
+2. V2 o-> V4
+3. V4 --> V3
+4. V5 o-> V1
+5. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V4
+3. V2 o-> V1
+4. V2 o-> V4
+5. V4 --> V3
+6. V5 o-> V1
+7. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 o-> V1
+3. V2 --> V4
+4. V3 --> V4
+5. V5 o-> V1
+6. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 --> V1
+3. V2 --> V4
+4. V3 --> V4
+5. V5 --> V1
+6. V5 --> V4
+
+
+  reversed real edge  : V4 --> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V3 *-> V4 <-* V2  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#8277
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V4, V3 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V5
+3. V3 o-> V4
+4. V4 <-> V2
+5. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-> V4
+4. V2 <-> V5
+5. V3 o-> V4
+6. V3 --> V5
+7. V4 <-> V2
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V3
+3. V3 o-> V4
+4. V3 o-o V5
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V3 --> V4
+4. V3 --> V5
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 <-> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#8308
+  extra (spurious) edges: [V1 o-o V2, V3 o-o V4]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V2 o-o V4
+3. V2 o-> V5
+4. V4 o-> V1
+5. V5 <-> V1
+6. V5 <-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V4
+5. V2 o-> V5
+6. V4 o-> V1
+7. V4 --> V3
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V4
+3. V2 --> V5
+4. V3 o-> V1
+5. V3 --> V5
+6. V4 o-> V1
+7. V4 o-o V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V4
+3. V2 --> V5
+4. V3 --> V1
+5. V3 --> V5
+6. V4 --> V1
+7. V4 --> V3
+
+
+  reversed real edge  : V1 --> V3 in G*'s MAG, but V1 <-- V3 in H1's MAG
+  displaced mark      : V4 *-> V1 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#8793
+  extra (spurious) edges: [V2 o-o V4, V2 o-o V5, V3 o-o V5]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V3
+2. V2 o-> V1
+3. V4 <-> V1
+4. V4 --> V3
+5. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V3
+2. V1 <-> V4
+3. V2 o-> V1
+4. V2 o-> V4
+5. V2 o-o V5
+6. V4 --> V3
+7. V5 --> V3
+8. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 o-o V5
+4. V3 --> V1
+5. V3 o-> V4
+6. V5 o-o V3
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 --> V5
+4. V3 --> V1
+5. V3 --> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V3 in G*'s MAG, but V1 <-- V3 in H1's MAG
+  displaced mark      : V1 -- V3 -- V4  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#8876
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V4]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V2 o-> V5
+4. V4 --> V3
+5. V5 <-> V3
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V3
+3. V1 o-> V4
+4. V2 o-> V4
+5. V2 o-> V5
+6. V4 --> V3
+7. V4 <-> V5
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-o V3
+3. V1 o-> V4
+4. V2 --> V5
+5. V3 o-> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V4
+4. V2 --> V5
+5. V3 --> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 --> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V4 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#8937
+  extra (spurious) edges: [V1 o-o V4, V1 o-o V5, V2 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V3 <-> V2
+3. V3 <-> V4
+4. V4 --> V2
+5. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-> V4
+3. V1 o-o V5
+4. V3 <-> V2
+5. V4 --> V2
+6. V4 <-> V3
+7. V5 --> V2
+8. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V5
+3. V2 --> V3
+4. V2 o-> V4
+5. V4 <-> V3
+6. V5 o-o V2
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V4
+5. V4 <-> V3
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V3 <-> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V3 -- V2 -- V4  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#9291
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V3, V3 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V2 --> V5
+3. V3 o-> V2
+4. V4 <-> V2
+5. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-> V4
+4. V2 --> V5
+5. V3 o-> V2
+6. V3 --> V5
+7. V4 <-> V2
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V4
+3. V3 o-> V2
+4. V3 o-o V5
+5. V4 <-> V2
+6. V5 o-> V2
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V3 --> V2
+4. V3 --> V5
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 --> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V3 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#9459
+  extra (spurious) edges: [V2 o-o V3, V2 o-o V4, V3 o-o V5]
+  edge removed from H0  : V3 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V5
+3. V3 o-> V1
+4. V5 <-> V1
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V1 <-> V5
+3. V2 o-o V3
+4. V2 --> V4
+5. V2 o-> V5
+6. V3 o-> V1
+7. V3 o-> V5
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V3
+3. V2 o-o V4
+4. V2 o-> V5
+5. V3 --> V1
+6. V4 --> V1
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V3
+3. V2 --> V4
+4. V2 --> V5
+5. V3 --> V1
+6. V4 --> V1
+7. V4 --> V5
+
+
+  reversed real edge  : V1 <-> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V1 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#9706
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V3, V2 o-o V4]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-> V1
+3. V3 o-> V5
+4. V5 <-> V1
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 --> V4
+6. V3 o-> V1
+7. V3 o-> V5
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V1
+3. V2 o-o V3
+4. V2 o-o V4
+5. V3 --> V5
+6. V4 o-> V1
+7. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V1
+3. V2 --> V3
+4. V2 --> V4
+5. V3 --> V5
+6. V4 --> V1
+7. V4 --> V5
+
+
+  reversed real edge  : V1 --> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#9786
+  extra (spurious) edges: [V2 o-o V4, V2 o-o V5, V3 o-o V4]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V3
+2. V2 o-> V1
+3. V4 o-> V5
+4. V5 <-> V1
+5. V5 --> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V3
+2. V2 o-> V1
+3. V2 o-o V4
+4. V2 o-> V5
+5. V4 --> V3
+6. V4 o-> V5
+7. V5 <-> V1
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 o-o V4
+3. V3 --> V1
+4. V3 o-> V5
+5. V4 o-o V3
+6. V4 o-> V5
+7. V5 <-> V1
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V4
+3. V3 --> V1
+4. V3 --> V5
+5. V4 --> V3
+6. V4 --> V5
+7. V5 <-> V1
+
+
+  reversed real edge  : V1 <-> V3 in G*'s MAG, but V1 <-- V3 in H1's MAG
+  displaced mark      : V1 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#9869
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V2 o-o V4
+4. V3 <-> V1
+5. V3 <-> V5
+6. V4 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V2 o-o V4
+4. V2 --> V5
+5. V3 <-> V1
+6. V3 <-> V5
+7. V4 o-> V1
+8. V4 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-> V1
+2. V2 o-o V4
+3. V2 o-o V5
+4. V3 <-> V1
+5. V4 --> V3
+6. V5 o-> V1
+7. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V4
+3. V2 --> V5
+4. V3 <-> V1
+5. V4 --> V3
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#9923
+  extra (spurious) edges: [V2 o-o V4, V3 o-o V5]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V1
+3. V3 o-o V2
+4. V3 o-> V4
+5. V4 <-> V1
+6. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-> V4
+5. V3 o-o V2
+6. V3 o-> V4
+7. V3 --> V5
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V3 o-o V2
+4. V3 o-> V4
+5. V3 o-o V5
+6. V5 --> V1
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 --> V3
+4. V3 --> V4
+5. V3 --> V5
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#9964
+  extra (spurious) edges: [V1 o-o V5, V2 o-o V3]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V2 o-> V5
+4. V4 <-> V3
+5. V5 --> V3
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V1 o-> V5
+4. V2 --> V3
+5. V2 o-> V5
+6. V4 <-> V3
+7. V4 <-> V5
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V4
+3. V2 o-o V3
+4. V2 o-> V5
+5. V3 --> V4
+6. V3 o-> V5
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 --> V3
+4. V2 --> V5
+5. V3 --> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 <-> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V4 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#10212
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V5, V2 o-o V3]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V2 o-> V4
+3. V3 --> V5
+4. V4 <-> V3
+5. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 --> V5
+4. V2 o-> V3
+5. V2 o-> V4
+6. V3 <-> V4
+7. V3 --> V5
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-o V5
+4. V2 --> V4
+5. V3 <-> V4
+6. V5 o-> V3
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V5
+4. V2 --> V4
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V3 --> V5 in G*'s MAG, but V3 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#10735
+  extra (spurious) edges: [V1 o-o V2, V3 o-o V4]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V4
+2. V1 o-> V5
+3. V2 --> V3
+4. V4 o-> V2
+5. V5 <-> V2
+6. V5 <-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V1 o-> V5
+4. V2 --> V3
+5. V2 <-> V5
+6. V4 o-> V2
+7. V4 --> V3
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V4
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 o-> V2
+5. V3 --> V5
+6. V4 o-> V2
+7. V4 o-o V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 --> V2
+5. V3 --> V5
+6. V4 --> V2
+7. V4 --> V3
+
+
+  reversed real edge  : V2 --> V3 in G*'s MAG, but V2 <-- V3 in H1's MAG
+  displaced mark      : V4 *-> V2 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#10944
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V4]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-> V1
+3. V2 o-o V3
+4. V3 o-> V5
+5. V5 <-> V1
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 --> V4
+6. V3 o-> V1
+7. V3 o-> V5
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V1
+3. V2 o-o V3
+4. V2 o-o V4
+5. V3 --> V5
+6. V4 o-> V1
+7. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V1
+3. V2 --> V3
+4. V2 --> V4
+5. V3 --> V5
+6. V4 --> V1
+7. V4 --> V5
+
+
+  reversed real edge  : V1 --> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#11446
+  extra (spurious) edges: [V2 o-o V3, V4 o-o V5]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V1
+3. V3 <-> V1
+4. V3 --> V5
+5. V4 o-o V2
+6. V4 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V1
+3. V2 o-> V3
+4. V3 <-> V1
+5. V3 --> V5
+6. V4 o-o V2
+7. V4 o-> V3
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V3 <-> V1
+3. V4 o-o V2
+4. V4 o-> V3
+5. V4 o-o V5
+6. V5 --> V1
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V4
+3. V3 <-> V1
+4. V4 --> V3
+5. V4 --> V5
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#11629
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V3]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V5
+3. V2 o-> V4
+4. V4 --> V3
+5. V5 <-> V3
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V1 o-> V5
+4. V2 --> V3
+5. V2 o-> V4
+6. V4 --> V3
+7. V4 <-> V5
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V5
+3. V2 o-o V3
+4. V2 o-> V4
+5. V3 o-> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V4
+5. V3 --> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 --> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V4 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#11794
+  extra (spurious) edges: [V2 o-o V4, V3 o-o V5]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 <-> V1
+3. V2 --> V5
+4. V3 o-> V2
+5. V4 o-> V1
+6. V4 o-o V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 <-> V1
+3. V2 --> V5
+4. V3 o-> V2
+5. V3 --> V5
+6. V4 o-> V1
+7. V4 o-> V2
+8. V4 o-o V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 o-> V2
+3. V3 o-o V5
+4. V4 --> V1
+5. V4 o-o V3
+6. V5 --> V1
+7. V5 o-> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V2
+3. V3 --> V4
+4. V3 --> V5
+5. V4 --> V1
+6. V5 --> V1
+7. V5 --> V2
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#11952
+  extra (spurious) edges: [V2 o-o V3, V4 o-o V5]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 <-> V1
+3. V2 --> V4
+4. V3 o-> V1
+5. V3 o-o V5
+6. V5 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 <-> V1
+3. V2 --> V4
+4. V3 o-> V1
+5. V3 o-> V2
+6. V3 o-o V5
+7. V5 o-> V2
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V1
+3. V3 o-o V5
+4. V4 --> V1
+5. V4 o-> V2
+6. V5 o-> V2
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V1
+3. V3 --> V5
+4. V4 --> V1
+5. V4 --> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#12055
+  extra (spurious) edges: [V1 o-o V3, V4 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 <-> V1
+3. V2 <-> V4
+4. V3 o-> V2
+5. V3 o-o V5
+6. V5 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V1 --> V4
+3. V2 <-> V4
+4. V3 o-> V1
+5. V3 o-> V2
+6. V3 o-o V5
+7. V5 o-> V1
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V2
+3. V3 o-o V5
+4. V4 o-> V1
+5. V4 --> V2
+6. V5 o-> V1
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V2
+3. V3 --> V5
+4. V4 --> V1
+5. V4 --> V2
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 --> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#12075
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V3]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V2 o-> V5
+4. V3 --> V4
+5. V5 <-> V3
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 --> V4
+4. V2 o-> V3
+5. V2 o-> V5
+6. V3 --> V4
+7. V5 <-> V3
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-o V4
+4. V2 --> V5
+5. V4 o-> V3
+6. V4 --> V5
+7. V5 <-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V4
+4. V2 --> V5
+5. V4 --> V3
+6. V4 --> V5
+7. V5 <-> V3
+
+
+  reversed real edge  : V3 --> V4 in G*'s MAG, but V3 <-- V4 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#12271
+  extra (spurious) edges: [V2 o-o V5, V3 o-o V4]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V1
+3. V2 o-o V3
+4. V3 o-> V5
+5. V5 <-> V1
+6. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 o-> V5
+6. V3 --> V4
+7. V3 o-> V5
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V1
+3. V2 o-o V3
+4. V3 o-o V4
+5. V3 o-> V5
+6. V4 --> V1
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V1
+3. V2 --> V3
+4. V3 --> V4
+5. V3 --> V5
+6. V4 --> V1
+7. V4 --> V5
+
+
+  reversed real edge  : V1 <-> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V1 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#12451
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V5, V4 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V2 --> V4
+3. V3 <-> V2
+4. V3 <-> V4
+5. V5 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V3
+3. V1 o-o V5
+4. V2 <-> V3
+5. V2 --> V4
+6. V3 <-> V4
+7. V5 o-> V2
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V5
+3. V2 <-> V3
+4. V4 o-> V2
+5. V4 --> V3
+6. V5 o-> V2
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 <-> V3
+4. V4 --> V2
+5. V4 --> V3
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 --> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V3 *-> V2 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#12691
+  extra (spurious) edges: [V1 o-o V5, V2 o-o V4]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V3 <-> V2
+4. V3 <-> V5
+5. V4 o-> V5
+6. V5 --> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V1 o-> V5
+4. V3 <-> V2
+5. V4 --> V2
+6. V4 o-> V5
+7. V5 --> V2
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V4
+3. V2 --> V3
+4. V2 o-> V5
+5. V4 o-o V2
+6. V4 o-> V5
+7. V5 <-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V2 --> V3
+4. V2 --> V5
+5. V4 --> V2
+6. V4 --> V5
+7. V5 <-> V3
+
+
+  reversed real edge  : V3 <-> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V3 -- V2 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#12793
+  extra (spurious) edges: [V2 o-o V3, V2 o-o V4]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V4
+3. V4 --> V3
+4. V5 o-> V2
+5. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V4
+3. V2 --> V3
+4. V2 o-o V4
+5. V4 --> V3
+6. V5 o-> V2
+7. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 --> V4
+3. V2 --> V3
+4. V3 --> V4
+5. V5 o-> V2
+6. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 --> V3
+4. V3 --> V4
+5. V5 --> V2
+6. V5 --> V4
+
+
+  reversed real edge  : V4 --> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V3 *-> V4 <-* V1  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#12828
+  extra (spurious) edges: [V1 o-o V4, V3 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 <-> V1
+3. V2 <-> V5
+4. V3 o-> V1
+5. V4 o-> V2
+6. V4 o-o V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 o-> V1
+5. V3 --> V5
+6. V4 o-> V1
+7. V4 o-> V2
+8. V4 o-o V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 o-> V1
+3. V3 o-o V5
+4. V4 --> V2
+5. V4 o-o V3
+6. V5 o-> V1
+7. V5 --> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V2
+2. V3 --> V1
+3. V3 --> V4
+4. V3 --> V5
+5. V4 --> V2
+6. V5 --> V1
+7. V5 --> V2
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#13050
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V4, V2 o-o V5]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V2 o-> V3
+3. V3 <-> V4
+4. V5 <-> V3
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V4
+3. V1 o-> V5
+4. V2 o-> V3
+5. V2 o-> V5
+6. V3 <-> V4
+7. V3 <-> V5
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-o V4
+3. V1 o-> V5
+4. V2 --> V3
+5. V3 <-> V5
+6. V4 --> V3
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V1 --> V5
+4. V2 --> V3
+5. V3 <-> V5
+6. V4 --> V3
+7. V4 --> V5
+
+
+  reversed real edge  : V3 <-> V4 in G*'s MAG, but V3 <-- V4 in H1's MAG
+  displaced mark      : V3 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#13573
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V5]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V5
+3. V2 o-> V3
+4. V3 <-> V4
+5. V5 <-> V3
+6. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V4
+3. V1 o-> V5
+4. V2 o-> V3
+5. V2 o-> V5
+6. V3 <-> V4
+7. V3 <-> V5
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-o V4
+3. V1 o-> V5
+4. V2 --> V3
+5. V3 <-> V5
+6. V4 --> V3
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V1 --> V5
+4. V2 --> V3
+5. V3 <-> V5
+6. V4 --> V3
+7. V4 --> V5
+
+
+  reversed real edge  : V3 <-> V4 in G*'s MAG, but V3 <-- V4 in H1's MAG
+  displaced mark      : V3 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#13711
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V3, V2 o-o V4]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V2 o-> V3
+3. V3 --> V4
+4. V5 <-> V3
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-> V5
+4. V2 o-> V3
+5. V2 --> V4
+6. V3 --> V4
+7. V3 <-> V5
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V5
+3. V2 o-> V3
+4. V2 o-o V4
+5. V3 <-> V5
+6. V4 o-> V3
+7. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V4
+5. V3 <-> V5
+6. V4 --> V3
+7. V4 --> V5
+
+
+  reversed real edge  : V3 --> V4 in G*'s MAG, but V3 <-- V4 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#14232
+  extra (spurious) edges: [V2 o-o V3, V2 o-o V5]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V5
+3. V4 o-> V2
+4. V4 o-> V5
+5. V5 --> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V5
+3. V2 --> V3
+4. V2 o-o V5
+5. V4 o-> V2
+6. V4 o-> V5
+7. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 --> V5
+3. V2 --> V3
+4. V3 --> V5
+5. V4 o-> V2
+6. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V2 --> V3
+4. V3 --> V5
+5. V4 --> V2
+6. V4 --> V5
+
+
+  reversed real edge  : V5 --> V3 in G*'s MAG, but V5 <-- V3 in H1's MAG
+  displaced mark      : V3 *-> V5 <-* V1  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#14257
+  extra (spurious) edges: [V1 o-o V5, V2 o-o V4]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V2 --> V5
+4. V3 <-> V2
+5. V3 <-> V5
+6. V4 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V1 --> V5
+4. V2 <-> V3
+5. V2 --> V5
+6. V3 <-> V5
+7. V4 o-> V2
+8. V4 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V1 o-o V5
+4. V2 <-> V3
+5. V4 --> V3
+6. V5 o-> V2
+7. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V1 --> V5
+4. V2 <-> V3
+5. V4 --> V3
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 --> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#14590
+  extra (spurious) edges: [V1 o-o V3, V4 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V3
+3. V2 <-> V4
+4. V3 --> V4
+5. V5 o-o V1
+6. V5 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V3
+3. V2 <-> V4
+4. V3 <-> V2
+5. V3 --> V4
+6. V5 o-o V1
+7. V5 o-> V3
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V3 <-> V2
+3. V4 --> V2
+4. V4 o-> V3
+5. V5 o-o V1
+6. V5 o-> V3
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V3 <-> V2
+4. V4 --> V2
+5. V4 --> V3
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V2 <-> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#14635
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V5, V4 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V3
+3. V2 <-> V4
+4. V3 --> V4
+5. V5 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V3
+3. V1 o-o V5
+4. V2 <-> V4
+5. V3 <-> V2
+6. V3 --> V4
+7. V5 o-> V3
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V5
+3. V3 <-> V2
+4. V4 --> V2
+5. V4 o-> V3
+6. V5 o-> V3
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V3 <-> V2
+4. V4 --> V2
+5. V4 --> V3
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V2 <-> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#14995
+  extra (spurious) edges: [V1 o-o V2, V4 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V5
+3. V2 --> V4
+4. V3 <-> V2
+5. V3 <-> V4
+6. V5 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V3
+3. V1 o-o V5
+4. V2 <-> V3
+5. V2 --> V4
+6. V3 <-> V4
+7. V5 o-> V2
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V5
+3. V2 <-> V3
+4. V4 o-> V2
+5. V4 --> V3
+6. V5 o-> V2
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 <-> V3
+4. V4 --> V2
+5. V4 --> V3
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 --> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V3 *-> V2 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#15268
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V5, V2 o-o V3]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 --> V5
+3. V3 o-> V4
+4. V4 <-> V2
+5. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 --> V5
+4. V2 --> V5
+5. V3 o-> V2
+6. V3 o-> V4
+7. V4 <-> V2
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-o V5
+4. V3 --> V4
+5. V4 <-> V2
+6. V5 o-> V2
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V5
+4. V3 --> V4
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 --> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#15420
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V3, V2 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V3 o-> V4
+4. V4 <-> V1
+5. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V1 --> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 --> V5
+6. V3 o-> V1
+7. V3 o-> V4
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V1
+3. V2 o-o V3
+4. V2 o-o V5
+5. V3 --> V4
+6. V5 o-> V1
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 --> V3
+4. V2 --> V5
+5. V3 --> V4
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#15653
+  extra (spurious) edges: [V2 o-o V3, V3 o-o V5, V4 o-o V5]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 <-> V1
+3. V2 --> V4
+4. V3 o-> V1
+5. V5 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 <-> V1
+3. V2 --> V4
+4. V3 o-> V1
+5. V3 o-> V2
+6. V3 o-o V5
+7. V5 o-> V2
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V1
+3. V3 o-o V5
+4. V4 --> V1
+5. V4 o-> V2
+6. V5 o-> V2
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V1
+3. V3 --> V5
+4. V4 --> V1
+5. V4 --> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V1 *-> V2 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#15743
+  extra (spurious) edges: [V1 o-o V4, V2 o-o V3]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V5
+3. V3 o-> V4
+4. V4 --> V2
+5. V5 <-> V2
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V1 o-> V5
+4. V3 --> V2
+5. V3 o-> V4
+6. V4 --> V2
+7. V4 <-> V5
+8. V5 <-> V2
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V5
+3. V2 o-> V4
+4. V2 --> V5
+5. V3 o-o V2
+6. V3 o-> V4
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 --> V4
+4. V2 --> V5
+5. V3 --> V2
+6. V3 --> V4
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 --> V2 in G*'s MAG, but V4 <-- V2 in H1's MAG
+  displaced mark      : V4 -- V2 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V4 _||_ V5 | [V1, V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#16075
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V4, V2 o-o V4]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V3 --> V2
+3. V4 o-> V3
+4. V5 <-> V2
+5. V5 <-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V1 o-> V5
+4. V3 --> V2
+5. V4 --> V2
+6. V4 o-> V3
+7. V5 <-> V2
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V4
+2. V1 --> V5
+3. V2 o-> V3
+4. V2 --> V5
+5. V4 o-o V2
+6. V4 o-> V3
+7. V5 <-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V5
+5. V4 --> V2
+6. V4 --> V3
+7. V5 <-> V3
+
+
+  reversed real edge  : V3 --> V2 in G*'s MAG, but V3 <-- V2 in H1's MAG
+  displaced mark      : V3 -- V2 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#16463
+  extra (spurious) edges: [V2 o-o V5, V3 o-o V4]
+  edge removed from H0  : V3 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V3
+3. V2 o-o V4
+4. V3 <-> V1
+5. V3 --> V5
+6. V4 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V3
+3. V2 o-o V4
+4. V2 --> V5
+5. V3 <-> V1
+6. V3 --> V5
+7. V4 o-> V1
+8. V4 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-> V3
+2. V2 o-o V4
+3. V2 o-o V5
+4. V3 <-> V1
+5. V4 --> V1
+6. V5 --> V1
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V4
+3. V2 --> V5
+4. V3 <-> V1
+5. V4 --> V1
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#16611
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V2 o-o V3
+4. V3 o-> V4
+5. V4 <-> V1
+6. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V1 --> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 --> V5
+6. V3 o-> V1
+7. V3 o-> V4
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V1
+3. V2 o-o V3
+4. V2 o-o V5
+5. V3 --> V4
+6. V5 o-> V1
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 --> V1
+3. V2 --> V3
+4. V2 --> V5
+5. V3 --> V4
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#16768
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V4, V4 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V5
+3. V3 <-> V2
+4. V3 --> V5
+5. V4 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V3
+3. V1 o-o V4
+4. V2 <-> V3
+5. V2 <-> V5
+6. V3 --> V5
+7. V4 o-> V3
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V4
+3. V2 <-> V3
+4. V4 o-> V3
+5. V4 o-o V5
+6. V5 --> V2
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 <-> V3
+4. V4 --> V3
+5. V4 --> V5
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 <-> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#16786
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V3, V2 o-o V5]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V2 o-> V4
+3. V4 <-> V3
+4. V5 --> V3
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V3
+3. V1 o-> V5
+4. V2 o-> V4
+5. V2 o-> V5
+6. V4 <-> V3
+7. V4 <-> V5
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-o V3
+3. V1 o-> V5
+4. V2 --> V4
+5. V3 --> V4
+6. V3 o-> V5
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V5
+4. V2 --> V4
+5. V3 --> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 <-> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V4 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#16835
+  extra (spurious) edges: [V3 o-o V4, V3 o-o V5]
+  edge removed from H0  : V3 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-> V5
+3. V2 o-> V3
+4. V2 o-> V5
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-> V5
+3. V2 o-> V3
+4. V2 o-> V5
+5. V3 --> V4
+6. V3 o-o V5
+7. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 --> V5
+3. V2 o-> V3
+4. V2 --> V5
+5. V3 --> V4
+6. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V5
+5. V3 --> V4
+6. V4 --> V5
+
+
+  reversed real edge  : V5 --> V4 in G*'s MAG, but V5 <-- V4 in H1's MAG
+  displaced mark      : V4 *-> V5 <-* V1  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#16848
+  extra (spurious) edges: [V1 o-o V2, V4 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V3
+3. V2 o-o V4
+4. V3 <-> V1
+5. V3 <-> V5
+6. V4 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V2 o-> V3
+4. V2 o-o V4
+5. V3 <-> V1
+6. V3 <-> V5
+7. V4 o-> V1
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 o-o V4
+3. V3 <-> V1
+4. V4 o-> V1
+5. V4 o-o V5
+6. V5 o-> V1
+7. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V4
+3. V3 <-> V1
+4. V4 --> V1
+5. V4 --> V5
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V3 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#17120
+  extra (spurious) edges: [V1 o-o V3, V4 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 <-> V1
+3. V2 <-> V5
+4. V3 o-> V2
+5. V4 o-> V1
+6. V4 o-o V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 <-> V1
+3. V2 <-> V5
+4. V3 o-> V1
+5. V3 o-> V2
+6. V4 o-> V1
+7. V4 o-o V3
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V2
+3. V4 o-> V1
+4. V4 o-o V3
+5. V4 o-o V5
+6. V5 o-> V1
+7. V5 --> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V2
+3. V3 --> V4
+4. V4 --> V1
+5. V4 --> V5
+6. V5 --> V1
+7. V5 --> V2
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#17235
+  extra (spurious) edges: [V1 o-o V5, V2 o-o V3]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V2 o-> V4
+4. V3 --> V5
+5. V4 <-> V3
+6. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 --> V5
+4. V2 o-> V3
+5. V2 o-> V4
+6. V3 <-> V4
+7. V3 --> V5
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-o V5
+4. V2 --> V4
+5. V3 <-> V4
+6. V5 o-> V3
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V5
+4. V2 --> V4
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V3 --> V5 in G*'s MAG, but V3 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V3 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#17253
+  extra (spurious) edges: [V2 o-o V3, V2 o-o V5, V3 o-o V4]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V1
+3. V3 o-> V5
+4. V5 <-> V1
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 o-> V5
+6. V3 --> V4
+7. V3 o-> V5
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V1
+3. V2 o-o V3
+4. V3 o-o V4
+5. V3 o-> V5
+6. V4 --> V1
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V1
+3. V2 --> V3
+4. V3 --> V4
+5. V3 --> V5
+6. V4 --> V1
+7. V4 --> V5
+
+
+  reversed real edge  : V1 <-> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V1 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1]   (m-separated here, m-connected in G*)
+  model                 : PAG#17281
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V4]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V3 o-> V1
+2. V3 o-> V4
+3. V4 --> V2
+4. V5 o-> V1
+5. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V4
+3. V3 o-> V1
+4. V3 o-> V4
+5. V4 --> V2
+6. V5 o-> V1
+7. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V2 --> V4
+3. V3 o-> V1
+4. V3 --> V4
+5. V5 o-> V1
+6. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V2 --> V4
+3. V3 --> V1
+4. V3 --> V4
+5. V5 --> V1
+6. V5 --> V4
+
+
+  reversed real edge  : V4 --> V2 in G*'s MAG, but V4 <-- V2 in H1's MAG
+  displaced mark      : V2 *-> V4 <-* V3  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#17704
+  extra (spurious) edges: [V1 o-o V5, V3 o-o V4]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V2 <-> V4
+4. V3 o-> V5
+5. V5 <-> V2
+6. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-> V5
+4. V2 <-> V4
+5. V3 --> V4
+6. V3 o-> V5
+7. V5 <-> V2
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V3
+3. V3 o-o V4
+4. V3 o-> V5
+5. V4 --> V2
+6. V4 o-> V5
+7. V5 <-> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V3 --> V4
+4. V3 --> V5
+5. V4 --> V2
+6. V4 --> V5
+7. V5 <-> V2
+
+
+  reversed real edge  : V2 <-> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V2 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#18283
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V5, V3 o-o V4]
+  edge removed from H0  : V3 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V2 <-> V5
+3. V3 o-> V2
+4. V4 <-> V2
+5. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V1 --> V5
+4. V2 <-> V5
+5. V3 o-> V2
+6. V3 o-> V4
+7. V4 <-> V2
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V4
+3. V1 o-o V5
+4. V3 --> V2
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V1 --> V5
+4. V3 --> V2
+5. V4 <-> V2
+6. V5 --> V2
+7. V5 --> V4
+
+
+  reversed real edge  : V2 <-> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#18701
+  extra (spurious) edges: [V1 o-o V5, V3 o-o V4]
+  edge removed from H0  : V3 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V2 <-> V5
+4. V3 <-> V2
+5. V3 --> V5
+6. V4 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V1 --> V5
+4. V2 <-> V5
+5. V3 <-> V2
+6. V3 --> V5
+7. V4 o-> V2
+8. V4 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V1 o-o V5
+4. V3 <-> V2
+5. V4 --> V2
+6. V5 --> V2
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V1 --> V5
+4. V3 <-> V2
+5. V4 --> V2
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 <-> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V4, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#18717
+  extra (spurious) edges: [V1 o-o V4, V1 o-o V5, V3 o-o V4]
+  edge removed from H0  : V3 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V2 <-> V5
+3. V3 <-> V2
+4. V3 --> V5
+5. V4 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V1 --> V5
+4. V2 <-> V5
+5. V3 <-> V2
+6. V3 --> V5
+7. V4 o-> V2
+8. V4 o-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V1 o-o V4
+3. V1 o-o V5
+4. V3 <-> V2
+5. V4 --> V2
+6. V5 --> V2
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V1 --> V5
+4. V3 <-> V2
+5. V4 --> V2
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 <-> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#18768
+  extra (spurious) edges: [V1 o-o V2, V2 o-o V4, V4 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V3
+3. V3 <-> V1
+4. V3 <-> V5
+5. V4 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V2 o-> V3
+4. V2 o-o V4
+5. V3 <-> V1
+6. V3 <-> V5
+7. V4 o-> V1
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 o-o V4
+3. V3 <-> V1
+4. V4 o-> V1
+5. V4 o-o V5
+6. V5 o-> V1
+7. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V4
+3. V3 <-> V1
+4. V4 --> V1
+5. V4 --> V5
+6. V5 --> V1
+7. V5 --> V3
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V3 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#19676
+  extra (spurious) edges: [V1 o-o V2, V3 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-o V3
+3. V2 o-> V4
+4. V3 o-> V1
+5. V4 <-> V1
+6. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V2 o-o V3
+4. V2 o-> V4
+5. V3 o-> V1
+6. V3 --> V5
+7. V4 <-> V1
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-o V3
+2. V2 --> V4
+3. V3 o-> V1
+4. V3 o-o V5
+5. V4 <-> V1
+6. V5 o-> V1
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V4
+3. V3 --> V1
+4. V3 --> V5
+5. V4 <-> V1
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V3 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#19735
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V4
+3. V2 o-> V3
+4. V3 --> V5
+5. V4 <-> V3
+6. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-> V4
+4. V2 o-> V3
+5. V2 --> V5
+6. V3 <-> V4
+7. V3 --> V5
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V4
+3. V2 o-> V3
+4. V2 o-o V5
+5. V3 <-> V4
+6. V5 o-> V3
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 --> V3
+4. V2 --> V5
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V3 --> V5 in G*'s MAG, but V3 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#19853
+  extra (spurious) edges: [V1 o-o V4, V1 o-o V5, V3 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V3
+3. V4 <-> V2
+4. V4 --> V3
+5. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V4
+3. V1 o-o V5
+4. V2 <-> V3
+5. V4 <-> V2
+6. V4 --> V3
+7. V5 --> V3
+8. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V5
+3. V3 --> V2
+4. V3 o-> V4
+5. V4 <-> V2
+6. V5 o-o V3
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V3 --> V2
+4. V3 --> V4
+5. V4 <-> V2
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V2 <-> V3 in G*'s MAG, but V2 <-- V3 in H1's MAG
+  displaced mark      : V2 -- V3 -- V4  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V4 | [V2]   (m-separated here, m-connected in G*)
+  model                 : PAG#19856
+  extra (spurious) edges: [V2 o-o V4, V2 o-o V5]
+  edge removed from H0  : V2 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V5
+3. V3 o-> V2
+4. V3 o-> V5
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V5
+3. V2 --> V4
+4. V2 o-o V5
+5. V3 o-> V2
+6. V3 o-> V5
+7. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 --> V5
+3. V2 --> V4
+4. V3 o-> V2
+5. V3 --> V5
+6. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V2 --> V4
+4. V3 --> V2
+5. V3 --> V5
+6. V4 --> V5
+
+
+  reversed real edge  : V5 --> V4 in G*'s MAG, but V5 <-- V4 in H1's MAG
+  displaced mark      : V4 *-> V5 <-* V1  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...at.cacacaca.|..atta.catacata.
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#20054
+  extra (spurious) edges: [V1 o-o V2, V2 o-o V3, V3 o-o V4]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-> V5
+3. V3 o-> V1
+4. V5 <-> V1
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V1 <-> V5
+3. V2 o-> V1
+4. V2 o-o V3
+5. V2 o-> V5
+6. V3 o-> V1
+7. V3 --> V4
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V3
+3. V2 --> V5
+4. V3 o-> V1
+5. V3 o-o V4
+6. V4 o-> V1
+7. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V3
+3. V2 --> V5
+4. V3 --> V1
+5. V3 --> V4
+6. V4 --> V1
+7. V4 --> V5
+
+
+  reversed real edge  : V1 --> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V3 *-> V1 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V2, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#20487
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V3, V2 o-o V4]
+  edge removed from H0  : V2 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V2 o-> V5
+3. V4 --> V3
+4. V5 <-> V3
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V3
+3. V1 o-> V4
+4. V2 o-> V4
+5. V2 o-> V5
+6. V4 --> V3
+7. V4 <-> V5
+8. V5 <-> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-o V3
+3. V1 o-> V4
+4. V2 --> V5
+5. V3 o-> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V1 --> V4
+4. V2 --> V5
+5. V3 --> V4
+6. V3 --> V5
+7. V4 <-> V5
+
+
+  reversed real edge  : V4 --> V3 in G*'s MAG, but V4 <-- V3 in H1's MAG
+  displaced mark      : V4 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V3 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#20550
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V5, V3 o-o V4]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V4
+3. V3 o-> V5
+4. V5 <-> V2
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-> V5
+4. V2 <-> V4
+5. V3 --> V4
+6. V3 o-> V5
+7. V5 <-> V2
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V3
+3. V3 o-o V4
+4. V3 o-> V5
+5. V4 --> V2
+6. V4 o-> V5
+7. V5 <-> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V3
+3. V3 --> V4
+4. V3 --> V5
+5. V4 --> V2
+6. V4 --> V5
+7. V5 <-> V2
+
+
+  reversed real edge  : V2 <-> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V2 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V2, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#20616
+  extra (spurious) edges: [V1 o-o V2, V2 o-o V3, V3 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V4
+3. V3 o-> V1
+4. V4 <-> V1
+5. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 o-> V1
+3. V2 o-o V3
+4. V2 o-> V4
+5. V3 o-> V1
+6. V3 --> V5
+7. V4 <-> V1
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-o V3
+2. V2 --> V4
+3. V3 o-> V1
+4. V3 o-o V5
+5. V4 <-> V1
+6. V5 o-> V1
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V4
+3. V3 --> V1
+4. V3 --> V5
+5. V4 <-> V1
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V3 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#20729
+  extra (spurious) edges: [V2 o-o V3, V2 o-o V5, V3 o-o V4]
+  edge removed from H0  : V3 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-> V4
+3. V3 o-> V1
+4. V4 <-> V1
+5. V4 --> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V3
+3. V2 o-> V4
+4. V2 --> V5
+5. V3 o-> V1
+6. V3 o-> V4
+7. V4 <-> V1
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 o-o V3
+2. V2 o-> V4
+3. V2 o-o V5
+4. V3 --> V1
+5. V4 <-> V1
+6. V5 --> V1
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V4
+3. V2 --> V5
+4. V3 --> V1
+5. V4 <-> V1
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V1 *-> V4 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#20887
+  extra (spurious) edges: [V2 o-o V4, V3 o-o V5]
+  edge removed from H0  : V3 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-o V3
+3. V2 o-> V5
+4. V3 o-> V1
+5. V5 <-> V1
+6. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V1 <-> V5
+3. V2 o-o V3
+4. V2 --> V4
+5. V2 o-> V5
+6. V3 o-> V1
+7. V3 o-> V5
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 o-o V3
+3. V2 o-o V4
+4. V2 o-> V5
+5. V3 --> V1
+6. V4 --> V1
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V5
+2. V2 --> V3
+3. V2 --> V4
+4. V2 --> V5
+5. V3 --> V1
+6. V4 --> V1
+7. V4 --> V5
+
+
+  reversed real edge  : V1 <-> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V1 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#21303
+  extra (spurious) edges: [V2 o-o V3, V2 o-o V5, V4 o-o V5]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V1
+3. V3 <-> V1
+4. V3 --> V4
+5. V5 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V1
+3. V2 o-> V3
+4. V2 o-o V5
+5. V3 <-> V1
+6. V3 --> V4
+7. V5 o-> V3
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 o-o V5
+3. V3 <-> V1
+4. V4 --> V1
+5. V4 o-> V3
+6. V5 o-> V3
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V5
+3. V3 <-> V1
+4. V4 --> V1
+5. V4 --> V3
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#21535
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V3, V2 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V4
+2. V2 o-> V3
+3. V3 --> V5
+4. V4 <-> V3
+5. V4 <-> V5
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-> V4
+4. V2 o-> V3
+5. V2 --> V5
+6. V3 <-> V4
+7. V3 --> V5
+8. V4 <-> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V4
+3. V2 o-> V3
+4. V2 o-o V5
+5. V3 <-> V4
+6. V5 o-> V3
+7. V5 --> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 --> V3
+4. V2 --> V5
+5. V3 <-> V4
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V3 --> V5 in G*'s MAG, but V3 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#21736
+  extra (spurious) edges: [V1 o-o V4, V3 o-o V5]
+  edge removed from H0  : V1 o-o V4
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V5
+3. V2 <-> V3
+4. V4 <-> V2
+5. V4 --> V3
+6. V5 o-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V4
+3. V1 o-o V5
+4. V2 <-> V3
+5. V4 <-> V2
+6. V4 --> V3
+7. V5 --> V3
+8. V5 o-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V5
+3. V3 --> V2
+4. V3 o-> V4
+5. V4 <-> V2
+6. V5 o-o V3
+7. V5 o-> V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V3 --> V2
+4. V3 --> V4
+5. V4 <-> V2
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V2 <-> V3 in G*'s MAG, but V2 <-- V3 in H1's MAG
+  displaced mark      : V2 -- V3 -- V4  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V5 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#21908
+  extra (spurious) edges: [V1 o-o V3, V2 o-o V4]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V5
+3. V2 o-> V3
+4. V3 --> V4
+5. V5 <-> V3
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 o-> V3
+3. V1 o-> V5
+4. V2 o-> V3
+5. V2 --> V4
+6. V3 --> V4
+7. V3 <-> V5
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V2
+2. V1 --> V5
+3. V2 o-> V3
+4. V2 o-o V4
+5. V3 <-> V5
+6. V4 o-> V3
+7. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V5
+3. V2 --> V3
+4. V2 --> V4
+5. V3 <-> V5
+6. V4 --> V3
+7. V4 --> V5
+
+
+  reversed real edge  : V3 --> V4 in G*'s MAG, but V3 <-- V4 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#22062
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V3, V3 o-o V4]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V2 --> V4
+3. V3 o-> V2
+4. V5 <-> V2
+5. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-> V5
+4. V2 --> V4
+5. V2 <-> V5
+6. V3 o-> V2
+7. V3 --> V4
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 o-> V2
+5. V3 o-o V4
+6. V4 o-> V2
+7. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 --> V2
+5. V3 --> V4
+6. V4 --> V2
+7. V4 --> V5
+
+
+  reversed real edge  : V2 --> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V3 *-> V2 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V3, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#22635
+  extra (spurious) edges: [V1 o-o V3, V3 o-o V4, V4 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 <-> V1
+3. V2 <-> V5
+4. V3 o-> V2
+5. V4 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V5
+2. V2 <-> V1
+3. V2 <-> V5
+4. V3 o-> V1
+5. V3 o-> V2
+6. V3 o-o V4
+7. V4 o-> V1
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V2
+3. V3 o-o V4
+4. V4 o-> V1
+5. V4 o-o V5
+6. V5 o-> V1
+7. V5 --> V2
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 <-> V1
+2. V3 --> V2
+3. V3 --> V4
+4. V4 --> V1
+5. V4 --> V5
+6. V5 --> V1
+7. V5 --> V2
+
+
+  reversed real edge  : V1 --> V5 in G*'s MAG, but V1 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V1 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V1, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#22657
+  extra (spurious) edges: [V1 o-o V2, V3 o-o V4]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V5
+3. V2 --> V4
+4. V3 o-> V2
+5. V5 <-> V2
+6. V5 <-> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V3
+3. V1 o-> V5
+4. V2 --> V4
+5. V2 <-> V5
+6. V3 o-> V2
+7. V3 --> V4
+8. V5 <-> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 o-> V2
+5. V3 o-o V4
+6. V4 o-> V2
+7. V4 --> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V5
+3. V2 <-> V5
+4. V3 --> V2
+5. V3 --> V4
+6. V4 --> V2
+7. V4 --> V5
+
+
+  reversed real edge  : V2 --> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V3 *-> V2 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V5 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#23030
+  extra (spurious) edges: [V1 o-o V2, V4 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-> V3
+3. V2 o-o V5
+4. V3 <-> V1
+5. V3 <-> V4
+6. V5 o-> V1
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V4
+2. V2 o-> V1
+3. V2 o-> V3
+4. V2 o-o V5
+5. V3 <-> V1
+6. V3 <-> V4
+7. V5 o-> V1
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 o-o V5
+3. V3 <-> V1
+4. V4 o-> V1
+5. V4 --> V3
+6. V5 o-> V1
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V3
+2. V2 --> V5
+3. V3 <-> V1
+4. V4 --> V1
+5. V4 --> V3
+6. V5 --> V1
+7. V5 --> V4
+
+
+  reversed real edge  : V1 --> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V3 *-> V1 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#23391
+  extra (spurious) edges: [V1 o-o V3, V1 o-o V4, V3 o-o V5]
+  edge removed from H0  : V3 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V5
+2. V2 <-> V4
+3. V3 o-> V2
+4. V5 <-> V2
+5. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V4
+3. V1 o-> V5
+4. V2 <-> V4
+5. V2 <-> V5
+6. V3 o-> V2
+7. V3 o-> V5
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-o V4
+3. V1 o-> V5
+4. V2 <-> V5
+5. V3 --> V2
+6. V4 --> V2
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V1 --> V5
+4. V2 <-> V5
+5. V3 --> V2
+6. V4 --> V2
+7. V4 --> V5
+
+
+  reversed real edge  : V2 <-> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V2 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1, V3]   (m-separated here, m-connected in G*)
+  model                 : PAG#23732
+  extra (spurious) edges: [V1 o-o V4, V1 o-o V5, V3 o-o V4]
+  edge removed from H0  : V1 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V3
+3. V4 o-> V5
+4. V5 <-> V2
+5. V5 --> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-o V4
+3. V1 o-> V5
+4. V2 <-> V3
+5. V2 <-> V5
+6. V4 --> V3
+7. V4 o-> V5
+8. V5 --> V3
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 o-o V4
+3. V2 <-> V5
+4. V3 --> V2
+5. V3 o-> V5
+6. V4 o-o V3
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 <-> V5
+4. V3 --> V2
+5. V3 --> V5
+6. V4 --> V3
+7. V4 --> V5
+
+
+  reversed real edge  : V2 <-> V3 in G*'s MAG, but V2 <-- V3 in H1's MAG
+  displaced mark      : V2 -- V3 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V2 | [V3, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#23789
+  extra (spurious) edges: [V1 o-o V4, V3 o-o V5]
+  edge removed from H0  : V3 o-o V5
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-> V5
+3. V2 <-> V4
+4. V3 o-> V2
+5. V5 <-> V2
+6. V5 --> V4
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 --> V4
+3. V1 o-> V5
+4. V2 <-> V4
+5. V2 <-> V5
+6. V3 o-> V2
+7. V3 o-> V5
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-o V3
+2. V1 o-o V4
+3. V1 o-> V5
+4. V2 <-> V5
+5. V3 --> V2
+6. V4 --> V2
+7. V4 o-> V5
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V1 --> V5
+4. V2 <-> V5
+5. V3 --> V2
+6. V4 --> V2
+7. V4 --> V5
+
+
+  reversed real edge  : V2 <-> V4 in G*'s MAG, but V2 <-- V4 in H1's MAG
+  displaced mark      : V2 -- V4 -- V5  [TAIL-displaced: non-collider in H1's MAG, collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V1 _||_ V5 | [V2, V4]   (m-separated here, m-connected in G*)
+  model                 : PAG#24124
+  extra (spurious) edges: [V2 o-o V3, V4 o-o V5]
+  edge removed from H0  : V2 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V1
+3. V2 o-o V5
+4. V3 <-> V1
+5. V3 --> V4
+6. V5 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 <-> V4
+2. V2 o-> V1
+3. V2 o-> V3
+4. V2 o-o V5
+5. V3 <-> V1
+6. V3 --> V4
+7. V5 o-> V3
+8. V5 --> V4
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 o-o V5
+3. V3 <-> V1
+4. V4 --> V1
+5. V4 o-> V3
+6. V5 o-> V3
+7. V5 o-o V4
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V2 --> V1
+2. V2 --> V5
+3. V3 <-> V1
+4. V4 --> V1
+5. V4 --> V3
+6. V5 --> V3
+7. V5 --> V4
+
+
+  reversed real edge  : V1 <-> V4 in G*'s MAG, but V1 <-- V4 in H1's MAG
+  displaced mark      : V1 *-> V3 <-* V4  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V2 _||_ V4 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#24164
+  extra (spurious) edges: [V1 o-o V3, V4 o-o V5]
+  edge removed from H0  : V1 o-o V3
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V2 <-> V5
+3. V3 <-> V2
+4. V3 --> V5
+5. V4 o-o V1
+6. V4 o-> V3
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V3
+3. V2 <-> V3
+4. V2 <-> V5
+5. V3 --> V5
+6. V4 o-o V1
+7. V4 o-> V3
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V2 <-> V3
+3. V4 o-o V1
+4. V4 o-> V3
+5. V4 o-o V5
+6. V5 --> V2
+7. V5 o-> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V2
+2. V1 --> V4
+3. V2 <-> V3
+4. V4 --> V3
+5. V4 --> V5
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 <-> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V2 *-> V3 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ..aaatcc.caca.aa|cc.tacacc.cata.aa
+
+==== STEP-BREAK WITH NO SPURIOUS-LEG COLLIDER (RESIDUE) ====
+  A LEGAL non-Markov reorientation in which NO collider, in the PAG or in its MAG
+  completion, sits on a spurious leg -- the unsoundness is not traceable to a
+  spurious adjacency by the leg test. Investigate before anything else.
+  WITNESS (in H1, not in G*): V3 _||_ V4 | [V1, V5]   (m-separated here, m-connected in G*)
+  model                 : PAG#24216
+  extra (spurious) edges: [V1 o-o V2, V1 o-o V4, V4 o-o V5]
+  edge removed from H0  : V1 o-o V2
+  true PAG G* (over observed):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V3
+2. V2 --> V5
+3. V3 <-> V2
+4. V3 <-> V5
+5. V4 o-> V2
+
+
+  H0:
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 o-> V2
+2. V1 o-> V3
+3. V1 o-o V4
+4. V2 --> V5
+5. V3 <-> V2
+6. V3 <-> V5
+7. V4 o-> V2
+8. V4 --> V5
+
+
+  H1 (PAG, legal, non-I-map):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 o-o V4
+3. V3 <-> V2
+4. V4 o-> V2
+5. V4 o-o V5
+6. V5 o-> V2
+7. V5 --> V3
+
+
+  MAG of H1 (magOfPag):
+Graph Nodes:
+V1;V2;V3;V4;V5
+
+Graph Edges:
+1. V1 --> V3
+2. V1 --> V4
+3. V3 <-> V2
+4. V4 --> V2
+5. V4 --> V5
+6. V5 --> V2
+7. V5 --> V3
+
+
+  reversed real edge  : V2 --> V5 in G*'s MAG, but V2 <-- V5 in H1's MAG
+  displaced mark      : V3 *-> V2 <-* V5  [ARROWHEAD-displaced: collider in H1's MAG, non-collider in G*]
+  structure signature : ...ca.aaatca.aa|cccc.ca.tacata.aa
+

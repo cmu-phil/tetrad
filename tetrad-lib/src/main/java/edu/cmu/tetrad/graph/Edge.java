@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.graph;
 
@@ -508,7 +508,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             out.defaultWriteObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to serialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -527,7 +527,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
             in.defaultReadObject();
         } catch (IOException e) {
             TetradLogger.getInstance().log("Failed to deserialize object: " + getClass().getCanonicalName()
-                                           + ", " + e.getMessage());
+                    + ", " + e.getMessage());
             throw e;
         }
     }
@@ -624,6 +624,20 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      */
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
+    }
+
+    /**
+     * Sets the endpoint nearest the given nodes to the given endpoint.
+     *
+     * @param node The node.
+     * @param proximalEndpoint The endpoint.
+     */
+    public void setProximalEndpoint(Node node, Endpoint proximalEndpoint) {
+        if (this.node1 == node) {
+            endpoint1 = proximalEndpoint;
+        } else if (this.node2 == node) {
+            endpoint2 = proximalEndpoint;
+        }
     }
 
     /**

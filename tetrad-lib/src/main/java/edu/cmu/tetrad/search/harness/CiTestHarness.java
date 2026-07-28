@@ -39,7 +39,7 @@ import java.util.function.Function;
  * - For now, assumes "true graph can be a DAG", but MsepTest works for DAG/CPDAG/MAG/PAG.
  * - If you want also implied-dependence cases (Type II-ish sanity checks), it’s easy to add.
  */
-public final class CiTestHarness {
+public final class  CiTestHarness {
 
     /**
      * Default constructor for the CiTestHarness class.

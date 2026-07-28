@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -16,7 +16,7 @@
 //                                                                           //
 // You should have received a copy of the GNU General Public License         //
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 package edu.cmu.tetrad.test;
 
@@ -32,8 +32,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.utils.PagLegalityCheck;
-import edu.cmu.tetrad.search.utils.MagToPag;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -41,14 +40,11 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 
 import static edu.cmu.tetrad.graph.GraphTransforms.dagToPag;
 import static org.junit.Assert.*;
@@ -148,7 +144,7 @@ public class TestFci {
 
         IndependenceTest independence = new MsepTest(trueGraph);
 
-        Fas fas  = new Fas(independence);
+        Fas fas = new Fas(independence);
         fas.setVerbose(true);
 
         try {
@@ -275,8 +271,8 @@ public class TestFci {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 10, numEdges,
-                7, 5, 5, false));
+        Graph trueGraph = RandomGraph.randomGraph(nodes, 10, numEdges,
+                7, 5, 5, false);
 
         IndependenceTest test = new MsepTest(trueGraph);
 
@@ -350,7 +346,7 @@ public class TestFci {
         }
 
         {
-            FgesFci fci = new FgesFci(independence, score);
+            Gfci fci = new Gfci(independence, score);
             fci.setKnowledge(knowledge);
             fci.setVerbose(verbose);
 
@@ -366,8 +362,8 @@ public class TestFci {
         }
 
         {
-            Fcit fci = new Fcit(independence, score);
-            fci.setStartWith(Fcit.START_WITH.GRASP);
+            FcitSl fci = new FcitSl(independence, score);
+            fci.setStartWith(FcitSl.START_WITH.GRASP);
             fci.setKnowledge(knowledge);
             fci.setVerbose(verbose);
 
@@ -553,10 +549,10 @@ public class TestFci {
             Graph estPag2 = graspFci.search();
             assertEquals(truePag_, estPag2);
 
-            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
-            fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setVerbose(true);
-            Graph estPag3 = fcit.search();
+            FcitSl FcitSl = new FcitSl(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            FcitSl.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.GRASP);
+            FcitSl.setVerbose(true);
+            Graph estPag3 = FcitSl.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
             System.out.println(unshieldedCollidersIdenticalPagMag(estPag3)
@@ -589,12 +585,8 @@ public class TestFci {
         Set<Node> B = null;
         try {
             Set<Node> result;
-            try {
-                result = RecursiveBlocking.blockPathsRecursivelyFull(mag, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
+                result = RecursiveBlocking.blockPathsRecursively(mag, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
                         -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-            } catch (TimeoutException e) {
-                throw new RuntimeException(e);
-            }
             B = result;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -632,12 +624,8 @@ public class TestFci {
         MsepTest msepTest = new MsepTest(g);
 
         Set<Node> result;
-        try {
-            result = RecursiveBlocking.blockPathsRecursivelyFull(g, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
+            result = RecursiveBlocking.blockPathsRecursively(g, x, y, (Set<Node>) new HashSet<Node>(), (Set<Node>) new HashSet<Node>(),
                     -1, -1, -1, 1, false, Long.MAX_VALUE).blockingSet();
-        } catch (TimeoutException e) {
-            throw new RuntimeException(e);
-        }
         Set<Node> Z = result;
         assertTrue(msepTest.checkIndependence(x, y, Z).isIndependent());
     }
@@ -686,16 +674,101 @@ public class TestFci {
             Graph estPag2 = graspFci.search();
             assertEquals(truePag_, estPag2);
 
-            Fcit fcit = new Fcit(new MsepTest(trueMag_), new GraphScore(trueMag_));
-            fcit.setStartWith(Fcit.START_WITH.GRASP);
-            fcit.setVerbose(true);
-            Graph estPag3 = fcit.search();
+            FcitSl FcitSl = new FcitSl(new MsepTest(trueMag_), new GraphScore(trueMag_));
+            FcitSl.setStartWith(edu.cmu.tetrad.search.FcitSl.START_WITH.GRASP);
+            FcitSl.setVerbose(true);
+            Graph estPag3 = FcitSl.search();
 
             System.out.println(estPag3.paths().isLegalPag() ? "Legal PAG" : "Illegal PAG");
             System.out.println(unshieldedCollidersIdenticalPagMag(estPag3)
                     ? "Unshielded colliders the same " : "Unshielded colliders different.");
 
             assertEquals(truePag_, estPag3);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSearch22() {
+
+        // There was a problem with the discriminating path rule not firing enough times in this
+        // example, so we're loading up the state of the graph at the start, removing the X1o->X5
+        // edge using sepset [X2,X3] (correct sepset from Recursive Blocking), and running FCI
+        // final orientation using the given oracle graph for oracle m-separation facts. The result
+        // should be the oracle graph.
+
+        final String oracleGraph = "Graph Nodes:\n" +
+                "X1;X2;X3;X4;X5;X6\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. X1 o-> X2\n" +
+                "2. X2 <-> X3\n" +
+                "3. X2 --> X5\n" +
+                "4. X2 --> X6\n" +
+                "5. X3 <-> X4\n" +
+                "6. X3 --> X5\n" +
+                "7. X4 --> X6\n" +
+                "8. X5 <-> X4\n" +
+                "9. X5 <-> X6\n" +
+                "\n";
+
+        final String currentState = "Graph Nodes:\n" +
+                "X1;X2;X3;X4;X5;X6\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. X1 o-> X2\n" +
+                "2. X1 o-> X5\n" +
+                "3. X2 <-> X3\n" +
+                "4. X2 o-> X5\n" +
+                "5. X2 --> X6\n" +
+                "6. X3 o-> X5\n" +
+                "7. X4 o-> X3\n" +
+                "8. X4 o-> X5\n" +
+                "9. X4 o-> X6\n" +
+                "10. X6 o-> X5\n" +
+                "\n";
+
+        final String currentStateWithout15 = "Graph Nodes:\n" +
+                "X1;X2;X3;X4;X5;X6\n" +
+                "\n" +
+                "Graph Edges:\n" +
+                "1. X1 o-> X2\n" +
+                "2. X2 <-> X3\n" +
+                "3. X2 o-> X5\n" +
+                "4. X2 --> X6\n" +
+                "5. X3 o-> X5\n" +
+                "6. X4 o-> X3\n" +
+                "7. X4 o-> X5\n" +
+                "8. X4 o-> X6\n" +
+                "9. X6 o-> X5\n" +
+                "\n";
+
+        try {
+            Graph _oracleGraph = GraphSaveLoadUtils.readerToGraphTxt(oracleGraph);
+            Graph _currentState = GraphSaveLoadUtils.readerToGraphTxt(currentState);
+            Graph _currentStateWithout15 = GraphSaveLoadUtils.readerToGraphTxt(currentStateWithout15);
+
+            _currentState = GraphUtils.replaceNodes(_currentState, _oracleGraph.getNodes());
+            _currentStateWithout15 = GraphUtils.replaceNodes(_currentStateWithout15, _oracleGraph.getNodes());
+
+            // Remove the X1o->X5 edge
+            Node x1 = _currentState.getNode("X1");
+            Node x5 = _currentState.getNode("X5");
+            _currentState.removeEdge(x1, x5);
+            assertEquals(_currentStateWithout15, _currentState);
+            FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(_oracleGraph)));
+            fciOrient.finalOrientation(_currentState);
+            assertEquals(_oracleGraph, _currentState);
+
+            // Finally, make sure fcitSl is recovering this oracle graph, which is should if all of the
+            // discriminating path rules fire correctly.
+            FcitSl fcitSl = new FcitSl(new MsepTest(_oracleGraph), new GraphScore(_oracleGraph));
+            fcitSl.setDepth(-1);
+            fcitSl.setCompleteRuleSetUsed(true);
+            fcitSl.setVerbose(true);
+            Graph pag = fcitSl.search();
+            assertEquals(_oracleGraph, pag);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -807,7 +880,7 @@ public class TestFci {
     }
 
     //    @Test
-    public void testFcitFromOracle() {
+    public void testFcitSlFromOracle() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
@@ -833,8 +906,8 @@ public class TestFci {
 //                Gfci alg = new Gfci(independence, score);
 //                GraspFci alg = new GraspFci(independence, score);
 
-                Fcit alg = new Fcit(independence, score);
-                alg.setStartWith(Fcit.START_WITH.GRASP);
+                FcitSl alg = new FcitSl(independence, score);
+                alg.setStartWith(FcitSl.START_WITH.GRASP);
                 alg.setUseBes(true); // Guarantees correct CPDAG under Faithfulness.
 
                 alg.setCompleteRuleSetUsed(true);
@@ -883,7 +956,7 @@ public class TestFci {
 
 
     //    @Test
-    public void testFcitFromData() {
+    public void testFcitSlFromData() {
         for (int i = 0; i < 100; i++) {
             System.out.println("==================== RUN " + (i + 1) + " TEST ====================");
 
@@ -902,13 +975,13 @@ public class TestFci {
             score.setPenaltyDiscount(2.0);
 
             try {
-                Fcit fcit = new Fcit(test, score);
-                fcit.setVerbose(true);
-                fcit.setUseBes(true);
-//                fcit.setGuaranteeMag(true);
-                fcit.setDepth(-1);
-                fcit.setCompleteRuleSetUsed(true);
-                Graph pag = fcit.search();
+                FcitSl FcitSl = new FcitSl(test, score);
+                FcitSl.setVerbose(true);
+                FcitSl.setUseBes(true);
+//                FcitSl.setGuaranteeMag(true);
+                FcitSl.setDepth(-1);
+                FcitSl.setCompleteRuleSetUsed(true);
+                Graph pag = FcitSl.search();
 
                 Graph mag = GraphTransforms.zhangMagFromPag(pag);
 
@@ -1029,15 +1102,15 @@ public class TestFci {
     }
 
     @Test
-    public void testFcitSimpleR4() {
+    public void testFcitSlSimpleR4() {
         Graph graph = GraphUtils.convert("X-->W,V-->W,V-->Y,W-->Y");
         Graph pag = GraphUtils.convert("Xo->W,Vo->W,V-->Y,W-->Y");
 
         IndependenceTest independence = new MsepTest(graph);
         Score score = new GraphScore(graph);
 
-        Fcit fci = new Fcit(independence, score);
-        fci.setStartWith(Fcit.START_WITH.GRASP);
+        FcitSl fci = new FcitSl(independence, score);
+        fci.setStartWith(FcitSl.START_WITH.GRASP);
 //        fci.setDepth(-1);
 //        fci.setPreserveMarkov(false);
         fci.setVerbose(true);
@@ -1056,6 +1129,50 @@ public class TestFci {
             throw new RuntimeException(e);
         }
 
+    }
+
+    @Test
+    public void testMagToPagRoundTripPreservesShieldedColliders() {
+        // Regression for the FcitSl-ZM bug: the PAG -> MAG -> PAG round trip must
+        // preserve discriminating-path (shielded) colliders. hd is a collider whose
+        // neighbors (cd, lc, mb) are pairwise adjacent, so its arrowheads can only be
+        // recovered by R4, not by unshielded-collider orientation. A regression shows
+        // up as hd --> lc / hd o-> cd instead of hd <-> lc / cd <-> hd.
+
+        Node cd = new GraphNode("cd");
+        Node hd = new GraphNode("hd");
+        Node lc = new GraphNode("lc");
+        Node s  = new GraphNode("s");
+        Node i  = new GraphNode("i");
+        Node ps = new GraphNode("ps");
+        Node mb = new GraphNode("mb");
+
+        List<Node> nodes = Arrays.asList(cd, hd, lc, s, i, ps, mb);
+
+        Graph pag = new EdgeListGraph(nodes);
+        pag.addBidirectedEdge(cd, hd);                                 // cd <-> hd
+        pag.addDirectedEdge(cd, lc);                                   // cd --> lc
+        pag.addDirectedEdge(cd, mb);                                   // cd --> mb
+        pag.addDirectedEdge(hd, mb);                                   // hd --> mb
+        pag.addEdge(new Edge(i, s, Endpoint.CIRCLE, Endpoint.ARROW));  // i o-> s
+        pag.addBidirectedEdge(lc, hd);                                 // lc <-> hd
+        pag.addDirectedEdge(lc, mb);                                   // lc --> mb
+        pag.addEdge(new Edge(ps, s, Endpoint.CIRCLE, Endpoint.ARROW)); // ps o-> s
+        pag.addDirectedEdge(s, cd);                                    // s --> cd
+
+        // Sanity: the fixture we typed in is itself a legal PAG. (Drop if the
+        // method name differs in your build.)
+        assertTrue("Fixture is not a legal PAG", pag.paths().isLegalPag());
+
+        // Round trip: PAG -> MAG (Zhang) -> PAG. checkMag=true also asserts the
+        // intermediate MAG is legal.
+        Graph mag = GraphTransforms.zhangMagFromPag(pag);
+        Graph pagBack = new MagToPag(mag).convert(true, false);
+
+        assertEquals(
+                "MAG->PAG round trip changed the PAG; a shielded/discriminating-path "
+                        + "collider was lost.\n  expected: " + pag + "\n  actual:   " + pagBack,
+                pag, pagBack);
     }
 }
 

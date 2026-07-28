@@ -5,11 +5,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.distribution.RealDistribution;
-import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.sem.RandomMlpSupport.RandomMlp;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.CommonOps_DDRM;
 
 import java.util.*;
 import java.util.function.Function;
@@ -21,12 +18,10 @@ import java.util.function.Function;
  * <p>
  * X_j = f_j(Pa(X_j)) + N_j,   with independent noise terms N_j.
  * <p>
- * Each f_j is represented by a randomly initialized MLP (parents-only input). Root nodes are generated as pure noise
- * (optionally rescaled).
+ * Each f_j is represented by a randomly initialized MLP (parents-only input). Root nodes are generated as pure noise.
  * <p>
- * NOTE: The optional rescaling performed here is computed from the realized sample (min/max of the generated column),
- * which couples rows within a dataset. This is convenient for keeping values in a range but is not “SCM-pure” in the
- * sense of applying a fixed transformation independent of the sampled data.
+ * Parent values are passed through the activation function (bounding them) before entering each node's MLP, so
+ * f_j is a bounded-input function by construction. No sample-dependent rescaling is performed.
  */
 public class AdditiveNoiseSimulation {
 
@@ -69,103 +64,16 @@ public class AdditiveNoiseSimulation {
         this.inputScale = inputScale;
         this.activationFunction = activationFunction;
 
-        // Robust-ish “is tanh” detection for fast path.
-        this.useFastTanh = looksLikeTanh(activationFunction);
-    }
-
-    private static double quantileOfColumn(double[][] raw, int col, double q) {
-        int n = raw.length;
-        double[] tmp = new double[n];
-        for (int i = 0; i < n; i++) tmp[i] = raw[i][col];
-        Arrays.sort(tmp);
-
-        if (n == 0) return Double.NaN;
-        if (q <= 0.0) return tmp[0];
-        if (q >= 1.0) return tmp[n - 1];
-
-        double pos = q * (n - 1);
-        int lo = (int) TMath.floor(pos);
-        int hi = (int) TMath.ceil(pos);
-        if (hi == lo) return tmp[lo];
-        double w = pos - lo;
-        return tmp[lo] * (1.0 - w) + tmp[hi] * w;
-    }
-
-    private static void addBiasRowsInPlace(DMatrixRMaj A, double[] b) {
-        final int n = A.numRows, m = A.numCols;
-        int k = 0;
-        for (int i = 0; i < n; i++) for (int j = 0; j < m; j++, k++) A.data[k] += b[j];
-    }
-
-    // ------------------ Tiny EJML MLP ------------------
-
-    private static void applyActivationInPlace(DMatrixRMaj A,
-                                               Function<Double, Double> f,
-                                               boolean fastTanh) {
-        final int n = A.getNumElements();
-        if (fastTanh) {
-            for (int i = 0; i < n; i++) A.data[i] = TMath.tanh(A.data[i]);
-        } else {
-            for (int i = 0; i < n; i++) A.data[i] = f.apply(A.data[i]);
-        }
-    }
-
-    private static boolean looksLikeTanh(Function<Double, Double> f) {
-        // Simple, cheap heuristic: tanh is odd and saturating in (-1,1).
-        // We check a few points; if user supplied something else, we just return false.
-        double[] xs = {-2.0, -1.0, -0.5, 0.5, 1.0, 2.0};
-        for (double x : xs) {
-            double fx = f.apply(x);
-            if (!Double.isFinite(fx)) return false;
-            if (TMath.abs(fx) > 1.000001) return false;
-        }
-        // oddness check at 0.5 and 1.0
-        double a = f.apply(0.5), b = f.apply(-0.5);
-        double c = f.apply(1.0), d = f.apply(-1.0);
-        return TMath.abs(a + b) < 1e-6 && TMath.abs(c + d) < 1e-6;
-    }
-
-    /**
-     * Z-score each column of A in place: mean 0, sd 1.
-     * Columns with ~0 variance are left unchanged.
-     */
-    private static void zScoreColumnsInPlace(DMatrixRMaj A) {
-        final int N = A.numRows;
-        final int D = A.numCols;
-
-        for (int j = 0; j < D; j++) {
-            // column j is at offsets j, j+D, j+2D, ...
-            double mean = 0.0;
-            int k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                mean += A.data[k];
-            }
-            mean /= N;
-
-            double var = 0.0;
-            k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                double d = A.data[k] - mean;
-                var += d * d;
-            }
-            var /= N;
-
-            if (var < 1e-12) continue; // avoid division by ~0
-
-            double invSd = 1.0 / TMath.sqrt(var);
-            k = j;
-            for (int i = 0; i < N; i++, k += D) {
-                A.data[k] = (A.data[k] - mean) * invSd;
-            }
-        }
+        this.useFastTanh = RandomMlpSupport.isTanhLike(activationFunction);
     }
 
     /**
      * Generates a synthetic dataset by simulating data propagation through a graph with additive noise. The method
      * creates data for each node in the graph based on its topological order, parent relationships, and random
-     * multilayer perceptron (MLP) evaluations, along with additive noise and optional data rescaling.
+     * multilayer perceptron (MLP) evaluations, along with additive noise.
      * <p>
-     * The dataset generation process includes: - Organizing nodes in topological order.
+     * Note: the returned dataset's columns are in topological order, not
+     * {@code graph.getNodes()} order.
      *
      * @return The generated synthetic dataset.
      */
@@ -190,9 +98,10 @@ public class AdditiveNoiseSimulation {
         }
 
         // Reusable EJML matrices
-        DMatrixRMaj A = new DMatrixRMaj(N, 1);  // parents-only input to MLP (will reshape)
-        DMatrixRMaj Z = new DMatrixRMaj(N, 1);  // hidden scratch
-        DMatrixRMaj Y = new DMatrixRMaj(N, 1);  // output (N x 1)
+        DMatrixRMaj A = new DMatrixRMaj(N, 1);   // parents-only input to MLP (will reshape)
+        DMatrixRMaj S1 = new DMatrixRMaj(N, 1);  // scratch buffer 1
+        DMatrixRMaj S2 = new DMatrixRMaj(N, 1);  // scratch buffer 2
+        DMatrixRMaj Y = new DMatrixRMaj(N, 1);   // output (N x 1)
 
         final double[] noise = new double[N];
 
@@ -221,13 +130,15 @@ public class AdditiveNoiseSimulation {
                     for (int i = 0; i < N; i++, k += Din) A.data[k] = raw[i][col];
                 }
 
-                applyActivationInPlace(A, activationFunction, useFastTanh);
+                // Bound parent values before they enter the MLP.
+                RandomMlpSupport.applyActivationInPlace(A, activationFunction, useFastTanh);
 
                 // Random MLP for this node
-                RandomMLP mlp = new RandomMLP(Din, hiddenDimensions, 1, inputScale);
+                RandomMlp mlp = new RandomMlp(Din, hiddenDimensions, 1, inputScale,
+                        0.0, activationFunction, useFastTanh);
 
                 // signal = f_j(Pa)
-                Y = mlp.forward(A, Z, Y, activationFunction, useFastTanh);
+                Y = mlp.forward(A, S1, S2, Y);
 
                 // Additive noise: X_j = signal + noise
                 for (int i = 0; i < N; i++) raw[i][j] = Y.data[i] + noise[i];
@@ -235,80 +146,5 @@ public class AdditiveNoiseSimulation {
         }
 
         return new BoxDataSet(new DoubleDataBox(raw), new ArrayList<>(topo));
-    }
-
-    private static final class RandomMLP {
-        final int Din, Dout;
-        final int[] H;
-        final DMatrixRMaj[] W;   // layer weights: (out x in)
-        final double[][] b;      // biases per layer
-
-        RandomMLP(int Din, int[] hidden, int Dout, double inputScale) {
-            this.Din = Din;
-            this.Dout = Dout;
-            this.H = hidden == null ? new int[0] : hidden.clone();
-            int L = H.length + 1;
-            this.W = new DMatrixRMaj[L];
-            this.b = new double[L][];
-
-            int prev = Din;
-            for (int l = 0; l < H.length; l++) {
-                W[l] = new DMatrixRMaj(H[l], prev);
-                b[l] = new double[H[l]];
-                heInit(W[l], inputScale, true);  // tanh-friendly
-                prev = H[l];
-            }
-            W[L - 1] = new DMatrixRMaj(Dout, prev);
-            b[L - 1] = new double[Dout];
-//            heInit(W[L - 1], r, inputScale * 0.5);
-            heInit(W[L - 1],inputScale * 0.5, true);
-
-        }
-
-        private static void heInit(DMatrixRMaj W, double scale, boolean tanhLike) {
-            // tanh prefers sqrt(1 / fan_in), ReLU prefers sqrt(2 / fan_in)
-            double base = tanhLike ? 1.0 : 2.0;
-            double s = scale * TMath.sqrt(base / TMath.max(1, W.numCols));
-            for (int i = 0, n = W.getNumElements(); i < n; i++) {
-                W.data[i] = RandomUtil.getInstance().nextGaussian() * s;
-            }
-        }
-
-        /**
-         * Y = forward(X). Uses multTransB so we never materialize W^T.
-         */
-        DMatrixRMaj forward(DMatrixRMaj X,
-                            DMatrixRMaj scratch1,
-                            DMatrixRMaj out,
-                            Function<Double, Double> act,
-                            boolean fastTanh) {
-
-            // Ping-pong buffers for hidden activations
-            DMatrixRMaj cur = X;
-            DMatrixRMaj bufA = scratch1;
-            DMatrixRMaj bufB = new DMatrixRMaj(1, 1); // reshaped as needed
-
-            // Hidden layers
-            for (int l = 0; l < H.length; l++) {
-                int h = H[l];
-
-                // choose destination buffer so it's not the same instance as 'cur'
-                DMatrixRMaj dest = (cur == bufA) ? bufB : bufA;
-                dest.reshape(X.numRows, h, false);
-
-                // dest = cur * W[l]^T
-                CommonOps_DDRM.multTransB(cur, W[l], dest);
-                addBiasRowsInPlace(dest, b[l]);
-                applyActivationInPlace(dest, act, fastTanh);
-
-                cur = dest;
-            }
-
-            // Output layer: write into 'out' (guaranteed != cur)
-            out.reshape(X.numRows, Dout, false);
-            CommonOps_DDRM.multTransB(cur, W[W.length - 1], out);
-            addBiasRowsInPlace(out, b[b.length - 1]);
-            return out;
-        }
     }
 }

@@ -26,11 +26,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -64,7 +60,7 @@ public final class MagToPag {
      * indicates that all possible blocking paths should be considered without any specific length constraint.
      * This value can be adjusted to limit the depth of analysis based on the specific use case.
      */
-    private int recursionDepth = -1;
+    private int recursiveDepth = -1;
     /**
      * Represents the maximum length of discriminating paths to be considered during MAG to PAG conversion. A value of
      * -1 indicates that all possible discriminating paths should be considered without any specific length constraint.
@@ -98,7 +94,7 @@ public final class MagToPag {
      * @return the anteriority set for (x, y)
      */
     private static Set<Node> anteriorityFromCache(Node x, Node y, Map<Node, Set<Node>> ancestorCache) {
-        Set<Node> result = new HashSet<>(ancestorCache.get(x));
+        Set<Node> result = new LinkedHashSet<>(ancestorCache.get(x));
         result.addAll(ancestorCache.get(y));
         result.remove(x);
         result.remove(y);
@@ -134,7 +130,10 @@ public final class MagToPag {
              * @throws IllegalArgumentException if x is adjacent to y
              * @see DiscriminatingPath
              */
-            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
+            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath,
+                                                                                     int recursiveDepth, int maxDiscriminatingPathLength,
+                                                                                     Graph graph, Set<Node> vNodes) throws InterruptedException {
+//            public Pair<DiscriminatingPath, Boolean> doDiscriminatingPathOrientation(DiscriminatingPath discriminatingPath, Graph graph, Set<Node> vNodes) {
                 Node x = discriminatingPath.getX();
                 Node w = discriminatingPath.getW();
                 Node v = discriminatingPath.getV();
@@ -208,19 +207,20 @@ public final class MagToPag {
         // Precompute ancestor sets for all nodes once. Each call to anteriority()
         // in the original code was O(n * pathSearch); now it's a single O(n * pathSearch)
         // pass here, and each subsequent anteriority lookup is just a set union — O(n).
-        ancestorCache = new HashMap<>();
+        ancestorCache = new LinkedHashMap<>();
         for (Node n : mag.getNodes()) {
-            ancestorCache.put(n, new HashSet<>(mag.paths().getAncestors(n)));
+            ancestorCache.put(n, new LinkedHashSet<>(mag.paths().getAncestors(n)));
         }
 
         Graph pag = new EdgeListGraph(mag);
         pag.reorientAllWith(Endpoint.CIRCLE);
 
         FciOrient fciOrient = new FciOrient(getFinalStrategyUsingDsep(mag, knowledge, verbose, ancestorCache));
+//        FciOrient fciOrient = new FciOrient(new R0R4StrategyTestBased(new MsepTest(mag)));
         fciOrient.setVerbose(verbose);
         fciOrient.setKnowledge(knowledge);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursionDepth(recursionDepth);
+        fciOrient.setRecursiveDepth(recursiveDepth);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
 
@@ -272,17 +272,10 @@ public final class MagToPag {
     /**
      * Sets the maximum length of blocking paths to be considered during processing.
      *
-     * @param recursionDepth the maximum length of blocking paths
+     * @param recursiveDepth the maximum length of blocking paths
      */
-    public void setRecursionDepth(int recursionDepth) {
-        this.recursionDepth = recursionDepth;
-    }
-
-    /**
-     * Lightweight value type for a triple of nodes (x, y, z) used to collect
-     * collider orientations from the parallel scan before applying them.
-     */
-    private record Triple(Node x, Node y, Node z) {
+    public void setRecursiveDepth(int recursiveDepth) {
+        this.recursiveDepth = recursiveDepth;
     }
 
     /**
@@ -343,5 +336,12 @@ public final class MagToPag {
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         this.maxDiscriminatingPathLength = maxDiscriminatingPathLength;
+    }
+
+    /**
+     * Lightweight value type for a triple of nodes (x, y, z) used to collect
+     * collider orientations from the parallel scan before applying them.
+     */
+    private record Triple(Node x, Node y, Node z) {
     }
 }

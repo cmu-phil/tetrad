@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.FgesFci;
+import edu.cmu.tetrad.search.Gfci;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
@@ -202,14 +202,14 @@ public class PerformanceTestsDan {
 
             out6.println("GFCI.PAG_of_the_true_DAG");
 
-            FgesFci fgesFci = new FgesFci(independenceTestGFci, scoreGfci);
-            fgesFci.setVerbose(false);
-            fgesFci.setMaxDegree(depth);
-            fgesFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+            Gfci gfci = new Gfci(independenceTestGFci, scoreGfci);
+            gfci.setVerbose(false);
+            gfci.setMaxDegree(depth);
+            gfci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
 //            fgesFci.setPossibleDsepSearchDone(true);
-            fgesFci.setCompleteRuleSetUsed(true);
+            gfci.setCompleteRuleSetUsed(true);
 
-            Graph pag = fgesFci.search();
+            Graph pag = gfci.search();
 
             out6.println(pag);
             printDanMatrix(_vars, pag, out7);

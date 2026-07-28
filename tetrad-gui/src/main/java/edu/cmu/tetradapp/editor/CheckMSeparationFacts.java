@@ -98,7 +98,7 @@ public class CheckMSeparationFacts extends AbstractAction {
 
 //        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), editor, "Independence Facts DSL Editor", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 
-        EditorWindow editorWindow = new EditorWindow(editor, "Nonlinearity Checks", null,
+        EditorWindow editorWindow = new EditorWindow(editor, "M-Separation Facts", null,
                 false, JOptionUtils.centeringComp());
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);

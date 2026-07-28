@@ -21,11 +21,13 @@
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.IDisplayEdge;
 
+import javax.help.Map;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -167,7 +169,23 @@ public class KnowledgeWorkbench extends AbstractWorkbench {
             return null;
         }
 
-        return new KnowledgeDisplayEdge(modelEdge, displayNodeA, displayNodeB);
+        try {
+            return new KnowledgeDisplayEdge(modelEdge, displayNodeA, displayNodeB);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public final void setGraph(Graph graph) {
+        // Skip the defensive copy in AbstractWorkbench.setGraph — copying a
+        // KnowledgeGraph loses the KnowledgeModelEdge subclass types, causing
+        // ClassCastExceptions in getNewDisplayEdge.
+        setGraphWithoutNotify(graph);
+        scrollRectToVisible(getVisibleRect());
+        registerKeys();
+        firePropertyChange("graph", null, graph);
+        firePropertyChange("modelChanged", null, null);
     }
 
     /**

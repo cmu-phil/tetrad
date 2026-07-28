@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.distribution.GammaDistribution;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
@@ -472,8 +473,9 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
                 if (r < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
                 if (r >= data.getNumRows()) throw new IllegalArgumentException("Row " + i + " out of bounds: " + r);
             }
-            rows.sort(Comparator.naturalOrder());
-            this.rows = new ArrayList<>(rows);
+            ArrayList<Integer> sorted = new ArrayList<>(rows);
+            sorted.sort(Comparator.naturalOrder());
+            this.rows = sorted;
         } else {
             this.rows = null;
         }
@@ -549,8 +551,10 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         }
 
         // Hard guarantee: if dataset has no discrete vars, behave exactly like FF-CI (IndTestFfCi).
+        // Delegate is synced in the constructor and kept in sync by the forwarding
+        // setters; re-syncing per call would clear the delegate's feature cache on
+        // every test (each delegate setter invalidates it), defeating caching entirely.
         if (!dataHasAnyDiscrete) {
-            syncDelegateToThis();
             return continuousDelegate.checkIndependence(x, y, z);
         }
 
@@ -610,39 +614,31 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
 
         if (fZ == null || fZ.getNumCols() == 0) {
             // -------- RIT --------
-            SimpleMatrix Cxy = covCentered(fX, fY);
+            // Cached features are already column-centered (zscore or mean-subtract
+            // in getMixedFeatures), so cov applies directly — no copies, no re-centering.
+            SimpleMatrix Cxy = cov(fX, fY);
             stat = n * frob2(Cxy);
 
-            SimpleMatrix resX = fX.copy();
-            SimpleMatrix resY = fY.copy();
-            subtractColumnMeansInPlace(resX);
-            subtractColumnMeansInPlace(resY);
-
-            SimpleMatrix Cov = kronResCov(resX, resY);
-            double[] eig = positiveEigs(Cov);
-
-            p = pValueFromMethod(fact, stat, eig, fX, fY);
+            p = pValueFromMethod(fact, stat, fX, fY);
         } else {
             // -------- Conditional: ridge residualization --------
             final double alphaRidge = TMath.max(1e-18, lambda);
-            SimpleMatrix rX = ridgeResidual(fX, fZ, alphaRidge);
-            SimpleMatrix rY = ridgeResidual(fY, fZ, alphaRidge);
 
+            // Residualize X and Y jointly: one Gram matrix, one factorization.
+            SimpleMatrix fXY = fX.concatColumns(fY);
+            SimpleMatrix rXY = ridgeResidual(fXY, fZ, alphaRidge);
+            int fx = fX.getNumCols();
+            SimpleMatrix rX = rXY.extractMatrix(0, n, 0, fx);
+            SimpleMatrix rY = rXY.extractMatrix(0, n, fx, rXY.getNumCols());
+
+            // Residuals are fresh matrices; center once, in place.
             subtractColumnMeansInPlace(rX);
             subtractColumnMeansInPlace(rY);
 
-            SimpleMatrix Cxy = covCentered(rX, rY);
+            SimpleMatrix Cxy = cov(rX, rY);
             stat = n * frob2(Cxy);
 
-            SimpleMatrix resX = rX.copy();
-            SimpleMatrix resY = rY.copy();
-            subtractColumnMeansInPlace(resX);
-            subtractColumnMeansInPlace(resY);
-
-            SimpleMatrix Cov = kronResCov(resX, resY);
-            double[] eig = positiveEigs(Cov);
-
-            p = pValueFromMethod(fact, stat, eig, rX, rY);
+            p = pValueFromMethod(fact, stat, rX, rY);
         }
 
         double p_ = clamp01(p);
@@ -775,9 +771,10 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
      */
     @Override
     public double computePValue(double[] x, double[] y) throws InterruptedException {
-        return new FfCiContinuous(data).computePValue(x, y);
+        return continuousDelegate.computePValue(x, y);
 
-//        double[][] combined = new double[x.length][2];
+//        double[][] combined = new double[x.length][2];public double computePValue(double[] x, double[] y) throws InterruptedException {
+//        return continuousDelegate.computePValue(x, y);
 //        for (int i = 0; i < x.length; i++) {
 //            combined[i][0] = x[i];
 //            combined[i][1] = y[i];
@@ -1150,7 +1147,8 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
             alpha = 1e-18;
         }
 
-        SimpleMatrix ZtZ = Z.transpose().mult(Z);
+        SimpleMatrix Zt = Z.transpose();
+        SimpleMatrix ZtZ = Zt.mult(Z);
 
         // Scale lambda by the mean diagonal of Z^T Z so it's relative
         // to the actual signal magnitude rather than absolute
@@ -1160,36 +1158,75 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         double effectiveLambda = alpha * TMath.max(1.0, meanDiag);
 
         SimpleMatrix A = ZtZ.plus(SimpleMatrix.identity(ZtZ.getNumRows()).scale(effectiveLambda));
-        SimpleMatrix B = A.solve(Z.transpose().mult(X));
+        SimpleMatrix B = A.solve(Zt.mult(X));
         return X.minus(Z.mult(B));
     }
 
     // ---------------- p-values ----------------
 
-    private double pValueFromMethod(IndependenceFact fact, double stat, double[] eig,
+    private double pValueFromMethod(IndependenceFact fact, double stat,
                                     SimpleMatrix rX, SimpleMatrix rY) {
         if (pValueMethod == FfCiContinuous.Approx.PERMUTATION && permutations > 0) {
+            final int n = rY.getNumRows();
+            final int q = rY.getNumCols();
             int greater = 0;
-            Random r = new Random(this.seed);
+
+            Random r = new Random(seedForPermutation(fact));
+            SimpleMatrix rXt = rX.transpose();          // hoisted out of the loop
+            SimpleMatrix rYp = new SimpleMatrix(n, q);  // reused buffer
+            double[] src = rY.getDDRM().data;
+            double[] dst = rYp.getDDRM().data;
+
+            int[] perm = new int[n];
+            for (int i = 0; i < n; i++) perm[i] = i;
+
             for (int b = 0; b < permutations; b++) {
-                int[] perm = randomPermutation(rY.getNumRows(), r);
-                SimpleMatrix rYp = permuteRows(rY, perm);
-                SimpleMatrix C = covCentered(rX, rYp);
-                double s = rY.getNumRows() * frob2(C);
-                if (s >= stat) {
-                    greater++;
+                for (int i = n - 1; i > 0; i--) {
+                    int j = r.nextInt(i + 1);
+                    int t = perm[i]; perm[i] = perm[j]; perm[j] = t;
                 }
+                for (int i = 0; i < n; i++) {
+                    System.arraycopy(src, perm[i] * q, dst, i * q, q);
+                }
+                // rX and rY are column-centered, and permuting rows preserves
+                // column means, so a plain cross-product covariance is valid.
+                SimpleMatrix C = rXt.mult(rYp).scale(1.0 / (n - 1));
+                double s = n * frob2(C);
+                if (s >= stat) greater++;
             }
             return (greater + 1.0) / (permutations + 1.0);
         }
 
-        // Otherwise use quadratic-form approximations
         return switch (pValueMethod) {
-            case GAMMA -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
-            case SADDLEPOINT -> QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig);
-            case DAVIES_IMHOF -> QuadraticFormPValues.daviesP(stat, eig);
-            case PERMUTATION -> QuadraticFormPValues.gammaSatterthwaiteP(stat, eig);
+            case SADDLEPOINT, DAVIES_IMHOF -> {
+                // Only these methods need the eigenvalues.
+                double[] eig = positiveEigs(kronResCov(rX, rY));
+                yield (pValueMethod == FfCiContinuous.Approx.SADDLEPOINT)
+                        ? QuadraticFormPValues.saddlepointLugannaniRiceP(stat, eig)
+                        : QuadraticFormPValues.daviesP(stat, eig);
+            }
+            default -> { // GAMMA (and PERMUTATION fallback when permutations == 0)
+                Moments mv = gammaMomentsNoEig(rX, rY);
+                yield gammaSatterthwaitePFromMoments(stat, mv.mu, mv.var);
+            }
         };
+    }
+
+    /** Deterministic per-fact permutation seed (stable across calls). */
+    private long seedForPermutation(IndependenceFact fact) {
+        long h = 1469598103934665603L;
+        h = 1099511628211L * (h ^ this.seed);
+        h = 1099511628211L * (h ^ "PERM".hashCode());
+        h = 1099511628211L * (h ^ Long.hashCode(dataVersion));
+        h = 1099511628211L * (h ^ getActiveRowCount());
+        h = 1099511628211L * (h ^ activeRowsHash());
+        h = 1099511628211L * (h ^ fact.getX().getName().hashCode());
+        h = 1099511628211L * (h ^ fact.getY().getName().hashCode());
+        ArrayList<String> zNames = new ArrayList<>();
+        for (Node zz : fact.getZ()) zNames.add(zz.getName());
+        zNames.sort(String::compareTo);
+        for (String s : zNames) h = 1099511628211L * (h ^ s.hashCode());
+        return h;
     }
 
     // ---------------- linear algebra helpers ----------------
@@ -1236,18 +1273,33 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         if (n < 2 || d == 0) {
             return;
         }
-        for (int j = 0; j < d; j++) {
-            double sum = 0, sumsq = 0;
-            for (int i = 0; i < n; i++) {
-                double v = M.get(i, j);
-                sum += v;
-                sumsq += v * v;
+
+        double[] a = M.getDDRM().data;   // row-major: a[i*d + j]
+        double[] sum = new double[d];
+        double[] sumsq = new double[d];
+
+        int idx = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < d; j++) {
+                double v = a[idx++];
+                sum[j] += v;
+                sumsq[j] += v * v;
             }
-            double mean = sum / n;
-            double var = (sumsq - n * mean * mean) / (n - 1);
-            double sd = (var > 0) ? TMath.sqrt(var) : 1.0;
-            for (int i = 0; i < n; i++) {
-                M.set(i, j, (M.get(i, j) - mean) / sd);
+        }
+
+        double[] mean = new double[d];
+        double[] invSd = new double[d];
+        for (int j = 0; j < d; j++) {
+            mean[j] = sum[j] / n;
+            double var = (sumsq[j] - n * mean[j] * mean[j]) / (n - 1);
+            invSd[j] = (var > 0) ? 1.0 / TMath.sqrt(var) : 1.0;
+        }
+
+        idx = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < d; j++) {
+                a[idx] = (a[idx] - mean[j]) * invSd[j];
+                idx++;
             }
         }
     }
@@ -1257,15 +1309,19 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         if (n == 0 || d == 0) {
             return;
         }
-        for (int j = 0; j < d; j++) {
-            double s = 0.0;
-            for (int i = 0; i < n; i++) {
-                s += M.get(i, j);
-            }
-            double mean = s / n;
-            for (int i = 0; i < n; i++) {
-                M.set(i, j, M.get(i, j) - mean);
-            }
+
+        double[] a = M.getDDRM().data;   // row-major
+        double[] mean = new double[d];
+
+        int idx = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < d; j++) mean[j] += a[idx++];
+        }
+        for (int j = 0; j < d; j++) mean[j] /= n;
+
+        idx = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < d; j++) a[idx++] -= mean[j];
         }
     }
 
@@ -1285,16 +1341,32 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         return s;
     }
 
+    /** cov(A,B) = A^T B / (n-1); assumes columns already centered. */
+    private static SimpleMatrix cov(SimpleMatrix A, SimpleMatrix B) {
+        int n = A.getNumRows();
+        return A.transpose().mult(B).scale(1.0 / (n - 1));
+    }
+
     private static SimpleMatrix kronResCov(SimpleMatrix resX, SimpleMatrix resY) {
         int Fx = resX.getNumCols(), Fy = resY.getNumCols(), q = Fx * Fy, n = resX.getNumRows();
         SimpleMatrix Z = new SimpleMatrix(n, q);
-        int idx = 0;
-        for (int a = 0; a < Fx; a++) {
-            for (int b = 0; b < Fy; b++) {
-                for (int i = 0; i < n; i++) Z.set(i, idx, resX.get(i, a) * resY.get(i, b));
-                idx++;
+
+        double[] xd = resX.getDDRM().data;  // n×Fx row-major
+        double[] yd = resY.getDDRM().data;  // n×Fy row-major
+        double[] zd = Z.getDDRM().data;     // n×q row-major
+
+        for (int r = 0; r < n; r++) {
+            final int xr = r * Fx;
+            final int yr = r * Fy;
+            int idx = r * q;
+            for (int a = 0; a < Fx; a++) {
+                final double xv = xd[xr + a];
+                for (int b = 0; b < Fy; b++) {
+                    zd[idx++] = xv * yd[yr + b];
+                }
             }
         }
+
         return Z.transpose().mult(Z).scale(1.0 / (n - 1));
     }
 
@@ -1309,6 +1381,73 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         double[] e = new double[pos.size()];
         for (int i = 0; i < e.length; i++) e[i] = pos.get(i);
         return e;
+    }
+
+    /** Moments of the quadratic form without forming the Khatri-Rao matrix or eig. */
+    private static Moments gammaMomentsNoEig(SimpleMatrix RX, SimpleMatrix RY) {
+        final int n = RX.getNumRows();
+        final int fx = RX.getNumCols();
+        final int fy = RY.getNumCols();
+        if (n < 2 || fx == 0 || fy == 0) return new Moments(0.0, 0.0);
+
+        final double denom = (double) (n - 1);
+        final double[] xd = RX.getDDRM().data; // n×fx row-major
+        final double[] yd = RY.getDDRM().data; // n×fy row-major
+
+        double sumAxAy = 0.0;
+        double sumA2B2 = 0.0;
+
+        for (int r = 0; r < n; r++) {
+            final int xr = r * fx, yr = r * fy;
+
+            double sx = 0.0;
+            for (int i = 0; i < fx; i++) { double v = xd[xr + i]; sx += v * v; }
+            double sy = 0.0;
+            for (int j = 0; j < fy; j++) { double v = yd[yr + j]; sy += v * v; }
+            double drr = sx * sy;
+            sumAxAy += drr;
+            sumA2B2 += drr * drr;
+
+            for (int s = r + 1; s < n; s++) {
+                final int xs = s * fx, ys = s * fy;
+                double dx = 0.0;
+                for (int i = 0; i < fx; i++) dx += xd[xr + i] * xd[xs + i];
+                double dy = 0.0;
+                for (int j = 0; j < fy; j++) dy += yd[yr + j] * yd[ys + j];
+                double prod = dx * dy;
+                sumA2B2 += 2.0 * prod * prod;
+            }
+        }
+
+        final double mu = sumAxAy / denom;                    // tr(Cov)
+        final double var = 2.0 * sumA2B2 / (denom * denom);   // 2 tr(Cov^2)
+        return new Moments(mu, var);
+    }
+
+    /** Gamma–Satterthwaite upper-tail p from moments: k = mu^2/var, θ = var/mu. */
+    private static double gammaSatterthwaitePFromMoments(double stat, double mu, double var) {
+        if (!(stat >= 0.0) || !Double.isFinite(stat)) return Double.NaN;
+        if (!(mu > 0.0) || !Double.isFinite(mu)) return Double.NaN;
+        if (!(var > 0.0) || !Double.isFinite(var)) return Double.NaN;
+
+        double shape = (mu * mu) / var;
+        double scale = var / mu;
+        if (!(shape > 0.0) || !(scale > 0.0) || !Double.isFinite(shape) || !Double.isFinite(scale)) {
+            return Double.NaN;
+        }
+
+        GammaDistribution gd = new GammaDistribution(shape, scale);
+        double cdf = gd.cumulativeProbability(stat);
+        if (!Double.isFinite(cdf)) return Double.NaN;
+
+        double p = 1.0 - cdf;
+        return p < 0.0 ? 0.0 : (p > 1.0 ? 1.0 : p);
+    }
+
+    private static final class Moments {
+        final double mu;
+        final double var;
+        Moments(double mu, double var) { this.mu = mu; this.var = var; }
     }
 
     private static int[] randomPermutation(int n, Random r) {

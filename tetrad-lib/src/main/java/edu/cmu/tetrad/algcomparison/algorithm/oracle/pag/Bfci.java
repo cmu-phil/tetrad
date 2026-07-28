@@ -55,13 +55,13 @@ import java.util.List;
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-FCI",
-        command = "boss-fci",
+        name = "BFCI",
+        command = "bfci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 //@Experimental
-public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
+public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix, LatentStructureAlgorithm {
 
@@ -94,7 +94,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
     /**
      * No-arg constructor. Used for reflection; do not delete.
      */
-    public BossFci() {
+    public Bfci() {
         // Used for reflection; do not delete.
     }
 
@@ -104,7 +104,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      * @param test  the independence test to use
      * @param score the score to use
      */
-    public BossFci(IndependenceWrapper test, ScoreWrapper score) {
+    public Bfci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -131,16 +131,19 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
             knowledge = timeSeries.getKnowledge();
         }
 
-        edu.cmu.tetrad.search.BossFci search = new edu.cmu.tetrad.search.BossFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+        edu.cmu.tetrad.search.Bfci search = new edu.cmu.tetrad.search.Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG_DEFAULT_TRUE));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        search.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
+        search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setKnowledge(knowledge);
@@ -169,7 +172,7 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
      */
     @Override
     public String getDescription() {
-        return "BOSS-FCI using " + this.test.getDescription() + " and " + this.score.getDescription();
+        return "BFCI using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     /**
@@ -193,14 +196,17 @@ public class BossFci extends AbstractBootstrapAlgorithm implements Algorithm, Ta
 
         params.add(Params.USE_BES);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        params.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.SEED);
         params.add(Params.NUM_THREADS);
-        params.add(Params.GUARANTEE_PAG);
+        params.add(Params.GUARANTEE_PAG_DEFAULT_TRUE);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
+        params.add(Params.LV_HEURISTIC_ONLY);
+        params.add(Params.DO_POSSIBLE_DSEP);
         params.add(Params.VERBOSE);
 
         // Parameters

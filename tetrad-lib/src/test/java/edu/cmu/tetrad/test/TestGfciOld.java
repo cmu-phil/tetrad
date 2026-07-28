@@ -25,7 +25,7 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.FgesFci;
+import edu.cmu.tetrad.search.Gfci;
 import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -57,7 +57,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author josephramsey
  */
-public class TestFgesFci {
+public class TestGfciOld {
     boolean precomputeCovariances = true;
 
 
@@ -98,15 +98,15 @@ public class TestFgesFci {
 
         independenceTest.setAlpha(alpha);
 
-        FgesFci FgesFci = new FgesFci(independenceTest, score);
-        FgesFci.setVerbose(false);
-        FgesFci.setMaxDegree(depth);
-        FgesFci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        FgesFci.setCompleteRuleSetUsed(false);
-        FgesFci.setFaithfulnessAssumed(true);
+        Gfci Gfci = new Gfci(independenceTest, score);
+        Gfci.setVerbose(false);
+        Gfci.setMaxDegree(depth);
+        Gfci.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        Gfci.setCompleteRuleSetUsed(false);
+        Gfci.setFaithfulnessAssumed(true);
         Graph outGraph = null;
         try {
-            outGraph = FgesFci.search();
+            outGraph = Gfci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -161,11 +161,11 @@ public class TestFgesFci {
 
         System.out.println(g1);
 
-        FgesFci fgesFci = new FgesFci(new MsepTest(g1), new GraphScore(g1));
+        Gfci gfci = new Gfci(new MsepTest(g1), new GraphScore(g1));
 
         Graph pag = null;
         try {
-            pag = fgesFci.search();
+            pag = gfci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -199,13 +199,13 @@ public class TestFgesFci {
                     10, 10, 10, false);
 
 //            Fci fgesFci = new Fci(new MsepTest(dag));
-            FgesFci fgesFci = new FgesFci(new MsepTest(dag), new GraphScore(dag));
-            fgesFci.setCompleteRuleSetUsed(true);
+            Gfci gfci = new Gfci(new MsepTest(dag), new GraphScore(dag));
+            gfci.setCompleteRuleSetUsed(true);
 //            fgesFci.setFaithfulnessAssumed(false);
             Graph pag1 = null;
 
             try {
-                pag1 = fgesFci.search();
+                pag1 = gfci.search();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -253,13 +253,13 @@ public class TestFgesFci {
         SemBicScore score = new SemBicScore(data, precomputeCovariances);
         score.setRuleType(SemBicScore.RuleType.CHICKERING);
         score.setPenaltyDiscount(2);
-        FgesFci fgesFci = new FgesFci(test, score);
-        fgesFci.setFaithfulnessAssumed(true);
+        Gfci gfci = new Gfci(test, score);
+        gfci.setFaithfulnessAssumed(true);
 
         long start = MillisecondTimes.timeMillis();
 
         try {
-            fgesFci.search();
+            gfci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -285,13 +285,13 @@ public class TestFgesFci {
         bDeuScore.setPriorEquivalentSampleSize(1.0);
         bDeuScore.setStructurePrior(1.0);
 
-        FgesFci fgesFci = new FgesFci(test, bDeuScore);
-        fgesFci.setFaithfulnessAssumed(true);
+        Gfci gfci = new Gfci(test, bDeuScore);
+        gfci.setFaithfulnessAssumed(true);
 
         long start = MillisecondTimes.timeMillis();
 
         try {
-            fgesFci.search();
+            gfci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -316,17 +316,17 @@ public class TestFgesFci {
         score.setStructurePrior(1.0);
         score.setPriorEquivalentSampleSize(1.0);
 
-        FgesFci fgesFci = new FgesFci(indTest, score);
-        fgesFci.setFaithfulnessAssumed(true);
-        fgesFci.setMaxDegree(-1);
-        fgesFci.setMaxDiscriminatingPathLength(-1);
-        fgesFci.setCompleteRuleSetUsed(false);
-        fgesFci.setVerbose(true);
+        Gfci gfci = new Gfci(indTest, score);
+        gfci.setFaithfulnessAssumed(true);
+        gfci.setMaxDegree(-1);
+        gfci.setMaxDiscriminatingPathLength(-1);
+        gfci.setCompleteRuleSetUsed(false);
+        gfci.setVerbose(true);
 
         long start = MillisecondTimes.timeMillis();
 
         try {
-            fgesFci.search();
+            gfci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -202,12 +202,12 @@ public final class Fask {
                                                   int maxPathLength) {
         try {
             Set<Node> z = null;
-            z = RecursiveBlocking.blockPathsRecursivelyFull(
+            z = RecursiveBlocking.blockPathsRecursively(
                     graph, xi, xj, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
             if (z == null) z = new HashSet<>();
 
-            Set<Node> z2 = RecursiveBlocking.blockPathsRecursivelyFull(
+            Set<Node> z2 = RecursiveBlocking.blockPathsRecursively(
                     graph, xj, xi, Set.of(), Set.of(), maxPathLength, -1, -1, 1, true).blockingSet();
 
             if (z2 == null) {

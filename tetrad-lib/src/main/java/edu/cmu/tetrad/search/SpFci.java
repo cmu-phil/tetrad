@@ -45,7 +45,7 @@ import java.io.PrintStream;
  * @see StarFci
  * @see Sp
  */
-public final class SpFci extends StarFci {
+public final class SpFci extends StarFciCheckPag {
 
     /**
      * The score.
@@ -85,7 +85,7 @@ public final class SpFci extends StarFci {
      * @return The resulting CPDAG representing the Markov equivalence class.
      * @throws InterruptedException if the operation is interrupted.
      */
-    public Graph getMarkovCpdag() throws InterruptedException {
+    public Graph getMarkovDag(boolean verbose) throws InterruptedException {
         Graph cpdag;
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting SP.");
@@ -99,6 +99,7 @@ public final class SpFci extends StarFci {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Finished SP.");
         }
+
         return cpdag;
     }
 

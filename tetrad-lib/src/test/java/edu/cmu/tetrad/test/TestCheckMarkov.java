@@ -129,7 +129,7 @@ public class TestCheckMarkov {
                 100, false);
         SemPm pm = new SemPm(dag);
         SemIm im = new SemIm(pm);
-        DataSet data = null;
+        DataSet data;
         try {
             data = im.simulateData(500, false);
         } catch (ParseException e) {
@@ -139,7 +139,7 @@ public class TestCheckMarkov {
         SemBicScore score = new SemBicScore(data, true);
 
         PermutationSearch search = new PermutationSearch(new Boss(score));
-        Graph cpdag = null;
+        Graph cpdag;
         try {
             cpdag = search.search();
         } catch (InterruptedException e) {
@@ -174,14 +174,14 @@ public class TestCheckMarkov {
         IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.01);
         SemBicScore score = new SemBicScore(data, 1, true);
 
-        Fcit fcit = new Fcit(test, score);
-        fcit.setVerbose(true);
-        fcit.setDepth(7);
-        fcit.setCompleteRuleSetUsed(false);
+        Bfci bfci = new Bfci(test, score);
+        bfci.setVerbose(true);
+        bfci.setDepth(7);
+        bfci.setCompleteRuleSetUsed(false);
         Graph pag;
 
         try {
-            pag = fcit.search();
+            pag = bfci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

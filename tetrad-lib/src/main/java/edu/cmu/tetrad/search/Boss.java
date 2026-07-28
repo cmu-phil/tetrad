@@ -194,57 +194,66 @@ public class Boss implements SuborderSearch {
 
         this.pool = new ForkJoinPool(this.numThreads);
 
-        for (int i = 0; i < this.numStarts; i++) {
+        try {
+            for (int i = 0; i < this.numStarts; i++) {
 
-            double time = System.currentTimeMillis();
+                double time = System.currentTimeMillis();
 
-            if ((i == 0 && !this.useDataOrder) || i > 0) {
-                shuffle(suborder);
-            }
-
-            if (i > 0 && this.resetAfterRS) {
-                for (Node root : suborder) {
-                    this.gsts.get(root).reset();
+                if ((i == 0 && !this.useDataOrder) || i > 0) {
+                    shuffle(suborder);
                 }
-            }
 
-            makeValidKnowledgeOrder(suborder);
-
-            do {
-                improved = false;
-                for (Node x : new ArrayList<>(suborder)) {
-
-                    if (this.verbose && (suborder.size() > 1)) TetradLogger.getInstance().log(x.toString());
-
-                    if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
-                    else {
-                        improved |= betterMutationAsync(prefix, suborder, x);
+                if (i > 0 && this.resetAfterRS) {
+                    for (Node root : suborder) {
+                        this.gsts.get(root).reset();
                     }
                 }
 
-                if (this.verbose && (suborder.size() > 1)) {
-                    TetradLogger.getInstance().log(String.format("Score: %.3f", update(prefix, suborder)));
+                makeValidKnowledgeOrder(suborder);
+                int maxIter = suborder.size() * suborder.size() + 1;
+                int iter = 0;
+
+                do {
+                    improved = false;
+                    for (Node x : new ArrayList<>(suborder)) {
+                        if (this.verbose && (suborder.size() > 1)) TetradLogger.getInstance().log(x.toString());
+
+                        if (this.numThreads == 1) improved |= betterMutation(prefix, suborder, x);
+                        else {
+                            improved |= betterMutationAsync(prefix, suborder, x);
+                        }
+                    }
+
+                    if (this.verbose && (suborder.size() > 1)) {
+                        TetradLogger.getInstance().log(String.format("Score: %.3f", update(prefix, suborder)));
+                    }
+
+                    if (++iter >= maxIter) {
+                        TetradLogger.getInstance().log("Warning: BOSS hit max iterations, terminating early.");
+                        break;
+                    }
+                } while (improved);
+
+                if (this.bes != null) bes(prefix, suborder);
+
+                score = update(prefix, suborder);
+                time = System.currentTimeMillis() - time;
+
+                if (suborder.size() > 1) {
+                    this.bics.add(score);
+                    this.times.add(time);
+                    if (this.verbose) {
+                        TetradLogger.getInstance().log(String.format("Restart: %d\t Score: %.3f\t Time: %.3f", i, score, time / 1e3));
+                    }
                 }
 
-            } while (improved);
-
-            if (this.bes != null) bes(prefix, suborder);
-
-            score = update(prefix, suborder);
-            time = System.currentTimeMillis() - time;
-
-            if (suborder.size() > 1) {
-                this.bics.add(score);
-                this.times.add(time);
-                if (this.verbose) {
-                    TetradLogger.getInstance().log(String.format("Restart: %d\t Score: %.3f\t Time: %.3f", i, score, time / 1e3));
+                if (score > bestScore) {
+                    bestSuborder = new ArrayList<>(suborder);
+                    bestScore = score;
                 }
             }
-
-            if (score > bestScore) {
-                bestSuborder = new ArrayList<>(suborder);
-                bestScore = score;
-            }
+        } finally {
+            this.pool.shutdownNow();
         }
 
         if (this.numThreads > 1) this.pool.shutdown();

@@ -37,6 +37,7 @@ import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.AbstractTableModel;
@@ -47,6 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -72,6 +74,7 @@ public class VertexCheckEditor extends JPanel {
 
     private static final int TAB_CHECK = 0;
     private static final int TAB_REPAIR = 1;
+    private static final int COL_PV = 3;   // overview p-value column (label follows selected method)
 
     private final VertexCheckIndTestModel model;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
@@ -90,6 +93,7 @@ public class VertexCheckEditor extends JPanel {
     private final JPanel histogramPanel = new JPanel(new BorderLayout());
     private final JComboBox<String> modelUniformityTest;
     private final Knowledge knowledge;
+    private final AtomicBoolean cancelRequested = new AtomicBoolean(false);
     private JTable overviewTable;
     private JTable factsTable;
     private AbstractTableModel overviewModel;
@@ -100,27 +104,29 @@ public class VertexCheckEditor extends JPanel {
     //    private volatile boolean runningAll = false;
     private SwingWorker<Void, Void> activeWorker = null;
     private Runnable pendingTask = null;
-
     /**
      * Right-hand tabbed pane ("Check" | "Repair").
      */
     private JTabbedPane rightTabs;
-
     /**
      * Wrapper panel inside the Repair tab — we swap a fresh
      * {@link VertexRepairPanelGlobalRepair} into this whenever the tab is selected.
      */
     private JPanel repairTabContent;
-
     /**
      * Live repair panel, or null when the Check tab is showing.
      */
     private VertexRepairPanelGlobalRepair repairPanel;
-    private boolean useAndersonDarling = false;
 
     // =========================================================================
     // Construction
     // =========================================================================
+    private boolean useAndersonDarling = false;
+
+    // =========================================================================
+    // Public API
+    // =========================================================================
+    private JDialog progressDialog;   // new field
 
     public VertexCheckEditor(VertexCheckIndTestModel model) {
         if (model == null) throw new NullPointerException("Expecting a model.");
@@ -134,15 +140,19 @@ public class VertexCheckEditor extends JPanel {
         if (this.knowledge.isViolatedBy(model.getGraph()))
             throw new IllegalArgumentException("Knowledge conflicts with current graph structure.");
 
-        modelUniformityTest = new JComboBox<>(new String[]{"Use KS", "Use AD"});
-        modelUniformityTest.setSelectedIndex(model.isUseAndersonDarling() ? 1 : 0);
+        modelUniformityTest = new JComboBox<>(new String[]{"Use KS", "Use AD", "Use WB"});
+        modelUniformityTest.setSelectedIndex(uniformityTestIndex(model.getUniformityTest()));
         modelUniformityTest.addActionListener(e -> {
-            model.setUseAndersonDarling(modelUniformityTest.getSelectedIndex() == 1);
+            if (initializing) return;
+            model.setUniformityTest(uniformityTestForIndex(modelUniformityTest.getSelectedIndex()));
             if (repairPanel != null) {
-                repairPanel.setUseAndersonDarling(modelUniformityTest.getSelectedIndex() == 1);
+                repairPanel.setUseAndersonDarling(model.isUseAndersonDarling());
+                repairPanel.setUseWildBootstrap(
+                        VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(model.getUniformityTest()));
             }
             runAllAndRefresh(null, null);
         });
+
         setPreferredSize(new Dimension(1100, 650));
         setLayout(new BorderLayout(10, 10));
         setBorder(new EmptyBorder(8, 8, 8, 8));
@@ -177,10 +187,6 @@ public class VertexCheckEditor extends JPanel {
         runAllAndRefresh(null, null);
     }
 
-    // =========================================================================
-    // Public API
-    // =========================================================================
-
     private static DataType guessDataType(DataModel dm) {
         if (dm instanceof DataSet ds) {
             boolean cont = ds.getVariables().stream().anyMatch(v -> v instanceof ContinuousVariable);
@@ -200,12 +206,36 @@ public class VertexCheckEditor extends JPanel {
         return "Ind(" + fact.getX().getName() + ", " + fact.getY().getName() + " | " + zStr + ")";
     }
 
+    /**
+     * Combo index (0=KS, 1=AD, 2=WB) for a model uniformity-test mode string.
+     */
+    private static int uniformityTestIndex(String mode) {
+        if (VertexCheckIndTestModel.ANDERSON_DARLING.equals(mode)) return 1;
+        if (VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(mode)) return 2;
+        return 0;
+    }
+
+    // =========================================================================
+    // UI construction
+    // =========================================================================
+
+    /**
+     * Model uniformity-test mode string for a combo index (0=KS, 1=AD, 2=WB).
+     */
+    private static String uniformityTestForIndex(int idx) {
+        return switch (idx) {
+            case 1 -> VertexCheckIndTestModel.ANDERSON_DARLING;
+            case 2 -> VertexCheckIndTestModel.WILD_BOOTSTRAP;
+            default -> VertexCheckIndTestModel.KOLMOGOROV_SMIRNOFF;
+        };
+    }
+
     private static JPanel createParamsPanel(IndependenceWrapper iw, Parameters params) {
         return createParamsPanel(new HashSet<>(iw.getParameters()), params);
     }
 
     // =========================================================================
-    // UI construction
+    // Repair tab lifecycle
     // =========================================================================
 
     public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
@@ -234,7 +264,7 @@ public class VertexCheckEditor extends JPanel {
     }
 
     // =========================================================================
-    // Repair tab lifecycle
+    // Overview selection
     // =========================================================================
 
     private static Box createParameterComponent(String parameter, Parameters parameters,
@@ -260,23 +290,19 @@ public class VertexCheckEditor extends JPanel {
         return row;
     }
 
+    // =========================================================================
+    // Detail refresh (Check tab only)
+    // =========================================================================
+
     private static DoubleTextField getDoubleField(String p, Parameters ps,
                                                   double dv, double lo, double hi) {
         return ParameterComponents.getDoubleField(p, ps, dv, lo, hi);
     }
 
-    // =========================================================================
-    // Overview selection
-    // =========================================================================
-
     private static IntTextField getIntTextField(String p, Parameters ps,
                                                 int dv, double lo, double hi) {
         return ParameterComponents.getIntTextField(p, ps, dv, lo, hi);
     }
-
-    // =========================================================================
-    // Detail refresh (Check tab only)
-    // =========================================================================
 
     private static LongTextField getLongTextField(String p, Parameters ps,
                                                   long dv, long lo, long hi) {
@@ -290,6 +316,10 @@ public class VertexCheckEditor extends JPanel {
         });
         return f;
     }
+
+    // =========================================================================
+    // Graph-change handling
+    // =========================================================================
 
     private static Box getBooleanSelectionBox(String p, Parameters ps, boolean dv) {
         Box box = Box.createHorizontalBox();
@@ -312,12 +342,16 @@ public class VertexCheckEditor extends JPanel {
         return box;
     }
 
+    // =========================================================================
+    // runAllAndRefresh
+    // =========================================================================
+
     private static StringTextField getStringField(String p, Parameters ps, String dv) {
         return PathsAction.getStringField(p, ps, dv);
     }
 
     // =========================================================================
-    // Graph-change handling
+    // Misc UI helpers
     // =========================================================================
 
     private static String factKey(IndependenceFact f) {
@@ -343,17 +377,9 @@ public class VertexCheckEditor extends JPanel {
         return a + "|" + b + "|" + String.join(",", z);
     }
 
-    // =========================================================================
-    // runAllAndRefresh
-    // =========================================================================
-
     public VertexCheckIndTestModel getIndTestModel() {
         return model;
     }
-
-    // =========================================================================
-    // Misc UI helpers
-    // =========================================================================
 
     public CachedIndependenceQueries getCachedQueries() {
         return Q;
@@ -423,7 +449,7 @@ public class VertexCheckEditor extends JPanel {
         // ---- Overview table ----
         overviewModel = new AbstractTableModel() {
             private final String[] cols =
-                    {"Vertex", "CS", "#p", "KS", "AD", "Fish", "Bin", "frac≤q", "min", "med"};
+                    {"Vertex", "CS", "#p", "PV", "Fish", "Bin", "frac≤q", "min", "med"};
 
             @Override
             public int getRowCount() {
@@ -453,13 +479,12 @@ public class VertexCheckEditor extends JPanel {
                         yield (min == max) ? String.valueOf(min) : min + "-" + max;
                     }
                     case 2 -> (s == null ? "" : s.numPValuesUsed());
-                    case 3 -> (s == null ? "" : fmt(s.modelP()));
-                    case 4 -> (s == null ? "" : fmt(s.asP()));
-                    case 5 -> (s == null ? "" : fmt(s.fishP()));
-                    case 6 -> (s == null ? "" : fmt(s.binP()));
-                    case 7 -> (s == null ? "" : fmt(s.fractionReject()));
-                    case 8 -> (s == null ? "" : fmt(s.minP()));
-                    case 9 -> (s == null ? "" : fmt(s.medianP()));
+                    case 3 -> (s == null ? "" : fmt(model.selectedVertexP(s)));
+                    case 4 -> (s == null ? "" : fmt(s.fishP()));
+                    case 5 -> (s == null ? "" : fmt(s.binP()));
+                    case 6 -> (s == null ? "" : fmt(s.fractionReject()));
+                    case 7 -> (s == null ? "" : fmt(s.minP()));
+                    case 8 -> (s == null ? "" : fmt(s.medianP()));
                     default -> "";
                 };
             }
@@ -471,7 +496,7 @@ public class VertexCheckEditor extends JPanel {
         ocm.getColumn(0).setPreferredWidth(80);
         ocm.getColumn(1).setPreferredWidth(45);
         ocm.getColumn(2).setPreferredWidth(45);
-        for (int c : new int[]{3, 4, 5, 6, 7, 8, 9}) ocm.getColumn(c).setPreferredWidth(70);
+        for (int c : new int[]{3, 4, 5, 6, 7, 8}) ocm.getColumn(c).setPreferredWidth(70);
         overviewTable.setRowSorter(new TableRowSorter<>(overviewModel));
         overviewTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         overviewTable.getSelectionModel().addListSelectionListener(this::overviewSelectionChanged);
@@ -595,6 +620,8 @@ public class VertexCheckEditor extends JPanel {
         repairPanel = new VertexRepairPanelGlobalRepair(this, x);
         repairPanel.setKnowledge(knowledge);
         repairPanel.setUseAndersonDarling(model.isUseAndersonDarling());
+        repairPanel.setUseWildBootstrap(
+                VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(model.getUniformityTest()));
 
         repairTabContent.removeAll();
         repairTabContent.add(repairPanel, BorderLayout.CENTER);
@@ -639,6 +666,10 @@ public class VertexCheckEditor extends JPanel {
         if (stillActive != null) refreshDetails(stillActive);
     }
 
+    // =========================================================================
+    // Selection helpers
+    // =========================================================================
+
     private void refreshDetails(String v) {
         if (rightTabs.getSelectedIndex() == TAB_CHECK) {
             factsModel.fireTableDataChanged();
@@ -661,9 +692,52 @@ public class VertexCheckEditor extends JPanel {
         histogramPanel.repaint();
     }
 
-    // =========================================================================
-    // Selection helpers
-    // =========================================================================
+//    private void runAllAndRefresh(String preferredVertex, Runnable onDone) {
+//        // If a worker is running, cancel it and queue this as the next task
+//        if (activeWorker != null && !activeWorker.isDone()) {
+//            activeWorker.cancel(true);
+//            pendingTask = () -> runAllAndRefresh(preferredVertex, onDone);
+//            return;
+//        }
+//
+//        activeWorker = new SwingWorker<>() {
+//            @Override
+//            protected Void doInBackground() {
+//                model.runAllVertices(true);
+//                return null;
+//            }
+//
+//            @Override
+//            protected void done() {
+//                if (!isCancelled()) {
+//                    try {
+//                        overviewModel.fireTableDataChanged();
+//                        refreshModelDiagnostics();
+//
+//                        String active;
+//                        if (preferredVertex != null) {
+//                            restoreOverviewSelection(preferredVertex);
+//                            active = preferredVertex;
+//                        } else {
+//                            selectFirstRowIfAny();
+//                            active = getActiveSelectedVertexName();
+//                        }
+//                        if (active != null) refreshDetails(active);
+//
+//                        if (onDone != null) onDone.run();
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
+//
+//                // Always drain — even if cancelled, the pending task must run
+//                Runnable next = pendingTask;
+//                pendingTask = null;
+//                if (next != null) next.run();
+//            }
+//        };
+//        activeWorker.execute();
+//    }
 
     private JPanel buildHistogramPanel(List<Double> pvals) {
         DataSet ds = new BoxDataSet(new VerticalDoubleDataBox(pvals.size(), 1),
@@ -699,17 +773,20 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void runAllAndRefresh(String preferredVertex, Runnable onDone) {
-        // If a worker is running, cancel it and queue this as the next task
         if (activeWorker != null && !activeWorker.isDone()) {
+            cancelRequested.set(true);          // stop the in-flight compute, not just interrupt
             activeWorker.cancel(true);
             pendingTask = () -> runAllAndRefresh(preferredVertex, onDone);
             return;
         }
 
+        cancelRequested.set(false);             // fresh run
+        showProgressDialog();
+
         activeWorker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
-                model.runAllVertices(true);
+                model.runAllVertices(true, cancelRequested::get);   // <-- pass the token
                 return null;
             }
 
@@ -718,7 +795,6 @@ public class VertexCheckEditor extends JPanel {
                 if (!isCancelled()) {
                     overviewModel.fireTableDataChanged();
                     refreshModelDiagnostics();
-
                     String active;
                     if (preferredVertex != null) {
                         restoreOverviewSelection(preferredVertex);
@@ -728,17 +804,47 @@ public class VertexCheckEditor extends JPanel {
                         active = getActiveSelectedVertexName();
                     }
                     if (active != null) refreshDetails(active);
-
                     if (onDone != null) onDone.run();
                 }
-
-                // Always drain — even if cancelled, the pending task must run
+                SwingWorker<?, ?> self = this;
                 Runnable next = pendingTask;
                 pendingTask = null;
-                if (next != null) next.run();
+                if (next != null) next.run();          // starts a successor, keeps dialog up
+                if (activeWorker == self) hideProgressDialog();   // nobody took over
             }
         };
         activeWorker.execute();
+    }
+
+    private void showProgressDialog() {
+        if (progressDialog != null && progressDialog.isVisible()) return;
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        progressDialog = new JDialog(owner, "Computing", Dialog.ModalityType.APPLICATION_MODAL);
+        progressDialog.setUndecorated(true);
+        JButton stop = new JButton("Computing (click to stop)...");
+        stop.addActionListener(e -> {
+            pendingTask = null;
+            cancelRequested.set(true);
+            if (activeWorker != null) activeWorker.cancel(true);
+            hideProgressDialog();
+        });
+        JPanel p = new JPanel(new BorderLayout());
+        p.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.BLACK));
+        p.add(stop);
+        progressDialog.getContentPane().add(p);
+        progressDialog.pack();
+        progressDialog.setLocationRelativeTo(owner);
+        SwingUtilities.invokeLater(() -> {
+            if (progressDialog != null) progressDialog.setVisible(true);
+        });
+    }
+
+    private void hideProgressDialog() {
+        if (progressDialog != null) {
+            JDialog d = progressDialog;
+            progressDialog = null;
+            SwingUtilities.invokeLater(d::dispose);
+        }
     }
 
     private void overviewSelectionChanged(ListSelectionEvent e) {
@@ -843,15 +949,41 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void refreshModelDiagnostics() {
-        String type = model.isUseAndersonDarling() ? "Anderson-Darling" : "Kolmogorov-Smirnov";
-        VertexCheckIndTestModel.ModelSummary ms = model.getModelSummary();
+        String mode = model.getUniformityTest();
+        boolean wb = VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(mode);
+        String type = switch (mode) {
+            case VertexCheckIndTestModel.ANDERSON_DARLING -> "Anderson-Darling";
+            case VertexCheckIndTestModel.WILD_BOOTSTRAP -> "Wild Bootstrap (sum T^2)";
+            default -> "Kolmogorov-Smirnov";
+        };
+        updatePvColumnHeader(mode);
+        String countLabel = wb ? "# constraints" : "# p-values";
+        VertexCheckIndTestModel.ModelSummary ms = model.peekModelSummary();
         if (ms == null) {
-            modelNpLabel.setText("# p-values: (not computed)");
+            modelNpLabel.setText(countLabel + ": (not computed)");
             modelPLabel.setText(type + " Model Uniformity P: (not computed)");
             return;
         }
-        modelNpLabel.setText("# p-values: " + ms.numPValues());
+        modelNpLabel.setText(countLabel + ": " + ms.numPValues());
         modelPLabel.setText(type + " Model Uniformity P: " + fmt(ms.modelP()));
+    }
+
+    /**
+     * Renames the overview p-value column header to the active method's abbreviation
+     * (KS / AD / WB) so the single column self-identifies. Cheap and idempotent.
+     */
+    private void updatePvColumnHeader(String mode) {
+        if (overviewTable == null) return;
+        String abbrev = switch (mode) {
+            case VertexCheckIndTestModel.ANDERSON_DARLING -> "AD";
+            case VertexCheckIndTestModel.WILD_BOOTSTRAP -> "WB";
+            default -> "KS";
+        };
+        var col = overviewTable.getColumnModel().getColumn(COL_PV);
+        if (!abbrev.equals(col.getHeaderValue())) {
+            col.setHeaderValue(abbrev);
+            overviewTable.getTableHeader().repaint();
+        }
     }
 
     private void showIndependenciesForSelectedRow() {

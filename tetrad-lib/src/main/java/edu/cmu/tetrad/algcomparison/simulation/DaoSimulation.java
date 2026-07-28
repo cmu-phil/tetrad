@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.util.*;
@@ -193,10 +194,54 @@ public class DaoSimulation implements Simulation {
                 dataSet = DataTransforms.standardizeData(dataSet);
             }
 
+            dataSet = postProcess(parameters, dataSet);
+            dataSet.setName("Run" + (run + 1));
+
             this.graphs.add(workingGraph);
             this.dataSets.add(dataSet);
         }
     }
+
+    /**
+     * Performs post-processing on a given dataset based on the provided parameters.
+     *
+     * @param parameters The parameters used for post-processing.
+     * @param dataSet    The dataset to be post-processed.
+     * @return The post-processed dataset.
+     */
+    private static DataSet postProcess(Parameters parameters, DataSet dataSet) {
+        if (parameters.getBoolean(Params.STANDARDIZE)) {
+            dataSet = DataTransforms.standardizeData(dataSet);
+        }
+
+        double variance = parameters.getDouble(Params.MEASUREMENT_VARIANCE);
+
+        if (variance > 0) {
+            for (int k = 0; k < dataSet.getNumRows(); k++) {
+                for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                    double d = dataSet.getDouble(k, j);
+                    double norm = RandomUtil.getInstance().nextGaussian(0, TMath.sqrt(variance));
+                    dataSet.setDouble(k, j, d + norm);
+                }
+            }
+        }
+
+        if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
+            dataSet = DataTransforms.shuffleColumns(dataSet);
+        }
+
+        if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+            double aDouble = parameters.getDouble(Params.PROB_REMOVE_COLUMN);
+            dataSet = DataTransforms.removeRandomColumns(dataSet, aDouble);
+        }
+
+        if (!parameters.getBoolean(Params.SAVE_LATENT_VARS)) {
+            dataSet = DataTransforms.restrictToMeasured(dataSet);
+        }
+
+        return dataSet;
+    }
+
 
     @Override
     public Graph getTrueGraph(int index) {
@@ -245,6 +290,12 @@ public class DaoSimulation implements Simulation {
         params.add(Params.DAO_SF_OUT);
         params.add(Params.DAO_SF_IN);
         params.add(Params.DAO_RANDOMIZE_ORDER);
+
+        params.add(Params.MEASUREMENT_VARIANCE);
+        params.add(Params.PROB_REMOVE_COLUMN);
+        params.add(Params.DIFFERENT_GRAPHS);
+        params.add(Params.RANDOMIZE_COLUMNS);
+        params.add(Params.SAVE_LATENT_VARS);
 
         return params;
     }
@@ -536,7 +587,7 @@ public class DaoSimulation implements Simulation {
      * @param dag the DAG
      * @return nodes in source-first topological order
      */
-    static List<Node> soficOrder(Graph dag) {
+    public static List<Node> soficOrder(Graph dag) {
         Map<Node, Integer> inDegree = new HashMap<>();
         for (Node n : dag.getNodes()) inDegree.put(n, 0);
         for (Edge e : dag.getEdges()) {

@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The GFCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
+ * The Fges-FCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "GFCI",
@@ -75,16 +75,16 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The GFCI class represents the Greedy Fast Causal Inference algorithm.
+     * The FGES-FCI class represents the Greedy Fast Causal Inference algorithm.
      */
     public Gfci() {
     }
 
     /**
-     * Constructs a new instance of GFCI with the given IndependenceWrapper and ScoreWrapper.
+     * Constructs a new instance of FGES-FCI with the given IndependenceWrapper and ScoreWrapper.
      *
-     * @param test  The IndependenceWrapper object to associate with this GFCI instance.
-     * @param score The ScoreWrapper object to associate with this GFCI instance.
+     * @param test  The IndependenceWrapper object to associate with this FGES-FCI instance.
+     * @param score The ScoreWrapper object to associate with this FGES-FCI instance.
      */
     public Gfci(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
@@ -115,18 +115,16 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         IndependenceTest test1 = this.test.getTest(dataModel, parameters);
         test1 = new CachedIndependenceQueries(test1);
         edu.cmu.tetrad.search.Gfci search = new edu.cmu.tetrad.search.Gfci(test1, this.score.getScore(dataModel, parameters));
-//        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
         search.setKnowledge(this.knowledge);
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-        search.setStartFromCompleteGraph(parameters.getBoolean(Params.START_FROM_COMPLETE_GRAPH));
+        search.setGuaranteePag(parameters.getBoolean(Params.REMOVE_ALMOST_CYCLES));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
-        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setOut(System.out);
 
         return search.search();
@@ -145,8 +143,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
     }
 
     /**
-     * Returns a description of the GFCI algorithm using the description of the independence test and score associated
-     * with it.
+     * Returns a description of the FGES-FCI algorithm using the description of the independence test and score
+     * associated with it.
      *
      * @return The description of the algorithm.
      */
@@ -177,14 +175,12 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(Params.DEPTH);
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
+        parameters.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
-//        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
-        parameters.add(Params.GUARANTEE_PAG);
-        parameters.add(Params.USE_MAX_P_HEURISTIC);
+        parameters.add(Params.REMOVE_ALMOST_CYCLES);
         parameters.add(Params.NUM_THREADS);
-        parameters.add(Params.START_FROM_COMPLETE_GRAPH);
-        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
+        parameters.add(Params.USE_MAX_P_HEURISTIC);
 
         parameters.add(Params.VERBOSE);
         return parameters;

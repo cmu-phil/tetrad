@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.MagToPag;
+import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import edu.cmu.tetrad.util.TMath;
@@ -470,6 +471,7 @@ public final class GraphUtils {
         for (Edge edge : originalGraph.getEdges()) {
             Node a = nameToConverted.getOrDefault(edge.getNode1().getName(), edge.getNode1());
             Node b = nameToConverted.getOrDefault(edge.getNode2().getName(), edge.getNode2());
+
             Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
 
             for (Property property : edge.getProperties()) {
@@ -2536,6 +2538,112 @@ public final class GraphUtils {
         return allLatent;
     }
 
+
+    /**
+     * Checks if the souce L of the given trek in a graph (not equal to x or y) is a latent.
+     * This is a trek from measured node x to measured node y with a latent source. Other nodes
+     * on the path may be measured or latent.
+     *
+     * @param trueGraph the true graph representing the causal relationships between nodes
+     * @param trek      the trek to be checked
+     * @param x         the first node in the trek
+     * @param y         the last node in the trek
+     * @return true if the source of the trek (not equal to x or y) is latent, false otherwise.
+     */
+    public static boolean trekSourceLatent(Graph trueGraph, List<Node> trek, Node x, Node y) {
+        if (x.getNodeType() != NodeType.MEASURED || y.getNodeType() != NodeType.MEASURED) {
+            return false;
+        }
+
+        Node source = getTrekSource(trueGraph, trek);
+
+        if (source == x || source == y) {
+            return false;
+        }
+
+        return source.getNodeType() == NodeType.LATENT;
+    }
+
+    /**
+     * Determines whether the given bidirected edge has a latent common cause in the true graph via a trek
+     * x &lt;~~ L ~~&gt; y whose source L is latent, but where at least one consecutive pair of nodes (w, r) along
+     * the trek is NOT adjacent in the estimated graph. Other nodes on the trek may be measured or latent; only
+     * the source L is required to be latent.
+     * <p>
+     * This is a variation of {@link #bidirectedExistsLatentCommonCause(Edge, Graph)} that additionally requires
+     * the trek to contain an edge (w, r) for which {@code !estGraph.isAdjacentTo(w, r)} -- i.e., the trek is not
+     * fully "covered" by adjacencies in the estimated graph.
+     *
+     * @param edge      The edge to check.
+     * @param trueGraph The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
+     * @param estGraph  The estimated graph against which consecutive-pair adjacency is checked.
+     * @return true if such a trek exists, false otherwise.
+     * @throws IllegalArgumentException if the edge is not bidirected.
+     */
+    public static boolean bidirectedExistsLatentCommonCauseUncovered(Edge edge, Graph trueGraph, Graph estGraph) {
+        if (!Edges.isBidirectedEdge(edge)) {
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        Set<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+
+        for (List<Node> trek : treks) {
+            if (trekSourceLatent(trueGraph, trek, x, y) && trekIsUncovered(trueGraph, estGraph, trek)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks whether the given trek is "uncovered" relative to the estimated graph in the following sense:
+     * every consecutive pair along the trek is adjacent in the true graph, and among the consecutive pairs whose
+     * BOTH endpoints are measured, at least one is non-adjacent in the estimated graph. If the trek has no
+     * measured-to-measured consecutive pair, the condition is vacuously satisfied.
+     * <p>
+     * Nodes are matched into the estimated graph by name, so the trek (from the true graph) and the estimated
+     * graph need not share node objects.
+     *
+     * @param trueGraph the true graph, used to confirm consecutive-pair adjacency along the trek
+     * @param estGraph  the estimated graph in which measured-to-measured adjacency is checked
+     * @param trek      the trek whose consecutive pairs are examined
+     * @return true if the trek is uncovered as defined above, false otherwise
+     */
+    public static boolean trekIsUncovered(Graph trueGraph, Graph estGraph, List<Node> trek) {
+        boolean sawMeasuredPair = false;
+        boolean sawUncoveredMeasuredPair = false;
+
+        for (int i = 0; i < trek.size() - 1; i++) {
+            Node w = trek.get(i);
+            Node r = trek.get(i + 1);
+
+            // Every consecutive pair must be a true-graph adjacency.
+            if (!trueGraph.isAdjacentTo(w, r)) {
+                return false;
+            }
+
+            // Only measured-to-measured pairs are candidates for the estimated-graph check.
+            if (w.getNodeType() != NodeType.MEASURED || r.getNodeType() != NodeType.MEASURED) {
+                continue;
+            }
+
+            sawMeasuredPair = true;
+
+            Node ew = estGraph.getNode(w.getName());
+            Node er = estGraph.getNode(r.getName());
+
+            if (ew == null || er == null || !estGraph.isAdjacentTo(ew, er)) {
+                sawUncoveredMeasuredPair = true;
+            }
+        }
+
+        return !sawMeasuredPair || sawUncoveredMeasuredPair;
+    }
+
     /**
      * This method returns the source node of a given trek in a graph.
      *
@@ -2569,7 +2677,7 @@ public final class GraphUtils {
      * @return true if the given bidirected has a latent confounder in the true graph, false otherwise.
      * @throws IllegalArgumentException if the edge is not bidirected.
      */
-    public static boolean isCorrectBidirectedEdge(Edge edge, Graph trueGraph) {
+    public static boolean bidirectedExistsLatentConfounder(Edge edge, Graph trueGraph) {
         if (!Edges.isBidirectedEdge(edge)) {
             throw new IllegalArgumentException("The edge is not bidirected: " + edge);
         }
@@ -2583,10 +2691,46 @@ public final class GraphUtils {
         for (List<Node> trek : treks) {
             if (isConfoundingTrek(trueGraph, trek, x, y)) {
                 existsLatentConfounder = true;
+                break;
             }
         }
 
         return existsLatentConfounder;
+    }
+
+    /**
+     * Determines whether a bidirected edge exists due to a latent common cause in the given graph.
+     * A latent common cause refers to an unobserved variable responsible for the relationship
+     * between the two nodes connected by the bidirected edge.
+     *
+     * @param edge the bidirected edge to be checked. Must be bidirected, otherwise an
+     *             IllegalArgumentException will be thrown.
+     * @param trueGraph the graph in which the check for a latent common cause is performed.
+     *                  This graph is assumed to contain the necessary structure and properties
+     *                  for validating the existence of a latent common cause.
+     * @return {@code true} if the bidirected edge exists due to a latent common cause in the
+     *         provided graph; {@code false} otherwise.
+     * @throws IllegalArgumentException if the input edge is not a bidirected edge.
+     */
+    public static boolean bidirectedExistsLatentCommonCause(Edge edge, Graph trueGraph) {
+        if (!Edges.isBidirectedEdge(edge)) {
+            throw new IllegalArgumentException("The edge is not bidirected: " + edge);
+        }
+
+        Node x = edge.getNode1();
+        Node y = edge.getNode2();
+
+        Set<List<Node>> treks = trueGraph.paths().treks(x, y, -1);
+        boolean trekSourceLatent = false;
+
+        for (List<Node> trek : treks) {
+            if (trekSourceLatent(trueGraph, trek, x, y)) {
+                trekSourceLatent = true;
+                break;
+            }
+        }
+
+        return trekSourceLatent;
     }
 
     /**
@@ -2601,13 +2745,13 @@ public final class GraphUtils {
      * @param verbose              whether to provide detailed logging of the repair process
      * @param selection            a set of nodes to be considered during the maximality repair
      * @param excludeSelectionBias whether to exclude the selection bias during the repair process
-     * @param recursionDepth       the maximum current depth of recursion in the repair process
+     * @param recursiveDepth       the maximum current depth of recursion in the repair process
      * @return the repaired PAG that satisfies required constraints and is free of faults
      */
     public static Graph guaranteePag(Graph pag, FciOrient fciOrient, Knowledge knowledge,
                                      Set<Triple> knownColliders,
                                      boolean verbose, Set<Node> selection, boolean excludeSelectionBias,
-                                     int recursionDepth) {
+                                     int recursiveDepth) {
         if (verbose) {
             TetradLogger.getInstance().log("Repairing faulty PAG...");
         }
@@ -2630,18 +2774,47 @@ public final class GraphUtils {
             reorientWithFci(pag, fciOrient, knowledge, knownColliders, excludeSelectionBias, verbose);
         } while (changed);
 
-        MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
-        magToPag.setRecursionDepth(recursionDepth);
-        magToPag.setKnowledge(knowledge);
-        Graph pag2 = magToPag.convert(true, excludeSelectionBias);
+// Snapshot the repaired loop state before the MAG round-trip; it is an
+        // independent legal-PAG candidate if the round-trip does not produce one.
+        Graph repaired = new EdgeListGraph(pag);
 
-        if (pag2.equals(orig)) {
-            if (verbose) TetradLogger.getInstance().log("NO FAULTY PAG CORRECTIONS MADE.");
-        } else {
-            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
+        // MagToPag.convert(true, ...) throws IllegalArgumentException when
+        // zhangMagFromPag yields an illegal MAG, so a failed round-trip shows up
+        // either as an exception here or as a pag2 that fails isLegalPag below.
+        Graph pag2 = null;
+
+        try {
+            MagToPag magToPag = new MagToPag(GraphTransforms.zhangMagFromPag(pag));
+            magToPag.setRecursiveDepth(recursiveDepth);
+            magToPag.setKnowledge(knowledge);
+            pag2 = magToPag.convert(true, excludeSelectionBias);
+        } catch (IllegalArgumentException e) {
+            if (verbose) {
+                TetradLogger.getInstance().log("guaranteePag: MAG round-trip failed (" + e.getMessage() + ").");
+            }
         }
 
-        return pag2;
+        // Accept the round-trip result only if it is actually a legal PAG.
+        if (pag2 != null && PagLegalityCheck.isLegalPagQuiet(pag2, selection)) {
+            if (verbose) TetradLogger.getInstance().log("Faulty PAG repaired.");
+            return pag2;
+        }
+
+        // Round-trip did not yield a legal PAG. Revert to the repaired loop state if
+        // that is legal, rather than returning an illegal graph from a method whose
+        // contract is to guarantee one (cf. Fcit.tryToModifyGraph).
+        if (PagLegalityCheck.isLegalPagQuiet(repaired, selection)) {
+            if (verbose) {
+                TetradLogger.getInstance().log("guaranteePag: round-trip result not a legal PAG; "
+                        + "returning repaired pre-round-trip state.");
+            }
+            return repaired;
+        }
+
+        // Neither candidate is legal: the guarantee cannot be met. Fail loudly with the
+        // reason instead of silently returning an illegal graph.
+        throw new IllegalStateException("guaranteePag could not produce a legal PAG: "
+                + PagLegalityCheck.isLegalPag(repaired, selection).getReason());
     }
 
     private static boolean removeAlmostCycles(Graph pag,
@@ -3188,6 +3361,7 @@ public final class GraphUtils {
         if (verbose) {
             TetradLogger.getInstance().log("Orient all edges in PAG as o-o:");
         }
+
         pag.reorientAllWith(Endpoint.CIRCLE);
     }
 
@@ -3208,7 +3382,9 @@ public final class GraphUtils {
                 throw new IllegalArgumentException("Nodes not distinct.");
             }
 
-            if (triple(pag, x, b, y) && !pag.isAdjacentTo(x, y) && colliderAllowed(pag, x, b, y, knowledge)) {
+            // Any collider triple in the BOSS data, regardless of whether it is unshielded, cam be copied over
+            // into the PAG so long as the adjacencies still exist.
+            if (triple(pag, x, b, y) && /*!pag.isAdjacentTo(x, y) &&*/ colliderAllowed(pag, x, b, y, knowledge)) {
                 pag.setEndpoint(x, b, Endpoint.ARROW);
                 pag.setEndpoint(y, b, Endpoint.ARROW);
             }
@@ -3527,6 +3703,39 @@ public final class GraphUtils {
         }
 
         return replicating;
+    }
+
+    /**
+     * Resolves forbidden circles in the given partially oriented graph (PAG) based on the provided knowledge.
+     * Updates edge endpoints to arrowheads where forbidden relationships are detected.
+     *
+     * Temp method to try to fix a putative knowledge issue in FCI.
+     *
+     * @param pag the partially oriented graph to be processed
+     * @param knowledge the knowledge object containing forbidden relationships between nodes
+     * @return {@code true} if any changes were made to the graph; {@code false} otherwise
+     */
+    public static boolean applyForbiddenCircleResolution(Graph pag, Knowledge knowledge) {
+        boolean anyChanged = false;
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Edge edge : new ArrayList<>(pag.getEdges())) {
+                Node a = edge.getNode1();
+                Node b = edge.getNode2();
+                // Check A end: if circle at A and A->B is forbidden, resolve to arrowhead
+                if (edge.getEndpoint1() == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
+                    edge.setEndpoint1(Endpoint.ARROW);
+                    changed = true; anyChanged = true;
+                }
+                // Check B end symmetrically
+                if (edge.getEndpoint2() == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), a.getName())) {
+                    edge.setEndpoint2(Endpoint.ARROW);
+                    changed = true; anyChanged = true;
+                }
+            }
+        }
+        return anyChanged;
     }
 
     /**
@@ -3891,5 +4100,6 @@ public final class GraphUtils {
             return "2c cor = " + this.twoCycCor + "\t" + "2c fn = " + this.twoCycFn + "\t" + "2c fp = " + this.twoCycFp;
         }
     }
+
 }
 

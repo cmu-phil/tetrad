@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -21,10 +21,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule;
 import edu.cmu.tetrad.search.SepsetFinder;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -32,6 +29,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +53,7 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * class FciOrientDataExaminationStrategyTestBased.
      */
     private final IndependenceTest test;
+    private long timeout = -1;
     /**
      * The type of blocking strategy used in the R0R4StrategyTestBased class. This variable determines whether the
      * strategy will be recursive or greedy.
@@ -93,7 +92,15 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * FciOrientDataExaminationStrategy. The separating sets are used to capture conditional independencies in a graph.
      * This map preserves that proper independence relationships are maintained during the execution of the strategy.
      */
-    private SepsetMap sepsetMap = new SepsetMap();
+    private SepsetMap sepsets = new SepsetMap();
+
+    /**
+     * Frozen reference graph (the initial Markov PAG, G_0) against which an
+     * unrecorded discriminating-path separator is computed, enforcing P1's
+     * "recorded, not live" discipline. When null, R4 falls back to computing on
+     * the live graph (the prior behavior).
+     */
+    private Graph sepsetGraph = null;
 
     /**
      * Creates a new instance of FciOrientDataExaminationStrategyTestBased.
@@ -102,6 +109,18 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     public R0R4StrategyTestBased(IndependenceTest test) {
         this.test = test;
+    }
+
+    /**
+     * Constructs an instance of R0R4StrategyTestBased with the specified
+     * IndependenceTest and timeout.
+     *
+     * @param test   the IndependenceTest object used by the strategy
+     * @param timeout the timeout value in milliseconds for the strategy
+     */
+    public R0R4StrategyTestBased(IndependenceTest test, long timeout) {
+        this.test = test;
+        this.timeout = timeout;
     }
 
     /**
@@ -210,17 +229,51 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-        Set<Node> blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
-                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper);
+//        Set<Node> blocking = sepsets.get(x, y);
+//
+//        if (blocking == null) {
+//            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
+//                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
+//
+//            if (blocking != null) {
+//                sepsets.set(x, y, blocking);
+//            } else {
+//                throw new IllegalStateException("Discriminating path could not be determined.");
+//            }
+//        }
 
-        if (blocking != null) {
-            sepsetMap.set(x, y, blocking);
-        } else {
-//            TetradLogger.getInstance().log("Discriminating path could not be determined.");
-            throw new IllegalStateException("Discriminating path could not be determined.");
+        Set<Node> blocking = sepsets.get(x, y);
+
+        if (blocking == null && blockingType == BlockingType.GREEDY) {
+            Set<Node> _blocking = findAdjSetSepset(graph, x, y, path, v);
+            if (_blocking != null) {
+                sepsets.set(x, y, _blocking);
+                return Pair.of(discriminatingPath, true);
+            }
         }
 
-        if (!(blocking.containsAll(path) && blocking.contains(w))) {
+        // BlockingType.RECURSIVE
+        if (blocking == null) {
+            // P1 ("recorded, not live"): compute an unrecorded endpoint separator
+            // against the frozen initial Markov PAG (G_0) rather than the live,
+            // mid-reorientation graph. This branch is reached only for pairs
+            // non-adjacent in G_0 -- deleted pairs always carry a recorded sepset --
+            // so sepsetGraph has x,y non-adjacent and the call is well-posed. A null
+            // sepsetGraph falls back to the live graph (prior behavior).
+            Graph refGraph = (sepsetGraph != null && !sepsetGraph.isAdjacentTo(x, y))
+                    ? sepsetGraph : graph;
+
+            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, refGraph, x, y,
+                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
+
+            if (blocking != null) {
+                sepsets.set(x, y, blocking);
+            } else {
+                throw new IllegalStateException("Discriminating path could not be determined.");
+            }
+        }
+
+        if (!(blocking.containsAll(path)) && blocking.contains(w)) {
             throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
         }
 
@@ -270,6 +323,30 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             return Pair.of(discriminatingPath, true);
         }
+    }
+
+    private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
+        Set<Node> blocking;
+        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+
+        Set<Node> b1 = new HashSet<>(blocking);
+        b1.remove(v);
+
+        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
+
+        Set<Node> b2 = new HashSet<>(b1);
+        b2.add(v);
+
+        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
+
+        if (b1Indep) {
+            blocking = b1;
+        } else if (b2Indep) {
+            blocking = b2;
+        } else {
+            blocking = null;
+        }
+        return blocking;
     }
 
     /**
@@ -353,10 +430,21 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
     /**
      * Sets the SepsetMap used by the R0R4StrategyTestBased.
      *
-     * @param sepsetMap the SepsetMap object to be set
+     * @param sepsets the SepsetMap object to be set
      */
-    public void setSepsetMap(SepsetMap sepsetMap) {
-        this.sepsetMap = sepsetMap;
+    public void setSepsetMap(SepsetMap sepsets) {
+        this.sepsets = sepsets;
+    }
+
+    /**
+     * Sets the frozen reference graph (G_0) used to compute separators for
+     * endpoint pairs that have no recorded separator. Pass the initial PAG; pass
+     * null to recompute on the live graph (prior behavior).
+     *
+     * @param sepsetGraph the frozen initial PAG, or null
+     */
+    public void setSepsetGraph(Graph sepsetGraph) {
+        this.sepsetGraph = sepsetGraph;
     }
 
     /**

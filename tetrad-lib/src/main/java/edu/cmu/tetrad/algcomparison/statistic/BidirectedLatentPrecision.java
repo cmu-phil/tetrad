@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.util.PagCache;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -53,7 +52,7 @@ public class BidirectedLatentPrecision implements Statistic {
      */
     @Override
     public String getAbbreviation() {
-        return "<->-Lat-Prec";
+        return "<->-LatPrec";
     }
 
     /**
@@ -64,12 +63,14 @@ public class BidirectedLatentPrecision implements Statistic {
      */
     @Override
     public String getDescription() {
-        return "Percent of bidirected edges for which a latent confounder exists (an latent L such that X <- (L) -> Y).";
+        return "Percent of bidirected edges for which a latent confounder exists (a latent L such that X <- (L) -> Y).";
     }
 
     /**
      * Calculates the percentage of correctly identified bidirected edges in an estimated graph for which a latent
-     * confounder exists in the true graph.
+     * confounder exists in the true graph. This includes bidirected edges that are uncovered by the estimated graph.
+     * That is, this finds latent L for x&lt;~~L~~&gt;Y where the paths to x or y may include measures, but
+     * not all measure-to-measure edges exist in the estimated graph.
      *
      * @param trueDag The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
@@ -87,7 +88,7 @@ public class BidirectedLatentPrecision implements Statistic {
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (GraphUtils.isCorrectBidirectedEdge(edge, trueDag)) {
+                if (GraphUtils.bidirectedExistsLatentCommonCauseUncovered(edge, trueDag, estGraph)) {
                     tp++;
                 }
 
