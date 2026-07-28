@@ -849,8 +849,9 @@ public final class Fcit implements IGraphSearch {
 
                                 // Eligibility filters (read-only).
                                 if (!this.pag.isAdjacentTo(x, y)) return null;
-                                if (!(knowledge == null || !Edges.isDirectedEdge(e)
-                                        || !knowledge.isForbidden(x.getName(), y.getName()))) return null;
+                                if (knowledge != null
+                                        && (knowledge.isRequired(x.getName(), y.getName())
+                                        || knowledge.isRequired(y.getName(), x.getName()))) return null;
 
                                 try {
                                     IndependenceCheck check = findIndependenceCheckRecursive(e, blind);
@@ -1358,8 +1359,8 @@ public final class Fcit implements IGraphSearch {
             Node x = e.getNode1();
             Node y = e.getNode2();
 
-            if (!(knowledge == null || !Edges.isDirectedEdge(e)
-                    || !knowledge.isForbidden(x.getName(), y.getName()))) continue;
+            if (knowledge != null && (knowledge.isRequired(x.getName(), y.getName())
+                    || knowledge.isRequired(y.getName(), x.getName()))) continue;
 
             if (foundSepsets.containsKey(Set.of(x, y))) {
                 confirmed.add(e);
@@ -1486,8 +1487,8 @@ public final class Fcit implements IGraphSearch {
             Node x = e.getNode1();
             Node y = e.getNode2();
 
-            if (!(knowledge == null || !Edges.isDirectedEdge(e)
-                    || !knowledge.isForbidden(x.getName(), y.getName()))) continue;
+            if (knowledge != null && (knowledge.isRequired(x.getName(), y.getName())
+                    || knowledge.isRequired(y.getName(), x.getName()))) continue;
 
             if (foundSepsets.containsKey(Set.of(x, y))) continue;
 
