@@ -490,6 +490,8 @@ public class TestSepsetMethods {
             int nearWhichEndpoint = 1;
             boolean ignoreDirectEdge = false;
 
+            RecursiveBlocking.DEFAULT_STRATEGY = RecursiveBlocking.Strategy.RECURSIVE;
+
             RecursiveBlocking.BlockingResult result = RecursiveBlocking.blockPathsRecursively(graph, a, y,
                     Set.of(), Set.of(), maxPathLength, depth, maxRadius, nearWhichEndpoint, ignoreDirectEdge);
 

@@ -174,14 +174,14 @@ public class TestCheckMarkov {
         IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.01);
         SemBicScore score = new SemBicScore(data, 1, true);
 
-        Fcit fcit = new Fcit(test, score);
-        fcit.setVerbose(true);
-        fcit.setDepth(7);
-        fcit.setCompleteRuleSetUsed(false);
+        Bfci bfci = new Bfci(test, score);
+        bfci.setVerbose(true);
+        bfci.setDepth(7);
+        bfci.setCompleteRuleSetUsed(false);
         Graph pag;
 
         try {
-            pag = fcit.search();
+            pag = bfci.search();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
