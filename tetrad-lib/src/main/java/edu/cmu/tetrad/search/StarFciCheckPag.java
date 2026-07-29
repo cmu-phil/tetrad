@@ -291,6 +291,11 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             return pag;
         }
 
+        // Print adjacency histogram
+        for (Node x : nodes) {
+            System.out.println(x + ": " + pag.getAdjacentNodes(x).size());
+        }
+
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
         // Reusable data facts (X _||_ Y | S), invariant across passes. Kept OUT of sepsetMap
