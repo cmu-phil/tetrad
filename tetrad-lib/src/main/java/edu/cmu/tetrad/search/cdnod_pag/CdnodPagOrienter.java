@@ -17,7 +17,7 @@ import java.util.function.Function;
  * <p><b>The C1 rule.</b> For an edge X *-* Y not yet directed either way, and a small conditioning
  * set S ⊆ Adj(Y) \ {X}, if
  * <ol>
- *   <li>Y's conditional distribution given S changes with some context (changes(Y, S)), and</li>
+ *   <li>Y's conditional distribution given  S changes with some context (changes(Y, S)), and</li>
  *   <li>Y is stable across all contexts given S ∪ {X} (stable(Y, S ∪ {X})),</li>
  * </ol>
  * then, under exogenous mutually independent contexts, no selection, and faithfulness of the
