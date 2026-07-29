@@ -64,6 +64,62 @@ public class PagLegalityCheck {
         }
     }
 
+    public static LegalPagRet isLegalPag(Graph pag, Set<Node> selection,
+                                         int recursiveDepth, int maxDiscriminatingPathLength) {
+        for (Node n : pag.getNodes()) {
+            if (n.getNodeType() != NodeType.MEASURED) {
+                return new LegalPagRet(false, "Node " + n + " is not measured");
+            }
+        }
+
+        Graph mag = null;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(pag);
+        } catch (Exception e) {
+            return new LegalPagRet(false, "PAG to MAG failed");
+        }
+        LegalMagRet legalMag = isLegalMag(mag, selection);
+
+        if (!legalMag.isLegalMag()) {
+            return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
+        }
+
+        Graph pag2;
+        try {
+            MagToPag magToPag = new MagToPag(mag);
+            magToPag.setRecursiveDepth(recursiveDepth);
+            magToPag.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+            pag2 = magToPag.convert(false, false);
+        } catch (IllegalStateException e) {
+            String reason = "Legal PAG status could not be determined";
+            return new LegalPagRet(false, reason);
+        }
+
+        if (!pag.equals(pag2)) {
+            String edgeMismatch = "";
+
+            for (Edge e : pag.getEdges()) {
+                Edge e2 = pag2.getEdge(e.getNode1(), e.getNode2());
+                if (!e.equals(e2)) {
+                    edgeMismatch = "For example, the original PAG has edge " + e + " whereas the reconstituted graph has edge " + e2;
+                    break;
+                }
+            }
+
+            String reason = legalMag.isLegalMag() ? "The MAG implied by this graph was a legal MAG, but one cannot recover the original graph " + "by finding the PAG of an implied MAG â this graph may lie between a MAG and a PAG" : "The MAG implied by this graph was not legal, and one cannot recover the original graph from its implied PAG";
+
+            if (!edgeMismatch.isEmpty()) {
+                reason += ". " + edgeMismatch;
+            }
+
+            if (!edgeMismatch.isEmpty()) {
+                return new LegalPagRet(false, reason);
+            }
+        }
+
+        return new LegalPagRet(true, "This is a legal PAG");
+    }
+
     /**
      * Checks if the provided Directed Acyclic Graph (PAG) is a legal PAG.
      *
@@ -200,31 +256,13 @@ public class PagLegalityCheck {
             Node x = e.getNode1();
             Node y = e.getNode2();
 
-//            if (Edges.isBidirectedEdge(e)) {
-//                Set<List<Node>> forwardPaths = mag.paths().directedPaths(x, y, -1);
-//                if (!forwardPaths.isEmpty()) {
-//                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + GraphUtils.pathString(mag, forwardPaths.iterator().next(), false));
-//                }
-//
-//                Set<List<Node>> backwardPaths = mag.paths().directedPaths(y, x, -1);
-//                if (!backwardPaths.isEmpty()) {
-//                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + GraphUtils.pathString(mag, backwardPaths.iterator().next(), false));
-//                }
-//            }
-
             if (Edges.isBidirectedEdge(e)) {
                 if (mag.paths().existsDirectedPath(x, y)) {
-                    Set<List<Node>> ex = mag.paths().directedPaths(x, y, nodes.size());
-                    String path = ex.isEmpty() ? "(direct ancestral path)"
-                            : GraphUtils.pathString(mag, ex.iterator().next(), false);
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ". An example path is " + path);
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + x + " to " + y + ".");
                 }
 
                 if (mag.paths().existsDirectedPath(y, x)) {
-                    Set<List<Node>> ex = mag.paths().directedPaths(y, x, nodes.size());
-                    String path = ex.isEmpty() ? "(direct ancestral path)"
-                            : GraphUtils.pathString(mag, ex.iterator().next(), false);
-                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ". An example path is " + path);
+                    return new LegalMagRet(false, "Bidirected edge semantics is violated: Directed path exists from " + y + " to " + x + ".");
                 }
             }
         }
@@ -379,9 +417,6 @@ public class PagLegalityCheck {
             if (!Edges.isBidirectedEdge(e)) continue;
             Node x = e.getNode1();
             Node y = e.getNode2();
-//            if (!mag.paths().directedPaths(x, y, -1).isEmpty()) return false;
-//            if (!mag.paths().directedPaths(y, x, -1).isEmpty()) return false;
-
             if (mag.paths().existsDirectedPath(x, y)) return false;
             if (mag.paths().existsDirectedPath(y, x)) return false;
         }

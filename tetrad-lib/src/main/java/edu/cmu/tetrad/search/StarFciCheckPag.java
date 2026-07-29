@@ -202,28 +202,49 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      */
     private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
                                                  List<Node> adjx, boolean useMaxP) throws InterruptedException {
-        List<Set<Node>> choices = getChoices(adjx, depth);
-
         if (useMaxP) {
+            List<Set<Node>> choices = getChoices(adjx, depth);
             // Max p for stability...
             return choices.parallelStream()
                     .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
                     .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
                     .orElse(null); // Return best set or null if none pass the threshold
         } else { // Greedy
+            // Greedy: lazy enumeration (smallest subsets first), batched parallel testing,
+            // short-circuit on the first separating set. Nothing is materialized up front.
+            int d = (depth < 0 || depth > adjx.size()) ? adjx.size() : depth;
+            SublistGenerator cg2 = new SublistGenerator(adjx.size(), d);
+            final int BATCH = 4096;
+            List<Set<Node>> batch = new ArrayList<>(BATCH);
+            boolean exhausted = false;
 
-            // Parallelize processing for adjx
-            // Generate combinations in parallel
-            // Filter combinations that don't contain 'containing'
-            return choices.parallelStream() // Generate combinations in parallel
-                    .filter(subset -> subset.containsAll(containing)) // Filter combinations that don't contain 'containing'
-                    .filter(subset -> {
-                        try {
-                            return test.checkIndependence(x, y, subset).isIndependent();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }).findFirst().orElse(null);
+            while (!exhausted) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+                batch.clear();
+
+                while (batch.size() < BATCH) {
+                    int[] ch = cg2.next();
+                    if (ch == null) { exhausted = true; break; }
+                    Set<Node> s = GraphUtils.asSet(ch, adjx);
+                    if (s.containsAll(containing)) batch.add(s);
+                }
+
+                if (batch.isEmpty()) break;
+
+                Optional<Set<Node>> hit = batch.parallelStream()
+                        .filter(s -> {
+                            try {
+                                return test.checkIndependence(x, y, s).isIndependent();
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }).findFirst();
+
+                if (hit.isPresent()) return hit.get();
+            }
+
+            return null;
         }
     }
 
@@ -289,11 +310,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
 
         if (lvHeuristicOnly) {
             return pag;
-        }
-
-        // Print adjacency histogram
-        for (Node x : nodes) {
-            System.out.println(x + ": " + pag.getAdjacentNodes(x).size());
         }
 
         Set<Triple> unshieldedColliders = new HashSet<>();
@@ -377,9 +393,9 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
             }
 
-                                    //            if (verbose) {
-                                    //                TetradLogger.getInstance().log("*-FCI finished.");
-                                    //            }
+            //            if (verbose) {
+            //                TetradLogger.getInstance().log("*-FCI finished.");
+            //            }
 
             List<Edge> dsepEdges = new ArrayList<>(pag.getEdges());
             RandomUtil.shuffle(dsepEdges);
@@ -409,7 +425,11 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                 Set<Node> sepset = foundSepsets.get(Set.of(a, c));
 
                 if (sepset == null) {
-                    sepset = getSepset(a, c, new HashSet<>(), independenceTest, depth, possibleDsep, useMaxP);
+                    // Possible-D-SEP pools can be very large; an unbounded depth here means
+                    // exhausting 2^|pool| subsets for every GENUINE edge. Clamp regardless of
+                    // the global depth setting.
+                    int dsepDepth = (depth < 0) ? Math.min(possibleDsep.size(), 4) : Math.min(depth, possibleDsep.size());
+                    sepset = getSepset(a, c, new HashSet<>(), independenceTest, dsepDepth, possibleDsep, useMaxP);
 
                     if (sepset != null) {
                         foundSepsets.put(Set.of(a, c), sepset);
@@ -557,7 +577,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         FciOrient trialOrient = buildFciOrient(trialMap);
         gfciOrientPag(_pag, cpdag, nodes, trialMap, unshieldedColliders, trialOrient);
 
-        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
+//        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection), 30);
+        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection), -1, maxDiscriminatingPathLength);
 
         if (!legal.isLegalPag()) {
             if (verbose) {

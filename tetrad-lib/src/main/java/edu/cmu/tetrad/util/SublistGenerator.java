@@ -172,7 +172,7 @@ public final class SublistGenerator {
      * @return the next combination in the series, or null if the series is finished.
      */
     public synchronized int[] next() {
-//        if (getB() == this.choiceLocal.length) return null;
+        if (this.b > this.effectiveDepth) return null;   // exhausted; stay exhausted
 
         int i = getB();
 
