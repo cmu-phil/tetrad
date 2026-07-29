@@ -1,125 +1,100 @@
 package edu.cmu.tetrad.search.cdnod_pag;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.function.Function;
 
 /**
- * <p>
- * The {@code CdnodPagOrienter} class is responsible for orienting edges in a
- * PAG (Partial Ancestral Graph). It integrates various configuration options
- * to ensure the process adheres to <i>strong legality</i> rules while allowing
- * flexibility through methods for configuring tiers, protected nodes, and
- * additional constraints.
- * </p>
+ * Orients arrowheads in a PAG using context-based change/stability evidence, maintaining strong
+ * PAG legality throughout.
  *
- * <p>
- * The class supports features such as propagating changes, excluding context
- * nodes, enforcing tier constraints, and providing an undo mechanism for
- * reversible operations.
- * </p>
+ * <p><b>The C1 rule.</b> For an edge X *-* Y not yet directed either way, and a small conditioning
+ * set S ⊆ Adj(Y) \ {X}, if
+ * <ol>
+ *   <li>Y's conditional distribution given S changes with some context (changes(Y, S)), and</li>
+ *   <li>Y is stable across all contexts given S ∪ {X} (stable(Y, S ∪ {X})),</li>
+ * </ol>
+ * then, under exogenous mutually independent contexts, no selection, and faithfulness of the
+ * pooled distribution to the augmented graph, Y is not an ancestor of X, so an arrowhead at Y
+ * (X *-&gt; Y) is sound. (Sketch: (1)+(2) force X onto every S-open context-to-Y path as a
+ * non-collider; if Y were an ancestor of X, the adjacency edge Y → X together with either the
+ * head-at-X or fork-at-X configuration of such a path yields an m-connecting path given
+ * S ∪ {X} — via a direct collider splice in the head case, or via the first S-descendant of the
+ * forced C-side collider in the fork case — contradicting (2).)
  *
- * <p><b>Core responsibilities of this class include:</b></p>
+ * <p><b>Commit discipline.</b> Each candidate arrowhead is applied to a <i>copy</i> of the current
+ * PAG; the copy is propagated by the supplied propagator and checked against the strong legality
+ * predicate (the fixed point PAG(MAG(G)) == G). Only if the check passes is the copy adopted as
+ * the current PAG. Failed attempts are discarded whole, so no propagated marks from rejected
+ * commits can leak into subsequent state — there is no undo stack to keep consistent. The
+ * propagator may mutate its argument or return a new graph; only the returned instance is used.</p>
  *
- * <ul>
- *   <li>Managing the orientation of edges in the PAG based on configurable rules.</li>
- *   <li>Ensuring the legality and integrity of the graph throughout the orientation process.</li>
- *   <li>Allowing extensibility through configurable constraints and flexibility in processing nodes.</li>
- * </ul>
+ * <p><b>Caveat (interim classes).</b> Even when every individual commit is sound, the set of MAGs
+ * consistent with the CI facts plus the change constraints need not form a full PAG equivalence
+ * class, so the strong-legality fixed point may be unattainable for some sound commits. Such
+ * commits are rejected (conservatively, and order-dependently). The telemetry counters record how
+ * often this occurs; a nonzero {@link #getLegalityRejections()} count flags that information was
+ * dropped to preserve legality.</p>
  */
 public final class CdnodPagOrienter {
 
     /**
-     * A reference to a {@link ChangeOracle} used by the orienter to evaluate changes and stability in probabilistic
-     * dependencies with respect to multi-context scenarios. The ChangeOracle provides methods for determining whether
-     * conditional probabilities vary or remain stable across different contexts.
+     * Provides multi-context change/stability judgments.
      */
     private final ChangeOracle oracle;
-    /**
-     * A function representing the strong legality check for PAG (Partial Ancestral Graph) orientation. This function
-     * takes a Graph as input and returns a Boolean value indicating whether the fixed-point condition PAG(MAG(G)) == G
-     * holds true for the given graph.
-     * <p>
-     * The strong legality ensures that the orientation process adheres to specific constraints, maintaining the
-     * consistency of the PAG with the given graph structure.
-     */
-    private final Function<Graph, Boolean> strongPagLegality; // fixed-point: PAG(MAG(G)) == G
-    /**
-     * A function that propagates changes within a graph structure by modifying it in-place. The function takes a
-     * {@code Graph} instance as input, applies the required logic to propagate updates or process the graph, and then
-     * returns the same modified {@code Graph} instance.
-     * <p>
-     * This function is typically used to implement in-place graph transformations or orientations, ensuring that the
-     * graph structure conforms to certain desired properties or constraints after propagation.
-     */
-    private final Function<Graph, Graph> propagator;          // in-place; returns same instance
-    /**
-     * A set of nodes that are protected from certain modifications during the orientation process in the directed
-     * graph. This field is used to ensure that specific nodes maintain their structural or functional roles within the
-     * graph.
-     */
-    private final Set<Node> protectedNodes = new LinkedHashSet<>();
-    /**
-     * A mapping of nodes to their corresponding tier levels, where a smaller integer value indicates an earlier tier.
-     * This is used to enforce tier-based constraints within the graph orientation process.
-     * <p>
-     * The tiers define a hierarchical structure for nodes, and this structure helps guide the orientation logic by
-     * ensuring that nodes with earlier tiers have precedence over nodes in later tiers.
-     */
-    private final Map<Node, Integer> tier = new HashMap<>(); // smaller = earlier
-    /**
-     * A stack used to record undoable operations in the form of {@link Runnable} commands. Each operation pushed onto
-     * this stack represents an action that can be reversed, enabling the ability to backtrack changes made to the graph
-     * or other internal states.
-     * <p>
-     * This stack operates on a last-in-first-out (LIFO) basis, where the most recently added undo operation is the
-     * first to be executed when an undo is triggered.
-     * <p>
-     * It is primarily utilized within the context of the CdnodPagOrienter class to manage reversible modifications
-     * during graph orientation.
-     */
-    private final Deque<Runnable> undoStack = new ArrayDeque<>();
-    /**
-     * A graphical representation of a partially oriented acyclic graph (PAG). The `pag` variable is a core field of the
-     * `CdnodPagOrienter` class and serves as the primary graph being manipulated during orientation operations.
-     * <p>
-     * The PAG is used to represent both the relationships between nodes and the partial orientation applied based on
-     * constraints and rules defined in the context of causal discovery algorithms. This field typically undergoes
-     * various modifications during execution of the associated methods in the `CdnodPagOrienter` class.
-     */
-    private Graph pag;
-    /**
-     * Represents the maximum subset size used during the operation of the CdnodPagOrienter class. This variable
-     * determines the upper limit on the size of subsets that are considered during specific computational or logical
-     * operations within the class.
-     * <p>
-     * The default value is set to 1, but it can be modified through the {@code withMaxSubsetSize(int k)} method to
-     * tailor the behavior of the class to specific requirements or datasets.
-     */
-    private int maxSubsetSize = 1;
-    /**
-     * Indicates whether the proxy guard mechanism is enabled or not. When enabled, additional constraints or
-     * validations may be applied during the processing or orientation of the graph.
-     */
-    private boolean useProxyGuard = true;
-    /**
-     * Indicates whether contexts that originate from set S should be excluded during specific operations or processing
-     * steps in the CdnodPagOrienter class. This variable primarily influences the behavior of the orientation logic to
-     * either include or disregard contextual information provided by set S.
-     */
-    private boolean excludeContextsFromS = true;
 
     /**
-     * Constructs a CdnodPagOrienter instance with the specified parameters.
+     * Strong legality predicate: the fixed-point condition PAG(MAG(G)) == G.
+     */
+    private final Function<Graph, Boolean> strongPagLegality;
+
+    /**
+     * Orientation-rule propagator. Applied to trial copies after each candidate commit; the
+     * returned instance is used (the argument may or may not be mutated).
+     */
+    private final Function<Graph, Graph> propagator;
+
+    /**
+     * Nodes that must not receive arrowheads (contexts, plus any extras). A node in this set is
+     * never used in the Y role. Nodes in this set MAY appear in the X role: orienting X *-&gt; Y
+     * places a head at Y only, so protection of X is not at issue.
+     */
+    private final Set<Node> protectedNodes = new LinkedHashSet<>();
+
+    /**
+     * Optional tier map (smaller = earlier). If both endpoints are tiered and tier(X) >= tier(Y),
+     * the pair (X, Y) is skipped: X cannot be oriented into Y across or within tiers.
+     */
+    private final Map<Node, Integer> tier = new HashMap<>();
+
+    /**
+     * The current PAG. Replaced wholesale by adopted trial copies; node objects are shared across
+     * copies, so Node handles remain valid.
+     */
+    private Graph pag;
+
+    private int maxSubsetSize = 1;
+    private boolean excludeContextsFromS = true;
+    private boolean verbose = false;
+
+    // --- telemetry ---
+    private int attemptedCommits = 0;
+    private int acceptedCommits = 0;
+    private int legalityRejections = 0;
+
+    /**
+     * Constructs a CdnodPagOrienter.
      *
-     * @param pag               the graph representation of the PAG (Possible Ancestral Graph)
-     * @param oracle            the ChangeOracle which provides context nodes and handles constraints
-     * @param strongPagLegality a function to verify the strong legality of the PAG
-     * @param propagator        a function to propagate changes in the PAG
+     * @param pag               the PAG to orient (node objects are shared with adopted copies)
+     * @param oracle            the ChangeOracle providing contexts and change/stability judgments
+     * @param strongPagLegality the strong legality predicate PAG(MAG(G)) == G
+     * @param propagator        the orientation-rule propagator; the returned instance is used
      */
     public CdnodPagOrienter(Graph pag,
                             ChangeOracle oracle,
@@ -139,37 +114,26 @@ public final class CdnodPagOrienter {
         return u;
     }
 
-    /**
-     * Sets the maximum subset size to the given value. The size is restricted to a non-negative value. This method
-     * updates the state of the current object and allows for method chaining.
-     *
-     * @param k the desired maximum subset size; if negative, it will be set to 0.
-     * @return the current instance of {@code CdnodPagOrienter} for method chaining.
-     */
     // ---- Fluent setters ----
+
+    /**
+     * Sets the maximum size of conditioning sets S considered per edge; negative values are
+     * clamped to 0.
+     *
+     * @param k the desired maximum subset size.
+     * @return this, for chaining.
+     */
     public CdnodPagOrienter withMaxSubsetSize(int k) {
         this.maxSubsetSize = TMath.max(0, k);
         return this;
     }
 
     /**
-     * Configures the use of a proxy guard for the current CdnodPagOrienter instance. The proxy guard is a mechanism
-     * that provides additional constraints or checks when processing the PAG.
+     * Configures whether contexts are excluded from the conditioning sets S offered to the change
+     * tests.
      *
-     * @param on specifies whether to enable (true) or disable (false) the proxy guard.
-     * @return the current instance of {@code CdnodPagOrienter} for method chaining.
-     */
-    public CdnodPagOrienter withProxyGuard(boolean on) {
-        this.useProxyGuard = on;
-        return this;
-    }
-
-    /**
-     * Configures whether to exclude contexts from S during the processing of the PAG. This modifies the internal state
-     * of the current object and supports method chaining.
-     *
-     * @param on specifies whether to enable (true) or disable (false) the exclusion of contexts from S.
-     * @return the current instance of {@code CdnodPagOrienter} for method chaining.
+     * @param on true to exclude contexts from S.
+     * @return this, for chaining.
      */
     public CdnodPagOrienter withExcludeContextsFromS(boolean on) {
         this.excludeContextsFromS = on;
@@ -177,12 +141,21 @@ public final class CdnodPagOrienter {
     }
 
     /**
-     * Prohibits the addition of arrowheads into the specified nodes in the PAG (Possible Ancestral Graph). This ensures
-     * that the given nodes are protected from certain types of modifications. The method updates the internal state of
-     * the object and allows for method chaining.
+     * Enables or disables logging of individual commit decisions.
      *
-     * @param nodes a collection of {@code Node} instances to be protected against arrowhead additions
-     * @return the current instance of {@code CdnodPagOrienter} for method chaining
+     * @param on true for verbose logging.
+     * @return this, for chaining.
+     */
+    public CdnodPagOrienter withVerbose(boolean on) {
+        this.verbose = on;
+        return this;
+    }
+
+    /**
+     * Prohibits arrowheads into the given nodes (they are never used in the Y role).
+     *
+     * @param nodes the nodes to protect.
+     * @return this, for chaining.
      */
     public CdnodPagOrienter forbidArrowheadsInto(Collection<Node> nodes) {
         this.protectedNodes.addAll(nodes);
@@ -190,12 +163,10 @@ public final class CdnodPagOrienter {
     }
 
     /**
-     * Prohibits the addition of arrowheads into the specified node in the PAG (Possible Ancestral Graph). This ensures
-     * that the given node is protected from certain types of modifications. The method updates the internal state of
-     * the object and supports method chaining.
+     * Prohibits arrowheads into the given node (it is never used in the Y role).
      *
-     * @param node the {@code Node} instance to be protected against arrowhead additions
-     * @return the current instance of {@code CdnodPagOrienter} for method chaining
+     * @param node the node to protect.
+     * @return this, for chaining.
      */
     public CdnodPagOrienter forbidArrowheadsInto(Node node) {
         this.protectedNodes.add(node);
@@ -203,120 +174,140 @@ public final class CdnodPagOrienter {
     }
 
     /**
-     * Configures the tiers for the current instance of {@code CdnodPagOrienter}. Tiers are used to group nodes,
-     * assigning each node to a specific level or layer. This method merges the provided tiers map into the existing
-     * tier configuration. If the provided map is not null, its contents will replace or add to the current tiers. This
-     * method supports method chaining by returning the current instance.
+     * Merges the given tier assignments (smaller = earlier) into the tier map.
      *
-     * @param tiers a map where the keys are {@code Node} instances and the values are their respective tier
-     *              assignments
-     * @return the current instance of {@code CdnodPagOrienter} for method chaining
+     * @param tiers the tier assignments; may be null.
+     * @return this, for chaining.
      */
     public CdnodPagOrienter withTiers(Map<Node, Integer> tiers) {
         if (tiers != null) this.tier.putAll(tiers);
         return this;
     }
 
+    // ---- Execution ----
+
     /**
-     * Executes the orientation process.
-     * <p>
-     * It iterates through the edges in the PAG and attempts to orient them using context-based stability checks.
-     * The process maintains strong legality by checking the PAG's legality after each orientation and
-     * rolling back if it violates the rules.
+     * Runs the orientation pass and returns the resulting PAG. Every adopted state has passed the
+     * strong legality check after propagation, so no final rollback pass is needed; callers should
+     * use the returned graph (the graph passed to the constructor may be a stale, superseded copy).
+     *
+     * @return the final PAG.
      */
-    public void run() {
+    public Graph run() {
         final List<Node> ctx = oracle.contexts();
 
-        for (Node y : pag.getNodes()) {
+        for (Node y : new ArrayList<>(pag.getNodes())) {
             if (protectedNodes.contains(y)) continue; // never add heads into protected
 
-            final List<Node> adjs = pag.getAdjacentNodes(y);
-            for (Node x : adjs) {
-                if (protectedNodes.contains(x)) continue;
+            // Adjacency (the skeleton) never changes during this pass, so this snapshot of
+            // neighbors of y remains valid across adopted copies (which share node objects).
+            for (Node x : new ArrayList<>(pag.getAdjacentNodes(y))) {
                 if (pag.isDirectedFromTo(x, y) || pag.isDirectedFromTo(y, x)) continue;
+                if (pag.getEndpoint(x, y) == Endpoint.ARROW) continue; // head at y already present
 
-                // Tier guard
+                // Tier guard: never orient into an earlier or equal tier.
                 Integer tx = tier.get(x), ty = tier.get(y);
                 if (tx != null && ty != null && tx >= ty) continue;
 
-                // Neighborhood for S = Adj(Y)\{X}, optionally minus contexts
-                List<Node> neigh = new ArrayList<>(adjs);
+                // S candidates: Adj(Y) \ {X}, optionally minus contexts.
+                List<Node> neigh = new ArrayList<>(pag.getAdjacentNodes(y));
                 neigh.remove(x);
                 if (excludeContextsFromS) neigh.removeAll(ctx);
 
-                tryOrientC1PerEdgeStrong(x, y, neigh, ctx);
+                tryOrientC1PerEdgeStrong(x, y, neigh);
             }
         }
 
-        // Final safety net: propagate & ensure strong legality
-        pag = propagator.apply(pag);
-        if (!strongPagLegality.apply(pag)) {
-            while (!undoStack.isEmpty() && !strongPagLegality.apply(pag)) {
-                undoStack.pop().run();
-                pag = propagator.apply(pag);
-            }
+        if (verbose) {
+            TetradLogger.getInstance().log("[CD-NOD-PAG] Orienter done: attempted=" + attemptedCommits
+                    + " accepted=" + acceptedCommits
+                    + " legality-rejected=" + legalityRejections);
         }
+
+        return pag;
+    }
+
+    /**
+     * Returns the current PAG (the final one, after {@link #run()} has completed).
+     *
+     * @return the current PAG.
+     */
+    public Graph getPag() {
+        return pag;
+    }
+
+    /**
+     * Number of candidate commits whose change/stability gates passed (each was tried on a copy).
+     *
+     * @return the attempted-commit count.
+     */
+    public int getAttemptedCommits() {
+        return attemptedCommits;
+    }
+
+    /**
+     * Number of commits adopted (trial copy passed strong legality after propagation).
+     *
+     * @return the accepted-commit count.
+     */
+    public int getAcceptedCommits() {
+        return acceptedCommits;
+    }
+
+    /**
+     * Number of commits rejected because the propagated trial failed strong legality. A nonzero
+     * count indicates evidence-backed orientations were dropped to preserve legality (the interim
+     * equivalence class was not representable as a legal PAG along this commit order).
+     *
+     * @return the legality-rejection count.
+     */
+    public int getLegalityRejections() {
+        return legalityRejections;
     }
 
     // ---- Internals ----
 
-    private void tryOrientC1PerEdgeStrong(Node x, Node y, List<Node> neigh, List<Node> contexts) {
+    private void tryOrientC1PerEdgeStrong(Node x, Node y, List<Node> neigh) {
         for (Set<Node> S0 : SmallSubsetIter.subsets(neigh, maxSubsetSize)) {
-            // Work on a copy; never mutate iterator's set
+            // Work on a copy; never mutate the iterator's set.
             Set<Node> S = new LinkedHashSet<>(S0);
 
-            // Require: Y shows change under S (w.r.t. some context)
+            // Gate 1: Y shows change under S (w.r.t. some context).
             if (!oracle.changes(y, S)) continue;
 
-            // If adding X stabilizes Y across all contexts, propose X o-> Y
-            Set<Node> SplusX = plus(S, x);
-            if (!oracle.stable(y, SplusX)) continue;
+            // Gate 2: adding X stabilizes Y across all contexts.
+            if (!oracle.stable(y, plus(S, x))) continue;
 
-            // Optional proxy guard: at least one context alone stabilizes Y
-            if (useProxyGuard && !contexts.isEmpty()) {
-                boolean someContextStabilizes = false;
-                for (Node c : contexts) {
-                    if (oracle.stable(y, plus(S, c))) {
-                        someContextStabilizes = true;
-                        break;
-                    }
+            attemptedCommits++;
+
+            // Try the commit on a copy; adopt only if strong legality holds after propagation.
+            Graph trial = new EdgeListGraph(pag);
+            trial.setEndpoint(x, y, Endpoint.ARROW); // X *-> Y; the mark at X is preserved
+            trial = propagator.apply(trial);
+
+            if (strongPagLegality.apply(trial)) {
+                acceptedCommits++;
+                pag = trial;
+                if (verbose) {
+                    TetradLogger.getInstance().log("[CD-NOD-PAG] Oriented " + x.getName() + " *-> " + y.getName()
+                            + " (S=" + names(S) + ")");
                 }
-                if (!someContextStabilizes) continue;
+                return; // this pair is settled; move on
+            } else {
+                legalityRejections++;
+                if (verbose) {
+                    TetradLogger.getInstance().log("[CD-NOD-PAG] Rejected " + x.getName() + " *-> " + y.getName()
+                            + " (S=" + names(S) + "): strong legality failed after propagation");
+                }
+                // Discard the trial entirely; try other S.
             }
-
-            // Tentatively orient arrowhead at child Y (X o-> Y)
-            addArrowheadAt(pag, x, y);
-
-            // Propagate and enforce strong fixed-point legality immediately
-            pag = propagator.apply(pag);
-            if (!strongPagLegality.apply(pag)) {
-                // Roll back just this arrowhead and continue trying other S
-                undoLast();
-                pag = propagator.apply(pag);
-                continue;
-            }
-
-            // Keep this orientation; move on to next (x,y)
-            return;
         }
     }
 
-    /**
-     * Add an arrowhead at y on edge (x,y); record undo. (Arrowheads-only; preserves the other endpoint.)
-     */
-    private void addArrowheadAt(Graph g, Node x, Node y) {
-        Endpoint oldXY = g.getEndpoint(x, y);
-        Endpoint oldYX = g.getEndpoint(y, x);
-        if (oldXY == Endpoint.ARROW) return; // already has head at y
-
-        g.setEndpoint(x, y, Endpoint.ARROW); // X *-> Y
-        undoStack.push(() -> {
-            g.setEndpoint(x, y, oldXY);
-            g.setEndpoint(y, x, oldYX);
-        });
-    }
-
-    private void undoLast() {
-        if (!undoStack.isEmpty()) undoStack.pop().run();
+    private static String names(Set<Node> S) {
+        List<String> out = new ArrayList<>();
+        for (Node n : S) out.add(n.getName());
+        Collections.sort(out);
+        return "{" + String.join(",", out) + "}";
     }
 }

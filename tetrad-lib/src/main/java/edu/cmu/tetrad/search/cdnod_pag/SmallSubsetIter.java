@@ -5,26 +5,32 @@ import edu.cmu.tetrad.util.TMath;
 import java.util.*;
 
 /**
- * Iterates all subsets S ⊆ items with |S| ≤ maxSize (returns insertion-ordered sets).
+ * Iterates all subsets S ⊆ items with |S| ≤ maxSize, in ascending order of size starting with the
+ * empty set (returns insertion-ordered sets).
+ * <p>
+ * The iterator obeys the standard {@link Iterator} contract: {@code hasNext()} is idempotent and
+ * side-effect-free from the caller's perspective (it uses a lookahead buffer internally), and
+ * {@code next()} throws {@link NoSuchElementException} when exhausted. It is therefore safe to
+ * call {@code hasNext()} any number of times, or {@code next()} without a preceding
+ * {@code hasNext()}.
  */
 final class SmallSubsetIter<T> implements Iterable<Set<T>> {
+
     /**
-     * A list of items from which subsets will be generated. This is an immutable collection that holds the elements for
-     * creating subsets with a specified maximum size.
+     * The items from which subsets are generated.
      */
     private final List<T> items;
+
     /**
-     * The maximum size of subsets to generate. Represents an upper limit on the number of elements in any subset
-     * created by the {@code SmallSubsetIter} class. This value must be non-negative and is utilized during the
-     * initialization of the subset iterator.
+     * The maximum subset size; non-negative.
      */
     private final int maxSize;
 
     /**
-     * Constructs an iterator for all subsets S ⊆ items with |S| ≤ maxSize.
+     * Constructs an iterable over all subsets S ⊆ items with |S| ≤ maxSize.
      *
      * @param items   the collection of items to generate subsets from
-     * @param maxSize the maximum size of subsets to generate; must be non-negative
+     * @param maxSize the maximum size of subsets to generate; negative values are clamped to 0
      */
     SmallSubsetIter(Collection<T> items, int maxSize) {
         this.items = new ArrayList<>(items);
@@ -32,68 +38,65 @@ final class SmallSubsetIter<T> implements Iterable<Set<T>> {
     }
 
     /**
-     * Generates all subsets of a given collection, where the size of each subset is less than or equal to the specified
-     * maximum size.
+     * Convenience factory.
      *
-     * @param <T>     the type of elements in the collection
-     * @param items   the collection of elements to generate subsets from
-     * @param maxSize the maximum size of subsets to generate; must be non-negative
-     * @return an iterable over all subsets satisfying the given constraints
-     * @throws IllegalArgumentException if maxSize is negative
+     * @param <T>     the element type
+     * @param items   the collection of items to generate subsets from
+     * @param maxSize the maximum size of subsets to generate; negative values are clamped to 0
+     * @return an iterable over all subsets satisfying the constraints
      */
     static <T> Iterable<Set<T>> subsets(Collection<T> items, int maxSize) {
         return new SmallSubsetIter<>(items, maxSize);
     }
 
-    /**
-     * Returns an iterator over all subsets of the collection with a size less than or equal to the maximum specified
-     * size. The subsets are generated in ascending order of size, starting with the empty set and progressing through
-     * increasing subset sizes.
-     *
-     * @return an iterator that provides subsets of the collection meeting the specified constraints
-     */
     @Override
     public Iterator<Set<T>> iterator() {
         return new Iterator<>() {
             private final int n = items.size();
-            private boolean firstReturned = false; // for ∅
-            private int k = 0;                     // current subset size
-            private int[] comb = (n == 0 ? null : new int[0]);
+            private int k = 0;                              // size of the subset last produced
+            private int[] comb = null;                      // current k-combination (k >= 1)
+            private Set<T> pending = Collections.emptySet(); // lookahead buffer; ∅ is first
+            private boolean exhausted = false;
 
             @Override
             public boolean hasNext() {
-                if (!firstReturned) return true;        // ∅ not returned yet
-                if (comb == null) return false;         // exhausted
-                if (k == 0) {                           // we just returned ∅
-                    if (maxSize < 1 || n == 0) {
-                        comb = null;
-                        return false;
-                    }
-                    k = 1;
-                    comb = initComb(k);
-                    return true;
-                }
-                if (nextComb()) return true;            // next k-combination
-                k++;
-                if (k > maxSize || k > n) {
-                    comb = null;
-                    return false;
-                }
-                comb = initComb(k);
-                return true;
+                if (pending == null && !exhausted) advance();
+                return pending != null;
             }
 
             @Override
             public Set<T> next() {
-                // DO NOT call hasNext() here — the for-each loop already did.
-                if (!firstReturned) {
-                    firstReturned = true;
-                    return Collections.emptySet();
+                if (!hasNext()) throw new NoSuchElementException();
+                Set<T> out = pending;
+                pending = null;
+                return out;
+            }
+
+            /**
+             * Computes the next subset into the lookahead buffer, or marks exhaustion.
+             */
+            private void advance() {
+                if (k == 0) {
+                    // ∅ has been produced; move to size-1 combinations.
+                    k = 1;
+                    if (k > maxSize || k > n) {
+                        exhausted = true;
+                        return;
+                    }
+                    comb = initComb(k);
+                } else if (!nextComb()) {
+                    // Current size exhausted; move to the next size.
+                    k++;
+                    if (k > maxSize || k > n) {
+                        exhausted = true;
+                        return;
+                    }
+                    comb = initComb(k);
                 }
-                if (comb == null) throw new NoSuchElementException();
+
                 Set<T> s = new LinkedHashSet<>();
                 for (int idx : comb) s.add(items.get(idx));
-                return s;
+                pending = s;
             }
 
             private int[] initComb(int k) {

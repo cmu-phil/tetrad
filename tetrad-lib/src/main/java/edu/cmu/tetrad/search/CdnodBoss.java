@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -16,13 +19,21 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Implements a variant of the CD-NOD (Causal Discovery from Non-stationary/
  * heterogeneous Data) algorithm that uses BOSS (Best Order Score Search) for
- * skeleton construction rather than FAS, combining score-based skeleton search
- * with constraint-based collider orientation.
+ * the backbone rather than FAS, combining a score-based CPDAG with
+ * constraint-based collider orientation for the triples BOSS leaves
+ * unresolved.
+ *
+ * <p><b>Division of labor.</b> BOSS's orientations are treated as
+ * authoritative: the constraint-based collider step is applied only to
+ * unshielded triples x --- z --- y in which <i>both</i> edges at z are
+ * undirected in the BOSS CPDAG (after context forcing). Triples that BOSS has
+ * already resolved, in whole or in part, are never revisited or overridden by
+ * CI tests. The CI step is thus a supplement that can only add information
+ * where the score-based search was agnostic.
  *
  * <p>Context variables are identified as all Tier-0 variables in the supplied
  * {@link Knowledge} object. Any variable in Tier-0 that is also present in the
@@ -32,26 +43,36 @@ import java.util.concurrent.TimeoutException;
  *
  * <p>The algorithm proceeds in four stages:
  * <ol>
- *   <li><b>BOSS skeleton search.</b> BOSS is run using a SEM BIC score on the
- *       augmented dataset (X ∪ contexts), with knowledge extended to forbid all
- *       edges into context variables. The resulting CPDAG provides the initial
- *       skeleton and a set of sepsets, which are cached and supplemented by a
- *       recursive blocking heuristic and conditional independence fallback during
- *       collider orientation.</li>
+ *   <li><b>BOSS backbone.</b> BOSS is run on the augmented dataset
+ *       (X ∪ contexts) using the supplied {@link Score} (a SEM BIC score over
+ *       the covariance matrix by default), with knowledge extended to forbid
+ *       all edges into context variables. The resulting CPDAG provides the
+ *       adjacencies and the authoritative score-based orientations.</li>
  *   <li><b>Context forcing.</b> For each context variable C and each adjacent
- *       non-context variable X, the undirected edge C --- X is replaced by the
- *       directed edge C → X, subject to any background knowledge constraints.</li>
- *   <li><b>Collider orientation.</b> Unshielded triples are oriented as colliders
- *       or non-colliders using one of three strategies, selectable via
- *       {@link ColliderOrientationStyle}:
+ *       non-context variable X, the edge C --- X is replaced by the directed
+ *       edge C → X, subject to any background knowledge constraints.</li>
+ *   <li><b>Collider orientation on unresolved triples.</b> Unshielded triples
+ *       whose two edges at the collider candidate are both undirected are
+ *       oriented as colliders or non-colliders using one of three strategies,
+ *       selectable via {@link ColliderOrientationStyle}:
  *       <ul>
  *         <li><b>SEPSETS</b>: orients x → z ← y if z is not in the sepset of
- *             x and y (standard PC rule).</li>
+ *             x and y (standard PC rule). Sepsets are derived on demand: a
+ *             RecursiveBlocking hint is tried first and validated by an actual
+ *             CI test, with enumeration over adjacency subsets as fallback.</li>
  *         <li><b>CONSERVATIVE</b>: orients a collider only if every sepset
  *             excludes z and no sepset includes z (Conservative PC rule).</li>
  *         <li><b>MAX_P</b>: selects the sepset with the highest p-value and
  *             uses it to decide orientation, with an optional tie-guard margin.</li>
- *       </ul></li>
+ *       </ul>
+ *       All sepset computations (RB hints and enumeration pools) are performed
+ *       against a frozen copy of the post-forcing BOSS graph, so results do not
+ *       depend on the order in which triples are visited or on orientations
+ *       added during this step. By default, context variables are admissible
+ *       members of conditioning sets, consistent with Huang et al. (2020);
+ *       setting {@link Builder#excludeContextsFromS(boolean)} to {@code true}
+ *       excludes contexts uniformly from RB hints and enumeration pools
+ *       (mirroring the CD-NOD-PAG runner).</li>
  *   <li><b>Meek closure.</b> Meek's orientation rules are applied to propagate
  *       implied orientations and complete the partially directed graph.</li>
  * </ol>
@@ -60,10 +81,9 @@ import java.util.concurrent.TimeoutException;
  * <pre>
  *   CdnodBoss cdnod = new CdnodBoss.Builder()
  *       .test(independenceTest)
- *       .data(dataSet)               // dataset already containing context column(s)
+ *       .data(dataSet)               // dataset containing all variables (contexts may be anywhere)
  *       .knowledge(knowledge)        // Tier-0 variables treated as contexts
  *       .colliderStyle(ColliderOrientationStyle.MAX_P)
- *       .alpha(0.05)
  *       .depth(3)
  *       .verbose(true)
  *       .build();
@@ -83,86 +103,78 @@ import java.util.concurrent.TimeoutException;
  */
 public final class CdnodBoss implements IGraphSearch {
 
-    private final double alpha;              // left for parity; not directly used unless Fas exposes setAlpha
-    private final boolean stable;
+    private final double alpha;              // recorded for reporting/parity; CI decisions are made by the
+    // supplied IndependenceTest, which carries its own alpha
     private final ColliderOrientationStyle colliderStyle;
     private final Knowledge knowledge;
     private final boolean verbose;
     private final double maxPMargin;         // tie-guard for MAX_P (0.0 = classic)
-    private final int depth;                 // S-size cap; also applied to FAS for consistency
+    private final int depth;                 // S-size cap for sepset enumeration; -1 = unbounded
+
+    // --- BOSS knobs (passed through to the backbone) ---
+    private final boolean useBes;
+    private final int numStarts;
+    private final int numThreads;
+    private final boolean useDataOrder;
+    private final long seed;                 // -1 = no fixed seed
+
+    // --- behavior flags ---
+    /**
+     * If true, context variables are excluded from conditioning sets in the collider-orientation
+     * step, uniformly across all collider styles (RB hints containing a context are rejected, and
+     * enumeration pools are filtered). If false (the default), contexts are admissible, per Huang
+     * et al. (2020).
+     */
+    private final boolean excludeContextsFromS;
+
     // --- core config ---
     private IndependenceTest test;
-    private DataSet dataWithC;               // MUST be set before search(); last column is C
+    private DataSet data;                    // dataset containing all variables (contexts may be anywhere)
+    private final Score score;               // may be null; a SEM BIC score is constructed by default
+    private final double penaltyDiscount;    // used only when the default SEM BIC score is constructed
+
     // --- runtime ---
     private long timeoutMs = -1;
     private long startTimeMs = 0;
     private final SepsetMap sepsets = new SepsetMap();
     private final Set<Long> noSep = new HashSet<>();
-    private Map<Node,Integer> id;
+    private Map<Node, Integer> id;
+    private Graph sepsetGraph;               // frozen post-forcing graph; all sepset machinery reads this
 
     private Set<Node> contextNodes = Collections.emptySet();
 
     private CdnodBoss(IndependenceTest test,
-                      DataSet dataWithC,
+                      DataSet data,
+                      Score score,
+                      double penaltyDiscount,
                       double alpha,
-                      boolean stable,
                       ColliderOrientationStyle colliderStyle,
                       Knowledge knowledge,
                       boolean verbose,
                       double maxPMargin,
-                      int depth) {
+                      int depth,
+                      boolean excludeContextsFromS,
+                      boolean useBes,
+                      int numStarts,
+                      int numThreads,
+                      boolean useDataOrder,
+                      long seed) {
         this.test = test;
-        this.dataWithC = dataWithC; // may be null; user can set later
+        this.data = data; // may be null; user can set later
+        this.score = score;
+        this.penaltyDiscount = penaltyDiscount;
         this.alpha = alpha;
-        this.stable = stable;
         this.colliderStyle = colliderStyle;
         this.knowledge = knowledge == null ? new Knowledge() : knowledge;
         this.verbose = verbose;
         this.maxPMargin = maxPMargin;
         this.depth = depth;
-    }
-
-    private Set<Node> getOrComputeSepset(Graph g, Node x, Node y) throws InterruptedException {
-        if (id == null) indexNodes(g);
-        long key = pairKey(x,y);
-
-        Set<Node> S = sepsets.get(x, y);
-        if (S != null || noSep.contains(key)) return S;
-
-        // RB hint (bounded; skip if adjacent)
-        if (!g.isAdjacentTo(x,y)) {
-            Set<Node> rb = RecursiveBlocking.blockPathsRecursively(
-                        g, x, y, Set.of(), Set.of(), -1, -1, -1, 1, true).blockingSet();
-
-            if (rb != null) {
-                IndependenceResult r = test.checkIndependence(x, y, rb);
-                if (r.isIndependent()) { sepsets.set(x, y, rb); return rb; }
-            }
-        }
-
-        // CI fallback (prefer smaller; tie by p)
-        Set<Node> best = null; int bestSize = Integer.MAX_VALUE; double bestP = Double.NEGATIVE_INFINITY;
-        for (SepCand c : enumerateSepsetsWithP(g, x, y)) {
-            if (!c.indep) continue;
-            int sz = c.S.size();
-            if (sz < bestSize || (sz == bestSize && c.p > bestP)) {
-                best = c.S; bestSize = sz; bestP = c.p;
-                if (sz == 0) break;
-            }
-        }
-        if (best != null) sepsets.set(x, y, best); else noSep.add(key);
-        return best;
-    }
-
-    private long pairKey(Node a, Node b){
-        int ia = id.get(a), ib = id.get(b);
-        int lo = TMath.min(ia, ib), hi = TMath.max(ia, ib);
-        return (((long) lo) << 32) | (hi & 0xffffffffL);
-    }
-    private void indexNodes(Graph g){
-        id = new IdentityHashMap<>();
-        int k = 0;
-        for (Node v : g.getNodes()) id.put(v, k++);
+        this.excludeContextsFromS = excludeContextsFromS;
+        this.useBes = useBes;
+        this.numStarts = numStarts;
+        this.numThreads = numThreads;
+        this.useDataOrder = useDataOrder;
+        this.seed = seed;
     }
 
     private static DataSet appendChangeIndexAsLastColumn(DataSet dataX, double[] cIndex, String cName) {
@@ -188,7 +200,7 @@ public final class CdnodBoss implements IGraphSearch {
     private static void ensureVariablesMatch(IndependenceTest test, DataSet data) {
         List<Node> testVars = test.getVariables();
         if (!testVars.equals(data.getVariables())) {
-            throw new IllegalStateException("Cdnod: IndependenceTest variables must match data variables (same order).");
+            throw new IllegalStateException("CdnodBoss: IndependenceTest variables must match data variables (same order).");
         }
     }
 
@@ -196,12 +208,12 @@ public final class CdnodBoss implements IGraphSearch {
 
     @Override
     public Graph search() throws InterruptedException {
-        if (dataWithC == null) {
-            throw new IllegalStateException("Cdnod: data is null. Provide a DataSet via Builder.data(...), " +
-                                            "or use Builder.dataAndIndex(...) to append a column before search().");
+        if (data == null) {
+            throw new IllegalStateException("CdnodBoss: data is null. Provide a DataSet via Builder.data(...), " +
+                    "or use Builder.dataAndIndex(...) to append a column before search().");
         }
-        ensureVariablesMatch(test, dataWithC);
-        return run(dataWithC);
+        ensureVariablesMatch(test, data);
+        return run(data);
     }
 
     @Override
@@ -227,12 +239,25 @@ public final class CdnodBoss implements IGraphSearch {
     // =============== Public helpers ===============
 
     /**
+     * Sets the dataset to be used in this instance. Contexts are determined from Knowledge tier 0;
+     * their column positions are irrelevant.
+     *
+     * @param data the dataset to be assigned
+     */
+    public void setData(DataSet data) {
+        this.data = data;
+    }
+
+    /**
      * Sets the dataset to be used in this instance.
      *
      * @param dataWithC the dataset to be assigned
+     * @deprecated Contexts are now determined from Knowledge tier 0, not from column position.
+     * Use {@link #setData(DataSet)} instead.
      */
+    @Deprecated
     public void setDataWithC(DataSet dataWithC) {
-        this.dataWithC = dataWithC;
+        setData(dataWithC);
     }
 
     /**
@@ -240,12 +265,12 @@ public final class CdnodBoss implements IGraphSearch {
      * This method modifies the data to include an additional column (defined by the provided change index and name)
      * and stores the updated dataset for further processing.
      *
-     * @param dataX the original dataset to which the change index will be appended
+     * @param dataX  the original dataset to which the change index will be appended
      * @param cIndex an array representing the change index values to be incorporated into the dataset
-     * @param cName the name of the new column that will represent the change index
+     * @param cName  the name of the new column that will represent the change index
      */
     public void setDataAndIndex(DataSet dataX, double[] cIndex, String cName) {
-        this.dataWithC = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
+        this.data = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
     }
 
     /**
@@ -266,20 +291,20 @@ public final class CdnodBoss implements IGraphSearch {
         // Resolve contexts from Knowledge tier 0 (CD-NOD semantics).
         this.contextNodes = resolveContextNodesTier0(dataAll);
 
-        // 1) Skeleton (BOSS instead of FAS)
+        // 1) BOSS backbone (CPDAG under knowledge)
         if (verbose) TetradLogger.getInstance().log("CD-NOD(BOSS): BOSS backbone...");
-        Graph g = runBossSkeleton(dataAll);
+        Graph g = runBossBackbone(dataAll);
 
         // If no contexts were provided, we skip context forcing.
         if (contextNodes.isEmpty()) {
             if (verbose) {
-                TetradLogger.getInstance().log("CD-NOD: No Tier-0 contexts in Knowledge; skipping context forcing.");
+                TetradLogger.getInstance().log("CD-NOD(BOSS): No Tier-0 contexts in Knowledge; skipping context forcing.");
             }
         } else {
             // 2) Force Context -> X where adjacent (respect knowledge/tiers)
             if (verbose) {
                 List<String> cn = contextNodes.stream().map(Node::getName).sorted().toList();
-                TetradLogger.getInstance().log("CD-NOD: Forcing Context -> X for contexts=" + cn);
+                TetradLogger.getInstance().log("CD-NOD(BOSS): Forcing Context -> X for contexts=" + cn);
             }
             for (Node c : contextNodes) {
                 for (Node nbr : new ArrayList<>(g.getAdjacentNodes(c))) {
@@ -294,12 +319,17 @@ public final class CdnodBoss implements IGraphSearch {
             }
         }
 
-        // 3) UC orientation per style
-        if (verbose) TetradLogger.getInstance().log("CD-NOD: UC orientation (" + colliderStyle + ")...");
-        orientUnshieldedTriples(g, sepsets);
+        // Freeze the post-forcing graph. All sepset machinery (RB hints, enumeration pools)
+        // reads this snapshot, so sepsets are independent of triple visitation order and of
+        // orientations added during step 3.
+        this.sepsetGraph = new EdgeListGraph(g);
+
+        // 3) UC orientation per style, restricted to triples BOSS left unresolved
+        if (verbose) TetradLogger.getInstance().log("CD-NOD(BOSS): UC orientation on unresolved triples (" + colliderStyle + ")...");
+        orientUnresolvedTriples(g);
 
         // 4) Meek closure
-        if (verbose) TetradLogger.getInstance().log("CD-NOD: Meek closure...");
+        if (verbose) TetradLogger.getInstance().log("CD-NOD(BOSS): Meek closure...");
         MeekRules meek = new MeekRules();
         meek.setKnowledge(knowledge);
         meek.orientImplied(g);
@@ -324,9 +354,47 @@ public final class CdnodBoss implements IGraphSearch {
         return out;
     }
 
-    // ------------- collider orientation (SEPSETS / CONSERVATIVE / MAX_P) --------------
+    // --- BOSS backbone (CPDAG over X ∪ Contexts) -------------------------------
 
-    private void orientUnshieldedTriples(Graph g, SepsetMap sepsets) throws InterruptedException {
+    private Graph runBossBackbone(DataSet dataAug) throws InterruptedException {
+        // 0) Prepare knowledge: forbid all edges into contexts.
+        Knowledge K = new Knowledge(this.knowledge); // copy
+        for (Node context : contextNodes) {
+            for (Node v : dataAug.getVariables()) {
+                if (v == context) continue;
+                K.setForbidden(v.getName(), context.getName());
+            }
+        }
+
+        // 1) Run BOSS with this knowledge, using the supplied score or the default SEM BIC.
+        Score s = this.score;
+        if (s == null) {
+            SemBicScore bic = new SemBicScore(new CovarianceMatrix(dataAug));
+            bic.setPenaltyDiscount(penaltyDiscount);
+            s = bic;
+        }
+        Boss boss = new Boss(s);
+        boss.setUseBes(useBes);
+        boss.setNumStarts(numStarts);
+        boss.setNumThreads(numThreads);
+        boss.setUseDataOrder(useDataOrder);
+        boss.setVerbose(verbose);
+
+        PermutationSearch search = new PermutationSearch(boss);
+        search.setKnowledge(K);
+        search.setSeed(seed);
+
+        return search.search();
+    }
+
+    // ------------- collider orientation on unresolved triples --------------
+
+    /**
+     * Applies the selected collider-orientation style to unshielded triples x --- z --- y in which
+     * both edges at z are undirected in the current graph (i.e., triples BOSS left unresolved).
+     * BOSS's orientations are authoritative and are never revisited here.
+     */
+    private void orientUnresolvedTriples(Graph g) throws InterruptedException {
         List<Node> nodes = new ArrayList<>(g.getNodes());
         nodes.sort(Comparator.comparing(Node::getName));
 
@@ -338,20 +406,14 @@ public final class CdnodBoss implements IGraphSearch {
                 Node x = adj.get(i);
                 for (int j = i + 1; j < adj.size(); j++) {
                     Node y = adj.get(j);
-                    if (g.isAdjacentTo(x, y)) continue; // only unshielded
+                    if (g.isAdjacentTo(x, y)) continue;       // only unshielded
+                    if (!unresolvedAtZ(g, x, z, y)) continue; // trust BOSS: both edges at z must be undirected
 
                     checkTimeout();
 
-                    // Canonicalize endpoints (x <= y by name)
-                    if (x.getName().compareTo(y.getName()) > 0) {
-                        Node tmp = x;
-                        x = y;
-                        y = tmp;
-                    }
-
                     switch (colliderStyle) {
                         case SEPSETS -> {
-                            Set<Node> s = getOrComputeSepset(g, x, y);
+                            Set<Node> s = getOrComputeSepset(x, y);
                             if (s != null && !s.contains(z) && canOrientCollider(g, x, z, y)) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose)
@@ -359,14 +421,14 @@ public final class CdnodBoss implements IGraphSearch {
                             }
                         }
                         case CONSERVATIVE -> {
-                            ColliderOutcome out = judgeConservative(g, x, z, y);
+                            ColliderOutcome out = judgeConservative(x, z, y);
                             if (out == ColliderOutcome.INDEPENDENT && canOrientCollider(g, x, z, y)) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose) TetradLogger.getInstance().log("[CPC] " + x + "->" + z + "<-" + y);
                             }
                         }
                         case MAX_P -> {
-                            MaxPDecision d = decideMaxP(g, x, z, y);
+                            MaxPDecision d = decideMaxP(x, z, y);
                             if (d.outcome == ColliderOutcome.INDEPENDENT && canOrientCollider(g, x, z, y)) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose)
@@ -379,12 +441,78 @@ public final class CdnodBoss implements IGraphSearch {
         }
     }
 
+    /**
+     * True iff both edges x --- z and z --- y are undirected in g, i.e., BOSS (plus context forcing
+     * and any colliders committed earlier in this pass) has taken no position at z on this triple.
+     */
+    private boolean unresolvedAtZ(Graph g, Node x, Node z, Node y) {
+        Edge xz = g.getEdge(x, z);
+        Edge zy = g.getEdge(z, y);
+        return xz != null && zy != null && Edges.isUndirectedEdge(xz) && Edges.isUndirectedEdge(zy);
+    }
+
+    // ------------- sepset machinery (reads the frozen sepsetGraph) --------------
+
+    private Set<Node> getOrComputeSepset(Node x, Node y) throws InterruptedException {
+        if (id == null) indexNodes(sepsetGraph);
+        long key = pairKey(x, y);
+
+        Set<Node> S = sepsets.get(x, y);
+        if (S != null || noSep.contains(key)) return S;
+
+        // RB hint (bounded; skip if adjacent). RB is used only as a heuristic proposal here:
+        // the proposed blocking set is validated by an actual CI test before acceptance, so the
+        // question of RB's exact semantics on a CPDAG does not affect correctness, only hit rate.
+        if (!sepsetGraph.isAdjacentTo(x, y)) {
+            Set<Node> rb = RecursiveBlocking.blockPathsRecursively(
+                    sepsetGraph, x, y, Set.of(), Set.of(), -1, -1, -1, 1, true).blockingSet();
+
+            if (rb != null && (!excludeContextsFromS || Collections.disjoint(rb, contextNodes))) {
+                IndependenceResult r = test.checkIndependence(x, y, rb);
+                if (r.isIndependent()) {
+                    sepsets.set(x, y, rb);
+                    return rb;
+                }
+            }
+        }
+
+        // CI fallback (prefer smaller; tie by p)
+        Set<Node> best = null;
+        int bestSize = Integer.MAX_VALUE;
+        double bestP = Double.NEGATIVE_INFINITY;
+        for (SepCand c : enumerateSepsetsWithP(x, y)) {
+            if (!c.indep) continue;
+            int sz = c.S.size();
+            if (sz < bestSize || (sz == bestSize && c.p > bestP)) {
+                best = c.S;
+                bestSize = sz;
+                bestP = c.p;
+                if (sz == 0) break;
+            }
+        }
+        if (best != null) sepsets.set(x, y, best);
+        else noSep.add(key);
+        return best;
+    }
+
+    private long pairKey(Node a, Node b) {
+        int ia = id.get(a), ib = id.get(b);
+        int lo = TMath.min(ia, ib), hi = TMath.max(ia, ib);
+        return (((long) lo) << 32) | (hi & 0xffffffffL);
+    }
+
+    private void indexNodes(Graph g) {
+        id = new IdentityHashMap<>();
+        int k = 0;
+        for (Node v : g.getNodes()) id.put(v, k++);
+    }
+
     // CPC: if any separating set S excludes z AND no separating set includes z -> collider.
     // if both kinds exist -> ambiguous; if only includes-z exist -> noncollider; if none -> no sepset.
-    private ColliderOutcome judgeConservative(Graph g, Node x, Node z, Node y) throws InterruptedException {
+    private ColliderOutcome judgeConservative(Node x, Node z, Node y) throws InterruptedException {
         boolean sawAny = false, sawIncl = false, sawExcl = false;
 
-        for (SepCand c : enumerateSepsetsWithP(g, x, y)) {
+        for (SepCand c : enumerateSepsetsWithP(x, y)) {
             if (!c.indep) continue;
             sawAny = true;
             if (c.S.contains(z)) sawIncl = true;
@@ -398,13 +526,13 @@ public final class CdnodBoss implements IGraphSearch {
     }
 
     // MAX-P: pick side (includes-z vs excludes-z) with strictly larger best p (by > margin). Else ambiguous.
-    private MaxPDecision decideMaxP(Graph g, Node x, Node z, Node y) throws InterruptedException {
+    private MaxPDecision decideMaxP(Node x, Node z, Node y) throws InterruptedException {
         double bestIncl = Double.NEGATIVE_INFINITY;
         double bestExcl = Double.NEGATIVE_INFINITY;
         Set<Node> bestS_incl = Collections.emptySet();
         Set<Node> bestS_excl = Collections.emptySet();
 
-        for (SepCand c : enumerateSepsetsWithP(g, x, y)) {
+        for (SepCand c : enumerateSepsetsWithP(x, y)) {
             if (!c.indep) continue;
             if (c.S.contains(z)) {
                 if (c.p > bestIncl) {
@@ -440,13 +568,21 @@ public final class CdnodBoss implements IGraphSearch {
     }
 
     // enumerate candidate sepsets (unique by content), across both adjacency sides, up to depth cap.
-    private Iterable<SepCand> enumerateSepsetsWithP(Graph g, Node x, Node y) throws InterruptedException {
+    // Adjacency pools are taken from the frozen sepsetGraph. Contexts are excluded from the pools
+    // iff excludeContextsFromS is set, so that all collider styles share a single conditioning universe.
+    private Iterable<SepCand> enumerateSepsetsWithP(Node x, Node y) throws InterruptedException {
         Map<String, SepCand> uniq = new LinkedHashMap<>();
 
-        List<Node> adjx = new ArrayList<>(g.getAdjacentNodes(x));
-        List<Node> adjy = new ArrayList<>(g.getAdjacentNodes(y));
+        List<Node> adjx = new ArrayList<>(sepsetGraph.getAdjacentNodes(x));
+        List<Node> adjy = new ArrayList<>(sepsetGraph.getAdjacentNodes(y));
         adjx.remove(y);
         adjy.remove(x);
+
+        if (excludeContextsFromS && contextNodes != null && !contextNodes.isEmpty()) {
+            adjx.removeAll(contextNodes);
+            adjy.removeAll(contextNodes);
+        }
+
         adjx.sort(Comparator.comparing(Node::getName));
         adjy.sort(Comparator.comparing(Node::getName));
 
@@ -476,36 +612,6 @@ public final class CdnodBoss implements IGraphSearch {
     }
 
     // ------------- utils -------------
-
-    // --- BOSS backbone (DAG/CPDAG over X ∪ Contexts) -------------------------------
-    private Graph runBossSkeleton(DataSet dataAug) {
-        // 0) Prepare knowledge
-        Knowledge K = new Knowledge(this.knowledge); // copy
-
-        // Forbid all edges into contexts.
-        for (Node context : contextNodes) {
-            for (Node v : dataAug.getVariables()) {
-                if (v == context) continue;
-                // forbid v -> context
-                K.setForbidden(v.getName(), context.getName());
-            }
-            // forbid context -> context
-            K.setForbidden(context.getName(), context.getName());
-        }
-
-        // 1) Run BOSS with this knowledge.
-        Score score = new SemBicScore(new CovarianceMatrix(dataAug));
-        Boss boss = new Boss(score);
-        PermutationSearch search = new PermutationSearch(boss);
-        search.setKnowledge(K);
-        boss.setVerbose(verbose);
-
-        try {
-            return search.search();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
         if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
@@ -601,23 +707,30 @@ public final class CdnodBoss implements IGraphSearch {
     }
 
     /**
-     * Builder class for creating instances of the Cdnod class with customized parameters. The Builder provides a
-     * flexible and fluent API for setting optional configurations in the resulting Cdnod instance.
+     * Builder class for creating instances of the CdnodBoss class with customized parameters. The Builder provides a
+     * flexible and fluent API for setting optional configurations in the resulting CdnodBoss instance.
      */
     public static final class Builder {
         private IndependenceTest test;
-        private DataSet dataWithC;
+        private DataSet data;
         private DataSet dataX;
         private double[] cIndex;
         private String cName = "C";
 
+        private Score score;                 // optional; SEM BIC by default
+        private double penaltyDiscount = 1.0;
         private double alpha = 0.05;
-        private boolean stable = true;
         private ColliderOrientationStyle colliderStyle = ColliderOrientationStyle.SEPSETS;
         private Knowledge knowledge = new Knowledge();
         private boolean verbose = false;
         private double maxPMargin = 0.0;
         private int depth = -1;
+        private boolean excludeContextsFromS = false;
+        private boolean useBes = false;
+        private int numStarts = 1;
+        private int numThreads = 1;
+        private boolean useDataOrder = true;
+        private long seed = -1;
 
         /**
          * Constructs a new instance of the Builder class. Instantiates an object used for configuring and creating
@@ -639,13 +752,14 @@ public final class CdnodBoss implements IGraphSearch {
         }
 
         /**
-         * Provide a DataSet that ALREADY ends with C as the last column.
+         * Provide the DataSet on which the search will be run. Contexts are determined from Knowledge
+         * tier 0; their column positions are irrelevant.
          *
-         * @param dataWithC The {@link DataSet} instance to be set. This parameter must not be null.
+         * @param data The {@link DataSet} instance to be set. This parameter must not be null.
          * @return The current Builder instance for method chaining.
          */
-        public Builder data(DataSet dataWithC) {
-            this.dataWithC = dataWithC;
+        public Builder data(DataSet data) {
+            this.data = data;
             return this;
         }
 
@@ -665,10 +779,39 @@ public final class CdnodBoss implements IGraphSearch {
         }
 
         /**
-         * Sets the alpha value to be used by the {@code Builder}. The alpha value typically represents the significance
-         * level for statistical tests in the constructed object.
+         * Sets the {@link Score} to be used by the BOSS backbone. If not supplied, a
+         * {@link SemBicScore} over the covariance matrix of the (augmented) dataset is
+         * constructed, with the penalty discount set via {@link #penaltyDiscount(double)}.
+         * Supply an appropriate score explicitly for non-Gaussian or mixed data.
          *
-         * @param a The alpha value to be set. This parameter must be a non-negative double.
+         * @param s The {@link Score} instance to be used, or null to use the default.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder score(Score s) {
+            this.score = s;
+            return this;
+        }
+
+        /**
+         * Sets the penalty discount used when the default SEM BIC score is constructed. Ignored
+         * if a {@link Score} is supplied via {@link #score(Score)}.
+         *
+         * @param c The penalty discount; values less than or equal to 0 are clamped to 1.0.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder penaltyDiscount(double c) {
+            this.penaltyDiscount = (c <= 0 ? 1.0 : c);
+            return this;
+        }
+
+        /**
+         * Sets the significance level recorded for this search.
+         *
+         * <p><b>Note:</b> the CI decisions in collider orientation are made by the supplied
+         * {@link IndependenceTest}, which carries its own alpha. Configure the test's alpha
+         * directly; this value is retained for reporting/parity only.</p>
+         *
+         * @param a The significance level (alpha).
          * @return The current Builder instance for method chaining.
          */
         public Builder alpha(double a) {
@@ -677,14 +820,15 @@ public final class CdnodBoss implements IGraphSearch {
         }
 
         /**
-         * Configures whether the builder operates in a stable mode. This can affect the behavior of the resulting
-         * object to ensure stability.
+         * Formerly configured FAS's stable adjacency search. CdnodBoss uses BOSS rather than FAS,
+         * so this setting has no effect.
          *
-         * @param s A boolean indicating whether stability should be enabled (true) or disabled (false).
+         * @param s Ignored.
          * @return The current Builder instance for method chaining.
+         * @deprecated This parameter is unused in CdnodBoss and will be removed.
          */
+        @Deprecated
         public Builder stable(boolean s) {
-            this.stable = s;
             return this;
         }
 
@@ -740,14 +884,85 @@ public final class CdnodBoss implements IGraphSearch {
         }
 
         /**
-         * Sets the depth to be used by the {@code Builder}. The depth typically represents a parameter for controlling
-         * the extent or level of operations in the constructed object.
+         * Sets the maximum size of conditioning sets considered during sepset enumeration in the
+         * collider-orientation step. A value of -1 (the default) means unbounded: conditioning
+         * sets are limited only by the sizes of the relevant adjacency sets.
          *
-         * @param d The depth value to be set. This parameter must be a valid integer.
+         * @param d The depth value to be set; -1 for unbounded.
          * @return The current {@code Builder} instance for method chaining.
          */
         public Builder depth(int d) {
             this.depth = d;
+            return this;
+        }
+
+        /**
+         * Configures whether BOSS runs a BES step after each permutation pass.
+         *
+         * @param on true to enable BES; default false.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder useBes(boolean on) {
+            this.useBes = on;
+            return this;
+        }
+
+        /**
+         * Sets the number of random restarts for BOSS. Values less than 1 are clamped to 1.
+         *
+         * @param n The number of starts; default 1.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder numStarts(int n) {
+            this.numStarts = TMath.max(1, n);
+            return this;
+        }
+
+        /**
+         * Sets the number of threads BOSS may use. Values less than 1 are clamped to 1.
+         *
+         * @param n The number of threads; default 1.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder numThreads(int n) {
+            this.numThreads = TMath.max(1, n);
+            return this;
+        }
+
+        /**
+         * Configures whether BOSS uses the data order for its initial permutation.
+         *
+         * @param on true to use the data order; default true.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder useDataOrder(boolean on) {
+            this.useDataOrder = on;
+            return this;
+        }
+
+        /**
+         * Sets the random seed passed to the permutation search; -1 (the default) means no fixed seed.
+         *
+         * @param seed The seed value.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder seed(long seed) {
+            this.seed = seed;
+            return this;
+        }
+
+        /**
+         * Configures whether context variables are excluded from conditioning sets during collider
+         * orientation. The default is {@code false} (contexts admissible), consistent with Huang et
+         * al. (2020), where conditioning on the context removes pseudo-confounding between variables
+         * whose mechanisms both change. Set to {@code true} to mirror the CD-NOD-PAG runner; the
+         * exclusion is then applied uniformly, including to RecursiveBlocking hints.
+         *
+         * @param on true to exclude contexts from conditioning sets; false to admit them.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder excludeContextsFromS(boolean on) {
+            this.excludeContextsFromS = on;
             return this;
         }
 
@@ -773,11 +988,12 @@ public final class CdnodBoss implements IGraphSearch {
          */
         public CdnodBoss build() {
             if (test == null) throw new IllegalStateException("IndependenceTest must be provided.");
-            DataSet working = dataWithC;
+            DataSet working = data;
             if (working == null && dataX != null && cIndex != null) {
                 working = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
             }
-            return new CdnodBoss(test, working, alpha, stable, colliderStyle, knowledge, verbose, maxPMargin, depth);
+            return new CdnodBoss(test, working, score, penaltyDiscount, alpha, colliderStyle, knowledge, verbose,
+                    maxPMargin, depth, excludeContextsFromS, useBes, numStarts, numThreads, useDataOrder, seed);
         }
     }
 
