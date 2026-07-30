@@ -583,8 +583,8 @@ public final class SemIm implements Im, ISemIm {
             }
         }
 
-        System.out.println("Style = " + style);
-        System.out.println("Shrinkage mode = " + shrinkageMode);
+//        System.out.println("Style = " + style);
+//        System.out.println("Shrinkage mode = " + shrinkageMode);
 
         // ---- simulate data per style ----
         DataSet ds;

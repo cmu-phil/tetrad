@@ -2,6 +2,34 @@ Tetrad Search Parameter Definitions (alphabetized)
 Source:
 <div id="parameters"> in index.html
 
+    === rescueAction ===
+    <h3 class="parameter_description" id="rescueAction">rescueAction</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rescueAction_short_desc">What to do with a detected adjacency-faithfulness clash: 0=off, 1=mark, 2=recover</span></li>
+        <li>Long Description: <span id="rescueAction_long_desc">
+            Controls the action taken on a tier-1 orientation-clash detection (PcAR, Sec. 14 of
+            the unfaithful-triangles analysis). 0 (OFF) runs no detection. 1 (MARK) records the
+            deletion as contested but leaves the skeleton exactly as FAS produced it. 2 (RECOVER)
+            reinstates the edge and re-runs orientation, but only when the configured recovery-odds
+            threshold is met by a supplied odds estimator; with no estimator wired, RECOVER behaves
+            identically to MARK.</span></li>
+        <li>Default Value: <span id="rescueAction_default_value">1</span></li>
+        <li>Lower Bound: <span id="rescueAction_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="rescueAction_upper_bound">2</span></li>
+        <li>Value Type: <span id="rescueAction_value_type">Integer</span></li>
+    </ul>
+
+    === recoveryOddsThreshold ===
+    <h3 class="parameter_description" id="recoveryOddsThreshold">recoveryOddsThreshold</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="recoveryOddsThreshold_short_desc">Posterior-odds threshold at or above which a clash triggers edge recovery rather than a mark</span></li>
+        <li>Long Description: <span id="recoveryOddsThreshold_long_desc">The posterior-odds threshold (base rate times likelihood ratio, PcAR Sec. 14) at or above which a tier-1 clash is recovered (edge reinstated) rather than merely marked as contested. Only has an effect when rescueAction=2 (RECOVER) and a RecoveryOddsEstimator has been wired. Default 1.0 is the paper's own non-conservative endpoint: recover exactly when posterior odds favor a present edge over no edge (posterior probability >= 0.5), rather than an arbitrary large number chosen to suppress recovery. With the base-rate-only estimator wired in the algcomparison wrapper (PcAR#paperCancellationBaseRateOdds), this threshold will rarely be met at realistic sample sizes, since that estimator omits the likelihood-ratio term -- this reflects the paper's own finding that base-rate evidence alone is seldom sufficient, not a miscalibration of the threshold.</span></li>
+        <li>Default Value: <span id="recoveryOddsThreshold_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="recoveryOddsThreshold_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="recoveryOddsThreshold_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="recoveryOddsThreshold_value_type">Double</span></li>
+    </ul>
+
     === acceptanceProportion ===
     <h3 class="parameter_description" id="acceptanceProportion">acceptanceProportion</h3>
     <ul class="parameter_description_list">

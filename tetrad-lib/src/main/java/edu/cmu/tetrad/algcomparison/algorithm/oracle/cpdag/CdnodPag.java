@@ -6,6 +6,9 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -13,6 +16,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.search.Bfci;
 import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.cdnod_pag.CgLrtChangeTest;
 import edu.cmu.tetrad.search.cdnod_pag.ChangeTest;
@@ -32,16 +36,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-///**
-// * CD-NOD wrapper for algcomparison.
-// */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "CD-NOD-PAG",
-//        command = "cdnodpag",
-//        algoType = AlgType.forbid_latent_common_causes
-//)
-//@Bootstrapping
-//@Experimental
+/**
+ * CD-NOD wrapper for algcomparison.
+ */
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "CD-NOD-PAG",
+        command = "cdnodpag",
+        algoType = AlgType.forbid_latent_common_causes
+)
+@Bootstrapping
+@Experimental
 public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, TakesScoreWrapper,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
@@ -108,7 +112,7 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, A
             IndependenceTest _test = test.getTest(dataWithoutEnv, parameters);
             _test = new CachedIndependenceQueries(_test);
 
-            Fcit fcit = new Fcit(_test, _score);
+            Bfci fcit = new Bfci(_test, _score);
             fcit.setKnowledge(knowledge);
             try {
                 return fcit.search();
@@ -140,8 +144,8 @@ public class CdnodPag extends AbstractBootstrapAlgorithm implements Algorithm, A
                 legalityCheck,
                 prop,
                 knowledge)
-                .withMaxSubsetSize(1)
-                .withProxyGuard(true);
+                .withMaxSubsetSize(1);
+//                .withProxyGuard(true);
 
         return cdnodPag.run();
     }

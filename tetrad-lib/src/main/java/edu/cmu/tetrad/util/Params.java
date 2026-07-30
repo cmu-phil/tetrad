@@ -42,6 +42,14 @@ public final class Params {
     }
 
     /**
+     * Constant <code>RESCUE_ACTION="rescueAction"</code>
+     */
+    public static String RESCUE_ACTION = "rescueAction";
+    /**
+     * Constant <code>RECOVERY_ODDS_THRESHOLD="recoveryOddsThreshold"</code>
+     */
+    public static String RECOVERY_ODDS_THRESHOLD = "recoveryOddsThreshold";
+    /**
      * Constant <code>ADD_ORIGINAL_DATASET="addOriginalDataset"</code>
      */
     public static final String ADD_ORIGINAL_DATASET = "addOriginalDataset";

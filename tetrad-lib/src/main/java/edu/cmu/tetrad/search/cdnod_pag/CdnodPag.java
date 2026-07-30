@@ -5,122 +5,102 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
 import java.util.function.Function;
 
 /**
- * CD-NOD-PAG runner where ALL Tier-0 variables are treated as contexts. No requirement that a context be the last
- * column.
+ * CD-NOD-PAG runner where ALL Tier-0 variables are treated as contexts. No requirement that a
+ * context be the last column.
+ *
+ * <p>Pipeline:
+ * <ol>
+ *   <li>Build a baseline PAG over all variables (contexts included) with the supplied
+ *       {@link PagBuilder}.</li>
+ *   <li>Orient every context edge C *-* V (V not a context) as C → V. Under the exogeneity
+ *       assumption (contexts have no causes), these marks are fully identified: C is an ancestor
+ *       of any variable it is adjacent to in the true MAG (tail at C), and V cannot be an
+ *       ancestor of C (arrowhead at V). Context–context adjacencies are left untouched and
+ *       logged, since under mutually independent exogenous contexts they should not occur.</li>
+ *   <li>Propagate and run the {@link CdnodPagOrienter}, which adds evidence-backed arrowheads
+ *       X *-&gt; Y where conditioning on X screens Y from the contexts, committing each candidate
+ *       on a copy and adopting it only if the propagated result satisfies the strong legality
+ *       predicate.</li>
+ * </ol>
+ *
+ * <p><b>PagBuilder and propagator contract.</b> For best results the supplied PagBuilder should
+ * already embed the exogeneity constraint (e.g., run BOSS-FCI/FCIT with knowledge forbidding
+ * edges into the Tier-0 variables), and the propagator should be knowledge-aware. This runner
+ * defensively re-asserts the C → V marks after every propagation (via a wrapped propagator), so a
+ * knowledge-blind propagator cannot silently reintroduce heads into contexts; but if the baseline
+ * PAG itself is built without the constraint, the forced marks may leave it outside strong
+ * legality, which is logged.</p>
  */
 public final class CdnodPag {
 
     /**
-     * Represents the input dataset used in the construction and operation of the causal discovery algorithm within the
-     * {@code CdnodPag} class. This dataset serves as the primary data source for analyzing and discovering graphical
-     * structures or dependencies. It must be a valid instance of {@code DataSet}, containing appropriate variables and
-     * measurements needed for the algorithm.
-     * <p>
-     * The {@code dataAll} variable is immutable and required during instantiation of the {@code CdnodPag} object. It
-     * provides the foundation for all causal analysis and manipulations performed by this class.
+     * The input dataset over all variables, contexts included.
      */
     private final DataSet dataAll;
+
     /**
-     * Significance level for statistical tests applied in the causal discovery process. Typically used to determine
-     * whether a relationship or dependency is statistically significant in the context of the algorithm.
-     * <p>
-     * A lower alpha value indicates a stricter threshold for determining significance, reducing the likelihood of Type
-     * I errors (false positives), whereas a higher alpha value increases sensitivity at the expense of potentially more
-     * false positives.
+     * Significance level passed to the change tests.
      */
     private final double alpha;
+
     /**
-     * The test for detecting changes or instabilities in conditional probabilities, used specifically by CD-NOD-PAG
-     * procedures. The ChangeTest instance provides methods for determining whether relationships between variables are
-     * context-dependent, which is essential for causal discovery in the presence of multiple contexts.
-     * <p>
-     * This variable is immutable and is initialized during the creation of the CdnodPag object. It represents the
-     * implementation of the change detection logic required for the CdnodPag algorithm.
+     * The change/instability test used by the ChangeOracle.
      */
     private final ChangeTest changeTest;
+
     /**
-     * A functional interface used to construct or search a PAG (Partially Oriented Graph) based on a given dataset.
-     * Instances of this interface encapsulate the logic for constructing the graph using the provided data and
-     * algorithmic constraints.
-     * <p>
-     * This variable is a core component of the CD-NOD-PAG class, responsible for generating the underlying graph
-     * structure, which enables further processing and analysis such as orientation of edges or validating causal
-     * relationships within the dataset.
-     * <p>
-     * In the CD-NOD-PAG context, this encapsulates the user-specified or default graph-building logic, and it interacts
-     * with other components such as change tests, legality checks, and propagation mechanisms to work cohesively in the
-     * search process.
+     * Builds the baseline PAG from the dataset.
      */
     private final PagBuilder pagBuilder;
+
     /**
-     * A {@link Function} used to perform a legality check on a given {@link Graph}. This function determines whether a
-     * specific {@link Graph} configuration is valid under the implemented constraints and rules.
-     * <p>
-     * The {@code legalityCheck} is typically invoked during the execution of graph processing to ensure the structure
-     * adheres to specific criteria.
+     * Strong legality predicate: the fixed-point condition PAG(MAG(G)) == G.
      */
     private final Function<Graph, Boolean> legalityCheck;
+
     /**
-     * Names for Tier-0 contexts.
-     */
-    private final List<String> contextNames = new ArrayList<>();
-    /**
-     * Optional: extra protected nodes (no arrowheads into these).
-     */
-    private final Set<String> forbidHeadsIntoByName = new LinkedHashSet<>();
-    /**
-     * Represents prior knowledge or assumptions used during the construction or analysis of a graph. This field holds
-     * immutable information that may influence the structure or constraints applied to a graph during processing.
-     */
-    private final Knowledge knowledge;
-    /**
-     * A functional component responsible for propagating changes or transformations on a {@code Graph} object,
-     * returning a potentially modified {@code Graph}.
-     * <p>
-     * This function is central to the process of applying specific graph-related logic during the execution of the
-     * associated algorithm. It acts as a transformation operation that encapsulates rules or constraints which ensure
-     * the validity or correctness of the graph based on the desired outcome or use case.
+     * Orientation-rule propagator supplied by the caller. This runner wraps it so that the sound
+     * context-edge marks are re-asserted after every propagation.
      */
     private final Function<Graph, Graph> propagator;
+
     /**
-     * Denotes the maximum allowable size of subsets to be considered in subset-based operations.
-     * <p>
-     * This variable is utilized to limit the number of nodes included in a conditioning set or other computations
-     * involving subsets, ensuring computational feasibility. Default value is 1.
+     * Names of Tier-0 contexts, resolved per run.
      */
+    private final List<String> contextNames = new ArrayList<>();
+
+    /**
+     * Optional extra protected nodes (no arrowheads into these), by name.
+     */
+    private final Set<String> forbidHeadsIntoByName = new LinkedHashSet<>();
+
+    /**
+     * Prior knowledge; Tier-0 variables are treated as contexts, and the full tier structure is
+     * passed to the orienter as a tier guard.
+     */
+    private final Knowledge knowledge;
+
     private int maxSubsetSize = 1;
-    /**
-     * A flag indicating whether the use of the "proxy guard" mechanism is enabled.
-     * <p>
-     * When enabled, the proxy guard enforces specific constraints or validations during the execution of the algorithm.
-     * This could involve protecting or ensuring correctness against unintended behaviors in the processing or
-     * manipulation of graph structures within the CD-NOD-PAG orientation procedure.
-     * <p>
-     * Default value is {@code true}.
-     */
-    private boolean useProxyGuard = true;
-    /**
-     * A flag indicating whether contexts should be excluded from the conditioning set S in the change tests.
-     */
     private boolean excludeContextsFromS = true;
+    private boolean verbose = false;
 
     /**
      * Constructs an instance of the CdnodPag class with the specified parameters.
      *
      * @param dataAll       The dataset to be analyzed.
-     * @param alpha         The significance level used in statistical tests.
-     * @param changeTest    The statistical change test to assess dependencies among variables.
-     * @param pagBuilder    The PAG builder used to construct the initial PAG.
-     * @param legalityCheck A function that determines the legality of a given graph.
-     * @param propagator    A function to propagate structural changes in the graph.
-     * @param knowledge     Prior background knowledge to inform the graph structure.
+     * @param alpha         The significance level used in the change tests.
+     * @param changeTest    The statistical change test to assess context dependence.
+     * @param pagBuilder    The PAG builder used to construct the baseline PAG.
+     * @param legalityCheck The strong legality predicate PAG(MAG(G)) == G.
+     * @param propagator    The orientation-rule propagator (will be wrapped; see class javadoc).
+     * @param knowledge     Prior background knowledge; Tier-0 variables are the contexts.
      */
     public CdnodPag(DataSet dataAll,
                     double alpha,
@@ -148,29 +128,37 @@ public final class CdnodPag {
         return out;
     }
 
-    // ---- Configuration API ----
-
-    private static Set<Node> resolveNodes(Graph g, Set<String> names) {
-        return new LinkedHashSet<>(resolveNodes(g, (Collection<String>) names));
-    }
-
     /**
-     * Remove any arrowheads INTO target: for any U *-> target, set endpoint at target to CIRCLE.
+     * Orients each context edge C *-* V (V not a context) as C → V: tail at C, arrowhead at V.
+     * Both marks are identified under exogeneity: C ∈ An(V) for any V adjacent to C in the true
+     * MAG, and V ∉ An(C) since contexts have no causes. Context–context adjacencies are left
+     * untouched (and logged), since they should not occur under mutually independent exogenous
+     * contexts and no orientation of them is licensed by the model.
      */
-    private static void stripHeadsInto(Graph pag, Node target) {
-        for (Node u : new ArrayList<>(pag.getAdjacentNodes(target))) {
-            if (pag.getEndpoint(u, target) == Endpoint.ARROW) pag.setEndpoint(u, target, Endpoint.CIRCLE);
-            if (pag.getEndpoint(target, u) == Endpoint.ARROW) pag.setEndpoint(target, u, Endpoint.CIRCLE);
+    private static void orientContextEdges(Graph g, Collection<Node> contexts) {
+        Set<Node> ctx = new LinkedHashSet<>(contexts);
+        for (Node c : ctx) {
+            for (Node v : new ArrayList<>(g.getAdjacentNodes(c))) {
+                if (ctx.contains(v)) {
+                    TetradLogger.getInstance().log("[CD-NOD-PAG] Warning: context-context adjacency "
+                            + c.getName() + " *-* " + v.getName()
+                            + "; leaving unoriented. Contexts are assumed exogenous and mutually independent.");
+                    continue;
+                }
+                g.setEndpoint(v, c, Endpoint.TAIL);   // mark at c: tail (c is an ancestor of v)
+                g.setEndpoint(c, v, Endpoint.ARROW);  // mark at v: head (v is not an ancestor of c)
+            }
         }
     }
 
+    // ---- Configuration API ----
+
     /**
-     * Sets the maximum subset size to the specified value if it is non-negative. If a negative value is provided, the
-     * maximum subset size is set to 0. This method is used for configuring the object and returns the current
-     * instance.
+     * Sets the maximum size of conditioning sets S considered per edge by the orienter; negative
+     * values are clamped to 0.
      *
-     * @param k the desired maximum subset size. If negative, it will default to 0.
-     * @return the current instance of {@code CdnodPag} with the updated maximum subset size.
+     * @param k the desired maximum subset size.
+     * @return this, for chaining.
      */
     public CdnodPag withMaxSubsetSize(int k) {
         this.maxSubsetSize = TMath.max(0, k);
@@ -178,23 +166,11 @@ public final class CdnodPag {
     }
 
     /**
-     * Configures whether the proxy guard feature is enabled or disabled. The proxy guard feature is used as part of the
-     * configuration of this instance. This method returns the current instance of {@code CdnodPag}, allowing method
-     * chaining.
+     * Configures whether contexts are excluded from the conditioning sets S offered to the change
+     * tests.
      *
-     * @param on a boolean value indicating whether to enable (true) or disable (false) the proxy guard feature.
-     * @return the current instance of {@code CdnodPag} with updated proxy guard configuration.
-     */
-    public CdnodPag withProxyGuard(boolean on) {
-        this.useProxyGuard = on;
-        return this;
-    }
-
-    /**
-     * Configures whether contexts should be excluded from the conditioning set S in the change tests.
-     *
-     * @param on a boolean value indicating whether to exclude (true) or include (false) contexts in S.
-     * @return the current instance of {@code CdnodPag} with updated configuration.
+     * @param on true to exclude contexts from S.
+     * @return this, for chaining.
      */
     public CdnodPag withExcludeContextsFromS(boolean on) {
         this.excludeContextsFromS = on;
@@ -202,11 +178,21 @@ public final class CdnodPag {
     }
 
     /**
-     * Executes the algorithm to construct and orient a causal PAG (Partial Ancestral Graph) using the provided data,
-     * context variables, and prior knowledge.
+     * Enables or disables logging of individual orientation decisions and summary telemetry.
      *
-     * @return the resulting PAG (Partial Ancestral Graph) after applying change-based orientation and enforcing
-     * constraints informed by contexts and prior knowledge.
+     * @param on true for verbose logging.
+     * @return this, for chaining.
+     */
+    public CdnodPag withVerbose(boolean on) {
+        this.verbose = on;
+        return this;
+    }
+
+    /**
+     * Executes the pipeline and returns the resulting PAG.
+     *
+     * @return the resulting PAG after context-edge orientation and change-based orientation, with
+     * strong legality enforced per commit.
      */
     public Graph run() {
 
@@ -218,64 +204,88 @@ public final class CdnodPag {
             forbidHeadsIntoByName.add(name);
         }
 
-        // 1) Build baseline PAG on ALL variables (contexts included)
+        // 1) Build baseline PAG on ALL variables (contexts included).
         Graph pag = pagBuilder.search(dataAll);
-        pag = propagator.apply(pag);
 
-        // Resolve Node handles
+        // Resolve Node handles. (Copies made downstream share node objects, so these handles
+        // remain valid throughout.)
         List<Node> contexts = resolveNodes(pag, contextNames);
         if (contexts.isEmpty()) {
             TetradLogger.getInstance().log("[CD-NOD-PAG] No context variables provided; skipping change-based orientation.");
-            return pag;
+            return propagator.apply(pag);
         }
 
-        // 1a) Post-hoc safeguard: remove arrowheads INTO any context
-        for (Node c : contexts) stripHeadsInto(pag, c);
+        // Guarded propagator: after each user propagation, re-assert the identified context-edge
+        // marks, so a knowledge-blind propagator cannot reintroduce heads into contexts. The
+        // strong legality check downstream then adjudicates the combination.
+        final List<Node> ctxFinal = contexts;
+        Function<Graph, Graph> guardedPropagator = g -> {
+            Graph h = propagator.apply(g);
+            orientContextEdges(h, ctxFinal);
+            return h;
+        };
 
-        // 2) Make the change oracle over ALL contexts
-        ChangeOracle oracle = new ChangeOracle(dataAll, contexts, alpha, changeTest);
+        // 2) Orient context edges and propagate the baseline.
+        orientContextEdges(pag, contexts);
+        pag = guardedPropagator.apply(pag);
 
-        // 3) Protected nodes: contexts + extras
+        if (!legalityCheck.apply(pag)) {
+            TetradLogger.getInstance().log("[CD-NOD-PAG] Warning: baseline PAG fails strong legality after context-edge "
+                    + "orientation. The PagBuilder was likely run without knowledge forbidding edges into "
+                    + "Tier-0 contexts; results may be unreliable.");
+        }
+
+        // 3) Protected nodes: contexts + extras.
         Set<Node> protectedNodes = new LinkedHashSet<>(contexts);
         protectedNodes.addAll(resolveNodes(pag, forbidHeadsIntoByName));
 
-        // 4) Optional: build a Node->tier map
+        // 4) Tier map for the orienter's tier guard.
         Map<Node, Integer> tiers = new HashMap<>();
-
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
-            List<String> tier = knowledge.getTier(i);
-            for (String nodeName : tier) {
+            for (String nodeName : knowledge.getTier(i)) {
                 Node n = pag.getNode(nodeName);
                 if (n != null) tiers.put(n, i);
             }
         }
 
-        CdnodPagOrienter orienter = new CdnodPagOrienter(pag, oracle, legalityCheck, propagator)
+        // 5) Change oracle over ALL contexts.
+        ChangeOracle oracle = new ChangeOracle(dataAll, contexts, alpha, changeTest);
+
+        CdnodPagOrienter orienter = new CdnodPagOrienter(pag, oracle, legalityCheck, guardedPropagator)
                 .withMaxSubsetSize(maxSubsetSize)
-                .withProxyGuard(useProxyGuard)
                 .withExcludeContextsFromS(excludeContextsFromS)
+                .withVerbose(verbose)
                 .forbidArrowheadsInto(protectedNodes)
                 .withTiers(tiers);
 
-        orienter.run();
-        return pag;
+        Graph out = orienter.run();
+
+        if (verbose) {
+            TetradLogger.getInstance().log("[CD-NOD-PAG] Telemetry: attempted=" + orienter.getAttemptedCommits()
+                    + " accepted=" + orienter.getAcceptedCommits()
+                    + " legality-rejected=" + orienter.getLegalityRejections());
+        }
+
+        // The orienter adopts copies; the local 'pag' reference above is stale. Return the
+        // orienter's final graph.
+        return out;
     }
 
     /**
-     * Functional interface representing a builder for constructing a Partial Ancestral Graph (PAG).
+     * Functional interface representing a builder for constructing the baseline PAG.
      * <p>
-     * This interface provides a method to define the construction of a PAG by using a dataset to infer relationships
-     * while adhering to specific constraints or methodologies defined by its implementation.
+     * Implementations should, where possible, embed the exogeneity constraint for Tier-0 contexts
+     * (e.g., by supplying knowledge that forbids edges into contexts to the underlying search);
+     * see the class javadoc.
      */
     @FunctionalInterface
     public interface PagBuilder {
 
         /**
-         * Performs a search operation on the provided dataset to build a graph
-         * representing relationships or dependencies within the data.
+         * Builds the baseline PAG from the given dataset.
          *
-         * @param fullData the dataset on which the search operation is performed
-         * @return the resulting graph constructed from the dataset
+         * @param fullData the dataset over all variables, contexts included
+         * @return the resulting PAG
          */
         Graph search(DataSet fullData);
     }

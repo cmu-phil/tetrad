@@ -25,12 +25,12 @@ import java.util.*;
  * Context variables are Knowledge Tier-0. We forbid edges into contexts and then
  * add Context -> Y edges when they improve the local score of Y given its current parents.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "CD-NOD-BOSS",
-        command = "cd-nod-boss",
-        algoType = AlgType.forbid_latent_common_causes
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "CD-NOD-BOSS-OLD",
+//        command = "cd-nod-boss-old",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
+//@Bootstrapping
 public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, AcceptsKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
@@ -305,7 +305,7 @@ public class BossCdnodScore extends AbstractBootstrapAlgorithm implements Algori
 
     @Override
     public String getDescription() {
-        return "BOSS + score-based CD-NOD context augmentation using " + this.score.getDescription();
+        return "BOSS + score-based CD-NOD (Old) context augmentation using " + this.score.getDescription();
     }
 
     @Override

@@ -153,7 +153,7 @@ public class TestCdnodPag {
         ChangeTest changeTest = new CgLrtChangeTest();
 
         return new CdnodPag(data, alpha, changeTest, pagBuilder, legalityCheck, prop, knowledge)
-                .withMaxSubsetSize(1)
-                .withProxyGuard(true);
+                .withMaxSubsetSize(1);
+//                .withProxyGuard(true);
     }
 }
