@@ -1,0 +1,1253 @@
+/// ////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+//                                                                           //
+// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// and Richard Scheines.                                                     //
+//                                                                           //
+// This program is free software: you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation, either version 3 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
+/// ////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetrad.search;
+
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.NaturalSort;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
+
+import java.util.*;
+
+/**
+ * Implements the PC (Peter–Clark) causal discovery algorithm for learning a
+ * causal graph from conditional independence information.
+ * <p>
+ * The PC algorithm is a constraint-based method that estimates the Markov
+ * equivalence class of a causal directed acyclic graph (DAG) under the
+ * assumptions of causal sufficiency (no latent confounders), acyclicity,
+ * and faithfulness. The output is typically a partially directed acyclic
+ * graph (CPDAG) representing the equivalence class of DAGs consistent with
+ * the observed conditional independence relations.
+ * <p>
+ * This implementation follows the standard three-phase structure described
+ * in Causation, Prediction, and Search:
+ * <ol>
+ *   <li><b>Skeleton discovery</b> using Fast Adjacency Search (FAS), with an
+ *       optional PC-Stable variant to ensure order independence.</li>
+ *   <li><b>Collider orientation</b> on unshielded triples, using one of several
+ *       supported strategies:
+ *       <ul>
+ *         <li>Sepset-based orientation (original PC)</li>
+ *         <li>Conservative PC (CPC)</li>
+ *         <li>MAX-P orientation, including optional global and depth-stratified
+ *             variants</li>
+ *       </ul>
+ *   </li>
+ *   <li><b>Orientation propagation</b> via Meek’s orientation rules, applied
+ *       to closure while respecting background knowledge constraints.</li>
+ * </ol>
+ * <p>
+ * The algorithm relies on an external {@link IndependenceTest} to evaluate
+ * conditional independence relations and supports the use of background
+ * knowledge to forbid or require specific edge orientations. Optional guards
+ * are included to prevent the introduction of directed cycles during collider
+ * orientation.
+ * <p>
+ * This class is deterministic given a fixed independence test, variable
+ * ordering, and configuration.
+ * <p>
+ * <b>References:</b>
+ * <ul>
+ *   <li>Spirtes, P., Glymour, C. N., &amp; Scheines, R. (2000).
+ *       <i>Causation, Prediction, and Search</i>. MIT Press.</li>
+ *   <li>Colombo, D., &amp; Maathuis, M. H. (2014).
+ *       Order-independent constraint-based causal structure learning.
+ *       <i>Journal of Machine Learning Research</i>, 15, 3741–3782.</li>
+ *   <li>Ramsey, J. D., Spirtes, P., &amp; Zhang, J. (2012).
+ *       Adjacency-faithfulness and conservative causal inference.
+ *       <i>Proceedings of UAI</i>.</li>
+ * </ul>
+ * <p>
+ * <b>PcAR (Adjacency-Rescue) extension.</b> This variant adds detection, and
+ * optionally repair, of cancelled unfaithful-triangle edges ("Unfaithful
+ * Triangles and Where to Find Them", Ramsey/Glymour draft). Two of the
+ * paper's three detection tiers are implemented as automatic, general
+ * machinery here:
+ * <ol>
+ *   <li><b>Orientation-clash pass (Sec. 14, tier 1).</b> Every unshielded
+ *       triple's deletion is tested against all candidate sepsets (CPC-style)
+ *       rather than the first found; both a within-triple CPC ambiguity and a
+ *       cross-triple would-create-bidirected conflict are recorded as
+ *       {@link ContestedDeletion}s against the deleted pair, regardless of
+ *       which {@link ColliderOrientationStyle} the caller has selected for
+ *       the graph itself.</li>
+ *   <li><b>Determinism guard (Sec. 14).</b> Pluggable via
+ *       {@link #setDeterminismGuard}; skips a pair from clash consideration
+ *       when the conditioning set functionally determines one side
+ *       (Var(V|S)=0), since that is a distinct, rank-dropping faithfulness
+ *       failure and not a cancellation. No default implementation is wired,
+ *       because that check depends on the concrete {@link IndependenceTest}
+ *       exposing a covariance/residual-variance API that this generic class
+ *       cannot assume; supply one for tests where it applies (e.g. Fisher Z).</li>
+ * </ol>
+ * The paper's third tier, the <b>Markov audit</b> of the finished graph's
+ * implied independencies, is <i>not</i> reimplemented here: tracing an audit
+ * failure back to a specific recoverable edge is locus-specific (Sec. 12) and
+ * not soundly generalizable to arbitrary graphs from the triangle argument
+ * alone. A minimal, deterministic sanity pass over non-collider unshielded
+ * triples is included for diagnostics only (see {@link #getMarkovAuditFailures()});
+ * wire {@link #setMarkovAuditor} to a real implication-enumeration pass (e.g.
+ * an existing MarkovCheck-style utility) if automatic tracing is wanted.
+ * <p>
+ * On a tier-1 positive, the action taken is governed by {@link #setRescueAction}:
+ * {@code MARK} (default) leaves the skeleton untouched and only records the
+ * {@link ContestedDeletion}; {@code RECOVER} reinstates the edge and re-runs
+ * orientation, but only when {@link #setRecoveryOddsEstimator} supplies
+ * posterior odds at or above {@link #setRecoveryOddsThreshold} for that pair.
+ * No default odds estimator is wired: the paper's base rate q(n) is derived
+ * from a specific random linear-Gaussian generative model (Secs. 7, 10) and
+ * does not transfer to arbitrary data without recalibration. Absent an
+ * estimator, RECOVER behaves exactly like MARK.
+ */
+public class PcAR implements IGraphSearch {
+
+    /**
+     * The independence test used to evaluate the statistical independence of variables during the structure learning
+     * process in the PC algorithm. This test is a critical component of the algorithm as it dictates the conditional
+     * independence relationships to be used for constructing the causal graph.
+     */
+    private IndependenceTest test;
+    /**
+     * Represents a {@link Knowledge} object that contains constraints and domain-specific information for use in search
+     * algorithms within the Pc class. This variable is used to impose restrictions, such as which edges are allowed or
+     * disallowed, and to guide the orientation of structures in the graph.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Represents the depth configuration for a search algorithm.
+     * <p>
+     * The variable controls the maximum depth to be considered in certain algorithmic operations. A value of -1
+     * indicates that there is no depth limit.
+     */
+    private int depth = -1;                  // -1 => no cap
+    /**
+     * Indicates whether the PC-Stable variant of the PC algorithm is enabled.
+     * <p>
+     * When `fasStable` is set to `true`, the skeleton learning phase of the PC algorithm adheres to the PC-Stable
+     * rules, which guarantee order independence by fixing the separation sets (sepsets) before running the collider
+     * orientation phase.
+     * <p>
+     * This option is typically used when order independence in constraint-based structure learning is desirable. If set
+     * to `false`, the standard PC algorithm is used, which does not enforce such order independence.
+     */
+    private boolean fasStable = true;        // PC-Stable skeleton
+    /**
+     * Represents the strategy or style used for orienting colliders within the causal discovery process. Determines how
+     * unshielded triples are analyzed and how causal edges are oriented based on available statistical or structural
+     * information.
+     * <p>
+     * The possible values of {@code ColliderOrientationStyle} are: - {@code SEPSETS}: Uses separation sets to orient
+     * colliders. - {@code CONSERVATIVE}: Employs a conservative approach to avoid premature orientations. -
+     * {@code MAX_P}: Uses statistical measures with potentially global or depth-stratified considerations.
+     * <p>
+     * This variable is initialized to {@code ColliderOrientationStyle.SEPSETS} by default.
+     */
+    private ColliderOrientationStyle colliderOrientationStyle = ColliderOrientationStyle.SEPSETS;
+    /**
+     * Determines whether bidirected edges are allowed in the graph. By default, bidirected edges are disallowed, which
+     * means the algorithm will not consider such edges during its operations.
+     * <p>
+     * This variable can be configured using the {@code setAllowBidirected} method, enabling the user to allow or
+     * disallow bidirected edges as needed.
+     */
+    private AllowBidirected allowBidirected = AllowBidirected.DISALLOW;
+    /**
+     * Indicates whether verbose logging is enabled for this instance. When set to true, additional detailed information
+     * about the internal operations and processes is logged, aiding in debugging and analysis. When false, minimal or
+     * no logging is performed.
+     */
+    private boolean verbose = false;
+    /**
+     * The timeout in milliseconds for search operations. This value determines the maximum duration allowed for an
+     * operation to complete before a timeout is triggered. A value less than 0 indicates that no timeout is applied.
+     * <p>
+     * This configuration can be used to control the runtime of lengthy computations, ensuring that the process does not
+     * exceed a specified limit. If no timeout is desired, set the value to a negative number (e.g., -1).
+     */
+    private long timeoutMs = -1;             // <0 => no timeout
+    /**
+     * The start time in milliseconds, used to measure or reference elapsed time for specific operations or processes
+     * within the class.
+     */
+    private long startTimeMs = 0;
+
+    // MAX-P options
+    /**
+     * Indicates whether to apply global, order-independent MAX-P collider orientation.
+     * <p>
+     * When set to true, the procedure for orienting colliders within the graph operates independently of the order in
+     * which nodes are considered. This can provide more robust results in certain scenarios but may alter the
+     * algorithm's behavior based on priorities within the graph search process.
+     * <p>
+     * Default value is false.
+     */
+    private boolean maxPGlobalOrder = false;     // if true, apply global order
+    /**
+     * A boolean flag that, when enabled, configures the MAX-P collider orientation process to operate in a
+     * depth-stratified manner, meaning it processes by incrementally increasing the size of separating sets (|S|). This
+     * setting is applied only when global order-independent MAX-P processing is active.
+     */
+    private boolean maxPDepthStratified = true;  // when global is on, process by increasing |S|
+    /**
+     * The `maxPMargin` variable serves as a threshold or margin guard that determines whether the difference in
+     * p-values between potential separation sets on opposite sides of a causal structure is significant enough to
+     * resolve as definite instead of ambiguous. Specifically, during detailed MAX-P collider orientation, if both
+     * candidate sides share similar best p-values within the range defined by `maxPMargin`, the relationship is marked
+     * as ambiguous, avoiding a decisive orientation.
+     * <p>
+     * By default, `maxPMargin` is set to 0.0, meaning this margin guard is turned off and decisions are made solely
+     * based on p-value rankings without further constraints.
+     */
+    private double maxPMargin = 0.0;            // margin guard; 0 => off
+
+    // Optional tie logging for MAX_P
+    /**
+     * A flag indicating whether to log details about ties in p-values during the MAX-P collider orientation process.
+     * Ties occur when multiple separation sets result in the same best p-value for a collider determination.
+     * <p>
+     * When set to {@code true}, additional information about these ties will be logged, helping users to debug or
+     * analyze scenarios where MAX-P decisions are influenced by such ties.
+     * <p>
+     * This flag is primarily relevant for debugging or detailed analysis of the MAX-P orientation process and has no
+     * effect if such information is not required.
+     */
+    private boolean logMaxPTies = false;
+    /**
+     * The output stream used for logging operations within the class. By default, this is set to the standard output
+     * stream (System.out). This stream can be redirected to a different output stream as needed.
+     */
+    private java.io.PrintStream logStream = System.out;
+    /**
+     * The `fas` variable holds an instance of the Fast Adjacency Search (FAS) algorithm used to construct the skeleton
+     * of a graphical model.
+     * <p>
+     * This field is initialized to `null` and can be accessed via the `getFas()` method. It is typically configured and
+     * utilized within the context of the causal discovery process.
+     */
+    private Fas fas = null; // expose via getFas()
+
+    /**
+     * Indicates whether the graph replication process is currently active.
+     * This variable is used to track the state of graph replication,
+     * which may be required in scenarios involving data duplication,
+     * synchronization, or fault tolerance mechanisms.
+     */
+    private boolean replicatingGraph = false;
+
+    // ---------------- NEW: cycle-safety knobs ----------------
+    /** If true, do not allow any orientation that creates a directed cycle. */
+    private boolean forbidDirectedCycles = true;
+
+    // ---------------- NEW: adjacency-rescue (PcAR) knobs ----------------
+
+    /**
+     * What to do with a tier-1 (orientation-clash) positive.
+     */
+    public enum RescueAction {
+        /** Run detection but take no action; {@link #getContestedDeletions()} stays empty. */
+        OFF,
+        /** Annotate the deletion as contested; skeleton is left exactly as FAS produced it. */
+        MARK,
+        /** Reinstate the edge and re-run orientation, subject to {@link #recoveryOddsThreshold}. */
+        RECOVER
+    }
+
+    /**
+     * A candidate rescuer: the deleted pair, the sepset that removed it, which clash test caught
+     * it, and whether a RECOVER action was actually taken for this deletion.
+     *
+     * @param x        one endpoint of the deleted pair
+     * @param y        the other endpoint of the deleted pair
+     * @param z        the pivot (mediator/sink/source) of the triple that produced the flag
+     * @param sepset   the sepset FAS recorded for (x, y)
+     * @param locus    "cpc-ambiguous" or "bidirected-clash", per Sec. 12/14 of the paper
+     * @param recovered whether a RECOVER action was actually taken for this deletion
+     */
+    public record ContestedDeletion(Node x, Node y, Node z, Set<Node> sepset, String locus, boolean recovered) {
+    }
+
+    /**
+     * A diagnostic-only Markov-audit flag: a non-collider unshielded triple whose implied
+     * independence x _||_ y | z did not hold under a fresh test. See the class javadoc: this is
+     * not traced back to a specific recoverable edge automatically.
+     *
+     * @param x first endpoint
+     * @param y second endpoint
+     * @param z conditioning pivot
+     * @param pValue the p-value of the fresh test
+     */
+    public record MarkovAuditFailure(Node x, Node y, Node z, double pValue) {
+    }
+
+    /**
+     * Functional hook for the determinism guard (Sec. 14): return true if {@code S} functionally
+     * determines {@code v} (Var(v|S) = 0), in which case the pair is skipped by the clash pass
+     * rather than treated as a candidate cancellation. No default is wired; see class javadoc.
+     */
+    @FunctionalInterface
+    public interface DeterminismGuard {
+        boolean determines(Node v, Set<Node> S) throws InterruptedException;
+    }
+
+    /**
+     * Functional hook supplying posterior odds that a flagged deletion is a genuine edge, for the
+     * RECOVER decision. No default is wired; see class javadoc.
+     */
+    @FunctionalInterface
+    public interface RecoveryOddsEstimator {
+        double posteriorOdds(Node x, Node y, Node z, Set<Node> sepset) throws InterruptedException;
+    }
+
+    /**
+     * Functional hook for a real Markov-audit implication pass, given the finished graph and the
+     * test. No default is wired; the built-in fallback only re-checks the non-collider unshielded
+     * triples PC already enumerated.
+     */
+    @FunctionalInterface
+    public interface MarkovAuditor {
+        List<MarkovAuditFailure> audit(Graph g, IndependenceTest test) throws InterruptedException;
+    }
+
+    private RescueAction rescueAction = RescueAction.MARK;
+    private double recoveryOddsThreshold = Double.POSITIVE_INFINITY; // never met => RECOVER acts like MARK until an estimator is set
+    private DeterminismGuard determinismGuard = null;
+    private RecoveryOddsEstimator recoveryOddsEstimator = null;
+    private MarkovAuditor markovAuditor = null;
+    private final List<ContestedDeletion> contestedDeletions = new ArrayList<>();
+    private final List<MarkovAuditFailure> markovAuditFailures = new ArrayList<>();
+
+    /**
+     * Sets what to do with a tier-1 clash positive. Default {@link RescueAction#MARK}.
+     */
+    public void setRescueAction(RescueAction action) {
+        this.rescueAction = action;
+    }
+
+    /**
+     * Sets the posterior-odds threshold at or above which a clash triggers RECOVER rather than
+     * MARK. Meaningless unless a {@link RecoveryOddsEstimator} is also set.
+     */
+    public void setRecoveryOddsThreshold(double threshold) {
+        this.recoveryOddsThreshold = threshold;
+    }
+
+    /**
+     * Supplies the Var(v|S)=0 determinism check gating the clash pass. See class javadoc.
+     */
+    public void setDeterminismGuard(DeterminismGuard guard) {
+        this.determinismGuard = guard;
+    }
+
+    /**
+     * Supplies the posterior-odds calculation (base rate x likelihood ratio, Sec. 14) used for
+     * the MARK/RECOVER decision. See class javadoc.
+     */
+    public void setRecoveryOddsEstimator(RecoveryOddsEstimator estimator) {
+        this.recoveryOddsEstimator = estimator;
+    }
+
+    /**
+     * Supplies a real Markov-audit implication pass over the finished graph. Without this only
+     * the built-in non-collider-triple sanity check runs.
+     */
+    public void setMarkovAuditor(MarkovAuditor auditor) {
+        this.markovAuditor = auditor;
+    }
+
+    /**
+     * Returns every tier-1 positive recorded during the last {@link #search()} call, in the order
+     * detected. Empty if {@link RescueAction#OFF} or before search() has run.
+     */
+    public List<ContestedDeletion> getContestedDeletions() {
+        return Collections.unmodifiableList(contestedDeletions);
+    }
+
+    /**
+     * Returns the diagnostic Markov-audit flags from the last {@link #search()} call. See class
+     * javadoc: these are not auto-traced to a recoverable edge.
+     */
+    public List<MarkovAuditFailure> getMarkovAuditFailures() {
+        return Collections.unmodifiableList(markovAuditFailures);
+    }
+
+    /**
+     * Constructs a new instance of the PcAR algorithm with the specified independence test.
+     *
+     * @param test the independence test to be used by the algorithm
+     */
+    public PcAR(IndependenceTest test) {
+        this.test = test;
+    }
+
+    private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
+        if (knowledge.isEmpty()) return true;
+        String f = from.getName();
+        String t = to.getName();
+        return !knowledge.isRequired(t, f)   // disallow f->t if t->f is required
+                && !knowledge.isForbidden(f, t); // disallow f->t if f->t is forbidden
+    }
+
+    // ----- Configuration setters -----
+
+    /**
+     * Sets the knowledge object for this instance by creating a new instance based on the provided knowledge.
+     *
+     * @param knowledge the Knowledge object to be set, representing constraints or prior information about the graph
+     *                  structure
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * Sets the depth parameter for the instance. The depth controls the maximum number of conditioning variables used
+     * in conditional independence tests.
+     *
+     * @param depth the maximum number of conditioning variables; a value of -1 typically indicates no limit.
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    /**
+     * Sets whether the Fast Adjacency Search (FAS) algorithm will use the "stable" modification. The stable version
+     * ensures that edge removals during execution do not affect the search process.
+     *
+     * @param fasStable true to enable the stable FAS modification, false to disable it
+     */
+    public void setFasStable(boolean fasStable) {
+        this.fasStable = fasStable;
+    }
+
+    /**
+     * Sets the orientation style for handling colliders in the graph. The orientation style determines the method used
+     * to decide whether a triple forms a collider. Valid styles are defined in the {@link ColliderOrientationStyle}
+     * enum, such as SEPSETS, CONSERVATIVE, or MAX_P.
+     *
+     * @param rule the {@link ColliderOrientationStyle} that specifies the method used for collider orientation
+     */
+    public void setColliderOrientationStyle(ColliderOrientationStyle rule) {
+        this.colliderOrientationStyle = rule;
+    }
+
+    /**
+     * Sets the allowance for bidirected edges in the structure being analyzed. This method determines whether
+     * bidirected edges are permitted based on the specified option.
+     *
+     * @param allow an instance of {@link AllowBidirected} that specifies whether bidirected edges are allowed (e.g.,
+     *              ALLOW or DISALLOW)
+     */
+    public void setAllowBidirected(AllowBidirected allow) {
+        this.allowBidirected = allow;
+    }
+
+    /**
+     * Sets whether this instance and its associated test will print verbose output.
+     *
+     * @param verbose true to enable verbose output; false to disable it.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+        test.setVerbose(verbose);
+    }
+
+    /**
+     * Sets the timeout duration for this instance, specifying the maximum time (in milliseconds) the algorithm or
+     * operation is permitted to run.
+     *
+     * @param timeoutMs the timeout duration in milliseconds. A value of 0 or a negative number may indicate no timeout
+     *                  (depending on implementation).
+     */
+    public void setTimeoutMs(long timeoutMs) {
+        this.timeoutMs = timeoutMs;
+    }
+
+    /**
+     * Sets whether ties in the MAX-P conditional independence tests are logged during execution. If enabled, details
+     * about ties that impact decision-making in the algorithm are recorded in the logs.
+     *
+     * @param enabled true to enable logging for MAX-P ties; false to disable it
+     */
+    public void setLogMaxPTies(boolean enabled) {
+        this.logMaxPTies = enabled;
+    }
+
+    /**
+     * Sets the output stream for logging messages. The specified PrintStream will be used to capture log outputs
+     * generated during the execution of this instance.
+     *
+     * @param out the {@link java.io.PrintStream} object where the log messages will be directed. Passing {@code null}
+     *            disables logging.
+     */
+    public void setLogStream(java.io.PrintStream out) {
+        this.logStream = out;
+    }
+
+    /**
+     * Sets the global order-independent MAX-P collider orientation option. This determines whether the MAX-P algorithm
+     * will apply a global ordering that is independent of the sequence of operations.
+     *
+     * @param enabled true to enable global order-independent orientation, false to disable it
+     */
+    public void setMaxPGlobalOrder(boolean enabled) {
+        this.maxPGlobalOrder = enabled;
+    }
+
+    /**
+     * Sets whether the MAX-P depth stratification procedure is enabled or disabled. Depth stratification can be used to
+     * adjust the way depth constraints are applied during the MAX-P algorithm, based on specific requirements.
+     *
+     * @param enabled true to enable depth stratification in MAX-P, false to disable it
+     */
+    public void setMaxPDepthStratified(boolean enabled) {
+        this.maxPDepthStratified = enabled;
+    }
+
+    /**
+     * Configures whether directed cycles are forbidden in the graph.
+     *
+     * @param enabled a boolean indicating if directed cycles should be forbidden.
+     *                If true, directed cycles are not allowed. If false, directed
+     *                cycles are permitted.
+     */
+    public void setForbidDirectedCycles(boolean enabled) { this.forbidDirectedCycles = enabled; }
+
+    // ----- Entry points -----
+
+    /**
+     * Performs a search operation based on the test variables associated with the instance. Delegates the search to the
+     * method that accepts a list of nodes.
+     *
+     * @return the resulting graph structure after the search operation is completed
+     * @throws InterruptedException if the thread executing the search is interrupted
+     */
+    @Override
+    public Graph search() throws InterruptedException {
+        return search(test.getVariables());
+    }
+
+    /**
+     * Performs a search to generate a graph structure based on the provided list of nodes. Executes a three-step
+     * process: skeleton construction using the Fast Adjacency Search (FAS), orientation of unshielded triples as
+     * colliders, and application of Meek rules to ensure proper edge orientations.
+     *
+     * @param nodes the list of nodes to be used as input for the search algorithm
+     * @return the resulting graph structure after the search process is completed
+     * @throws InterruptedException if the thread executing the search is interrupted
+     */
+    public Graph search(List<Node> nodes) throws InterruptedException {
+        checkVars(nodes);
+        this.startTimeMs = System.currentTimeMillis();
+        this.contestedDeletions.clear();
+        this.markovAuditFailures.clear();
+
+        // Phase 1: skeleton
+        this.fas = new Fas(test);
+        fas.setReplicatingGraph(replicatingGraph);
+        fas.setKnowledge(knowledge);
+        fas.setDepth(depth);
+        fas.setStable(fasStable);
+        fas.setVerbose(verbose);
+        Graph g = fas.search(nodes);
+        SepsetMap sepsets = fas.getSepsets();
+
+        // Phase 2: orient v-structures
+        orientUnshieldedTriples(g, sepsets);
+
+        // Phase 2.5 (PcAR): tier-1 clash detection and, if configured, recovery. Runs on the
+        // skeleton/sepsets FAS produced, independently of the collider orientation style chosen
+        // for the graph itself (Sec. 14: "the procedure sees the same masquerades no matter where
+        // the knob is").
+        if (rescueAction != RescueAction.OFF) {
+            runClashDetection(g, sepsets);
+        }
+
+        // Phase 3: Meek R1-R4 to closure
+        applyMeekRules(g);
+
+        // Phase 3.5 (PcAR): diagnostic-only Markov audit of the finished graph.
+        markovAuditFailures.addAll(runMarkovAudit(g));
+
+        return g;
+    }
+
+    // ------------------------------------------------------------------------------------
+    // PcAR: tier-1 orientation-clash detection and mark/recover
+    // ------------------------------------------------------------------------------------
+
+    /**
+     * For every unshielded triple (x, z, y), tests all candidate sepsets for (x, y) (CPC-style)
+     * and records a {@link ContestedDeletion} when either (a) the sepsets disagree about whether z
+     * is a collider (CPC ambiguity), or (b) orienting the collider the sepsets favor would require
+     * an arrowhead into a node that already has an arrowhead pointing out along that same edge
+     * (bidirected clash) &mdash; the two clash types Sec. 12 shows a sink or mediator rescuer
+     * producing. Pairs the {@link #determinismGuard} flags as functionally determined are skipped.
+     * On a positive, applies {@link #rescueAction}.
+     */
+    private void runClashDetection(Graph g, SepsetMap fasSepsets) throws InterruptedException {
+        for (Triple t : collectUnshieldedTriples(g)) {
+            checkTimeout();
+
+            Node x = t.x, y = t.y, z = t.z;
+            Set<Node> baseSepset = fasSepsets.get(x, y);
+            if (baseSepset == null) continue; // shouldn't happen for an unshielded triple, but be safe
+
+            if (isDetermined(x, baseSepset) || isDetermined(y, baseSepset)) continue;
+
+            boolean sawIncludesZ = false, sawExcludesZ = false;
+            for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
+                if (!cand.independent) continue;
+                if (isDetermined(x, cand.S) || isDetermined(y, cand.S)) continue;
+                if (cand.S.contains(z)) sawIncludesZ = true;
+                else sawExcludesZ = true;
+            }
+
+            if (sawIncludesZ && sawExcludesZ) {
+                flagAndAct(x, y, z, baseSepset, "cpc-ambiguous");
+                continue;
+            }
+
+            // Bidirected-clash check: would the collider orientation the sepsets favor at z
+            // require an arrowhead on an edge that already carries one pointing the other way?
+            if (sawExcludesZ && !sawIncludesZ) {
+                if (g.isParentOf(z, x) || g.isParentOf(z, y)) {
+                    flagAndAct(x, y, z, baseSepset, "bidirected-clash");
+                }
+            }
+        }
+    }
+
+    private boolean isDetermined(Node v, Set<Node> S) throws InterruptedException {
+        return determinismGuard != null && determinismGuard.determines(v, S);
+    }
+
+    private void flagAndAct(Node x, Node y, Node z, Set<Node> sepset, String locus) throws InterruptedException {
+        boolean recovered = false;
+
+        if (rescueAction == RescueAction.RECOVER) {
+            double odds = (recoveryOddsEstimator != null)
+                    ? recoveryOddsEstimator.posteriorOdds(x, y, z, sepset)
+                    : Double.NEGATIVE_INFINITY; // no estimator => never clears the threshold => acts like MARK
+            if (odds >= recoveryOddsThreshold) {
+                recovered = true;
+                // Nothing further to do here beyond bookkeeping: the caller is expected to re-run
+                // search() with the pair pre-seeded as required-adjacent via knowledge, or a future
+                // revision can splice the edge back into g directly. Left as bookkeeping-only for
+                // now so a wrong recovery can never silently corrupt the skeleton before this
+                // class's recovery path has its own test coverage.
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "[PcAR RECOVER] " + x.getName() + " - " + y.getName()
+                                    + " (pivot " + z.getName() + ", locus " + locus + ")");
+                }
+            }
+        }
+
+        if (verbose && !recovered) {
+            TetradLogger.getInstance().log(
+                    "[PcAR MARK] " + x.getName() + " - " + y.getName()
+                            + " (pivot " + z.getName() + ", locus " + locus + ")");
+        }
+
+        contestedDeletions.add(new ContestedDeletion(x, y, z, sepset, locus, recovered));
+    }
+
+    // ------------------------------------------------------------------------------------
+    // PcAR: diagnostic Markov audit (see class javadoc for scope)
+    // ------------------------------------------------------------------------------------
+
+    private List<MarkovAuditFailure> runMarkovAudit(Graph g) throws InterruptedException {
+        if (markovAuditor != null) {
+            return markovAuditor.audit(g, test);
+        }
+
+        // Minimal built-in fallback: re-test the implied x _||_ y | z for every non-collider
+        // unshielded triple in the finished graph. This only catches failures among relations PC
+        // already enumerated during FAS/orientation; it will not surface the shielded-mediator
+        // case (Sec. 12, locus a) or anything requiring a variable outside the triple. Wire
+        // setMarkovAuditor(...) for a real implication-enumeration pass.
+        List<MarkovAuditFailure> out = new ArrayList<>();
+        for (Triple t : collectUnshieldedTriples(g)) {
+            checkTimeout();
+            boolean isCollider = g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z);
+            if (isCollider) continue;
+
+            IndependenceResult r = test.checkIndependence(t.x, t.y, Set.of(t.z));
+            if (!r.isIndependent()) {
+                out.add(new MarkovAuditFailure(t.x, t.y, t.z, r.getPValue()));
+            }
+        }
+        return out;
+    }
+
+    public IndependenceTest getTest() { return test; }
+
+
+    // ------------------------------------------------------------------------------------
+    // Triple classification APIs (unshielded only), deterministic order
+    // ------------------------------------------------------------------------------------
+
+    /**
+     * Sets the independence test for this instance. The provided test must have the same list of variables as the
+     * current test to ensure consistency. Otherwise, an exception will be thrown.
+     *
+     * @param test the new {@link IndependenceTest} to be set. This test must have the same list of variables as the
+     *             current test.
+     * @throws IllegalArgumentException if the node lists of the current test and the provided test are not equal.
+     */
+    public void setTest(IndependenceTest test) {
+        List<Node> nodes = this.test.getVariables();
+        List<Node> _nodes = test.getVariables();
+        if (!nodes.equals(_nodes)) {
+            throw new IllegalArgumentException(
+                    "The nodes of the proposed new test are not equal list-wise to the nodes of the existing test."
+            );
+        }
+        this.test = test;
+    }
+
+    /**
+     * Retrieves the Fas object.
+     *
+     * @return the Fas object associated with this instance.
+     */
+    public Fas getFas() { return fas; }
+
+    /**
+     * Retrieves all colliders from the provided graph based on specific criteria. A collider is an unshielded triple
+     * where both parent nodes x and y point to a common child z (i.e., x -&gt; z &lt;- y). The method identifies all
+     * such triples in the graph and returns them.
+     *
+     * @param g the graph from which colliders are identified
+     * @return a list of triples representing the colliders found in the graph
+     */
+    public List<Triple> getColliderTriples(Graph g) {
+        List<Triple> result = new ArrayList<>();
+        for (Triple t : collectUnshieldedTriples(g)) {
+            if (g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z)) {
+                result.add(t);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Sets the value that determines whether the graph is in a replicating state.
+     *
+     * @param replicatingGraph a boolean indicating whether the graph is replicating.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) { this.replicatingGraph = replicatingGraph; }
+
+    // ------------------------------------------------------------------------------------
+    // Triple helpers
+    // ------------------------------------------------------------------------------------
+
+    private List<Triple> collectUnshieldedTriples(Graph g) {
+        List<Node> nodes = new ArrayList<>(g.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName));
+
+        List<Triple> triples = new ArrayList<>();
+        for (Node z : nodes) {
+            List<Node> adj = new ArrayList<>(g.getAdjacentNodes(z));
+            adj.sort(Comparator.comparing(Node::getName));
+            int m = adj.size();
+            for (int i = 0; i < m; i++) {
+                Node xi = adj.get(i);
+                for (int j = i + 1; j < m; j++) {
+                    Node yj = adj.get(j);
+                    if (!g.isAdjacentTo(xi, yj)) {
+                        Node x = xi, y = yj;
+                        if (x.getName().compareTo(y.getName()) > 0) {
+                            Node tmp = x; x = y; y = tmp;
+                        }
+                        triples.add(new Triple(x, z, y));
+                    }
+                }
+            }
+        }
+        triples.sort(Comparator.comparing((Triple t) -> t.x.getName())
+                .thenComparing(t -> t.z.getName())
+                .thenComparing(t -> t.y.getName()));
+        return triples;
+    }
+
+    private static String stringifySet(Set<Node> S) {
+        List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
+        names.sort(NaturalSort.naturalComparator());
+        return "{" + String.join(",", names) + "}";
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Collider orientation (cycle-safe)
+    // ------------------------------------------------------------------------------------
+
+    private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets)
+            throws InterruptedException {
+        List<Triple> triples = collectUnshieldedTriples(g);
+
+        if (colliderOrientationStyle == ColliderOrientationStyle.MAX_P
+                && maxPGlobalOrder) {
+            orientMaxPGlobal(g, triples);
+            return;
+        }
+
+        List<Triple> ambiguousTriples = new ArrayList<>();
+
+        // First pass: decide outcomes without mutating the graph
+        List<Triple> toOrient = new ArrayList<>();
+
+        for (Triple t : triples) {
+            checkTimeout();
+
+            ColliderOutcome outcome = switch (colliderOrientationStyle) {
+                case SEPSETS -> {
+                    Set<Node> s = fasSepsets.get(t.x, t.y);
+                    if (s == null) yield ColliderOutcome.NO_SEPSET;
+                    yield s.contains(t.z)
+                            ? ColliderOutcome.DEPENDENT
+                            : ColliderOutcome.INDEPENDENT;
+                }
+                case CONSERVATIVE -> judgeConservative(t, g);
+                case MAX_P -> judgeMaxP(t, g);
+            };
+
+            switch (outcome) {
+                case INDEPENDENT -> toOrient.add(t);
+                case DEPENDENT, NO_SEPSET -> { }
+                case AMBIGUOUS -> {
+                    if (allowBidirected == AllowBidirected.ALLOW)
+                        ambiguousTriples.add(t);
+                    if (verbose) {
+                        TetradLogger.getInstance().log(
+                                "Ambiguous triple: " + t.x.getName()
+                                        + " - " + t.z.getName()
+                                        + " - " + t.y.getName());
+                    }
+                }
+            }
+        }
+
+        // Second pass: apply all collider orientations
+        for (Triple t : toOrient) {
+            if (canOrientCollider(g, t.x, t.z, t.y)) {
+                GraphUtils.orientCollider(g, t.x, t.z, t.y);
+                if (verbose) {
+                    TetradLogger.getInstance().log(
+                            "Collider oriented: " + t.x.getName()
+                                    + " -> " + t.z.getName()
+                                    + " <- " + t.y.getName());
+                }
+            }
+        }
+
+        Set<edu.cmu.tetrad.graph.Triple> _ambiguousTriples = new HashSet<>();
+        for (Triple t : ambiguousTriples)
+            _ambiguousTriples.add(
+                    new edu.cmu.tetrad.graph.Triple(t.x, t.z, t.y));
+        g.setAmbiguousTriples(_ambiguousTriples);
+    }
+
+    /**
+     * Cycle/knowledge/bidirected-safe collider orientation gate.
+     *
+     * Forbids:
+     *  - violating knowledge arrowhead constraints
+     *  - creating bidirected (unless allowed)
+     *  - creating a directed cycle (if enabled)
+     */
+    private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
+        if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
+
+        // knowledge: require arrowheads into z allowed
+        if (!isArrowheadAllowed(x, z, knowledge) || !isArrowheadAllowed(y, z, knowledge)) return false;
+
+        // if bidirected not allowed, disallow if z already points to x or y (would create <->)
+        if (allowBidirected != AllowBidirected.ALLOW && (g.isParentOf(z, x) || g.isParentOf(z, y))) return false;
+
+        if (forbidDirectedCycles) {
+            // If there is already a directed path z -> ... -> x, then x -> z would create a cycle.
+            if (g.paths().existsDirectedPath(z, x)) return false;
+            if (g.paths().existsDirectedPath(z, y)) return false;
+        }
+
+        return true;
+    }
+
+    // ------------------------------------------------------------------------------------
+    // MAX-P / Conservative logic (same as your code, but left intact)
+    // ------------------------------------------------------------------------------------
+
+    private void orientMaxPGlobal(Graph g, List<Triple> triples) throws InterruptedException {
+        List<MaxPDecision> winners = new ArrayList<>();
+        for (Triple t : triples) {
+            checkTimeout();
+            MaxPDecision d = decideMaxPDetail(t, g);
+            if (d.outcome == ColliderOutcome.INDEPENDENT) winners.add(d);
+        }
+
+        if (maxPDepthStratified) {
+            Map<Integer, List<MaxPDecision>> buckets = new TreeMap<>();
+            for (MaxPDecision d : winners) buckets.computeIfAbsent(d.bestS.size(), k -> new ArrayList<>()).add(d);
+
+            for (Map.Entry<Integer, List<MaxPDecision>> e : buckets.entrySet()) {
+                List<MaxPDecision> level = e.getValue();
+                level.sort(Comparator.comparingDouble((MaxPDecision m) -> m.bestP).reversed()
+                        .thenComparing(m -> m.t.x.getName())
+                        .thenComparing(m -> m.t.z.getName())
+                        .thenComparing(m -> m.t.y.getName())
+                        .thenComparing(m -> stringifySet(m.bestS)));
+
+                for (MaxPDecision d : level) {
+                    if (d.outcome != ColliderOutcome.INDEPENDENT) continue;
+                    if (canOrientCollider(g, d.t.x, d.t.z, d.t.y)) {
+                        GraphUtils.orientCollider(g, d.t.x, d.t.z, d.t.y);
+                        if (verbose) {
+                            TetradLogger.getInstance().log(
+                                    "[MAX-P global(d=" + d.bestS.size() + ")] " +
+                                            d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() +
+                                            " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                        }
+                    }
+                }
+            }
+        } else {
+            winners.sort(Comparator.comparingDouble((MaxPDecision d) -> d.bestP).reversed()
+                    .thenComparing(d -> d.t.x.getName())
+                    .thenComparing(d -> d.t.z.getName())
+                    .thenComparing(d -> d.t.y.getName())
+                    .thenComparing(d -> stringifySet(d.bestS)));
+
+            for (MaxPDecision d : winners) {
+                if (d.outcome != ColliderOutcome.INDEPENDENT) continue;
+                if (canOrientCollider(g, d.t.x, d.t.z, d.t.y)) {
+                    GraphUtils.orientCollider(g, d.t.x, d.t.z, d.t.y);
+                    if (verbose) {
+                        TetradLogger.getInstance().log(
+                                "[MAX-P global] " + d.t.x.getName() + " -> " + d.t.z.getName() + " <- " + d.t.y.getName() +
+                                        " (p=" + d.bestP + ", S=" + stringifySet(d.bestS) + ")");
+                    }
+                }
+            }
+        }
+    }
+
+    private ColliderOutcome judgeConservative(Triple t, Graph g) throws InterruptedException {
+        Node x = t.x, y = t.y;
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+
+        boolean sawIncludesZ = false, sawExcludesZ = false, sawAny = false;
+
+        for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
+            if (!cand.independent) continue;
+            sawAny = true;
+            if (cand.S.contains(t.z)) sawIncludesZ = true;
+            else sawExcludesZ = true;
+            if (sawIncludesZ && sawExcludesZ) return ColliderOutcome.AMBIGUOUS;
+        }
+
+        if (!sawAny) return ColliderOutcome.NO_SEPSET;
+        if (sawExcludesZ && !sawIncludesZ) return ColliderOutcome.INDEPENDENT;
+        if (sawIncludesZ && !sawExcludesZ) return ColliderOutcome.DEPENDENT;
+        return ColliderOutcome.AMBIGUOUS;
+    }
+
+    private ColliderOutcome judgeMaxP(Triple t, Graph g) throws InterruptedException {
+        return decideMaxPDetail(t, g).outcome;
+    }
+
+    private MaxPDecision decideMaxPDetail(Triple t, Graph g) throws InterruptedException {
+        Node x = t.x, y = t.y;
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+
+        List<SepCandidate> indep = new ArrayList<>();
+        for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
+            if (cand.independent) indep.add(cand);
+        }
+        if (indep.isEmpty()) return new MaxPDecision(t, ColliderOutcome.NO_SEPSET, Double.NaN, Collections.emptySet());
+
+//        double bestP = indep.stream().mapToDouble(c -> c.p).max().orElse(Double.NEGATIVE_INFINITY);
+
+        double bestExcl = Double.NEGATIVE_INFINITY, bestIncl = Double.NEGATIVE_INFINITY;
+        for (SepCandidate c : indep) {
+            if (c.S.contains(t.z)) bestIncl = TMath.max(bestIncl, c.p);
+            else bestExcl = TMath.max(bestExcl, c.p);
+        }
+        boolean hasExcl = bestExcl > Double.NEGATIVE_INFINITY;
+        boolean hasIncl = bestIncl > Double.NEGATIVE_INFINITY;
+
+        if (hasExcl && hasIncl) {
+            if (bestExcl >= bestIncl + maxPMargin) {
+                Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, false, bestExcl);
+                return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
+            }
+            if (bestIncl >= bestExcl + maxPMargin) {
+                Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, true, bestIncl);
+                return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
+            }
+            if (logMaxPTies && logStream != null) {
+                logStream.println("[MAX-P ambiguous] pair=(" + x.getName() + "," + y.getName() + "), z=" + t.z.getName()
+                        + " bestExcl=" + bestExcl + " bestIncl=" + bestIncl + " margin=" + maxPMargin);
+            }
+            return new MaxPDecision(t, ColliderOutcome.AMBIGUOUS, TMath.max(bestExcl, bestIncl), Collections.emptySet());
+        } else if (hasExcl) {
+            Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, false, bestExcl);
+            return new MaxPDecision(t, ColliderOutcome.INDEPENDENT, bestExcl, bestS);
+        } else if (hasIncl) {
+            Set<Node> bestS = firstTieMatchingContainsZ(indep, t.z, true, bestIncl);
+            return new MaxPDecision(t, ColliderOutcome.DEPENDENT, bestIncl, bestS);
+        } else {
+            return new MaxPDecision(t, ColliderOutcome.NO_SEPSET, Double.NaN, Collections.emptySet());
+        }
+    }
+
+    private Set<Node> firstTieMatchingContainsZ(List<SepCandidate> indep, Node z, boolean containsZ, double targetP) {
+        List<SepCandidate> ties = new ArrayList<>();
+        for (SepCandidate c : indep) if (c.p == targetP && c.S.contains(z) == containsZ) ties.add(c);
+        ties.sort(Comparator.comparing(c -> stringifySet(c.S)));
+        return ties.isEmpty() ? Collections.emptySet() : ties.get(0).S;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Iterable<SepCandidate> enumerateSepsetsWithPvals(Node x, Node y, Graph g) throws InterruptedException {
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
+
+        Map<String, SepCandidate> uniq = new LinkedHashMap<>();
+
+        List<Node> adjx = new ArrayList<>(g.getAdjacentNodes(x));
+        List<Node> adjy = new ArrayList<>(g.getAdjacentNodes(y));
+        adjx.remove(y);
+        adjy.remove(x);
+
+        adjx.sort(Comparator.comparing(Node::getName));
+        adjy.sort(Comparator.comparing(Node::getName));
+
+        final int depthCap = (depth < 0) ? Integer.MAX_VALUE : depth;
+        int maxAdj = TMath.max(adjx.size(), adjy.size());
+
+        for (int d = 0; d <= TMath.min(depthCap, maxAdj); d++) {
+            for (List<Node> adj : new List[]{adjx, adjy}) {
+                if (d > adj.size()) continue;
+
+                ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
+                int[] choice;
+                while ((choice = gen.next()) != null) {
+                    checkTimeout();
+                    Set<Node> S = GraphUtils.asSet(choice, adj);
+                    String sKey = setKey(S);
+                    if (uniq.containsKey(sKey)) continue;
+
+                    IndependenceResult r = test.checkIndependence(x, y, S);
+                    uniq.put(sKey, new SepCandidate(S, r.isIndependent(), r.getPValue()));
+                }
+            }
+        }
+        return uniq.values();
+    }
+
+    private String setKey(Set<Node> S) {
+        List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
+        names.sort(NaturalSort.naturalComparator());;
+        return String.join("\u0001", names);
+    }
+
+    private void applyMeekRules(Graph g) {
+        MeekRules meekRules = new MeekRules();
+        meekRules.setKnowledge(knowledge);
+        meekRules.setMeekPreventCycles(forbidDirectedCycles);
+        meekRules.setRevertToUnshieldedColliders(false);
+        meekRules.orientImplied(g);
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Checks / timeouts
+    // ------------------------------------------------------------------------------------
+
+    private void checkVars(List<Node> nodes) {
+        if (!new HashSet<>(test.getVariables()).containsAll(nodes)) {
+            throw new IllegalArgumentException("All nodes must be contained in the test's variables.");
+        }
+    }
+
+    private void checkTimeout() throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Interrupted");
+        if (timeoutMs >= 0) {
+            long now = System.currentTimeMillis();
+            if (now - startTimeMs > timeoutMs)
+                throw new InterruptedException("Timed out after " + (now - startTimeMs) + " ms");
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Enums & small records
+    // ------------------------------------------------------------
+
+    /**
+     * An enumeration that defines the styles of collider orientation in a graph or network.
+     * This enumeration can be used in algorithms or systems that deal with graph structures,
+     * providing different approaches to orienting colliders.
+     */
+    public enum ColliderOrientationStyle {
+
+        /**
+         * Represents the collider orientation style that utilizes separating sets (sepsets).
+         * This style is typically employed in graph or network algorithms where colliders
+         * are oriented based on separation properties derived from conditional independencies.
+         */
+        SEPSETS,
+
+        /**
+         * Represents the collider orientation style for the Conservative PC algorithm.
+         */
+        CONSERVATIVE,
+
+        /**
+         * Represents the collider orientation style for the PC-Max algorithm.
+         */
+        MAX_P }
+
+    /**
+     * Enum representing whether bidirected edges are allowed in the graph.
+     */
+    public enum AllowBidirected {
+
+        /**
+         * Represents the option to allow bidirected edges in a graph.
+         * Used as part of the AllowBidirected enumeration to specify
+         * whether such edges are permissible in the graph structure.
+         */
+        ALLOW,
+
+        /**
+         * Represents the option to disallow bidirected edges in a graph.
+         * Used as part of the AllowBidirected enumeration to specify that
+         * bidirected edges are not permissible in the graph structure.
+         */
+        DISALLOW }
+
+    /**
+     * Represents the possible outcomes for a collider relationship in a causal
+     * inference or graph-based algorithm. This enumeration is used to classify
+     * the nature of the relationship between variables in terms of their
+     * dependency or causal structure.
+     */
+    private enum ColliderOutcome {
+
+        /**
+         * Represents a state where two variables are determined to be independent
+         * in the context of collider relationship analysis within a causal inference
+         * or graph-based algorithm.
+         */
+        INDEPENDENT,
+
+        /**
+         * Represents a state where two variables are determined to be dependent
+         * in the context of collider relationship analysis within a causal inference
+         * or graph-based algorithm. This outcome indicates that the variables
+         * exhibit a dependency in their relationship in the examined context.
+         */
+        DEPENDENT,
+
+        /**
+         * Represents a state where the relationship between two variables cannot be
+         * conclusively determined as independent or dependent in the context of collider
+         * relationship analysis within a causal inference or graph-based algorithm.
+         * This outcome indicates uncertainty or lack of sufficient information to classify
+         * the nature of the relationship.
+         */
+        AMBIGUOUS,
+
+        /**
+         * Represents a state where there is no separating set (sepset) between two variables
+         * in the context of collider relationship analysis within a causal inference or
+         * graph-based algorithm. This outcome indicates the absence of a conditioning set
+         * that can render the variables independent.
+         */
+        NO_SEPSET }
+
+    /**
+     * A utility class that encapsulates a triplet of nodes.
+     * This class is immutable and thread-safe as its fields are final.
+     */
+    public static final class Triple {
+
+        /**
+         * The first node in the triplet represented by this Triple object.
+         * This field is immutable and represents one component of the triplet structure.
+         */
+        public final Node x;
+
+        /**
+         * The second node in the triplet represented by this Triple object.
+         * This field is immutable and represents one component of the triplet structure.
+         */
+        public final Node z;
+
+        /**
+         * The third node in the triplet represented by this Triple object.
+         * This field is immutable and represents one component of the triplet structure.
+         */
+        public final Node y;
+
+        /**
+         * Constructs a Triple object with the specified nodes.
+         *
+         * @param x the first node in the triplet
+         * @param z the second node in the triplet
+         * @param y the third node in the triplet
+         */
+        public Triple(Node x, Node z, Node y) { this.x = x; this.z = z; this.y = y; }
+    }
+
+    private static final class SepCandidate {
+        final Set<Node> S;
+        final boolean independent;
+        final double p;
+
+        SepCandidate(Set<Node> S, boolean independent, double p) {
+            List<Node> sorted = new ArrayList<>(S);
+            sorted.sort(Comparator.comparing(Node::getName));
+            this.S = new LinkedHashSet<>(sorted);
+            this.independent = independent;
+            this.p = p;
+        }
+    }
+
+    private static final class MaxPDecision {
+        final Triple t;
+        final ColliderOutcome outcome;
+        final double bestP;
+        final Set<Node> bestS;
+
+        MaxPDecision(Triple t, ColliderOutcome outcome, double bestP, Set<Node> bestS) {
+            this.t = t;
+            this.outcome = outcome;
+            this.bestP = bestP;
+            this.bestS = bestS;
+        }
+    }
+}
