@@ -578,7 +578,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         gfciOrientPag(_pag, cpdag, nodes, trialMap, unshieldedColliders, trialOrient);
 
 //        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection), 30);
-        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection), -1, maxDiscriminatingPathLength);
+        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
 
         if (!legal.isLegalPag()) {
             if (verbose) {
