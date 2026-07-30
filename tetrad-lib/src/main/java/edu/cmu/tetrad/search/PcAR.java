@@ -324,6 +324,66 @@ public class PcAR implements IGraphSearch {
     }
 
     /**
+     * Boole upper bound on the per-triangle probability that a true triangle is silently
+     * collapsed by genuine cancellation (not a weak-edge miss), summed over the three
+     * cancellation loci (Secs. 7-8): {@code Sigma_canc = f_XZ(0) + f_YZ(0) + f_XY.Z(0) ~= 1.774},
+     * {@code c0_cancel = 2*z* * Sigma_canc ~= 6.95}. Table 1 shows the true rate settling a few
+     * percent below this as n grows (6.87 at n=1e5 vs. the 6.95 bound), so it over- rather than
+     * under-states the base rate.
+     * <p>
+     * DERIVED UNDER (A1)-(A3): Erdos-Renyi skeleton, coefficients uniform on (-1,1), disturbance
+     * variances uniform on (1/2, 2), an <i>isolated</i> triangle (no exogenous parent on any of
+     * the three vertices -- Sec. 2's closing paragraph), Fisher z at alpha=0.05. It is the right
+     * default only to the extent your data matches that generative story; recalibrate for
+     * anything else rather than trusting the number on its face.
+     * <p>
+     * Does NOT distinguish which of the three loci is in play (mediator-hidden f_XZ(0)~=0.598,
+     * source-hidden f_YZ(0)~=0.505 -- never detects via the clash pass, per the Sec. 12 Lemma --
+     * shielded-collider f_XY.Z(0)~=0.671, detectable only via a Markov audit, not this class's
+     * clash pass). If you want a locus-specific rate rather than the pooled one, that's the split
+     * to make; {@link #getContestedDeletions()}'s {@code locus} field doesn't currently map
+     * cleanly onto these three surfaces (it records which clash mechanism fired, not which
+     * cancellation surface produced it), so that mapping would need doing by hand per flag.
+     */
+    public static final double PAPER_CANCELLATION_C0 = 6.95;
+
+    /**
+     * {@code q_cancel(n) ~= PAPER_CANCELLATION_C0 / sqrt(n - 3)}, per Secs. 7-8. Returns NaN for
+     * n &lt;= 3 (linearization doesn't apply) and also for n small enough that the bound exceeds 1
+     * (below n~=51: 6.95/sqrt(48)~=1.003) -- past that point the union bound is vacuous, not "cancellation
+     * is certain," and clamping it to 1 would silently assert a confidence the bound doesn't
+     * support. Callers (including {@link #paperCancellationBaseRateOdds}) should treat NaN as "this
+     * estimator doesn't apply at this n," not as a large or small odds value.
+     */
+    public static double paperCancellationBaseRate(int n) {
+        if (n <= 3) return Double.NaN;
+        double q = PAPER_CANCELLATION_C0 / Math.sqrt(n - 3);
+        return q < 1.0 ? q : Double.NaN;
+    }
+
+    /**
+     * The base rate above, expressed as odds ({@code q/(1-q)}) rather than a probability -- i.e.
+     * exactly the "base rate" term of the Sec. 14 posterior-odds factorization, and nothing more:
+     * it does NOT include the likelihood-ratio term (the rescue test's own power/alpha against the
+     * specific discriminating statistic at this triangle), which the paper treats as a separate,
+     * per-test factor and which nothing in this class computes for you. Using this value alone as
+     * a {@link RecoveryOddsEstimator} implicitly sets that likelihood ratio to 1 -- i.e. treats a
+     * clash detection as carrying no evidentiary weight of its own beyond the base rate, which is
+     * conservative for real detections and overstates recovery odds for weak/coincidental ones.
+     * It is a real default in the sense that it isn't fabricated, but it is not the paper's actual
+     * calibrated odds, and shouldn't be presented as such.
+     * <p>
+     * Returns NaN wherever {@link #paperCancellationBaseRate} does (n too small either way); a NaN
+     * compared against any {@link #recoveryOddsThreshold} in {@code x >= threshold} form is always
+     * false in Java, so this correctly falls back to MARK behavior rather than throwing or
+     * producing a nonsensical negative "odds" from {@code q/(1-q)} with q &gt;= 1.
+     */
+    public static double paperCancellationBaseRateOdds(int n) {
+        double q = paperCancellationBaseRate(n);
+        return Double.isNaN(q) ? Double.NaN : q / (1 - q);
+    }
+
+    /**
      * Functional hook for a real Markov-audit implication pass, given the finished graph and the
      * test. No default is wired; the built-in fallback only re-checks the non-collider unshielded
      * triples PC already enumerated.
@@ -583,8 +643,20 @@ public class PcAR implements IGraphSearch {
         // skeleton/sepsets FAS produced, independently of the collider orientation style chosen
         // for the graph itself (Sec. 14: "the procedure sees the same masquerades no matter where
         // the knob is").
+        boolean anyRecovered = false;
         if (rescueAction != RescueAction.OFF) {
-            runClashDetection(g, sepsets);
+            anyRecovered = runClashDetection(g, sepsets);
+        }
+
+        if (anyRecovered) {
+            // Recovered pairs were spliced back into g as plain undirected edges (Sec. 14:
+            // "reinstate the edge and re-run orientation"). Re-running the same collider pass over
+            // the updated skeleton is idempotent for every triple recovery didn't touch -- their
+            // sepset lookup and outcome are unchanged -- and orients the newly-adjacent pairs
+            // consistently with the rest of the graph instead of leaving them as bare undirected
+            // edges. Ambiguous-triple bookkeeping is fully recomputed on this pass, which is
+            // correct since it derives from current adjacency, not accumulated across passes.
+            orientUnshieldedTriples(g, sepsets);
         }
 
         // Phase 3: Meek R1-R4 to closure
@@ -608,12 +680,21 @@ public class PcAR implements IGraphSearch {
      * (bidirected clash) &mdash; the two clash types Sec. 12 shows a sink or mediator rescuer
      * producing. Pairs the {@link #determinismGuard} flags as functionally determined are skipped.
      * On a positive, applies {@link #rescueAction}.
+     *
+     * @return true if at least one deletion was actually recovered (edge spliced back into g)
      */
-    private void runClashDetection(Graph g, SepsetMap fasSepsets) throws InterruptedException {
+    private boolean runClashDetection(Graph g, SepsetMap fasSepsets) throws InterruptedException {
+        boolean anyRecovered = false;
+
         for (Triple t : collectUnshieldedTriples(g)) {
             checkTimeout();
 
             Node x = t.x, y = t.y, z = t.z;
+
+            // A pair recovered earlier in this same pass (by a different pivot) is no longer
+            // unshielded; skip it rather than re-flagging against a sepset that no longer applies.
+            if (g.isAdjacentTo(x, y)) continue;
+
             Set<Node> baseSepset = fasSepsets.get(x, y);
             if (baseSepset == null) continue; // shouldn't happen for an unshielded triple, but be safe
 
@@ -628,7 +709,7 @@ public class PcAR implements IGraphSearch {
             }
 
             if (sawIncludesZ && sawExcludesZ) {
-                flagAndAct(x, y, z, baseSepset, "cpc-ambiguous");
+                anyRecovered |= flagAndAct(g, x, y, z, baseSepset, "cpc-ambiguous");
                 continue;
             }
 
@@ -636,17 +717,32 @@ public class PcAR implements IGraphSearch {
             // require an arrowhead on an edge that already carries one pointing the other way?
             if (sawExcludesZ && !sawIncludesZ) {
                 if (g.isParentOf(z, x) || g.isParentOf(z, y)) {
-                    flagAndAct(x, y, z, baseSepset, "bidirected-clash");
+                    anyRecovered |= flagAndAct(g, x, y, z, baseSepset, "bidirected-clash");
                 }
             }
         }
+
+        return anyRecovered;
     }
 
     private boolean isDetermined(Node v, Set<Node> S) throws InterruptedException {
         return determinismGuard != null && determinismGuard.determines(v, S);
     }
 
-    private void flagAndAct(Node x, Node y, Node z, Set<Node> sepset, String locus) throws InterruptedException {
+    /**
+     * Applies {@link #rescueAction} to a tier-1 positive. On RECOVER with odds clearing
+     * {@link #recoveryOddsThreshold}, splices the edge back into {@code g} as a plain undirected
+     * edge (Sec. 14's "reinstate the edge"); the caller is responsible for re-running orientation
+     * afterward. The paper's "re-test under an enlarged conditioning set" step is the
+     * {@link RecoveryOddsEstimator}'s job (it's what should have produced the odds in the first
+     * place, using the discriminating rescuer statistic at that enlarged set) -- this method does
+     * not re-test independently, to avoid running the discriminating test twice with two different
+     * notions of what the enlarged set is.
+     *
+     * @return true if the edge is now present in g (either just added, or already added earlier
+     * in the same pass by a different pivot)
+     */
+    private boolean flagAndAct(Graph g, Node x, Node y, Node z, Set<Node> sepset, String locus) throws InterruptedException {
         boolean recovered = false;
 
         if (rescueAction == RescueAction.RECOVER) {
@@ -654,16 +750,11 @@ public class PcAR implements IGraphSearch {
                     ? recoveryOddsEstimator.posteriorOdds(x, y, z, sepset)
                     : Double.NEGATIVE_INFINITY; // no estimator => never clears the threshold => acts like MARK
             if (odds >= recoveryOddsThreshold) {
-                recovered = true;
-                // Nothing further to do here beyond bookkeeping: the caller is expected to re-run
-                // search() with the pair pre-seeded as required-adjacent via knowledge, or a future
-                // revision can splice the edge back into g directly. Left as bookkeeping-only for
-                // now so a wrong recovery can never silently corrupt the skeleton before this
-                // class's recovery path has its own test coverage.
+                recovered = reinstateEdge(g, x, y);
                 if (verbose) {
                     TetradLogger.getInstance().log(
                             "[PcAR RECOVER] " + x.getName() + " - " + y.getName()
-                                    + " (pivot " + z.getName() + ", locus " + locus + ")");
+                                    + " (pivot " + z.getName() + ", locus " + locus + ", odds=" + odds + ")");
                 }
             }
         }
@@ -675,6 +766,27 @@ public class PcAR implements IGraphSearch {
         }
 
         contestedDeletions.add(new ContestedDeletion(x, y, z, sepset, locus, recovered));
+        return recovered;
+    }
+
+    /**
+     * Splices (x, y) back into g as a plain undirected edge, i.e. exactly the state every skeleton
+     * edge is in immediately after FAS and before collider orientation -- so the subsequent
+     * re-run of {@link #orientUnshieldedTriples} treats it like any other freshly-discovered edge.
+     * Idempotent: if the pair is already adjacent (e.g. recovered earlier in the same pass by a
+     * different pivot), this is a no-op that still reports the edge as present.
+     *
+     * ASSUMPTION FLAGGED: uses {@code Edges.undirectedEdge}, which I'm inferring is available
+     * from the same {@code edu.cmu.tetrad.graph} package as {@code GraphUtils.orientCollider}
+     * (already used elsewhere in this class) and {@code EdgeListGraph}/{@code Graph} (already
+     * imported via the wildcard import). If your version names it differently, this is the one
+     * line to change.
+     */
+    private boolean reinstateEdge(Graph g, Node x, Node y) {
+        if (!g.isAdjacentTo(x, y)) {
+            g.addEdge(Edges.undirectedEdge(x, y));
+        }
+        return true;
     }
 
     // ------------------------------------------------------------------------------------

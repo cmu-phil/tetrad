@@ -57,13 +57,16 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
  * not primitive values, and so cannot be expressed as {@link Parameters} entries. They are left
  * unset here (i.e. the built-in fallbacks apply, or RECOVER behaves like MARK with no odds
  * estimator) &mdash; wire them programmatically against a specific {@link IndependenceTest}
- * implementation if you want them active, rather than through this wrapper.
+ * implementation if you want them active, rather than through this wrapper. As of this revision
+ * a placeholder {@code RecoveryOddsEstimator} IS wired below for the RECOVER path (see
+ * PLACEHOLDER_ALWAYS_RECOVER), purely so RECOVER produces a visibly different graph without you
+ * having to write a real estimator first. Swap it out before trusting a recovered edge as more
+ * than a demo.
  * <p>
- * NOTE ON NEW PARAMS: {@code RESCUE_ACTION} and {@code RECOVERY_ODDS_THRESHOLD} below are new
- * parameter keys that need entries added to {@code Params} (and the corresponding
- * {@code ParamDescriptions} default/description/bounds registration) before this will run;
- * I don't have those files, so I've named them here to match the setters on
- * {@code edu.cmu.tetrad.search.PcAR} and left the defaults as comments for you to place.
+ * NOTE ON PARAMS: {@code Params.RESCUE_ACTION} and {@code Params.RECOVERY_ODDS_THRESHOLD} are
+ * used directly below on the assumption you've now registered them (plus their
+ * {@code ParamDescriptions} entries) yourself; an earlier revision of this file referenced them
+ * without that registration existing, which wouldn't have compiled.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -74,7 +77,7 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class PcAR extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
+public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -93,7 +96,7 @@ public class PcAR extends AbstractBootstrapAlgorithm implements Algorithm, Accep
     /**
      * <p>Constructor for PcAr.</p>
      */
-    public PcAR() {
+    public PcAr() {
     }
 
     /**
@@ -101,7 +104,7 @@ public class PcAR extends AbstractBootstrapAlgorithm implements Algorithm, Accep
      *
      * @param test a {@link edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper} object
      */
-    public PcAR(IndependenceWrapper test) {
+    public PcAr(IndependenceWrapper test) {
         this.test = test;
     }
 
@@ -129,9 +132,8 @@ public class PcAR extends AbstractBootstrapAlgorithm implements Algorithm, Accep
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };
 
-        // Defaulted here, not sure this mapping is what you want long-term: 0=OFF, 1=MARK,
-        // 2=RECOVER. Falls back to MARK (1) if RESCUE_ACTION isn't a registered param yet.
-        int rescueActionCode = parameters.getInt(Params.RESCUE_ACTION); // TODO: register Params.RESCUE_ACTION, default 1 (MARK)
+        // 0=OFF, 1=MARK, 2=RECOVER; see Params/ParamDescriptions registration on your end.
+        int rescueActionCode = parameters.getInt(Params.RESCUE_ACTION);
         edu.cmu.tetrad.search.PcAR.RescueAction rescueAction = switch (rescueActionCode) {
             case 0 -> edu.cmu.tetrad.search.PcAR.RescueAction.OFF;
             case 2 -> edu.cmu.tetrad.search.PcAR.RescueAction.RECOVER;
@@ -154,17 +156,28 @@ public class PcAR extends AbstractBootstrapAlgorithm implements Algorithm, Accep
                 : edu.cmu.tetrad.search.PcAR.AllowBidirected.DISALLOW);
 
         search.setRescueAction(rescueAction);
-        // Defaulted, unsure of the right default: paper has no natural "always safe" nonzero
-        // threshold outside a calibrated odds estimator, so this only matters if RECOVER is
-        // selected above *and* setRecoveryOddsEstimator is wired programmatically elsewhere.
-        // TODO: register Params.RECOVERY_ODDS_THRESHOLD; using Double.POSITIVE_INFINITY here
-        // (RECOVER behaves like MARK) until you decide on a real default.
         search.setRecoveryOddsThreshold(parameters.getDouble(Params.RECOVERY_ODDS_THRESHOLD));
-        // determinismGuard, recoveryOddsEstimator, markovAuditor intentionally left unset (null) --
-        // see class javadoc. Wire them here directly if/when you have concrete implementations,
-        // e.g.:
+
+        // BASE_RATE_ONLY estimator: uses the paper's closed-form q_cancel(n) ~= 6.95/sqrt(n-3)
+        // (Secs. 7-8, edu.cmu.tetrad.search.PcAR#paperCancellationBaseRateOdds) as the *base-rate*
+        // term of the Sec. 14 posterior odds. It does NOT include the likelihood-ratio term (the
+        // rescue test's own power/alpha against the discriminating statistic at this specific
+        // triangle) -- nothing here computes that -- so this implicitly treats every clash
+        // detection as carrying no evidentiary weight beyond the base rate. That's a real,
+        // paper-derived number rather than a fabricated one, but it's still derived under (A1)-
+        // (A3): Erdos-Renyi skeleton, coefficients uniform(-1,1), disturbance variances
+        // uniform(1/2,2), an isolated triangle. It is not locus-specific (see the javadoc on
+        // paperCancellationBaseRate for the three-way split) and does not know your actual
+        // data-generating process. Recalibrate before trusting RECOVER output past a smoke test.
+        int sampleSize = (dataModel instanceof DataSet ds) ? ds.getNumRows() : -1;
+        double baseRateOdds = sampleSize > 3
+                ? edu.cmu.tetrad.search.PcAR.paperCancellationBaseRateOdds(sampleSize)
+                : Double.NEGATIVE_INFINITY; // unknown/too-small n => never recovers, falls back to MARK
+        search.setRecoveryOddsEstimator((x, y, z, sepset) -> baseRateOdds);
+
+        // determinismGuard and markovAuditor intentionally left unset (null) -- see class
+        // javadoc. Wire them here directly once you have concrete implementations, e.g.:
         //   search.setDeterminismGuard((v, S) -> ...);
-        //   search.setRecoveryOddsEstimator((x, y, z, S) -> ...);
         //   search.setMarkovAuditor((g, t) -> ...);
 
         double fdrQ = parameters.getDouble(Params.FDR_Q);
