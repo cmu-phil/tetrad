@@ -105,7 +105,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * original *-FCI behavior is used (greedy removal with a single final orientation). This is the one knob that
      * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
      */
-    private boolean guaranteePag = false;
+    private boolean guaranteePag = true;
     /**
      * Whether to do the possible d-sep step; empirically we find this unnecessary, though the defiition of GFCI
      * includes it. In the context of the check pag branch it is not expensive.
