@@ -123,7 +123,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     /**
      * Whether to use parallel streams.
      */
-    private boolean parallelized = true;
+    private boolean parallelized = false;
 
     /**
      * Constructs a new StarFci algorithm with the given independence test.
