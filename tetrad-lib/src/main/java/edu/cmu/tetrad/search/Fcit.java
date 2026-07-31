@@ -1792,7 +1792,6 @@ public final class Fcit implements IGraphSearch {
     private @NotNull Grasp getGraspSearch() {
         Grasp grasp = new Grasp(test, score);
 
-        grasp.setSeed(-1);
         grasp.setDepth(3);
         grasp.setUncoveredDepth(1);
         grasp.setNonSingularDepth(1);

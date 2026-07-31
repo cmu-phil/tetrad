@@ -8,12 +8,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Bfci;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.Gfci;
-import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -205,6 +200,7 @@ public class TestBfciDeterminism {
         search.setGuaranteePag(guaranteePag);
         search.setNumStarts(1);
         search.setNumThreads(numThreads);
+        search.setParallelized(false);
         search.setVerbose(false);
         return search.search();
     }

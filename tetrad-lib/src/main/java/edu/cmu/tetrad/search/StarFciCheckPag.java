@@ -29,13 +29,13 @@ import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 
@@ -120,6 +120,10 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * Maximum path length for possible d-sep.
      */
     private int maxPossibleDsepPathLength = -1;
+    /**
+     * Whether to use parallel streams.
+     */
+    private boolean parallelized = true;
 
     /**
      * Constructs a new StarFci algorithm with the given independence test.
@@ -144,7 +148,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * such set is found.
      * @throws InterruptedException if the process is interrupted during execution.
      */
-    public static Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
+    public Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
                                                      IndependenceTest test, int depth, boolean useMaxP)
             throws InterruptedException {
 
@@ -200,12 +204,13 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * @return A separating set of nodes that fulfills all constraints and is a subset of adjx, or {@code null} if no
      * such set is found.
      */
-    private static @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
+    private @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
                                                  List<Node> adjx, boolean useMaxP) throws InterruptedException {
         if (useMaxP) {
             List<Set<Node>> choices = getChoices(adjx, depth);
             // Max p for stability...
-            return choices.parallelStream()
+            Stream<Set<Node>> setStream = parallelized ? choices.parallelStream() : choices.stream();
+            return setStream
                     .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
                     .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
                     .orElse(null); // Return best set or null if none pass the threshold
@@ -232,7 +237,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
 
                 if (batch.isEmpty()) break;
 
-                Optional<Set<Node>> hit = batch.parallelStream()
+                Stream<Set<Node>> setStream = parallelized ? batch.parallelStream() : batch.stream();
+                Optional<Set<Node>> hit = setStream
                         .filter(s -> {
                             try {
                                 return test.checkIndependence(x, y, s).isIndependent();
@@ -284,6 +290,16 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         }
 
         return choices;
+    }
+
+    /**
+     * Sets the parallel processing mode for the StarFciCheckPag class.
+     *
+     * @param parallelized a boolean value indicating whether to enable (true) or
+     *                 disable (false) parallel processing.
+     */
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
     }
 
     /**
@@ -347,7 +363,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         do {
             edgesBefore = pag.getNumEdges();
             List<Edge> edges = new ArrayList<>(pag.getEdges());
-//            RandomUtil.shuffle(edges);
 
             for (Edge edge : edges) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -398,8 +413,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             //            }
 
             List<Edge> dsepEdges = new ArrayList<>(pag.getEdges());
-            RandomUtil.shuffle(dsepEdges);
-            RandomUtil.shuffle(dsepEdges);
 
             for (Edge edge : dsepEdges) {
                 if (Thread.currentThread().isInterrupted()) {
