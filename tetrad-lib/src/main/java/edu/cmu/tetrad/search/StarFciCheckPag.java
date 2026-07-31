@@ -347,7 +347,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         do {
             edgesBefore = pag.getNumEdges();
             List<Edge> edges = new ArrayList<>(pag.getEdges());
-            RandomUtil.shuffle(edges);
+//            RandomUtil.shuffle(edges);
 
             for (Edge edge : edges) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -399,7 +399,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
 
             List<Edge> dsepEdges = new ArrayList<>(pag.getEdges());
             RandomUtil.shuffle(dsepEdges);
-//            shuffle(dsepEdges);
+            RandomUtil.shuffle(dsepEdges);
 
             for (Edge edge : dsepEdges) {
                 if (Thread.currentThread().isInterrupted()) {
