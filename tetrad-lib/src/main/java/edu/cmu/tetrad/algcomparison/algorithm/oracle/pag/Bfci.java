@@ -133,18 +133,20 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         edu.cmu.tetrad.search.Bfci search = new edu.cmu.tetrad.search.Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
+        boolean parallelized = parameters.getBoolean(Params.PARALLELIZED);
+
         search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
+        search.setParallelized(parallelized);
+        search.setNumThreads(parallelized ? 1 : Runtime.getRuntime().availableProcessors());
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG_DEFAULT_TRUE));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
-        search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         search.setKnowledge(knowledge);
@@ -201,7 +203,6 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
-        params.add(Params.NUM_THREADS);
         params.add(Params.GUARANTEE_PAG_DEFAULT_TRUE);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
