@@ -395,7 +395,11 @@ public final class RecursiveAdjustment {
     // Uses your existing graph.paths() helpers:
     private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength, Set<Node> forceVisibility) {
         if (source == null || target == null || source == target) return Collections.emptySet();
-        return ("PAG".equalsIgnoreCase(graphType))
+        // MAGs need the visibility-checking variant: Def. 2 (Perkovic et al.)
+        // requires the first edge to be VISIBLE, and getAmenablePathsPdagMag
+        // checks direction only, which is vacuous for selection-free MAGs.
+        // Direction-only remains correct for DAGs and CPDAGs.
+        return ("PAG".equalsIgnoreCase(graphType) || "MAG".equalsIgnoreCase(graphType))
                 ? graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility)
                 : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
     }
