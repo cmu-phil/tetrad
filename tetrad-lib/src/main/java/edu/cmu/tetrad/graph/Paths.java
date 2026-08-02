@@ -789,8 +789,13 @@ public class Paths implements TetradSerializable {
             if (!canBeOutOfA) {
                 okStart = false;
             } else if (!hasForcing) {
-                // No refinement choice supplied: allow any first step that *could* be oriented out of X.
-                okStart = true;
+                // No refinement supplied: enforce Def. 2 of Perkovic et al.
+                // (JMLR 2018) strictly -- an amenable path must start with a
+                // VISIBLE directed edge out of node1. The old okStart = true
+                // made amenability vacuous: a pd path's first edge trivially
+                // "could be" oriented out of node1, so amenable == pd always
+                // and no PAG was ever judged non-amenable.
+                okStart = alreadyStrictAmenable;
             } else {
                 // Refinement choice supplied: only allow the chosen outgoing neighbors,
                 // plus anything already strictly amenable.

@@ -29,5 +29,4 @@ public class RecursiveAdjustmentTest {
 
         assertEquals(List.of(Set.of(w)), sets);
     }
-
 }

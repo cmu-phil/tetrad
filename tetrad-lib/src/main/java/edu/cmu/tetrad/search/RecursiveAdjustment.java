@@ -124,10 +124,19 @@ public final class RecursiveAdjustment {
         return canReach;
     }
 
+//    private static boolean isPossiblyOutEdge(Edge e, Node a, Node b) {
+//        if (e.pointsTowards(a)) return false;
+//        if (Edges.isBidirectedEdge(e)) return false;
+//        return true;
+//    }
+
     private static boolean isPossiblyOutEdge(Edge e, Node a, Node b) {
-        if (e.pointsTowards(a)) return false;
-        if (Edges.isBidirectedEdge(e)) return false;
-        return true;
+        // Perkovic et al. (JMLR 2018), Sec. 2: an edge can lie on a possibly
+        // directed path traversed a -> b iff it has no arrowhead at a.
+        // pointsTowards(a) additionally demands a tail at b, so a <-o b was
+        // being treated as possibly-out despite its arrowhead at a. The
+        // endpoint test also subsumes the bidirected case (arrowhead at a).
+        return e.getProximalEndpoint(a) != Endpoint.ARROW;
     }
 
 
@@ -751,11 +760,23 @@ public final class RecursiveAdjustment {
 
     // --- Helper methods ----------------------------------------------------------------------
 
+//    private boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
+//        boolean collider = graph.isDefCollider(a, b, c);
+//        boolean defNon = graph.isDefNoncollider(a, b, c);
+//        if (collider) return Z.contains(b) || graph.paths().isAncestorOfAnyZ(b, Z);
+//        return !Z.contains(b);
+//    }
+
     private boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
         boolean collider = graph.isDefCollider(a, b, c);
         boolean defNon = graph.isDefNoncollider(a, b, c);
         if (collider) return Z.contains(b) || graph.paths().isAncestorOfAnyZ(b, Z);
-        return !Z.contains(b);
+        if (defNon) return !Z.contains(b);
+        // b is not of definite status at (a, b, c), so no definite status
+        // path continues through this triple. GAC's blocking condition
+        // (Perkovic et al., Def. 4) quantifies over definite status paths
+        // only, so this continuation need not be blocked.
+        return false;
     }
 
     private RoleOnWitness roleOnWitness(Node v, List<Node> witness) {
