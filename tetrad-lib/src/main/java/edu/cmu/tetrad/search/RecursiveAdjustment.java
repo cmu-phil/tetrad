@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -321,6 +322,13 @@ public final class RecursiveAdjustment {
 
         if (notFollowed != null) poolSet.removeAll(notFollowed);
 
+        // X and Y must never enter an adjustment set. Without this, Y survives
+        // into the pool via shellsFromX.layers, and X via shellsFromY.reach
+        // when nearWhichEndpoint == 2, and either can be picked as a "blocker"
+        // on a short witness (ENDPOINT scores -200 but wins a field of one).
+        poolSet.remove(X);
+        poolSet.remove(Y);
+
         List<Node> pool = new ArrayList<>(poolSet);
         pool.sort(Comparator
                 .comparingInt((Node v) -> {
@@ -342,7 +350,10 @@ public final class RecursiveAdjustment {
         LinkedHashSet<Node> seedZ = new LinkedHashSet<>();
         if (containing != null)
             for (Node v : containing)
-                if (poolSet.contains(v)) seedZ.add(v);
+                // A forbidden seed would violate GAC condition (b) in every
+                // returned set with no downstream re-check; drop it (or
+                // consider throwing, since "containing" is a contract).
+                if (poolSet.contains(v) && !forbidden.contains(v)) seedZ.add(v);
 
         return new PrecomputeContext(X, Y, graphType, maxRadius, nearWhichEndpoint,
                 maxPathLength, amenablePaths, amenableBackbone, forbidden,
@@ -365,7 +376,11 @@ public final class RecursiveAdjustment {
 
         // G is amenable w.r.t. (X, Y) iff every potentially directed path is amenable.
         // If there are no potentially directed paths, amenability holds vacuously.
-        return /*pdPaths.isEmpty() ||*/ pdPaths.equals(amenablePaths);
+        // Amenability = every pd path is amenable, i.e. containment, not
+        // equality. equals() also demands amenable ⊆ pd, so any discrepancy
+        // between the two enumerators (forceVisibility, traversal order,
+        // path representation) yields a spurious non-amenable verdict.
+        return amenablePaths.containsAll(pdPaths);
     }
 
     // Uses your existing graph.paths() helpers:
@@ -411,9 +426,13 @@ public final class RecursiveAdjustment {
             Edge e = graph.getEdge(X, W);
             if (e == null) continue;
             if (!isPAG) {
-                if (e.pointsTowards(X)) starts.add(W);                 // DAG/PDAG/MAG: X <- W
+                // Any arrowhead at X starts a non-causal path: W -> X and, in
+                // MAGs, W <-> X (latent confounding). pointsTowards(X) demands
+                // a tail at W and so silently drops bidirected edges.
+                if (graph.getEndpoint(W, X) == Endpoint.ARROW) starts.add(W);
             } else {
-                boolean intoX = e.pointsTowards(X);
+                // Arrowhead at X covers W -> X, W <-> X, and W o-> X.
+                boolean intoX = graph.getEndpoint(W, X) == Endpoint.ARROW;
                 boolean undOrBi = Edges.isUndirectedEdge(e) || Edges.isBidirectedEdge(e);
                 boolean wToX = graph.paths().existsDirectedPath(W, X);
                 boolean wToY = graph.paths().existsDirectedPath(W, Y);
@@ -566,8 +585,11 @@ public final class RecursiveAdjustment {
                     // Return {} as the (only) adjustment set
                     return new LinkedHashSet<>(Collections.emptySet());
                 case SUPPRESS:
-                    // Suppress any output for this (X,Y) pair
-                    return new LinkedHashSet<>();
+                    // Suppress any output for this (X,Y) pair. Must be null:
+                    // returning an empty set would be reported upstream as a
+                    // (vacuously "valid") adjustment set for a pair that has
+                    // no valid adjustment set at all.
+                    return null;
                 default: /* SEARCH */
                     // Fall through: allow heuristic search even if not GAC-sound
                     break;
@@ -694,6 +716,14 @@ public final class RecursiveAdjustment {
                 }
             }
         }
+        if (candidates.isEmpty()) return null;
+
+        // A definite collider on this witness cannot block it -- adding it to
+        // Z opens the triple, so the same witness is re-found and the pick is
+        // pure junk (and may open other paths). If it could serve as a
+        // noncollider on some other path, that path will surface as its own
+        // witness later and it can be picked then. Drop colliders outright.
+        candidates.removeIf(v -> roleOnWitness(v, witness) == RoleOnWitness.COLLIDER);
         if (candidates.isEmpty()) return null;
 
         if (colliderPolicy == ColliderPolicy.NONCOLLIDER_FIRST) {
