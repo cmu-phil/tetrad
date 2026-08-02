@@ -477,7 +477,6 @@ public final class FaskOrig implements IGraphSearch {
             G = fas.search();
         } else if (this.adjacencyMethod == AdjacencyMethod.GRASP) {
             Grasp fas = new Grasp(this.score);
-            fas.setSeed(seed);
             fas.setDepth(5);
             fas.setNonSingularDepth(1);
             fas.setUncoveredDepth(1);

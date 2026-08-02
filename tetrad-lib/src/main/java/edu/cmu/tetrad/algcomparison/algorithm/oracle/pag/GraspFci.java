@@ -127,7 +127,6 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         edu.cmu.tetrad.search.GraspFci search = new edu.cmu.tetrad.search.GraspFci(test, score);
 
         // GRaSP
-        search.setSeed(parameters.getLong(Params.SEED));
         search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
         search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
         search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
@@ -144,6 +143,7 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+        search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -212,10 +212,10 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.DO_POSSIBLE_DSEP);
+        params.add(Params.PARALLELIZED);
 
         // General
         params.add(Params.TIME_LAG);
-        params.add(Params.SEED);
         params.add(Params.GUARANTEE_PAG_DEFAULT_TRUE);
         params.add(Params.VERBOSE);
 

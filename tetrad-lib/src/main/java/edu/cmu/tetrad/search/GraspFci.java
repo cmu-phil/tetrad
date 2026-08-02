@@ -116,7 +116,6 @@ public final class GraspFci extends StarFciCheckPag {
 
         // Run GRaSP to get a CPDAG.
         Grasp alg = new Grasp(independenceTest, score);
-        alg.setSeed(seed);
         alg.setOrdered(ordered);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);

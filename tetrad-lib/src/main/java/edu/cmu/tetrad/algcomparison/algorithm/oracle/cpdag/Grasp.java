@@ -117,7 +117,6 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         myTest.setVerbose(parameters.getBoolean(Params.VERBOSE));
         edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(myTest, myScore);
 
-        grasp.setSeed(parameters.getLong(Params.SEED));
         grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
         grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
         grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
@@ -182,7 +181,6 @@ public class Grasp extends AbstractBootstrapAlgorithm implements Algorithm, Take
         params.add(Params.OUTPUT_CPDAG);
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
-        params.add(Params.SEED);
         params.add(Params.VERBOSE);
         params.add(Params.NUM_STARTS);
 

@@ -137,10 +137,6 @@ public class Grasp {
      * Whether to allow internal randomness in the algorithm.
      */
     private boolean allowInternalRandomness = false;
-    /**
-     * Represents the seed used for random number generation or shuffling.
-     */
-    private long seed = -1;
     private boolean replicatingGraph = false;
 
     /**
@@ -223,10 +219,6 @@ public class Grasp {
      * @throws InterruptedException if any
      */
     public List<Node> bestOrder(@NotNull List<Node> order) throws InterruptedException {
-        if (seed != -1) {
-            RandomUtil.getInstance().setSeed(seed);
-        }
-
         long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
@@ -638,15 +630,6 @@ public class Grasp {
                 scorer.goToBookmark(currentDepth);
             }
         }
-    }
-
-    /**
-     * Sets the seed for random number generation.
-     *
-     * @param seed The seed to set.
-     */
-    public void setSeed(long seed) {
-        this.seed = seed;
     }
 
     /**

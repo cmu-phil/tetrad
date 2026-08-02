@@ -131,6 +131,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Take
         search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG_DEFAULT_TRUE));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setOut(System.out);
 
@@ -187,6 +188,7 @@ public class SpFci extends AbstractBootstrapAlgorithm implements Algorithm, Take
         params.add(Params.GUARANTEE_PAG_DEFAULT_TRUE);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
+        params.add(Params.PARALLELIZED);
         params.add(Params.VERBOSE);
 
         // Flags
