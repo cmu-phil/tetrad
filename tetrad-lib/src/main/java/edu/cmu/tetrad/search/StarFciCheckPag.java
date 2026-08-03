@@ -470,6 +470,8 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         // gfciOrientPag on each accepted candidate), so no further orientation is applied here.
         if (!guaranteePag) {
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
+                    excludeSelectionBias, Integer.MAX_VALUE);
         }
 
         pag = GraphUtils.replaceNodes(pag, nodes);
