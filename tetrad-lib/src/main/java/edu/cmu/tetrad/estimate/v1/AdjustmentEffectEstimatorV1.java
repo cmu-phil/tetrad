@@ -20,7 +20,7 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
+import edu.cmu.tetrad.util.RandomUtil;
 import java.util.stream.Collectors;
 
 /**
@@ -240,7 +240,7 @@ public final class AdjustmentEffectEstimatorV1 {
         double[] drAll = new double[B];
         int valid = 0;
 
-        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        RandomUtil rng = RandomUtil.getInstance();
 
         // v1: bootstrap by resampling rows with replacement; refit models each time.
         // v1.2: skip replicates that fail (singular fits on degenerate resamples,
