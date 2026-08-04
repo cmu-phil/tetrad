@@ -81,9 +81,10 @@ public final class RecursiveAdjustmentMultiple {
         onSomePDPath.retainAll(canReachY);
         onSomePDPath.removeAll(X);
 
-        // Seeds = X ∪ onSomePDPath
-        Set<Node> seeds = new LinkedHashSet<>(X);
-        seeds.addAll(onSomePDPath);
+        // Seeds = onSomePDPath (Perkovic et al.: Forb = possDe of non-X nodes on
+        // proper PD paths, plus X; X and Y are barred from the pool separately).
+        // Seeding with X would over-forbid descendants of X off every PD path to Y.
+        Set<Node> seeds = new LinkedHashSet<>(onSomePDPath);
 
         // Forb = forward reach from seeds, minus X and Y.
         Set<Node> forb = forwardReach(G, graphType, seeds);
@@ -398,6 +399,8 @@ public final class RecursiveAdjustmentMultiple {
                 if (x.equals(y)) continue;
                 if ("PAG".equalsIgnoreCase(graphType)) {
                     out.addAll(graph.paths().getAmenablePathsPag(x, y, maxLength, Set.of()));
+                } else if ("MAG".equalsIgnoreCase(graphType)) {
+                    out.addAll(graph.paths().getAmenablePathsMag(x, y, maxLength, Set.of()));
                 } else {
                     out.addAll(graph.paths().getAmenablePathsPdagMag(x, y, maxLength));
                 }

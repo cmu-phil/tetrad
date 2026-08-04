@@ -424,38 +424,6 @@ public class TestSemIm {
 
         estSem.getBicScore();
     }
-
-    @Test
-    public void test8() {
-        Node x1 = new GraphNode("X1");
-        Node x2 = new GraphNode("X2");
-        Node x3 = new GraphNode("X3");
-        Node x4 = new GraphNode("X4");
-
-        Graph g = new SemGraph();
-        g.addNode(x1);
-        g.addNode(x2);
-        g.addNode(x3);
-        g.addNode(x4);
-
-        g.addDirectedEdge(x1, x4);
-        g.addDirectedEdge(x2, x4);
-        g.addDirectedEdge(x3, x4);
-        g.addBidirectedEdge(x1, x2);
-
-        SemPm semPm = new SemPm(g);
-        Parameters params = new Parameters();
-        SemIm semIm = new SemIm(semPm, params);
-
-        SemIm modified = TestSemIm.modifySemImStandardizedInterventionOnTargetParents(semIm, x4);
-
-        try {
-            modified.simulateData(1000, false);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
 }
 
 

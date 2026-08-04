@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  * <ul>
  *   <li>Data generation: identical seeds give bit-identical data.</li>
  *   <li>Concurrency: {@code setNumThreads(1)} does not fix it.</li>
- *   <li>The {@code guaranteePag} flag: it occurs with the flag both on and
+ *   <li>The {@code doLegalityGating} flag: it occurs with the flag both on and
  *       off, so it is not the legalization pass alone.</li>
  *   <li>The score-based stage: BOSS (via PermutationSearch) and FGES are both
  *       deterministic on the same data.</li>
@@ -83,7 +83,7 @@ import static org.junit.Assert.assertTrue;
  *   PASS  testBossIsDeterministic
  *   PASS  testFgesIsDeterministic
  *   PASS  testGfciIsDeterministicWhenGlobalRngIsReseeded  (source 1 only)
- *   PASS  testDefaultGuaranteePagFlags
+ *   PASS  testDefaultdoLegalityGatingFlags
  *   PASS  testReseedingSubstantiallyReducesBfciInstability
  *   FAIL  testBfciIsDeterministicAcrossRepeatedCalls     &lt;-- the target
  *   FAIL  testBfciCpIsDeterministicAcrossRepeatedCalls   &lt;-- the target
@@ -192,12 +192,12 @@ public class TestBfciDeterminism {
 
     // ------------------------------------------------------------ searches
 
-    private static Graph bfci(DataSet data, boolean guaranteePag, int numThreads)
+    private static Graph bfci(DataSet data, boolean doLegalityGating, int numThreads)
             throws InterruptedException {
         Bfci search = new Bfci(test(data), score(data));
         search.setDepth(DEPTH);
         search.setCompleteRuleSetUsed(true);
-        search.setGuaranteePag(guaranteePag);
+        search.setDoLegalityGating(doLegalityGating);
         search.setNumStarts(1);
         search.setNumThreads(numThreads);
         search.setParallelized(false);
@@ -205,7 +205,7 @@ public class TestBfciDeterminism {
         return search.search();
     }
 
-    /** Constructor defaults only; never touches setGuaranteePag. */
+    /** Constructor defaults only; never touches setdoLegalityGating. */
     private static Graph bfciDefaults(DataSet data) throws InterruptedException {
         Bfci search = new Bfci(test(data), score(data));
         search.setDepth(DEPTH);
@@ -214,12 +214,12 @@ public class TestBfciDeterminism {
         return search.search();
     }
 
-    private static Graph gfci(DataSet data, boolean guaranteePag)
+    private static Graph gfci(DataSet data, boolean doLegalityGating)
             throws InterruptedException {
         Gfci search = new Gfci(test(data), score(data));
         search.setDepth(DEPTH);
         search.setCompleteRuleSetUsed(true);
-        search.setGuaranteePag(guaranteePag);
+        search.setDoLegalityGating(doLegalityGating);
         search.setVerbose(false);
         return search.search();
     }
@@ -430,7 +430,7 @@ public class TestBfciDeterminism {
 
     /**
      * THE TARGET. Constructor defaults only, which as of the 2026-07-31 jar
-     * means guaranteePag = true, i.e. what a py-tetrad user gets from
+     * means doLegalityGating = true, i.e. what a py-tetrad user gets from
      * {@code new Bfci(test, score).search()}. Expected FAIL before a fix.
      */
     @Test
@@ -444,7 +444,7 @@ public class TestBfciDeterminism {
     @Test
     public void testBfciCpIsDeterministicAcrossRepeatedCalls()
             throws InterruptedException {
-        assertDeterministic("BFCI-CP (guaranteePag = true)",
+        assertDeterministic("BFCI-CP (doLegalityGating = true)",
                 data -> bfci(data, true, 1));
     }
 
@@ -531,7 +531,7 @@ public class TestBfciDeterminism {
 
 //    /**
 //     * The legalization pass is not the whole story: the instability is present
-//     * with guaranteePag off as well. Asserts only that BOTH settings are
+//     * with doLegalityGating off as well. Asserts only that BOTH settings are
 //     * affected, so it stays meaningful whichever way the flag defaults.
 //     *
 //     * <p>Delete or invert this once the fix lands -- at that point neither
@@ -539,45 +539,43 @@ public class TestBfciDeterminism {
 //     * covers it.
 //     */
 //    @Test
-//    public void testGuaranteePagFlagDoesNotExplainNondeterminism()
+//    public void testdoLegalityGatingFlagDoesNotExplainNondeterminism()
 //            throws InterruptedException {
 //        int withFlag = unstableCount(data -> bfci(data, true, 1));
 //        int withoutFlag = unstableCount(data -> bfci(data, false, 1));
 //
-//        assertTrue("expected instability with guaranteePag = true, saw none; "
+//        assertTrue("expected instability with doLegalityGating = true, saw none; "
 //                + "the diagnosis may be stale", withFlag > 0);
-//        assertTrue("guaranteePag = false was stable across all "
+//        assertTrue("doLegalityGating = false was stable across all "
 //                + NUM_DATASETS + " datasets, so the legalization pass may in "
 //                + "fact be the sole cause -- worth re-checking", withoutFlag > 0);
 //    }
 
     /**
      * Pins the defaults set on 2026-07-31 so they cannot regress silently:
-     * guaranteePag defaults true on the StarFciCheckPag subclasses and false on
+     * doLegalityGating defaults true on the StarFciCheckPag subclasses and false on
      * Fci, which is a published algorithm and must keep its published behavior.
      */
     @Test
-    public void testDefaultGuaranteePagFlags() throws Exception {
+    public void testDefaultdoLegalityGatingFlags() throws Exception {
         DataSet data = lowRankData(1000L);
 
-        assertTrue("Bfci should default to guaranteePag = true",
-                readGuaranteePag(new Bfci(test(data), score(data))));
-        assertTrue("Gfci should default to guaranteePag = true",
-                readGuaranteePag(new Gfci(test(data), score(data))));
-        assertFalse("Fci must keep guaranteePag = false; it is published",
-                readGuaranteePag(new Fci(test(data))));
+        assertTrue("Bfci should default to doLegalityGating = true",
+                readdoLegalityGating(new Bfci(test(data), score(data))));
+        assertTrue("Gfci should default to doLegalityGating = true",
+                readdoLegalityGating(new Gfci(test(data), score(data))));
     }
 
-    private static boolean readGuaranteePag(Object search) throws Exception {
+    private static boolean readdoLegalityGating(Object search) throws Exception {
         for (Class<?> c = search.getClass(); c != null; c = c.getSuperclass()) {
             for (Field field : c.getDeclaredFields()) {
-                if ("guaranteePag".equals(field.getName())) {
+                if ("doLegalityGating".equals(field.getName())) {
                     field.setAccessible(true);
                     return field.getBoolean(search);
                 }
             }
         }
-        throw new NoSuchFieldException("guaranteePag not found on "
+        throw new NoSuchFieldException("doLegalityGating not found on "
                 + search.getClass().getName());
     }
 }

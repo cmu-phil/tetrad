@@ -81,9 +81,11 @@ public final class RecursiveAdjustment {
         onSomePDPath.retainAll(canReachY);
         onSomePDPath.remove(X);
 
-        Set<Node> seeds = new LinkedHashSet<>();
-        seeds.add(X);
-        seeds.addAll(onSomePDPath);
+        // Perkovic et al.: Forb = possDe(W) for non-X nodes W on proper PD paths
+        // from X to Y, plus X itself (X is barred from the pool separately).
+        // Seeding with X would additionally forbid descendants of X lying off
+        // every PD path to Y, which the GAC permits in adjustment sets.
+        Set<Node> seeds = new LinkedHashSet<>(onSomePDPath);
 
         Set<Node> forb = forwardReach(G, gt, seeds);
         forb.remove(X);
@@ -206,8 +208,8 @@ public final class RecursiveAdjustment {
      * Checks whether the graph is adjustment-amenable relative to (X, Y) in the sense of Perković et al.: every proper
      * potentially directed path from X to Y starts with a visible / directed edge out of X.
      * <p>
-     * This uses the same notion of "amenable path" as the main algorithm: - For PAGs: first edge must be visible and
-     * point away from X. - For DAG/PDAG/MAG: first edge must be directed out of X.
+     * This uses the same notion of "amenable path" as the main algorithm: - For MAG/PAG: first edge must be visible
+     * and directed out of X. For DAG/PDAG: first edge must be directed out of X."
      *
      * @param X               source node
      * @param Y               target node
@@ -399,9 +401,13 @@ public final class RecursiveAdjustment {
         // requires the first edge to be VISIBLE, and getAmenablePathsPdagMag
         // checks direction only, which is vacuous for selection-free MAGs.
         // Direction-only remains correct for DAGs and CPDAGs.
-        return ("PAG".equalsIgnoreCase(graphType) || "MAG".equalsIgnoreCase(graphType))
-                ? graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility)
-                : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
+        if ("PAG".equalsIgnoreCase(graphType)) {
+            return graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility);
+        }
+        if ("MAG".equalsIgnoreCase(graphType)) {
+            return graph.paths().getAmenablePathsMag(source, target, maxLength, forceVisibility);
+        }
+        return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
     }
 
 //    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType,

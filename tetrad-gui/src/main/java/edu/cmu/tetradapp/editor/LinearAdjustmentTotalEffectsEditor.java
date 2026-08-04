@@ -57,6 +57,9 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
     private final JTextField treatmentsField = new JTextField();
     private final JTextField outcomesField = new JTextField();
 
+    private final JComboBox<String> graphTypeCombo =
+            new JComboBox<>(new String[]{"DAG", "PDAG", "MAG", "PAG"});
+
     // Buttons
     private final JButton runButton =
             new JButton("Compute adjustment sets and effects");
@@ -115,6 +118,7 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
 
         this.treatmentsField.setText(model.getTreatmentsText());
         this.outcomesField.setText(model.getOutcomesText());
+        this.graphTypeCombo.setSelectedItem(model.getGraphType());
 
         this.treatmentsField.addFocusListener(
                 new FocusAdapter() {
@@ -202,11 +206,13 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
         topPanel.add(modePanel, BorderLayout.NORTH);
 
         // X/Y input panel
-        JPanel xyPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+        JPanel xyPanel = new JPanel(new GridLayout(3, 2, 5, 5));
         xyPanel.add(new JLabel("Treatments (X):"));
         xyPanel.add(treatmentsField);
         xyPanel.add(new JLabel("Outcomes (Y):"));
         xyPanel.add(outcomesField);
+        xyPanel.add(new JLabel("Interpret graph as:"));
+        xyPanel.add(graphTypeCombo);
 
         topPanel.add(xyPanel, BorderLayout.CENTER);
 
@@ -364,6 +370,8 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
                         ? LinearAdjustmentTotalEffectsModel.EffectMode.PAIRWISE
                         : LinearAdjustmentTotalEffectsModel.EffectMode.JOINT
         );
+
+        model.setGraphType((String) graphTypeCombo.getSelectedItem());
     }
 
     /**
@@ -529,6 +537,19 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
 //        }
 //    }
 
+//    private void installEffectRenderers() {
+//        var cm = resultTable.getColumnModel();
+//
+//        for (int i = 0; i < cm.getColumnCount(); i++) {
+//            String name = cm.getColumn(i).getHeaderValue().toString();
+//
+//            if (name.equals("Total effect")
+//                    || name.equals("True Total Effect")) {
+//                cm.getColumn(i).setCellRenderer(effectRenderer);
+//            }
+//        }
+//    }
+
     private void installEffectRenderers() {
         var cm = resultTable.getColumnModel();
 
@@ -538,6 +559,10 @@ public final class LinearAdjustmentTotalEffectsEditor extends JPanel {
             if (name.equals("Total effect")
                     || name.equals("True Total Effect")) {
                 cm.getColumn(i).setCellRenderer(effectRenderer);
+            }
+
+            if (name.equals("Adjustment set Z")) {
+                cm.getColumn(i).setPreferredWidth(140);
             }
         }
     }
