@@ -747,6 +747,40 @@ public class Paths implements TetradSerializable {
     }
 
     /**
+     * Amenable paths for MAGs: potentially directed paths from node1 to node2 whose first
+     * edge is directed out of node1 AND visible (Zhang 2008; required for adjustment
+     * amenability in MAGs per Perkovic et al. 2018). An invisible directed edge in a MAG
+     * is compatible with latent confounding, so it cannot anchor an amenable path.
+     *
+     * @param node1        the source node
+     * @param node2        the target node
+     * @param maxLength    maximum path length, or -1 for unbounded
+     * @param forceVisible nodes b for which a directed edge node1 -&gt; b should be treated
+     *                     as visible by fiat (e.g., from background knowledge); may be empty
+     * @return the set of amenable paths
+     */
+    public Set<List<Node>> getAmenablePathsMag(Node node1, Node node2, int maxLength, Set<Node> forceVisible) {
+        Set<List<Node>> amenablePaths = new HashSet<>(potentiallyDirectedPaths(node1, node2, maxLength));
+        boolean hasForcing = (forceVisible != null && !forceVisible.isEmpty());
+
+        for (List<Node> path : new ArrayList<>(amenablePaths)) {
+            Node a = path.getFirst();
+            Node b = path.get(1);
+
+            Edge edge = graph.getEdge(a, b);
+            boolean directedOut = edge != null && edge.pointsTowards(b);
+            boolean okStart = directedOut
+                    && (defVisiblePag(a, b) || (hasForcing && forceVisible.contains(b)));
+
+            if (!okStart) {
+                amenablePaths.remove(path);
+            }
+        }
+
+        return amenablePaths;
+    }
+
+    /**
      * Finds amenable paths from the given source node to the given destination node with a maximum length, for a PAG.
      * These are potentially directed paths that start with a visible edge out of node1. This is the option
      * used by Refinement-based PAG IDA (rPAG-IDA).
@@ -789,8 +823,13 @@ public class Paths implements TetradSerializable {
             if (!canBeOutOfA) {
                 okStart = false;
             } else if (!hasForcing) {
-                // No refinement choice supplied: allow any first step that *could* be oriented out of X.
-                okStart = true;
+                // No refinement supplied: enforce Def. 2 of Perkovic et al.
+                // (JMLR 2018) strictly -- an amenable path must start with a
+                // VISIBLE directed edge out of node1. The old okStart = true
+                // made amenability vacuous: a pd path's first edge trivially
+                // "could be" oriented out of node1, so amenable == pd always
+                // and no PAG was ever judged non-amenable.
+                okStart = alreadyStrictAmenable;
             } else {
                 // Refinement choice supplied: only allow the chosen outgoing neighbors,
                 // plus anything already strictly amenable.

@@ -971,7 +971,7 @@ public final class Params {
     /**
      * Constant <code>GUARANTEE_PAG_DEFAULT_TRUE="guaranteePagDefaultTrue"</code>
      */
-    public static final String GUARANTEE_PAG_DEFAULT_TRUE = "guaranteePagDefaultTrue";
+    public static final String DO_LEGALITY_GATING = "doLegalityGating";
     /**
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */

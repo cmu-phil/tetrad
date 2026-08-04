@@ -93,15 +93,23 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
         this.parameters = Objects.requireNonNull(parameters);
 
         boolean containsCircle = false;
+        boolean containsBidirected = false;
 
         for (Edge edge : graph.getEdges()) {
             if (edge.getProximalEndpoint(edge.getNode1()) == Endpoint.CIRCLE || edge.getProximalEndpoint(edge.getNode2()) == Endpoint.CIRCLE) {
                 containsCircle = true;
                 break;
             }
+            if (edge.getEndpoint1() == Endpoint.ARROW && edge.getEndpoint2() == Endpoint.ARROW) {
+                containsBidirected = true;
+            }
         }
 
-        this.graphType = containsCircle ? "PAG" : "PDAG";
+        // Circles => PAG; bidirected without circles => MAG; else PDAG.
+        // NOTE: a MAG containing only directed edges is syntactically
+        // indistinguishable from a DAG/PDAG, so intent must be declared
+        // via setGraphType in that case.
+        this.graphType = containsCircle ? "PAG" : (containsBidirected ? "MAG" : "PDAG");
 
         this.dataModel = dataWrapper;
         this.graphSource = graphSource;
@@ -901,7 +909,8 @@ public final class LinearAdjustmentTotalEffectsModel implements SessionModel, Gr
             if (discreteRegression) return "(Discrete)";
             else if (!amenable) return "(Not amenable)";
                 // Distinguish “amenable with empty adjustment set”
-            else if (Z == null) return "-";
+//            else if (Z == null) return "-";
+            else if (Z == null) return "(No semidirected path)";
             else if (Z.isEmpty()) return "∅";
             else return formatSet(Z);
         }

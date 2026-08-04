@@ -268,10 +268,23 @@ public final class FcitSepsets {
     }
 
     /**
-     * Back-compatible wrapper: the separator or null, discarding the not-found /
-     * indeterminate distinction. Existing callers (the PKE harnesses) compile
-     * unchanged; new code should prefer {@link #spanningSepsetSearch} so that a
-     * budget-limited search is not silently read as proof of non-separability.
+     * Searches for a separating set S such that x and y are conditionally independent given S
+     * within the specified constraints. The method uses a recursive-blocking approach to explore
+     * potential separating sets in the graph. Returns the result including the found separating
+     * set and the corresponding p-value of the test that confirmed it, or indicates failure to
+     * find such a set.
+     *
+     * @param graph          the graph in which the separator search is performed
+     * @param test           the independence test used to evaluate conditional independence
+     * @param x              one endpoint node of the pair being tested
+     * @param y              the other endpoint node of the pair being tested
+     * @param recursiveDepth the maximum recursive-blocking depth; use -1 for no limit
+     * @param depth          the maximum size of the conditioning set; use -1 for no limit
+     * @param rbRadius       the recursive-blocking radius; use -1 for no limit
+     * @param deadline       the absolute wall-clock deadline in milliseconds; use Long.MAX_VALUE for no deadline
+     * @param onTest         a callback function executed once per independence test; may be null
+     * @return a SepsetResult containing the found separating set and p-value, or indicating indeterminate/no result
+     * @throws InterruptedException if the thread executing the method is interrupted
      */
     public static SepsetResult spanningSepset(Graph graph, IndependenceTest test, Node x, Node y,
                                               int recursiveDepth, int depth, int rbRadius,

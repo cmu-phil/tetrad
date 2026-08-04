@@ -72,6 +72,10 @@ public class SemUpdater implements TetradSerializable {
             throw new NullPointerException();
         }
 
+        if (!semIm.getSemPm().getGraph().paths().isLegalDag()) {
+            throw new IllegalArgumentException("SEM model must be a DAG for the SEM updater.");
+        }
+
         this.semIm = semIm;
         SemEvidence evidence = new SemEvidence(this.semIm);
         setEvidence(evidence);

@@ -20,7 +20,7 @@ import org.ejml.simple.SimpleMatrix;
 
 import java.io.Serial;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
+import edu.cmu.tetrad.util.RandomUtil;
 import java.util.stream.Collectors;
 
 /**
@@ -236,12 +236,16 @@ public final class AdjustmentEffectEstimatorV1 {
             return new BootstrapSummaryV1(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         }
 
-        double[] or = new double[B];
-        double[] dr = new double[B];
+        double[] orAll = new double[B];
+        double[] drAll = new double[B];
+        int valid = 0;
 
-        ThreadLocalRandom rng = ThreadLocalRandom.current();
+        RandomUtil rng = RandomUtil.getInstance();
 
         // v1: bootstrap by resampling rows with replacement; refit models each time.
+        // v1.2: skip replicates that fail (singular fits on degenerate resamples,
+        // e.g. an absent one-hot category or constant treatment column) or that
+        // return non-finite estimates; summaries use valid replicates only.
         for (int b = 0; b < B; b++) {
             int[] idx = new int[ex.n];
             for (int i = 0; i < ex.n; i++) idx[i] = rng.nextInt(ex.n);
@@ -251,12 +255,26 @@ public final class AdjustmentEffectEstimatorV1 {
             // v1: IMPORTANT: fit feature builder on bootstrap sample (simplest choice).
             MixedFeatureBuilderV1 bfb = new MixedFeatureBuilderV1(cfg);
             bfb.fit(bx);
-//            SimpleMatrix phi = bfb.transformZ(bx);
 
-            PointEstimatesV1 pe = computePointEstimatesV1(bx, bfb, om, pm, cfg);
-            or[b] = pe.ateOr;
-            dr[b] = pe.ateDr;
+            try {
+                PointEstimatesV1 pe = computePointEstimatesV1(bx, bfb, om, pm, cfg);
+                if (Double.isFinite(pe.ateOr) && Double.isFinite(pe.ateDr)) {
+                    orAll[valid] = pe.ateOr;
+                    drAll[valid] = pe.ateDr;
+                    valid++;
+                }
+            } catch (RuntimeException e) {
+                // v1.2: degenerate resample; skip.
+            }
         }
+
+        if (valid < 2) {
+            return new BootstrapSummaryV1(Double.NaN, Double.NaN,
+                    Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        }
+
+        double[] or = Arrays.copyOf(orAll, valid);
+        double[] dr = Arrays.copyOf(drAll, valid);
 
         double seOr = sd(or);
         double seDr = sd(dr);
@@ -1020,7 +1038,7 @@ public final class AdjustmentEffectEstimatorV1 {
                 y.set(i, 0, ex.y[i]);
             }
 
-            var fit = RegressionUtilV1.olsFitV1(Xmat, y);
+            var fit = RegressionUtilV1.olsFitRidgeV1(Xmat, y, cfg.ridge);
             SimpleMatrix beta = fit.beta;
             return new Fit(beta, pPhi, inter);
         }

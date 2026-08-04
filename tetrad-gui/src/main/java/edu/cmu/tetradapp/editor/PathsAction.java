@@ -634,8 +634,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
     private static Set<List<Node>> getAmenablePaths(Graph graph, String graphType, Node node1, Node node2) {
         Set<List<Node>> amenablePaths;
-        if (graphType.equals("DAG") || graphType.equals("PDAG") || graphType.equals("MAG")) {
+        if (graphType.equals("DAG") || graphType.equals("PDAG")) {
             amenablePaths = graph.paths().getAmenablePathsPdagMag(node1, node2, -1);
+        } else if (graphType.equals("MAG")) {
+            amenablePaths = graph.paths().getAmenablePathsMag(node1, node2, -1, Set.of());
         } else if (graphType.equals("PAG")) {
             amenablePaths = graph.paths().getAmenablePathsPag(node1, node2, -1, Set.of());
         } else {

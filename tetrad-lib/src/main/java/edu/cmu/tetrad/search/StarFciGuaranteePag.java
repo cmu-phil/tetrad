@@ -64,7 +64,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * @see #getMarkovDag(boolean)
  * @see Knowledge
  */
-public abstract class StarFciCheckPag implements IGraphSearch {
+public abstract class StarFciGuaranteePag implements IGraphSearch {
     /**
      * The independence test used in search.
      */
@@ -102,10 +102,12 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     /**
      * When true, the extra-edge-removal step mimics FCIT: each candidate removal is committed only if the resulting
      * graph (after re-running the full *-FCI orientation) is a legal PAG; otherwise it is reverted. When false, the
-     * original *-FCI behavior is used (greedy removal with a single final orientation). This is the one knob that
-     * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
+     * original *-FCI behavior is used (greedy removal with a single final orientation), and the result is then
+     * mapped to a nearby legal PAG by GraphUtils.guaranteePag. Either way, the output is guaranteed to be a legal
+     * PAG; this flag only selects the mechanism. It remains the one knob that isolates Bryan's hypothesis: flip it
+     * to A/B the "legal PAG at each step" effect with everything else held fixed.
      */
-    private boolean guaranteePag = true;
+    private boolean doLegalityGating = true;
     /**
      * Whether to do the possible d-sep step; empirically we find this unnecessary, though the defiition of GFCI
      * includes it. In the context of the check pag branch it is not expensive.
@@ -130,8 +132,45 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      *
      * @param test The independence test to use.
      */
-    public StarFciCheckPag(IndependenceTest test) {
+    public StarFciGuaranteePag(IndependenceTest test) {
         this.independenceTest = test;
+    }
+
+    private static double computeScore(Node x, Node y, Set<Node> set, IndependenceTest test) {
+        try {
+            return test.checkIndependence(x, y, set).getPValue();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
+     * using combinations.
+     *
+     * @param adjx  The adjacency list of nodes to generate combinations from.
+     * @param depth The maximum size of the sublists to be generated. If the depth is negative or exceeds the size of
+     *              the adjacency list, it will be adjusted to the size of the adjacency list.
+     * @return A list of all possible lists of integers representing combinations of indices from the adjacency list up
+     * to the given depth.
+     */
+    private static @NotNull List<Set<Node>> getChoices(List<Node> adjx, int depth) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
+
+        List<Set<Node>> choices = new ArrayList<>();
+
+        if (depth < 0 || depth > adjx.size()) depth = adjx.size();
+
+        SublistGenerator cg = new SublistGenerator(adjx.size(), depth);
+        int[] choice;
+
+        while ((choice = cg.next()) != null) {
+            choices.add(GraphUtils.asSet(choice, adjx));
+        }
+
+        return choices;
     }
 
     /**
@@ -149,7 +188,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * @throws InterruptedException if the process is interrupted during execution.
      */
     public Set<Node> sepsetSubsetOfAdjxOrAdjy(Graph graph, Node x, Node y, Set<Node> containing,
-                                                     IndependenceTest test, int depth, boolean useMaxP)
+                                              IndependenceTest test, int depth, boolean useMaxP)
             throws InterruptedException {
 
         test.setVerbose(false);
@@ -205,7 +244,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * such set is found.
      */
     private @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
-                                                 List<Node> adjx, boolean useMaxP) throws InterruptedException {
+                                          List<Node> adjx, boolean useMaxP) throws InterruptedException {
         if (useMaxP) {
             List<Set<Node>> choices = getChoices(adjx, depth);
             // Max p for stability...
@@ -230,7 +269,10 @@ public abstract class StarFciCheckPag implements IGraphSearch {
 
                 while (batch.size() < BATCH) {
                     int[] ch = cg2.next();
-                    if (ch == null) { exhausted = true; break; }
+                    if (ch == null) {
+                        exhausted = true;
+                        break;
+                    }
                     Set<Node> s = GraphUtils.asSet(ch, adjx);
                     if (s.containsAll(containing)) batch.add(s);
                 }
@@ -254,49 +296,11 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         }
     }
 
-    private static double computeScore(Node x, Node y, Set<Node> set, IndependenceTest test) {
-        try {
-            return test.checkIndependence(x, y, set).getPValue();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
     /**
-     * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
-     * using combinations.
-     *
-     * @param adjx  The adjacency list of nodes to generate combinations from.
-     * @param depth The maximum size of the sublists to be generated. If the depth is negative or exceeds the size of
-     *              the adjacency list, it will be adjusted to the size of the adjacency list.
-     * @return A list of all possible lists of integers representing combinations of indices from the adjacency list up
-     * to the given depth.
-     */
-    private static @NotNull List<Set<Node>> getChoices(List<Node> adjx, int depth) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException();
-        }
-
-        List<Set<Node>> choices = new ArrayList<>();
-
-        if (depth < 0 || depth > adjx.size()) depth = adjx.size();
-
-        SublistGenerator cg = new SublistGenerator(adjx.size(), depth);
-        int[] choice;
-
-        while ((choice = cg.next()) != null) {
-            choices.add(GraphUtils.asSet(choice, adjx));
-        }
-
-        return choices;
-    }
-
-    /**
-     * Sets the parallel processing mode for the StarFciCheckPag class.
+     * Sets the parallel processing mode for the StarFciGuaranteePag class.
      *
      * @param parallelized a boolean value indicating whether to enable (true) or
-     *                 disable (false) parallel processing.
+     *                     disable (false) parallel processing.
      */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
@@ -390,7 +394,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
                     continue;
                 }
 
-                pag = commitRemoval(pag, a, c, sepset, "adjacency-subset", guaranteePag,
+                pag = commitRemoval(pag, a, c, sepset, "adjacency-subset", doLegalityGating,
                         cpdag, nodes, sepsetMap, unshieldedColliders, selection);
             }
         } while (pag.getNumEdges() < edgesBefore);
@@ -404,7 +408,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
             // ran the complete gfciOrientPag on the accepted candidate), so this standalone pass is
             // unnecessary and is skipped. In the UNGATED path nothing has oriented pag yet, so this is
             // the sole orientation pass, exactly as before.
-            if (!guaranteePag) {
+            if (!doLegalityGating) {
                 gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
             }
 
@@ -461,15 +465,20 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         // Saturating step (gated path only): clears deadlocks of the single-edge gated
         // fixpoint by trying the surviving test-confirmed removals JOINTLY. See the
         // saturatingRemoval javadoc for the witness case and the escalation ladder.
-        if (guaranteePag) {
+        if (doLegalityGating) {
             pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets);
         }
 
-        // Final orientation only for the ungated greedy path. In the gated path pag is already the
-        // last-accepted, fully oriented, proven-legal PAG (commitRemoval ran the complete
-        // gfciOrientPag on each accepted candidate), so no further orientation is applied here.
-        if (!guaranteePag) {
+        // Ungated greedy path: run the single final orientation, then map the result to a nearby
+        // legal PAG via GraphUtils.guaranteePag. In the gated path pag is already the last-accepted,
+        // fully oriented, proven-legal PAG (commitRemoval ran the complete gfciOrientPag on each
+        // accepted candidate), so neither step is needed. EITHER WAY the returned graph is a legal
+        // PAG: by per-step legality gating when doLegalityGating is true, by post-hoc repair when
+        // it is false.
+        if (!doLegalityGating) {
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
+            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
+                    excludeSelectionBias, Integer.MAX_VALUE);
         }
 
         pag = GraphUtils.replaceNodes(pag, nodes);
@@ -487,7 +496,7 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * the FCI final-orientation rules. This is the original *-FCI orientation block, factored out unchanged so the
      * legal-PAG gate can re-run it after each candidate removal. {@code unshieldedColliders} is rebuilt from scratch on
      * each call so that, after the (possibly many) re-orientations done by the gate, it always reflects the current
-     * committed graph (it is consumed only by the final guaranteePag step).
+     * committed graph (it is consumed only by the final GraphUtils.guaranteePag repair step, on the ungated path).
      */
     private void gfciOrientPag(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
                                Set<Triple> unshieldedColliders, FciOrient fciOrient)
@@ -544,10 +553,10 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     /**
      * Attempts to remove edge (a, c) using the given candidate sepset.
      * <p>
-     * When {@code guaranteePag} is false, the edge is removed unconditionally (original greedy *-FCI),
+     * When {@code doLegalityGating} is false, the edge is removed unconditionally (original greedy *-FCI),
      * leaving the graph for the single final orientation, and the sepset is written to the committed map.
      * <p>
-     * When {@code guaranteePag} is true, the removal is gated on per-step PAG legality. The candidate is
+     * When {@code doLegalityGating} is true, the removal is gated on per-step PAG legality. The candidate is
      * built on a copy: the edge is removed and the graph is re-oriented from scratch by the full GFCI
      * orientation {@link #gfciOrientPag} — re-blank to circles, copy unshielded CPDAG colliders, stamp
      * recorded-sepset colliders, and apply the complete FCI rules (R0–R4). The full reorient (rather than
@@ -564,10 +573,10 @@ public abstract class StarFciCheckPag implements IGraphSearch {
      * the map unboundedly, breaking maximality. Only the deliberate {@code (a, c) = sepset} write reaches
      * the committed map, and only on acceptance.
      */
-    private Graph commitRemoval(Graph pag, Node a, Node c, Set<Node> sepset, String type, boolean guaranteePag,
+    private Graph commitRemoval(Graph pag, Node a, Node c, Set<Node> sepset, String type, boolean doLegalityGating,
                                 Graph cpdag, List<Node> nodes, SepsetMap sepsetMap, Set<Triple> unshieldedColliders,
                                 Set<Node> selection) throws InterruptedException {
-        if (!guaranteePag) {
+        if (!doLegalityGating) {
             pag.removeEdge(a, c);
             sepsetMap.set(a, c, sepset);
             if (verbose) {
@@ -590,7 +599,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
         FciOrient trialOrient = buildFciOrient(trialMap);
         gfciOrientPag(_pag, cpdag, nodes, trialMap, unshieldedColliders, trialOrient);
 
-//        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection), 30);
         PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
 
         if (!legal.isLegalPag()) {
@@ -601,23 +609,6 @@ public abstract class StarFciCheckPag implements IGraphSearch {
 
             return pag;                                // committed sepset map untouched
         }
-
-//        try {
-//            ICovarianceMatrix covarianceMatrix = getIndependenceTest().getCov();
-//
-//            double lik = new RicfEjml().ricf(GraphTransforms.zhangMagFromPag(pag), covarianceMatrix).getLogLik();
-//            double _lik = new RicfEjml().ricf(GraphTransforms.zhangMagFromPag(_pag), covarianceMatrix).getLogLik();
-//
-//            if (2 * (_lik - lik) - Math.log(covarianceMatrix.getSampleSize()) < 0) {
-//                if (verbose) {
-//                    TetradLogger.getInstance().log("\tRejected " + a + " -- " + c + " (" + type
-//                            + ") because BIC did not improve.");
-//                }
-//                return pag;
-//            }
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
 
         // Accepted: commit only the deliberate sepset write and carry the reoriented PAG forward.
         sepsetMap.set(a, c, sepset);
@@ -857,13 +848,14 @@ public abstract class StarFciCheckPag implements IGraphSearch {
     /**
      * When true, the extra-edge-removal step mimics FCIT: each candidate removal is committed only if the resulting
      * graph (after re-running the full *-FCI orientation) is a legal PAG; otherwise it is reverted. When false, the
-     * original *-FCI behavior is used (greedy removal with a single final orientation). This is the one knob that
-     * isolates Bryan's hypothesis: flip it to A/B the "legal PAG at each step" effect with everything else held fixed.
+     * original *-FCI behavior is used (greedy removal with a single final orientation), and the result is then
+     * mapped to a nearby legal PAG by GraphUtils.guaranteePag. Either way, the output is guaranteed to be a legal
+     * PAG; this flag only selects the mechanism.
      *
-     * @param guaranteePag Whether to pursue the branch that guarantees a legal PAG.
+     * @param doLegalityGating Whether to gate each removal on per-step PAG legality (true) or repair post hoc (false).
      */
-    public void setGuaranteePag(boolean guaranteePag) {
-        this.guaranteePag = guaranteePag;
+    public void setDoLegalityGating(boolean doLegalityGating) {
+        this.doLegalityGating = doLegalityGating;
     }
 
     /**

@@ -43,7 +43,7 @@ import java.util.List;
  * @see StarFci
  * @see Grasp
  */
-public final class GraspFci extends StarFciCheckPag {
+public final class GraspFci extends StarFciGuaranteePag {
 
     /**
      * The conditional independence test.

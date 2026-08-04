@@ -81,9 +81,11 @@ public final class RecursiveAdjustment {
         onSomePDPath.retainAll(canReachY);
         onSomePDPath.remove(X);
 
-        Set<Node> seeds = new LinkedHashSet<>();
-        seeds.add(X);
-        seeds.addAll(onSomePDPath);
+        // Perkovic et al.: Forb = possDe(W) for non-X nodes W on proper PD paths
+        // from X to Y, plus X itself (X is barred from the pool separately).
+        // Seeding with X would additionally forbid descendants of X lying off
+        // every PD path to Y, which the GAC permits in adjustment sets.
+        Set<Node> seeds = new LinkedHashSet<>(onSomePDPath);
 
         Set<Node> forb = forwardReach(G, gt, seeds);
         forb.remove(X);
@@ -124,10 +126,19 @@ public final class RecursiveAdjustment {
         return canReach;
     }
 
+//    private static boolean isPossiblyOutEdge(Edge e, Node a, Node b) {
+//        if (e.pointsTowards(a)) return false;
+//        if (Edges.isBidirectedEdge(e)) return false;
+//        return true;
+//    }
+
     private static boolean isPossiblyOutEdge(Edge e, Node a, Node b) {
-        if (e.pointsTowards(a)) return false;
-        if (Edges.isBidirectedEdge(e)) return false;
-        return true;
+        // Perkovic et al. (JMLR 2018), Sec. 2: an edge can lie on a possibly
+        // directed path traversed a -> b iff it has no arrowhead at a.
+        // pointsTowards(a) additionally demands a tail at b, so a <-o b was
+        // being treated as possibly-out despite its arrowhead at a. The
+        // endpoint test also subsumes the bidirected case (arrowhead at a).
+        return e.getProximalEndpoint(a) != Endpoint.ARROW;
     }
 
 
@@ -197,8 +208,8 @@ public final class RecursiveAdjustment {
      * Checks whether the graph is adjustment-amenable relative to (X, Y) in the sense of Perković et al.: every proper
      * potentially directed path from X to Y starts with a visible / directed edge out of X.
      * <p>
-     * This uses the same notion of "amenable path" as the main algorithm: - For PAGs: first edge must be visible and
-     * point away from X. - For DAG/PDAG/MAG: first edge must be directed out of X.
+     * This uses the same notion of "amenable path" as the main algorithm: - For MAG/PAG: first edge must be visible
+     * and directed out of X. For DAG/PDAG: first edge must be directed out of X."
      *
      * @param X               source node
      * @param Y               target node
@@ -386,9 +397,17 @@ public final class RecursiveAdjustment {
     // Uses your existing graph.paths() helpers:
     private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType, int maxLength, Set<Node> forceVisibility) {
         if (source == null || target == null || source == target) return Collections.emptySet();
-        return ("PAG".equalsIgnoreCase(graphType))
-                ? graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility)
-                : graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
+        // MAGs need the visibility-checking variant: Def. 2 (Perkovic et al.)
+        // requires the first edge to be VISIBLE, and getAmenablePathsPdagMag
+        // checks direction only, which is vacuous for selection-free MAGs.
+        // Direction-only remains correct for DAGs and CPDAGs.
+        if ("PAG".equalsIgnoreCase(graphType)) {
+            return graph.paths().getAmenablePathsPag(source, target, maxLength, forceVisibility);
+        }
+        if ("MAG".equalsIgnoreCase(graphType)) {
+            return graph.paths().getAmenablePathsMag(source, target, maxLength, forceVisibility);
+        }
+        return graph.paths().getAmenablePathsPdagMag(source, target, maxLength);
     }
 
 //    private Set<List<Node>> getAmenablePaths(Node source, Node target, String graphType,
@@ -751,11 +770,23 @@ public final class RecursiveAdjustment {
 
     // --- Helper methods ----------------------------------------------------------------------
 
+//    private boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
+//        boolean collider = graph.isDefCollider(a, b, c);
+//        boolean defNon = graph.isDefNoncollider(a, b, c);
+//        if (collider) return Z.contains(b) || graph.paths().isAncestorOfAnyZ(b, Z);
+//        return !Z.contains(b);
+//    }
+
     private boolean tripleKeepsOpen(Node a, Node b, Node c, Set<Node> Z) {
         boolean collider = graph.isDefCollider(a, b, c);
         boolean defNon = graph.isDefNoncollider(a, b, c);
         if (collider) return Z.contains(b) || graph.paths().isAncestorOfAnyZ(b, Z);
-        return !Z.contains(b);
+        if (defNon) return !Z.contains(b);
+        // b is not of definite status at (a, b, c), so no definite status
+        // path continues through this triple. GAC's blocking condition
+        // (Perkovic et al., Def. 4) quantifies over definite status paths
+        // only, so this continuation need not be blocked.
+        return false;
     }
 
     private RoleOnWitness roleOnWitness(Node v, List<Node> witness) {
