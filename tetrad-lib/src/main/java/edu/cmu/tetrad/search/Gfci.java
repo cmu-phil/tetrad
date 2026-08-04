@@ -48,7 +48,7 @@ import java.io.PrintStream;
  * @see Fges
  * @see Knowledge
  */
-public final class Gfci extends StarFciCheckPag {
+public final class Gfci extends StarFciGuaranteePag {
     /**
      * The score used in search.
      */

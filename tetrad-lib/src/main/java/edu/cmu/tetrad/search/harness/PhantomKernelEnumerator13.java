@@ -767,7 +767,7 @@ public final class PhantomKernelEnumerator13 {
             // user-facing shipping config is the MAG-legality-GATED commit path.  The raw
             // StarFciCheckPag field default is false (ungated); certifying that instead
             // silently tests a different algorithm than the GUI runs.
-            gfci.setGuaranteePag(true);
+            gfci.setDoLegalityGating(true);
             // StarFciCheckPag has no setRecursiveDepth or setTimeout (a hang stalls the
             // run).  Other branch knobs left at shipping defaults (false); toggles:
             gfci.setUsePossibleDsep(true);  // REQUIRED: without the pDsep pass, pairs whose only
