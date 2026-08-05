@@ -21,6 +21,9 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TMath;
 
@@ -58,9 +61,46 @@ public class MvpScore implements Score {
      */
     public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize,
                     int effectiveSampleSize) {
+        this(dataSet, structurePrior, fDegree, discretize, effectiveSampleSize, null);
+    }
+
+    /**
+     * Constructs the score from a dataset with an explicit missing-data specification. This score cannot handle
+     * missing values natively (prior to the Phase 1 refactor, missing data caused exceptions in the likelihood). A
+     * dataset with missing values is therefore rejected unless the policy is LISTWISE.
+     *
+     * @param dataSet             The mixed dataset.
+     * @param structurePrior      The prior over structures, influencing the scoring model.
+     * @param fDegree             The degree of freedom adjustment for the scoring algorithm.
+     * @param discretize          Whether the data should be discretized (true) or not (false).
+     * @param effectiveSampleSize The effective sample size to be used; if less than 0, the actual sample size of
+     *                            the dataset is used.
+     * @param spec                The missing-data specification, or null (equivalent to FAIL on missing data).
+     * @throws NullPointerException          If the dataSet is null.
+     * @throws IllegalArgumentException      If the dataset has missing values and the policy is not LISTWISE.
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single score; see Phase 3).
+     */
+    public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize,
+                    int effectiveSampleSize, MissingDataSpec spec) {
 
         if (dataSet == null) {
             throw new NullPointerException();
+        }
+
+        if (dataSet.existsMissingValue()) {
+            MissingDataPolicy policy = spec == null ? MissingDataPolicy.FAIL : spec.getPolicy();
+
+            switch (policy) {
+                case LISTWISE -> dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "MvpScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed datasets, not "
+                                + "by a single score.");
+                default -> throw new IllegalArgumentException(
+                        "MvpScore: The dataset contains missing values, which this score cannot handle (previously "
+                                + "this caused exceptions in the likelihood). Use MissingDataSpec.listwise(), or "
+                                + "impute the data first. " + MissingDataUtils.briefSummary(dataSet));
+            }
         }
 
         this.dataSet = dataSet;
