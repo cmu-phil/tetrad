@@ -876,6 +876,41 @@ public final class Params {
      * Constant <code>SEED="seed"</code>
      */
     public static final String SEED = "seed";
+
+    /**
+     * Constant <code>MISSING_DATA_POLICY="missingDataPolicy"</code>. One of "default" (legacy behavior per
+     * component), "fail", "listwise", "testwise", "em" (EM-estimated covariance; continuous data), or "mi"
+     * (multiple imputation; handled by search wrappers). See edu.cmu.tetrad.data.missing.MissingDataPolicy.
+     */
+    public static final String MISSING_DATA_POLICY = "missingDataPolicy";
+
+    /**
+     * Constant <code>MISSING_EM_RIDGE="missingEmRidge"</code>. Ridge for the EM covariance estimator.
+     */
+    public static final String MISSING_EM_RIDGE = "missingEmRidge";
+
+    /**
+     * Constant <code>MISSING_EM_TOLERANCE="missingEmTolerance"</code>. Convergence tolerance for the EM covariance
+     * estimator.
+     */
+    public static final String MISSING_EM_TOLERANCE = "missingEmTolerance";
+
+    /**
+     * Constant <code>MISSING_EM_MAX_ITERATIONS="missingEmMaxIterations"</code>. Maximum EM iterations.
+     */
+    public static final String MISSING_EM_MAX_ITERATIONS = "missingEmMaxIterations";
+
+    /**
+     * Constant <code>MISSING_NUM_IMPUTATIONS="missingNumImputations"</code>. Number of imputed datasets for
+     * multiple imputation.
+     */
+    public static final String MISSING_NUM_IMPUTATIONS = "missingNumImputations";
+
+    /**
+     * Constant <code>MISSING_ESS_MODE="missingEssMode"</code>. Effective-sample-size mode for analyses run on a
+     * covariance matrix estimated from incomplete data: "fullN", "minPairwise", or "meanPairwise".
+     */
+    public static final String MISSING_ESS_MODE = "missingEssMode";
     /**
      * Constant <code>SIGNIFICANCE_CHECKED="significanceChecked"</code>
      */

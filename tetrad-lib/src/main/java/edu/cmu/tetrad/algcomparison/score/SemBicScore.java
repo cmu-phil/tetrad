@@ -27,6 +27,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -73,7 +75,9 @@ public class SemBicScore implements ScoreWrapper {
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.score.SemBicScore((DataSet) this.dataSet, precomputeCovariances);
+            MissingDataSpec missingDataSpec = MissingDataUtils.fromParameters(parameters);
+            semBicScore = new edu.cmu.tetrad.search.score.SemBicScore((DataSet) this.dataSet, precomputeCovariances,
+                    missingDataSpec);
         } else if (dataSet instanceof ICovarianceMatrix) {
             semBicScore = new edu.cmu.tetrad.search.score.SemBicScore((ICovarianceMatrix) this.dataSet);
         } else {
@@ -83,7 +87,10 @@ public class SemBicScore implements ScoreWrapper {
         semBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         semBicScore.setStructurePrior(parameters.getDouble(Params.SEM_BIC_STRUCTURE_PRIOR));
         semBicScore.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
-        semBicScore.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        // Only override the effective sample size when explicitly given (>= 0), so that a MissingDataSpec ESS
+        // mode (e.g., minPairwise under the EM policy) set in the constructor is not clobbered by the default -1.
+        int effectiveSampleSize = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
+        if (effectiveSampleSize >= 0) semBicScore.setEffectiveSampleSize(effectiveSampleSize);
 
         switch (parameters.getInt(Params.SEM_BIC_RULE)) {
             case 1:
@@ -133,6 +140,11 @@ public class SemBicScore implements ScoreWrapper {
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_EM_RIDGE);
+        parameters.add(Params.MISSING_EM_TOLERANCE);
+        parameters.add(Params.MISSING_EM_MAX_ITERATIONS);
+        parameters.add(Params.MISSING_ESS_MODE);
         return parameters;
     }
 

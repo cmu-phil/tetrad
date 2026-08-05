@@ -25,6 +25,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -65,7 +67,8 @@ public class DiscreteBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         edu.cmu.tetrad.search.score.DiscreteBicScore score
-                = new edu.cmu.tetrad.search.score.DiscreteBicScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
+                = new edu.cmu.tetrad.search.score.DiscreteBicScore(SimpleDataLoader.getDiscreteDataSet(dataSet),
+                MissingDataUtils.fromParameters(parameters));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return score;
@@ -95,6 +98,7 @@ public class DiscreteBicScore implements ScoreWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 

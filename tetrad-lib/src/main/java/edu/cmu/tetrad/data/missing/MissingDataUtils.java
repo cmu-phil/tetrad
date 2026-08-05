@@ -21,6 +21,8 @@
 package edu.cmu.tetrad.data.missing;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
@@ -41,6 +43,51 @@ public final class MissingDataUtils {
      * Private constructor to prevent instantiation.
      */
     private MissingDataUtils() {
+    }
+
+    /**
+     * Builds a MissingDataSpec from algcomparison/GUI/py-tetrad parameters (see the MISSING_* constants in
+     * {@link Params}), or returns null--meaning "legacy default behavior"--if the policy parameter is absent or
+     * "default". Policy values (case-insensitive): "fail", "listwise", "testwise", "em" (or "emCovariance"), "mi"
+     * (or "multipleImputation"). ESS modes: "fullN", "minPairwise", "meanPairwise".
+     *
+     * @param parameters The parameters.
+     * @return The spec, or null for the legacy default.
+     * @throws IllegalArgumentException If the policy or ESS mode string is unrecognized.
+     */
+    public static MissingDataSpec fromParameters(Parameters parameters) {
+        String policy = parameters.getString(Params.MISSING_DATA_POLICY, "default").trim();
+
+        if (policy.isEmpty() || policy.equalsIgnoreCase("default")) {
+            return null;
+        }
+
+        MissingDataSpec spec = switch (policy.toLowerCase()) {
+            case "fail" -> MissingDataSpec.fail();
+            case "listwise" -> MissingDataSpec.listwise();
+            case "testwise" -> MissingDataSpec.testwise();
+            case "em", "emcovariance", "em_covariance" -> MissingDataSpec.emCovariance();
+            case "mi", "multipleimputation", "multiple_imputation" -> MissingDataSpec.multipleImputation(
+                    parameters.getInt(Params.MISSING_NUM_IMPUTATIONS, 10));
+            default -> throw new IllegalArgumentException("Unrecognized missing-data policy: '" + policy
+                    + "'. Expected one of: default, fail, listwise, testwise, em, mi.");
+        };
+
+        spec = spec.withEmRidge(parameters.getDouble(Params.MISSING_EM_RIDGE, spec.getEmRidge()))
+                .withEmTolerance(parameters.getDouble(Params.MISSING_EM_TOLERANCE, spec.getEmTolerance()))
+                .withEmMaxIterations(parameters.getInt(Params.MISSING_EM_MAX_ITERATIONS, spec.getEmMaxIterations()));
+
+        String essMode = parameters.getString(Params.MISSING_ESS_MODE, "fullN").trim();
+
+        spec = switch (essMode.toLowerCase()) {
+            case "", "fulln", "full_n" -> spec.withEssMode(MissingDataSpec.EffectiveSampleSizeMode.FULL_N);
+            case "minpairwise", "min_pairwise" -> spec.withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE);
+            case "meanpairwise", "mean_pairwise" -> spec.withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE);
+            default -> throw new IllegalArgumentException("Unrecognized missing-data ESS mode: '" + essMode
+                    + "'. Expected one of: fullN, minPairwise, meanPairwise.");
+        };
+
+        return spec;
     }
 
     /**
