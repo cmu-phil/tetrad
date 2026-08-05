@@ -348,6 +348,25 @@ public final class Fcit implements IGraphSearch {
      * all; the search will remove nothing.
      */
     private boolean useRecursiveBlockingSweep = true;
+    /**
+     * Whether the conflict-driven mark-flip escalation runs when the two-view
+     * sweep fails for a pair (experimental; default false). The failed live
+     * sweep reports the arrowheads its blocked-collider verdicts relied on; the
+     * escalation retries the shared sweep on views of the current PAG that each
+     * distrust exactly one of those marks (arrowhead -> circle). Targets the
+     * displacement mechanism: a propagated unsound arrowhead creating a false
+     * definite collider that hides the true blocker from the proposing walk.
+     * Views propose only; every candidate is test-confirmed, so soundness is
+     * untouched. NOT covered by any existing certification; PKE-class
+     * enumeration required before trusting trajectories under this flag.
+     */
+    private boolean useMarkFlipEscalation = false;
+    /**
+     * Cap on flip hypotheses (single marks) tried per pair by the mark-flip
+     * escalation; -1 unlimited. Hypotheses are name-sorted for determinism, so
+     * the cap keeps a deterministic prefix.
+     */
+    private int maxMarkFlips = 16;
 
     /**
      * FCIT constructor.
@@ -972,26 +991,46 @@ public final class Fcit implements IGraphSearch {
             }
         }
 
-        SweepOutcome live = sweepForSepset(this.pag, x, y, deadline, tried);
+        // Live-view sweep. Under mark-flip escalation, collect the load-bearing
+        // blocked-collider marks the walk relied on: on failure, these are the
+        // escalation's flip hypotheses. The NF loop makes many RB calls; the
+        // collector accumulates their union.
+        Set<RecursiveBlocking.Mark> conflicts = null;
+        SweepOutcome live;
+        if (useMarkFlipEscalation) {
+            RecursiveBlocking.beginConflictCollection();
+            try {
+                live = sweepForSepset(this.pag, x, y, deadline, tried);
+            } finally {
+                conflicts = RecursiveBlocking.endConflictCollection();
+            }
+        } else {
+            live = sweepForSepset(this.pag, x, y, deadline, tried);
+        }
         if (live.sepset() != null) {
             return new IndependenceCheck(edge, live.sepset());
         }
 
-        if (!useBlindView) {
-            if (!live.indeterminate()) {
-                sweepFailedAt.put(Set.of(x, y), graphVersion);
-            }
-            return null;
-        }
-
-        SweepOutcome blindOutcome = sweepForSepset(blind, x, y, deadline, tried);
+        SweepOutcome blindOutcome = useBlindView
+                ? sweepForSepset(blind, x, y, deadline, tried)
+                : new SweepOutcome(null, false);
         if (blindOutcome.sepset() != null) {
             return new IndependenceCheck(edge, blindOutcome.sepset());
         }
 
+        // Conflict-driven mark-flip escalation: structure-guided (the walk
+        // nominated the marks), unlike the completion layer's pool enumeration.
+        SweepOutcome flip = new SweepOutcome(null, false);
+        if (useMarkFlipEscalation && conflicts != null && !conflicts.isEmpty()) {
+            flip = markFlipEscalation(x, y, conflicts, deadline, tried);
+            if (flip.sepset() != null) {
+                return new IndependenceCheck(edge, flip.sepset());
+            }
+        }
+
         // Cache only a DEFINITE exhaustion. A budget-truncated failure could
         // succeed on a later attempt with a fresh budget, so it is not cached.
-        if (!live.indeterminate() && !blindOutcome.indeterminate()) {
+        if (!live.indeterminate() && !blindOutcome.indeterminate() && !flip.indeterminate()) {
             sweepFailedAt.put(Set.of(x, y), graphVersion);
         }
 
@@ -1185,6 +1224,58 @@ public final class Fcit implements IGraphSearch {
         }
 
         return null;
+    }
+
+    /**
+     * Conflict-driven mark-flip escalation (experimental; Rem. mark-flip). For
+     * each load-bearing arrowhead the failed live sweep reported, build a view
+     * of the current PAG that distrusts exactly that mark (arrowhead ->
+     * circle) and re-run the shared sweep against it. A single flipped
+     * endpoint demotes the corresponding definite collider to an ambiguous
+     * triple in both traversal directions, so the walk may pass through it or
+     * condition on it -- the displacement repair -- while every other definite
+     * mark keeps guiding the proposal. The flipped view behaves like the blind
+     * view at one mark and like the live view everywhere else. Single flips
+     * only; the hypothesis count is bounded by the load-bearing marks
+     * encountered, not by 2^|PDS|.
+     *
+     * <p>Candidates share {@code tried} with the other views, so no set is
+     * ever retested; every returned set is test-confirmed, so soundness is
+     * untouched.</p>
+     */
+    private SweepOutcome markFlipEscalation(Node x, Node y, Set<RecursiveBlocking.Mark> conflicts,
+                                            long deadline, Set<Set<Node>> tried)
+            throws InterruptedException {
+        List<RecursiveBlocking.Mark> marks = new ArrayList<>(conflicts);
+        marks.sort(Comparator
+                .comparing((RecursiveBlocking.Mark m) -> m.at().getName())
+                .thenComparing(m -> m.from().getName()));
+
+        int cap = (maxMarkFlips < 0) ? marks.size() : Math.min(maxMarkFlips, marks.size());
+        boolean sawIndeterminate = false;
+
+        for (int i = 0; i < cap; i++) {
+            if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
+
+            RecursiveBlocking.Mark m = marks.get(i);
+
+            // Flipped view: the current PAG with one arrowhead circled.
+            Graph flipped = new EdgeListGraph(this.pag);
+            flipped.setEndpoint(m.from(), m.at(), Endpoint.CIRCLE);
+
+            checkCounter.increment("mark-flip escalation (view swept)");
+
+            SweepOutcome out = sweepForSepset(flipped, x, y, deadline, tried);
+            if (out.sepset() != null) {
+                TetradLogger.getInstance().log("MARK-FLIP: separator for " + x + " *-* " + y
+                        + " found under distrust of the arrowhead at " + m.at()
+                        + " on " + m.from() + " *-> " + m.at() + ": " + out.sepset());
+                return out;
+            }
+            if (out.indeterminate()) sawIndeterminate = true;
+        }
+
+        return new SweepOutcome(null, sawIndeterminate);
     }
 
     // -------------------------------------------------------------------------
@@ -2031,6 +2122,27 @@ public final class Fcit implements IGraphSearch {
      */
     public void setUseRecursiveBlockingSweep(boolean useRecursiveBlockingSweep) {
         this.useRecursiveBlockingSweep = useRecursiveBlockingSweep;
+    }
+
+    /**
+     * Sets whether the conflict-driven mark-flip escalation runs when the
+     * two-view sweep fails for a pair. Experimental; not covered by existing
+     * certifications.
+     *
+     * @param useMarkFlipEscalation false by default.
+     */
+    public void setUseMarkFlipEscalation(boolean useMarkFlipEscalation) {
+        this.useMarkFlipEscalation = useMarkFlipEscalation;
+    }
+
+    /**
+     * Caps the number of single-mark flip hypotheses tried per pair by the
+     * mark-flip escalation.
+     *
+     * @param maxMarkFlips the cap, or -1 for unlimited; 16 by default.
+     */
+    public void setMaxMarkFlips(int maxMarkFlips) {
+        this.maxMarkFlips = maxMarkFlips;
     }
 
     /**

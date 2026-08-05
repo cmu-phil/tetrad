@@ -99,6 +99,62 @@ public class RecursiveBlocking {
      */
     public static Strategy DEFAULT_STRATEGY = Strategy.RECURSIVE;
 
+    /**
+     * A single endpoint mark: the endpoint at {@code at} on the edge between
+     * {@code from} and {@code at}. Used to report the load-bearing arrowheads
+     * behind blocked-collider verdicts (conflict collection, below).
+     */
+    public record Mark(Node from, Node at) {
+    }
+
+    /**
+     * Per-thread collector for load-bearing blocked-collider marks. When set,
+     * {@link #reachable} records, for every path judged blocked at a definite
+     * (or forced) collider, the graph arrowheads that verdict read. These are
+     * exactly the marks whose falsity would change the verdict, i.e. the flip
+     * hypotheses for conflict-driven escalation (see Fcit). Scoped to one
+     * caller on one thread via {@link #beginConflictCollection()} /
+     * {@link #endConflictCollection()}; RB's internal search is
+     * single-threaded, so per-thread scoping is sound even when callers run
+     * many RB searches in parallel.
+     */
+    private static final ThreadLocal<Set<Mark>> CONFLICT_COLLECTOR = new ThreadLocal<>();
+
+    /**
+     * Begins collecting load-bearing blocked-collider marks on this thread.
+     * Every blocking call on this thread records into the same set until
+     * {@link #endConflictCollection()} is called.
+     */
+    public static void beginConflictCollection() {
+        CONFLICT_COLLECTOR.set(new LinkedHashSet<>());
+    }
+
+    /**
+     * Ends collection on this thread and returns the marks recorded since
+     * {@link #beginConflictCollection()}.
+     *
+     * @return the recorded marks, in first-encountered order; empty if none.
+     */
+    public static Set<Mark> endConflictCollection() {
+        Set<Mark> out = CONFLICT_COLLECTOR.get();
+        CONFLICT_COLLECTOR.remove();
+        return out == null ? Collections.emptySet() : out;
+    }
+
+    private static void recordBlockedColliderMarks(Graph graph, Node a, Node b, Node c) {
+        Set<Mark> collector = CONFLICT_COLLECTOR.get();
+        if (collector == null) return;
+
+        // The (c, b) arrowhead was read directly from the graph by the collider
+        // test. The (a, b) arrival mark may have been FORCED rather than read
+        // (see nextArrivedHead), so record it only when the graph itself shows
+        // the arrow.
+        collector.add(new Mark(c, b));
+        if (graph.getEndpoint(a, b) == Endpoint.ARROW) {
+            collector.add(new Mark(a, b));
+        }
+    }
+
 //    /**
 //     * Blocks paths between two specified nodes in a graph by iteratively
 //     * identifying and selecting nodes to include in a blocking set, subject to
@@ -360,142 +416,6 @@ public class RecursiveBlocking {
                 graph, x, y, containing, notFollowed,
                 graph.paths().getDescendantsMap(),
                 _recursiveDepth, currentRecursiveDepth, depth, pool, ignoreDirectEdge, deadlineMs);
-    }
-
-    /**
-     * Breadth-first separating-set search between {@code x} and {@code y}.
-     *
-     * <p>Unlike {@link #blockPathsRecursivelyFull}, which commits to a path and
-     * backtracks, this method maintains a queue of candidate blocking sets and
-     * expands them one node at a time, level by level. It finds the
-     * <em>smallest</em> blocking set reachable from the seed before trying
-     * larger ones, so it terminates quickly when x and y are unconditionally
-     * d-separated or separated by a small set.</p>
-     *
-     * <p>Candidates for addition to Z are drawn exclusively from nodes that lie
-     * on <em>active</em> paths between x and y under the current Z — that is,
-     * non-collider nodes that are currently open and therefore need to be
-     * blocked. This keeps the search space small relative to exhaustive
-     * enumeration over adjacency subsets.</p>
-     *
-     * <p>The method respects the same parameter contract as
-     * {@link #blockPathsRecursivelyFull}:</p>
-     * <ul>
-     *   <li>{@code recursiveDepth} bounds the recursion depth considered when
-     *       collecting candidates; -1 means unlimited.</li>
-     *   <li>{@code depth} caps the size of Z; sets larger than this are never
-     *       enqueued.</li>
-     *   <li>{@code maxRadius} and {@code nearWhichEndpoint} restrict which
-     *       nodes may enter Z to a BFS shell around x and/or y.</li>
-     *   <li>{@code ignoreDirectEdge} controls whether the direct x–y edge is
-     *       skipped when collecting active paths.</li>
-     * </ul>
-     *
-     * <p>Returns a {@link BlockingResult} using the same three-outcome
-     * convention:</p>
-     * <ul>
-     *   <li><b>Found</b>: a blocking set was found and is returned.</li>
-     *   <li><b>Unblockable</b>: the queue was exhausted without finding a
-     *       blocking set within the depth bound — no separator exists within
-     *       the constrained search space.</li>
-     *   <li><b>Indeterminate</b>: the search was interrupted.</li>
-     * </ul>
-     *
-     * @param graph             the graph
-     * @param x                 first endpoint
-     * @param y                 second endpoint
-     * @param containing        nodes forced into Z (the seed set)
-     * @param notFollowed       nodes not to be traversed when collecting
-     *                          active paths
-     * @param recursiveDepth    maximum recursion depth when collecting active
-     *                          paths (-1 = unlimited)
-     * @param depth             maximum size of Z (-1 = unlimited)
-     * @param maxRadius         BFS radius for the node pool (-1 = unlimited)
-     * @param nearWhichEndpoint 1 = near x only, 2 = near y only,
-     *                          3 = near both
-     * @param ignoreDirectEdge  whether to ignore the direct x–y edge
-     * @param deadlineMs        the deadline for the operation (in milliseconds)
-     * @return a {@link BlockingResult} describing the outcome
-     * @throws InterruptedException if the thread is interrupted
-     * @throws TimeoutException     if the search was interrupted
-     */
-    private static BlockingResult blockPathsBfs(
-            Graph graph,
-            Node x,
-            Node y,
-            Set<Node> containing,
-            Set<Node> notFollowed,
-            int recursiveDepth,
-            int depth,
-            int maxRadius,
-            int nearWhichEndpoint,
-            boolean ignoreDirectEdge,
-            long deadlineMs)
-            throws InterruptedException, TimeoutException {
-
-        // Build the pool of nodes eligible to enter Z, same as the recursive version.
-        Set<Node> pool = buildPool(graph, x, y, maxRadius, nearWhichEndpoint, deadlineMs);
-        pool.addAll(containing);
-
-        // Precompute descendants map for the reachability predicate.
-        Map<Node, Set<Node>> descendantsMap = graph.paths().getDescendantsMap();
-
-        // BFS queue: each entry is a candidate blocking set.
-        // We use a LinkedHashSet to preserve insertion order within each level,
-        // which gives deterministic behaviour and avoids re-visiting the same
-        // set reached by different expansion orders.
-        //
-        // visited tracks sets we have already enqueued to avoid duplicates.
-        // Since sets can be large, we use a Set<Set<Node>> with hash equality.
-        Deque<Set<Node>> queue = new ArrayDeque<>();
-        Set<Set<Node>> visited = new HashSet<>();
-
-        Set<Node> seed = new HashSet<>(containing);
-        queue.add(seed);
-        visited.add(seed);
-
-        while (!queue.isEmpty()) {
-
-            checkTimeout(deadlineMs);
-
-            Set<Node> z = queue.poll();
-
-            // Depth guard: never process a set that exceeds the depth cap.
-            if (depth >= 0 && z.size() > depth) {
-                continue;
-            }
-
-            // Check whether z already blocks all active paths from x to y.
-            if (blocksAllPaths(graph, x, y, z, notFollowed, descendantsMap,
-                    ignoreDirectEdge, deadlineMs)) {
-                return new BlockingResult(z, false);
-            }
-
-            // If we are already at the depth cap, do not expand further.
-            if (depth >= 0 && z.size() == depth) {
-                continue;
-            }
-
-            // Collect candidates: nodes on active paths that are non-colliders
-            // (and therefore blockable by conditioning on them).
-            Set<Node> candidates = activeCandidates(
-                    graph, x, y, z, notFollowed, descendantsMap,
-                    pool, ignoreDirectEdge,
-                    deadlineMs);
-
-            for (Node candidate : candidates) {
-                checkTimeout(deadlineMs);
-
-                Set<Node> zPrime = new HashSet<>(z);
-                zPrime.add(candidate);
-                if (visited.add(zPrime)) {
-                    queue.add(zPrime);
-                }
-            }
-        }
-
-        // Queue exhausted without finding a blocking set within the constraints.
-        return new BlockingResult(null, false);
     }
 
     /**
@@ -1394,17 +1314,30 @@ public class RecursiveBlocking {
 
         if (z.contains(b)) return true;
 
+        boolean activated;
+
         if (descendantsMap == null) {
-            return graph.paths().isAncestorOfAnyZ(b, z);
+            activated = graph.paths().isAncestorOfAnyZ(b, z);
         } else {
+            activated = false;
             Set<Node> desc = descendantsMap.getOrDefault(b, Collections.emptySet());
             for (Node d : desc) {
                 checkTimeout(deadlineMs);
 
-                if (z.contains(d)) return true;
+                if (z.contains(d)) {
+                    activated = true;
+                    break;
+                }
             }
-            return false;
         }
+
+        // A blocked-collider verdict: the walk is trusting the arrowheads at b.
+        // If a collector is active, report them as load-bearing.
+        if (!activated) {
+            recordBlockedColliderMarks(graph, a, b, c);
+        }
+
+        return activated;
     }
 
     /**

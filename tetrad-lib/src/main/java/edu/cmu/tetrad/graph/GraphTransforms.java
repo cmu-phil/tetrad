@@ -281,7 +281,15 @@ public class GraphTransforms {
         UnorientedComponentAsUndirected result = getGetUnorientedComponentAsUndirected(pag);
         Graph pcafci;
 
-        pcafci = GraphTransforms.dagFromCpdag(result.pcafci(), new Knowledge(), false);
+        // Zhang 2008 Thm 2, step (ii): the circle component must be oriented into a
+        // DAG with NO unshielded colliders. The previous route (dagFromCpdag: direct
+        // one edge by node order, Meek fixpoint after each) was observed producing
+        // unshielded colliders on circle-rich PAGs (PKE12's ZHANG-ROUNDTRIP-FAIL
+        // witnesses), i.e. a "MAG" outside the input PAG's class. Orient by
+        // MCS/perfect-elimination instead: for a chordal component (guaranteed for
+        // valid PAGs) every parent set is then a clique, so no unshielded collider
+        // can occur, with no dependence on the Meek machinery.
+        pcafci = noUnshieldedColliderDag(result.pcafci());
 
         for (Edge e : pcafci.getEdges()) {
             result.pafci().removeEdges(e.getNode1(), e.getNode2());
@@ -289,6 +297,51 @@ public class GraphTransforms {
         }
 
         return result.pafci();
+    }
+
+    /**
+     * Orients an undirected chordal graph into a DAG with no unshielded colliders by
+     * directing every edge from the earlier to the later endpoint of a Maximum
+     * Cardinality Search order. Reversed MCS is a perfect elimination order for
+     * chordal graphs (Tarjan and Yannakakis, 1984), so each vertex's earlier
+     * neighbors -- its parents under this orientation -- form a clique. Deterministic:
+     * ties broken by node name. If the input is NOT chordal (an invalid "PAG"), the
+     * result is still a DAG over the same skeleton but may contain unshielded
+     * colliders; callers wanting the guarantee should round-trip check.
+     *
+     * @param und the undirected graph (the circle component of a PAG).
+     * @return a DAG over the same skeleton whose parent sets are cliques.
+     */
+    public static Graph noUnshieldedColliderDag(Graph und) {
+        List<Node> nodes = new ArrayList<>(und.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName));
+
+        Map<Node, Integer> numbered = new HashMap<>();   // node -> MCS position
+        Map<Node, Integer> weight = new HashMap<>();
+        for (Node n : nodes) weight.put(n, 0);
+
+        for (int step = 0; step < nodes.size(); step++) {
+            Node best = null;
+            for (Node n : nodes) {
+                if (numbered.containsKey(n)) continue;
+                if (best == null || weight.get(n) > weight.get(best)) best = n;
+            }
+            numbered.put(best, step);
+            for (Node nb : und.getAdjacentNodes(best)) {
+                if (!numbered.containsKey(nb)) weight.put(nb, weight.get(nb) + 1);
+            }
+        }
+
+        Graph dag = new EdgeListGraph(und.getNodes());
+        for (Edge e : und.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            if (numbered.get(a) < numbered.get(b)) {
+                dag.addDirectedEdge(a, b);
+            } else {
+                dag.addDirectedEdge(b, a);
+            }
+        }
+        return dag;
     }
 
     /**

@@ -173,38 +173,45 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // run self-consistent, but not a no-op. If that is not wanted, drop the wrap for those tests.
         test = new CachedIndependenceQueries(test);
 
-        edu.cmu.tetrad.search.Fcit search = new edu.cmu.tetrad.search.Fcit(test, score);
+        edu.cmu.tetrad.search.Fcit fcit = new edu.cmu.tetrad.search.Fcit(test, score);
 
         // BOSS
-        search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
-        search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        fcit.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
+        fcit.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        fcit.setUseBes(parameters.getBoolean(Params.USE_BES));
 
         // FCIT
-        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
-        search.setRbRadius(parameters.getInt(Params.RB_RADIUS));
-        search.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
-        search.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);
+        fcit.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        fcit.setDepth(parameters.getInt(Params.DEPTH));
+        fcit.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
+        fcit.setRbRadius(parameters.getInt(Params.RB_RADIUS));
+        fcit.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
+//        fcit.setCompletionPolicy(edu.cmu.tetrad.fcit.Fcit.CompletionPolicy.OFF);
+
+//        fcit.setUseMarkFlipEscalation(true);
+//        fcit.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);  // or POOL_ONLY
+
+        fcit.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);
+        fcit.setUseBlindView(false);
+        fcit.setUseMarkFlipEscalation(true);
 
         // Wall-clock per-pair budget. NOTE: this makes runs NONDETERMINISTIC -- a machine under load explores a
         // different candidate family and can return a different graph. For enumeration harnesses and any experiment
         // that must reproduce, set TEST_TIMEOUT to -1 and use setMaxTestsPerPair(...) below instead. A wall-clock
         // budget also degrades the negative sweep cache, since budget-truncated failures are indeterminate and are
         // deliberately not cached.
-        search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
+        fcit.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
 
-        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
+        fcit.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.BOSS);
+            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.GRASP);
+            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.SP);
+            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.SP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
-            search.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.COMPLETE_GRAPH);
+            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
@@ -212,7 +219,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // =====================================================================================================
         // THOROUGHNESS SETTINGS
         //
-        // Every line below is COMMENTED OUT and shows the value the search already uses by default, so the code as
+        // Every line below is COMMENTED OUT and shows the value the fcit already uses by default, so the code as
         // written runs the full algorithm. Uncommenting any of them trades completeness for speed. The knobs are
         // listed in rough order of value-per-fidelity-lost: take them from the top.
         //
@@ -231,9 +238,9 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // B no longer applies -- missed separators fall through to the completion layer, which is slower, so an
         // over-aggressive cap can be a net loss. Measure.
         //
-//         search.setSweepNfMaxSize(3);        // default -1 (unlimited)
-//         search.setSweepAddMaxSize(2);       // default -1 (unlimited)
-//         search.setSweepRemoveMaxSize(-1);   // default -1 (unlimited)
+//         fcit.setSweepNfMaxSize(3);        // default -1 (unlimited)
+//         fcit.setSweepAddMaxSize(2);       // default -1 (unlimited)
+//         fcit.setSweepRemoveMaxSize(-1);   // default -1 (unlimited)
 
         // --- Second proposal view ---------------------------------------------------------------------------
         //
@@ -241,7 +248,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // blind-proposal: separators hidden by a wrong interim mark become unreachable except through the
         // completion layer.
         //
-        // search.setUseBlindView(false);      // default true
+        // fcit.setUseBlindView(false);      // default true
 
         // --- Deterministic per-pair budget ------------------------------------------------------------------
         //
@@ -250,7 +257,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // distinguishes "no phantom confirmed within budget" from "no phantom exists". Use this, not the
         // wall-clock timeout, in enumeration runs.
         //
-        // search.setMaxTestsPerPair(20000L);  // default -1 (unlimited)
+        // fcit.setMaxTestsPerPair(20000L);  // default -1 (unlimited)
 
         // --- Completion layer -------------------------------------------------------------------------------
         //
@@ -263,8 +270,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         //   OFF       reverts to the recursive-blocking family alone, i.e. to the out-of-B coverage condition,
         //             which is REFUTED at six observed variables. Use only to measure the gap.
         //
-//         search.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.POOL_ONLY);  // default FULL
-//         search.setCompletionMaxSubsetSize(4);   // default -1 (DEPTH still applies)
+//         fcit.setCompletionPolicy(edu.cmu.tetrad.fcit.Fcit.CompletionPolicy.POOL_ONLY);  // default FULL
+//         fcit.setCompletionMaxSubsetSize(4);   // default -1 (DEPTH still applies)
 
         // --- Final detection scan ---------------------------------------------------------------------------
         //
@@ -272,7 +279,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // single-edge removal nor the saturating pass caught are then neither reported nor removed. Reasonable in
         // a benchmark; wrong in a harness.
         //
-//         search.setDetectionEnabled(false);  // default true
+//         fcit.setDetectionEnabled(false);  // default true
 
         // --- Small-subset shortcut pass (NOT output-identical) ----------------------------------------------
         //
@@ -286,7 +293,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // completion-layer firing rate as well as the runtime. Compare violation counts AND "PDS COMPLETION" log
         // counts against a default run.
         //
-        // search.setQuickSubsetDepth(2);      // default -1 (off)
+        // fcit.setQuickSubsetDepth(2);      // default -1 (off)
 
         // --- Recursive-blocking sweep, i.e. completion-only mode (NOT output-identical) ---------------------
         //
@@ -309,7 +316,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // Do not combine with CompletionPolicy.OFF: that configuration has no separator-finding machinery left
         // and will remove no edges at all.
         //
-        // search.setUseRecursiveBlockingSweep(false);  // default true
+        // fcit.setUseRecursiveBlockingSweep(false);  // default true
 
         // --- Legality memo audit ----------------------------------------------------------------------------
         //
@@ -318,15 +325,15 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // hash-order dependence in FciOrient would show itself. Slower than either memo-on or memo-off; run once
         // after touching the orientation code, then turn it back off.
         //
-        // search.setAuditLegalityMemo(true);  // default false
+        // fcit.setAuditLegalityMemo(true);  // default false
 
         // =====================================================================================================
 
         // General
-        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setKnowledge(this.knowledge);
+        fcit.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        fcit.setKnowledge(this.knowledge);
 
-        return search.search();
+        return fcit.search();
     }
 
     /**
