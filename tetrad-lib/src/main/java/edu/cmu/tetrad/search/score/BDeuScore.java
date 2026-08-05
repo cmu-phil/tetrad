@@ -21,6 +21,11 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.special.Gamma;
 import edu.cmu.tetrad.util.TMath;
@@ -60,6 +65,12 @@ public class BDeuScore implements DiscreteScore {
      * The discrete dataset.
      */
     private final DataSet dataSet;
+
+    /**
+     * The shared, cached test-wise row computation, or null if the dataset has no missing values (in which case no
+     * per-row filtering is needed).
+     */
+    private final TestwiseRows testwiseRows;
     /**
      * The variables of the dataset.
      */
@@ -88,11 +99,50 @@ public class BDeuScore implements DiscreteScore {
      * @param dataSet A discrete dataset.
      */
     public BDeuScore(DataSet dataSet) {
+        this(dataSet, null);
+    }
+
+    /**
+     * Constructs the score from a dataset with an explicit missing-data specification. If the spec is null and the
+     * dataset contains missing values, TESTWISE deletion is used (this score's historical behavior) and a warning is
+     * logged; see MissingDataUtils.resolveOrWarn.
+     *
+     * @param dataSet A discrete dataset.
+     * @param spec    The missing-data specification, or null for the legacy default.
+     * @throws IllegalArgumentException      If the policy is FAIL and the dataset has missing values, or if the
+     *                                       policy is EM_COVARIANCE (continuous data only).
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single score; see Phase 3).
+     */
+    public BDeuScore(DataSet dataSet, MissingDataSpec spec) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
 
+        boolean missing = dataSet.existsMissingValue();
+        MissingDataPolicy policy = MissingDataUtils.resolveOrWarn(dataSet, spec, "BDeuScore");
+
+        if (missing) {
+            switch (policy) {
+                case FAIL -> throw new IllegalArgumentException(
+                        "BDeuScore: The dataset contains missing values and the missing-data policy is FAIL. "
+                                + MissingDataUtils.briefSummary(dataSet));
+                case LISTWISE -> {
+                    dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                    missing = false;
+                }
+                case EM_COVARIANCE -> throw new IllegalArgumentException(
+                        "BDeuScore: EM_COVARIANCE applies to continuous data only.");
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "BDeuScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed datasets, "
+                                + "not by a single score.");
+                default -> {
+                }
+            }
+        }
+
         this.dataSet = dataSet;
+        this.testwiseRows = missing ? TestwiseRows.forDataSet(dataSet) : null;
 
         if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
@@ -130,6 +180,16 @@ public class BDeuScore implements DiscreteScore {
      * @param values The values corresponding to each dimension.
      * @return The row index.
      */
+    /**
+     * Declares this score's native missing-value support: test-wise deletion.
+     *
+     * @return This support level.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
+
     private static int getRowIndex(int[] dim, int[] values) {
         int rowIndex = 0;
         for (int i = 0; i < dim.length; i++) {
@@ -181,24 +241,40 @@ public class BDeuScore implements DiscreteScore {
 
         int N = 0;
 
-        ROW:
-        for (int i = 0; i < this.sampleSize; i++) {
-            for (int p = 0; p < parents.length; p++) {
-                if (myParents[p][i] == -99) continue ROW;
-                parentValues[p] = myParents[p][i];
+        if (this.testwiseRows == null) {
+
+            // Complete data: every row counts; no per-row missingness checks are needed.
+            for (int i = 0; i < this.sampleSize; i++) {
+                for (int p = 0; p < parents.length; p++) {
+                    parentValues[p] = myParents[p][i];
+                }
+
+                int rowIndex = BDeuScore.getRowIndex(dims, parentValues);
+
+                n_jk[rowIndex][myChild[i]]++;
+                n_j[rowIndex]++;
+                N++;
             }
+        } else {
 
-            int childValue = myChild[i];
+            // Test-wise deletion: iterate the rows complete on {node} union parents, computed once per column set
+            // and cached across calls; see TestwiseRows. This is the same row set the previous inline -99 checks
+            // selected, so the numerics are unchanged.
+            int[] allColumns = new int[parents.length + 1];
+            allColumns[0] = node;
+            System.arraycopy(parents, 0, allColumns, 1, parents.length);
 
-            if (childValue == -99) {
-                continue;
+            for (int i : this.testwiseRows.validRows(allColumns)) {
+                for (int p = 0; p < parents.length; p++) {
+                    parentValues[p] = myParents[p][i];
+                }
+
+                int rowIndex = BDeuScore.getRowIndex(dims, parentValues);
+
+                n_jk[rowIndex][myChild[i]]++;
+                n_j[rowIndex]++;
+                N++;
             }
-
-            int rowIndex = BDeuScore.getRowIndex(dims, parentValues);
-
-            n_jk[rowIndex][childValue]++;
-            n_j[rowIndex]++;
-            N++;
         }
 
         //Finally, compute the score

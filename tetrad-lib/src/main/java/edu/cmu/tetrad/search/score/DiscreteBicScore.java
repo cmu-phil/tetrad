@@ -21,6 +21,11 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.util.TMath;
@@ -49,6 +54,12 @@ public class DiscreteBicScore implements DiscreteScore {
      * The discrete dataset.
      */
     private final DataSet dataSet;
+
+    /**
+     * The shared, cached test-wise row computation, or null if the dataset has no missing values (in which case no
+     * per-row filtering is needed).
+     */
+    private final TestwiseRows testwiseRows;
     /**
      * The variables of the dataset.
      */
@@ -88,11 +99,52 @@ public class DiscreteBicScore implements DiscreteScore {
      * @param dataSet The discrete dataset to analyze.
      */
     public DiscreteBicScore(DataSet dataSet) {
+        this(dataSet, null);
+    }
+
+    /**
+     * Constructs the score from a dataset with an explicit missing-data specification. If the spec is null and the
+     * dataset contains missing values, TESTWISE deletion is used and a warning is logged; see
+     * MissingDataUtils.resolveOrWarn. (Note: prior to the Phase 1 refactor, this score corrupted its
+     * contingency-table indices, or threw ArrayIndexOutOfBoundsException, on any missing value in the scored
+     * columns; excluding those rows is a bug fix, and brings this score into agreement with BDeuScore.)
+     *
+     * @param dataSet The discrete dataset to analyze.
+     * @param spec    The missing-data specification, or null for the legacy default.
+     * @throws IllegalArgumentException      If the policy is FAIL and the dataset has missing values, or if the
+     *                                       policy is EM_COVARIANCE (continuous data only).
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single score; see Phase 3).
+     */
+    public DiscreteBicScore(DataSet dataSet, MissingDataSpec spec) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
 
+        boolean missing = dataSet.existsMissingValue();
+        MissingDataPolicy policy = MissingDataUtils.resolveOrWarn(dataSet, spec, "DiscreteBicScore");
+
+        if (missing) {
+            switch (policy) {
+                case FAIL -> throw new IllegalArgumentException(
+                        "DiscreteBicScore: The dataset contains missing values and the missing-data policy is FAIL. "
+                                + MissingDataUtils.briefSummary(dataSet));
+                case LISTWISE -> {
+                    dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                    missing = false;
+                }
+                case EM_COVARIANCE -> throw new IllegalArgumentException(
+                        "DiscreteBicScore: EM_COVARIANCE applies to continuous data only.");
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "DiscreteBicScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed "
+                                + "datasets, not by a single score.");
+                default -> {
+                }
+            }
+        }
+
         this.dataSet = dataSet;
+        this.testwiseRows = missing ? TestwiseRows.forDataSet(dataSet) : null;
 
         if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
@@ -130,7 +182,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
             // Go through the data and map each new category to an integer if it hasn't been seen before.
             for (int j = 0; j < data[i].length; j++) {
-                if (data[i][j] != -99) {
+                if (data[i][j] != DiscreteVariable.MISSING_VALUE) {
                     if (attestedCategories.get(i).containsKey(data[i][j])) {
                         continue;
                     }
@@ -140,6 +192,16 @@ public class DiscreteBicScore implements DiscreteScore {
             }
         }
 
+    }
+
+    /**
+     * Declares this score's native missing-value support: test-wise deletion.
+     *
+     * @return This support level.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 
     private static int getRowIndex(int[] dim, int[] values) {
@@ -201,22 +263,43 @@ public class DiscreteBicScore implements DiscreteScore {
 
         int[] myChild = this.data[node];
 
-        ROW:
-        for (int i = 0; i < this.sampleSize; i++) {
-            for (int p = 0; p < parents.length; p++) {
-                if (myParents[p][i] == -99) parentValues[p] = -99;
-                else parentValues[p] = attestedCategories.get(parents[p]).get(myParents[p][i]);
+        int nUsed = 0;
+
+        if (this.testwiseRows == null) {
+
+            // Complete data: every row counts; no per-row missingness checks are needed.
+            for (int i = 0; i < this.sampleSize; i++) {
+                for (int p = 0; p < parents.length; p++) {
+                    parentValues[p] = attestedCategories.get(parents[p]).get(myParents[p][i]);
+                }
+
+                int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
+
+                n_jk[rowIndex][myChild[i]]++;
+                n_j[rowIndex]++;
+                nUsed++;
             }
+        } else {
 
-            int childValue;
+            // Test-wise deletion (bug fix): previously, a missing child or parent value flowed the -99 sentinel
+            // into the contingency-table indices, corrupting the counts or throwing
+            // ArrayIndexOutOfBoundsException. Rows incomplete on {node} union parents are now excluded, matching
+            // BDeuScore; the row sets are computed once per column set and cached; see TestwiseRows.
+            int[] allColumns = new int[parents.length + 1];
+            allColumns[0] = node;
+            System.arraycopy(parents, 0, allColumns, 1, parents.length);
 
-            if (myChild[i] == -99) childValue = -99;
-            else childValue = myChild[i];
+            for (int i : this.testwiseRows.validRows(allColumns)) {
+                for (int p = 0; p < parents.length; p++) {
+                    parentValues[p] = attestedCategories.get(parents[p]).get(myParents[p][i]);
+                }
 
-            int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
+                int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
 
-            n_jk[rowIndex][childValue]++;
-            n_j[rowIndex]++;
+                n_jk[rowIndex][myChild[i]]++;
+                n_j[rowIndex]++;
+                nUsed++;
+            }
         }
 
         //Finally, compute the score
@@ -245,7 +328,9 @@ public class DiscreteBicScore implements DiscreteScore {
 //        int params = attestedRows * (c - 1);
         int params = r * (c - 1);
 
-        double score = 2 * lik - this.penaltyDiscount * params * TMath.log(sampleSize) + 2 * getPriorForStructure(parents.length);
+        // The BIC penalty uses the number of rows actually scored (equal to sampleSize on complete data; the
+        // retained row count under test-wise deletion, consistent with the likelihood above).
+        double score = 2 * lik - this.penaltyDiscount * params * TMath.log(nUsed) + 2 * getPriorForStructure(parents.length);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
