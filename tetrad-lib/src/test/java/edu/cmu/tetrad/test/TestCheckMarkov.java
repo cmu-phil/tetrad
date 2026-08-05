@@ -166,18 +166,17 @@ public class TestCheckMarkov {
         SemIm im = new SemIm(pm);
         DataSet data = null;
         try {
-            data = im.simulateData(10000, false);
+            data = im.simulateData(1000, false);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
 
-        IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.01);
+        IndTestFisherZ test = new IndTestFisherZ(new CovarianceMatrix(data), 0.001);
         SemBicScore score = new SemBicScore(data, 1, true);
 
         Bfci bfci = new Bfci(test, score);
         bfci.setVerbose(true);
-        bfci.setDepth(7);
-        bfci.setCompleteRuleSetUsed(false);
+        bfci.setDoLegalityGating(true);
         Graph pag;
 
         try {

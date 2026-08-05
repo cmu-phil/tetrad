@@ -2,6 +2,11 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TMath;
@@ -29,6 +34,12 @@ public class ConditionalGaussianScore implements Score {
 
     // Dataset and variables.
     private final DataSet dataSet;
+
+    /**
+     * The shared, cached test-wise row computation, or null if the dataset has no missing values (in which case no
+     * per-row filtering is needed).
+     */
+    private final TestwiseRows testwiseRows;
     private final List<Node> variables;
 
     // Likelihood engine (leave as-is; we just forward settings).
@@ -49,9 +60,51 @@ public class ConditionalGaussianScore implements Score {
      * @param discretize      if true, use shadow discretization of continuous parents for discrete children
      */
     public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, boolean discretize) {
+        this(dataSet, penaltyDiscount, discretize, null);
+    }
+
+    /**
+     * Constructs the score from a dataset with an explicit missing-data specification. If the spec is null and the
+     * dataset contains missing values, TESTWISE deletion is used (this score's historical behavior) and a warning is
+     * logged; see MissingDataUtils.resolveOrWarn.
+     *
+     * @param dataSet         mixed (or all-continuous / all-discrete) dataset
+     * @param penaltyDiscount BIC penalty multiplier
+     * @param discretize      if true, use shadow discretization of continuous parents for discrete children
+     * @param spec            The missing-data specification, or null for the legacy default.
+     * @throws IllegalArgumentException      If the policy is FAIL and the dataset has missing values, or if the
+     *                                       policy is EM_COVARIANCE (all-continuous data only).
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single score; see Phase 3).
+     */
+    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, boolean discretize,
+                                    MissingDataSpec spec) {
         if (dataSet == null) throw new NullPointerException("dataSet");
 
+        boolean missing = dataSet.existsMissingValue();
+        MissingDataPolicy policy = MissingDataUtils.resolveOrWarn(dataSet, spec, "ConditionalGaussianScore");
+
+        if (missing) {
+            switch (policy) {
+                case FAIL -> throw new IllegalArgumentException(
+                        "ConditionalGaussianScore: The dataset contains missing values and the missing-data policy "
+                                + "is FAIL. " + MissingDataUtils.briefSummary(dataSet));
+                case LISTWISE -> {
+                    dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                    missing = false;
+                }
+                case EM_COVARIANCE -> throw new IllegalArgumentException(
+                        "ConditionalGaussianScore: EM_COVARIANCE applies to all-continuous data only.");
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "ConditionalGaussianScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed "
+                                + "datasets, not by a single score.");
+                default -> {
+                }
+            }
+        }
+
         this.dataSet = dataSet;
+        this.testwiseRows = missing ? TestwiseRows.forDataSet(dataSet) : null;
         this.variables = dataSet.getVariables();
         this.penaltyDiscount = penaltyDiscount;
 
@@ -216,38 +269,33 @@ public class ConditionalGaussianScore implements Score {
      * -99 as “missing”; for continuous we treat NaN as missing.
      */
     private List<Integer> getRows(int i, int[] parents) {
-        List<Integer> rows = new ArrayList<>(this.dataSet.getNumRows());
+        if (this.testwiseRows == null) {
 
-        for (int r = 0; r < this.dataSet.getNumRows(); r++) {
-            // child
-            if (isMissing(variables.get(i), r)) continue;
-            // parents
-            boolean ok = true;
-            for (int p : parents) {
-                if (isMissing(variables.get(p), r)) {
-                    ok = false;
-                    break;
-                }
-            }
-            if (ok) rows.add(r);
+            // Complete data: all rows.
+            List<Integer> rows = new ArrayList<>(this.dataSet.getNumRows());
+            for (int r = 0; r < this.dataSet.getNumRows(); r++) rows.add(r);
+            return rows;
         }
-        return rows;
+
+        // Test-wise deletion: the rows complete on {i} union parents, computed once per column set and cached; see
+        // TestwiseRows. Same row set as the previous inline checks (which this replaces, along with the class's
+        // private isMissing, in favor of the shared definition in MissingDataAudit.isMissing). Copied out of the
+        // cache because the likelihood receives (and may retain) the list.
+        int[] allColumns = new int[parents.length + 1];
+        allColumns[0] = i;
+        System.arraycopy(parents, 0, allColumns, 1, parents.length);
+
+        return new ArrayList<>(this.testwiseRows.validRows(allColumns));
     }
 
     /**
-     * Missingness by variable type.
+     * Declares this score's native missing-value support: test-wise deletion.
+     *
+     * @return This support level.
      */
-    private boolean isMissing(Node v, int row) {
-        if (v instanceof DiscreteVariable) {
-            int val = this.dataSet.getInt(row, this.dataSet.getColumnIndex(v));
-            return val == -99; // project convention
-        } else if (v instanceof ContinuousVariable) {
-            double val = this.dataSet.getDouble(row, this.dataSet.getColumnIndex(v));
-            return Double.isNaN(val);
-        } else {
-            // default conservative
-            return false;
-        }
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 
     private double getStructurePrior(int[] parents) {

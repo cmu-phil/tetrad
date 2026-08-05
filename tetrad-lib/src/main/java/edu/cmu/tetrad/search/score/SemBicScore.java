@@ -24,6 +24,12 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
@@ -181,15 +187,52 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
      */
     public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
+        this(dataSet, precomputeCovariances, null);
+    }
+
+    /**
+     * Constructs the score from a dataset with an explicit missing-data specification. If the spec is null and the
+     * dataset contains missing values, TESTWISE deletion is used for backward compatibility and a warning is logged;
+     * see MissingDataUtils.resolveOrWarn.
+     *
+     * @param dataSet               The dataset.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly (complete
+     *                              data only).
+     * @param spec                  The missing-data specification, or null for the legacy default.
+     * @throws IllegalArgumentException      If the policy is FAIL and the dataset has missing values.
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single score; see Phase 3).
+     */
+    public SemBicScore(DataSet dataSet, boolean precomputeCovariances, MissingDataSpec spec) {
 
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
+        boolean missing = dataSet.existsMissingValue();
+        MissingDataPolicy policy = MissingDataUtils.resolveOrWarn(dataSet, spec, "SemBicScore");
+
+        if (missing) {
+            switch (policy) {
+                case FAIL -> throw new IllegalArgumentException(
+                        "SemBicScore: The dataset contains missing values and the missing-data policy is FAIL. "
+                                + MissingDataUtils.briefSummary(dataSet));
+                case LISTWISE -> {
+                    dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                    missing = false;
+                }
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "SemBicScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed datasets, "
+                                + "not by a single score.");
+                default -> {
+                }
+            }
+        }
+
         this.dataModel = dataSet;
         this.data = dataSet.getDoubleData();
 
-        if (!dataSet.existsMissingValue()) {
+        if (!missing) {
             setCovariances(getCovarianceMatrix(dataSet, precomputeCovariances));
 
             this.variables = this.covariances.getVariables();
@@ -198,16 +241,28 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
             this.logN = log(nEff);
-            return;
-        }
+        } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
+            EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
+            estimator.setRidge(spec.getEmRidge());
+            estimator.setTolerance(spec.getEmTolerance());
+            estimator.setMaxIterations(spec.getEmMaxIterations());
+            setCovariances(estimator.estimate());
 
-        this.variables = dataSet.getVariables();
-        this.sampleSize = dataSet.getNumRows();
-        setEffectiveSampleSize(-1);
-        this.indexMap = indexMap(this.variables);
-        this.calculateRowSubsets = true;
-        this.logN = log(nEff);
-        this.penaltyDiscount = 1.0;
+            this.variables = this.covariances.getVariables();
+            this.sampleSize = this.covariances.getSampleSize();
+            setEffectiveSampleSize(MissingDataUtils.effectiveSampleSize(dataSet, spec));
+            this.indexMap = indexMap(this.variables);
+            this.calculateRowSubsets = false;
+            this.logN = log(nEff);
+        } else { // TESTWISE
+            this.variables = dataSet.getVariables();
+            this.sampleSize = dataSet.getNumRows();
+            setEffectiveSampleSize(-1);
+            this.indexMap = indexMap(this.variables);
+            this.calculateRowSubsets = true;
+            this.logN = log(nEff);
+            this.penaltyDiscount = 1.0;
+        }
     }
 
     /**
@@ -218,37 +273,12 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
      */
     public SemBicScore(DataSet dataSet, double penaltyDiscount, boolean precomputeCovariances) {
-
-        if (dataSet == null) {
-            throw new NullPointerException();
-        }
+        this(dataSet, precomputeCovariances, null);
 
         if (penaltyDiscount <= 0) {
             throw new IllegalArgumentException("Penalty discount must be positive");
         }
 
-        this.dataModel = dataSet;
-        this.data = dataSet.getDoubleData();
-
-        if (!dataSet.existsMissingValue()) {
-            setCovariances(getCovarianceMatrix(dataSet, precomputeCovariances));
-
-            this.variables = this.covariances.getVariables();
-            this.sampleSize = this.covariances.getSampleSize();
-            setEffectiveSampleSize(-1);
-            this.indexMap = indexMap(this.variables);
-            this.calculateRowSubsets = false;
-            this.logN = log(nEff);
-            this.penaltyDiscount = penaltyDiscount;
-            return;
-        }
-
-        this.variables = dataSet.getVariables();
-        this.sampleSize = dataSet.getNumRows();
-        setEffectiveSampleSize(-1);
-        this.indexMap = indexMap(this.variables);
-        this.calculateRowSubsets = true;
-        this.logN = log(nEff);
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -340,31 +370,27 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
             return covarianceMatrix.getSelection(rows, cols);
         }
 
+        // The set of valid rows (complete on every column in 'rows' and 'cols') is the same for every cell of the
+        // covariance matrix, so it is computed once per call--and cached per column set across calls; see
+        // TestwiseRows--rather than recomputed inside every cell as before. The numerics are unchanged. (Note: this
+        // path divides by n - 1 while calcCovWithTestwiseDeletion divides by n; that preexisting inconsistency is
+        // preserved here for backward compatibility and flagged for later resolution.)
+        int[] filterColumns = new int[cols.length + rows.length];
+        System.arraycopy(cols, 0, filterColumns, 0, cols.length);
+        System.arraycopy(rows, 0, filterColumns, cols.length, rows.length);
+        List<Integer> validRows = TestwiseRows.forMatrix(data).validRows(filterColumns, rowsInData);
+
         Matrix cov = new Matrix(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
             for (int j = 0; j < cols.length; j++) {
                 double mui = 0.0;
                 double muj = 0.0;
-                double sampleSize = 0;//data.getNumRows();
+                double sampleSize = validRows.size();
 
-                K1:
-                for (int k : rowsInData) {
-                    for (int c : cols) {
-                        if (Double.isNaN(data.get(k, c))) {
-                            continue K1;
-                        }
-                    }
-
-                    for (int c : rows) {
-                        if (Double.isNaN(data.get(k, c))) {
-                            continue K1;
-                        }
-                    }
-
+                for (int k : validRows) {
                     mui += data.get(k, cols[i]);
                     muj += data.get(k, cols[j]);
-                    sampleSize++;
                 }
 
                 mui /= sampleSize;
@@ -372,20 +398,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
 
                 double _cov = 0.0;
 
-                K2:
-                for (int k : rowsInData) {
-                    for (int c : cols) {
-                        if (Double.isNaN(data.get(k, c))) {
-                            continue K2;
-                        }
-                    }
-
-                    for (int c : rows) {
-                        if (Double.isNaN(data.get(k, c))) {
-                            continue K2;
-                        }
-                    }
-
+                for (int k : validRows) {
                     _cov += (data.get(k, cols[i]) - mui) * (data.get(k, cols[j]) - muj);
                 }
 
@@ -491,20 +504,9 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
     private static @NotNull Matrix calcCovWithTestwiseDeletion(List<Integer> rows, int[] cols, int[] all, DataSet dataSet) {
         Matrix _cov = new Matrix(cols.length, cols.length);
 
-        // Precompute valid rows
-        List<Integer> validRows = new ArrayList<>();
-        for (int k : rows) {
-            boolean isValid = true;
-            for (int c : all) {
-                if (Double.isNaN(dataSet.getDouble(k, c))) {
-                    isValid = false;
-                    break;
-                }
-            }
-            if (isValid) {
-                validRows.add(k);
-            }
-        }
+        // Valid rows (complete on the columns in 'all'), computed once per column set and cached; see
+        // TestwiseRows. Custom row subsets (e.g., from subsampling) bypass the cache.
+        List<Integer> validRows = TestwiseRows.forDataSet(dataSet).validRows(all, rows);
 
         // Parallel computation of covariance matrix
         IntStream.range(0, cols.length).parallel().forEach(i -> {
@@ -526,7 +528,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
                 if (validCount > 1) {
                     mui /= validCount;
                     muj /= validCount;
-                    __cov = (__cov - validCount * mui * muj) / validCount;
+                    __cov = (__cov - validCount * mui * muj) / (validCount - 1);
                 } else {
                     __cov = 0.0; // Handle cases with no valid rows
                 }
@@ -992,6 +994,16 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
+    }
+
+    /**
+     * Declares this score's native missing-value support: test-wise deletion.
+     *
+     * @return This support level.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 
     /**

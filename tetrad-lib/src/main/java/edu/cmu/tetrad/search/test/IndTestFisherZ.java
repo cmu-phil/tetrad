@@ -21,6 +21,11 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
@@ -119,26 +124,72 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      * @throws IllegalArgumentException if the alpha value is not in the range [0, 1]
      */
     public IndTestFisherZ(DataSet dataSet, double alpha) {
+        this(dataSet, alpha, (MissingDataSpec) null);
+    }
+
+    /**
+     * Constructs the test from a dataset with an explicit missing-data specification. If the spec is null and the
+     * dataset contains missing values, TESTWISE deletion is used for backward compatibility and a warning is logged;
+     * see MissingDataUtils.resolveOrWarn.
+     *
+     * @param dataSet The dataset; must be continuous.
+     * @param alpha   The significance level, in [0, 1].
+     * @param spec    The missing-data specification, or null for the legacy default.
+     * @throws IllegalArgumentException      If the policy is FAIL and the dataset has missing values.
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single test; see Phase 3).
+     */
+    public IndTestFisherZ(DataSet dataSet, double alpha, MissingDataSpec spec) {
+        if (!(dataSet.isContinuous())) throw new IllegalArgumentException("Data set must be continuous.");
+        if (!(alpha >= 0 && alpha <= 1)) throw new IllegalArgumentException("Alpha must be in [0,1]");
+
+        boolean missing = dataSet.existsMissingValue();
+        MissingDataPolicy policy = MissingDataUtils.resolveOrWarn(dataSet, spec, "IndTestFisherZ");
+
+        if (missing) {
+            switch (policy) {
+                case FAIL -> throw new IllegalArgumentException(
+                        "IndTestFisherZ: The dataset contains missing values and the missing-data policy is FAIL. "
+                                + MissingDataUtils.briefSummary(dataSet));
+                case LISTWISE -> {
+                    dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                    missing = false;
+                }
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "IndTestFisherZ: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed datasets, "
+                                + "not by a single test.");
+                default -> {
+                }
+            }
+        }
+
         this.dataSet = dataSet;
         this.sampleSize = dataSet.getNumRows();
         setEffectiveSampleSize(-1);
 
-        if (!(dataSet.isContinuous())) throw new IllegalArgumentException("Data set must be continuous.");
-
-        if (!dataSet.existsMissingValue()) {
+        if (!missing) {
             this.cor = new CorrelationMatrix(dataSet);
             this.variables = this.cor.getVariables();
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
-            setAlpha(alpha);
-        } else {
-            if (!(alpha >= 0 && alpha <= 1)) throw new IllegalArgumentException("Alpha must be in [0,1]");
+        } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
+            EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
+            estimator.setRidge(spec.getEmRidge());
+            estimator.setTolerance(spec.getEmTolerance());
+            estimator.setMaxIterations(spec.getEmMaxIterations());
+            this.cor = new CorrelationMatrix(estimator.estimate());
+            this.variables = this.cor.getVariables();
+            this.indexMap = indexMap(this.variables);
+            this.nameMap = nameMap(this.variables);
+            setEffectiveSampleSize(MissingDataUtils.effectiveSampleSize(dataSet, spec));
+        } else { // TESTWISE
             List<Node> nodes = dataSet.getVariables();
             this.variables = Collections.unmodifiableList(nodes);
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
-            setAlpha(alpha);
         }
+
+        setAlpha(alpha);
     }
 
     /**
@@ -740,6 +791,16 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         RealMatrix Pinv = V.multiply(new Array2DRowRealMatrix(Dinv)).multiply(V.transpose());
 
         return partialFromPrecision(Pinv);
+    }
+
+    /**
+     * Declares this test's native missing-value support: test-wise deletion.
+     *
+     * @return This support level.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 
     private ICovarianceMatrix covMatrix() {

@@ -27,6 +27,8 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -71,7 +73,8 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
         ConditionalGaussianScore conditionalGaussianScore =
                 new ConditionalGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet),
                         parameters.getDouble("penaltyDiscount"),
-                        parameters.getBoolean("discretize"));
+                        parameters.getBoolean("discretize"),
+                        MissingDataUtils.fromParameters(parameters));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt(Params.NUM_CATEGORIES_TO_DISCRETIZE));
         conditionalGaussianScore.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         conditionalGaussianScore.setNumCategoriesToDiscretize(parameters.getInt(Params.MIN_SAMPLE_SIZE_PER_CELL));
@@ -106,6 +109,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
         parameters.add(Params.DISCRETIZE);
         parameters.add(Params.NUM_CATEGORIES_TO_DISCRETIZE);
         parameters.add(Params.MIN_SAMPLE_SIZE_PER_CELL);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

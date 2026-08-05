@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 
@@ -217,6 +218,18 @@ public interface IndependenceTest {
      */
     default boolean canBeSubsampled() {
         return this instanceof RowsSettable;
+    }
+
+    /**
+     * Declares what this test can do, natively, with data containing missing values. The default is
+     * {@link MissingValueSupport#NONE}, meaning that missingness must be handled upstream (e.g., by imputation, or
+     * by supplying an EM-estimated covariance matrix if the test consumes one); tests that handle missing values
+     * themselves should override this.
+     *
+     * @return This support level.
+     */
+    default MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.NONE;
     }
 }
 

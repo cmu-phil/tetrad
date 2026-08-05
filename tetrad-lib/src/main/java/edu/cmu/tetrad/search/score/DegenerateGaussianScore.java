@@ -21,6 +21,9 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
@@ -64,8 +67,43 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
      * @param lambda                Singularity lambda
      */
     public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances, double lambda) {
+        this(dataSet, precomputeCovariances, lambda, null);
+    }
+
+    /**
+     * Constructs the score from a dataset with an explicit missing-data specification. This score cannot handle
+     * missing values natively: its indicator embedding of discrete categories is undefined for the missing-value
+     * sentinel, and prior to the Phase 1 refactor missing data silently produced statistically undefined scores. A
+     * dataset with missing values is therefore rejected unless the policy is LISTWISE.
+     *
+     * @param dataSet               The dataset.
+     * @param precomputeCovariances True if covariances should be precomputed.
+     * @param lambda                Singularity lambda
+     * @param spec                  The missing-data specification, or null (equivalent to FAIL on missing data).
+     * @throws IllegalArgumentException      If the dataset has missing values and the policy is not LISTWISE.
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
+     *                                       by a single score; see Phase 3).
+     */
+    public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances, double lambda,
+                                   MissingDataSpec spec) {
         if (dataSet == null) {
             throw new NullPointerException();
+        }
+
+        if (dataSet.existsMissingValue()) {
+            MissingDataPolicy policy = spec == null ? MissingDataPolicy.FAIL : spec.getPolicy();
+
+            switch (policy) {
+                case LISTWISE -> dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "DegenerateGaussianScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed "
+                                + "datasets, not by a single score.");
+                default -> throw new IllegalArgumentException(
+                        "DegenerateGaussianScore: The dataset contains missing values, which this score cannot "
+                                + "handle (its indicator embedding is undefined for missing values; previously this "
+                                + "produced statistically undefined results). Use MissingDataSpec.listwise(), or "
+                                + "impute the data first. " + MissingDataUtils.briefSummary(dataSet));
+            }
         }
 
         this.variables = dataSet.getVariables();

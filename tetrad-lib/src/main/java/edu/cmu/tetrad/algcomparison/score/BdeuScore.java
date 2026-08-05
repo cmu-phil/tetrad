@@ -26,6 +26,8 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.BDeuScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -66,7 +68,8 @@ public class BdeuScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
         BDeuScore score
-                = new BDeuScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
+                = new BDeuScore(SimpleDataLoader.getDiscreteDataSet(dataSet),
+                MissingDataUtils.fromParameters(parameters));
         score.setPriorEquivalentSampleSize(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return score;
@@ -96,6 +99,7 @@ public class BdeuScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE);
         parameters.add(Params.STRUCTURE_PRIOR);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

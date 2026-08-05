@@ -27,6 +27,8 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -71,7 +73,8 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
         DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,
-                parameters.getDouble(Params.SINGULARITY_LAMBDA));
+                parameters.getDouble(Params.SINGULARITY_LAMBDA),
+                MissingDataUtils.fromParameters(parameters));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         degenerateGaussianScore.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return degenerateGaussianScore;
@@ -104,6 +107,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 
