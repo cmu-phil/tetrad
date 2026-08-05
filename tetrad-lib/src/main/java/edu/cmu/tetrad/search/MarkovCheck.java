@@ -1673,6 +1673,37 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     }
 
     /**
+     * Returns the FDR (False Discovery Rate) p-value cutoff for the given condition, using the
+     * Benjamini-Hochberg procedure (or Benjamini-Yekutieli if negative correlation is assumed).
+     * P-values at or below this cutoff may be judged significant while controlling the FDR at
+     * the given level.
+     *
+     * @param alpha                The FDR level to control (e.g., 0.05).
+     * @param indep                True for the Markov (implied independence) results, false for the
+     *                             dependency results.
+     * @param negativelyCorrelated True if the Benjamini-Yekutieli correction for arbitrary dependence
+     *                             should be used, false for the Benjamini-Hochberg procedure.
+     * @return The FDR p-value cutoff for this condition.
+     */
+    public double getFdrCutoff(double alpha, boolean indep, boolean negativelyCorrelated) {
+        return getFdrCutoff(alpha, getResults(indep), negativelyCorrelated);
+    }
+
+    /**
+     * Returns the FDR (False Discovery Rate) p-value cutoff for the given list of results, using the
+     * Benjamini-Hochberg procedure (or Benjamini-Yekutieli if negative correlation is assumed).
+     *
+     * @param alpha                The FDR level to control (e.g., 0.05).
+     * @param results              The results whose p-values are to be used.
+     * @param negativelyCorrelated True if the Benjamini-Yekutieli correction for arbitrary dependence
+     *                             should be used, false for the Benjamini-Hochberg procedure.
+     * @return The FDR p-value cutoff for the given results.
+     */
+    public double getFdrCutoff(double alpha, List<IndependenceResult> results, boolean negativelyCorrelated) {
+        return StatUtils.fdrCutoff(alpha, getPValues(results), negativelyCorrelated);
+    }
+
+    /**
      * Returns the fraction of dependent judgments for the given list of results.
      *
      * @param indep True for the Markov results, false for the dependency results.

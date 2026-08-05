@@ -102,7 +102,11 @@ public final class Fcit implements IGraphSearch {
      * "lexicographic over name-sorted nodes").
      */
     private static final Comparator<Node> NODE_ORDER = Comparator.comparing(Node::getName);
-
+    /**
+     * Canonical edge order for the sweep scan and the saturating pass.
+     */
+    private static final Comparator<Edge> EDGE_ORDER =
+            Comparator.comparing(Fcit::minName).thenComparing(Fcit::maxName);
     /**
      * Whether the constructor wraps the supplied test in
      * {@link CachedIndependenceQueries}. Static because it must be decided
@@ -110,13 +114,6 @@ public final class Fcit implements IGraphSearch {
      * repeated-query consistency is not wanted.
      */
     public static boolean useTestCache = true;
-
-    /**
-     * Canonical edge order for the sweep scan and the saturating pass.
-     */
-    private static final Comparator<Edge> EDGE_ORDER =
-            Comparator.comparing(Fcit::minName).thenComparing(Fcit::maxName);
-
     /**
      * The independence test.
      */
@@ -150,25 +147,12 @@ public final class Fcit implements IGraphSearch {
      */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
     /**
-     * Monotone counter bumped on every graph-changing commit. Sweep results are
-     * a function of the graph, so a definite not-found remains valid until this
-     * changes.
-     */
-    private volatile long graphVersion = 0L;
-    /**
      * Pairs whose two-view sweep exhausted without a separator, and the graph
      * version at which that happened. Consulted before re-sweeping.
      * Concurrent because {@code findIndependenceCheckRecursive} runs inside the
      * parallel lookahead.
      */
     private final Map<Set<Node>, Long> sweepFailedAt = new java.util.concurrent.ConcurrentHashMap<>();
-    /**
-     * Committed separation sets: one entry per pair whose edge was removed by a
-     * committed (legal) deletion, plus R4-time separators recorded along the
-     * committed sequence. Reassigned wholesale on commit (scratch adoption); see
-     * {@link #tryToModifyGraph} and {@link #saturatingPass}.
-     */
-    private SepsetMap sepsets = new SepsetMap();
     /**
      * Memo of candidate states already found ILLEGAL, keyed by
      * (skeleton signature, sepset signature). The from-scratch reorientation and
@@ -185,6 +169,19 @@ public final class Fcit implements IGraphSearch {
      * {@code auditLegalityMemo} flag turns the memo into such an audit.</p>
      */
     private final Map<String, Boolean> illegalStates = new HashMap<>();
+    /**
+     * Monotone counter bumped on every graph-changing commit. Sweep results are
+     * a function of the graph, so a definite not-found remains valid until this
+     * changes.
+     */
+    private volatile long graphVersion = 0L;
+    /**
+     * Committed separation sets: one entry per pair whose edge was removed by a
+     * committed (legal) deletion, plus R4-time separators recorded along the
+     * committed sequence. Reassigned wholesale on commit (scratch adoption); see
+     * {@link #tryToModifyGraph} and {@link #saturatingPass}.
+     */
+    private SepsetMap sepsets = new SepsetMap();
     /**
      * When true, the legality memo is consulted but not trusted: every hit is
      * recomputed and a mismatch is logged. Use to verify that reorientation is
@@ -264,7 +261,8 @@ public final class Fcit implements IGraphSearch {
     /**
      * Maximum discriminating-path length (-1 unlimited).
      */
-    private int maxDiscriminatingPathLength = -1;    /**
+    private int maxDiscriminatingPathLength = -1;
+    /**
      * Per-edge (and per-pair, in detection) search budget in ms, -1 unlimited.
      * NOTE: wall-clock, hence nondeterministic across runs under varying load.
      * For reproducible experiments prefer {@link #maxTestsPerPair}.
@@ -543,10 +541,28 @@ public final class Fcit implements IGraphSearch {
         return out;
     }
 
+    /**
+     * True iff {@code v} carries at least one circle endpoint on some incident
+     * edge of {@code view} -- the ambiguity criterion of Def. rb-step's harvest.
+     */
+    private static boolean hasCircleEndpoint(Graph view, Node v) {
+        for (Node w : view.getAdjacentNodes(v)) {
+            if (view.getEndpoint(v, w) == Endpoint.CIRCLE
+                    || view.getEndpoint(w, v) == Endpoint.CIRCLE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public IndependenceTest getTest() {
         return test;
     }
+
+    // -------------------------------------------------------------------------
+    // Phase 1: legality-gated single-edge removals with parallel lookahead.
+    // -------------------------------------------------------------------------
 
     /**
      * Run the search and return a PAG.
@@ -803,10 +819,6 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
-    // -------------------------------------------------------------------------
-    // Phase 1: legality-gated single-edge removals with parallel lookahead.
-    // -------------------------------------------------------------------------
-
     /**
      * One sweep over the edges of the current PAG, attempting removals. Each
      * phase scans the tail of a canonical edge list in parallel; the
@@ -896,6 +908,11 @@ public final class Fcit implements IGraphSearch {
         return changedThisSweep;
     }
 
+    // -------------------------------------------------------------------------
+    // The shared sweep (Def. rb-step): one implementation, used by the removal
+    // phase (live + blind views) and by the detection scan.
+    // -------------------------------------------------------------------------
+
     /**
      * The full separator search for one edge: committed and cross-round fast
      * paths, then the shared sweep against the live view, then against the
@@ -981,11 +998,6 @@ public final class Fcit implements IGraphSearch {
         return null;
     }
 
-    // -------------------------------------------------------------------------
-    // The shared sweep (Def. rb-step): one implementation, used by the removal
-    // phase (live + blind views) and by the detection scan.
-    // -------------------------------------------------------------------------
-
     /**
      * One sweep against one view of the graph. The view supplies proposals only;
      * every returned set is test-confirmed. Candidate order is canonical
@@ -1006,7 +1018,9 @@ public final class Fcit implements IGraphSearch {
         boolean sawIndeterminate = false;
 
         // Seed blocking set with no forbidden nodes.
-        RecursiveBlocking.BlockingResult b0 = blockWithEscalation(view, x, y, Set.of(), deadline);
+        RecursiveBlocking.BlockingResult b0 = RecursiveBlocking.blockPathsRecursively(
+                view, x, y, Set.of(), Set.of(), recursiveDepth, this.depth, rbRadius, 1, true,
+                deadline);
         if (b0.indeterminate()) {
             sawIndeterminate = true;
         }
@@ -1053,9 +1067,10 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
-            RecursiveBlocking.BlockingResult result = notFollowed.isEmpty()
-                    ? b0
-                    : blockWithEscalation(view, x, y, notFollowed, deadline);
+            RecursiveBlocking.BlockingResult result;
+            result = notFollowed.isEmpty() ? b0 : RecursiveBlocking.blockPathsRecursively(
+                    view, x, y, Set.of(), notFollowed, recursiveDepth, this.depth, rbRadius, 1, true,
+                    deadline);
 
             if (result.indeterminate()) {
                 sawIndeterminate = true;
@@ -1137,20 +1152,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * True iff {@code v} carries at least one circle endpoint on some incident
-     * edge of {@code view} -- the ambiguity criterion of Def. rb-step's harvest.
-     */
-    private static boolean hasCircleEndpoint(Graph view, Node v) {
-        for (Node w : view.getAdjacentNodes(v)) {
-            if (view.getEndpoint(v, w) == Endpoint.CIRCLE
-                    || view.getEndpoint(w, v) == Endpoint.CIRCLE) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Small-subset shortcut: tests subsets of the common neighborhood of
      * {@code (x, y)} by increasing size, up to {@link #quickSubsetDepth}.
      * Returns the first confirmed separator, or null. Every candidate is
@@ -1184,43 +1185,6 @@ public final class Fcit implements IGraphSearch {
         }
 
         return null;
-    }
-
-    /**
-     * Recursive blocking with depth escalation when a conditioning-set cap is
-     * set. NOTE: RecursiveBlocking currently reports a binding depth cap (and a
-     * binding radius pool) as UNBLOCKABLE rather than INDETERMINATE, contrary to
-     * its documented three-valued contract; until that is fixed there, we
-     * escalate on any not-found result rather than only on indeterminate().
-     * Harmless when the verdict is genuinely UNBLOCKABLE: the cap bounds the
-     * extra calls.
-     */
-    private RecursiveBlocking.BlockingResult blockWithEscalation(Graph view, Node x, Node y,
-                                                                 Set<Node> notFollowed, long deadline)
-            throws InterruptedException {
-        if (this.depth < 0) {
-            return RecursiveBlocking.blockPathsRecursively(
-                    view, x, y, Set.of(), notFollowed, recursiveDepth, this.depth, rbRadius, 1, true,
-                    deadline);
-        }
-
-        RecursiveBlocking.BlockingResult result = null;
-
-        for (int d = 1; d <= this.depth; d++) {
-            if (System.currentTimeMillis() > deadline) {
-                return new RecursiveBlocking.BlockingResult(null, true);
-            }
-
-            result = RecursiveBlocking.blockPathsRecursively(
-                    view, x, y, Set.of(), notFollowed, recursiveDepth, d, rbRadius, 1, true,
-                    deadline);
-
-            if (result.found()) {
-                return result;
-            }
-        }
-
-        return result == null ? new RecursiveBlocking.BlockingResult(null, true) : result;
     }
 
     // -------------------------------------------------------------------------

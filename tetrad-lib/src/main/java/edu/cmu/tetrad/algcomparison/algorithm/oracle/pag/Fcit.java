@@ -186,6 +186,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setRbRadius(parameters.getInt(Params.RB_RADIUS));
         search.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
+        search.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);
 
         // Wall-clock per-pair budget. NOTE: this makes runs NONDETERMINISTIC -- a machine under load explores a
         // different candidate family and can return a different graph. For enumeration harnesses and any experiment

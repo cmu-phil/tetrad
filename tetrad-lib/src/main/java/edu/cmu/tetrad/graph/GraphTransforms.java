@@ -130,7 +130,7 @@ public class GraphTransforms {
             }
         }
 
-        // This method failed on an example that was a valid CPDAG. jdramsey 2025-12-3
+//        // This method failed on an example that was a valid CPDAG. jdramsey 2025-12-3
 //        List<Node> order = graph.getNodes();
 //        order.sort((node1, node2) -> {
 //            if (graph.paths().isAncestorOf(node1, node2)) {
@@ -142,8 +142,52 @@ public class GraphTransforms {
 //            }
 //        });
 
+        // Peel the node with no remaining directed parents; when the directed part is
+        // acyclic this is a topological order (Kahn's algorithm). If a cycle makes the
+        // minimum parent count positive, peel the node with fewest remaining parents,
+        // breaking the cycle deterministically instead of failing. Tie-break by name
+        // for determinism. (Cf. the sort-based version, removed 2025-12: ancestry is a
+        // partial order, and List.sort requires a total one -- TimSort throws
+        // "Comparison method violates its general contract!" on inputs where it
+        // detects the intransitivity, and silently produces non-topological orders on
+        // inputs where it doesn't.)
+        List<Node> nodes = graph.getNodes();
+
+        Map<Node, Set<Node>> parents = new HashMap<>();
+        Map<Node, Set<Node>> children = new HashMap<>();
+
+        for (Node n : nodes) {
+            parents.put(n, new HashSet<>());
+            children.put(n, new HashSet<>());
+        }
+
+        for (Edge e : graph.getEdges()) {
+            if (Edges.isDirectedEdge(e)) {
+                Node tail = Edges.getDirectedEdgeTail(e);
+                Node head = Edges.getDirectedEdgeHead(e);
+                parents.get(head).add(tail);
+                children.get(tail).add(head);
+            }
+        }
+
+        Comparator<Node> pick = Comparator
+                .comparingInt((Node n) -> parents.get(n).size())
+                .thenComparing(Node::getName);
+
+        List<Node> order = new ArrayList<>(nodes.size());
+        Set<Node> remaining = new LinkedHashSet<>(nodes);
+
+        while (!remaining.isEmpty()) {
+            Node next = remaining.stream().min(pick).orElseThrow();
+            order.add(next);
+            remaining.remove(next);
+            for (Node c : children.get(next)) {
+                parents.get(c).remove(next);
+            }
+        }
+
         // Replacing with this method.
-        List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
+//        List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
 
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(true);
