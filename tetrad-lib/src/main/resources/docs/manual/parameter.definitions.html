@@ -7214,4 +7214,99 @@ Source:
         <li>Upper Bound: <span id="daoRandomizeOrder_upper_bound"></span></li>
         <li>Value Type: <span id="daoRandomizeOrder_value_type">Boolean</span></li>
     </ul>
+
+    === missingDataPolicy ===
+    <h3 class="parameter_description" id="missingDataPolicy">missingDataPolicy</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingDataPolicy_short_desc">Missing-data policy: "default", "fail", "listwise", "testwise", "em", or "mi"</span></li>
+        <li>Long Description: <span id="missingDataPolicy_long_desc">
+        How missing values in the dataset are handled by scores and independence tests. "default"
+        preserves each component's historical behavior (typically test-wise deletion, with a logged
+        warning). "fail" refuses data containing missing values. "listwise" deletes every row with
+        at least one missing value up front. "testwise" uses, for each local calculation, only the
+        rows complete on the variables involved; unbiased only if values are missing completely at
+        random (MCAR). "em" estimates the covariance matrix once by expectation-maximization under
+        a saturated Gaussian model and proceeds as complete data; valid under the weaker
+        missing-at-random (MAR) assumption for approximately multivariate normal continuous data.
+        "mi" performs multiple imputation and is handled by a search wrapper over imputed datasets,
+        not by a single score or test. Values are case-insensitive.</span></li>
+        <li>Default Value: <span id="missingDataPolicy_default_value">default</span></li>
+        <li>Lower Bound: <span id="missingDataPolicy_lower_bound"></span></li>
+        <li>Upper Bound: <span id="missingDataPolicy_upper_bound"></span></li>
+        <li>Value Type: <span id="missingDataPolicy_value_type">String</span></li>
+    </ul>
+
+    === missingEmRidge ===
+    <h3 class="parameter_description" id="missingEmRidge">missingEmRidge</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingEmRidge_short_desc">Ridge for the EM covariance estimator (default 0.0; min 0.0)</span></li>
+        <li>Long Description: <span id="missingEmRidge_long_desc">
+        A nonnegative value added to the diagonal of the covariance matrix in the M-step of the EM
+        covariance estimator, for numerical stability when the estimated matrix is near-singular.
+        Used only when missingDataPolicy is "em".</span></li>
+        <li>Default Value: <span id="missingEmRidge_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="missingEmRidge_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="missingEmRidge_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="missingEmRidge_value_type">Double</span></li>
+    </ul>
+
+    === missingEmTolerance ===
+    <h3 class="parameter_description" id="missingEmTolerance">missingEmTolerance</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingEmTolerance_short_desc">Convergence tolerance for the EM covariance estimator (default 1.0E-6)</span></li>
+        <li>Long Description: <span id="missingEmTolerance_long_desc">
+        The convergence tolerance for the observed-data log likelihood in the EM covariance
+        estimator; iteration stops when the improvement falls below this value. Must be positive.
+        Used only when missingDataPolicy is "em".</span></li>
+        <li>Default Value: <span id="missingEmTolerance_default_value">1.0E-6</span></li>
+        <li>Lower Bound: <span id="missingEmTolerance_lower_bound">4.9E-324</span></li>
+        <li>Upper Bound: <span id="missingEmTolerance_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="missingEmTolerance_value_type">Double</span></li>
+    </ul>
+
+    === missingEmMaxIterations ===
+    <h3 class="parameter_description" id="missingEmMaxIterations">missingEmMaxIterations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingEmMaxIterations_short_desc">Maximum EM iterations (default 1000; min 1)</span></li>
+        <li>Long Description: <span id="missingEmMaxIterations_long_desc">
+        The maximum number of iterations for the EM covariance estimator. If the tolerance is not
+        met within this many iterations, the estimate at the final iteration is used and the run is
+        reported as not converged. Used only when missingDataPolicy is "em".</span></li>
+        <li>Default Value: <span id="missingEmMaxIterations_default_value">1000</span></li>
+        <li>Lower Bound: <span id="missingEmMaxIterations_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="missingEmMaxIterations_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="missingEmMaxIterations_value_type">Integer</span></li>
+    </ul>
+
+    === missingNumImputations ===
+    <h3 class="parameter_description" id="missingNumImputations">missingNumImputations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingNumImputations_short_desc">Number of imputed datasets for multiple imputation (default 10; min 2)</span></li>
+        <li>Long Description: <span id="missingNumImputations_long_desc">
+        The number of completed datasets, m, generated under multiple imputation. The search is run
+        on each imputed dataset and the resulting graphs are pooled by edge frequency. Larger
+        values give more stable pooled results at proportionally greater cost. Used only when
+        missingDataPolicy is "mi".</span></li>
+        <li>Default Value: <span id="missingNumImputations_default_value">10</span></li>
+        <li>Lower Bound: <span id="missingNumImputations_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="missingNumImputations_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="missingNumImputations_value_type">Integer</span></li>
+    </ul>
+
+    === missingEssMode ===
+    <h3 class="parameter_description" id="missingEssMode">missingEssMode</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingEssMode_short_desc">Effective sample size mode under the EM policy: "fullN", "minPairwise", or "meanPairwise"</span></li>
+        <li>Long Description: <span id="missingEssMode_long_desc">
+        How the effective sample size used by penalized scores (the n in BIC) is determined when
+        the analysis runs on a covariance matrix estimated from incomplete data. "fullN" uses the
+        nominal number of rows (anti-conservative when much data is missing). "minPairwise" uses
+        the minimum, over variable pairs, of the number of rows on which both variables are
+        observed (most conservative). "meanPairwise" uses the mean of those pairwise counts.
+        Values are case-insensitive. Used only when missingDataPolicy is "em".</span></li>
+        <li>Default Value: <span id="missingEssMode_default_value">fullN</span></li>
+        <li>Lower Bound: <span id="missingEssMode_lower_bound"></span></li>
+        <li>Upper Bound: <span id="missingEssMode_upper_bound"></span></li>
+        <li>Value Type: <span id="missingEssMode_value_type">String</span></li>
+    </ul>
 </div>
