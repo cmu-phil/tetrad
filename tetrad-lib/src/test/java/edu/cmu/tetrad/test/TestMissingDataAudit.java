@@ -186,22 +186,30 @@ public class TestMissingDataAudit {
     }
 
     /**
-     * Scores that have not declared missing-value support should report NONE by default.
+     * Scores that have not declared missing-value support should report NONE by default. (Note: this must be tested
+     * with a score that does not override getMissingValueSupport(); SemBicScore, used here originally, declares
+     * TESTWISE as of the Phase 1 refactor and is covered by TestMissingDataPhase1.testCapabilityDeclarations.)
      */
     @Test
     public void testDefaultMissingValueSupport() {
-        double[][] data = new double[50][2];
-        Random rand = new Random(0);
+        edu.cmu.tetrad.search.score.Score undeclared = new edu.cmu.tetrad.search.score.Score() {
+            @Override
+            public double localScore(int node, int... parents) {
+                return 0.0;
+            }
 
-        for (int i = 0; i < 50; i++) {
-            data[i][0] = rand.nextGaussian();
-            data[i][1] = rand.nextGaussian();
-        }
+            @Override
+            public List<Node> getVariables() {
+                return new ArrayList<>();
+            }
 
-        edu.cmu.tetrad.search.score.SemBicScore score
-                = new edu.cmu.tetrad.search.score.SemBicScore(continuousDataSet(data, 2), true);
+            @Override
+            public int getSampleSize() {
+                return 0;
+            }
+        };
 
-        assertEquals(MissingValueSupport.NONE, score.getMissingValueSupport());
+        assertEquals(MissingValueSupport.NONE, undeclared.getMissingValueSupport());
     }
 
     private static double[][] deepCopy(double[][] a) {
