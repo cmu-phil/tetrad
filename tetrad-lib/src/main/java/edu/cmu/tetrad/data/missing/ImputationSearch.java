@@ -55,8 +55,8 @@ public final class ImputationSearch {
      * @param dataSet    The dataset.
      * @param algorithm  The algcomparison algorithm to run on each completed dataset.
      * @param parameters The parameters for the algorithm.
-     * @param imputer    The imputer, or null to choose a default (MvnImputer for continuous data; mixed-data
-     *                   imputation is a flagged follow-up).
+     * @param imputer    The imputer, or null to choose a default: MvnImputer for all-continuous data,
+     *                   MiceLiteImputer for discrete or mixed data.
      * @param spec       The spec (policy MULTIPLE_IMPUTATION), or null for the default of m = 10.
      * @return The result: the pooled graph and the per-imputation graphs.
      * @throws InterruptedException          If the search is interrupted.
@@ -86,8 +86,7 @@ public final class ImputationSearch {
             if (dataSet.isContinuous()) {
                 imputer = new MvnImputer(spec);
             } else {
-                throw new UnsupportedOperationException("No default imputer is available for discrete or mixed "
-                        + "data yet; supply a MultipleImputer, or use a test-wise-deletion-capable score.");
+                imputer = new MiceLiteImputer();
             }
         }
 
