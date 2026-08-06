@@ -41,9 +41,13 @@ import java.util.Map;
  * <p>
  * Resampling and the resample searches are delegated to the shared machinery in {@link ParameterSweep}
  * ({@code drawResamples} and {@code searchOnResamples}); this class keeps its historical edge-counting and
- * thresholding semantics. Compared to the pre-2026 implementation, resampling is now seed-controllable via
+ * thresholding semantics. Compared to the pre-2026 implementation, the resample draws are now seed-controllable via
  * Params.SEED, resample graphs have their nodes replaced by the original variables before counting (so edges are
- * comparable across resamples), and a concurrency hazard in the resample collection was removed.
+ * comparable across resamples), and a concurrency hazard in the resample collection was removed. Note that a fixed
+ * seed makes the resampled row sets exactly reproducible but makes the output graph reproducible only if the
+ * wrapped algorithm is itself deterministic; algorithms with internal thread pools (e.g. FGES) can break score
+ * near-ties differently between runs, which can flip edges whose resample counts sit at the percentStability
+ * threshold.
  * <p>
  * Parameters read from the Parameters object: "numSubsamples", "percentSubsampleSize", "percentStability", and
  * optionally Params.SEED.

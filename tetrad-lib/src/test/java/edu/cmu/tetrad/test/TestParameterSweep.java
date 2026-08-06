@@ -232,8 +232,12 @@ public class TestParameterSweep {
     }
 
     /**
-     * The refactored StabilitySelection should return a graph over the data's variables and be deterministic under
-     * a fixed seed.
+     * The refactored StabilitySelection should run end to end and return a graph over the data's variables. Exact
+     * run-to-run equality of the output is deliberately NOT asserted with FGES as the wrapped algorithm: the
+     * resamples are seed-deterministic, but FGES's internal thread pool can break score near-ties differently
+     * between runs, flipping resample graphs slightly and with them any edge whose count sits at the
+     * percentStability threshold. End-to-end determinism of the machinery itself is asserted in
+     * {@link #testEndToEndDeterminismWithDeterministicAlgorithm()}.
      */
     @Test
     public void testStabilitySelectionSmoke() {
@@ -247,10 +251,94 @@ public class TestParameterSweep {
 
         StabilitySelection ss = new StabilitySelection(new Fges(new SemBicScore()));
         Graph g1 = ss.search(data, params);
-        Graph g2 = ss.search(data, params);
 
         assertNotNull(g1);
         assertEquals(data.getNumColumns(), g1.getNodes().size());
+    }
+
+    /**
+     * With a deterministic wrapped algorithm, StabilitySelection and the sweep harness are exactly deterministic
+     * under a fixed seed. This isolates the harness's own contract (seed-deterministic resamples, race-free
+     * collection, order-stable counting) from any nondeterminism inside real search algorithms.
+     */
+    @Test
+    public void testEndToEndDeterminismWithDeterministicAlgorithm() throws InterruptedException {
+        DataSet data = simulate();
+
+        Parameters params = new Parameters();
+        params.set("percentSubsampleSize", 0.5);
+        params.set("numSubsamples", 10);
+        params.set("percentStability", 0.5);
+        params.set(Params.SEED, 7L);
+
+        StabilitySelection ss = new StabilitySelection(new ColumnMeanAlgorithm());
+        Graph g1 = ss.search(data, params);
+        Graph g2 = ss.search(data, params);
+
         assertEquals(g1.getEdges(), g2.getEdges());
+
+        ParameterSweep sweep = new ParameterSweep(new ColumnMeanAlgorithm(), new Parameters());
+        sweep.setNumResamples(10);
+        sweep.setPercentResampleSize(0.5);
+        sweep.setSeed(7);
+
+        SweepReport a = sweep.sweep(data, Params.PENALTY_DISCOUNT, List.of(1.0, 2.0));
+        SweepReport b = sweep.sweep(data, Params.PENALTY_DISCOUNT, List.of(1.0, 2.0));
+
+        for (int i = 0; i < 2; i++) {
+            assertEquals(a.getResults().get(i).getAdjacencyInstability(),
+                    b.getResults().get(i).getAdjacencyInstability(), 0.0);
+            assertEquals(a.getResults().get(i).getPointGraph().getEdges(),
+                    b.getResults().get(i).getPointGraph().getEdges());
+        }
+    }
+
+    /**
+     * A deterministic dummy algorithm for testing the harness machinery in isolation: connects variable 0 to each
+     * other variable whose sample mean on the given data exceeds variable 0's sample mean. A pure function of the
+     * dataset, so any nondeterminism observed with it wrapped is the harness's fault.
+     */
+    private static final class ColumnMeanAlgorithm implements edu.cmu.tetrad.algcomparison.algorithm.Algorithm {
+
+        @Override
+        public Graph search(edu.cmu.tetrad.data.DataModel dataModel, Parameters parameters) {
+            DataSet d = (DataSet) dataModel;
+            Graph g = new edu.cmu.tetrad.graph.EdgeListGraph(d.getVariables());
+            double mean0 = columnMean(d, 0);
+
+            for (int j = 1; j < d.getNumColumns(); j++) {
+                if (columnMean(d, j) > mean0) {
+                    g.addUndirectedEdge(d.getVariables().get(0), d.getVariables().get(j));
+                }
+            }
+
+            return g;
+        }
+
+        private double columnMean(DataSet d, int j) {
+            double sum = 0;
+            for (int i = 0; i < d.getNumRows(); i++) sum += d.getDouble(i, j);
+            return sum / d.getNumRows();
+        }
+
+        @Override
+        public Graph getComparisonGraph(Graph graph) {
+            return graph;
+        }
+
+        @Override
+        public String getDescription() {
+            return "Deterministic column-mean dummy";
+        }
+
+        @Override
+        public edu.cmu.tetrad.data.DataType getDataType() {
+            return edu.cmu.tetrad.data.DataType.Continuous;
+        }
+
+        @Override
+        public java.util.List<String> getParameters() {
+            return new java.util.ArrayList<>();
+        }
     }
 }
