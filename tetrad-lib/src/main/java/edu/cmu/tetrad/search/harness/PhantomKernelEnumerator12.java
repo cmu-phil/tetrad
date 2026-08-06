@@ -773,12 +773,7 @@ public final class PhantomKernelEnumerator12 {
             fcit.setDepth(DEPTH);
             fcit.setRecursiveDepth(RECURSIVE_DEPTH);
             fcit.setTimeout(FCIT_TIMEOUT_MS);
-//            fcit.setUseMarkFlipEscalation(true);
-//            fcit.setCompletionPolicy(Fcit.CompletionPolicy.OFF);
-
-            fcit.setCompletionPolicy(Fcit.CompletionPolicy.OFF);
-            fcit.setUseBlindView(false);
-            fcit.setUseMarkFlipEscalation(false);
+            fcit.setUseMarkFlipEscalation(true);
 
             fcit.setVerbose(false);
             terminal = fcit.search();
