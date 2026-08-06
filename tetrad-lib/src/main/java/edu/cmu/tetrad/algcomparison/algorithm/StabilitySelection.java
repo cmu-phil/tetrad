@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// Copyright (C) 2026 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
 // and Richard Scheines.                                                     //
 //                                                                           //
 // This program is free software: you can redistribute it and/or modify      //
@@ -20,26 +20,37 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.data.BootstrapSampler;
+import edu.cmu.tetrad.algcomparison.sweep.ParameterSweep;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.TimeUnit;
 
 /**
- * Stability selection.
+ * Stability selection: runs the wrapped algorithm on resamples of the data and returns the graph containing exactly
+ * those edges (with orientation) appearing in more than "percentStability" of the resample graphs.
+ * <p>
+ * Resampling and the resample searches are delegated to the shared machinery in {@link ParameterSweep}
+ * ({@code drawResamples} and {@code searchOnResamples}); this class keeps its historical edge-counting and
+ * thresholding semantics. Compared to the pre-2026 implementation, the resample draws are now seed-controllable via
+ * Params.SEED, resample graphs have their nodes replaced by the original variables before counting (so edges are
+ * comparable across resamples), and a concurrency hazard in the resample collection was removed. Note that a fixed
+ * seed makes the resampled row sets exactly reproducible but makes the output graph reproducible only if the
+ * wrapped algorithm is itself deterministic; algorithms with internal thread pools (e.g. FGES) can break score
+ * near-ties differently between runs, which can flip edges whose resample counts sit at the percentStability
+ * threshold.
+ * <p>
+ * Parameters read from the Parameters object: "numSubsamples", "percentSubsampleSize", "percentStability", and
+ * optionally Params.SEED.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -50,7 +61,7 @@ public class StabilitySelection implements Algorithm {
     private static final long serialVersionUID = 23L;
 
     /**
-     * The algorithm to use for the initial graph.
+     * The algorithm to use for the resample searches.
      */
     private final Algorithm algorithm;
 
@@ -72,66 +83,21 @@ public class StabilitySelection implements Algorithm {
 
         double percentageB = parameters.getDouble("percentSubsampleSize");
         int numSubsamples = parameters.getInt("numSubsamples");
+        long seed = parameters.getLong(Params.SEED, -1L);
 
-        Map<Edge, Integer> counts = new HashMap<>();
+        List<DataSet> resamples = ParameterSweep.drawResamples(_dataSet, numSubsamples, percentageB, true, seed);
 
-        List<Graph> graphs = new ArrayList<>();
-
-        int parallelism = Runtime.getRuntime().availableProcessors();
-        ForkJoinPool pool = new ForkJoinPool(parallelism);
-
-        class StabilityAction extends RecursiveAction {
-
-            private final int chunk;
-            private final int from;
-            private final int to;
-
-            private StabilityAction(int chunk, int from, int to) {
-                this.chunk = chunk;
-                this.from = from;
-                this.to = to;
-            }
-
-            @Override
-            protected void compute() {
-                if (this.to - this.from <= this.chunk) {
-                    for (int s = this.from; s < this.to; s++) {
-                        BootstrapSampler sampler = new BootstrapSampler();
-                        sampler.setWithReplacement(true);
-                        DataSet sample = sampler.sample(_dataSet, (int) (percentageB * _dataSet.getNumRows()));
-                        Graph graph = null;
-                        try {
-                            graph = StabilitySelection.this.algorithm.search(sample, parameters);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        graphs.add(graph);
-                    }
-                } else {
-                    int mid = (this.to + this.from) / 2;
-
-                    StabilityAction left = new StabilityAction(this.chunk, this.from, mid);
-                    StabilityAction right = new StabilityAction(this.chunk, mid, this.to);
-
-                    left.fork();
-                    right.compute();
-                    left.join();
-                }
-            }
-        }
-
-        final int chunk = 2;
+        List<Graph> graphs;
 
         try {
-            pool.invoke(new StabilityAction(chunk, 0, numSubsamples));
-        } catch (Exception e) {
+            graphs = ParameterSweep.searchOnResamples(this.algorithm, parameters, resamples,
+                    _dataSet.getVariables(), true);
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw e;
+            throw new RuntimeException(e);
         }
 
-        if (!pool.awaitQuiescence(1, TimeUnit.DAYS)) {
-            throw new IllegalStateException("Pool timed out");
-        }
+        Map<Edge, Integer> counts = new HashMap<>();
 
         for (Graph graph : graphs) {
             for (Edge edge : graph.getEdges()) {
@@ -151,6 +117,12 @@ public class StabilitySelection implements Algorithm {
         return outputGraph;
     }
 
+    /**
+     * Increments the count for an edge.
+     *
+     * @param edge   the edge.
+     * @param counts the count map.
+     */
     private void increment(Edge edge, Map<Edge, Integer> counts) {
         counts.putIfAbsent(edge, 0);
         counts.put(edge, counts.get(edge) + 1);
@@ -195,4 +167,3 @@ public class StabilitySelection implements Algorithm {
         return parameters;
     }
 }
-
