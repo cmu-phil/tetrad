@@ -208,6 +208,8 @@ public final class PhantomKernelEnumerator12 {
 
     private static final AtomicBoolean STOP = new AtomicBoolean(false);
     private static final AtomicLong ERR_PRINTS = new AtomicLong();
+    /** Models on which the Zhang completion round trip fails (diagnostic; see analyzeInline). */
+    private static final AtomicLong ZHANG_ROUNDTRIP_FAILS = new AtomicLong();
     private static final AtomicLong ANALYZED = new AtomicLong();
     private static long ANALYSIS_T0;
 
@@ -340,7 +342,10 @@ public final class PhantomKernelEnumerator12 {
                     // Dedup on the canonical (isomorph-invariant) key: one Fcit run per
                     // class up to relabelling, matching magspace.
                     if (seen.putIfAbsent(canonicalKey(canon), Boolean.TRUE) == null) {
-                        analyzeInline(total, canon);   // new class -> run Fcit now
+                        // PKE8's oracle convention: project the generating DAG.  The
+                        // same name-sorted map relabels mag and pag identically.
+                        Graph mag = canonicalEdgeOrder(relabelToCanon(GraphTransforms.dagToMag(dag)));
+                        analyzeInline(total, mag, canon);
                     }
                 } catch (Exception ignore) {
                     // A model that will not project is not a true PAG; skip it.
@@ -438,7 +443,9 @@ public final class PhantomKernelEnumerator12 {
                     // relabellings), so isomorphic PAGs collapse to one Fcit run.
                     String key = canonicalKey(canon);
                     if (seen.putIfAbsent(key, Boolean.TRUE) == null) {
-                        analyzeInline(total, canon);   // new class -> run Fcit now
+                        // The representative pair is (this labelling's mag, its pag):
+                        // same CANON nodes, consistent by construction.
+                        analyzeInline(total, canonicalEdgeOrder(mag), canon);
                         blockNewKeys.add(key);
                     }
                 } catch (Exception ignore) {
@@ -698,17 +705,36 @@ public final class PhantomKernelEnumerator12 {
      *  Called from inside the enumeration streams, so it must be thread-safe: the Result
      *  counters are LongAdders and the violation log is synchronized. The model id is the
      *  PAG's positional key -- stable, and it identifies the model in the log. */
-    private static void analyzeInline(Result r, Graph truePag) {
+    private static void analyzeInline(Result r, Graph trueMag, Graph truePag) {
         if (STOP.get()) return;
         String modelId = positionalKey(truePag);
         r.pagsScanned.increment();
         try {
-            // The oracle is m-separation in a MAG of G*'s equivalence class.  Any MAG
-            // in the class induces the same observed m-separation model, so deriving
-            // it from the PAG (Zhang completion) makes the analysis mode-independent:
-            // Fcit cannot tell two models sharing a true PAG apart.  This replaces
-            // PKE8's dagToMag(dag) with the same oracle.
-            Graph trueMag = GraphTransforms.zhangMagFromPag(truePag);
+            // The oracle is m-separation in trueMag, the ENUMERATED member of G*'s
+            // class (magspace: the legal MAG that projected to G*; dagsweep: the
+            // projection of the generating DAG).  The previous convention derived
+            // the oracle as zhangMagFromPag(G*), trusting the completion to stay in
+            // the class; it does not always (see ZHANG-ROUNDTRIP-FAIL below): on
+            // circle-rich PAGs it can orient the circle component with unshielded
+            // colliders, handing Fcit an oracle from a DIFFERENT class and
+            // manufacturing violations against a mismatched reference.  Oracle and
+            // reference are now consistent by construction.
+            //
+            // Round-trip audit of the Zhang completion, kept as a byproduct: this
+            // enumeration is exactly the fuzzer the GraphTransforms bug needs.
+            try {
+                Graph zm = GraphTransforms.zhangMagFromPag(truePag);
+                if (!graphsIdentical(pagOfMag(zm), truePag)) {
+                    long k = ZHANG_ROUNDTRIP_FAILS.incrementAndGet();
+                    if (k <= 50) {
+                        violationLog.write("# ZHANG-ROUNDTRIP-FAIL " + modelId
+                                + " : pagOfMag(zhangMagFromPag(G*)) != G* -- completion left the class\n");
+                    }
+                }
+            } catch (Exception ignore) {
+                // Audit only; never blocks the analysis.
+            }
+
             runFcit(r, modelId, trueMag, truePag, CANON);
         } catch (Exception ex) {
             r.skipped.increment();
@@ -747,6 +773,8 @@ public final class PhantomKernelEnumerator12 {
             fcit.setDepth(DEPTH);
             fcit.setRecursiveDepth(RECURSIVE_DEPTH);
             fcit.setTimeout(FCIT_TIMEOUT_MS);
+            fcit.setUseMarkFlipEscalation(true);
+
             fcit.setVerbose(false);
             terminal = fcit.search();
         } catch (Throwable ex) {
@@ -778,7 +806,7 @@ public final class PhantomKernelEnumerator12 {
             if (xd[0] > 0) r.skeletonExtra.increment();
             if (xd[1] > 0) r.skeletonMissing.increment();
             bucket = "SKELETON_DIFF";
-        } else if (markovEquivalent(term, truePag, obs)) {
+        } else if (markovEquivalent(term, trueMag, obs)) {
             r.equivNotExact.increment();
             bucket = "EQUIVALENT_NOT_EXACT";
         } else {
@@ -842,11 +870,13 @@ public final class PhantomKernelEnumerator12 {
         return new int[]{extra, missing};
     }
 
-    /** Same observed m-separation model?  Compared via each PAG's Zhang MAG. */
-    private static boolean markovEquivalent(Graph a, Graph b, List<Node> obs) {
+    /** Same observed m-separation model?  The terminal side goes through its Zhang
+     *  MAG (still completion-sensitive; see ZHANG-ROUNDTRIP-FAIL); the reference
+     *  side is the oracle MAG itself, trustworthy by construction. */
+    private static boolean markovEquivalent(Graph term, Graph refMag, List<Node> obs) {
         try {
-            Graph ma = GraphTransforms.zhangMagFromPag(a);
-            Graph mb = GraphTransforms.zhangMagFromPag(b);
+            Graph ma = GraphTransforms.zhangMagFromPag(term);
+            Graph mb = refMag;
             MsepTest ta = new MsepTest(ma);
             MsepTest tb = new MsepTest(mb);
             int n = obs.size();

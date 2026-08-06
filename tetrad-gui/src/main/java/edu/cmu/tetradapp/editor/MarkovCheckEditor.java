@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static edu.cmu.tetrad.util.StatUtils.fdrCutoff;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 
 /**
@@ -182,6 +183,14 @@ public class MarkovCheckEditor extends JPanel {
      * The label for the Fisher combined p.
      */
     private JLabel fisherCombinedLabelIndep;
+    /**
+     * The label for the FDR p-value cutoff.
+     */
+    private JLabel fdrCutoffLabelDep;
+    /**
+     * The label for the FDR p-value cutoff.
+     */
+    private JLabel fdrCutoffLabelIndep;
     /**
      * Sort direction.
      */
@@ -998,6 +1007,11 @@ public class MarkovCheckEditor extends JPanel {
         a10.add(fisherCombinedLabelIndep);
         a4.add(a10);
 
+        Box a11 = Box.createHorizontalBox();
+        a11.add(Box.createHorizontalGlue());
+        a11.add(fdrCutoffLabelIndep);
+        a4.add(a11);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -1113,6 +1127,10 @@ public class MarkovCheckEditor extends JPanel {
                         "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
                 );
 
+                fdrCutoffLabelIndep.setText(
+                        "FDR p-value cutoff = " + nf.format(fdrCutoff(visiblePairs))
+                );
+
                 histogramPanelIndep.removeAll();
                 histogramPanelIndep.add(createHistogramPanel(visiblePairs), BorderLayout.CENTER);
                 histogramPanelIndep.validate();
@@ -1157,6 +1175,10 @@ public class MarkovCheckEditor extends JPanel {
 
                 fisherCombinedPLabelDep.setText(
                         "Fisher combined p = " + nf.format(model.getMarkovCheck().getFisherCombinedPValue(visiblePairs))
+                );
+
+                fdrCutoffLabelDep.setText(
+                        "FDR p-value cutoff = " + nf.format(fdrCutoff(visiblePairs))
                 );
 
                 histogramPanelDep.removeAll();
@@ -1340,6 +1362,11 @@ public class MarkovCheckEditor extends JPanel {
         a10.add(fisherCombinedPLabelDep);
         a4.add(a10);
 
+        Box a11 = Box.createHorizontalBox();
+        a11.add(Box.createHorizontalGlue());
+        a11.add(fdrCutoffLabelDep);
+        a4.add(a11);
+
         JPanel checkMarkovPanel = new JPanel(new BorderLayout());
         checkMarkovPanel.add(new PaddingPanel(tableBox), BorderLayout.CENTER);
         checkMarkovPanel.add(new PaddingPanel(a4), BorderLayout.EAST);
@@ -1432,14 +1459,14 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getAndersonDarlingP(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
-        fisherCombinedLabelIndep.setText("Fisher combined p= "
+        fisherCombinedLabelIndep.setText("Fisher combined p = "
                 + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(true))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(true)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFisherCombinedP(true)))));
         fisherCombinedPLabelDep.setText("Fisher combined p = "
                 + ((Double.isNaN(model.getMarkovCheck().getFisherCombinedP(false))
                 ? "-"
-                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getAndersonDarlingP(false)))));
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFisherCombinedP(false)))));
         binomialPLabelIndep.setText("P-value of Binomial Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getBinomialPValue_(true))
                 ? "-"
@@ -1457,8 +1484,44 @@ public class MarkovCheckEditor extends JPanel {
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
 
+        if (fdrCutoffLabelIndep == null) {
+            fdrCutoffLabelIndep = new JLabel();
+        }
+
+        if (fdrCutoffLabelDep == null) {
+            fdrCutoffLabelDep = new JLabel();
+        }
+
+        double fdrCutoffIndep = fdrCutoff(model.getMarkovCheck().getResults(true));
+        double fdrCutoffDep = fdrCutoff(model.getMarkovCheck().getResults(false));
+
+        fdrCutoffLabelIndep.setText("FDR p-value cutoff = "
+                + ((Double.isNaN(fdrCutoffIndep)
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(fdrCutoffIndep))));
+        fdrCutoffLabelDep.setText("FDR p-value cutoff = "
+                + ((Double.isNaN(fdrCutoffDep)
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(fdrCutoffDep))));
+
         conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
         conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
+    }
+
+    /**
+     * Returns the FDR p-value cutoff for the given results at the alpha level of the model's independence test, or NaN
+     * if the test does not support an alpha level or the cutoff cannot be computed.
+     *
+     * @param results The results whose p-values are to be used.
+     * @return The FDR p-value cutoff, or NaN.
+     */
+    private double fdrCutoff(List<IndependenceResult> results) {
+        try {
+            double alpha = model.getMarkovCheck().getIndependenceTest().getAlpha();
+            return model.getMarkovCheck().getFdrCutoff(alpha, results, false);
+        } catch (Exception e) {
+            return Double.NaN;
+        }
     }
 
     private int getLastSortCol() {

@@ -130,7 +130,7 @@ public class GraphTransforms {
             }
         }
 
-        // This method failed on an example that was a valid CPDAG. jdramsey 2025-12-3
+//        // This method failed on an example that was a valid CPDAG. jdramsey 2025-12-3
 //        List<Node> order = graph.getNodes();
 //        order.sort((node1, node2) -> {
 //            if (graph.paths().isAncestorOf(node1, node2)) {
@@ -142,8 +142,52 @@ public class GraphTransforms {
 //            }
 //        });
 
+        // Peel the node with no remaining directed parents; when the directed part is
+        // acyclic this is a topological order (Kahn's algorithm). If a cycle makes the
+        // minimum parent count positive, peel the node with fewest remaining parents,
+        // breaking the cycle deterministically instead of failing. Tie-break by name
+        // for determinism. (Cf. the sort-based version, removed 2025-12: ancestry is a
+        // partial order, and List.sort requires a total one -- TimSort throws
+        // "Comparison method violates its general contract!" on inputs where it
+        // detects the intransitivity, and silently produces non-topological orders on
+        // inputs where it doesn't.)
+        List<Node> nodes = graph.getNodes();
+
+        Map<Node, Set<Node>> parents = new HashMap<>();
+        Map<Node, Set<Node>> children = new HashMap<>();
+
+        for (Node n : nodes) {
+            parents.put(n, new HashSet<>());
+            children.put(n, new HashSet<>());
+        }
+
+        for (Edge e : graph.getEdges()) {
+            if (Edges.isDirectedEdge(e)) {
+                Node tail = Edges.getDirectedEdgeTail(e);
+                Node head = Edges.getDirectedEdgeHead(e);
+                parents.get(head).add(tail);
+                children.get(tail).add(head);
+            }
+        }
+
+        Comparator<Node> pick = Comparator
+                .comparingInt((Node n) -> parents.get(n).size())
+                .thenComparing(Node::getName);
+
+        List<Node> order = new ArrayList<>(nodes.size());
+        Set<Node> remaining = new LinkedHashSet<>(nodes);
+
+        while (!remaining.isEmpty()) {
+            Node next = remaining.stream().min(pick).orElseThrow();
+            order.add(next);
+            remaining.remove(next);
+            for (Node c : children.get(next)) {
+                parents.get(c).remove(next);
+            }
+        }
+
         // Replacing with this method.
-        List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
+//        List<Node> order = graph.paths().getValidOrder(graph.getNodes(), true);
 
         MeekRules rules = new MeekRules();
         rules.setMeekPreventCycles(true);
@@ -237,7 +281,15 @@ public class GraphTransforms {
         UnorientedComponentAsUndirected result = getGetUnorientedComponentAsUndirected(pag);
         Graph pcafci;
 
-        pcafci = GraphTransforms.dagFromCpdag(result.pcafci(), new Knowledge(), false);
+        // Zhang 2008 Thm 2, step (ii): the circle component must be oriented into a
+        // DAG with NO unshielded colliders. The previous route (dagFromCpdag: direct
+        // one edge by node order, Meek fixpoint after each) was observed producing
+        // unshielded colliders on circle-rich PAGs (PKE12's ZHANG-ROUNDTRIP-FAIL
+        // witnesses), i.e. a "MAG" outside the input PAG's class. Orient by
+        // MCS/perfect-elimination instead: for a chordal component (guaranteed for
+        // valid PAGs) every parent set is then a clique, so no unshielded collider
+        // can occur, with no dependence on the Meek machinery.
+        pcafci = noUnshieldedColliderDag(result.pcafci());
 
         for (Edge e : pcafci.getEdges()) {
             result.pafci().removeEdges(e.getNode1(), e.getNode2());
@@ -245,6 +297,51 @@ public class GraphTransforms {
         }
 
         return result.pafci();
+    }
+
+    /**
+     * Orients an undirected chordal graph into a DAG with no unshielded colliders by
+     * directing every edge from the earlier to the later endpoint of a Maximum
+     * Cardinality Search order. Reversed MCS is a perfect elimination order for
+     * chordal graphs (Tarjan and Yannakakis, 1984), so each vertex's earlier
+     * neighbors -- its parents under this orientation -- form a clique. Deterministic:
+     * ties broken by node name. If the input is NOT chordal (an invalid "PAG"), the
+     * result is still a DAG over the same skeleton but may contain unshielded
+     * colliders; callers wanting the guarantee should round-trip check.
+     *
+     * @param und the undirected graph (the circle component of a PAG).
+     * @return a DAG over the same skeleton whose parent sets are cliques.
+     */
+    public static Graph noUnshieldedColliderDag(Graph und) {
+        List<Node> nodes = new ArrayList<>(und.getNodes());
+        nodes.sort(Comparator.comparing(Node::getName));
+
+        Map<Node, Integer> numbered = new HashMap<>();   // node -> MCS position
+        Map<Node, Integer> weight = new HashMap<>();
+        for (Node n : nodes) weight.put(n, 0);
+
+        for (int step = 0; step < nodes.size(); step++) {
+            Node best = null;
+            for (Node n : nodes) {
+                if (numbered.containsKey(n)) continue;
+                if (best == null || weight.get(n) > weight.get(best)) best = n;
+            }
+            numbered.put(best, step);
+            for (Node nb : und.getAdjacentNodes(best)) {
+                if (!numbered.containsKey(nb)) weight.put(nb, weight.get(nb) + 1);
+            }
+        }
+
+        Graph dag = new EdgeListGraph(und.getNodes());
+        for (Edge e : und.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            if (numbered.get(a) < numbered.get(b)) {
+                dag.addDirectedEdge(a, b);
+            } else {
+                dag.addDirectedEdge(b, a);
+            }
+        }
+        return dag;
     }
 
     /**

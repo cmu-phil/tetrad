@@ -54,13 +54,14 @@ import java.util.*;
  *     common neighbors omitted from the base. Every candidate is adjudicated by the
  *     independence test; the graph view only proposes, never decides.</li>
  *
- * <li><b>Blind proposal view (Rem. blind-proposal).</b> When the sweep against the
- *     live, marked PAG finds nothing, the same sweep is re-run against the bare
- *     skeleton (every endpoint a circle), on which no triple is a collider and
- *     nothing counts as pre-blocked, so the proposal is a function of adj(H)
- *     alone. This is the skeleton-relative core the progress lemma's coverage
- *     argument leans on; it closes the reach gap in which a wrong interim mark
- *     off the common neighborhood hides the separator.</li>
+ * <li><b>Conflict-driven mark-flip escalation (Rem. mark-flip).</b> When the sweep
+ *     against the live, marked PAG finds nothing, the walk reports the arrowheads
+ *     its blocked-collider verdicts relied on, and the sweep is re-run on views
+ *     that each distrust exactly one of those marks (arrowhead -&gt; circle). This
+ *     repairs the displacement mechanism -- a propagated unsound arrowhead whose
+ *     false definite collider hides the true blocker -- with hypotheses nominated
+ *     by the failure itself, bounded by the load-bearing marks encountered rather
+ *     than by any pool's powerset.</li>
  *
  * <li><b>Recorded, not live (P1/P2).</b> Committed separators live in
  *     {@link #sepsets}; separators recorded by R4 during a candidate reorientation
@@ -102,7 +103,11 @@ public final class Fcit implements IGraphSearch {
      * "lexicographic over name-sorted nodes").
      */
     private static final Comparator<Node> NODE_ORDER = Comparator.comparing(Node::getName);
-
+    /**
+     * Canonical edge order for the sweep scan and the saturating pass.
+     */
+    private static final Comparator<Edge> EDGE_ORDER =
+            Comparator.comparing(Fcit::minName).thenComparing(Fcit::maxName);
     /**
      * Whether the constructor wraps the supplied test in
      * {@link CachedIndependenceQueries}. Static because it must be decided
@@ -110,13 +115,6 @@ public final class Fcit implements IGraphSearch {
      * repeated-query consistency is not wanted.
      */
     public static boolean useTestCache = true;
-
-    /**
-     * Canonical edge order for the sweep scan and the saturating pass.
-     */
-    private static final Comparator<Edge> EDGE_ORDER =
-            Comparator.comparing(Fcit::minName).thenComparing(Fcit::maxName);
-
     /**
      * The independence test.
      */
@@ -150,25 +148,12 @@ public final class Fcit implements IGraphSearch {
      */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
     /**
-     * Monotone counter bumped on every graph-changing commit. Sweep results are
-     * a function of the graph, so a definite not-found remains valid until this
-     * changes.
-     */
-    private volatile long graphVersion = 0L;
-    /**
      * Pairs whose two-view sweep exhausted without a separator, and the graph
      * version at which that happened. Consulted before re-sweeping.
      * Concurrent because {@code findIndependenceCheckRecursive} runs inside the
      * parallel lookahead.
      */
     private final Map<Set<Node>, Long> sweepFailedAt = new java.util.concurrent.ConcurrentHashMap<>();
-    /**
-     * Committed separation sets: one entry per pair whose edge was removed by a
-     * committed (legal) deletion, plus R4-time separators recorded along the
-     * committed sequence. Reassigned wholesale on commit (scratch adoption); see
-     * {@link #tryToModifyGraph} and {@link #saturatingPass}.
-     */
-    private SepsetMap sepsets = new SepsetMap();
     /**
      * Memo of candidate states already found ILLEGAL, keyed by
      * (skeleton signature, sepset signature). The from-scratch reorientation and
@@ -185,6 +170,19 @@ public final class Fcit implements IGraphSearch {
      * {@code auditLegalityMemo} flag turns the memo into such an audit.</p>
      */
     private final Map<String, Boolean> illegalStates = new HashMap<>();
+    /**
+     * Monotone counter bumped on every graph-changing commit. Sweep results are
+     * a function of the graph, so a definite not-found remains valid until this
+     * changes.
+     */
+    private volatile long graphVersion = 0L;
+    /**
+     * Committed separation sets: one entry per pair whose edge was removed by a
+     * committed (legal) deletion, plus R4-time separators recorded along the
+     * committed sequence. Reassigned wholesale on commit (scratch adoption); see
+     * {@link #tryToModifyGraph} and {@link #saturatingPass}.
+     */
+    private SepsetMap sepsets = new SepsetMap();
     /**
      * When true, the legality memo is consulted but not trusted: every hit is
      * recomputed and a mismatch is logged. Use to verify that reorientation is
@@ -264,7 +262,8 @@ public final class Fcit implements IGraphSearch {
     /**
      * Maximum discriminating-path length (-1 unlimited).
      */
-    private int maxDiscriminatingPathLength = -1;    /**
+    private int maxDiscriminatingPathLength = -1;
+    /**
      * Per-edge (and per-pair, in detection) search budget in ms, -1 unlimited.
      * NOTE: wall-clock, hence nondeterministic across runs under varying load.
      * For reproducible experiments prefer {@link #maxTestsPerPair}.
@@ -292,31 +291,13 @@ public final class Fcit implements IGraphSearch {
      */
     private int sweepRemoveMaxSize = -1;
     /**
-     * Whether the bare-skeleton (blind) proposal view is searched when the
-     * marked view finds nothing. Disabling halves sweep cost and forfeits
-     * Rem. blind-proposal: separators hidden by a wrong interim mark become
-     * unreachable except through the completion layer.
-     */
-    private boolean useBlindView = true;
-    /**
      * Deterministic per-pair budget: maximum number of independence tests
-     * executed across BOTH views for one pair, -1 unlimited. Unlike
+     * executed across ALL views for one pair, -1 unlimited. Unlike
      * {@link #timeout} this is reproducible, so it is the budget to use in
      * enumeration harnesses. Exhausting it yields an indeterminate sweep, not a
      * not-found verdict.
      */
     private long maxTestsPerPair = -1L;
-    /**
-     * How much of the completion layer to run (Prop. completion).
-     */
-    private CompletionPolicy completionPolicy = CompletionPolicy.FULL;
-    /**
-     * Cap on conditioning-set size in the completion layer, -1 unlimited (in
-     * which case {@link #depth} still applies). The completion enumeration is by
-     * increasing size, so a cap here is a clean "separators up to size k only"
-     * restriction: sound, incomplete, and the incompleteness is legible.
-     */
-    private int completionMaxSubsetSize = -1;
     /**
      * Whether the final discriminating-path scan runs. OFF skips detection and
      * the discharge it feeds, so confirmed-spurious legs that neither
@@ -336,20 +317,24 @@ public final class Fcit implements IGraphSearch {
      */
     private int quickSubsetDepth = -1;
     /**
-     * Whether the recursive-blocking sweep runs at all. When false, no separator
-     * is proposed by recursive blocking; the completion layer
-     * (Prop. completion) becomes the sole source of separators, feeding
-     * {@code foundSepsets}, from which the legality-gated removal loop and the
-     * saturating pass then work. The result is FCI-style subset enumeration with
-     * a legality gate: complete at the oracle, and at small p often cheaper than
-     * the sweep it replaces, since a pair admits at most 2^(p-2) candidate sets
-     * while the sweep runs a powerset of not-followed sets with a recursive
-     * blocking call apiece. At large p the trade inverts sharply, which is why
-     * the sweep is the default. Setting this false with
-     * {@code completionPolicy == OFF} leaves no separator-finding machinery at
-     * all; the search will remove nothing.
+     * Whether the conflict-driven mark-flip escalation runs when the live-view
+     * sweep fails for a pair (default true; the certified configuration). The
+     * failed live sweep reports the arrowheads its blocked-collider verdicts
+     * relied on; the escalation retries the shared sweep on views of the
+     * current PAG that each distrust exactly one of those marks (arrowhead ->
+     * circle). Repairs the displacement mechanism: a propagated unsound
+     * arrowhead creating a false definite collider that hides the true blocker
+     * from the proposing walk. Views propose only; every candidate is
+     * test-confirmed. False gives the trajectory-trusting core alone -- the
+     * ablation baseline, refuted at six observed variables.
      */
-    private boolean useRecursiveBlockingSweep = true;
+    private boolean useMarkFlipEscalation = true;
+    /**
+     * Cap on flip hypotheses (single marks) tried per pair by the mark-flip
+     * escalation; -1 unlimited. Hypotheses are name-sorted for determinism, so
+     * the cap keeps a deterministic prefix.
+     */
+    private int maxMarkFlips = 16;
 
     /**
      * FCIT constructor.
@@ -476,21 +461,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * All-circles copy of {@code g}: the bare-skeleton proposal view of
-     * Rem. blind-proposal. No triple is a collider on this view, so nothing
-     * counts as pre-blocked and the sweep's proposals depend on adj(H) alone.
-     * The view proposes only; every candidate is still test-confirmed.
-     */
-    private static Graph blindView(Graph g) {
-        Graph blind = new EdgeListGraph(g);
-        for (Edge e : new ArrayList<>(blind.getEdges())) {
-            blind.setEndpoint(e.getNode1(), e.getNode2(), Endpoint.CIRCLE);
-            blind.setEndpoint(e.getNode2(), e.getNode1(), Endpoint.CIRCLE);
-        }
-        return blind;
-    }
-
-    /**
      * Canonical signature of a graph's skeleton: name-sorted adjacencies. Two
      * graphs with the same signature reorient identically from circles.
      */
@@ -543,10 +513,28 @@ public final class Fcit implements IGraphSearch {
         return out;
     }
 
+    /**
+     * True iff {@code v} carries at least one circle endpoint on some incident
+     * edge of {@code view} -- the ambiguity criterion of Def. rb-step's harvest.
+     */
+    private static boolean hasCircleEndpoint(Graph view, Node v) {
+        for (Node w : view.getAdjacentNodes(v)) {
+            if (view.getEndpoint(v, w) == Endpoint.CIRCLE
+                    || view.getEndpoint(w, v) == Endpoint.CIRCLE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public IndependenceTest getTest() {
         return test;
     }
+
+    // -------------------------------------------------------------------------
+    // Phase 1: legality-gated single-edge removals with parallel lookahead.
+    // -------------------------------------------------------------------------
 
     /**
      * Run the search and return a PAG.
@@ -745,12 +733,6 @@ public final class Fcit implements IGraphSearch {
                 continue;
             }
 
-            if (pdsCompletionPass()) {
-                progressed = true;
-                lastScan = null;
-                continue;
-            }
-
             if (!detectionEnabled) {
                 lastScan = new NongenuineScan(null, false, false);
                 break;
@@ -803,10 +785,6 @@ public final class Fcit implements IGraphSearch {
         return GraphUtils.replaceNodes(this.pag, nodes);
     }
 
-    // -------------------------------------------------------------------------
-    // Phase 1: legality-gated single-edge removals with parallel lookahead.
-    // -------------------------------------------------------------------------
-
     /**
      * One sweep over the edges of the current PAG, attempting removals. Each
      * phase scans the tail of a canonical edge list in parallel; the
@@ -832,10 +810,6 @@ public final class Fcit implements IGraphSearch {
         while (from < edgeList.size()) {
             final int start = from;
 
-            // One blind proposal view per phase; the PAG is not mutated during
-            // the parallel scan, so concurrent reads of both views are safe.
-            final Graph blind = blindView(this.pag);
-
             // Parallel search over the tail [start, end). findFirst on an ordered
             // parallel stream returns the LOWEST-index removable edge
             // deterministically, independent of which thread finishes first.
@@ -854,7 +828,7 @@ public final class Fcit implements IGraphSearch {
                                         || knowledge.isRequired(y.getName(), x.getName()))) return null;
 
                                 try {
-                                    IndependenceCheck check = findIndependenceCheckRecursive(e, blind);
+                                    IndependenceCheck check = findIndependenceCheckRecursive(e);
                                     if (check == null) return null;
                                     return new RemovalHit(i, e, check.cond());
                                 } catch (InterruptedException ie) {
@@ -896,12 +870,17 @@ public final class Fcit implements IGraphSearch {
         return changedThisSweep;
     }
 
+    // -------------------------------------------------------------------------
+    // The shared sweep (Def. rb-step): one implementation, used by the removal
+    // phase and by the detection scan.
+    // -------------------------------------------------------------------------
+
     /**
      * The full separator search for one edge: committed and cross-round fast
-     * paths, then the shared sweep against the live view, then against the
-     * blind (bare-skeleton) view (Rem. blind-proposal).
+     * paths, then the shared sweep against the live view, then the
+     * conflict-driven mark-flip escalation (Rem. mark-flip).
      */
-    private IndependenceCheck findIndependenceCheckRecursive(Edge edge, Graph blind) throws InterruptedException {
+    private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
 
@@ -930,21 +909,14 @@ public final class Fcit implements IGraphSearch {
         }
 
         // Per-edge deadline: at most `timeout` ms spent separating THIS edge,
-        // shared across every RB call and both views below.
+        // shared across every RB call and every view below.
         final long deadline = (timeout < 0L)
                 ? Long.MAX_VALUE
                 : System.currentTimeMillis() + timeout;
 
-        // Candidate sets already tested for this edge, shared across both views:
+        // Candidate sets already tested for this edge, shared across all views:
         // the nested enumerations can arrive at the same S by different routes.
         Set<Set<Node>> tried = new HashSet<>();
-
-        if (!useRecursiveBlockingSweep) {
-            // No proposal machinery here; the completion layer supplies
-            // separators, and they arrive via the foundSepsets fast path above
-            // on the next pass of the outer loop.
-            return null;
-        }
 
         // Shortcut pass: small subsets of the common neighborhood, by increasing
         // size. Candidates feed `tried`, so the sweep below never retests them.
@@ -955,36 +927,44 @@ public final class Fcit implements IGraphSearch {
             }
         }
 
-        SweepOutcome live = sweepForSepset(this.pag, x, y, deadline, tried);
+        // Live-view sweep. Under mark-flip escalation, collect the load-bearing
+        // blocked-collider marks the walk relied on: on failure, these are the
+        // escalation's flip hypotheses. The NF loop makes many RB calls; the
+        // collector accumulates their union.
+        Set<RecursiveBlocking.Mark> conflicts = null;
+        SweepOutcome live;
+        if (useMarkFlipEscalation) {
+            RecursiveBlocking.beginConflictCollection();
+            try {
+                live = sweepForSepset(this.pag, x, y, deadline, tried);
+            } finally {
+                conflicts = RecursiveBlocking.endConflictCollection();
+            }
+        } else {
+            live = sweepForSepset(this.pag, x, y, deadline, tried);
+        }
         if (live.sepset() != null) {
             return new IndependenceCheck(edge, live.sepset());
         }
 
-        if (!useBlindView) {
-            if (!live.indeterminate()) {
-                sweepFailedAt.put(Set.of(x, y), graphVersion);
+        // Conflict-driven mark-flip escalation: structure-guided -- the failed
+        // walk nominates the marks (Rem. mark-flip).
+        SweepOutcome flip = new SweepOutcome(null, false);
+        if (useMarkFlipEscalation && conflicts != null && !conflicts.isEmpty()) {
+            flip = markFlipEscalation(x, y, conflicts, deadline, tried);
+            if (flip.sepset() != null) {
+                return new IndependenceCheck(edge, flip.sepset());
             }
-            return null;
-        }
-
-        SweepOutcome blindOutcome = sweepForSepset(blind, x, y, deadline, tried);
-        if (blindOutcome.sepset() != null) {
-            return new IndependenceCheck(edge, blindOutcome.sepset());
         }
 
         // Cache only a DEFINITE exhaustion. A budget-truncated failure could
         // succeed on a later attempt with a fresh budget, so it is not cached.
-        if (!live.indeterminate() && !blindOutcome.indeterminate()) {
+        if (!live.indeterminate() && !flip.indeterminate()) {
             sweepFailedAt.put(Set.of(x, y), graphVersion);
         }
 
         return null;
     }
-
-    // -------------------------------------------------------------------------
-    // The shared sweep (Def. rb-step): one implementation, used by the removal
-    // phase (live + blind views) and by the detection scan.
-    // -------------------------------------------------------------------------
 
     /**
      * One sweep against one view of the graph. The view supplies proposals only;
@@ -1006,7 +986,9 @@ public final class Fcit implements IGraphSearch {
         boolean sawIndeterminate = false;
 
         // Seed blocking set with no forbidden nodes.
-        RecursiveBlocking.BlockingResult b0 = blockWithEscalation(view, x, y, Set.of(), deadline);
+        RecursiveBlocking.BlockingResult b0 = RecursiveBlocking.blockPathsRecursively(
+                view, x, y, Set.of(), Set.of(), recursiveDepth, this.depth, rbRadius, 1, true,
+                deadline);
         if (b0.indeterminate()) {
             sawIndeterminate = true;
         }
@@ -1053,9 +1035,10 @@ public final class Fcit implements IGraphSearch {
 
             Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
 
-            RecursiveBlocking.BlockingResult result = notFollowed.isEmpty()
-                    ? b0
-                    : blockWithEscalation(view, x, y, notFollowed, deadline);
+            RecursiveBlocking.BlockingResult result;
+            result = notFollowed.isEmpty() ? b0 : RecursiveBlocking.blockPathsRecursively(
+                    view, x, y, Set.of(), notFollowed, recursiveDepth, this.depth, rbRadius, 1, true,
+                    deadline);
 
             if (result.indeterminate()) {
                 sawIndeterminate = true;
@@ -1086,8 +1069,8 @@ public final class Fcit implements IGraphSearch {
             // RB omits a node either because it conditioned around it or because
             // a definite mark made the path look blocked; when that mark is an
             // artifact of the edge under test, the omitted node must be
-            // enumerable back in. (On the blind view there are no definite
-            // colliders, so this pool shrinks toward empty there.)
+            // enumerable back in. (On a flip view the distrusted mark is not
+            // definite, so the node it hid re-enters this pool.)
             List<Node> addCandidates = new ArrayList<>();
             for (Node c : common) if (!base.contains(c)) addCandidates.add(c);
             // `common` is name-sorted, so addCandidates is too.
@@ -1137,20 +1120,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * True iff {@code v} carries at least one circle endpoint on some incident
-     * edge of {@code view} -- the ambiguity criterion of Def. rb-step's harvest.
-     */
-    private static boolean hasCircleEndpoint(Graph view, Node v) {
-        for (Node w : view.getAdjacentNodes(v)) {
-            if (view.getEndpoint(v, w) == Endpoint.CIRCLE
-                    || view.getEndpoint(w, v) == Endpoint.CIRCLE) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Small-subset shortcut: tests subsets of the common neighborhood of
      * {@code (x, y)} by increasing size, up to {@link #quickSubsetDepth}.
      * Returns the first confirmed separator, or null. Every candidate is
@@ -1187,40 +1156,55 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Recursive blocking with depth escalation when a conditioning-set cap is
-     * set. NOTE: RecursiveBlocking currently reports a binding depth cap (and a
-     * binding radius pool) as UNBLOCKABLE rather than INDETERMINATE, contrary to
-     * its documented three-valued contract; until that is fixed there, we
-     * escalate on any not-found result rather than only on indeterminate().
-     * Harmless when the verdict is genuinely UNBLOCKABLE: the cap bounds the
-     * extra calls.
+     * Conflict-driven mark-flip escalation (experimental; Rem. mark-flip). For
+     * each load-bearing arrowhead the failed live sweep reported, build a view
+     * of the current PAG that distrusts exactly that mark (arrowhead ->
+     * circle) and re-run the shared sweep against it. A single flipped
+     * endpoint demotes the corresponding definite collider to an ambiguous
+     * triple in both traversal directions, so the walk may pass through it or
+     * condition on it -- the displacement repair -- while every other definite
+     * mark keeps guiding the proposal. The flipped view is the bare skeleton at
+     * one mark and the live view everywhere else. Single flips
+     * only; the hypothesis count is bounded by the load-bearing marks
+     * encountered, not by 2^|PDS|.
+     *
+     * <p>Candidates share {@code tried} with the other views, so no set is
+     * ever retested; every returned set is test-confirmed, so soundness is
+     * untouched.</p>
      */
-    private RecursiveBlocking.BlockingResult blockWithEscalation(Graph view, Node x, Node y,
-                                                                 Set<Node> notFollowed, long deadline)
+    private SweepOutcome markFlipEscalation(Node x, Node y, Set<RecursiveBlocking.Mark> conflicts,
+                                            long deadline, Set<Set<Node>> tried)
             throws InterruptedException {
-        if (this.depth < 0) {
-            return RecursiveBlocking.blockPathsRecursively(
-                    view, x, y, Set.of(), notFollowed, recursiveDepth, this.depth, rbRadius, 1, true,
-                    deadline);
+        List<RecursiveBlocking.Mark> marks = new ArrayList<>(conflicts);
+        marks.sort(Comparator
+                .comparing((RecursiveBlocking.Mark m) -> m.at().getName())
+                .thenComparing(m -> m.from().getName()));
+
+        int cap = (maxMarkFlips < 0) ? marks.size() : Math.min(maxMarkFlips, marks.size());
+        boolean sawIndeterminate = false;
+
+        for (int i = 0; i < cap; i++) {
+            if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
+
+            RecursiveBlocking.Mark m = marks.get(i);
+
+            // Flipped view: the current PAG with one arrowhead circled.
+            Graph flipped = new EdgeListGraph(this.pag);
+            flipped.setEndpoint(m.from(), m.at(), Endpoint.CIRCLE);
+
+            checkCounter.increment("mark-flip escalation (view swept)");
+
+            SweepOutcome out = sweepForSepset(flipped, x, y, deadline, tried);
+            if (out.sepset() != null) {
+                TetradLogger.getInstance().log("MARK-FLIP: separator for " + x + " *-* " + y
+                        + " found under distrust of the arrowhead at " + m.at()
+                        + " on " + m.from() + " *-> " + m.at() + ": " + out.sepset());
+                return out;
+            }
+            if (out.indeterminate()) sawIndeterminate = true;
         }
 
-        RecursiveBlocking.BlockingResult result = null;
-
-        for (int d = 1; d <= this.depth; d++) {
-            if (System.currentTimeMillis() > deadline) {
-                return new RecursiveBlocking.BlockingResult(null, true);
-            }
-
-            result = RecursiveBlocking.blockPathsRecursively(
-                    view, x, y, Set.of(), notFollowed, recursiveDepth, d, rbRadius, 1, true,
-                    deadline);
-
-            if (result.found()) {
-                return result;
-            }
-        }
-
-        return result == null ? new RecursiveBlocking.BlockingResult(null, true) : result;
+        return new SweepOutcome(null, sawIndeterminate);
     }
 
     // -------------------------------------------------------------------------
@@ -1443,177 +1427,6 @@ public final class Fcit implements IGraphSearch {
     }
 
     // -------------------------------------------------------------------------
-    // Completion layer with a classical guarantee (FCI D-SEP completeness).
-    // -------------------------------------------------------------------------
-
-    /**
-     * Completion pass for remaining adjacencies the two-view sweep could not
-     * separate. For each such edge, conditioning sets are enumerated by
-     * increasing size from a permissive Possible-D-SEP pool (and, failing that,
-     * from all remaining nodes), each candidate adjudicated by the test.
-     *
-     * <p>Rationale: the recursive-blocking family reads the marks of a view,
-     * and a propagated unsound mark on all-real edges (the displacement
-     * mechanism) can make an M*-active path look blocked at a node outside the
-     * swept set -- an out-of-B coverage failure, observed at six observed
-     * variables. The pool here is mark-agnostic in the dangerous direction:
-     * the walk continues through b iff the triple is a triangle or both
-     * path-edge endpoints at b are arrow-or-circle, so circles and EXTRA
-     * unsound arrowheads cannot hide a member; the all-nodes escalation covers
-     * unsound tails as well. Under the oracle, the adjacency-superset
-     * invariant plus D-SEP completeness then makes every spurious edge
-     * confirmable unconditionally -- coverage becomes an efficiency statement
-     * (how often this pass fires), not a correctness hypothesis.</p>
-     *
-     * <p>Every firing of this pass is a witness that the recursive-blocking
-     * family missed a separator; every confirmation is a concrete
-     * coverage-failure instance and is logged as such for the harness.</p>
-     *
-     * @return true iff a separator was confirmed for at least one remaining
-     * edge (recorded in {@link #foundSepsets} for discharge by removal or
-     * saturation)
-     */
-    private boolean pdsCompletionPass() throws InterruptedException {
-        if (completionPolicy == CompletionPolicy.OFF) {
-            return false;
-        }
-
-        boolean any = false;
-
-        List<Edge> edges = new ArrayList<>(this.pag.getEdges());
-        edges.sort(EDGE_ORDER);
-
-        for (Edge e : edges) {
-            Node x = e.getNode1();
-            Node y = e.getNode2();
-
-            if (knowledge != null && (knowledge.isRequired(x.getName(), y.getName())
-                    || knowledge.isRequired(y.getName(), x.getName()))) continue;
-
-            if (foundSepsets.containsKey(Set.of(x, y))) continue;
-
-            final long deadline = (timeout < 0L)
-                    ? Long.MAX_VALUE
-                    : System.currentTimeMillis() + timeout;
-
-            Set<Set<Node>> tried = new HashSet<>();
-
-            // Primary pool: permissive possible-D-SEP from both endpoints.
-            Set<Node> pool = new LinkedHashSet<>(permissivePossibleDsep(x, y));
-            pool.addAll(permissivePossibleDsep(y, x));
-
-            Set<Node> found = enumeratePoolSubsets(x, y, pool, deadline, tried);
-
-            // Escalation: all remaining nodes. Covers separators whose members
-            // an unsound TAIL hid even from the permissive walk. Certified
-            // complete at the oracle; deadline- and depth-capped from sample.
-            if (found == null && completionPolicy == CompletionPolicy.FULL) {
-                Set<Node> all = new LinkedHashSet<>(this.pag.getNodes());
-                all.remove(x);
-                all.remove(y);
-                if (!all.equals(pool)) {
-                    found = enumeratePoolSubsets(x, y, all, deadline, tried);
-                }
-            }
-
-            if (found != null) {
-                TetradLogger.getInstance().log("PDS COMPLETION: confirmed separator for " + e
-                        + " that the recursive-blocking family missed (out-of-B coverage-failure "
-                        + "witness): sepset = " + found);
-                foundSepsets.put(Set.of(x, y), found);
-                any = true;
-            }
-        }
-
-        return any;
-    }
-
-    /**
-     * Enumerates subsets of {@code pool} by increasing size (canonical order)
-     * and returns the first test-confirmed separator of (x, y), or null.
-     */
-    private Set<Node> enumeratePoolSubsets(Node x, Node y, Set<Node> pool, long deadline,
-                                           Set<Set<Node>> tried) throws InterruptedException {
-        List<Node> poolList = new ArrayList<>(pool);
-        poolList.sort(NODE_ORDER);
-
-        int maxSize = poolList.size();
-        if (this.depth >= 0) maxSize = Math.min(maxSize, this.depth);
-        if (completionMaxSubsetSize >= 0) maxSize = Math.min(maxSize, completionMaxSubsetSize);
-
-        SublistGenerator gen = new SublistGenerator(poolList.size(), maxSize);
-        int[] choice;
-        while ((choice = gen.next()) != null) {
-            if (System.currentTimeMillis() > deadline) return null;
-
-            Set<Node> S = GraphUtils.asSet(choice, poolList);
-
-            if (!tried.add(S)) continue;
-
-            checkCounter.increment("possible-dsep completion (test executed)");
-
-            if (this.test.checkIndependence(x, y, S).isIndependent()) {
-                return S;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Permissive Possible-D-SEP of x (relative to y) on the current PAG: v is
-     * in the pool iff a path x ... v exists on which every non-endpoint b is
-     * either in a triangle (its path-neighbors adjacent) or a POSSIBLE
-     * collider -- both path-edge endpoints at b are ARROW or CIRCLE. The
-     * possible-collider reading (rather than definite-collider) makes the pool
-     * robust to circles and to extra unsound arrowheads; only an unsound tail
-     * can exclude a member, and the all-nodes escalation covers that.
-     */
-    private Set<Node> permissivePossibleDsep(Node x, Node y) {
-        Set<Node> pds = new LinkedHashSet<>();
-        Deque<Node[]> queue = new ArrayDeque<>();
-        Set<String> visited = new HashSet<>();
-
-        List<Node> firstHops = new ArrayList<>(this.pag.getAdjacentNodes(x));
-        firstHops.sort(NODE_ORDER);
-
-        for (Node n : firstHops) {
-            if (visited.add(x.getName() + ">" + n.getName())) {
-                pds.add(n);
-                queue.add(new Node[]{x, n});
-            }
-        }
-
-        while (!queue.isEmpty()) {
-            Node[] pr = queue.poll();
-            Node a = pr[0];
-            Node b = pr[1];
-
-            List<Node> nexts = new ArrayList<>(this.pag.getAdjacentNodes(b));
-            nexts.sort(NODE_ORDER);
-
-            for (Node c : nexts) {
-                if (c == a) continue;
-
-                boolean triangle = this.pag.isAdjacentTo(a, c);
-                boolean possibleCollider =
-                        this.pag.getEndpoint(a, b) != Endpoint.TAIL
-                                && this.pag.getEndpoint(c, b) != Endpoint.TAIL;
-
-                if (!(triangle || possibleCollider)) continue;
-
-                if (visited.add(b.getName() + ">" + c.getName())) {
-                    pds.add(c);
-                    queue.add(new Node[]{b, c});
-                }
-            }
-        }
-
-        pds.remove(x);
-        pds.remove(y);
-        return pds;
-    }
-
-    // -------------------------------------------------------------------------
     // Detection with confirmation, and discharge.
     // -------------------------------------------------------------------------
 
@@ -1639,8 +1452,6 @@ public final class Fcit implements IGraphSearch {
                 ? Long.MAX_VALUE
                 : System.currentTimeMillis() + timeout;
 
-        Graph blind = blindView(this.pag);
-
         boolean sawIndeterminate = false;
         boolean newEvidence = false;
         Edge firstConfirmed = null;
@@ -1658,7 +1469,7 @@ public final class Fcit implements IGraphSearch {
                 Node n = spine.get(i + 1);
 
                 boolean known = foundSepsets.containsKey(Set.of(m, n));
-                LegVerdict v = legVerdict(m, n, blind, deadlineMs, verdictCache);
+                LegVerdict v = legVerdict(m, n, deadlineMs, verdictCache);
 
                 if (v == LegVerdict.SPURIOUS) {
                     if (!known) newEvidence = true;
@@ -1672,7 +1483,7 @@ public final class Fcit implements IGraphSearch {
             Node y = dd.getY();
             for (Node v0 : colliderPath) {
                 boolean known = foundSepsets.containsKey(Set.of(v0, y));
-                LegVerdict v = legVerdict(v0, y, blind, deadlineMs, verdictCache);
+                LegVerdict v = legVerdict(v0, y, deadlineMs, verdictCache);
 
                 if (v == LegVerdict.SPURIOUS) {
                     if (!known) newEvidence = true;
@@ -1689,10 +1500,10 @@ public final class Fcit implements IGraphSearch {
     /**
      * Classifies one adjacent pair on a discriminating path. SPURIOUS requires a
      * test-confirmed separator: either one already on record, or one found now
-     * by the shared sweep (live view, then blind view). A confirmed separator is
+     * by the shared sweep against the live view. A confirmed separator is
      * recorded so the pair can be discharged.
      */
-    private LegVerdict legVerdict(Node m, Node n, Graph blind, long deadlineMs, Map<Set<Node>, LegVerdict> cache)
+    private LegVerdict legVerdict(Node m, Node n, long deadlineMs, Map<Set<Node>, LegVerdict> cache)
             throws InterruptedException {
         Edge edge = pag.getEdge(m, n);
         if (edge == null) {
@@ -1714,51 +1525,15 @@ public final class Fcit implements IGraphSearch {
 
         Set<Set<Node>> tried = new HashSet<>();
 
-        if (!useRecursiveBlockingSweep) {
-            // Confirm by the completion enumeration instead, so detection keeps
-            // its "test-confirmed or nothing" contract.
-            Set<Node> byCompletion = null;
-
-            if (completionPolicy != CompletionPolicy.OFF) {
-                Set<Node> pool = new LinkedHashSet<>(permissivePossibleDsep(m, n));
-                pool.addAll(permissivePossibleDsep(n, m));
-                byCompletion = enumeratePoolSubsets(m, n, pool, deadlineMs, tried);
-
-                if (byCompletion == null && completionPolicy == CompletionPolicy.FULL) {
-                    Set<Node> all = new LinkedHashSet<>(this.pag.getNodes());
-                    all.remove(m);
-                    all.remove(n);
-                    byCompletion = enumeratePoolSubsets(m, n, all, deadlineMs, tried);
-                }
-            }
-
-            LegVerdict vc;
-            if (byCompletion != null) {
-                foundSepsets.put(key, byCompletion);
-                vc = LegVerdict.SPURIOUS;
-            } else if (completionPolicy == CompletionPolicy.OFF) {
-                // Nothing left that can confirm; do not report NOT_SPURIOUS.
-                vc = LegVerdict.INDETERMINATE;
-            } else {
-                vc = LegVerdict.NOT_SPURIOUS;
-            }
-
-            cache.put(key, vc);
-            return vc;
-        }
-
         SweepOutcome live = sweepForSepset(this.pag, m, n, deadlineMs, tried);
-        SweepOutcome blindOutcome = (live.sepset() != null || !useBlindView)
-                ? live
-                : sweepForSepset(blind, m, n, deadlineMs, tried);
 
-        Set<Node> found = (live.sepset() != null) ? live.sepset() : blindOutcome.sepset();
+        Set<Node> found = live.sepset();
 
         LegVerdict v;
         if (found != null) {
             foundSepsets.put(key, found);  // test-confirmed; enables discharge
             v = LegVerdict.SPURIOUS;
-        } else if (live.indeterminate() || blindOutcome.indeterminate()) {
+        } else if (live.indeterminate()) {
             v = LegVerdict.INDETERMINATE;
         } else {
             v = LegVerdict.NOT_SPURIOUS;
@@ -1990,42 +1765,13 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets whether the bare-skeleton proposal view is searched when the marked
-     * view finds nothing.
-     *
-     * @param useBlindView true for both views (the default), false for the
-     *                     marked view only.
-     */
-    public void setUseBlindView(boolean useBlindView) {
-        this.useBlindView = useBlindView;
-    }
-
-    /**
-     * Sets a deterministic per-pair budget on independence tests, across both
+     * Sets a deterministic per-pair budget on independence tests, across all
      * views. Exhaustion yields an indeterminate sweep.
      *
      * @param maxTestsPerPair the cap, or -1 for unlimited.
      */
     public void setMaxTestsPerPair(long maxTestsPerPair) {
         this.maxTestsPerPair = maxTestsPerPair;
-    }
-
-    /**
-     * Sets how much of the completion layer to run.
-     *
-     * @param completionPolicy the policy; FULL by default.
-     */
-    public void setCompletionPolicy(CompletionPolicy completionPolicy) {
-        this.completionPolicy = completionPolicy;
-    }
-
-    /**
-     * Caps conditioning-set size in the completion layer.
-     *
-     * @param completionMaxSubsetSize the cap, or -1 for unlimited.
-     */
-    public void setCompletionMaxSubsetSize(int completionMaxSubsetSize) {
-        this.completionMaxSubsetSize = completionMaxSubsetSize;
     }
 
     /**
@@ -2060,13 +1806,24 @@ public final class Fcit implements IGraphSearch {
     }
 
     /**
-     * Sets whether the recursive-blocking sweep runs. False makes the completion
-     * layer the sole source of separators.
+     * Sets whether the conflict-driven mark-flip escalation runs when the
+     * live-view sweep fails for a pair. False gives the trajectory-trusting
+     * core alone (the ablation baseline).
      *
-     * @param useRecursiveBlockingSweep true by default.
+     * @param useMarkFlipEscalation true by default.
      */
-    public void setUseRecursiveBlockingSweep(boolean useRecursiveBlockingSweep) {
-        this.useRecursiveBlockingSweep = useRecursiveBlockingSweep;
+    public void setUseMarkFlipEscalation(boolean useMarkFlipEscalation) {
+        this.useMarkFlipEscalation = useMarkFlipEscalation;
+    }
+
+    /**
+     * Caps the number of single-mark flip hypotheses tried per pair by the
+     * mark-flip escalation.
+     *
+     * @param maxMarkFlips the cap, or -1 for unlimited; 16 by default.
+     */
+    public void setMaxMarkFlips(int maxMarkFlips) {
+        this.maxMarkFlips = maxMarkFlips;
     }
 
     /**
@@ -2085,29 +1842,6 @@ public final class Fcit implements IGraphSearch {
     // -------------------------------------------------------------------------
 
     private enum LegVerdict {SPURIOUS, NOT_SPURIOUS, INDETERMINATE}
-
-    /**
-     * How much of the completion layer of Prop. completion to run. FULL is the
-     * only setting under which the oracle guarantee holds unconditionally;
-     * POOL_ONLY drops the all-nodes escalation (sound, and complete unless an
-     * unsound tail hides a pool member); OFF returns the procedure to the
-     * recursive-blocking family alone, i.e. to the out-of-B coverage condition,
-     * which is refuted at six observed variables.
-     */
-    public enum CompletionPolicy {
-        /**
-         * Possible-D-SEP stage and all-nodes escalation. Default.
-         */
-        FULL,
-        /**
-         * Possible-D-SEP stage only, no escalation.
-         */
-        POOL_ONLY,
-        /**
-         * No completion layer.
-         */
-        OFF
-    }
 
     /**
      * Enumeration representing different start options.
