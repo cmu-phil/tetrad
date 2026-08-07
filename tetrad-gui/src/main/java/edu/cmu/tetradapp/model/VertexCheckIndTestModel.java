@@ -143,7 +143,13 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      */
     public static double getAndersonDarlingP(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
-        return generalAndersonDarlingTest.getP();
+        // A-squared evaluated against getProbTail, not getP(). The null here is a fully specified Uniform(0, 1)
+        // with no estimated parameters (case 0), but getP() returns Stephens' case-3 approximation, which both
+        // inflates the statistic by (1 + 0.75/n + 2.25/n^2) and evaluates it with the piecewise formulas for
+        // testing normality with an estimated mean and variance. On exactly uniform p-values that combination
+        // rejects at roughly 52-63% against a nominal 5%, and unlike a small-sample correction the error does not
+        // decay with n. See MarkovCheck.calcStats and TestAndersonDarlingCalibration.
+        return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), generalAndersonDarlingTest.getASquared());
     }
 
     public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {

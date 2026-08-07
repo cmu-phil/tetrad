@@ -21,6 +21,11 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.GeneralAndersonDarlingTest;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.search.ConditioningSetType;
+import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.VertexRepairSearch;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.junit.Test;
@@ -128,6 +133,59 @@ public class TestAndersonDarlingCalibration {
             assertEquals("Kolmogorov-Smirnov rejection rate at n = " + n + " was " + rate,
                     ALPHA, rate, 0.015);
         }
+    }
+
+    /**
+     * The other uniformity entry points must be calibrated too. {@code VertexRepairSearch.getAndersonDarlingP} and
+     * {@code MarkovCheck.checkAgainstAndersonDarlingTest} previously returned
+     * {@code GeneralAndersonDarlingTest.getP()}, which is Stephens' case-3 approximation for testing normality with
+     * an estimated mean and variance; against a fully specified Uniform(0, 1) it rejected 52% to 63% of the time at
+     * a nominal 5%, and unlike a small-sample correction the error did not decay with n.
+     */
+    @Test
+    public void testOtherEntryPointsCalibrated() {
+        for (int n : new int[]{5, 20, 200}) {
+            Random rng = new Random(1234L);
+            int rejRepair = 0, rejCheck = 0;
+
+            for (int r = 0; r < REPS; r++) {
+                List<Double> pValues = new ArrayList<>();
+                for (int i = 0; i < n; i++) pValues.add(rng.nextDouble());
+
+                if (VertexRepairSearch.getAndersonDarlingP(pValues) < ALPHA) rejRepair++;
+                if (new MarkovCheck(new EdgeListGraph(), new MsepTest(new EdgeListGraph()),
+                        ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY)
+                        .checkAgainstAndersonDarlingTest(pValues) < ALPHA) rejCheck++;
+            }
+
+            assertEquals("VertexRepairSearch.getAndersonDarlingP rejection rate at n = " + n
+                         + " was " + rejRepair / (double) REPS, ALPHA, rejRepair / (double) REPS, 0.015);
+            assertEquals("MarkovCheck.checkAgainstAndersonDarlingTest rejection rate at n = " + n
+                         + " was " + rejCheck / (double) REPS, ALPHA, rejCheck / (double) REPS, 0.015);
+        }
+    }
+
+    /**
+     * The distortion depended on the number of p-values, so it altered the ORDER in which VertexRepairSearch ranked
+     * candidate edits with differing numbers of implied independencies, not merely their scale. This pins the
+     * corrected ordering: with the same degree of non-uniformity, a candidate offering more implied independencies
+     * must score no higher than one offering fewer.
+     */
+    @Test
+    public void testUniformityPOrderingAcrossTestCounts() {
+        double previous = Double.MAX_VALUE;
+
+        for (int n : new int[]{4, 6, 8, 12, 20}) {
+            List<Double> pValues = new ArrayList<>();
+            for (int i = 0; i < n; i++) pValues.add((i + 0.5) / n * 0.6);
+
+            double p = VertexRepairSearch.getAndersonDarlingP(pValues);
+            assertTrue("More evidence of the same non-uniformity must not raise the uniformity p-value"
+                       + " (n = " + n + ", p = " + p + ")", p <= previous);
+            previous = p;
+        }
+
+        assertTrue("At n = 20 the same non-uniformity should be clearly detected", previous < 0.05);
     }
 
     /**
