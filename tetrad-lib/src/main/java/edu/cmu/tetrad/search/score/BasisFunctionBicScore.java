@@ -114,9 +114,22 @@ public class BasisFunctionBicScore implements Score {
      */
     public double localScore(int i, int... parents) {
 
-        // Note that this needs to be the sum of the individual BIC scores, not a BIC score calculated from
-        // the sums of the likelihoods and degrees of freedom. A test case to try is with nonlinear variables
-        // embedded as Legendre polynomials. jdramsey 2025-2-13
+        // Chain-rule decomposition over the embedded components of X = <X1, ..., Xp>:
+        //
+        //   BIC(X | Z) = BIC(X1 | Z) + BIC(X2 | Z, X1) + ... + BIC(Xp | Z, X1, ..., X{p-1}).
+        //
+        // Each component is conditioned on the earlier components of its own block, so the
+        // summed log-likelihoods telescope to the joint Gaussian log-likelihood of the whole
+        // embedded block given the parents' blocks. This is what makes the score a
+        // (penalized) joint likelihood and hence score-equivalent: all DAGs in a Markov
+        // equivalence class receive the same total score.
+        //
+        // Changes from the pre-2026-8 implementation: the conditioning step (B.add below) had
+        // been commented out, so each component was scored against the parents' blocks only,
+        // treating the components as conditionally independent given the parents. Since the
+        // components are deterministic transforms of a single variable, their residuals given
+        // the parents are generally correlated, and that diagonal-residual sum is not a joint
+        // likelihood and is not score-equivalent across Markov-equivalent DAGs.
         List<Integer> A = new ArrayList<>(this.embedding.get(i));
 
         if (doOneEquationOnly) {
@@ -142,7 +155,7 @@ public class BasisFunctionBicScore implements Score {
             sumLik += result.lik();
             sumDof += result.dof();
 
-//            B.add(i_);
+            B.add(i_);
         }
 
         return 2 * sumLik - penaltyDiscount * sumDof * log(getSampleSize());

@@ -172,10 +172,9 @@ public class BasisFunctionBicScoreFullSample implements Score {
             Z_basis.set(j, embedded_z.size(), 1);
         }
 
-        // For the tabular formulation, it doesn't matter whether we use the sum-likelihood or the sum-BIC
-        // formulation. The two given identical performance for the test cases we tried. However, Chat thinks
-        // the sum likelihood formulation is more correct, so we will use that. We will revisit this issue
-        // later as light dawns. jdramsey 2025-2-13
+        // See getSequentialLocalScoreSumLikelihood for the chain-rule decomposition over the
+        // components of X's embedded block (conditioning restored 2026-8; see the Javadoc there
+        // for the change history).
         return getSequentialLocalScoreSumLikelihood(X_basis, Z_basis);
     }
 
@@ -253,6 +252,19 @@ public class BasisFunctionBicScoreFullSample implements Score {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * Chain-rule decomposition over the embedded components of X: component Xi is regressed on
+     * the parents' block together with the earlier components X1, ..., X{i-1}, so the summed
+     * log-likelihoods telescope to the joint Gaussian log-likelihood of X's embedded block
+     * given the parents' block. This makes the score a penalized joint likelihood and hence
+     * score-equivalent across Markov-equivalent DAGs.
+     * <p>
+     * Changes from the pre-2026-8 implementation: the conditioning on earlier components had
+     * been commented out, so every component was regressed on the parents' block only. That
+     * diagonal-residual sum is not a joint likelihood (the components are deterministic
+     * transforms of one variable, so their residuals are correlated) and is not
+     * score-equivalent.
+     */
     private double getSequentialLocalScoreSumLikelihood(SimpleMatrix X_basis, SimpleMatrix Y_basis) {
         int N = X_basis.getNumRows();
         int pX = X_basis.getNumCols();
@@ -260,9 +272,9 @@ public class BasisFunctionBicScoreFullSample implements Score {
         int totalDof = 0;
 
         for (int i = 0; i < pX; i++) {
-            // Define parent variables for Xi
-//            SimpleMatrix Z = (i == 0) ? Y_basis : Y_basis.combine(0, Y_basis.getNumCols(), X_basis.extractMatrix(0, N, 0, i));
-            SimpleMatrix Z = Y_basis;
+            // Predictors for Xi: the parents' block (with intercept), plus X1, ..., X{i-1}.
+            SimpleMatrix Z = (i == 0) ? Y_basis
+                    : Y_basis.combine(0, Y_basis.getNumCols(), X_basis.extractMatrix(0, N, 0, i));
 
             // Fit regression: Xi ~ Z
             SimpleMatrix x = X_basis.extractMatrix(0, N, i, i + 1);
