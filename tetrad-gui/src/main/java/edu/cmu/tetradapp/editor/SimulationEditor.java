@@ -199,6 +199,8 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         JMenu data = new JMenu("Data");
         data.add(new PlotMatrixAction(this));
         data.add(new DescriptiveStatsAction(this));
+        data.add(new DataAuditAction(this));
+        data.add(new DataAuditAction(this));
         data.add(new QQPlotAction(this));
         data.add(new NonlinearityChecksAction(this));
         data.add(new CheckIndependenceFacts(this));
