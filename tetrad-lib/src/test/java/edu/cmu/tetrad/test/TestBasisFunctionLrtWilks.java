@@ -195,7 +195,69 @@ public class TestBasisFunctionLrtWilks {
                 wrapped instanceof IndTestBasisFunctionBlocks);
     }
 
+    /**
+     * Continuous-vs-binary with purely nonlinear dependence: y = 1{|x| > 1} (10% label noise).
+     * The linear correlation between x and y is ~0 by symmetry, so the dependence is only
+     * visible through the higher-order basis columns of x. Prior to the 2026-8 fix,
+     * robustifyXY in IndTestBlocksWilkes truncated the continuous block (truncation-limit
+     * columns) to the binary block's single indicator column, reducing the test to an
+     * effectively linear one; this test fails against those classes.
+     */
+    @Test
+    public void testMixedNonlinearDependenceNotTruncated() {
+        Random rng = new Random(47);
+        int n = 1000;
+
+        DataSet data = makeMixedData(n);
+        for (int i = 0; i < n; i++) {
+            double x = rng.nextGaussian();
+            int y = (Math.abs(x) > 1.0) ? 1 : 0;
+            if (rng.nextDouble() < 0.10) y = 1 - y; // label noise; avoids determinism
+            data.setDouble(i, 0, x);
+            data.setInt(i, 1, y);
+        }
+
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(data, 3, 1);
+        double p = pOf(test, data);
+        System.out.printf("Mixed nonlinear (y = 1{|x| > 1}): p = %.4g%n", p);
+        assertTrue("Nonlinear dependence of a binary on a continuous variable should be "
+                + "detected (p < .01), got p = " + p, p < 0.01);
+    }
+
+    /**
+     * Continuous-vs-binary null: independent Gaussian x and Bernoulli y. Guards that removing
+     * the block truncation does not inflate false positives on mixed data.
+     */
+    @Test
+    public void testMixedNullContinuousVsBinary() {
+        Random rng = new Random(48);
+        int reps = 200, n = 500;
+        int rejects = 0;
+
+        for (int r = 0; r < reps; r++) {
+            DataSet data = makeMixedData(n);
+            for (int i = 0; i < n; i++) {
+                data.setDouble(i, 0, rng.nextGaussian());
+                data.setInt(i, 1, rng.nextDouble() < 0.4 ? 1 : 0);
+            }
+            IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(data, 3, 1);
+            if (pOf(test, data) < 0.05) rejects++;
+        }
+
+        double rate = rejects / (double) reps;
+        System.out.printf("Mixed null (continuous vs binary): reject@.05 = %.3f%n", rate);
+        assertTrue("Mixed null rejection rate should be near nominal, got " + rate,
+                rate >= 0.005 && rate <= 0.15);
+    }
+
     // ------------------------------------------------------------------------------------------
+
+    private static DataSet makeMixedData(int n) {
+        List<Node> vars = new ArrayList<>();
+        vars.add(new ContinuousVariable("X"));
+        vars.add(new edu.cmu.tetrad.data.DiscreteVariable("Y", 2));
+        return new BoxDataSet(new edu.cmu.tetrad.data.MixedDataBox(vars, n), vars);
+    }
 
     private static DataSet makeData(double[][] d, String... names) {
         List<Node> vars = new ArrayList<>();
@@ -241,6 +303,8 @@ public class TestBasisFunctionLrtWilks {
         t.testConditionalNull();
         t.testEffectiveSampleSizeAffectsPValues();
         t.testWrapperResolvesToBlocksTest();
+        t.testMixedNonlinearDependenceNotTruncated();
+        t.testMixedNullContinuousVsBinary();
         System.out.println("ALL TESTS PASSED");
     }
 }

@@ -285,11 +285,19 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
 //    }
 
     /**
-     * Make the CCA well-posed without padding from unrelated variables.
-     * Strategy:
-     *  1) Remove overlaps with Z.
-     *  2) If one side is bigger, shrink the bigger side to the smaller side (deterministic).
-     *  3) (Optional) if either side becomes empty, return empty.
+     * Clean up the X and Y blocks before CCA:
+     *  1) Deduplicate and sort for determinism.
+     *  2) Remove overlaps with Z.
+     *  3) If either side becomes empty, return empty.
+     * <p>
+     * Changes from the pre-2026-8 implementation: the blocks are no longer equalized in size.
+     * Previously, the larger of the two blocks was truncated to a deterministic prefix of the
+     * smaller block's length. That step is unnecessary — both the Wilks rank estimator and the
+     * Bartlett p-value handle rectangular blocks (min(p, q) canonical correlations, df = p * q
+     * rank-aware) — and it silently discarded detection power. In particular, testing a
+     * continuous variable (truncation-limit basis columns) against a binary variable (one
+     * indicator column) reduced the continuous side to its first basis column, making the test
+     * effectively linear on mixed data.
      */
     private XY robustifyXY(int[] xCols0, int[] yCols0, int[] zCols) {
         int[] X = uniqSorted(xCols0);
@@ -301,13 +309,6 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
             Y = minus(Y, Z);
         }
         if (X.length == 0 || Y.length == 0) return new XY(new int[0], new int[0]);
-
-        // Always shrink the larger side; never pad with unrelated columns.
-        if (X.length > Y.length) {
-            X = Arrays.copyOf(X, Y.length);
-        } else if (Y.length > X.length) {
-            Y = Arrays.copyOf(Y, X.length);
-        }
 
         return new XY(X, Y);
     }
