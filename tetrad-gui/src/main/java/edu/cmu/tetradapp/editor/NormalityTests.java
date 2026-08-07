@@ -117,19 +117,14 @@ class NormalityTests {
      * .10, .05, and .01 respectively.
      */
     public static double[] kolmogorovSmirnov(DataSet dataSet, ContinuousVariable variable) {
-        int n = dataSet.getNumRows();
         int columnIndex = dataSet.getColumnIndex(variable);
-        NormalDistribution idealDistribution = NormalityTests.getNormal(dataSet, variable);
-
-        double[] ks = new double[6];
-
-        //get all critical values
-        for (int i = 1; i < 6; i++) {
-            ks[i] = NormalityTests.estimateKSCriticalValue(i, n);
-        }
 
         double[] _data = dataSet.getDoubleData().getColumn(columnIndex).toArray();
 
+        // Leave out missing values (NaN). All subsequent calculations use the
+        // effective (observed) sample size, n, not the number of rows in the
+        // dataset; using the number of rows here was the cause of an
+        // ArrayIndexOutOfBoundsException for datasets with missing values.
         List<Double> _leaveOutMissing = new ArrayList<>();
 
         for (double datum : _data) {
@@ -138,11 +133,34 @@ class NormalityTests {
             }
         }
 
-        double[] data = new double[_leaveOutMissing.size()];
+        int n = _leaveOutMissing.size();
 
-        for (int i = 0; i < _leaveOutMissing.size(); i++) data[i] = _leaveOutMissing.get(i);
+        double[] ks = new double[6];
+
+        //get all critical values
+        for (int i = 1; i < 6; i++) {
+            ks[i] = NormalityTests.estimateKSCriticalValue(i, n);
+        }
+
+        // Too few observed values, or a constant column, to fit a normal;
+        // report an undefined statistic rather than throwing.
+        if (n < 2) {
+            ks[0] = Double.NaN;
+            return ks;
+        }
+
+        double[] data = new double[n];
+
+        for (int i = 0; i < n; i++) data[i] = _leaveOutMissing.get(i);
 
         Arrays.sort(data);
+
+        NormalDistribution idealDistribution = NormalityTests.getNormal(data);
+
+        if (idealDistribution == null) {
+            ks[0] = Double.NaN;
+            return ks;
+        }
 
         double d = 0.0;
         for (int i = 1; i <= n; i++) {
@@ -333,37 +351,46 @@ class NormalityTests {
      * @return Ideal Normal distribution for a variable.
      */
 
-    private static NormalDistribution getNormal(DataSet dataSet, Variable variable) {
-        double[] paramsForNormal = NormalityTests.normalParams(dataSet, variable);
+    /**
+     * Fits a normal distribution to the given observed (non-missing) values, or returns null if the values are
+     * degenerate (fewer than two values, constant, or otherwise yielding a nonpositive standard deviation).
+     */
+    private static NormalDistribution getNormal(double[] observed) {
+        double[] paramsForNormal = NormalityTests.normalParams(observed);
         double mean = paramsForNormal[0];
         double sd = paramsForNormal[1];
+
+        if (Double.isNaN(mean) || Double.isNaN(sd) || sd <= 0.0) {
+            return null;
+        }
+
         return new NormalDistribution(mean, sd);
     }
 
     /**
-     * Given some variable, returns the mean and standard deviation in indices 0 and 1 respectively.
+     * Given an array of observed (non-missing) values, returns the mean and standard deviation in indices 0 and 1
+     * respectively.
      *
      * @return [0] -&gt; mean, [1] -&gt; standard deviation
      */
-
-    private static double[] normalParams(DataSet dataSet, Variable variable) {
-        int columnIndex = dataSet.getColumnIndex(variable);
+    private static double[] normalParams(double[] observed) {
+        int n = observed.length;
         double mean = 0.0;
         double sd = 0.0;
 
         //calculate the mean
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            mean += dataSet.getDouble(i, columnIndex);
+        for (double datum : observed) {
+            mean += datum;
         }
 
-        mean /= dataSet.getNumRows();
+        mean /= n;
 
         //calculate the standard deviation
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            sd += (dataSet.getDouble(i, columnIndex) - mean) * (dataSet.getDouble(i, columnIndex) - mean);
+        for (double datum : observed) {
+            sd += (datum - mean) * (datum - mean);
         }
 
-        sd /= dataSet.getNumRows() - 1.0;
+        sd /= n - 1.0;
         sd = TMath.sqrt(sd);
 
         double[] result = new double[2];

@@ -63,6 +63,21 @@ import java.util.Map;
 public final class MissingDataAudit {
 
     /**
+     * The per-variable missing rate at or above which advice() flags a variable as having high missingness.
+     */
+    public static final double HIGH_MISSING_RATE = 0.20;
+
+    /**
+     * The alpha level advice() uses to interpret Little's MCAR test.
+     */
+    public static final double MCAR_TEST_ALPHA = 0.05;
+
+    /**
+     * The pairwise complete count below which advice() warns that test-wise statistics may be unstable.
+     */
+    public static final int SMALL_PAIRWISE_COUNT = 30;
+
+    /**
      * The dataset being audited.
      */
     private final DataSet dataSet;
@@ -431,6 +446,97 @@ public final class MissingDataAudit {
 
         this.littleResult = new LittleResult(d2, df, pValue, numPatternsUsed, numPatternsSkipped);
         return this.littleResult;
+    }
+
+    /**
+     * Rule-based advice for handling the missingness in this dataset, as a list of short paragraphs, in decreasing
+     * order of importance. This is shared by the GUI's Data Audit dialog, causal-cmd, and py-tetrad so that all three
+     * interfaces give the same recommendations. The rules are deliberately conservative: no test can confirm MCAR or
+     * rule out MNAR, so the advice recommends policies rather than asserting assumptions.
+     *
+     * @return The advice, one recommendation per entry; never empty.
+     */
+    public List<String> advice() {
+        List<String> out = new ArrayList<>();
+
+        NumberFormat pct = NumberFormat.getPercentInstance();
+        pct.setMaximumFractionDigits(1);
+
+        if (!anyMissing()) {
+            out.add("No missing values were found. All missing-data policies behave identically on complete "
+                    + "data, so no policy choice is needed.");
+            return out;
+        }
+
+        // Listwise loss.
+        double retained = this.numCompleteRows / (double) this.numRows;
+        out.add("Listwise deletion would retain " + this.numCompleteRows + " of " + this.numRows + " rows ("
+                + pct.format(retained) + ").");
+
+        // Variables with high missingness.
+        List<Node> variables = this.dataSet.getVariables();
+        StringBuilder high = new StringBuilder();
+
+        for (int j = 0; j < this.numColumns; j++) {
+            if (getMissingRate(j) >= HIGH_MISSING_RATE) {
+                if (high.length() > 0) high.append(", ");
+                high.append(variables.get(j).getName()).append(" (").append(pct.format(getMissingRate(j)))
+                        .append(")");
+            }
+        }
+
+        if (high.length() > 0) {
+            out.add("High missingness (>= " + pct.format(HIGH_MISSING_RATE) + ") for: " + high
+                    + ". Consider whether these variables belong in the analysis; if they do, "
+                    + "MULTIPLE_IMPUTATION uses their observed values most efficiently.");
+        }
+
+        // Unstable pairwise counts.
+        int minPairwise = getMinPairwiseCount();
+
+        if (minPairwise < SMALL_PAIRWISE_COUNT) {
+            out.add("The smallest pairwise complete count is " + minPairwise
+                    + ". Test-wise statistics for the affected variable pair(s) will rest on very few rows "
+                    + "and may be unstable.");
+        }
+
+        // MCAR evidence and policy recommendation.
+        if (this.dataSet.isContinuous()) {
+            try {
+                LittleResult r = littlesMcarTest();
+
+                if (Double.isNaN(r.pValue)) {
+                    out.add("Little's MCAR test could not produce a p-value (df = " + r.df + ", patterns used = "
+                            + r.numPatternsUsed + "). With MCAR undetermined, EM_COVARIANCE (for approximately "
+                            + "Gaussian data) or MULTIPLE_IMPUTATION are the safer choices.");
+                } else if (r.pValue < MCAR_TEST_ALPHA) {
+                    out.add("Little's MCAR test rejects the MCAR hypothesis (chi-square = "
+                            + String.format("%.2f", r.chiSquare) + ", df = " + r.df + ", p = "
+                            + String.format("%.4f", r.pValue) + "). TESTWISE and LISTWISE deletion may be "
+                            + "biased. Prefer EM_COVARIANCE (valid under MAR for approximately Gaussian data) "
+                            + "or MULTIPLE_IMPUTATION.");
+                } else {
+                    out.add("Little's MCAR test does not reject the MCAR hypothesis (chi-square = "
+                            + String.format("%.2f", r.chiSquare) + ", df = " + r.df + ", p = "
+                            + String.format("%.4f", r.pValue) + "). TESTWISE deletion (the default) is "
+                            + "reasonable; LISTWISE is also unbiased if the retained sample is large enough, "
+                            + "and EM_COVARIANCE will typically use the data more efficiently.");
+                }
+            } catch (Exception e) {
+                out.add("Little's MCAR test could not be computed (" + e.getMessage() + "). With MCAR "
+                        + "undetermined, EM_COVARIANCE or MULTIPLE_IMPUTATION are the safer choices.");
+            }
+        } else {
+            out.add("Little's MCAR test applies only to continuous datasets, so no MCAR evidence is available "
+                    + "for this (discrete or mixed) dataset. If missingness may depend on observed values, "
+                    + "prefer MULTIPLE_IMPUTATION, which supports discrete and mixed data.");
+        }
+
+        out.add("Caveat: statistical tests can reject MCAR but can never confirm it, and no test can rule out "
+                + "MNAR (missingness depending on the missing values themselves). Use background knowledge "
+                + "about why values are missing when choosing a policy.");
+
+        return out;
     }
 
     /**
