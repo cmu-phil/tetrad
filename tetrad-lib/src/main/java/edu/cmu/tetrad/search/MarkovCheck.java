@@ -2250,10 +2250,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private void calcStats(boolean indep) {
         List<IndependenceResult> results = new ArrayList<>(getResultsLocal(indep));
 
+        double alpha = cachedQueries.getBaseTest().getAlpha();
+        boolean usableAlpha = isUsableAlpha(alpha);
+
         int dependent = 0;
 
-        for (IndependenceResult result : results) {
-            if (result.getPValue() <= cachedQueries.getBaseTest().getAlpha()) dependent++;
+        if (usableAlpha) {
+            for (IndependenceResult result : results) {
+                if (result.getPValue() <= alpha) dependent++;
+            }
         }
 
         List<Double> pValues = getPValues(results);
@@ -2266,7 +2271,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double ksP = UniformityTest.getKsPValue(pValues, 0, 1);
         double fishP = getFisherCombinedPValue(results);
         double binP = getBinomialPValue_(pValues);
-        double fracDep = dependent / (double) results.size();
+
+        // Without a usable alpha there is no threshold to count dependencies against; report the fraction as
+        // undefined rather than as zero, which would read as "no implied dependency was detected."
+        double fracDep = usableAlpha ? (dependent / (double) results.size()) : Double.NaN;
         int numTests = results.size();
 
         if (indep) {
@@ -2361,6 +2369,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private double getBinomialPValue_(List<Double> pValues) {
         int n = pValues.size();
         double q = cachedQueries.getBaseTest().getAlpha();
+
+        // Some IndependenceTest implementations do not have a meaningful alpha and signal this out of band:
+        // ScoreIndTest returns -1 (its "p-value" is a score bump, not a probability) and IndTestIndependenceFacts
+        // returns NaN. Feeding either to BinomialDistribution threw OutOfRangeException (for -1) or silently
+        // produced NaN (for NaN), so guard explicitly and report the statistic as undefined instead.
+        if (!isUsableAlpha(q) || n == 0) {
+            return Double.NaN;
+        }
+
         int k = (int) pValues.stream().filter(p -> p <= q).count();
 
         BinomialDistribution bd = new BinomialDistribution(n, q);
@@ -2369,6 +2386,32 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
 
         return TMath.min(1.0, 2.0 * TMath.min(leftTail, rightTail));
+    }
+
+    /**
+     * Returns true just in case the given alpha can be used as a probability threshold. An independence test that
+     * does not test at a level--a score wrapped as a test, or a test backed by an oracle of independence facts--
+     * reports an alpha outside [0, 1] (currently -1 or NaN), and the p-value-threshold statistics of the Markov
+     * check are undefined for it.
+     *
+     * @param alpha The alpha to check.
+     * @return True if the alpha is usable as a threshold.
+     */
+    private static boolean isUsableAlpha(double alpha) {
+        return !Double.isNaN(alpha) && alpha >= 0.0 && alpha <= 1.0;
+    }
+
+    /**
+     * Returns true just in case the base independence test of this Markov check reports p-values that can be
+     * compared against a threshold and tested for uniformity. This is false for score-based tests (whose
+     * "p-values" are score differences and may be any real number) and for oracle tests. When this is false, the
+     * fraction-dependent and binomial statistics are reported as {@link Double#NaN} rather than being computed from
+     * values that are not p-values.
+     *
+     * @return True if the base test reports usable p-values.
+     */
+    public boolean providesCalibratedPValues() {
+        return isUsableAlpha(cachedQueries.getBaseTest().getAlpha());
     }
 
     /**
