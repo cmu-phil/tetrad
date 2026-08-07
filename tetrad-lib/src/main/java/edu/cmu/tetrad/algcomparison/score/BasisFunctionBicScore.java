@@ -42,7 +42,7 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BF-SEM-BIC", command = "bf-sem-bic-score", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BF-BIC", command = "bf-bic-score", dataType = DataType.Mixed)
 @Mixed
 @General
 @Experimental
