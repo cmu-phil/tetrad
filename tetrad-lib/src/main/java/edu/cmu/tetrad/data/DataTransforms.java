@@ -62,6 +62,38 @@ public class DataTransforms {
      * @return a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public static DataSet logData(DataSet dataSet, double a, boolean isUnlog, int base) {
+        Map<String, LogTransformSpec> specs = new HashMap<>();
+        LogTransformSpec spec = new LogTransformSpec(a, base, isUnlog);
+
+        // Discrete columns are passed through unchanged, as before; omitting them from the spec map has
+        // exactly that effect.
+        for (Node variable : dataSet.getVariables()) {
+            if (!(variable instanceof DiscreteVariable)) {
+                specs.put(variable.getName(), spec);
+            }
+        }
+
+        return logData(dataSet, specs);
+    }
+
+    /**
+     * Applies a logarithmic transform to selected variables of the given dataset, each with its own offset, base,
+     * and direction.
+     * <p>
+     * Variables absent from the map are copied through unchanged, as are discrete variables (which are never
+     * transformed even if named in the map). Passing a map that assigns the same spec to every continuous variable
+     * reproduces {@link #logData(DataSet, double, boolean, int)} exactly.
+     * <p>
+     * No check is made that the offsets keep values in the domain of the logarithm; a variable whose values are not
+     * strictly positive under its offset will yield NaN or negative infinity, exactly as the dataset-wide transform
+     * does. {@link LogTransformSpec#safeOffsetFor(double[])} is available to callers that want to propose a safe
+     * offset to the user first.
+     *
+     * @param dataSet The dataset to transform.
+     * @param specs   A map from variable name to the transform to apply to that variable.
+     * @return The transformed dataset.
+     */
+    public static DataSet logData(DataSet dataSet, Map<String, LogTransformSpec> specs) {
         Matrix data = dataSet.getDoubleData();
         Matrix X = data.like();
 
@@ -69,26 +101,16 @@ public class DataTransforms {
             double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
             double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
 
-            if (dataSet.getVariable(j) instanceof DiscreteVariable) {
+            Node variable = dataSet.getVariable(j);
+            LogTransformSpec spec = specs == null ? null : specs.get(variable.getName());
+
+            if (variable instanceof DiscreteVariable || spec == null) {
                 X.assignColumn(j, new Vector(x1));
                 continue;
             }
 
             for (int i = 0; i < x1.length; i++) {
-                if (isUnlog) {
-                    if (base == 0) {
-                        x1[i] = TMath.exp(x1Orig[i]) - a;
-                    } else {
-                        x1[i] = TMath.pow(base, (x1Orig[i])) - a;
-                    }
-                } else {
-                    double log = TMath.log(a + x1Orig[i]);
-                    if (base == 0) {
-                        x1[i] = log;
-                    } else {
-                        x1[i] = log / TMath.log(base);
-                    }
-                }
+                x1[i] = spec.apply(x1Orig[i]);
             }
 
             X.assignColumn(j, new Vector(x1));
