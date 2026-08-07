@@ -216,7 +216,10 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
             return 1.0;
         }
 
-        double p = RankTests.pValueIndepConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, n);
+        // Use the effective sample size here, consistent with getEstimatedRank; the cache key
+        // already includes effN. Prior to 2026-8 this used the raw row count n, so
+        // setEffectiveSampleSize had no effect on reported p-values.
+        double p = RankTests.pValueIndepConditioned(S, pads.xAdj, pads.yAdj, kp.zCols, effN);
         if (Double.isNaN(p) || Double.isInfinite(p)) p = 1.0;
         p = TMath.max(0.0, TMath.min(1.0, p));
 

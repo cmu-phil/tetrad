@@ -406,5 +406,13 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
+
+        // Forward to the delegate, which performs the actual rank and p-value computations.
+        // Prior to 2026-8 this value was recorded here but never forwarded, so it had no
+        // effect on test results. (The delegate is null only during construction; the
+        // constructor sets the delegate's effective sample size explicitly.)
+        if (this.blocksTest != null) {
+            this.blocksTest.setEffectiveSampleSize(nEff);
+        }
     }
 }
