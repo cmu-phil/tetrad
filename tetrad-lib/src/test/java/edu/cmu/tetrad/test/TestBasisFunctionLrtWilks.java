@@ -170,6 +170,120 @@ public class TestBasisFunctionLrtWilks {
     }
 
     /**
+     * A caller-set effective sample size must survive setRows. The Markov Checker calls
+     * setRows on every run (even with resample fraction 1), and prior to the 2026-8 fix that
+     * call rebuilt the internal delegate with the default effective sample size, silently
+     * discarding the caller's value. This test fails against the pre-fix class.
+     */
+    @Test
+    public void testEffectiveSampleSizeSurvivesSetRows() {
+        Random rng = new Random(49);
+        int n = 1000;
+        double[][] d = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            double x = rng.nextGaussian();
+            d[i][0] = x;
+            d[i][1] = 0.15 * x + rng.nextGaussian(); // weak dependence: p sensitive to effN
+        }
+        DataSet data = makeData(d, "X", "Y");
+
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(data, 3, 1);
+        test.setEffectiveSampleSize(100);
+        double pBefore = pOf(test, data);
+
+        // Same rows, set explicitly - as the Markov Checker does with resample fraction 1.
+        List<Integer> allRows = new ArrayList<>();
+        for (int i = 0; i < n; i++) allRows.add(i);
+        test.setRows(allRows);
+        double pAfter = pOf(test, data);
+
+        System.out.printf("effN survives setRows: p(before) = %.4g, p(after setRows) = %.4g, "
+                + "getEffectiveSampleSize() = %d%n", pBefore, pAfter, test.getEffectiveSampleSize());
+        assertTrue("getEffectiveSampleSize should still report the caller's value",
+                test.getEffectiveSampleSize() == 100);
+        assertTrue("p-value should be unchanged when setRows selects the same rows; got "
+                + pBefore + " -> " + pAfter, Math.abs(pBefore - pAfter) < 1e-9);
+    }
+
+    /**
+     * Under a proper row subset, the applied effective sample size rescales proportionally:
+     * declaring nEff for N rows means a subset of m rows carries nEff * m / N. Restoring the
+     * full row set (setRows(null)) restores the caller's value.
+     */
+    @Test
+    public void testEffectiveSampleSizeRescalesUnderSubsampling() {
+        Random rng = new Random(50);
+        int n = 1000;
+        double[][] d = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            double x = rng.nextGaussian();
+            d[i][0] = x;
+            d[i][1] = 0.15 * x + rng.nextGaussian();
+        }
+        DataSet data = makeData(d, "X", "Y");
+
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(data, 3, 1);
+        test.setEffectiveSampleSize(200);
+
+        List<Integer> half = new ArrayList<>();
+        for (int i = 0; i < n / 2; i++) half.add(i);
+        test.setRows(half);
+        System.out.printf("effN rescales: userNEff = 200, half rows -> applied = %d%n",
+                test.getEffectiveSampleSize());
+        assertTrue("Half the rows should apply half the declared effN (100), got "
+                + test.getEffectiveSampleSize(), test.getEffectiveSampleSize() == 100);
+
+        test.setRows(null);
+        assertTrue("Restoring all rows should restore the caller's effN (200), got "
+                + test.getEffectiveSampleSize(), test.getEffectiveSampleSize() == 200);
+    }
+
+    /**
+     * End-to-end: the Markov Checker must honor a caller-set effective sample size. With weak
+     * dependence and an empty graph asserting X _||_ Y, the checked p-value must be larger at
+     * effN = 100 than at the full n. Fails against the pre-fix class, where MarkovCheck's
+     * setRows call reset the effective sample size and the two runs returned identical
+     * p-values.
+     */
+    @Test
+    public void testMarkovCheckHonorsEffectiveSampleSize() {
+        Random rng = new Random(51);
+        int n = 1000;
+        double[][] d = new double[n][2];
+        for (int i = 0; i < n; i++) {
+            double x = rng.nextGaussian();
+            d[i][0] = x;
+            d[i][1] = 0.15 * x + rng.nextGaussian();
+        }
+        DataSet data = makeData(d, "X", "Y");
+
+        double pDefault = markovCheckP(data, -1);
+        double pSmall = markovCheckP(data, 100);
+
+        System.out.printf("MarkovCheck honors effN: p(effN = n) = %.4g, p(effN = 100) = %.4g%n",
+                pDefault, pSmall);
+        assertTrue("Markov-checked p-value should increase when effN shrinks to 100; got "
+                + pDefault + " -> " + pSmall, pSmall > pDefault + 1e-6);
+    }
+
+    private static double markovCheckP(DataSet data, int effN) {
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(data, 3, 1);
+        test.setEffectiveSampleSize(effN);
+
+        edu.cmu.tetrad.graph.Graph empty =
+                new edu.cmu.tetrad.graph.EdgeListGraph(data.getVariables());
+        edu.cmu.tetrad.search.MarkovCheck mc = new edu.cmu.tetrad.search.MarkovCheck(
+                empty, test, edu.cmu.tetrad.search.ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+        mc.setParallelized(false);
+        try {
+            mc.generateAllResults();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return mc.getResults(true).get(0).getPValue();
+    }
+
+    /**
      * The BF-LRT wrapper must resolve to the Wilks blocks test, not the deprecated
      * trace-averaged LRT.
      */
@@ -302,6 +416,9 @@ public class TestBasisFunctionLrtWilks {
         t.testPowerUnderPureNonlinearity();
         t.testConditionalNull();
         t.testEffectiveSampleSizeAffectsPValues();
+        t.testEffectiveSampleSizeSurvivesSetRows();
+        t.testEffectiveSampleSizeRescalesUnderSubsampling();
+        t.testMarkovCheckHonorsEffectiveSampleSize();
         t.testWrapperResolvesToBlocksTest();
         t.testMixedNonlinearDependenceNotTruncated();
         t.testMixedNullContinuousVsBinary();

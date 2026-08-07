@@ -95,6 +95,11 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     // ---- Knobs ----
     private double alpha = 0.01;
     private int nEff;
+    /**
+     * The caller-requested effective sample size (-1 = default). Remembered so that it
+     * survives setRows; see setEffectiveSampleSize.
+     */
+    private int userNEff = -1;
 
     // Optional row subset (null = use all rows)
     private List<Integer> rows;
@@ -137,12 +142,11 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         // Default: all rows
         this.rows = null;
         this.sampleSize = dataSet.getNumRows();
-        setEffectiveSampleSize(-1);
 
         // Delegate CI testing to IndTestBlocks over the full embedded data
         this.blocksTest = new IndTestBlocksWilkes(
                 new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables));
-        this.blocksTest.setEffectiveSampleSize(-1);
+        applyEffectiveSampleSize();
     }
 
     // ====== IndependenceTest API ======
@@ -335,12 +339,11 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         if (rows == null) {
             this.rows = null;
             this.sampleSize = dataSet.getNumRows();
-            setEffectiveSampleSize(-1);
 
             // Rebuild delegate on the full embedded data
             this.blocksTest = new IndTestBlocksWilkes(
                     new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables));
-            this.blocksTest.setEffectiveSampleSize(-1);
+            applyEffectiveSampleSize();
             return;
         }
 
@@ -358,7 +361,6 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         this.rows = new ArrayList<>(rows);
         this.sampleSize = rows.size();
-        setEffectiveSampleSize(-1);
 
         // Build an embedded DataSet with only the selected rows
         DataSet subEmbedded = subsetRows(embeddedDataSetFull, this.rows);
@@ -366,7 +368,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         // Rebuild delegate on the subsampled embedded data
         this.blocksTest = new IndTestBlocksWilkes(
                 new BlockSpec(subEmbedded, this.blocks, this.variables));
-        this.blocksTest.setEffectiveSampleSize(-1);
+        applyEffectiveSampleSize();
     }
 
     /**
@@ -403,16 +405,54 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         return this.nEff;
     }
 
+    /**
+     * Sets the effective sample size. The value is remembered and survives subsequent
+     * {@code setRows} calls.
+     * <p>
+     * Changes from the pre-2026-8 implementation: previously, {@code setRows} reset the
+     * effective sample size to the row count when it rebuilt the internal delegate, so a
+     * caller-set value was silently discarded by any tool that subsamples or shuffles rows --
+     * in particular the Markov Checker, which calls {@code setRows} on every run (even with
+     * resample fraction 1). The requested value is now stored and re-applied whenever the row
+     * set changes. Under a proper row subset, the applied effective sample size is rescaled
+     * proportionally: if the caller declares that the full data of N rows carry nEff
+     * independent observations' worth of information, a subset of m rows is treated as
+     * carrying nEff * m / N (floored at 1). Passing a negative value restores the default
+     * (effective sample size = current row count).
+     *
+     * @param nEff the effective sample size, or a negative value for the default.
+     */
     @Override
     public void setEffectiveSampleSize(int nEff) {
-        this.nEff = nEff < 0 ? this.sampleSize : nEff;
+        this.userNEff = nEff < 0 ? -1 : nEff;
+        applyEffectiveSampleSize();
+    }
 
-        // Forward to the delegate, which performs the actual rank and p-value computations.
-        // Prior to 2026-8 this value was recorded here but never forwarded, so it had no
-        // effect on test results. (The delegate is null only during construction; the
-        // constructor sets the delegate's effective sample size explicitly.)
+    /**
+     * Applies the remembered effective-sample-size request to the current row set and forwards
+     * the result to the delegate, which performs the actual rank and p-value computations.
+     * (The delegate is null only during construction; the constructor calls this method after
+     * creating the delegate.)
+     */
+    private void applyEffectiveSampleSize() {
+        int applied;
+
+        if (this.userNEff < 0) {
+            applied = -1; // default: delegate uses its own row count
+            this.nEff = this.sampleSize;
+        } else if (this.rows == null) {
+            applied = this.userNEff;
+            this.nEff = applied;
+        } else {
+            // Proportional rescaling under a row subset; see setEffectiveSampleSize.
+            int total = this.dataSet.getNumRows();
+            applied = TMath.max(1, (int) TMath.round(
+                    this.userNEff * (double) this.sampleSize / (double) total));
+            this.nEff = applied;
+        }
+
         if (this.blocksTest != null) {
-            this.blocksTest.setEffectiveSampleSize(nEff);
+            this.blocksTest.setEffectiveSampleSize(applied);
         }
     }
 }
