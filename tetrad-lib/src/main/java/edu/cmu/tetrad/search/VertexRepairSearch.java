@@ -623,6 +623,33 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
+     * Returns true if the given candidate graph is inconsistent with the background knowledge. This is stricter than
+     * {@link Knowledge#isViolatedBy(Graph)} alone: in addition to forbidden directed edges and undirected edges whose
+     * orientations are both forbidden, it rejects candidates containing an undirected edge exactly one of whose
+     * orientations is forbidden. Such an edge is not impossible, but it is under-oriented - a knowledge-respecting
+     * CPDAG would have compiled it to the allowed direction - and accepting it would let repair "erase" orientations
+     * that the knowledge determines. (A more permissive alternative would be to orient such edges rather than reject
+     * the candidate; rejection is the conservative choice and keeps candidate enumeration unchanged.)
+     */
+    private boolean violatesKnowledge(Graph g) {
+        if (this.knowledge == null || this.knowledge.isEmpty()) return false;
+        if (this.knowledge.isViolatedBy(g)) return true;
+
+        for (Edge edge : g.getEdges()) {
+            if (Edges.isUndirectedEdge(edge)) {
+                String a = edge.getNode1().getName();
+                String b = edge.getNode2().getName();
+
+                if (this.knowledge.isForbidden(a, b) != this.knowledge.isForbidden(b, a)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Sets the graph type that governs which edits are legal.
      *
      * @param graphType the graph type to use; must not be {@code null}
@@ -697,7 +724,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     public List<ScoredCandidate> searchForNode(Node node) {
         Graph base = prepareBase();
         if (base == null) return List.of();
-        if (knowledge != null && knowledge.isViolatedBy(base)) return List.of();
+        if (violatesKnowledge(base)) return List.of();
 
         Node nodeInBase = base.getNode(node.getName());
         if (nodeInBase == null) return List.of();
@@ -965,7 +992,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             Graph g2 = candGraphByKey.computeIfAbsent(cand.key(),
                     k -> buildCandidateGraph(base, cand));
             if (g2 == null) continue;
-            if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
+            if (violatesKnowledge(g2)) continue;
 
             boolean useLocality = usesLocality();
             Set<String> affected = affectedVertices(base, node, g2);
@@ -1001,7 +1028,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             Graph g2 = candGraphByKey.computeIfAbsent(cand.key(),
                     k -> buildCandidateGraph(base, cand));
             if (g2 == null) continue;
-            if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
+            if (violatesKnowledge(g2)) continue;
 
             Set<String> affected = affectedVertices(base, node, g2);
             int after = usesLocality()

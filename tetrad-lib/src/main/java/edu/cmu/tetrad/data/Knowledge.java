@@ -581,14 +581,32 @@ public final class Knowledge implements TetradSerializable {
             throw new NullPointerException("Sorry, a graph hasn't been provided.");
         }
 
-        return graph.getEdges().stream()
-                .filter(Edge::isDirected)
-                .anyMatch(edge -> {
-                    Node from = Edges.getDirectedEdgeTail(edge);
-                    Node to = Edges.getDirectedEdgeHead(edge);
+        for (Edge edge : graph.getEdges()) {
+            if (edge.isDirected()) {
+                Node from = Edges.getDirectedEdgeTail(edge);
+                Node to = Edges.getDirectedEdgeHead(edge);
 
-                    return isForbidden(from.getName(), to.getName());
-                });
+                if (isForbidden(from.getName(), to.getName())) {
+                    return true;
+                }
+            } else if (Edges.isUndirectedEdge(edge)) {
+                // An undirected edge in a CPDAG/PDAG stands for "either orientation in some member
+                // of the class." If BOTH orientations are forbidden, no member is legal, so the
+                // edge violates the knowledge. (Previously this method filtered to directed edges
+                // only, so, e.g., an undirected edge between two variables in a forbidden-within
+                // tier passed the check.) If exactly one direction is forbidden the edge is not a
+                // violation of the class per se - it is under-oriented - and callers that require
+                // knowledge-compiled graphs should check for that case themselves.
+                String a = edge.getNode1().getName();
+                String b = edge.getNode2().getName();
+
+                if (isForbidden(a, b) && isForbidden(b, a)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
