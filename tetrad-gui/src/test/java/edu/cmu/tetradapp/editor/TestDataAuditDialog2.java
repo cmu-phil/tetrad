@@ -73,7 +73,7 @@ public class TestDataAuditDialog2 {
 
         // --- Variables model. ---
         DataAuditVariablesModel varsModel = new DataAuditVariablesModel(data, audit, missingAudit);
-        check(varsModel.getRowCount() == 7 && varsModel.getColumnCount() == 8, "variables table is 7 x 8");
+        check(varsModel.getRowCount() == 7 && varsModel.getColumnCount() == 9, "variables table is 7 x 9");
 
         for (int r = 0; r < varsModel.getRowCount(); r++) {
             StringBuilder line = new StringBuilder();
@@ -83,8 +83,8 @@ public class TestDataAuditDialog2 {
         }
 
         check("3".equals(varsModel.getValueAt(3, 5)), "x3 distinct observed == 3, got " + varsModel.getValueAt(3, 5));
-        check("-".equals(varsModel.getValueAt(6, 6)), "discrete variable AD p shown as '-'");
-        check(!"-".equals(varsModel.getValueAt(2, 6)), "continuous variable AD p shown");
+        check("-".equals(varsModel.getValueAt(6, 7)), "discrete variable AD p shown as '-'");
+        check(!"-".equals(varsModel.getValueAt(2, 7)), "continuous variable AD p shown");
         int x5Missing = Integer.parseInt((String) varsModel.getValueAt(5, 3));
         check(x5Missing > 20 && x5Missing < 70, "x5 missing count plausible: " + x5Missing);
 
