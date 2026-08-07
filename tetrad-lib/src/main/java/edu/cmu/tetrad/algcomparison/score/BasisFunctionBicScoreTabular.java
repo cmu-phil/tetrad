@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// Copyright (C) 2026 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
 // and Richard Scheines.                                                     //
 //                                                                           //
 // This program is free software: you can redistribute it and/or modify      //
@@ -20,13 +20,11 @@
 
 package edu.cmu.tetrad.algcomparison.score;
 
-import edu.cmu.tetrad.annotation.Experimental;
-import edu.cmu.tetrad.annotation.General;
-import edu.cmu.tetrad.annotation.Mixed;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -36,17 +34,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for Basis Function BIC Score (Basis-BIC) version.
+ * Wrapper for the full-sample (tabular) Basis Function BIC Score, delegating to
+ * {@link BasisFunctionBicScoreFullSample}. Unlike the covariance-based
+ * {@link BasisFunctionBicScore} wrapper, this version computes each regression on the full
+ * sample rather than from a covariance matrix.
+ * <p>
+ * This wrapper intentionally carries no {@code @Score} annotation, so it does not appear in the
+ * interface's score dropdown; it exists for programmatic use, in particular py-tetrad's
+ * {@code use_basis_function_bic_fs}, which instantiates it by this class name.
  *
  * @author josephramsey
  * @author bryanandrews
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BF-SEM-BIC", command = "bf-sem-bic-score", dataType = DataType.Mixed)
-@Mixed
-@General
-@Experimental
-public class BasisFunctionBicScore implements ScoreWrapper {
+public class BasisFunctionBicScoreTabular implements ScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -57,10 +58,9 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     private DataModel dataSet;
 
     /**
-     * Initializes a new instance of the BasisFunctionBicScore class.
+     * Initializes a new instance of the BasisFunctionBicScoreTabular wrapper.
      */
-    public BasisFunctionBicScore() {
-
+    public BasisFunctionBicScoreTabular() {
     }
 
     /**
@@ -69,14 +69,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-
-        // Changes from the pre-2026-8 implementation: the singularity lambda was previously read
-        // from Params.REGULARIZATION_LAMBDA, while callers such as py-tetrad set
-        // Params.SINGULARITY_LAMBDA (the key used by the BF-LRT wrapper and matching the score
-        // constructor's documentation), so the setting was silently ignored. The wrapper now
-        // reads SINGULARITY_LAMBDA. DO_ONE_EQUATION_ONLY was previously accepted but never
-        // forwarded to the score; it is now applied.
-        edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+        BasisFunctionBicScoreFullSample score = new BasisFunctionBicScoreFullSample(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT),
                 parameters.getDouble(Params.SINGULARITY_LAMBDA));
@@ -90,7 +83,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "BF SEM BIC";
+        return "BF SEM BIC (Full Sample)";
     }
 
     /**
@@ -122,4 +115,3 @@ public class BasisFunctionBicScore implements ScoreWrapper {
         return this.dataSet.getVariable(name);
     }
 }
-

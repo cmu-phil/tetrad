@@ -60,8 +60,8 @@ public class Embedding {
      *                        are as follows:
      *                        <ul>
      *                             <li> 0 = `g(x) = x^index [Polynomial basis]</li>
-     *                             <li> 1 = `g(x) = hermite1(index, x) [Probabilist's Hermite polynomial]</li>
-     *                             <li> 2 = `g(x) = legendre(index, x) [Legendre polynomial]</li>
+     *                             <li> 1 = `g(x) = legendre(index, x) [Legendre polynomial]</li>
+     *                             <li> 2 = `g(x) = hermite1(index, x) [Probabilist's Hermite polynomial]</li>
      *                             <li> 3 = `g(x) = chebyshev(index, x) [Chebyshev polynomial]</li>
      *                         </ul>
      * @param basisScale      The scaling factor for data transformation. Set to 0 for standardization, positive for
