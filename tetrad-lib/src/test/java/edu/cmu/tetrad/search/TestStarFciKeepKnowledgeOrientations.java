@@ -20,10 +20,16 @@ import java.util.List;
  * Hand-run harness for StarFciKeepKnowledgeOrientations. Run main() directly; no JUnit wiring yet
  * (per current test-harness convention). Exit code 0 iff all checks pass.
  * <p>
+ * NOTE (2026-8): the base-behavior comparator is the private nested GfciBase below, a direct
+ * StarFciGuaranteePag subclass with the same FGES Markov-DAG supplier as GfciKeepKnowledge. It
+ * deliberately does NOT use the public Gfci class: since Gfci (along with SpFci, GraspFci, and
+ * Bfci) was switched to extend StarFciKeepKnowledgeOrientations, using Gfci here would compare
+ * the new engine against itself, making checks 1 and 2 vacuous.
+ * <p>
  * Checks, in order:
  * <ol>
  *   <li>DEGENERATION: with empty knowledge, the new engine returns exactly the same graph as
- *       StarFciGuaranteePag (via Gfci) on the same data and settings.</li>
+ *       StarFciGuaranteePag (via GfciBase) on the same data and settings.</li>
  *   <li>KEPT ORIENTATION: for a required edge X-&gt;Y whose mark at X is a circle in the
  *       knowledge-free estimate (so the requirement genuinely goes beyond the equivalence class),
  *       the new engine's output contains X --&gt; Y, while the base engine's output does not keep
@@ -42,8 +48,31 @@ public final class TestStarFciKeepKnowledgeOrientations {
     }
 
     /**
-     * Concrete engine over the new abstract class, using the same FGES Markov-DAG supplier as Gfci,
-     * so base-vs-new comparisons differ only in the legality machinery.
+     * Base-engine comparator: a direct StarFciGuaranteePag subclass with the same FGES Markov-DAG
+     * supplier as GfciKeepKnowledge, so base-vs-new comparisons differ only in the legality
+     * machinery. (The public Gfci class can no longer serve this role; see the class Javadoc.)
+     */
+    private static final class GfciBase extends StarFciGuaranteePag {
+        private final edu.cmu.tetrad.search.score.Score score;
+
+        GfciBase(IndependenceTest test, edu.cmu.tetrad.search.score.Score score) {
+            super(test);
+            this.score = score;
+        }
+
+        @Override
+        public Graph getMarkovDag(boolean verbose) throws InterruptedException {
+            Fges fges = new Fges(this.score);
+            fges.setKnowledge(getKnowledge());
+            fges.setVerbose(false);
+            Graph graph = fges.search();
+            return GraphTransforms.dagFromCpdag(graph);
+        }
+    }
+
+    /**
+     * Concrete engine over the new abstract class, using the same FGES Markov-DAG supplier as
+     * GfciBase, so base-vs-new comparisons differ only in the legality machinery.
      */
     private static final class GfciKeepKnowledge extends StarFciKeepKnowledgeOrientations {
         private final edu.cmu.tetrad.search.score.Score score;
@@ -214,7 +243,7 @@ public final class TestStarFciKeepKnowledgeOrientations {
         IndependenceTest test = new IndTestFisherZ(data, 0.01);
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(2);
-        Gfci gfci = new Gfci(test, score);
+        GfciBase gfci = new GfciBase(test, score);
         gfci.setKnowledge(knowledge);
         gfci.setExcludeSelectionBias(excludeSelectionBias);
         gfci.setVerbose(false);
