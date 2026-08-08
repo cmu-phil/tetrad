@@ -70,6 +70,34 @@ import java.util.concurrent.ConcurrentHashMap;
  * here therefore recalls that seed collider set rather than recomputing colliders from the
  * current graph, which could re-derive marks stamped unsoundly at an earlier step.
  *
+ * <p><b>KEEP-KNOWLEDGE VARIANT.</b> This is the knowledge-orientation-keeping variant of the
+ * repaired FcitZm, parallel to StarFciKeepKnowledgeOrientations, FcitKeepKnowledgeOrientations
+ * and FcitSlKeepKnowledgeOrientations. Two things differ from those, both consequences of this
+ * algorithm's MAG-side gate:
+ * <ol>
+ *   <li><b>No certificate change is needed.</b> The other variants had to weaken a strict
+ *       PAG-legality certificate (whose final step is exact equality with the canonical PAG of
+ *       the implied Zhang MAG) to equality MODULO knowledge, because knowledge marks beyond
+ *       the invariant marks always failed that equality. FcitZm gates on
+ *       {@code PagLegalityCheck.isLegalMag} of the candidate Zhang MAG instead, and a
+ *       knowledge-refined PAG still implies a legal MAG -- the MAG completion orients
+ *       everything regardless. So the gate admits knowledge marks as it stands, and both
+ *       commit gates here are left exactly as in FcitZm.</li>
+ *   <li><b>The whole fix is orientation plumbing.</b> Knowledge entered only through the
+ *       initial knowledge-aware {@code dagToPag} and was then dropped at every reorientation:
+ *       the MAG-route commits converted through a knowledge-free {@code MagToPag}, and
+ *       {@code coldReorient} recalled colliders and ran {@code finalOrientation} (R1-R10)
+ *       without ever calling {@code fciOrientbk}. Both now carry the knowledge. The PAG-route
+ *       commits already did, via {@code FciOrient.orient}, whose {@code ruleR0} applies
+ *       {@code fciOrientbk} internally.</li>
+ * </ol>
+ * A final "knowledge never degrades legality" rung is added: if the knowledge-refined final
+ * reorientation fails the MAG-legality check, it is recomputed knowledge-free and that
+ * rendering is preferred when legal, with a loud log. As in the other variants, knowledge
+ * therefore loses conservatively when it conflicts with data-derived structure -- a
+ * deliberate, contestable modeling choice. With empty knowledge this class behaves exactly
+ * like the repaired FcitZm.
+ *
  * <p><b>Reach repair (2026-8).</b> The separator search and the loop structure were narrower
  * than Fcit's, in four ways that an exhaustive enumeration over small observed sizes is
  * built to expose. All four are now closed; none of them touches the MAG-side legality gate
@@ -92,7 +120,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author josephramsey
  */
-public final class FcitZm implements IGraphSearch {
+public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
     /**
      * The independence test.
      */
@@ -280,7 +308,7 @@ public final class FcitZm implements IGraphSearch {
      * @param score The Score object to be used for scoring DAGs.
      * @throws NullPointerException if the score is null.
      */
-    public FcitZm(IndependenceTest test, Score score) {
+    public FcitZmKeepKnowledgeOrientations(IndependenceTest test, Score score) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -340,6 +368,18 @@ public final class FcitZm implements IGraphSearch {
      * this each commit removes any reliance on prior colliders persisting through the
      * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
      */
+    /**
+     * MAG-to-PAG conversion that carries the background knowledge, so {@code fciOrientbk}
+     * runs during the conversion and the knowledge marks survive a MAG-route commit.
+     * Identity in behavior to the knowledge-free conversion when knowledge is empty.
+     */
+    private Graph magToPagWithKnowledge(Graph mag, boolean excludeSelectionBias) {
+        MagToPag magToPag = new MagToPag(mag);
+        magToPag.setKnowledge(knowledge);
+        magToPag.setRecursiveDepth(recursiveDepth);
+        return magToPag.convert(false, excludeSelectionBias);
+    }
+
     /**
      * R0 from the recorded separators, PAG side: for every recorded pair now non-adjacent,
      * each common neighbor absent from the recorded set is oriented as a collider. The
@@ -655,9 +695,44 @@ public final class FcitZm implements IGraphSearch {
                 PagLegalityCheck.isLegalMag(finalMag, new LinkedHashSet<>(selection));
 
         if (!finalLegal.isLegalMag()) {
-            TetradLogger.getInstance().log("\nFinal reorientation is not legal ("
-                    + finalLegal.getReason() + "); returning the last gated PAG instead.");
-            finalPag = interimPags.getLast();
+            // KEEP-KNOWLEDGE: knowledge must never degrade legality. Before falling back to
+            // the last gated PAG, check whether the knowledge refinement is what broke the
+            // final reorientation by recomputing it knowledge-free; if that rendering is
+            // legal, it is preferred, and the conflict is logged loudly. (With empty
+            // knowledge the recomputation is identical to finalPag and this rung is inert.)
+            boolean recovered = false;
+
+            if (knowledge != null && !knowledge.isEmpty()) {
+                TetradLogger.getInstance().log("\nFinal reorientation is not legal ("
+                        + finalLegal.getReason() + "); recomputing it without knowledge to "
+                        + "check for a knowledge/data conflict.");
+
+                Knowledge saved = this.knowledge;
+                Graph canonicalPag;
+                try {
+                    this.knowledge = new Knowledge();
+                    canonicalPag = coldReorient(interimPags.getLast());
+                } finally {
+                    this.knowledge = saved;
+                }
+
+                Graph canonicalMag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(canonicalPag));
+
+                if (PagLegalityCheck.isLegalMag(canonicalMag, new LinkedHashSet<>(selection)).isLegalMag()) {
+                    TetradLogger.getInstance().log("KNOWLEDGE/DATA CONFLICT: the knowledge-refined "
+                            + "final reorientation is not legal while the knowledge-free rendering "
+                            + "is. Returning the knowledge-free rendering; the conflicting knowledge "
+                            + "orientations are dropped.");
+                    finalPag = canonicalPag;
+                    recovered = true;
+                }
+            }
+
+            if (!recovered) {
+                TetradLogger.getInstance().log("\nFinal reorientation is not legal ("
+                        + finalLegal.getReason() + "); returning the last gated PAG instead.");
+                finalPag = interimPags.getLast();
+            }
         }
 
         // Diagnostics are run on the graph actually RETURNED. Running them on the last
@@ -1391,7 +1466,10 @@ public final class FcitZm implements IGraphSearch {
         //     directly, leaving endpoints as circles until a rule commits them. The gate
         //     above is identical either way. ---
         if (commitRoute == COMMIT_ROUTE.MAG) {
-            pushPag(new MagToPag(_mag).convert(false, excludeSelectionBias));
+            // KEEP-KNOWLEDGE: MagToPag applies fciOrientbk during conversion, but only if it
+            // is given the knowledge. A knowledge-free MagToPag returns the canonical PAG of
+            // the class and the knowledge marks vanish at every MAG-route commit.
+            pushPag(magToPagWithKnowledge(_mag, excludeSelectionBias));
             return true;
         }
 
@@ -1457,7 +1535,8 @@ public final class FcitZm implements IGraphSearch {
         }
 
         if (commitRoute == COMMIT_ROUTE.MAG) {
-            pushPag(new MagToPag(_mag).convert(false, excludeSelectionBias));
+            // KEEP-KNOWLEDGE: see the single-edge commit.
+            pushPag(magToPagWithKnowledge(_mag, excludeSelectionBias));
             return true;
         }
 
@@ -1572,7 +1651,15 @@ public final class FcitZm implements IGraphSearch {
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setUseR4(true);
         fciOrient.setKnowledge(knowledge);
-        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
+
+        // KEEP-KNOWLEDGE: apply the background-knowledge orientations before the final rules.
+        // finalOrientation applies R1-R10 but never fciOrientbk (only FciOrient.ruleR0 does
+        // that internally, and coldReorient does not go through ruleR0), so without this the
+        // knowledge marks are absent from the returned graph even though they were present in
+        // the initial knowledge-aware dagToPag.
+        fciOrient.fciOrientbk(knowledge, finalPag, finalPag.getNodes(), excludeSelectionBias);
+
+        fciOrient.finalOrientation(finalPag);   // R1-R10; R0 stamped above from recorded sepsets
 
         return finalPag;
     }
