@@ -435,6 +435,25 @@ public class Grasp {
             }
         }
 
+        // Tier consistency: a node in a later tier may not precede a node in an earlier tier. Change from the
+        // pre-2026 implementation: previously only required edges were checked here, so tiered knowledge did not
+        // constrain the DFS at all -- the initial order was made tier-consistent by makeValidKnowledgeOrder, but
+        // graspDfs was then free to tuck across tiers. Because the scorer blocks knowledge-forbidden parents, a
+        // tier-violating order projects to an artificially sparse (non-Markov) DAG; under test-based scoring
+        // (e.g., oracle runs with GraphScore/MsepTest, where the objective is edge count) such orders can WIN,
+        // e.g. returning an empty graph for X1 --> X2 under tiers {0: X1, 1: X2}. This check restores the
+        // documented contract that the procedure is carried out tier by tier, matching PermutationSearch/BOSS.
+        for (int i = 0; i < order.size(); i++) {
+            int ti = this.knowledge.isInWhichTier(order.get(i));
+            if (ti < 0) continue;
+            for (int j = 0; j < i; j++) {
+                int tj = this.knowledge.isInWhichTier(order.get(j));
+                if (tj > ti) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
