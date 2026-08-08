@@ -83,7 +83,7 @@ public class BasisFunctionBicScoreTabular implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "BF SEM BIC (Full Sample)";
+        return "BF BIC (Full Sample)";
     }
 
     /**
