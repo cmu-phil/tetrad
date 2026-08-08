@@ -82,13 +82,13 @@ import java.util.concurrent.ConcurrentHashMap;
  *       {@code PagLegalityCheck.isLegalMag} of the candidate Zhang MAG instead, and a
  *       knowledge-refined PAG still implies a legal MAG -- the MAG completion orients
  *       everything regardless. So the gate admits knowledge marks as it stands, and both
- *       commit gates here are left exactly as in FcitZm.</li>
+ *       commit gates here are left exactly as in the repaired FcitZm.</li>
  *   <li><b>The whole fix is orientation plumbing.</b> Knowledge entered only through the
  *       initial knowledge-aware {@code dagToPag} and was then dropped at every reorientation:
  *       the MAG-route commits converted through a knowledge-free {@code MagToPag}, and
  *       {@code coldReorient} recalled colliders and ran {@code finalOrientation} (R1-R10)
- *       without ever calling {@code fciOrientbk}. Both now carry the knowledge. The PAG-route
- *       commits already did, via {@code FciOrient.orient}, whose {@code ruleR0} applies
+ *       without ever calling {@code fciOrientbk}. Both now carry the knowledge. The candidate
+ *       reorientation already did, via {@code FciOrient.orient}, whose {@code ruleR0} applies
  *       {@code fciOrientbk} internally.</li>
  * </ol>
  * A final "knowledge never degrades legality" rung is added: if the knowledge-refined final
@@ -1437,12 +1437,29 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias) {
         Edge _edge = interimPags.getLast().getEdge(x, y);
 
-        // --- legality gate: unchanged, still judged on the MAG ---
-        Graph _mag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(interimPags.getLast()));
-        _mag.removeEdge(x, y);
-
         Set<Node> prevSepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
+
+        // --- legality gate: still judged on the MAG, but on the MAG of the REORIENTED
+        //     post-deletion PAG.
+        //
+        // Change from the pre-2026 implementation: the candidate MAG was the Zhang
+        // completion of the CURRENT PAG with the edge then deleted from it. Those
+        // orientations were derived while the edge was still present, so the completion
+        // resolved circles using stale marks and could manufacture an almost-cycle that the
+        // correctly reoriented graph does not have -- refusing a removal whose reorientation
+        // is in fact the true PAG. (Witness: the PKE14 model ca....aaaa.acccacacacaccc, where
+        // removing V2 *-* V5 on sepset {V6} was refused for "directed path exists from V3 to
+        // V2", arising from V3 o-o V6 completing as V3 --> V6; reorienting first stamps
+        // V6 o-> V3 from the recorded separator and the candidate is legal -- and is exactly
+        // G*.) The reorientation is the same one the PAG route already applied AFTER the
+        // gate, so this moves work rather than adding it; what is new is that the gate now
+        // judges the object the algorithm would actually carry forward.
+        Graph _pag = new EdgeListGraph(interimPags.getLast());
+        _pag.removeEdge(x, y);
+        reorientCandidate(_pag, excludeSelectionBias);
+
+        Graph _mag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(_pag));
         orientSepsetCollidersInMag(_mag, sepsets);
 
         PagLegalityCheck.LegalMagRet legal =
@@ -1473,28 +1490,36 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
             return true;
         }
 
-        Graph _pag = new EdgeListGraph(interimPags.getLast());
-        _pag.removeEdge(x, y);
-
-        // Reset to circles and RECALL THE SEED COLLIDERS before re-closing. Seed soundness
-        // is the single orientation premise the soundness argument consumes, so the seed
-        // set must be re-supplied at every reorientation; recomputing colliders from the
-        // current graph would instead re-derive whatever was stamped earlier, unsound marks
-        // included. (Passing an empty set here also left shielded colliders unseeded, so R4
-        // could not recover them and arrow precision dropped.)
-        _pag.reorientAllWith(Endpoint.CIRCLE);
-        fciOrient.orient(_pag, new HashSet<>(initialColliders), excludeSelectionBias);
-
+        // PAG route: carry forward the very graph the gate just certified.
         pushPag(_pag);
         return true;
     }
 
+    /**
+     * The candidate reorientation: reset to circles, RECALL THE SEED COLLIDERS, stamp R0 from
+     * the recorded separators, and close under the final rules.
+     * <p>
+     * Seed soundness is the single orientation premise the soundness argument consumes, so
+     * the seed set is re-supplied at every reorientation; recomputing colliders from the
+     * current graph would instead re-derive whatever was stamped earlier, unsound marks
+     * included. The {@code adjustForExtraSepsets} stamp is a change from the pre-2026
+     * implementation: without it the colliders created by this search's own removals were
+     * never seeded on the interim graphs (only the seed colliders were), which both
+     * under-oriented the carried state and -- through the Zhang completion -- produced the
+     * spurious almost-cycles that made the gate refuse sound removals.
+     */
+    private void reorientCandidate(Graph pag, boolean excludeSelectionBias) {
+        pag.reorientAllWith(Endpoint.CIRCLE);
+        fciOrient.orient(pag, new HashSet<>(initialColliders), excludeSelectionBias);
+        adjustForExtraSepsets(sepsets, pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
+    }
+
     private boolean tryToModifyGraph(List<Edge> edges,
                                      boolean excludeSelectionBias) {
-        Graph _pag = new EdgeListGraph(interimPags.getLast());
-        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);   // one MAG of the current legal PAG
-
         Map<Edge, Set<Node>> prev = new LinkedHashMap<>();    // for clean rollback
+
+        Graph _pag = new EdgeListGraph(interimPags.getLast());
 
         for (Edge edge : edges) {
             Node m = edge.getNode1();
@@ -1507,8 +1532,17 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
             prev.put(edge, sepsets.get(m, n));
             sepsets.set(m, n, z);
 
-            _mag.removeEdge(m, n);
+            _pag.removeEdge(m, n);
         }
+
+        // Reorient the post-deletion PAG before completing it, for the same reason as the
+        // single-edge gate: a completion of the pre-deletion orientations can manufacture an
+        // almost-cycle the correctly reoriented graph does not have, and the saturating pass
+        // is precisely where a refusal is read as a certificate of unfaithfulness -- so a
+        // spurious refusal here is maximally misleading.
+        reorientCandidate(_pag, excludeSelectionBias);
+
+        Graph _mag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(_pag));
 
         // Stamp all sepset-implied colliders, then judge MAG legality once.
         orientSepsetCollidersInMag(_mag, sepsets);
@@ -1540,16 +1574,8 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
             return true;
         }
 
-        // PAG route: delete the whole set, then reset and re-close from the seed colliders,
-        // exactly as the single-edge commit does.
-        Graph _next = new EdgeListGraph(interimPags.getLast());
-        for (Edge edge : edges) {
-            _next.removeEdge(edge.getNode1(), edge.getNode2());
-        }
-        _next.reorientAllWith(Endpoint.CIRCLE);
-        fciOrient.orient(_next, new HashSet<>(initialColliders), excludeSelectionBias);
-
-        pushPag(_next);
+        // PAG route: carry forward the very graph the gate just certified.
+        pushPag(_pag);
         return true;
     }
 
@@ -1659,7 +1685,7 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
         // the initial knowledge-aware dagToPag.
         fciOrient.fciOrientbk(knowledge, finalPag, finalPag.getNodes(), excludeSelectionBias);
 
-        fciOrient.finalOrientation(finalPag);   // R1-R10; R0 stamped above from recorded sepsets
+        fciOrient.finalOrientation(finalPag);   // R1-R10; R0 stamped above from the recorded sepsets
 
         return finalPag;
     }
