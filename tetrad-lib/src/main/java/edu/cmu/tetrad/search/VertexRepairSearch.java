@@ -1483,8 +1483,8 @@ public final class VertexRepairSearch implements IGraphSearch {
      * Whole-graph Model-P via the joint wild bootstrap. Unlike KS/AD this cannot be
      * reassembled from cached per-vertex p-values — the wild bootstrap is a joint
      * statistic over the full implied-fact set with a shared multiplier — so it is
-     * recomputed from all implied facts of {@code g}. NaN if <2 facts or data is not
-     * a DataSet.
+     * recomputed from all implied facts of {@code g}. NaN if &lt;2 facts or the data is
+     * not an all-continuous DataSet.
      */
     private double wildBootstrapModelP(Graph g) {
         if (g == null) return Double.NaN;
@@ -1495,23 +1495,39 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Joint wild-bootstrap Markov check over an explicit fact list against the data set
-     * backing the independence test; returns the sum-T^2 omnibus p-value (pMax is also
-     * on the Result). Residualization is OLS on Z, independent of the configured test.
-     * NaN if the data is not a DataSet, there are <2 facts, or the run is interrupted.
+     * backing the independence test; returns the max-|T| omnibus p-value (pSumSquares is
+     * also on the Result). The max statistic is used because repair alternatives are
+     * sparse — a single wrong edge perturbs only a few implied facts out of possibly
+     * thousands — and the sum-T^2 statistic dilutes a sparse signal linearly in the
+     * number of facts K: in simulation (one violated fact, shift d=0.2, rho=0.5, n=400)
+     * pSumSquares' power collapses to its size (~0.03) by K=200 while pMax retains ~0.71
+     * at K=1000. Residualization is OLS on Z, independent of the configured test, so the
+     * data must be all-continuous; discrete or mixed data would be silently regressed on
+     * category indices, so it is rejected here rather than mis-scored. NaN if the data is
+     * not an all-continuous DataSet, there are &lt;2 facts, or the run is interrupted.
      */
     private double wildBootstrapP(List<IndependenceFact> facts) {
         if (facts == null || facts.size() < 2) return Double.NaN;
         if (Q == null || Q.getTest() == null) return Double.NaN;
         Object dm = Q.getTest().getData();
         if (!(dm instanceof DataSet ds)) return Double.NaN;
+        if (!ds.isContinuous()) {
+            vlog("Wild bootstrap Model-P requires an all-continuous data set (OLS "
+                    + "residualization); data is discrete or mixed. Returning NaN.");
+            return Double.NaN;
+        }
         try {
             WildBootstrapMarkovCheck.Result r = new WildBootstrapMarkovCheck(ds)
                     .setNumBootstraps(wbNumBootstraps)
                     .setSeed(wbSeed)
                     .checkFacts(facts);
-            return (r == null) ? Double.NaN : r.pSumSquares;
+            return (r == null) ? Double.NaN : r.pMax;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Double.NaN;
         } catch (Exception e) {
-            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            vlog("Wild bootstrap Model-P failed (%s: %s); returning NaN.",
+                    e.getClass().getSimpleName(), e.getMessage());
             return Double.NaN;
         }
     }
