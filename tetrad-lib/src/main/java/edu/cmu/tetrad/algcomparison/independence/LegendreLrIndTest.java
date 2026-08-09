@@ -46,13 +46,13 @@ import java.util.List;
  *
  * @author josephramsey
  */
-@TestOfIndependence(
-        name = "Legendre-LR-Test",
-        command = "legendre-lr-test",
-        dataType = DataType.Mixed
-)
-@Mixed
-@General
+//@TestOfIndependence(
+//        name = "Legendre-LR-Test",
+//        command = "legendre-lr-test",
+//        dataType = DataType.Mixed
+//)
+//@Mixed
+//@General
 public final class LegendreLrIndTest implements IndependenceWrapper {
 
     @Serial
