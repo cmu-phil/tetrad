@@ -117,6 +117,11 @@ class DataAuditAction extends AbstractAction {
                 new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
         setPreferredColumnWidths(findingsTable, new int[]{80, 220, 180, 500});
 
+        // The Message column fits its longest message (reachable by scrolling right) rather than truncating at a
+        // fixed width; when messages are short it stretches to fill the rest of the dialog instead (see
+        // DataAuditJTable's sizing behavior).
+        findingsTable.sizeColumnToContents(3, 500);
+
         DataAuditJTable variablesTable =
                 new DataAuditJTable(new DataAuditVariablesModel(dataSet, audit, missingAudit), 2);
 

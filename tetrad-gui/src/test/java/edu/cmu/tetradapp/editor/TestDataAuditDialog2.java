@@ -123,6 +123,42 @@ public class TestDataAuditDialog2 {
             System.out.println("(panel construction skipped: HeadlessException)");
         }
 
+        // --- Findings table sizing: the Message column must fit its widest message, and the table must scroll
+        // horizontally when wider than the viewport but stretch to fill it when narrower. ---
+        try {
+            DataAuditJTable table = new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
+            table.getColumnModel().getColumn(3).setPreferredWidth(500);
+            table.sizeColumnToContents(3, 500);
+
+            java.awt.FontMetrics fm = table.getFontMetrics(table.getFont());
+            int widest = 0;
+            for (AuditFinding f : audit.getFindings()) widest = Math.max(widest, fm.stringWidth(f.getMessage()));
+            int colWidth = table.getColumnModel().getColumn(3).getPreferredWidth();
+            check(colWidth >= Math.max(500, widest),
+                    "Message column fits widest message: " + colWidth + " >= " + Math.max(500, widest));
+
+            javax.swing.JScrollPane narrow = new javax.swing.JScrollPane(table);
+            narrow.setSize(850, 450);
+            narrow.doLayout();
+            narrow.getViewport().doLayout();
+            check(!table.getScrollableTracksViewportWidth(),
+                    "table wider than 850px viewport does not track it (horizontal scrollbar active)");
+
+            javax.swing.JScrollPane wide = new javax.swing.JScrollPane(table);
+            wide.setSize(table.getPreferredSize().width + 400, 450);
+            wide.doLayout();
+            wide.getViewport().doLayout();
+            check(table.getScrollableTracksViewportWidth(),
+                    "table narrower than viewport tracks it (last column takes the remainder)");
+            table.setSize(table.getParent().getWidth(), table.getPreferredSize().height);
+            table.doLayout();
+            check(table.getColumnModel().getColumn(3).getWidth() >= colWidth + 390,
+                    "slack width goes to the Message column: "
+                            + table.getColumnModel().getColumn(3).getWidth() + " >= " + (colWidth + 390));
+        } catch (java.awt.HeadlessException e) {
+            System.out.println("(findings table sizing checks skipped: HeadlessException)");
+        }
+
         System.out.println("\nALL CHECKS PASSED");
     }
 
