@@ -37,9 +37,9 @@ import java.util.Set;
 /**
  * A pre-search audit of a data matrix. On construction, computes a battery of descriptive checks bearing on the
  * choice and reliability of causal search procedures - variable typing and cardinalities, small discrete cells,
- * near-constant columns, high correlation and near-determinism among variables, marginal non-Gaussianity, sample
- * adequacy, and missingness (the last delegated to {@link MissingDataAudit}) - and emits the results as a list of
- * {@link AuditFinding}s keyed by {@link FindingCode}.
+ * near-constant columns, high correlation and near-determinism among variables, marginal non-Gaussianity, serial
+ * dependence of rows in file order, sample adequacy, and missingness (the last delegated to
+ * {@link MissingDataAudit}) - and emits the results as a list of {@link AuditFinding}s keyed by {@link FindingCode}.
  * <p>
  * This class reports findings only; it makes no recommendations. The interpretation of findings is left to the user
  * and to documentation that dispatches on the finding codes. Raw statistics computed along the way (correlations,
@@ -121,6 +121,18 @@ public final class DataAudit {
     private final Map<String, Double> etaSquared = new LinkedHashMap<>();
 
     /**
+     * Lag-1 autocorrelation in file order per continuous variable name (within groups, if a serial grouping variable
+     * is configured), for those variables with enough observed values to compute it.
+     */
+    private final Map<String, Double> lag1Autocorrelations = new LinkedHashMap<>();
+
+    /**
+     * Ljung-Box p-value per continuous variable name over the configured number of lags, for those variables with
+     * enough observed values to compute it.
+     */
+    private final Map<String, Double> ljungBoxPValues = new LinkedHashMap<>();
+
+    /**
      * The delegated missingness audit, or null if the dataset has no missing values.
      */
     private final MissingDataAudit missingDataAudit;
@@ -176,6 +188,7 @@ public final class DataAudit {
         this.continuousCorrelation = correlationChecks();
         nearDeterminismDiscreteContinuousCheck();
         nonGaussianityCheck();
+        serialDependenceCheck();
         sampleRatioCheck();
         missingnessCheck();
     }
@@ -267,6 +280,29 @@ public final class DataAudit {
      */
     public Map<String, Double> getEtaSquaredValues() {
         return new LinkedHashMap<>(this.etaSquared);
+    }
+
+    /**
+     * Returns the lag-1 autocorrelation in file order per continuous variable name, for those variables with enough
+     * observed values to compute it, unmodifiable. If a serial grouping variable is configured, autocorrelations are
+     * computed within its groups (per-group centering, cross-boundary pairs excluded) and pooled.
+     *
+     * @return This map.
+     */
+    public Map<String, Double> getLag1Autocorrelations() {
+        return new LinkedHashMap<>(this.lag1Autocorrelations);
+    }
+
+    /**
+     * Returns the Ljung-Box p-value per continuous variable name, testing the joint null that the first
+     * {@code serialMaxLag} autocorrelations in file order are zero, for those variables with enough observed values
+     * to compute it, unmodifiable. The chi-square reference distribution is approximate when there are missing values
+     * or a serial grouping variable.
+     *
+     * @return This map.
+     */
+    public Map<String, Double> getSerialDependencePValues() {
+        return new LinkedHashMap<>(this.ljungBoxPValues);
     }
 
     /**
@@ -699,6 +735,169 @@ public final class DataAudit {
     }
 
     /**
+     * Flags continuous variables that are serially dependent in file order, i.e., autocorrelated across consecutive
+     * rows, which violates the i.i.d.-rows assumption of the usual independence tests and scores. For each continuous
+     * variable, autocorrelations at lags 1..{@code serialMaxLag} are computed on the column in file order, and a
+     * Ljung-Box test aggregates them into a single p-value against the joint null that all are zero. A variable is
+     * flagged when the Ljung-Box p-value falls below {@code serialAlpha} AND the largest absolute autocorrelation is
+     * at least {@code serialMinAbsAutocorrelation}; the magnitude condition keeps the check from flagging trivially
+     * small dependence at large n. Flagged findings also report an AR(1) effective sample size,
+     * n_eff = m (1 - r1) / (1 + r1), when the lag-1 autocorrelation r1 is positive, since that communicates severity
+     * better than a correlation does.
+     * <p>
+     * Design decisions, deliberate and contestable: (1) The check is one-sided with respect to row order. File order
+     * is treated as potentially meaningful (time, spatial sequence, batch); a flag establishes that rows are not
+     * exchangeable as given, but a clean result does not establish independence under any other ordering (e.g., if
+     * the rows were shuffled before saving). (2) If {@code serialGroupVariable} names a discrete variable,
+     * autocorrelations are computed within its groups - each group's rows form a subsequence in file order, series
+     * are centered at their own group means, lag-k pairs are taken at subsequence distance k, and the per-group sums
+     * are pooled before dividing - so that block-level mean shifts and concatenation-boundary jumps (e.g., two
+     * regions' data stacked in one file) do not contaminate the estimate. A configured grouping variable that is
+     * missing or not discrete is an error rather than a silent fallback, since a pooled estimate is exactly the
+     * artifact grouping exists to avoid. (3) Missing values are handled pairwise: means and variances use all
+     * observed values; a lag-k product contributes only if both endpoints are observed. The Ljung-Box chi-square
+     * reference is therefore approximate under missingness or grouping, which the Javadoc of
+     * {@link #getSerialDependencePValues()} also notes. (4) Discrete variables are not checked in this version; a
+     * lag-1 Cramer's V or runs test could be added later under the same finding code.
+     */
+    private void serialDependenceCheck() {
+        int n = this.dataSet.getNumRows();
+        int maxLag = this.config.serialMaxLag;
+        if (maxLag < 1 || this.continuousIndices.length == 0) return;
+
+        int groupCol = -1;
+
+        if (this.config.serialGroupVariable != null) {
+            for (int j = 0; j < this.names.length; j++) {
+                if (this.names[j].equals(this.config.serialGroupVariable)) {
+                    groupCol = j;
+                    break;
+                }
+            }
+
+            if (groupCol == -1) {
+                throw new IllegalArgumentException("Serial grouping variable '" + this.config.serialGroupVariable
+                        + "' is not a variable in the dataset.");
+            }
+
+            if (!this.discrete[groupCol]) {
+                throw new IllegalArgumentException("Serial grouping variable '" + this.config.serialGroupVariable
+                        + "' must be discrete.");
+            }
+        }
+
+        for (int j : this.continuousIndices) {
+            // Partition rows into group subsequences in file order (one group if no grouping variable). Rows where
+            // the grouping variable is missing are excluded, since their group is unknown.
+            Map<Integer, List<Integer>> groupRows = new LinkedHashMap<>();
+
+            for (int i = 0; i < n; i++) {
+                if (groupCol >= 0 && MissingDataAudit.isMissing(this.dataSet, i, groupCol)) continue;
+                int g = groupCol >= 0 ? this.dataSet.getInt(i, groupCol) : 0;
+                groupRows.computeIfAbsent(g, k -> new ArrayList<>()).add(i);
+            }
+
+            // Pooled, per-group-centered autocovariances. c0 uses all observed values; ck uses pairs at subsequence
+            // distance k with both endpoints observed.
+            int m = 0;
+            double c0 = 0;
+            double[] ck = new double[maxLag + 1];
+            List<double[]> centered = new ArrayList<>(); // per group: centered series with NaN where missing
+
+            for (List<Integer> rows : groupRows.values()) {
+                double sum = 0;
+                int obs = 0;
+
+                for (int i : rows) {
+                    if (MissingDataAudit.isMissing(this.dataSet, i, j)) continue;
+                    sum += this.dataSet.getDouble(i, j);
+                    obs++;
+                }
+
+                if (obs < 2) continue;
+                double mean = sum / obs;
+                double[] series = new double[rows.size()];
+
+                for (int t = 0; t < rows.size(); t++) {
+                    int i = rows.get(t);
+                    series[t] = MissingDataAudit.isMissing(this.dataSet, i, j)
+                            ? Double.NaN : this.dataSet.getDouble(i, j) - mean;
+                }
+
+                centered.add(series);
+                m += obs;
+
+                for (double x : series) {
+                    if (!Double.isNaN(x)) c0 += x * x;
+                }
+            }
+
+            if (m < this.config.minSerialSampleSize || m <= maxLag + 2 || c0 <= 0) continue;
+
+            for (double[] series : centered) {
+                for (int k = 1; k <= maxLag; k++) {
+                    for (int t = 0; t + k < series.length; t++) {
+                        if (Double.isNaN(series[t]) || Double.isNaN(series[t + k])) continue;
+                        ck[k] += series[t] * series[t + k];
+                    }
+                }
+            }
+
+            double q = 0;
+            double r1 = ck[1] / c0;
+            double maxAbs = 0;
+            int maxAbsLag = 1;
+
+            for (int k = 1; k <= maxLag; k++) {
+                double rk = ck[k] / c0;
+                q += rk * rk / (m - k);
+
+                if (Math.abs(rk) > maxAbs) {
+                    maxAbs = Math.abs(rk);
+                    maxAbsLag = k;
+                }
+            }
+
+            q *= m * (m + 2.0);
+            double p = Math.min(1.0, Math.max(0.0, 1.0 - edu.cmu.tetrad.util.ProbUtils.chisqCdf(q, maxLag)));
+
+            String name = this.dataSet.getVariables().get(j).getName();
+            this.lag1Autocorrelations.put(name, r1);
+            this.ljungBoxPValues.put(name, p);
+
+            if (p < this.config.serialAlpha && maxAbs >= this.config.serialMinAbsAutocorrelation) {
+                Map<String, Double> values = new LinkedHashMap<>();
+                values.put("lag1Autocorrelation", r1);
+                values.put("maxAbsAutocorrelation", maxAbs);
+                values.put("maxAbsLag", (double) maxAbsLag);
+                values.put("ljungBoxQ", q);
+                values.put("ljungBoxP", p);
+                values.put("maxLag", (double) maxLag);
+                values.put("numObserved", (double) m);
+                values.put("alpha", this.config.serialAlpha);
+                values.put("minAbsThreshold", this.config.serialMinAbsAutocorrelation);
+
+                String effNote = "";
+
+                if (r1 > 0 && r1 < 1) {
+                    double nEff = m * (1 - r1) / (1 + r1);
+                    values.put("effectiveSampleSize", nEff);
+                    effNote = "; under an AR(1) approximation n = " + m + " behaves like n ~ "
+                            + Math.round(nEff);
+                }
+
+                String groupNote = groupCol >= 0 ? ", within groups of " + this.names[groupCol] : "";
+                this.findings.add(new AuditFinding(FindingCode.SERIAL_DEPENDENCE,
+                        AuditFinding.Severity.WARNING, List.of(name), values,
+                        "Continuous variable " + name + " is serially dependent in file order (r1 = " + fmt(r1)
+                                + ", max |r| = " + fmt(maxAbs) + " at lag " + maxAbsLag + ", Ljung-Box p = "
+                                + fmt(p) + " over " + maxLag + " lags" + groupNote
+                                + "); rows may not be i.i.d." + effNote + "."));
+            }
+        }
+    }
+
+    /**
      * Flags a small ratio of sample size to number of variables.
      */
     private void sampleRatioCheck() {
@@ -902,10 +1101,39 @@ public final class DataAudit {
         private final double nearConstantVariance;
 
         /**
+         * The number of lags over which serial dependence is tested (Ljung-Box). Default 5. Setting this to 0
+         * disables the serial dependence check.
+         */
+        private final int serialMaxLag;
+
+        /**
+         * Alpha for the Ljung-Box serial dependence flag. Default 0.01.
+         */
+        private final double serialAlpha;
+
+        /**
+         * Minimum largest absolute autocorrelation (over the tested lags) for the serial dependence flag; keeps the
+         * check from flagging trivially small dependence at large n. Default 0.2.
+         */
+        private final double serialMinAbsAutocorrelation;
+
+        /**
+         * Minimum number of observed values for the serial dependence check to run on a column. Default 20.
+         */
+        private final int minSerialSampleSize;
+
+        /**
+         * The name of a discrete variable defining groups within which autocorrelations are computed (per-group
+         * centering, cross-boundary pairs excluded, pooled), or null to treat the file as one sequence. Naming a
+         * variable that is absent or not discrete is an error, not a silent fallback. Default null.
+         */
+        private final String serialGroupVariable;
+
+        /**
          * Constructs a config with default thresholds.
          */
         public Config() {
-            this(5, 10, 10, 5.0, 0.9, 0.98, 0.95, 0.01, 20, 5.0, 0.99, 1e-12);
+            this(5, 10, 10, 5.0, 0.9, 0.98, 0.95, 0.01, 20, 5.0, 0.99, 1e-12, 5, 0.01, 0.2, 20, null);
         }
 
         /**
@@ -928,6 +1156,40 @@ public final class DataAudit {
                       double minExpectedPairwiseCell, double highCorrelation, double r2Determinism,
                       double etaSquaredDeterminism, double adAlpha, int minAdSampleSize,
                       double lowSampleRatio, double nearConstantFrequency, double nearConstantVariance) {
+            this(fewContinuousValues, manyDiscreteLevels, smallCellCount, minExpectedPairwiseCell, highCorrelation,
+                    r2Determinism, etaSquaredDeterminism, adAlpha, minAdSampleSize, lowSampleRatio,
+                    nearConstantFrequency, nearConstantVariance, 5, 0.01, 0.2, 20, null);
+        }
+
+        /**
+         * Constructs a config with the given thresholds, including the serial dependence settings. See the field
+         * documentation for meanings.
+         *
+         * @param fewContinuousValues         threshold for CONTINUOUS_FEW_VALUES.
+         * @param manyDiscreteLevels          threshold for DISCRETE_MANY_LEVELS.
+         * @param smallCellCount              threshold for SMALL_MARGINAL_CELL.
+         * @param minExpectedPairwiseCell     threshold for SMALL_PAIRWISE_CELLS.
+         * @param highCorrelation             threshold for HIGH_CORRELATION.
+         * @param r2Determinism               threshold for NEAR_DETERMINISM_CONTINUOUS.
+         * @param etaSquaredDeterminism       threshold for NEAR_DETERMINISM_DISCRETE_CONTINUOUS.
+         * @param adAlpha                     alpha for NON_GAUSSIAN.
+         * @param minAdSampleSize             minimum column n for the Anderson-Darling test.
+         * @param lowSampleRatio              threshold for LOW_SAMPLE_RATIO.
+         * @param nearConstantFrequency       modal-frequency threshold for discrete NEAR_CONSTANT.
+         * @param nearConstantVariance        variance threshold for continuous NEAR_CONSTANT.
+         * @param serialMaxLag                number of lags for SERIAL_DEPENDENCE (0 disables the check).
+         * @param serialAlpha                 Ljung-Box alpha for SERIAL_DEPENDENCE.
+         * @param serialMinAbsAutocorrelation minimum largest absolute autocorrelation for SERIAL_DEPENDENCE.
+         * @param minSerialSampleSize         minimum column n for the serial dependence check.
+         * @param serialGroupVariable         name of a discrete grouping variable for within-group autocorrelations,
+         *                                    or null.
+         */
+        public Config(int fewContinuousValues, int manyDiscreteLevels, int smallCellCount,
+                      double minExpectedPairwiseCell, double highCorrelation, double r2Determinism,
+                      double etaSquaredDeterminism, double adAlpha, int minAdSampleSize,
+                      double lowSampleRatio, double nearConstantFrequency, double nearConstantVariance,
+                      int serialMaxLag, double serialAlpha, double serialMinAbsAutocorrelation,
+                      int minSerialSampleSize, String serialGroupVariable) {
             this.fewContinuousValues = fewContinuousValues;
             this.manyDiscreteLevels = manyDiscreteLevels;
             this.smallCellCount = smallCellCount;
@@ -940,6 +1202,11 @@ public final class DataAudit {
             this.lowSampleRatio = lowSampleRatio;
             this.nearConstantFrequency = nearConstantFrequency;
             this.nearConstantVariance = nearConstantVariance;
+            this.serialMaxLag = serialMaxLag;
+            this.serialAlpha = serialAlpha;
+            this.serialMinAbsAutocorrelation = serialMinAbsAutocorrelation;
+            this.minSerialSampleSize = minSerialSampleSize;
+            this.serialGroupVariable = serialGroupVariable;
         }
 
         /**
@@ -952,7 +1219,8 @@ public final class DataAudit {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
                     this.minExpectedPairwiseCell, highCorrelation, this.r2Determinism, this.etaSquaredDeterminism,
                     this.adAlpha, this.minAdSampleSize, this.lowSampleRatio, this.nearConstantFrequency,
-                    this.nearConstantVariance);
+                    this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable);
         }
 
         /**
@@ -965,7 +1233,8 @@ public final class DataAudit {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, smallCellCount,
                     this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
                     this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
-                    this.nearConstantFrequency, this.nearConstantVariance);
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable);
         }
 
         /**
@@ -978,7 +1247,36 @@ public final class DataAudit {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
                     this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
                     this.etaSquaredDeterminism, adAlpha, this.minAdSampleSize, this.lowSampleRatio,
-                    this.nearConstantFrequency, this.nearConstantVariance);
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given serial dependence grouping variable.
+         *
+         * @param serialGroupVariable the name of a discrete grouping variable, or null for no grouping.
+         * @return the new config.
+         */
+        public Config withSerialGroupVariable(String serialGroupVariable) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
+                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
+                    this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, serialGroupVariable);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given Ljung-Box alpha for serial dependence.
+         *
+         * @param serialAlpha the new alpha.
+         * @return the new config.
+         */
+        public Config withSerialAlpha(double serialAlpha) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
+                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
+                    this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable);
         }
     }
 }

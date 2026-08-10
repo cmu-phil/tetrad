@@ -102,5 +102,16 @@ public enum FindingCode {
      * The dataset contains missing values. The finding carries summary statistics; detailed pattern information and
      * Little's MCAR test are available from the delegated {@link edu.cmu.tetrad.data.missing.MissingDataAudit}.
      */
-    MISSING_DATA
+    MISSING_DATA,
+
+    /**
+     * A continuous variable is serially dependent in file order (autocorrelated across consecutive rows), so rows are
+     * not exchangeable as given and independence tests that assume i.i.d. rows may be anticonservative. This check is
+     * one-sided with respect to row order: a flag means rows are dependent in the order given, but the absence of a
+     * flag does not rule out dependence under some other ordering of the rows (e.g., if a time series was shuffled
+     * before saving). If the dataset concatenates blocks (e.g., regions or subjects), autocorrelations should be
+     * computed within blocks by naming a grouping variable, since block-level mean shifts and boundary jumps
+     * otherwise contaminate the pooled estimate.
+     */
+    SERIAL_DEPENDENCE
 }
