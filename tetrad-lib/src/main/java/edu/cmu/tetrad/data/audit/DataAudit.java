@@ -757,7 +757,11 @@ public final class DataAudit {
      * artifact grouping exists to avoid. (3) Missing values are handled pairwise: means and variances use all
      * observed values; a lag-k product contributes only if both endpoints are observed. The Ljung-Box chi-square
      * reference is therefore approximate under missingness or grouping, which the Javadoc of
-     * {@link #getSerialDependencePValues()} also notes. (4) Discrete variables are not checked in this version; a
+     * {@link #getSerialDependencePValues()} also notes. (4) Variables whose within-group variance is negligible
+     * relative to their scale are skipped: a variable that is constant within every group (e.g., a town-level
+     * attribute grouped by town) centers to exact or near-exact zeros, and in the near-exact case (non-representable
+     * decimals) the surviving c0 is rounding residue from which autocorrelations would be pure floating-point noise.
+     * (5) Discrete variables are not checked in this version; a
      * lag-1 Cramer's V or runs test could be added later under the same finding code.
      */
     private void serialDependenceCheck() {
@@ -798,9 +802,14 @@ public final class DataAudit {
             }
 
             // Pooled, per-group-centered autocovariances. c0 uses all observed values; ck uses pairs at subsequence
-            // distance k with both endpoints observed.
+            // distance k with both endpoints observed. sumSqRaw (the uncentered second moment) supports a relative
+            // guard below: a variable that is constant within every group centers to exact or near-exact zeros, and
+            // with non-representable decimal values the near-exact case leaves rounding residue of relative order
+            // eps^2 ~ 1e-32 in c0, from which autocorrelations would be pure floating-point noise. Such variables
+            // are skipped, as they would be under an exact-zero c0.
             int m = 0;
             double c0 = 0;
+            double sumSqRaw = 0;
             double[] ck = new double[maxLag + 1];
             List<double[]> centered = new ArrayList<>(); // per group: centered series with NaN where missing
 
@@ -810,7 +819,9 @@ public final class DataAudit {
 
                 for (int i : rows) {
                     if (MissingDataAudit.isMissing(this.dataSet, i, j)) continue;
-                    sum += this.dataSet.getDouble(i, j);
+                    double x = this.dataSet.getDouble(i, j);
+                    sum += x;
+                    sumSqRaw += x * x;
                     obs++;
                 }
 
@@ -832,7 +843,10 @@ public final class DataAudit {
                 }
             }
 
-            if (m < this.config.minSerialSampleSize || m <= maxLag + 2 || c0 <= 0) continue;
+            // Relative guard: skip when the within-group variance is negligible relative to the variable's scale
+            // (rounding residue is of relative order ~1e-32; genuine variation in real data is many orders larger).
+            if (m < this.config.minSerialSampleSize || m <= maxLag + 2
+                    || c0 <= 0 || c0 <= 1e-18 * sumSqRaw) continue;
 
             for (double[] series : centered) {
                 for (int k = 1; k <= maxLag; k++) {
