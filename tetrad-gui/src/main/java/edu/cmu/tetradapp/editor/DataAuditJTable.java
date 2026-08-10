@@ -52,13 +52,20 @@ public class DataAuditJTable extends JTable {
     private static final Color WARNING_COLOR = new Color(150, 30, 30);
 
     /**
+     * The number of leftmost columns to left-align; the rest are right-aligned. Kept so that renderers can be
+     * reapplied when the model is swapped (setting a model recreates the columns, discarding their renderers).
+     */
+    private final int leftAlignedCols;
+
+    /**
      * Constructor.
      *
      * @param model           the table model.
      * @param leftAlignedCols the number of leftmost columns to left-align; the rest are right-aligned.
      */
     public DataAuditJTable(AbstractTableModel model, int leftAlignedCols) {
-        setModel(model);
+        this.leftAlignedCols = leftAlignedCols;
+        setAuditModel(model);
 
         // OFF preserves the columns' preferred widths and classic drag semantics; the doLayout override below
         // routes viewport slack to the last column when the table is narrower than the viewport (see
@@ -72,11 +79,22 @@ public class DataAuditJTable extends JTable {
         setRowSelectionAllowed(true);
         getColumnModel().setColumnSelectionAllowed(true);
 
-        for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
-            getColumnModel().getColumn(i).setCellRenderer(new AuditCellRenderer(i >= leftAlignedCols));
-        }
-
         setTransferHandler(new DataAuditTransferHandler());
+    }
+
+    /**
+     * Sets the table's model and (re)applies the alignment renderers, which setting a model discards along with the
+     * columns. Used by the Data Audit dialog to swap in a recomputed audit (e.g., when a serial-dependence grouping
+     * variable is selected) without rebuilding the table.
+     *
+     * @param model the new table model.
+     */
+    public void setAuditModel(AbstractTableModel model) {
+        setModel(model);
+
+        for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
+            getColumnModel().getColumn(i).setCellRenderer(new AuditCellRenderer(i >= this.leftAlignedCols));
+        }
     }
 
     /**

@@ -35,8 +35,9 @@ import java.util.List;
 /**
  * A table of per-variable facts for the Data Audit dialog, one row per variable in dataset column order (so that
  * rows correspond to audit column indices). Missingness facts come from the {@link MissingDataAudit}; distinct
- * observed counts and Anderson-Darling p-values come from the {@link DataAudit}. Dataset-level facts, findings, and
- * advice are not in this table; the dialog presents those separately.
+ * observed counts, Anderson-Darling p-values, and lag-1 autocorrelations (pooled and, when a serial-dependence
+ * grouping variable is selected in the dialog, within-group) come from the {@link DataAudit}. Dataset-level facts,
+ * findings, and advice are not in this table; the dialog presents those separately.
  *
  * @author josephramsey
  */
@@ -48,7 +49,7 @@ class DataAuditVariablesModel extends AbstractTableModel {
      */
     private static final String[] COLUMNS = {
             "Variable", "Type", "Observed", "Missing", "Missing %", "Distinct", "Levels (counts)", "AD p",
-            "Min Pairwise n"
+            "Min Pairwise n", "Lag-1 r (pooled)", "Lag-1 r (grouped)"
     };
 
     /**
@@ -67,21 +68,43 @@ class DataAuditVariablesModel extends AbstractTableModel {
     private final DataAudit audit;
 
     /**
+     * An audit of the dataset with a serial-dependence grouping variable configured, or null when no grouping is
+     * selected. Only its lag-1 autocorrelations are consulted; the pooled audit remains the source for everything
+     * else, so the pooled and within-group values can be compared side by side (the comparison that distinguishes
+     * genuine sequential dependence from block structure).
+     */
+    private final DataAudit groupedAudit;
+
+    /**
      * The missingness audit of the dataset. (The DataAudit's delegated missingness audit is null when the dataset is
      * complete, so the dialog supplies one unconditionally.)
      */
     private final MissingDataAudit missingAudit;
 
     /**
-     * Constructs the model.
+     * Constructs the model with no serial-dependence grouping.
      *
      * @param dataSet      the dataset.
      * @param audit        the audit of that dataset.
      * @param missingAudit the missingness audit of that dataset.
      */
     public DataAuditVariablesModel(DataSet dataSet, DataAudit audit, MissingDataAudit missingAudit) {
+        this(dataSet, audit, null, missingAudit);
+    }
+
+    /**
+     * Constructs the model.
+     *
+     * @param dataSet      the dataset.
+     * @param audit        the (pooled) audit of that dataset.
+     * @param groupedAudit an audit with a serial-dependence grouping variable configured, or null for none.
+     * @param missingAudit the missingness audit of that dataset.
+     */
+    public DataAuditVariablesModel(DataSet dataSet, DataAudit audit, DataAudit groupedAudit,
+                                   MissingDataAudit missingAudit) {
         this.dataSet = dataSet;
         this.audit = audit;
+        this.groupedAudit = groupedAudit;
         this.missingAudit = missingAudit;
     }
 
@@ -142,9 +165,23 @@ class DataAuditVariablesModel extends AbstractTableModel {
                 return NumberFormatUtil.getInstance().getNumberFormat().format(adP);
             case 8:
                 return Integer.toString(minPairwiseFor(row));
+            case 9:
+                return formatR1(this.audit, name);
+            case 10:
+                return this.groupedAudit == null ? "-" : formatR1(this.groupedAudit, name);
             default:
                 throw new IllegalArgumentException("Unexpected column: " + col);
         }
+    }
+
+    /**
+     * The given audit's lag-1 autocorrelation for the named variable, formatted; or "-" when unavailable (discrete
+     * variables, too few observed values, or negligible within-group variance).
+     */
+    private static String formatR1(DataAudit audit, String name) {
+        Double r1 = audit.getLag1Autocorrelations().get(name);
+        if (r1 == null || Double.isNaN(r1)) return "-";
+        return NumberFormatUtil.getInstance().getNumberFormat().format(r1);
     }
 
     /**

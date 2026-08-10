@@ -37,7 +37,8 @@ import java.util.List;
 /**
  * Displays a data audit for the selected dataset, combining the general data-quality audit
  * ({@link edu.cmu.tetrad.data.audit.DataAudit}) with the missingness audit
- * ({@link edu.cmu.tetrad.data.missing.MissingDataAudit}). A summary line sits above three tabs:
+ * ({@link edu.cmu.tetrad.data.missing.MissingDataAudit}). A summary line and, when the dataset has discrete
+ * variables, a serial-dependence grouping control sit above three tabs:
  * <ul>
  * <li><b>Findings</b>: the audit's findings (severity, code, variables, message), warnings highlighted. Per the
  * audit's contract these describe properties of the data and carry no recommendations.</li>
@@ -107,23 +108,18 @@ class DataAuditAction extends AbstractAction {
      * Package visible so that it can be exercised headlessly in tests.
      */
     static JComponent createDataAuditPanel(DataSet dataSet) {
-        DataAudit audit = new DataAudit(dataSet);
+        DataAudit pooledAudit = new DataAudit(dataSet);
 
         // The DataAudit's delegated missingness audit is null for complete data; the dialog wants one either way.
-        MissingDataAudit missingAudit = audit.getMissingDataAudit() != null
-                ? audit.getMissingDataAudit() : new MissingDataAudit(dataSet);
+        MissingDataAudit missingAudit = pooledAudit.getMissingDataAudit() != null
+                ? pooledAudit.getMissingDataAudit() : new MissingDataAudit(dataSet);
 
         DataAuditJTable findingsTable =
-                new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
-        setPreferredColumnWidths(findingsTable, new int[]{80, 220, 180, 500});
-
-        // The Message column fits its longest message (reachable by scrolling right) rather than truncating at a
-        // fixed width; when messages are short it stretches to fill the rest of the dialog instead (see
-        // DataAuditJTable's sizing behavior).
-        findingsTable.sizeColumnToContents(3, 500);
+                new DataAuditJTable(new DataAuditFindingsModel(pooledAudit.getFindings()), 4);
+        sizeFindingsColumns(findingsTable);
 
         DataAuditJTable variablesTable =
-                new DataAuditJTable(new DataAuditVariablesModel(dataSet, audit, missingAudit), 2);
+                new DataAuditJTable(new DataAuditVariablesModel(dataSet, pooledAudit, null, missingAudit), 2);
 
         JTextArea missingText = new JTextArea(missingnessText(dataSet, missingAudit));
         missingText.setEditable(false);
@@ -152,12 +148,19 @@ class DataAuditAction extends AbstractAction {
         editMenu.add(copyCells);
         bar.add(editMenu);
 
-        JLabel summary = new JLabel(summaryLine(dataSet, audit, missingAudit));
+        JLabel summary = new JLabel(summaryLine(dataSet, pooledAudit, missingAudit));
         summary.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
         JPanel north = new JPanel(new BorderLayout());
         north.add(bar, BorderLayout.NORTH);
-        north.add(summary, BorderLayout.SOUTH);
+        north.add(summary, BorderLayout.CENTER);
+
+        JComponent groupControl = createGroupControl(dataSet, pooledAudit, missingAudit,
+                findingsTable, variablesTable, summary);
+
+        if (groupControl != null) {
+            north.add(groupControl, BorderLayout.SOUTH);
+        }
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(north, BorderLayout.NORTH);
@@ -167,6 +170,74 @@ class DataAuditAction extends AbstractAction {
         box.add(panel);
 
         return box;
+    }
+
+    /**
+     * Builds the serial-dependence grouping control: a combo of the dataset's discrete variables (plus "None"),
+     * defaulting to None. Selecting a variable recomputes the audit with that variable as the serial grouping
+     * variable and swaps the recomputed findings into the Findings tab, the within-group lag-1 autocorrelations into
+     * the Variables tab (alongside the pooled ones, whose comparison distinguishes genuine sequential dependence
+     * from block structure), and the recomputed counts into the summary line. Audits are cached per selection so
+     * toggling is free. Returns null when the dataset has no discrete variables, since there is then nothing to
+     * group by.
+     */
+    private static JComponent createGroupControl(DataSet dataSet, DataAudit pooledAudit,
+                                                 MissingDataAudit missingAudit, DataAuditJTable findingsTable,
+                                                 DataAuditJTable variablesTable, JLabel summary) {
+        java.util.List<String> discreteNames = dataSet.getVariables().stream()
+                .filter(v -> v instanceof edu.cmu.tetrad.data.DiscreteVariable)
+                .map(edu.cmu.tetrad.graph.Node::getName).toList();
+
+        if (discreteNames.isEmpty()) return null;
+
+        final String none = "None";
+        JComboBox<String> combo = new JComboBox<>();
+        combo.addItem(none);
+        discreteNames.forEach(combo::addItem);
+        combo.setToolTipText("Compute row autocorrelations within groups of the selected discrete variable "
+                + "(for block-structured data such as stacked regions or subjects).");
+
+        java.util.Map<String, DataAudit> cache = new java.util.HashMap<>();
+        cache.put(none, pooledAudit);
+
+        combo.addActionListener(e -> {
+            String selected = (String) combo.getSelectedItem();
+            DataAudit current;
+
+            try {
+                current = cache.computeIfAbsent(selected, name ->
+                        new DataAudit(dataSet, new DataAudit.Config().withSerialGroupVariable(name)));
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(combo, "Could not compute the grouped audit: "
+                        + ex.getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
+                combo.setSelectedItem(none);
+                return;
+            }
+
+            boolean grouped = !none.equals(selected);
+            findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
+            sizeFindingsColumns(findingsTable);
+            variablesTable.setAuditModel(new DataAuditVariablesModel(dataSet, pooledAudit,
+                    grouped ? current : null, missingAudit));
+            summary.setText(summaryLine(dataSet, current, missingAudit));
+        });
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        controls.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        controls.add(new JLabel("Serial dependence within groups of:"));
+        controls.add(combo);
+        return controls;
+    }
+
+    /**
+     * Sets the findings table's column widths: fixed preferred widths for the first three columns, and the Message
+     * column sized to its longest message (reachable by scrolling right) rather than truncating at a fixed width;
+     * when messages are short it stretches to fill the rest of the dialog instead (see DataAuditJTable's sizing
+     * behavior). Reapplied whenever the findings model is swapped, since new findings mean new message widths.
+     */
+    private static void sizeFindingsColumns(DataAuditJTable findingsTable) {
+        setPreferredColumnWidths(findingsTable, new int[]{80, 220, 180, 500});
+        findingsTable.sizeColumnToContents(3, 500);
     }
 
     /**
