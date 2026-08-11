@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search.utils;
 
-import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
@@ -17,8 +16,18 @@ import org.ejml.interfaces.linsol.LinearSolverDense;
 import java.util.Arrays;
 
 /**
- * Practical nonlinearity tests for conditional mean E(Y|X).
- * All methods assume continuous variables and use testwise deletion via clean(...).
+ * Practical nonlinearity tests for conditional mean E(Y|X). All methods assume continuous variables; callers should
+ * remove missing rows via clean(...).
+ * <p>
+ * All tests internally center y and each column of X (on copies; caller arrays are not modified), so the linear null
+ * hypothesis includes an intercept. Without this, any linear relationship with a nonzero intercept - which is the
+ * typical case for raw (uncentered) real data - is misspecified under the no-intercept fits used here, and the tests
+ * reject "linearity" with probability approaching 1 for reasons that have nothing to do with nonlinearity.
+ * <p>
+ * Caveat, deliberate and documented: these are conditional-MEAN tests computed under homoskedasticity assumptions.
+ * Heteroskedastic but linear-in-mean data inflates their type I error above nominal (verified by harness on
+ * y = x + (0.5 + |x|) e: rejection rates of roughly 10-35 percent at alpha = 0.05). A rejection therefore supports
+ * "not linear-homoskedastic" more strongly than "nonlinear conditional mean" when heteroskedasticity is plausible.
  */
 public final class NonlinearityTests {
 
@@ -153,6 +162,37 @@ public final class NonlinearityTests {
     }
 
     // ============================================================
+    // Centering (gives the linear null an intercept)
+    // ============================================================
+
+    /**
+     * Returns a centered copy of y (mean subtracted). The tests fit without an intercept column, so centering y and
+     * X is what makes the linear null include an intercept; see the class Javadoc.
+     */
+    private static double[] centeredCopy(double[] y) {
+        double m = 0;
+        for (double v : y) m += v;
+        m /= y.length;
+        double[] out = new double[y.length];
+        for (int i = 0; i < y.length; i++) out[i] = y[i] - m;
+        return out;
+    }
+
+    /**
+     * Returns a copy of X with each column centered (column means subtracted); see the class Javadoc.
+     */
+    private static double[][] centeredCopy(double[][] X) {
+        int n = X.length;
+        int d = (n == 0) ? 0 : X[0].length;
+        double[] mean = new double[d];
+        for (double[] row : X) for (int j = 0; j < d; j++) mean[j] += row[j];
+        for (int j = 0; j < d; j++) mean[j] /= n;
+        double[][] out = new double[n][d];
+        for (int i = 0; i < n; i++) for (int j = 0; j < d; j++) out[i][j] = X[i][j] - mean[j];
+        return out;
+    }
+
+    // ============================================================
     // 1) RESET (Ramsey): augment with powers of fitted values
     // ============================================================
 
@@ -170,6 +210,9 @@ public final class NonlinearityTests {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
         if (n < 10 || d == 0) return new TestResult(Double.NaN, Double.NaN, false);
+
+        y = centeredCopy(y);
+        X = centeredCopy(X);
 
         // Base linear fit
         Fit base = ridgeFit(y, X, /*lambda*/1e-8);
@@ -220,6 +263,9 @@ public final class NonlinearityTests {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
         if (n < 20 || d == 0) return new TestResult(Double.NaN, Double.NaN, false);
+
+        y = centeredCopy(y);
+        X = centeredCopy(X);
 
         kfold = TMath.max(2, TMath.min(kfold, TMath.max(2, n / 5)));
 
@@ -274,6 +320,9 @@ public final class NonlinearityTests {
         int d = (X.length == 0) ? 0 : X[0].length;
         if (n < 20 || d == 0) return new TestResult(Double.NaN, Double.NaN, false);
 
+        y = centeredCopy(y);
+        X = centeredCopy(X);
+
         // Fit linear model -> residuals
         Fit lin = ridgeFit(y, X, 1e-8);
         double[] e = lin.resid;
@@ -326,6 +375,9 @@ public final class NonlinearityTests {
         int n = y.length;
         int d = (X.length == 0) ? 0 : X[0].length;
         if (n < 20 || d == 0) return new TestResult(Double.NaN, Double.NaN, false);
+
+        y = centeredCopy(y);
+        X = centeredCopy(X);
 
         // Base linear
         Fit base = ridgeFit(y, X, 1e-8);
@@ -472,10 +524,13 @@ public final class NonlinearityTests {
     }
 
     private static int[] shuffledIndices(int n, long seed) {
+        // The seed is honored with a local generator so that fold assignment is reproducible and independent of
+        // the global RandomUtil stream's state (which varies with whatever ran before this call).
+        Random rng = new Random(seed);
         int[] idx = new int[n];
         for (int i = 0; i < n; i++) idx[i] = i;
         for (int i = n - 1; i > 0; i--) {
-            int j = RandomUtil.getInstance().nextInt(i + 1);
+            int j = rng.nextInt(i + 1);
             int t = idx[i];
             idx[i] = idx[j];
             idx[j] = t;
@@ -566,10 +621,16 @@ public final class NonlinearityTests {
         double[][] W = new double[mf][d];
         double[] b = new double[mf];
 
+        // The seed MUST be honored here (a local generator, not the global RandomUtil stream): this method is
+        // called separately for the training and test matrices with the same seed, and the two calls must produce
+        // the same random features W and b. The previous implementation drew from the global stream, so the model
+        // was fit in one feature space and evaluated in a different one - predictions were noise, the nonlinear
+        // model always lost the CV comparison, and cvLinearVsNonlinear had zero power (verified by harness).
+        Random rng = new Random(seed);
         double wStd = 1.0 / sigma;
         for (int i = 0; i < mf; i++) {
-            for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
-            b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
+            for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
+            b[i] = rng.nextDouble() * 2.0 * TMath.PI;
         }
 
         double scale = TMath.sqrt(2.0 / outM);
@@ -689,10 +750,16 @@ public final class NonlinearityTests {
             return new TestResult(Double.NaN, Double.NaN, false);
         }
 
+        y = centeredCopy(y);
+        X = centeredCopy(X);
+
         // --- sane fold count (like your other CV method) ---
         int folds = TMath.max(2, TMath.min(kfold, TMath.max(2, n / 5)));
 
+        // Honored below for fold shuffling and the RFF map, making the test deterministic given its inputs
+        // (previously declared but unused; folds and features came from the global RandomUtil stream).
         final long seed = 1729L;
+        Random rng = new Random(seed);
 
         // Hyperparams (UI tool): keep modest but not tiny.
         final double ridge = 1e-3;
@@ -706,7 +773,7 @@ public final class NonlinearityTests {
         // ---- make folds ----
         int[] perm = new int[n];
         for (int i = 0; i < n; i++) perm[i] = i;
-        shuffleInPlace(perm);
+        shuffleInPlace(perm, rng);
 
         int[] foldId = new int[n];
         for (int i = 0; i < n; i++) foldId[perm[i]] = i % folds;
@@ -759,7 +826,7 @@ public final class NonlinearityTests {
             double sigma = medianPairwiseDistanceND(XTr, TMath.min(400, XTr.length));
             if (!(sigma > 0) || !Double.isFinite(sigma)) sigma = 1.0;
 
-            RffMap rff = new RffMap(d, rffFeatures, sigma, useCosSinPairs);
+            RffMap rff = new RffMap(d, rffFeatures, sigma, useCosSinPairs, rng);
 
             DMatrixRMaj PhiTr = rff.transform(XTr);
             DMatrixRMaj PhiTe = rff.transform(XTe);
@@ -974,9 +1041,9 @@ public final class NonlinearityTests {
         return sign * y;
     }
 
-    private static void shuffleInPlace(int[] a) {
+    private static void shuffleInPlace(int[] a, Random rng) {
         for (int i = a.length - 1; i > 0; i--) {
-            int j = RandomUtil.getInstance().nextInt(i + 1);
+            int j = rng.nextInt(i + 1);
             int tmp = a[i]; a[i] = a[j]; a[j] = tmp;
         }
     }
@@ -1100,7 +1167,7 @@ public final class NonlinearityTests {
         final boolean useCosSinPairs;
         final double scale;
 
-        RffMap(int d, int m, double sigma, boolean useCosSinPairs) {
+        RffMap(int d, int m, double sigma, boolean useCosSinPairs, Random rng) {
             this.d = d;
             this.useCosSinPairs = useCosSinPairs;
 
@@ -1110,8 +1177,8 @@ public final class NonlinearityTests {
                 this.b = new double[outM];
                 double wStd = 1.0 / sigma;
                 for (int i = 0; i < outM; i++) {
-                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
-                    b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
+                    for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
+                    b[i] = rng.nextDouble() * 2.0 * TMath.PI;
                 }
                 this.scale = TMath.sqrt(2.0 / outM);
             } else {
@@ -1121,8 +1188,8 @@ public final class NonlinearityTests {
                 this.b = new double[mf];
                 double wStd = 1.0 / sigma;
                 for (int i = 0; i < mf; i++) {
-                    for (int j = 0; j < d; j++) W[i][j] = RandomUtil.getInstance().nextGaussian() * wStd;
-                    b[i] = RandomUtil.getInstance().nextDouble() * 2.0 * TMath.PI;
+                    for (int j = 0; j < d; j++) W[i][j] = rng.nextGaussian() * wStd;
+                    b[i] = rng.nextDouble() * 2.0 * TMath.PI;
                 }
                 this.scale = TMath.sqrt(2.0 / outM);
             }

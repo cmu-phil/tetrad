@@ -46,8 +46,8 @@ public final class NonlinearityChecks extends JPanel {
     private final JButton runButton = new JButton("Check Nonlinearity");
     private final JButton showStatsButton = new JButton("Show Stats");
 
-//    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity)", false);
-    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (Additivity)", false);
+    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity)", false);
+//    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (Additivity)", false);
 
     private final ResultsTableModel tableModel = new ResultsTableModel();
     private final JTable table = new JTable(tableModel);
@@ -387,8 +387,8 @@ public final class NonlinearityChecks extends JPanel {
 
         final boolean doSlow = includeSlowTests.isSelected();
 
-//        NonlinearityTests.TestResult cv =
-//                doSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
+        NonlinearityTests.TestResult cv =
+                doSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
 
         NonlinearityTests.TestResult mom =
                 NonlinearityTests.conditionalMomentTest(yy, XX, alpha);
@@ -404,7 +404,7 @@ public final class NonlinearityChecks extends JPanel {
                 : xs.stream().map(Node::getName).collect(Collectors.joining(", "));
         String yLabel = y.getName();
 
-        return new ResultRow(index, xLabel, yLabel, reset, /*cv,*/ mom, add, addit);//, addNoise);
+        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add, addit);//, addNoise);
     }
 
     private double[] col(Node v) {
@@ -610,7 +610,7 @@ public final class NonlinearityChecks extends JPanel {
                         "X: " + row.xLabel + "\n" +
                         "Y: " + row.yLabel + "\n\n" +
                         "RESET: " + formatStats(row.reset) + "\n" +
-//                        "CV (linear vs nonlinear): " + formatStats(row.cv) + "\n" +
+                        "CV (linear vs nonlinear): " + formatStats(row.cv) + "\n" +
                         "Conditional-moment: " + formatStats(row.moment) + "\n" +
                         "Additive-component: " + formatStats(row.additive) + "\n" +
                         "Additivity (Additive vs RFF): " + row.additivity + "\n";
@@ -626,7 +626,7 @@ public final class NonlinearityChecks extends JPanel {
     // ---------------- table model ----------------
 
     private final class ResultsTableModel extends AbstractTableModel {
-        private final String[] cols = {"#", "X", "Y", "RESET", /*"CV",*/ "Moment", "Additive", "Additivity (Parents)"};//, "Additive Noise"}; // NEW
+        private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity (Parents)"};//, "Additive Noise"}; // NEW
         private List<ResultRow> rows = new ArrayList<>();
 
         @Override
@@ -637,10 +637,10 @@ public final class NonlinearityChecks extends JPanel {
                 case 1 -> row.xLabel;
                 case 2 -> row.yLabel;
                 case 3 -> summarize(row.reset, "");              // RESET always run
-//                case 4 -> summarize(row.cv, "Skipped");          // CV is slow
-                case 4 -> summarize(row.moment, "");             // Moment is fast-ish
-                case 5 -> summarize(row.additive, "");           // Additive-component is fast-ish
-                case 6 -> summarizeAdditivity(row.additivity);
+                case 4 -> summarize(row.cv, "Skipped");          // CV is slow
+                case 5 -> summarize(row.moment, "");             // Moment is fast-ish
+                case 6 -> summarize(row.additive, "");           // Additive-component is fast-ish
+                case 7 -> summarizeAdditivity(row.additivity);
                 default -> "";
             };
         }
@@ -693,14 +693,14 @@ public final class NonlinearityChecks extends JPanel {
         final String xLabel;
         final String yLabel;
         final NonlinearityTests.TestResult reset;
-//        final NonlinearityTests.TestResult cv;
+        final NonlinearityTests.TestResult cv;
         final NonlinearityTests.TestResult moment;
         final NonlinearityTests.TestResult additive;
         final NonlinearityTests.TestResult additivity;
 
         ResultRow(int index, String xLabel, String yLabel,
                   NonlinearityTests.TestResult reset,
-//                  NonlinearityTests.TestResult cv,
+                  NonlinearityTests.TestResult cv,
                   NonlinearityTests.TestResult moment,
                   NonlinearityTests.TestResult additive,
                   NonlinearityTests.TestResult additivity
@@ -709,7 +709,7 @@ public final class NonlinearityChecks extends JPanel {
             this.xLabel = xLabel;
             this.yLabel = yLabel;
             this.reset = reset;
-//            this.cv = cv;
+            this.cv = cv;
             this.moment = moment;
             this.additive = additive;
             this.additivity = additivity;
