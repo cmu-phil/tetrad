@@ -177,19 +177,33 @@ public final class NonlinearityChecks extends JPanel {
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Footer note
+        // Footer: a short note plus a "Notes..." button that opens the full interpretation guidance.
         JTextArea note = new JTextArea(
                 "Notes:\n" +
-                        "- Results are about nonlinearity in the conditional mean E(Y|X).\n" +
-                        "- “Nonlinear” means the test rejected linearity at the chosen alpha.\n" +
-                        "- Use “Show Stats” for full statistics and p-values for the selected row."
+                        "- Results are about nonlinearity in the conditional mean E(Y|X); “Nonlinear” means the " +
+                        "test rejected linearity at the chosen alpha.\n" +
+                        "- Use “Show Stats” for full statistics and p-values for the selected row; see “Notes...” " +
+                        "for how to read disagreements between tests and the effect of regression direction."
         );
         note.setEditable(false);
         note.setOpaque(false);
         note.setLineWrap(true);
         note.setWrapStyleWord(true);
         note.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        add(note, BorderLayout.SOUTH);
+
+        JButton notesButton = new JButton("Notes...");
+        notesButton.setFocusable(false);
+        notesButton.addActionListener(e -> showFullNotes());
+
+        JPanel notesButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 6));
+        notesButtonPanel.setOpaque(false);
+        notesButtonPanel.add(notesButton);
+
+        JPanel footer = new JPanel(new BorderLayout());
+        footer.setOpaque(false);
+        footer.add(note, BorderLayout.CENTER);
+        footer.add(notesButtonPanel, BorderLayout.EAST);
+        add(footer, BorderLayout.SOUTH);
 
         installPrefsListeners();
         loadPrefs();
@@ -367,6 +381,51 @@ public final class NonlinearityChecks extends JPanel {
 
     private Component getThisComponent() {
         return this;
+    }
+
+    /**
+     * Shows the full interpretation guidance for the results table, in a scrollable dialog. The short footer keeps
+     * the panel compact; the details live here. The guidance mirrors the caveats documented in
+     * {@link edu.cmu.tetrad.search.utils.NonlinearityTests} and is grounded in the calibration harness results.
+     */
+    private void showFullNotes() {
+        JTextArea area = new JTextArea(
+                "What is tested\n" +
+                        "Each row tests whether the conditional mean E(Y|X) of that row's regression is linear; " +
+                        "“Nonlinear” means the test rejected linearity at the chosen alpha. The tests say nothing " +
+                        "about the variance or the distribution of Y.\n\n" +
+                        "Direction matters\n" +
+                        "The verdict is direction-relative. A linear non-Gaussian pair has a linear mean from " +
+                        "cause to effect but a genuinely nonlinear mean in the reverse regression, so a rejection " +
+                        "can mean “nonlinear relationship” or “linear non-Gaussian pair tested in the anticausal " +
+                        "direction.” Testing both directions disambiguates: linear both ways suggests a linear " +
+                        "near-Gaussian pair; linear one way only suggests a linear non-Gaussian pair, with the " +
+                        "linear direction the plausible causal one; nonlinear both ways suggests a genuinely " +
+                        "nonlinear relationship.\n\n" +
+                        "Reading disagreements between tests\n" +
+                        "RESET, Moment, and Additive assume homoskedastic errors and over-reject when errors are " +
+                        "heteroskedastic but the mean is linear. CV (run when “Include slow tests” is checked) " +
+                        "keeps its false-rejection rate under heteroskedasticity, so RESET/Moment rejecting while " +
+                        "CV does not is a hint of heteroskedasticity rather than a nonlinear mean; all tests " +
+                        "rejecting together is stronger evidence that the mean really is nonlinear.\n\n" +
+                        "Additivity (Parents)\n" +
+                        "This column answers a different question: whether the (possibly nonlinear) effects of " +
+                        "several parents combine additively, or whether interactions among them improve " +
+                        "prediction.\n\n" +
+                        "Statistics\n" +
+                        "Use “Show Stats” for full statistics and p-values for the selected row."
+        );
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setMargin(new Insets(8, 8, 8, 8));
+        area.setCaretPosition(0);
+
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setPreferredSize(new Dimension(560, 420));
+
+        JOptionPane.showMessageDialog(getThisComponent(), scroll,
+                "Nonlinearity Checks - Notes", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold) {
