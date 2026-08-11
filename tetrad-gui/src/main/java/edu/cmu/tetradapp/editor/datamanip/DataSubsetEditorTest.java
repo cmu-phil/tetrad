@@ -186,4 +186,57 @@ public class DataSubsetEditorTest {
                     source.getVariable(j).getName(), selectedModel.get(j).getName());
         }
     }
+
+    /**
+     * Test that Sort A-Z and Restore dataset order act on both lists, changing order only, never membership. Uses
+     * variable names whose alphabetical order differs from dataset order so the sort is observable.
+     */
+    @Test
+    public void testSortAndRestoreActOnBothLists() {
+        String[] names = {"Zeta", "Alpha", "Mike", "Bravo", "Echo"};
+        List<Node> vars = new ArrayList<>();
+        for (String name : names) {
+            vars.add(new ContinuousVariable(name));
+        }
+        DataSet source = new BoxDataSet(new DoubleDataBox(5, names.length), vars);
+
+        DataSubsetEditor editor = new DataSubsetEditor(source);
+
+        @SuppressWarnings("unchecked")
+        DefaultListModel<Node> selectedModel =
+                getPrivateField(editor, "selectedModel", DefaultListModel.class);
+        @SuppressWarnings("unchecked")
+        DefaultListModel<Node> availableModel =
+                getPrivateField(editor, "availableModel", DefaultListModel.class);
+
+        // Move Zeta and Bravo to Available (as the "<" button would).
+        Node zeta = source.getVariable("Zeta");
+        Node bravo = source.getVariable("Bravo");
+        selectedModel.removeElement(zeta);
+        selectedModel.removeElement(bravo);
+        availableModel.addElement(zeta);
+        availableModel.addElement(bravo);
+
+        // Sort: both lists alphabetical, membership unchanged.
+        editor.sortBothAlphabetically();
+
+        assertEquals(2, availableModel.size());
+        assertEquals("Bravo", availableModel.get(0).getName());
+        assertEquals("Zeta", availableModel.get(1).getName());
+
+        assertEquals(3, selectedModel.size());
+        assertEquals("Alpha", selectedModel.get(0).getName());
+        assertEquals("Echo", selectedModel.get(1).getName());
+        assertEquals("Mike", selectedModel.get(2).getName());
+
+        // Restore: both lists back to dataset order, membership unchanged.
+        editor.restoreBothOriginalOrder();
+
+        assertEquals("Zeta", availableModel.get(0).getName());
+        assertEquals("Bravo", availableModel.get(1).getName());
+
+        assertEquals("Alpha", selectedModel.get(0).getName());
+        assertEquals("Mike", selectedModel.get(1).getName());
+        assertEquals("Echo", selectedModel.get(2).getName());
+    }
 }
