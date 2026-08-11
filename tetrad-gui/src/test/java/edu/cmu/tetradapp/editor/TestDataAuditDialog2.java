@@ -123,6 +123,44 @@ public class TestDataAuditDialog2 {
             System.out.println("(panel construction skipped: HeadlessException)");
         }
 
+        // --- Copy behavior: an empty selection produces no transferable; ensureCellSelection makes the
+        // menu-invoked copy select all in that case (and leave an existing selection alone); a full selection
+        // copies headers plus every cell in tab-delimited form. ---
+        try {
+            DataAuditJTable table = new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
+            DataAuditJTable.DataAuditTransferHandler handler =
+                    (DataAuditJTable.DataAuditTransferHandler) table.getTransferHandler();
+
+            check(handler.createTransferable(table) == null, "copy: empty selection produces no transferable");
+
+            DataAuditAction.ensureCellSelection(table);
+            check(table.getSelectedRowCount() == table.getRowCount()
+                    && table.getSelectedColumnCount() == table.getColumnCount(),
+                    "copy: ensureCellSelection selects all cells when nothing is selected");
+
+            java.awt.datatransfer.Transferable t = handler.createTransferable(table);
+            check(t != null, "copy: full selection produces a transferable");
+            String tsv = (String) t.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor);
+            String[] lines = tsv.split("\n", -1);
+            check(lines.length == table.getRowCount() + 1,
+                    "copy: one header line plus one line per row (" + lines.length + ")");
+            check(lines[0].split("\t", -1).length == table.getColumnCount(),
+                    "copy: header line has one field per column");
+            check(lines[1].split("\t", -1).length == table.getColumnCount(),
+                    "copy: data lines have one field per column");
+
+            table.clearSelection();
+            table.setRowSelectionInterval(0, 0);
+            table.setColumnSelectionInterval(0, 1);
+            DataAuditAction.ensureCellSelection(table);
+            check(table.getSelectedRowCount() == 1 && table.getSelectedColumnCount() == 2,
+                    "copy: ensureCellSelection leaves an existing selection alone");
+        } catch (java.awt.HeadlessException e) {
+            System.out.println("(copy behavior checks skipped: HeadlessException)");
+        } catch (Exception e) {
+            check(false, "copy behavior checks threw: " + e);
+        }
+
         // --- Findings table sizing: the Message column must fit its widest message, and the table must scroll
         // horizontally when wider than the viewport but stretch to fill it when narrower. ---
         try {

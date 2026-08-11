@@ -104,6 +104,45 @@ class DataAuditAction extends AbstractAction {
     //============================== Private methods ============================//
 
     /**
+     * The table of the currently selected tab: the variables table for the Variables tab, otherwise the findings
+     * table. (The Missingness &amp; Advice tab is a text area, which supports ordinary text selection and copy on its
+     * own.)
+     */
+    private static JTable currentTable(JTabbedPane tabs, JTable findingsTable, JTable variablesTable) {
+        return tabs.getSelectedIndex() == 1 ? variablesTable : findingsTable;
+    }
+
+    /**
+     * Selects all cells when no cells are selected, so that a menu-invoked copy with no selection copies the whole
+     * table instead of silently doing nothing (the transfer handler produces no transferable for an empty selection,
+     * leaving the clipboard unchanged). The emptiness condition matches the transfer handler's guard: with cell
+     * selection, both selected rows and selected columns must be nonempty for anything to be copied. Package visible
+     * for tests.
+     *
+     * @param table the table to guarantee a selection in.
+     */
+    static void ensureCellSelection(JTable table) {
+        if (table.getSelectedRowCount() == 0 || table.getSelectedColumnCount() == 0) {
+            table.selectAll();
+        }
+    }
+
+    /**
+     * The platform menu shortcut mask (Command on macOS, Control elsewhere). Hard-coding CTRL_DOWN_MASK here was a
+     * bug on macOS: the FlatLaf table bindings there use Command for select-all and copy, so Ctrl-A/Ctrl-C did
+     * nothing in the table, and the dialog's Ctrl-C accelerator additionally collided with the main menu bar's
+     * session-copy accelerator registered in the same top-level window. Falls back to Control in headless
+     * environments, where the toolkit refuses the query (this panel is constructed headlessly in tests).
+     */
+    private static int menuShortcutMask() {
+        try {
+            return Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        } catch (HeadlessException e) {
+            return InputEvent.CTRL_DOWN_MASK;
+        }
+    }
+
+    /**
      * Builds the audit panel: a summary line, then tabs for findings, per-variable facts, and missingness/advice.
      * Package visible so that it can be exercised headlessly in tests.
      */
@@ -135,16 +174,23 @@ class DataAuditAction extends AbstractAction {
         tabs.setPreferredSize(new Dimension(850, 450));
 
         JMenuBar bar = new JMenuBar();
+        int menuMask = menuShortcutMask();
+
+        JMenuItem selectAllCells = new JMenuItem("Select All Cells");
+        selectAllCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, menuMask));
+        selectAllCells.addActionListener(e -> currentTable(tabs, findingsTable, variablesTable).selectAll());
+
         JMenuItem copyCells = new JMenuItem("Copy Cells");
-        copyCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
         copyCells.addActionListener(e -> {
-            JTable target = tabs.getSelectedIndex() == 1 ? variablesTable : findingsTable;
+            JTable target = currentTable(tabs, findingsTable, variablesTable);
+            ensureCellSelection(target);
             Action copyAction = TransferHandler.getCopyAction();
             copyAction.actionPerformed(new ActionEvent(target, ActionEvent.ACTION_PERFORMED, "copy"));
         });
 
         JMenu editMenu = new JMenu("Edit");
+        editMenu.add(selectAllCells);
         editMenu.add(copyCells);
         bar.add(editMenu);
 
