@@ -48,8 +48,19 @@ public enum FindingCode {
     DISCRETE_MANY_LEVELS,
 
     /**
-     * A variable is constant or nearly constant (a continuous variable with negligible variance, or a discrete
-     * variable with almost all mass on one category).
+     * A column is constant: it has at most one distinct value among its non-missing entries. This includes the
+     * degenerate cases of a column with a single non-missing entry and a column with no non-missing entries at all.
+     * Constancy is determined exactly (equality of observed values), not by a variance threshold. A constant column
+     * carries no sample information: every independence test and score involving it is degenerate, and including it
+     * renders the covariance matrix of the continuous variables singular. A column flagged with this code is not
+     * additionally flagged NEAR_CONSTANT.
+     */
+    CONSTANT_COLUMN,
+
+    /**
+     * A variable varies but is nearly constant (a continuous variable with negligible but nonzero variance, or a
+     * discrete variable with more than one observed category but almost all mass on one of them). Exactly constant
+     * columns are flagged CONSTANT_COLUMN instead.
      */
     NEAR_CONSTANT,
 

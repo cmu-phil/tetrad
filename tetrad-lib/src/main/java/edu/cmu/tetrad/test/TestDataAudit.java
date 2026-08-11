@@ -206,7 +206,8 @@ public class TestDataAudit {
     }
 
     /**
-     * A constant continuous column and a 99.5-percent-modal discrete column should each fire NEAR_CONSTANT.
+     * A negligible-variance (but varying) continuous column and a 99.5-percent-modal (but two-category) discrete
+     * column should each fire NEAR_CONSTANT, and neither should fire CONSTANT_COLUMN.
      */
     @Test
     public void testNearConstant() {
@@ -216,7 +217,7 @@ public class TestDataAudit {
         int[][] disc = new int[1][n];
 
         for (int i = 0; i < n; i++) {
-            cont[0][i] = 3.14;
+            cont[0][i] = 3.14 + 1e-8 * rand.nextGaussian();
             cont[1][i] = rand.nextGaussian();
             disc[0][i] = (i < 2) ? 1 : 0;
         }
@@ -226,6 +227,60 @@ public class TestDataAudit {
 
         assertTrue(nc.stream().anyMatch(f -> f.getVariables().contains("X1")));
         assertTrue(nc.stream().anyMatch(f -> f.getVariables().contains("D1")));
+        assertFalse(audit.hasFinding(FindingCode.CONSTANT_COLUMN));
+    }
+
+    /**
+     * An exactly constant continuous column, a continuous column constant on its two non-missing entries, and a
+     * single-category discrete column should each fire CONSTANT_COLUMN (and not NEAR_CONSTANT); a varying Gaussian
+     * column should fire neither.
+     */
+    @Test
+    public void testConstantColumn() {
+        Random rand = new Random(31);
+        int n = 400;
+        double[][] cont = new double[3][n];
+        int[][] disc = new int[1][n];
+
+        for (int i = 0; i < n; i++) {
+            cont[0][i] = 3.14;
+            cont[1][i] = rand.nextGaussian();
+            cont[2][i] = (i < 2) ? 7.0 : Double.NaN;
+            disc[0][i] = 0;
+        }
+
+        DataAudit audit = new DataAudit(mixedDataSet(n, cont, disc, 2));
+        List<AuditFinding> cc = audit.getFindings(FindingCode.CONSTANT_COLUMN);
+
+        assertTrue(cc.stream().anyMatch(f -> f.getVariables().contains("X1")));
+        assertTrue(cc.stream().anyMatch(f -> f.getVariables().contains("X3")));
+        assertTrue(cc.stream().anyMatch(f -> f.getVariables().contains("D1")));
+        assertFalse(cc.stream().anyMatch(f -> f.getVariables().contains("X2")));
+        assertFalse(audit.hasFinding(FindingCode.NEAR_CONSTANT));
+        assertEquals(3.14, cc.stream().filter(f -> f.getVariables().contains("X1"))
+                .findFirst().orElseThrow().getValues().get("value"), 0.0);
+    }
+
+    /**
+     * A column with no non-missing values at all should fire CONSTANT_COLUMN with numNonMissing = 0.
+     */
+    @Test
+    public void testAllMissingColumn() {
+        Random rand = new Random(37);
+        int n = 200;
+        double[][] data = new double[n][2];
+
+        for (int i = 0; i < n; i++) {
+            data[i][0] = rand.nextGaussian();
+            data[i][1] = Double.NaN;
+        }
+
+        DataAudit audit = new DataAudit(continuousDataSet(data));
+        List<AuditFinding> cc = audit.getFindings(FindingCode.CONSTANT_COLUMN);
+
+        assertEquals(1, cc.size());
+        assertTrue(cc.get(0).getVariables().contains("X2"));
+        assertEquals(0.0, cc.get(0).getValues().get("numNonMissing"), 0.0);
     }
 
     /**

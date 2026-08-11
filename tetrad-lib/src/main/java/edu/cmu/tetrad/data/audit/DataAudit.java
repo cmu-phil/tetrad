@@ -37,7 +37,8 @@ import java.util.Set;
 /**
  * A pre-search audit of a data matrix. On construction, computes a battery of descriptive checks bearing on the
  * choice and reliability of causal search procedures - variable typing and cardinalities, small discrete cells,
- * near-constant columns, high correlation and near-determinism among variables, marginal non-Gaussianity, serial
+ * constant and near-constant columns, high correlation and near-determinism among variables, marginal
+ * non-Gaussianity, serial
  * dependence of rows in file order, sample adequacy, and missingness (the last delegated to
  * {@link MissingDataAudit}) - and emits the results as a list of {@link AuditFinding}s keyed by {@link FindingCode}.
  * <p>
@@ -183,7 +184,7 @@ public final class DataAudit {
         this.missingDataAudit = mda.anyMissing() ? mda : null;
 
         censusCheck();
-        nearConstantCheck();
+        constancyChecks();
         smallCellChecks();
         this.continuousCorrelation = correlationChecks();
         nearDeterminismDiscreteContinuousCheck();
@@ -436,10 +437,14 @@ public final class DataAudit {
     }
 
     /**
-     * Flags continuous variables with negligible variance and discrete variables with almost all mass on one
-     * category. Uses non-missing values only.
+     * Flags exactly constant columns (at most one distinct value among non-missing entries, including the degenerate
+     * cases of one or zero non-missing entries) as CONSTANT_COLUMN, and, for columns that do vary, flags continuous
+     * variables with negligible variance and discrete variables with almost all mass on one category as
+     * NEAR_CONSTANT. A column flagged CONSTANT_COLUMN is not additionally flagged NEAR_CONSTANT. Constancy is
+     * determined by exact equality of observed values, not by the variance threshold, so floating-point cancellation
+     * in the variance computation cannot misclassify a constant column. Uses non-missing values only.
      */
-    private void nearConstantCheck() {
+    private void constancyChecks() {
         int n = this.dataSet.getNumRows();
 
         for (int j = 0; j < this.names.length; j++) {
@@ -453,7 +458,24 @@ public final class DataAudit {
                     total++;
                 }
 
-                if (total == 0) continue;
+                if (counts.size() <= 1) {
+                    if (total == 0) {
+                        this.findings.add(new AuditFinding(FindingCode.CONSTANT_COLUMN,
+                                AuditFinding.Severity.WARNING, List.of(this.names[j]),
+                                Map.of("numNonMissing", 0.0),
+                                "Discrete variable " + this.names[j] + " has no non-missing values."));
+                    } else {
+                        int cat = counts.keySet().iterator().next();
+                        this.findings.add(new AuditFinding(FindingCode.CONSTANT_COLUMN,
+                                AuditFinding.Severity.WARNING, List.of(this.names[j]),
+                                Map.of("numNonMissing", (double) total, "categoryIndex", (double) cat),
+                                "Discrete variable " + this.names[j] + " is constant: all " + total
+                                        + " non-missing values fall in one category."));
+                    }
+
+                    continue;
+                }
+
                 int max = counts.values().stream().mapToInt(Integer::intValue).max().orElse(0);
                 double maxFreq = max / (double) total;
 
@@ -466,6 +488,7 @@ public final class DataAudit {
                 }
             } else {
                 double sum = 0, sumSq = 0;
+                double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
                 int m = 0;
 
                 for (int i = 0; i < n; i++) {
@@ -473,17 +496,35 @@ public final class DataAudit {
                     double x = this.dataSet.getDouble(i, j);
                     sum += x;
                     sumSq += x * x;
+                    if (x < min) min = x;
+                    if (x > max) max = x;
                     m++;
                 }
 
-                if (m < 2) continue;
+                if (m == 0) {
+                    this.findings.add(new AuditFinding(FindingCode.CONSTANT_COLUMN,
+                            AuditFinding.Severity.WARNING, List.of(this.names[j]),
+                            Map.of("numNonMissing", 0.0),
+                            "Continuous variable " + this.names[j] + " has no non-missing values."));
+                    continue;
+                }
+
+                if (min == max) {
+                    this.findings.add(new AuditFinding(FindingCode.CONSTANT_COLUMN,
+                            AuditFinding.Severity.WARNING, List.of(this.names[j]),
+                            Map.of("value", min, "numNonMissing", (double) m),
+                            "Continuous variable " + this.names[j] + " is constant: all " + m
+                                    + " non-missing values equal " + min + "."));
+                    continue;
+                }
+
                 double var = (sumSq - sum * sum / m) / (m - 1);
 
                 if (var <= this.config.nearConstantVariance) {
                     this.findings.add(new AuditFinding(FindingCode.NEAR_CONSTANT,
                             AuditFinding.Severity.WARNING, List.of(this.names[j]),
                             Map.of("variance", var),
-                            "Continuous variable " + this.names[j] + " is (nearly) constant."));
+                            "Continuous variable " + this.names[j] + " is nearly constant."));
                 }
             }
         }
