@@ -30,6 +30,16 @@ import java.util.Arrays;
  * Heteroskedastic but linear-in-mean data inflates their type I error above nominal (verified by harness on
  * y = x + (0.5 + |x|) e: rejection rates of roughly 10-35 percent at alpha = 0.05). A rejection therefore supports
  * "not linear-homoskedastic" more strongly than "nonlinear conditional mean" when heteroskedasticity is plausible.
+ * <p>
+ * Second caveat: these tests are about the conditional mean of the particular regression given, and that judgment is
+ * direction-relative. For a linear non-Gaussian pair y = bx + e, the forward mean E[y|x] is exactly linear (the
+ * tests hold their size under skewed or heavy-tailed noise; harness-verified), but the anticausal mean E[x|y] is
+ * genuinely nonlinear whenever the pair is non-Gaussian with distinct component distributions - the same asymmetry
+ * LiNGAM exploits - and the tests correctly reject there (harness-verified at up to 100 percent). A rejection on a
+ * pair of unknown causal direction therefore does NOT establish that the system is nonlinear: it may be a linear
+ * non-Gaussian system tested anticausally. Testing both directions disambiguates: linear both ways suggests a
+ * linear (near-)Gaussian pair; linear one way and nonlinear the other suggests a linear non-Gaussian pair with the
+ * linear direction causal; nonlinear both ways suggests a genuinely nonlinear system.
  */
 public final class NonlinearityTests {
 
