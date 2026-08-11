@@ -82,10 +82,13 @@ public class DataSubsetEditorTest {
         DataSet source = makeTestDataSet();
         DataSubsetEditor editor = new DataSubsetEditor(source);
 
-        // Put X2 and X4 into the Selected list using reflection.
+        // All variables start in Selected by default; clear that (as the "<<" button would) and put X2 and X4
+        // into the Selected list using reflection.
         @SuppressWarnings("unchecked")
         DefaultListModel<Node> selectedModel =
                 getPrivateField(editor, "selectedModel", DefaultListModel.class);
+
+        selectedModel.clear();
 
         Node x2 = source.getVariable("X2");
         Node x4 = source.getVariable("X4");
@@ -137,8 +140,8 @@ public class DataSubsetEditorTest {
         DataSubsetEditor editor = new DataSubsetEditor(source);
 
         // Row spec field is blank by default; we don't touch it.
-        // We also don't put anything into selectedModel, so the editor
-        // should default to "all variables".
+        // All variables are in the Selected list by default, so all
+        // variables should appear in the subset.
 
         DataSet subset = editor.createSubset();
         assertNotNull("Subset should not be null", subset);
@@ -155,6 +158,32 @@ public class DataSubsetEditorTest {
                 double actual = subset.getDouble(r, c);
                 assertEquals("Value mismatch at (" + r + "," + c + ")", expected, actual, 0.0);
             }
+        }
+    }
+
+    /**
+     * Test that on construction all variables are in the Selected list, in dataset order, and the Available list is
+     * empty. This pins the default: subsetting by removing a few variables should be a one-step removal.
+     */
+    @Test
+    public void testAllVariablesSelectedByDefault() {
+        DataSet source = makeTestDataSet();
+        DataSubsetEditor editor = new DataSubsetEditor(source);
+
+        @SuppressWarnings("unchecked")
+        DefaultListModel<Node> selectedModel =
+                getPrivateField(editor, "selectedModel", DefaultListModel.class);
+        @SuppressWarnings("unchecked")
+        DefaultListModel<Node> availableModel =
+                getPrivateField(editor, "availableModel", DefaultListModel.class);
+
+        assertEquals("All variables should start in Selected",
+                source.getNumColumns(), selectedModel.size());
+        assertEquals("Available should start empty", 0, availableModel.size());
+
+        for (int j = 0; j < source.getNumColumns(); j++) {
+            assertEquals("Selected order should match dataset order",
+                    source.getVariable(j).getName(), selectedModel.get(j).getName());
         }
     }
 }

@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
  * <p>
  * Features:
  * <ul>
- *   <li>Two-list variable selector (available vs. selected).</li>
+ *   <li>Two-list variable selector (available vs. selected). All variables start in the Selected list, so
+ *       subsetting by dropping a few variables is a one-step removal.</li>
  *   <li>Row selection via comma-separated ranges (1-based),
  *       e.g. {@code "1-100, 150, 200-250"}.</li>
  *   <li>Sampling modes: use as-is, shuffle, subsample, or bootstrap.</li>
@@ -76,11 +77,18 @@ public class DataSubsetEditor extends JPanel {
     // GUI construction
     // ------------------------------------------------------------------------
 
+    /**
+     * Populates the variable lists. All variables start in the Selected list, in dataset order. This is a deliberate
+     * design decision: the dominant use of this editor is to drop a small number of variables (e.g., ones flagged by
+     * the data audit) while keeping the rest, and starting with everything selected makes that a one-step removal
+     * rather than requiring the user to first move all variables across. Subsetting down to a small keep-list is
+     * still one step via the "&lt;&lt;" button followed by selection or Paste.
+     */
     private void initVariableModels() {
         List<Node> variables = sourceDataSet.getVariables();
 
         for (Node v : variables) {
-            availableModel.addElement(v);
+            selectedModel.addElement(v);
         }
     }
 
