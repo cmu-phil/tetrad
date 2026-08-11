@@ -70,6 +70,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
             columnCategories[i] = new HashSet<>();
         }
 
+        // Columns containing any value that cannot be parsed as a number must be
+        // treated as discrete, regardless of the number of distinct values;
+        // otherwise reading them as continuous data will fail downstream.
+        boolean[] columnHasNonNumericValue = new boolean[numOfColsInDataFile];
+
         try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {
             boolean skipHeader = hasHeader;
             boolean skip = false;
@@ -169,6 +174,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                     if (categories.size() < maxCategoryToAdd) {
                                         categories.add(value);
                                     }
+                                    if (!columnHasNonNumericValue[columnIndex]) {
+                                        columnHasNonNumericValue[columnIndex] = isNotNumeric(value);
+                                    }
                                 }
 
                                 columnIndex++;
@@ -242,6 +250,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                                             if (categories.size() < maxCategoryToAdd) {
                                                 categories.add(value);
                                             }
+                                            if (!columnHasNonNumericValue[columnIndex]) {
+                                                columnHasNonNumericValue[columnIndex] = isNotNumeric(value);
+                                            }
                                         }
 
                                         columnIndex++;
@@ -274,6 +285,9 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
                         if (categories.size() < maxCategoryToAdd) {
                             categories.add(value);
                         }
+                        if (!columnHasNonNumericValue[columnIndex]) {
+                            columnHasNonNumericValue[columnIndex] = isNotNumeric(value);
+                        }
                     }
 
                     columnIndex++;
@@ -289,7 +303,24 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
         }
 
         for (int i = 0; i < numOfColsInDataFile; i++) {
-            dataColumns[i].setDiscrete(columnCategories[i].size() <= numberOfCategories);
+            dataColumns[i].setDiscrete(columnHasNonNumericValue[i] || columnCategories[i].size() <= numberOfCategories);
+        }
+    }
+
+    /**
+     * Tests whether the given value cannot be parsed as a number. This uses the same criterion
+     * (Double.parseDouble) that is applied when continuous data are read in, so any column
+     * containing such a value must be treated as discrete.
+     *
+     * @param value The value to test; assumed to be trimmed, nonempty, and not the missing-data marker.
+     * @return true if the value cannot be parsed as a double.
+     */
+    private static boolean isNotNumeric(String value) {
+        try {
+            Double.parseDouble(value);
+            return false;
+        } catch (NumberFormatException exception) {
+            return true;
         }
     }
 
