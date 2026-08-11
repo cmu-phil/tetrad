@@ -47,6 +47,15 @@ import java.util.Set;
  * Anderson-Darling p-values, R-squared and eta-squared values, distinct-value counts) are available from accessors so
  * that downstream tools can display or reason over the numbers, not just the flags.
  * <p>
+ * Columns found to be exactly constant (see {@link FindingCode#CONSTANT_COLUMN}) are flagged and then excluded from
+ * all subsequent checks in the same audit: constant columns contribute nothing to small-cell, correlation,
+ * near-determinism, non-Gaussianity, or serial-dependence diagnostics, and a constant continuous column would
+ * otherwise poison the pairwise-complete correlation matrix (its correlations are undefined), masking findings such
+ * as NEAR_DETERMINISM_CONTINUOUS among the remaining variables. Each CONSTANT_COLUMN finding states this exclusion
+ * in its message. Consequently {@link #getContinuousNames()} and the correlation-based accessors cover only the
+ * non-constant continuous variables, while whole-dataset summaries (distinct-value counts, the sample-size ratio,
+ * and missingness statistics) continue to describe the dataset as given.
+ * <p>
  * Missing values (NaN for continuous variables, the discrete missing-value marker for discrete variables, as judged
  * by {@link MissingDataAudit#isMissing(DataSet, int, int)}) are excluded pairwise or listwise as appropriate to each
  * statistic; each check's documentation notes which.
@@ -80,6 +89,12 @@ public final class DataAudit {
     private final boolean[] discrete;
 
     /**
+     * Whether each column is constant (at most one distinct value among non-missing entries), as determined by
+     * {@link #constancyChecks()}. Constant columns are flagged CONSTANT_COLUMN and excluded from subsequent checks.
+     */
+    private final boolean[] constant;
+
+    /**
      * Variable names, in column order.
      */
     private final String[] names;
@@ -90,12 +105,12 @@ public final class DataAudit {
     private final Map<String, Integer> observedDistinct = new LinkedHashMap<>();
 
     /**
-     * Column indices of the continuous variables, in column order.
+     * Column indices of the continuous variables, in column order, excluding constant columns.
      */
     private final int[] continuousIndices;
 
     /**
-     * Names of the continuous variables, in column order.
+     * Names of the continuous variables, in column order, excluding constant columns.
      */
     private final List<String> continuousNames = new ArrayList<>();
 
@@ -162,29 +177,36 @@ public final class DataAudit {
 
         int p = dataSet.getNumColumns();
         this.discrete = new boolean[p];
+        this.constant = new boolean[p];
         this.names = new String[p];
 
         List<Node> variables = dataSet.getVariables();
-        List<Integer> contIdx = new ArrayList<>();
 
         for (int j = 0; j < p; j++) {
             Node v = variables.get(j);
             this.names[j] = v.getName();
             this.discrete[j] = v instanceof DiscreteVariable;
-
-            if (!this.discrete[j]) {
-                contIdx.add(j);
-                this.continuousNames.add(v.getName());
-            }
         }
-
-        this.continuousIndices = contIdx.stream().mapToInt(Integer::intValue).toArray();
 
         MissingDataAudit mda = new MissingDataAudit(dataSet);
         this.missingDataAudit = mda.anyMissing() ? mda : null;
 
         censusCheck();
         constancyChecks();
+
+        // Constant columns (flagged above) are excluded from the continuous-variable arrays and hence from all
+        // subsequent continuous checks; see the class Javadoc.
+        List<Integer> contIdx = new ArrayList<>();
+
+        for (int j = 0; j < p; j++) {
+            if (!this.discrete[j] && !this.constant[j]) {
+                contIdx.add(j);
+                this.continuousNames.add(this.names[j]);
+            }
+        }
+
+        this.continuousIndices = contIdx.stream().mapToInt(Integer::intValue).toArray();
+
         smallCellChecks();
         this.continuousCorrelation = correlationChecks();
         nearDeterminismDiscreteContinuousCheck();
@@ -235,7 +257,8 @@ public final class DataAudit {
     }
 
     /**
-     * Returns the names of the continuous variables, in column order, unmodifiable.
+     * Returns the names of the continuous variables, in column order, excluding constant columns (see the class
+     * Javadoc), unmodifiable.
      *
      * @return These names.
      */
@@ -443,6 +466,10 @@ public final class DataAudit {
      * NEAR_CONSTANT. A column flagged CONSTANT_COLUMN is not additionally flagged NEAR_CONSTANT. Constancy is
      * determined by exact equality of observed values, not by the variance threshold, so floating-point cancellation
      * in the variance computation cannot misclassify a constant column. Uses non-missing values only.
+     * <p>
+     * As a side effect, records which columns are constant; the constructor excludes those columns from the
+     * continuous-variable arrays and the discrete checks that follow, so that a constant column cannot mask
+     * downstream findings (see the class Javadoc).
      */
     private void constancyChecks() {
         int n = this.dataSet.getNumRows();
@@ -459,18 +486,22 @@ public final class DataAudit {
                 }
 
                 if (counts.size() <= 1) {
+                    this.constant[j] = true;
+
                     if (total == 0) {
                         this.findings.add(new AuditFinding(FindingCode.CONSTANT_COLUMN,
                                 AuditFinding.Severity.WARNING, List.of(this.names[j]),
                                 Map.of("numNonMissing", 0.0),
-                                "Discrete variable " + this.names[j] + " has no non-missing values."));
+                                "Discrete variable " + this.names[j]
+                                        + " has no non-missing values. Excluded from subsequent audit checks."));
                     } else {
                         int cat = counts.keySet().iterator().next();
                         this.findings.add(new AuditFinding(FindingCode.CONSTANT_COLUMN,
                                 AuditFinding.Severity.WARNING, List.of(this.names[j]),
                                 Map.of("numNonMissing", (double) total, "categoryIndex", (double) cat),
                                 "Discrete variable " + this.names[j] + " is constant: all " + total
-                                        + " non-missing values fall in one category."));
+                                        + " non-missing values fall in one category."
+                                        + " Excluded from subsequent audit checks."));
                     }
 
                     continue;
@@ -502,19 +533,23 @@ public final class DataAudit {
                 }
 
                 if (m == 0) {
+                    this.constant[j] = true;
                     this.findings.add(new AuditFinding(FindingCode.CONSTANT_COLUMN,
                             AuditFinding.Severity.WARNING, List.of(this.names[j]),
                             Map.of("numNonMissing", 0.0),
-                            "Continuous variable " + this.names[j] + " has no non-missing values."));
+                            "Continuous variable " + this.names[j]
+                                    + " has no non-missing values. Excluded from subsequent audit checks."));
                     continue;
                 }
 
                 if (min == max) {
+                    this.constant[j] = true;
                     this.findings.add(new AuditFinding(FindingCode.CONSTANT_COLUMN,
                             AuditFinding.Severity.WARNING, List.of(this.names[j]),
                             Map.of("value", min, "numNonMissing", (double) m),
                             "Continuous variable " + this.names[j] + " is constant: all " + m
-                                    + " non-missing values equal " + min + "."));
+                                    + " non-missing values equal " + min
+                                    + ". Excluded from subsequent audit checks."));
                     continue;
                 }
 
@@ -539,7 +574,7 @@ public final class DataAudit {
 
         // Marginal cells.
         for (int j = 0; j < this.names.length; j++) {
-            if (!this.discrete[j]) continue;
+            if (!this.discrete[j] || this.constant[j]) continue;
             Map<Integer, Integer> counts = new LinkedHashMap<>();
 
             for (int i = 0; i < n; i++) {
@@ -569,10 +604,10 @@ public final class DataAudit {
 
         // Pairwise expected cells.
         for (int a = 0; a < this.names.length; a++) {
-            if (!this.discrete[a]) continue;
+            if (!this.discrete[a] || this.constant[a]) continue;
 
             for (int b = a + 1; b < this.names.length; b++) {
-                if (!this.discrete[b]) continue;
+                if (!this.discrete[b] || this.constant[b]) continue;
 
                 Map<Integer, Integer> countsA = new LinkedHashMap<>();
                 Map<Integer, Integer> countsB = new LinkedHashMap<>();
@@ -694,7 +729,7 @@ public final class DataAudit {
         int n = this.dataSet.getNumRows();
 
         for (int a = 0; a < this.names.length; a++) {
-            if (!this.discrete[a]) continue;
+            if (!this.discrete[a] || this.constant[a]) continue;
 
             for (int jc : this.continuousIndices) {
                 Map<Integer, double[]> groups = new LinkedHashMap<>(); // category -> {count, sum, sumSq}

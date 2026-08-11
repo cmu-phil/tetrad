@@ -284,6 +284,34 @@ public class TestDataAudit {
     }
 
     /**
+     * A constant column must not mask downstream findings among the remaining variables: with a constant X1 present,
+     * a near-linear-dependence among X2, X3, X4 should still fire NEAR_DETERMINISM_CONTINUOUS, the continuous-name
+     * accessors should exclude X1, and the correlation matrix should cover only the non-constant variables. (Before
+     * constant columns were excluded, X1's undefined correlations aborted the whole correlation battery.)
+     */
+    @Test
+    public void testConstantColumnDoesNotMaskDownstreamChecks() {
+        Random rand = new Random(41);
+        int n = 500;
+        double[][] data = new double[n][4];
+
+        for (int i = 0; i < n; i++) {
+            data[i][0] = 2012.0;
+            data[i][1] = rand.nextGaussian();
+            data[i][2] = rand.nextGaussian();
+            data[i][3] = data[i][1] + data[i][2] + 0.01 * rand.nextGaussian();
+        }
+
+        DataAudit audit = new DataAudit(continuousDataSet(data));
+
+        assertTrue(audit.hasFinding(FindingCode.CONSTANT_COLUMN));
+        assertTrue(audit.hasFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS));
+        assertFalse(audit.getContinuousNames().contains("X1"));
+        assertEquals(3, audit.getContinuousNames().size());
+        assertEquals(3, audit.getContinuousCorrelationMatrix().getNumRows());
+    }
+
+    /**
      * A 13-level discrete variable should fire DISCRETE_MANY_LEVELS, and a continuous variable taking three values
      * should fire CONTINUOUS_FEW_VALUES.
      */
