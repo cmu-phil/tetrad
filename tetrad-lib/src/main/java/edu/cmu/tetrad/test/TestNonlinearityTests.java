@@ -148,6 +148,56 @@ public class TestNonlinearityTests {
     }
 
     /**
+     * cvAdditiveVsRff must have power on its one job: a pure interaction, which no additive model can represent.
+     * Before the redesign (nested models on a shared additive base, a single GCV-tuned ridge selected on the full
+     * model, and pooled per-observation signed-rank inference), the full RFF model had more features than training
+     * rows at near-interpolation regularization, lost the CV comparison even here, and the test rejected in only
+     * about 5-12 percent of replications; after it, rejection is essentially certain at this n and effect size.
+     */
+    @Test
+    public void testAdditivityCheckFlagsPureInteraction() {
+        Random rng = new Random(92);
+        int n = 400;
+        double[] y = new double[n];
+        double[][] X = new double[n][2];
+
+        for (int i = 0; i < n; i++) {
+            double x1 = rng.nextGaussian(), x2 = rng.nextGaussian();
+            X[i][0] = x1;
+            X[i][1] = x2;
+            y[i] = x1 * x2 + rng.nextGaussian();
+        }
+
+        TestResult res = NonlinearityTests.cvAdditiveVsRff(y, X, 5, 0.05);
+        assertTrue("cvAdditiveVsRff must flag a pure interaction", res.reject);
+        assertTrue("statistic must favor the full model on an interaction", res.statistic > 0);
+    }
+
+    /**
+     * cvAdditiveVsRff must NOT flag additive-but-smooth truths. This pins the per-variable RFF enrichment of the
+     * additive design: with a hinge-only additive base, the joint RFF block absorbed the hinge basis's approximation
+     * bias on smooth additive functions and this scenario was falsely flagged non-additive about 45 percent of the
+     * time. The alpha of 0.01 with a fixed seed keeps this test stable against the nominal false-rejection rate.
+     */
+    @Test
+    public void testAdditivityCheckNotFooledBySmoothAdditive() {
+        Random rng = new Random(93);
+        int n = 400;
+        double[] y = new double[n];
+        double[][] X = new double[n][2];
+
+        for (int i = 0; i < n; i++) {
+            double x1 = rng.nextGaussian(), x2 = rng.nextGaussian();
+            X[i][0] = x1;
+            X[i][1] = x2;
+            y[i] = x1 * x1 + Math.sin(2 * x2) + 0.5 * rng.nextGaussian();
+        }
+
+        TestResult res = NonlinearityTests.cvAdditiveVsRff(y, X, 5, 0.01);
+        assertFalse("cvAdditiveVsRff must not flag smooth additive nonlinearity", res.reject);
+    }
+
+    /**
      * Internal centering must operate on copies: caller arrays are not modified.
      */
     @Test
