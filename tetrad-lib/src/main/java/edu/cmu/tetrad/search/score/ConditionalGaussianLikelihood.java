@@ -29,9 +29,11 @@ import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
@@ -95,6 +97,11 @@ public class ConditionalGaussianLikelihood {
      * Minimum sample size per cell.
      */
     private int minSampleSizePerCell = 4;
+    /**
+     * Cache of reference Gaussians (marginal all-rows fits) keyed by continuous column set; see referenceGaussian.
+     * Concurrent because FGES/BOSS evaluate local scores in parallel. Invalidated by setRows on support change.
+     */
+    private final Map<String, RefGaussian> referenceCache = new ConcurrentHashMap<>();
 
     /**
      * Constructs the score using a covariance matrix.
@@ -147,8 +154,10 @@ public class ConditionalGaussianLikelihood {
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             // null means "all rows"
-            this.rows = new ArrayList<>();
-            for (int i = 0; i < mixedDataSet.getNumRows(); i++) this.rows.add(i);
+            List<Integer> all = new ArrayList<>();
+            for (int i = 0; i < mixedDataSet.getNumRows(); i++) all.add(i);
+            if (!all.equals(this.rows)) this.referenceCache.clear();
+            this.rows = all;
             return;
         }
 
@@ -157,6 +166,12 @@ public class ConditionalGaussianLikelihood {
             if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
             if (rows.get(i) >= mixedDataSet.getNumRows()) throw new IllegalArgumentException("Row " + i + " is out of bounds.");
         }
+
+        // The reference Gaussians (see referenceGaussian) are fit on this.rows, so they are stale
+        // whenever the row support actually changes. ConditionalGaussianScore.localScore calls
+        // setRows on every score call (testwise deletion); with complete data the row set is
+        // identical each time, so comparing first avoids discarding the cache needlessly.
+        if (!rows.equals(this.rows)) this.referenceCache.clear();
 
         // defensive copy is a good idea
         this.rows = new ArrayList<>(rows);
@@ -175,16 +190,7 @@ public class ConditionalGaussianLikelihood {
 
         List<ContinuousVariable> X0 = new ArrayList<>();
         List<DiscreteVariable> A0 = new ArrayList<>();
-
-        for (int p : parents) {
-            Node parent = this.mixedVariables.get(p);
-
-            if (parent instanceof ContinuousVariable) {
-                X0.add((ContinuousVariable) parent);
-            } else {
-                A0.add((DiscreteVariable) parent);
-            }
-        }
+        split(parents, X0, A0);
 
         List<ContinuousVariable> X1 = new ArrayList<>(X0);
         List<DiscreteVariable> A1 = new ArrayList<>(A0);
@@ -195,10 +201,98 @@ public class ConditionalGaussianLikelihood {
             A1.add((DiscreteVariable) target);
         }
 
-        Ret ret0 = likelihoodJoint(X0, A0, target, this.rows);
-        Ret ret1 = likelihoodJoint(X1, A1, target, this.rows);
+        // The discretize swap is keyed on the target, so it applies to the joint and the
+        // parents-only model identically, exactly as the removed likelihoodJoint did.
+        maybeDiscretizeSwap(target, X0, A0);
+        maybeDiscretizeSwap(target, X1, A1);
 
-        return new Ret(ret1.getLik() - ret0.getLik(), ret1.getDof() - ret0.getDof());
+        LikDof l1 = likScoreAllRows(X1, A1);
+        LikDof l0 = likScoreAllRows(X0, A0);
+
+        return new Ret(l1.lik - l0.lik, l1.dof - l0.dof);
+    }
+
+    /**
+     * Log-likelihood and dof of the joint (X, A) evaluated on ALL of this.rows, for the score path.
+     *
+     * <p>Changes from the pre-2026-8-12 computation (likelihoodJoint, now removed): that method dropped every cell
+     * with fewer than minSampleSizePerCell rows (and every cell smaller than the continuous dimension) and
+     * renormalized the multinomial over the surviving rows, PER MODEL. Since different parent sets partition the
+     * rows differently, every score comparison in FGES/BOSS was a comparison of likelihoods computed on different
+     * row supports, contaminated by O(dropped rows) terms unrelated to fit; the multinomial renormalization
+     * compounded this. It also charged dof for all f(A) possible cells, observed or not, and used the unbiased
+     * (n-1) covariance, whose bias does not cancel between models with different cell counts.</p>
+     *
+     * <p>Here, instead: (1) no rows are ever dropped, so every (node, parent set) likelihood is computed over the
+     * identical support and score differences are coherent; (2) cells large enough to support the full k-dimensional
+     * Gaussian MLE (at least max(minSampleSizePerCell, k + 1) rows, and a nonsingular fit) are scored by that MLE
+     * with the MLE (divide-by-n) covariance and charged h(X) parameters; (3) smaller or degenerate cells are scored
+     * under a fixed REFERENCE Gaussian - the marginal fit to all rows - and charged ZERO parameters, so shattering
+     * the data into tiny cells buys no likelihood credit and pays no phantom dof; (4) the multinomial is normalized
+     * over all rows and charged (m - 1) dof over the m observed nonempty cells. Note dof differences can be
+     * negative when adding a parent demotes cells below the full-fit threshold; this is honest accounting - the
+     * finer model genuinely fits fewer free Gaussian parameter blocks - and BIC comparison remains meaningful.</p>
+     */
+    private LikDof likScoreAllRows(List<ContinuousVariable> X, List<DiscreteVariable> A) {
+        int k = X.size();
+        int N = this.rows.size();
+
+        int[] continuousCols = new int[k];
+        for (int j = 0; j < k; j++) {
+            int col = mixedDataSet.getColumnIndex(X.get(j));
+            if (col < 0) col = mixedDataSet.getColumnIndex(X.get(j).getName());
+            if (col < 0) throw new IllegalArgumentException("Cannot find continuous variable in dataset: " + X.get(j));
+            continuousCols[j] = col;
+        }
+
+        List<List<Integer>> cells = partition(A, this.rows); // nonempty cells only
+        int m = cells.size();
+
+        double lik = 0.0;
+        int mFull = 0;
+
+        if (!A.isEmpty()) {
+            for (List<Integer> cell : cells) {
+                lik += cell.size() * multinomialLikelihood(cell.size(), N);
+            }
+        }
+
+        if (k > 0) {
+            int fullThreshold = Math.max(this.minSampleSizePerCell, k + 1);
+            RefGaussian ref = null;
+
+            for (List<Integer> cell : cells) {
+                int a = cell.size();
+
+                if (a >= fullThreshold) {
+                    double gl = gaussianLikelihood(k, covMle(getSubsample(continuousCols, cell)));
+
+                    if (!Double.isNaN(gl) && !Double.isInfinite(gl)) {
+                        lik += a * gl;
+                        mFull++;
+                        continue;
+                    }
+                    // Degenerate full fit (singular within-cell covariance): fall through to the reference.
+                }
+
+                if (ref == null) ref = referenceGaussian(continuousCols);
+                lik += ref.logLik(getSubsample(continuousCols, cell));
+            }
+        }
+
+        int dof = mFull * h(X) + (m - 1);
+        return new LikDof(lik, dof);
+    }
+
+    /** Log-likelihood / dof pair for the score path. */
+    private static final class LikDof {
+        private final double lik;
+        private final int dof;
+
+        private LikDof(double lik, int dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
     }
 
     /**
@@ -379,6 +473,97 @@ public class ConditionalGaussianLikelihood {
     }
 
     /**
+     * The reference Gaussian for a set of continuous columns: the marginal MLE fit over ALL of this.rows. Used by
+     * likScoreAllRows to assign a defined, model-independent density to rows in cells too small (or too degenerate)
+     * to support their own full covariance fit, so that no rows are ever dropped from a score comparison. Cached per
+     * column set; the cache is invalidated by setRows when the row support changes.
+     */
+    private RefGaussian referenceGaussian(int[] continuousCols) {
+        return this.referenceCache.computeIfAbsent(Arrays.toString(continuousCols), key -> {
+            Matrix all = getSubsample(continuousCols, this.rows);
+            int n = all.getNumRows();
+            int k = all.getNumColumns();
+
+            double[] mu = new double[k];
+            for (int j = 0; j < k; j++) {
+                double s = 0.0;
+                for (int i = 0; i < n; i++) s += all.get(i, j);
+                mu[j] = s / n;
+            }
+
+            Matrix sigma = n >= 2 ? covMle(all) : Matrix.identity(k);
+
+            double det = sigma.det();
+            Matrix inv;
+
+            if (Double.isNaN(det) || det < 1e-12) {
+                // Collinear or degenerate marginal: retreat to floored diagonal variances,
+                // which is always a proper, invertible density.
+                Matrix diag = new Matrix(k, k);
+                double logDet = 0.0;
+                for (int j = 0; j < k; j++) {
+                    double v = Math.max(n >= 2 ? sigma.get(j, j) : 1.0, 1e-10);
+                    diag.set(j, j, v);
+                    logDet += log(v);
+                }
+                inv = new Matrix(k, k);
+                for (int j = 0; j < k; j++) inv.set(j, j, 1.0 / diag.get(j, j));
+                return new RefGaussian(mu, inv, logDet);
+            }
+
+            try {
+                inv = sigma.inverse();
+                return new RefGaussian(mu, inv, log(det));
+            } catch (Exception e) {
+                Matrix diag = new Matrix(k, k);
+                double logDet = 0.0;
+                for (int j = 0; j < k; j++) {
+                    double v = Math.max(sigma.get(j, j), 1e-10);
+                    diag.set(j, j, v);
+                    logDet += log(v);
+                }
+                inv = new Matrix(k, k);
+                for (int j = 0; j < k; j++) inv.set(j, j, 1.0 / diag.get(j, j));
+                return new RefGaussian(mu, inv, logDet);
+            }
+        });
+    }
+
+    /** A fixed multivariate Gaussian density used as the reference for small-cell rows in likScoreAllRows. */
+    private static final class RefGaussian {
+        private final double[] mu;
+        private final Matrix inv;
+        private final double logDet;
+
+        private RefGaussian(double[] mu, Matrix inv, double logDet) {
+            this.mu = mu;
+            this.inv = inv;
+            this.logDet = logDet;
+        }
+
+        /** Sum of log-densities of the rows of xs (an a-by-k matrix) under this fixed Gaussian. */
+        private double logLik(Matrix xs) {
+            int a = xs.getNumRows();
+            int k = this.mu.length;
+            double constant = -0.5 * (k * ConditionalGaussianLikelihood.LOG2PI + this.logDet);
+            double sum = 0.0;
+
+            for (int r = 0; r < a; r++) {
+                double quad = 0.0;
+                for (int p = 0; p < k; p++) {
+                    double dp = xs.get(r, p) - this.mu[p];
+                    for (int q = 0; q < k; q++) {
+                        quad += dp * this.inv.get(p, q) * (xs.get(r, q) - this.mu[q]);
+                    }
+                }
+                sum += constant - 0.5 * quad;
+            }
+
+            return sum;
+        }
+    }
+
+    /**
      * Sets whether to discretize child variables to avoid integration. An optimization.
      *
      * @param discretize True, if so.
@@ -447,98 +632,7 @@ public class ConditionalGaussianLikelihood {
         return replaced;
     }
 
-    // The likelihood of the joint over all of these mixedVariables, assuming conditional Gaussian,
-    // continuous and discrete.
-    private Ret likelihoodJoint(List<ContinuousVariable> X, List<DiscreteVariable> A, Node target, List<Integer> rows) {
 
-        A = new ArrayList<>(A);
-        X = new ArrayList<>(X);
-
-        if (this.discretize) {
-            if (target instanceof DiscreteVariable) {
-                for (ContinuousVariable x : new ArrayList<>(X)) {
-                    Node variable = this.dataSet.getVariable(x.getName());
-
-                    if (variable != null) {
-                        A.add((DiscreteVariable) variable);
-                        X.remove(x);
-                    }
-                }
-            }
-        }
-
-        int k = X.size();
-
-//        int[] continuousCols = new int[k];
-//        for (int j = 0; j < k; j++) continuousCols[j] = this.nodesHash.get(X.get(j));
-
-        int[] continuousCols = new int[k];
-        for (int j = 0; j < k; j++) {
-            // Use original dataset columns for continuous data
-            int col = mixedDataSet.getColumnIndex(X.get(j));
-            if (col < 0) col = mixedDataSet.getColumnIndex(X.get(j).getName()); // you added this default method
-            if (col < 0) throw new IllegalArgumentException("Cannot find continuous variable in dataset: " + X.get(j));
-            continuousCols[j] = col;
-        }
-
-        double c1 = 0, c2 = 0;
-
-        List<List<Integer>> cells = partition(A, rows);
-
-        // choose eligible cells once
-        List<List<Integer>> eligible = new ArrayList<>();
-        int totalEligibleRows = 0;
-
-        for (List<Integer> cell : cells) {
-            int a = cell.size();
-            if (a < minSampleSizePerCell) continue;
-            if (!X.isEmpty() && a < k) continue; // need at least k rows to estimate k-dim covariance
-            eligible.add(cell);
-            totalEligibleRows += a;
-        }
-
-        if (eligible.isEmpty()) {
-            return new Ret(Double.NaN, dof(A, X));
-        }
-
-        // Discrete term over same support
-        if (!A.isEmpty()) {
-            for (List<Integer> cell : eligible) {
-                int a = cell.size();
-                c1 += a * multinomialLikelihood(a, totalEligibleRows);
-            }
-        }
-
-        // Continuous term over same support
-        if (!X.isEmpty()) {
-            for (List<Integer> cell : eligible) {
-                Matrix subsample = getSubsample(continuousCols, cell);
-
-                int nRows = subsample.getNumRows();
-                int nCols = subsample.getNumColumns();
-
-                if (nRows < minSampleSizePerCell || nCols < 1) continue;
-                if (nRows < nCols) continue;
-
-                double gl = gaussianLikelihood(k, cov(subsample));
-                if (Double.isNaN(gl)) return new Ret(Double.NaN, dof(A, X));
-
-                c2 += nRows * gl; // (nRows == cell.size())
-            }
-        }
-
-        double lnL = c1 + c2;
-
-//        int dof = f(A) * h(X) + f(A);
-        int dof = dof(A, X);
-
-        return new Ret(lnL, dof);
-    }
-
-    private int dof(List<DiscreteVariable> A, List<ContinuousVariable> X) {
-        int fA = f(A);
-        return fA * h(X) + (fA - 1);
-    }
 
     // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number
     // of mixedVariables. This is the number of unique entries in the covariance matrix over X.
@@ -564,9 +658,6 @@ public class ConditionalGaussianLikelihood {
         return -0.5 * log(abs(det)) - 0.5 * k * (1 + ConditionalGaussianLikelihood.LOG2PI);
     }
 
-    private Matrix cov(Matrix x) {
-        return new Matrix(new Covariance(x.toArray(), true).getCovarianceMatrix().getData());
-    }
 
     // Subsample of the continuous mixedVariables conditioning on the given cell.
     private Matrix getSubsample(int[] continuousCols, List<Integer> cell) {
@@ -581,17 +672,6 @@ public class ConditionalGaussianLikelihood {
         return subset;
     }
 
-    // Degrees of freedom for a discrete distribution is the product of the number of categories for each
-    // variable.
-    private int f(List<DiscreteVariable> A) {
-        int f = 1;
-
-        for (DiscreteVariable V : A) {
-            f *= V.getNumCategories();
-        }
-
-        return f;
-    }
 
     // Degrees of freedom for a multivariate Gaussian distribution is p * (p + 1) / 2, where p is the number
     // of mixedVariables. This is the number of unique entries in the covariance matrix over X.
