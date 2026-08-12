@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractMultiBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -60,7 +61,7 @@ import java.util.List;
         dataType = DataType.All
 )
 @Bootstrapping
-public class Images implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
+public class Images extends AbstractMultiBootstrapAlgorithm implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -91,10 +92,12 @@ public class Images implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesSco
     }
 
     /**
-     * {@inheritDoc}
+     * The non-resampling core of the IMaGES search. Bootstrapping, when requested via
+     * {@code numberResampling}, is handled by the base class, which resamples rows within each
+     * data set separately and calls this method on each resampled list.
      */
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) {
+    protected Graph runSearch(List<DataModel> dataSets, Parameters parameters) {
         List<DataModel> _dataSets = new ArrayList<>();
 
         if (parameters.getInt(Params.TIME_LAG) > 0) {
@@ -133,8 +136,8 @@ public class Images implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesSco
      * {@inheritDoc}
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) {
-        return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
+    protected Graph runSearch(DataModel dataSet, Parameters parameters) throws InterruptedException {
+        return runSearch(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 
     /**
