@@ -401,9 +401,37 @@ public class ConditionalGaussianLikelihood {
         boolean targetInEligibility = target instanceof DiscreteVariable && !x1.isEmpty();
         List<DiscreteVariable> eligibilityPartition = targetInEligibility ? a1t : a1;
 
+        // Degeneracy screen (added 2026-8-12, motivated by a crash on the contraceptive-method
+        // data under bootstrap): a cell can meet the size threshold and still have a singular
+        // continuous MLE - e.g., an integer-valued "continuous" variable that is constant within
+        // the cell, which bootstrap resampling produces readily. Every Gaussian fit either model
+        // makes is over a subset of the columns of x1t on a union of eligibility cells, and a
+        // principal submatrix of a positive-definite covariance is positive definite, as is any
+        // mixture containing a positive-definite component - so screening x1t on the eligibility
+        // cells guarantees every fit downstream is nonsingular. Screening whole eligibility cells
+        // by ANY within-cell criterion is null-safe: all rows of a retained cell are kept, so
+        // f(target | x, z) within each retained cell is untouched, exactly as with the size
+        // threshold. (When the eligibility partition is a1t - the discrete-target,
+        // discretize=false configuration - the partial-cell selection caveat documented above
+        // applies to this screen as it already does to the size threshold.)
+        int[] screenCols = new int[x1t.size()];
+        for (int j = 0; j < x1t.size(); j++) {
+            int col = mixedDataSet.getColumnIndex(x1t.get(j));
+            if (col < 0) col = mixedDataSet.getColumnIndex(x1t.get(j).getName());
+            if (col < 0) throw new IllegalArgumentException("Cannot find continuous variable in dataset: " + x1t.get(j));
+            screenCols[j] = col;
+        }
+
         List<Integer> commonRows = new ArrayList<>();
         for (List<Integer> cell : partition(eligibilityPartition, rows)) {
-            if (cell.size() >= minCell) commonRows.addAll(cell);
+            if (cell.size() < minCell) continue;
+
+            if (screenCols.length > 0) {
+                double det = covMle(getSubsample(screenCols, cell)).det();
+                if (Double.isNaN(det) || det < 1e-12) continue;
+            }
+
+            commonRows.addAll(cell);
         }
 
         if (commonRows.isEmpty()) {

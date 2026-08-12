@@ -184,8 +184,13 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         double pValue;
 
         if (Double.isNaN(lik_diff)) {
-            throw new RuntimeException("Undefined likelihood encountered for test: "
-                                       + LogUtilsSearch.independenceFact(x, y, _z));
+            // No evaluable common support (every eligibility cell was too small or degenerate),
+            // or a residual numerical breakdown past the degeneracy screen. Before 2026-8-12
+            // this threw, which aborted entire bootstrap searches whenever one resample produced
+            // a degenerate cell; a defined answer is required for search robustness. No
+            // estimable evidence against independence on the evaluable support: p = 1, matching
+            // the dof_diff <= 0 convention below.
+            pValue = 1.0;
         } else {
             // Changes from the pre-2026-8 computation: the statistic now comes from
             // ConditionalGaussianLikelihood.getLikelihoodRatio, which fits both models on a
