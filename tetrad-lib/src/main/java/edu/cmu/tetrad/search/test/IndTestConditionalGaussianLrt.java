@@ -139,8 +139,12 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         allVars.add(x);
         allVars.add(y);
 
-        // Apply row restriction + testwise deletion (for these vars) and pass to likelihood.
-        this.likelihood.setRows(getRows(allVars, this.nodesHash));
+        // Row restriction + testwise deletion (for these vars). Rows are passed explicitly to the
+        // likelihood-ratio call below rather than via likelihood.setRows: checkIndependence runs
+        // concurrently under the parallelized Markov checker and parallel constraint-based
+        // searches, and setRows mutated state shared by all threads, silently mixing supports
+        // whenever testwise deletion made them differ (i.e., under missing data). Changed 2026-8-12.
+        List<Integer> testRows = getRows(allVars, this.nodesHash);
 
         // Changes from the pre-2026-8 computation: for a mixed pair, the CONTINUOUS member is
         // always the modeled target, regardless of argument order. Modeling the discrete member
@@ -172,7 +176,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
             list1[i + 1] = __z;
         }
 
-        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihoodRatio(_y, list0, list1);
+        ConditionalGaussianLikelihood.Ret ret = likelihood.getLikelihoodRatio(_y, list0, list1, testRows);
 
         double lik_diff = ret.getLik();
         int dof_diff = ret.getDof();

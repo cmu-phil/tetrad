@@ -2,11 +2,17 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
+import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Hand-run harness for the CG SCORE (ConditionalGaussianScore / ConditionalGaussianLikelihood.getLikelihood),
@@ -60,6 +66,141 @@ public final class CgScoreHarness {
             for (boolean rare : new boolean[]{false, true}) {
                 s3(n, r3, rare);
             }
+        }
+
+        System.out.println();
+        System.out.println("=== S4: parallel consistency under MISSING DATA (want 0 mismatches) ===");
+        try {
+            s4();
+        } catch (Exception e) {
+            System.out.println("S4 failed: " + e);
+        }
+    }
+
+    /**
+     * Serial-versus-parallel consistency of localScore and checkIndependence on a dataset with ~8% testwise-deletable
+     * missing values. localScore / checkIndependence historically routed the per-call row support through
+     * likelihood.setRows - shared mutable state - so concurrent calls with differing supports (which is exactly what
+     * testwise deletion produces under missing data) could silently mix supports. Every parallel result is compared
+     * for exact equality with its serially computed value.
+     */
+    private static void s4() throws Exception {
+        int n = 600;
+        Random rng = new Random(4242);
+
+        int[] d1 = new int[n];
+        int[] d2 = new int[n];
+        double[] c1 = new double[n];
+        double[] c2 = new double[n];
+        double[] c3 = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            d1[i] = sample(new double[]{0.4, 0.35, 0.25}, rng);
+            d2[i] = sample(new double[]{0.6, 0.4}, rng);
+            c1[i] = 0.8 * d1[i] + rng.nextGaussian();
+            c2[i] = 0.7 * c1[i] + 0.9 * d2[i] + rng.nextGaussian();
+            c3[i] = 0.7 * c2[i] + rng.nextGaussian();
+        }
+
+        DataSet data = mixed(n, new String[]{"C1", "C2", "C3", "D1", "D2"},
+                new double[][]{c1, c2, c3}, new int[][]{d1, d2}, new int[]{3, 2});
+
+        // Punch ~8% missing values into every column, independently.
+        for (int j = 0; j < 5; j++) {
+            for (int i = 0; i < n; i++) {
+                if (rng.nextDouble() < 0.08) {
+                    if (j < 3) data.setDouble(i, j, Double.NaN);
+                    else data.setInt(i, j, -99);
+                }
+            }
+        }
+
+        // --- Score side ---
+        ConditionalGaussianScore score = new ConditionalGaussianScore(data, 1.0, true);
+
+        List<int[]> configs = new ArrayList<>(); // {child, parent...}
+        for (int i = 0; i < 5; i++) {
+            configs.add(new int[]{i});
+            for (int p = 0; p < 5; p++) {
+                if (p != i) configs.add(new int[]{i, p});
+            }
+            for (int p = 0; p < 5; p++) {
+                for (int q = p + 1; q < 5; q++) {
+                    if (p != i && q != i) configs.add(new int[]{i, p, q});
+                }
+            }
+        }
+
+        double[] expectedScores = new double[configs.size()];
+        for (int c = 0; c < configs.size(); c++) {
+            expectedScores[c] = scoreOf(score, configs.get(c));
+        }
+
+        // --- Test side ---
+        IndependenceTest test = new IndTestConditionalGaussianLrt(data, 0.05, true);
+        List<Node> vars = test.getVariables();
+        List<Node[]> facts = new ArrayList<>(); // {x, y, z...}
+        for (int x = 0; x < 5; x++) {
+            for (int y = x + 1; y < 5; y++) {
+                facts.add(new Node[]{vars.get(x), vars.get(y)});
+                for (int z = 0; z < 5; z++) {
+                    if (z != x && z != y) facts.add(new Node[]{vars.get(x), vars.get(y), vars.get(z)});
+                }
+            }
+        }
+
+        double[] expectedPs = new double[facts.size()];
+        for (int c = 0; c < facts.size(); c++) {
+            expectedPs[c] = pOf(test, facts.get(c));
+        }
+
+        int threads = 8;
+        int itersPerThread = 400;
+        AtomicInteger scoreMismatches = new AtomicInteger();
+        AtomicInteger pMismatches = new AtomicInteger();
+
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        List<Future<?>> futures = new ArrayList<>();
+
+        for (int t = 0; t < threads; t++) {
+            long seed = 1000L + t;
+            futures.add(pool.submit(() -> {
+                Random local = new Random(seed);
+                for (int it = 0; it < itersPerThread; it++) {
+                    int c = local.nextInt(configs.size());
+                    double s = scoreOf(score, configs.get(c));
+                    if (Double.compare(s, expectedScores[c]) != 0) scoreMismatches.incrementAndGet();
+
+                    int f = local.nextInt(facts.size());
+                    double pv = pOf(test, facts.get(f));
+                    if (Double.compare(pv, expectedPs[f]) != 0) pMismatches.incrementAndGet();
+                }
+            }));
+        }
+
+        for (Future<?> f : futures) f.get();
+        pool.shutdown();
+
+        int total = threads * itersPerThread;
+        System.out.printf("score: %d / %d parallel evaluations differ from serial%n", scoreMismatches.get(), total);
+        System.out.printf("test:  %d / %d parallel evaluations differ from serial%n", pMismatches.get(), total);
+    }
+
+    private static double scoreOf(ConditionalGaussianScore score, int[] config) {
+        int child = config[0];
+        int[] parents = new int[config.length - 1];
+        System.arraycopy(config, 1, parents, 0, parents.length);
+        return score.localScore(child, parents);
+    }
+
+    private static double pOf(IndependenceTest test, Node[] fact) {
+        java.util.Set<Node> z = new java.util.HashSet<>();
+        for (int i = 2; i < fact.length; i++) z.add(fact[i]);
+        try {
+            return test.checkIndependence(fact[0], fact[1], z).getPValue();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
     }
 

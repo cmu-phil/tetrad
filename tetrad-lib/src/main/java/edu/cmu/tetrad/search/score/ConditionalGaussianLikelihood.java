@@ -98,10 +98,12 @@ public class ConditionalGaussianLikelihood {
      */
     private int minSampleSizePerCell = 4;
     /**
-     * Cache of reference Gaussians (marginal all-rows fits) keyed by continuous column set; see referenceGaussian.
-     * Concurrent because FGES/BOSS evaluate local scores in parallel. Invalidated by setRows on support change.
+     * Cache of reference Gaussians (marginal fits over a row support) keyed by continuous column set; see
+     * referenceGaussian. Concurrent because FGES/BOSS evaluate local scores in parallel. Entries record the row
+     * support they were fit on and are validated against the caller's rows on every hit, so no invalidation hook
+     * is needed and stale entries are never used.
      */
-    private final Map<String, RefGaussian> referenceCache = new ConcurrentHashMap<>();
+    private final Map<String, RefEntry> referenceCache = new ConcurrentHashMap<>();
 
     /**
      * Constructs the score using a covariance matrix.
@@ -154,10 +156,8 @@ public class ConditionalGaussianLikelihood {
     public void setRows(List<Integer> rows) {
         if (rows == null) {
             // null means "all rows"
-            List<Integer> all = new ArrayList<>();
-            for (int i = 0; i < mixedDataSet.getNumRows(); i++) all.add(i);
-            if (!all.equals(this.rows)) this.referenceCache.clear();
-            this.rows = all;
+            this.rows = new ArrayList<>();
+            for (int i = 0; i < mixedDataSet.getNumRows(); i++) this.rows.add(i);
             return;
         }
 
@@ -166,12 +166,6 @@ public class ConditionalGaussianLikelihood {
             if (rows.get(i) < 0) throw new IllegalArgumentException("Row " + i + " is negative.");
             if (rows.get(i) >= mixedDataSet.getNumRows()) throw new IllegalArgumentException("Row " + i + " is out of bounds.");
         }
-
-        // The reference Gaussians (see referenceGaussian) are fit on this.rows, so they are stale
-        // whenever the row support actually changes. ConditionalGaussianScore.localScore calls
-        // setRows on every score call (testwise deletion); with complete data the row set is
-        // identical each time, so comparing first avoids discarding the cache needlessly.
-        if (!rows.equals(this.rows)) this.referenceCache.clear();
 
         // defensive copy is a good idea
         this.rows = new ArrayList<>(rows);
@@ -186,6 +180,20 @@ public class ConditionalGaussianLikelihood {
      * @return The likelihood.
      */
     public Ret getLikelihood(int i, int[] parents) {
+        return getLikelihood(i, parents, this.rows);
+    }
+
+    /**
+     * As {@link #getLikelihood(int, int[])}, but evaluated over exactly the given rows, passed explicitly so that
+     * concurrent callers (parallel FGES / BOSS scoring with testwise deletion) do not need to mutate shared state
+     * via {@link #setRows(List)}. Added 2026-8-12; setRows remains supported for callers that use it.
+     *
+     * @param i       The index of the conditioned variable.
+     * @param parents The indices of the conditioning mixedVariables.
+     * @param rows    The rows over which to evaluate.
+     * @return The likelihood.
+     */
+    public Ret getLikelihood(int i, int[] parents, List<Integer> rows) {
         Node target = this.mixedVariables.get(i);
 
         List<ContinuousVariable> X0 = new ArrayList<>();
@@ -206,8 +214,8 @@ public class ConditionalGaussianLikelihood {
         maybeDiscretizeSwap(target, X0, A0);
         maybeDiscretizeSwap(target, X1, A1);
 
-        LikDof l1 = likScoreAllRows(X1, A1);
-        LikDof l0 = likScoreAllRows(X0, A0);
+        LikDof l1 = likScoreAllRows(X1, A1, rows);
+        LikDof l0 = likScoreAllRows(X0, A0, rows);
 
         return new Ret(l1.lik - l0.lik, l1.dof - l0.dof);
     }
@@ -233,9 +241,9 @@ public class ConditionalGaussianLikelihood {
      * negative when adding a parent demotes cells below the full-fit threshold; this is honest accounting - the
      * finer model genuinely fits fewer free Gaussian parameter blocks - and BIC comparison remains meaningful.</p>
      */
-    private LikDof likScoreAllRows(List<ContinuousVariable> X, List<DiscreteVariable> A) {
+    private LikDof likScoreAllRows(List<ContinuousVariable> X, List<DiscreteVariable> A, List<Integer> rows) {
         int k = X.size();
-        int N = this.rows.size();
+        int N = rows.size();
 
         int[] continuousCols = new int[k];
         for (int j = 0; j < k; j++) {
@@ -245,7 +253,7 @@ public class ConditionalGaussianLikelihood {
             continuousCols[j] = col;
         }
 
-        List<List<Integer>> cells = partition(A, this.rows); // nonempty cells only
+        List<List<Integer>> cells = partition(A, rows); // nonempty cells only
         int m = cells.size();
 
         double lik = 0.0;
@@ -275,7 +283,7 @@ public class ConditionalGaussianLikelihood {
                     // Degenerate full fit (singular within-cell covariance): fall through to the reference.
                 }
 
-                if (ref == null) ref = referenceGaussian(continuousCols);
+                if (ref == null) ref = referenceGaussian(continuousCols, rows);
                 lik += ref.logLik(getSubsample(continuousCols, cell));
             }
         }
@@ -328,6 +336,21 @@ public class ConditionalGaussianLikelihood {
      * @return lik and dof differences (larger minus smaller conditional model) on the common support.
      */
     public Ret getLikelihoodRatio(int i, int[] parents0, int[] parents1) {
+        return getLikelihoodRatio(i, parents0, parents1, this.rows);
+    }
+
+    /**
+     * As {@link #getLikelihoodRatio(int, int[], int[])}, but evaluated over exactly the given rows, passed
+     * explicitly so that concurrent callers (the parallelized Markov checker, parallel constraint-based search) do
+     * not need to mutate shared state via {@link #setRows(List)}. Added 2026-8-12.
+     *
+     * @param i        The index of the target variable.
+     * @param parents0 The indices of the parents of the smaller (null) model.
+     * @param parents1 The indices of the parents of the larger model.
+     * @param rows     The rows over which to evaluate.
+     * @return lik and dof differences on the common support of the given rows.
+     */
+    public Ret getLikelihoodRatio(int i, int[] parents0, int[] parents1, List<Integer> rows) {
         Node target = this.mixedVariables.get(i);
 
         List<ContinuousVariable> x0 = new ArrayList<>();
@@ -379,7 +402,7 @@ public class ConditionalGaussianLikelihood {
         List<DiscreteVariable> eligibilityPartition = targetInEligibility ? a1t : a1;
 
         List<Integer> commonRows = new ArrayList<>();
-        for (List<Integer> cell : partition(eligibilityPartition, this.rows)) {
+        for (List<Integer> cell : partition(eligibilityPartition, rows)) {
             if (cell.size() >= minCell) commonRows.addAll(cell);
         }
 
@@ -478,9 +501,21 @@ public class ConditionalGaussianLikelihood {
      * to support their own full covariance fit, so that no rows are ever dropped from a score comparison. Cached per
      * column set; the cache is invalidated by setRows when the row support changes.
      */
-    private RefGaussian referenceGaussian(int[] continuousCols) {
-        return this.referenceCache.computeIfAbsent(Arrays.toString(continuousCols), key -> {
-            Matrix all = getSubsample(continuousCols, this.rows);
+    private RefGaussian referenceGaussian(int[] continuousCols, List<Integer> rows) {
+        String key = Arrays.toString(continuousCols);
+        RefEntry cached = this.referenceCache.get(key);
+        if (cached != null && cached.rows.equals(rows)) return cached.ref;
+
+        RefGaussian ref = buildReferenceGaussian(continuousCols, rows);
+        // Benign race: a concurrent put for a different row set just means recomputation next
+        // time; every hit is validated against its own rows, so a stale entry is never used.
+        this.referenceCache.put(key, new RefEntry(new ArrayList<>(rows), ref));
+        return ref;
+    }
+
+    private RefGaussian buildReferenceGaussian(int[] continuousCols, List<Integer> rows) {
+        {
+            Matrix all = getSubsample(continuousCols, rows);
             int n = all.getNumRows();
             int k = all.getNumColumns();
 
@@ -526,7 +561,18 @@ public class ConditionalGaussianLikelihood {
                 for (int j = 0; j < k; j++) inv.set(j, j, 1.0 / diag.get(j, j));
                 return new RefGaussian(mu, inv, logDet);
             }
-        });
+        }
+    }
+
+    /** A cached reference Gaussian together with the row support it was fit on; hits are validated by row equality. */
+    private static final class RefEntry {
+        private final List<Integer> rows;
+        private final RefGaussian ref;
+
+        private RefEntry(List<Integer> rows, RefGaussian ref) {
+            this.rows = rows;
+            this.ref = ref;
+        }
     }
 
     /** A fixed multivariate Gaussian density used as the reference for small-cell rows in likScoreAllRows. */

@@ -126,9 +126,11 @@ public class ConditionalGaussianScore implements Score {
         List<Integer> rows = getRows(i, parents);
         if (rows.isEmpty()) return Double.NEGATIVE_INFINITY;
 
-        this.likelihood.setRows(rows);
-
-        ConditionalGaussianLikelihood.Ret ret = this.likelihood.getLikelihood(i, parents);
+        // Rows are passed explicitly rather than via likelihood.setRows: localScore is called
+        // concurrently under parallelized FGES / BOSS, and setRows mutated state shared by all
+        // threads, silently mixing supports whenever testwise deletion made them differ (i.e.,
+        // under missing data). Changed 2026-8-12.
+        ConditionalGaussianLikelihood.Ret ret = this.likelihood.getLikelihood(i, parents, rows);
 
         double lik = ret.getLik();
         int k = ret.getDof();
