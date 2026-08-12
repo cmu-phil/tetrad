@@ -44,11 +44,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implements the CPW (Causal Pairwise) algorithm for causal discovery from
+ * Implements the CPW (Cyclic Pairwise) algorithm for causal discovery from
  * continuous, causally sufficient observational data. CPW combines FCI with
  * a pairwise left-right orientation rule to resolve edge directions that FCI
  * leaves ambiguous, under the assumption of no latent common causes and no
- * selection bias.
+ * selection bias. Acyclicity is not assumed: the FCI output is read as a
+ * PAG in the sigma-separation sense (valid for cyclic linear models; cf.
+ * Mooij &amp; Claassen, 2020), and the pairwise orientation phase may
+ * produce cycles in the final graph.
  *
  * <p>The algorithm proceeds iteratively until the PAG stabilizes:
  * <ol>
@@ -77,8 +80,14 @@ import java.util.Map;
  *         <li><b>Circle–arrow (o→) or arrow–circle (←o):</b> under causal
  *             sufficiency, the circle is resolved to a tail.</li>
  *       </ul>
- *       Bidirected (↔) edges are never altered, and existing tails and
- *       arrows are never flipped.</li>
+ *       Bidirected (↔) edges are never altered, and no single rule flips an
+ *       existing arrow. Note, however, that rules can compose across sweeps:
+ *       a tail–circle edge whose pairwise statistic opposes the tail
+ *       direction is first demoted to tail–tail and may then be oriented
+ *       against the original tail by the tail–tail rule. Under the cyclic
+ *       interpretation this indicates possible 2-cycle involvement rather
+ *       than a contradiction, but the ancestral information carried by the
+ *       original tail is not retained in the output.</li>
  * </ol>
  *
  * <p>The pairwise left-right rule is selected via the {@code PAIRWISE_RULE}
@@ -130,8 +139,8 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
     /**
      * Executes the search algorithm on a given data model and set of parameters,
-     * producing a partially directed acyclic graph (PAG) that represents the
-     * causal structure inferred from the data.
+     * producing a partial ancestral graph (PAG) that represents the causal
+     * structure inferred from the data. The output graph may contain cycles.
      * <p>
      * The underlying functionality includes handling time-lagged data, standardizing,
      * generating internal knowledge, performing conditional independence tests,
@@ -344,12 +353,16 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
     /**
      * Generates a comparison graph for the given graph by transforming it into
-     * a partially directed acyclic graph (PAG) representation.
+     * a partial ancestral graph (PAG) representation via {@code dagToPag}.
+     *
+     * <p>Note that this transform assumes an acyclic true graph, so
+     * algcomparison runs against cyclic ground truth are not supported
+     * through this path.
      *
      * @param graph The input {@link Graph} to be transformed into a comparison graph.
      *              This graph serves as the basis for creating the resulting PAG.
-     * @return A {@link Graph} representing the transformed partially directed
-     * acyclic graph (PAG) based on the input graph.
+     * @return A {@link Graph} representing the transformed partial ancestral
+     * graph (PAG) based on the input graph.
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
@@ -366,7 +379,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      */
     @Override
     public String getDescription() {
-        return "CPW: Causal Pairwise (causally sufficient case)";
+        return "CPW: Cyclic Pairwise (causally sufficient case)";
     }
 
     /**
