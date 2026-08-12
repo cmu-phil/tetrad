@@ -633,8 +633,9 @@ public final class  CiTestHarness {
         for (double p : pvals) pValues.add(p);
         GeneralAndersonDarlingTest _generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         double _aSquared = _generalAndersonDarlingTest.getASquared();
-        double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
-        return 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
+        // A-squared, not A-squared-star: the null is a fully specified Uniform(0, 1) with no estimated parameters,
+        // and getProbTail is the tail for the uninflated statistic. See MarkovCheck.calcStats.
+        return 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquared);
     }
 
     // Optional: running diagnostics printout

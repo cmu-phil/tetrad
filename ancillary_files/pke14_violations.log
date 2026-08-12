@@ -1,0 +1,12 @@
+# pke14 config: mode=magspace N=7 latent=2 observed=6 timeoutMs=-1 depth=-1 recDepth=-1 exclSel=true
+# run started Sat Aug 08 02:25:13 EDT 2026
+# VIOLATIONS: every distinct true PAG whose terminal FcitZm PAG (GRaSP start,
+# oracle-driven) is NOT exactly G*.  Analysis is INLINE: each new distinct
+# PAG is run through FcitZm the moment it is found, and any violation below
+# is written and flushed immediately -- tail this file to watch live.  Bucket
+# legend:
+#   EQUIVALENT_NOT_EXACT       -- Markov-equivalent to G* but not edge-identical
+#   SKELETON_MATCH_ORIENT_DIFF -- same skeleton, non-equivalent orientation error
+#   SKELETON_DIFF              -- adjacencies differ (extra = undeletable spurious,
+#                                 missing = over-deletion)
+#   ERROR                      -- FcitZm threw or timed out

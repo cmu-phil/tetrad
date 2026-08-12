@@ -42,7 +42,7 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Score(name = "BF-SEM-BIC", command = "bf-sem-bic-score", dataType = DataType.Mixed)
+@edu.cmu.tetrad.annotation.Score(name = "BF-BIC (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
 @Mixed
 @General
 @Experimental
@@ -69,15 +69,19 @@ public class BasisFunctionBicScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
+
+        // Changes from the pre-2026-8 implementation: the singularity lambda was previously read
+        // from Params.REGULARIZATION_LAMBDA, while callers such as py-tetrad set
+        // Params.SINGULARITY_LAMBDA (the key used by the BF-LRT wrapper and matching the score
+        // constructor's documentation), so the setting was silently ignored. The wrapper now
+        // reads SINGULARITY_LAMBDA. DO_ONE_EQUATION_ONLY was previously accepted but never
+        // forwarded to the score; it is now applied.
         edu.cmu.tetrad.search.score.BasisFunctionBicScore score = new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT),
-                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
-//        edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample score = new edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample(
-//                SimpleDataLoader.getMixedDataSet(dataSet),
-//                parameters.getInt(Params.TRUNCATION_LIMIT),
-//                parameters.getDouble(Params.REGULARIZATION_LAMBDA));
+                parameters.getDouble(Params.SINGULARITY_LAMBDA));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return score;
     }
 
@@ -86,7 +90,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
      */
     @Override
     public String getDescription() {
-        return "BF SEM BIC";
+        return "BF BIC";
     }
 
     /**
@@ -105,7 +109,8 @@ public class BasisFunctionBicScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.PENALTY_DISCOUNT);
-        parameters.add(Params.REGULARIZATION_LAMBDA);
+        parameters.add(Params.SINGULARITY_LAMBDA);
+        parameters.add(Params.DO_ONE_EQUATION_ONLY);
         return parameters;
     }
 

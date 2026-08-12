@@ -206,7 +206,8 @@ public class TestDataAudit {
     }
 
     /**
-     * A constant continuous column and a 99.5-percent-modal discrete column should each fire NEAR_CONSTANT.
+     * A negligible-variance (but varying) continuous column and a 99.5-percent-modal (but two-category) discrete
+     * column should each fire NEAR_CONSTANT, and neither should fire CONSTANT_COLUMN.
      */
     @Test
     public void testNearConstant() {
@@ -216,7 +217,7 @@ public class TestDataAudit {
         int[][] disc = new int[1][n];
 
         for (int i = 0; i < n; i++) {
-            cont[0][i] = 3.14;
+            cont[0][i] = 3.14 + 1e-8 * rand.nextGaussian();
             cont[1][i] = rand.nextGaussian();
             disc[0][i] = (i < 2) ? 1 : 0;
         }
@@ -226,6 +227,88 @@ public class TestDataAudit {
 
         assertTrue(nc.stream().anyMatch(f -> f.getVariables().contains("X1")));
         assertTrue(nc.stream().anyMatch(f -> f.getVariables().contains("D1")));
+        assertFalse(audit.hasFinding(FindingCode.CONSTANT_COLUMN));
+    }
+
+    /**
+     * An exactly constant continuous column, a continuous column constant on its two non-missing entries, and a
+     * single-category discrete column should each fire CONSTANT_COLUMN (and not NEAR_CONSTANT); a varying Gaussian
+     * column should fire neither.
+     */
+    @Test
+    public void testConstantColumn() {
+        Random rand = new Random(31);
+        int n = 400;
+        double[][] cont = new double[3][n];
+        int[][] disc = new int[1][n];
+
+        for (int i = 0; i < n; i++) {
+            cont[0][i] = 3.14;
+            cont[1][i] = rand.nextGaussian();
+            cont[2][i] = (i < 2) ? 7.0 : Double.NaN;
+            disc[0][i] = 0;
+        }
+
+        DataAudit audit = new DataAudit(mixedDataSet(n, cont, disc, 2));
+        List<AuditFinding> cc = audit.getFindings(FindingCode.CONSTANT_COLUMN);
+
+        assertTrue(cc.stream().anyMatch(f -> f.getVariables().contains("X1")));
+        assertTrue(cc.stream().anyMatch(f -> f.getVariables().contains("X3")));
+        assertTrue(cc.stream().anyMatch(f -> f.getVariables().contains("D1")));
+        assertFalse(cc.stream().anyMatch(f -> f.getVariables().contains("X2")));
+        assertFalse(audit.hasFinding(FindingCode.NEAR_CONSTANT));
+        assertEquals(3.14, cc.stream().filter(f -> f.getVariables().contains("X1"))
+                .findFirst().orElseThrow().getValues().get("value"), 0.0);
+    }
+
+    /**
+     * A column with no non-missing values at all should fire CONSTANT_COLUMN with numNonMissing = 0.
+     */
+    @Test
+    public void testAllMissingColumn() {
+        Random rand = new Random(37);
+        int n = 200;
+        double[][] data = new double[n][2];
+
+        for (int i = 0; i < n; i++) {
+            data[i][0] = rand.nextGaussian();
+            data[i][1] = Double.NaN;
+        }
+
+        DataAudit audit = new DataAudit(continuousDataSet(data));
+        List<AuditFinding> cc = audit.getFindings(FindingCode.CONSTANT_COLUMN);
+
+        assertEquals(1, cc.size());
+        assertTrue(cc.get(0).getVariables().contains("X2"));
+        assertEquals(0.0, cc.get(0).getValues().get("numNonMissing"), 0.0);
+    }
+
+    /**
+     * A constant column must not mask downstream findings among the remaining variables: with a constant X1 present,
+     * a near-linear-dependence among X2, X3, X4 should still fire NEAR_DETERMINISM_CONTINUOUS, the continuous-name
+     * accessors should exclude X1, and the correlation matrix should cover only the non-constant variables. (Before
+     * constant columns were excluded, X1's undefined correlations aborted the whole correlation battery.)
+     */
+    @Test
+    public void testConstantColumnDoesNotMaskDownstreamChecks() {
+        Random rand = new Random(41);
+        int n = 500;
+        double[][] data = new double[n][4];
+
+        for (int i = 0; i < n; i++) {
+            data[i][0] = 2012.0;
+            data[i][1] = rand.nextGaussian();
+            data[i][2] = rand.nextGaussian();
+            data[i][3] = data[i][1] + data[i][2] + 0.01 * rand.nextGaussian();
+        }
+
+        DataAudit audit = new DataAudit(continuousDataSet(data));
+
+        assertTrue(audit.hasFinding(FindingCode.CONSTANT_COLUMN));
+        assertTrue(audit.hasFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS));
+        assertFalse(audit.getContinuousNames().contains("X1"));
+        assertEquals(3, audit.getContinuousNames().size());
+        assertEquals(3, audit.getContinuousCorrelationMatrix().getNumRows());
     }
 
     /**
@@ -325,6 +408,69 @@ public class TestDataAudit {
         long close = json.chars().filter(c -> c == '}').count();
 
         assertEquals(open, close);
+    }
+
+    /**
+     * An AR(1) series with substantial lag-1 autocorrelation should fire SERIAL_DEPENDENCE with the AR(1)
+     * effective-sample-size clause in the message and without the periodicSuspect flag.
+     */
+    @Test
+    public void testSerialDependenceAr1Message() {
+        Random rand = new Random(31);
+        int n = 400;
+        double[][] data = new double[n][2];
+        double x = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            x = 0.8 * x + rand.nextGaussian();
+            data[i][0] = x;
+            data[i][1] = rand.nextGaussian();
+        }
+
+        DataAudit audit = new DataAudit(continuousDataSet(data));
+
+        List<AuditFinding> serial = audit.getFindings().stream()
+                .filter(f -> f.getCode() == FindingCode.SERIAL_DEPENDENCE)
+                .filter(f -> f.getVariables().contains("X1")).toList();
+
+        assertEquals(1, serial.size());
+        AuditFinding f = serial.get(0);
+        assertTrue(f.getMessage().contains("behaves like"));
+        assertFalse(f.getMessage().contains("periodic"));
+        assertFalse(f.getValues().containsKey("periodicSuspect"));
+        assertTrue(f.getValues().containsKey("effectiveSampleSize"));
+    }
+
+    /**
+     * A periodic series with near-zero lag-1 autocorrelation but a dominant autocorrelation at a deeper lag (here a
+     * period-4 cycle, whose lag-2 autocorrelation is near -1 while lag-1 is near 0) should fire SERIAL_DEPENDENCE
+     * with the periodic-dependence clause in place of the AR(1) effective-sample-size clause, and should carry
+     * periodicSuspect = 1 in its values. This is the thinned task-fMRI case: AR decay removed by thinning, but a
+     * stimulus-locked cycle remaining at the task period.
+     */
+    @Test
+    public void testSerialDependencePeriodicSuspectMessage() {
+        Random rand = new Random(37);
+        int n = 400;
+        double[][] data = new double[n][2];
+
+        for (int i = 0; i < n; i++) {
+            data[i][0] = Math.sin(2 * Math.PI * i / 4.0) + 0.1 * rand.nextGaussian();
+            data[i][1] = rand.nextGaussian();
+        }
+
+        DataAudit audit = new DataAudit(continuousDataSet(data));
+
+        List<AuditFinding> serial = audit.getFindings().stream()
+                .filter(f -> f.getCode() == FindingCode.SERIAL_DEPENDENCE)
+                .filter(f -> f.getVariables().contains("X1")).toList();
+
+        assertEquals(1, serial.size());
+        AuditFinding f = serial.get(0);
+        assertTrue(f.getMessage().contains("consistent with periodic dependence"));
+        assertFalse(f.getMessage().contains("behaves like"));
+        assertEquals(1.0, f.getValues().get("periodicSuspect"), 0.0);
+        assertEquals(2.0, f.getValues().get("maxAbsLag"), 0.0);
     }
 
     //==================================== HELPERS ====================================//

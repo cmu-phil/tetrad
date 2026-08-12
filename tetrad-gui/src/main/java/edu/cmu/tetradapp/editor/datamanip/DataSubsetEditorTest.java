@@ -82,10 +82,13 @@ public class DataSubsetEditorTest {
         DataSet source = makeTestDataSet();
         DataSubsetEditor editor = new DataSubsetEditor(source);
 
-        // Put X2 and X4 into the Selected list using reflection.
+        // All variables start in Selected by default; clear that (as the "<<" button would) and put X2 and X4
+        // into the Selected list using reflection.
         @SuppressWarnings("unchecked")
         DefaultListModel<Node> selectedModel =
                 getPrivateField(editor, "selectedModel", DefaultListModel.class);
+
+        selectedModel.clear();
 
         Node x2 = source.getVariable("X2");
         Node x4 = source.getVariable("X4");
@@ -137,8 +140,8 @@ public class DataSubsetEditorTest {
         DataSubsetEditor editor = new DataSubsetEditor(source);
 
         // Row spec field is blank by default; we don't touch it.
-        // We also don't put anything into selectedModel, so the editor
-        // should default to "all variables".
+        // All variables are in the Selected list by default, so all
+        // variables should appear in the subset.
 
         DataSet subset = editor.createSubset();
         assertNotNull("Subset should not be null", subset);
@@ -156,5 +159,84 @@ public class DataSubsetEditorTest {
                 assertEquals("Value mismatch at (" + r + "," + c + ")", expected, actual, 0.0);
             }
         }
+    }
+
+    /**
+     * Test that on construction all variables are in the Selected list, in dataset order, and the Available list is
+     * empty. This pins the default: subsetting by removing a few variables should be a one-step removal.
+     */
+    @Test
+    public void testAllVariablesSelectedByDefault() {
+        DataSet source = makeTestDataSet();
+        DataSubsetEditor editor = new DataSubsetEditor(source);
+
+        @SuppressWarnings("unchecked")
+        DefaultListModel<Node> selectedModel =
+                getPrivateField(editor, "selectedModel", DefaultListModel.class);
+        @SuppressWarnings("unchecked")
+        DefaultListModel<Node> availableModel =
+                getPrivateField(editor, "availableModel", DefaultListModel.class);
+
+        assertEquals("All variables should start in Selected",
+                source.getNumColumns(), selectedModel.size());
+        assertEquals("Available should start empty", 0, availableModel.size());
+
+        for (int j = 0; j < source.getNumColumns(); j++) {
+            assertEquals("Selected order should match dataset order",
+                    source.getVariable(j).getName(), selectedModel.get(j).getName());
+        }
+    }
+
+    /**
+     * Test that Sort A-Z and Restore dataset order act on both lists, changing order only, never membership. Uses
+     * variable names whose alphabetical order differs from dataset order so the sort is observable.
+     */
+    @Test
+    public void testSortAndRestoreActOnBothLists() {
+        String[] names = {"Zeta", "Alpha", "Mike", "Bravo", "Echo"};
+        List<Node> vars = new ArrayList<>();
+        for (String name : names) {
+            vars.add(new ContinuousVariable(name));
+        }
+        DataSet source = new BoxDataSet(new DoubleDataBox(5, names.length), vars);
+
+        DataSubsetEditor editor = new DataSubsetEditor(source);
+
+        @SuppressWarnings("unchecked")
+        DefaultListModel<Node> selectedModel =
+                getPrivateField(editor, "selectedModel", DefaultListModel.class);
+        @SuppressWarnings("unchecked")
+        DefaultListModel<Node> availableModel =
+                getPrivateField(editor, "availableModel", DefaultListModel.class);
+
+        // Move Zeta and Bravo to Available (as the "<" button would).
+        Node zeta = source.getVariable("Zeta");
+        Node bravo = source.getVariable("Bravo");
+        selectedModel.removeElement(zeta);
+        selectedModel.removeElement(bravo);
+        availableModel.addElement(zeta);
+        availableModel.addElement(bravo);
+
+        // Sort: both lists alphabetical, membership unchanged.
+        editor.sortBothAlphabetically();
+
+        assertEquals(2, availableModel.size());
+        assertEquals("Bravo", availableModel.get(0).getName());
+        assertEquals("Zeta", availableModel.get(1).getName());
+
+        assertEquals(3, selectedModel.size());
+        assertEquals("Alpha", selectedModel.get(0).getName());
+        assertEquals("Echo", selectedModel.get(1).getName());
+        assertEquals("Mike", selectedModel.get(2).getName());
+
+        // Restore: both lists back to dataset order, membership unchanged.
+        editor.restoreBothOriginalOrder();
+
+        assertEquals("Zeta", availableModel.get(0).getName());
+        assertEquals("Bravo", availableModel.get(1).getName());
+
+        assertEquals("Alpha", selectedModel.get(0).getName());
+        assertEquals("Mike", selectedModel.get(1).getName());
+        assertEquals("Echo", selectedModel.get(2).getName());
     }
 }

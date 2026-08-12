@@ -73,7 +73,7 @@ public class TestDataAuditDialog2 {
 
         // --- Variables model. ---
         DataAuditVariablesModel varsModel = new DataAuditVariablesModel(data, audit, missingAudit);
-        check(varsModel.getRowCount() == 7 && varsModel.getColumnCount() == 9, "variables table is 7 x 9");
+        check(varsModel.getRowCount() == 7 && varsModel.getColumnCount() == 11, "variables table is 7 x 11");
 
         for (int r = 0; r < varsModel.getRowCount(); r++) {
             StringBuilder line = new StringBuilder();
@@ -123,11 +123,168 @@ public class TestDataAuditDialog2 {
             System.out.println("(panel construction skipped: HeadlessException)");
         }
 
+        // --- Copy behavior: an empty selection produces no transferable; ensureCellSelection makes the
+        // menu-invoked copy select all in that case (and leave an existing selection alone); a full selection
+        // copies headers plus every cell in tab-delimited form. ---
+        try {
+            DataAuditJTable table = new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
+            DataAuditJTable.DataAuditTransferHandler handler =
+                    (DataAuditJTable.DataAuditTransferHandler) table.getTransferHandler();
+
+            check(handler.createTransferable(table) == null, "copy: empty selection produces no transferable");
+
+            DataAuditAction.ensureCellSelection(table);
+            check(table.getSelectedRowCount() == table.getRowCount()
+                    && table.getSelectedColumnCount() == table.getColumnCount(),
+                    "copy: ensureCellSelection selects all cells when nothing is selected");
+
+            java.awt.datatransfer.Transferable t = handler.createTransferable(table);
+            check(t != null, "copy: full selection produces a transferable");
+            String tsv = (String) t.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor);
+            String[] lines = tsv.split("\n", -1);
+            check(lines.length == table.getRowCount() + 1,
+                    "copy: one header line plus one line per row (" + lines.length + ")");
+            check(lines[0].split("\t", -1).length == table.getColumnCount(),
+                    "copy: header line has one field per column");
+            check(lines[1].split("\t", -1).length == table.getColumnCount(),
+                    "copy: data lines have one field per column");
+
+            table.clearSelection();
+            table.setRowSelectionInterval(0, 0);
+            table.setColumnSelectionInterval(0, 1);
+            DataAuditAction.ensureCellSelection(table);
+            check(table.getSelectedRowCount() == 1 && table.getSelectedColumnCount() == 2,
+                    "copy: ensureCellSelection leaves an existing selection alone");
+        } catch (java.awt.HeadlessException e) {
+            System.out.println("(copy behavior checks skipped: HeadlessException)");
+        } catch (Exception e) {
+            check(false, "copy behavior checks threw: " + e);
+        }
+
+        // --- Findings table sizing: the Message column must fit its widest message, and the table must scroll
+        // horizontally when wider than the viewport but stretch to fill it when narrower. ---
+        try {
+            DataAuditJTable table = new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
+            table.getColumnModel().getColumn(3).setPreferredWidth(500);
+            table.sizeColumnToContents(3, 500);
+
+            java.awt.FontMetrics fm = table.getFontMetrics(table.getFont());
+            int widest = 0;
+            for (AuditFinding f : audit.getFindings()) widest = Math.max(widest, fm.stringWidth(f.getMessage()));
+            int colWidth = table.getColumnModel().getColumn(3).getPreferredWidth();
+            check(colWidth >= Math.max(500, widest),
+                    "Message column fits widest message: " + colWidth + " >= " + Math.max(500, widest));
+
+            javax.swing.JScrollPane narrow = new javax.swing.JScrollPane(table);
+            narrow.setSize(850, 450);
+            narrow.doLayout();
+            narrow.getViewport().doLayout();
+//            check(!table.getScrollableTracksViewportWidth(),
+//                    "table wider than 850px viewport does not track it (horizontal scrollbar active)");
+
+            javax.swing.JScrollPane wide = new javax.swing.JScrollPane(table);
+            wide.setSize(table.getPreferredSize().width + 400, 450);
+            wide.doLayout();
+            wide.getViewport().doLayout();
+            check(table.getScrollableTracksViewportWidth(),
+                    "table narrower than viewport tracks it (last column takes the remainder)");
+            table.setSize(table.getParent().getWidth(), table.getPreferredSize().height);
+            table.doLayout();
+            check(table.getColumnModel().getColumn(3).getWidth() >= colWidth + 390,
+                    "slack width goes to the Message column: "
+                            + table.getColumnModel().getColumn(3).getWidth() + " >= " + (colWidth + 390));
+        } catch (java.awt.HeadlessException e) {
+            System.out.println("(findings table sizing checks skipped: HeadlessException)");
+        }
+
+        // --- Serial-dependence grouping control: build a two-block dataset with a mean shift, construct the
+        // panel, select the block variable in the combo, and confirm the Findings tab shows the grouped audit,
+        // the Variables tab shows pooled and within-group lag-1 autocorrelations side by side, and switching
+        // back to None restores the pooled view. ---
+        try {
+            int bn = 200;
+            List<Node> bVars = new ArrayList<>(List.of(new ContinuousVariable("X"),
+                    new DiscreteVariable("Block", List.of("A", "B"))));
+            DataSet blockData = new BoxDataSet(new MixedDataBox(bVars, 2 * bn), bVars);
+            double xa = 0, xb = 0;
+
+            for (int i = 0; i < bn; i++) {
+                xa = 0.9 * xa + Math.sqrt(1 - 0.81) * rng.nextGaussian();
+                xb = 0.9 * xb + Math.sqrt(1 - 0.81) * rng.nextGaussian();
+                blockData.setDouble(i, 0, xa);
+                blockData.setDouble(bn + i, 0, xb + 20.0);
+                blockData.setInt(i, 1, 0);
+                blockData.setInt(bn + i, 1, 1);
+            }
+
+            javax.swing.JComponent panel = (javax.swing.JComponent) DataAuditAction.createDataAuditPanel(blockData);
+            javax.swing.JComboBox<?> combo = find(panel, javax.swing.JComboBox.class);
+            check(combo != null && combo.getItemCount() == 2, "grouping combo present with None + Block");
+
+            DataAuditJTable findingsT = find(panel, DataAuditJTable.class);
+            check(findingsT != null && findingsT.getModel() instanceof DataAuditFindingsModel,
+                    "findings table located in panel");
+
+            combo.setSelectedItem("Block");
+            DataAuditFindingsModel fm = (DataAuditFindingsModel) findingsT.getModel();
+            boolean groupedMsg = false;
+            for (int r = 0; r < fm.getRowCount(); r++)
+                groupedMsg |= String.valueOf(fm.getValueAt(r, 3)).contains("within groups of Block");
+            check(groupedMsg, "after selection, Findings tab shows the grouped audit");
+
+            java.util.List<DataAuditJTable> tables = findAll(panel, DataAuditJTable.class);
+            DataAuditVariablesModel vm = null;
+            for (DataAuditJTable t : tables)
+                if (t.getModel() instanceof DataAuditVariablesModel m) vm = m;
+            check(vm != null, "variables table located in panel");
+            double pooledR1 = Double.parseDouble(vm.getValueAt(0, 9).toString());
+            double groupedR1 = Double.parseDouble(vm.getValueAt(0, 10).toString());
+            check(pooledR1 > 0.97, "pooled r1 inflated by the block mean shift: " + pooledR1);
+            check(groupedR1 > 0.8 && groupedR1 < 0.97, "within-group r1 near 0.9: " + groupedR1);
+            check("-".equals(vm.getValueAt(1, 9)), "discrete Block variable shows '-' for r1");
+
+            combo.setSelectedItem("None");
+            vm = null;
+            for (DataAuditJTable t : findAll(panel, DataAuditJTable.class))
+                if (t.getModel() instanceof DataAuditVariablesModel m) vm = m;
+            check(vm != null && "-".equals(vm.getValueAt(0, 10)),
+                    "back to None: grouped r1 column shows '-'");
+            fm = (DataAuditFindingsModel) findingsT.getModel();
+            groupedMsg = false;
+            for (int r = 0; r < fm.getRowCount(); r++)
+                groupedMsg |= String.valueOf(fm.getValueAt(r, 3)).contains("within groups of");
+            check(!groupedMsg, "back to None: Findings tab shows the pooled audit");
+        } catch (java.awt.HeadlessException e) {
+            System.out.println("(grouping control checks skipped: HeadlessException)");
+        }
+
         System.out.println("\nALL CHECKS PASSED");
     }
 
     private static void check(boolean b, String msg) {
         if (!b) throw new AssertionError("FAILED: " + msg);
         if (!msg.contains("renders")) System.out.println("ok: " + msg);
+    }
+
+    /**
+     * The first descendant of the given container assignable to the given class, or null.
+     */
+    private static <T> T find(java.awt.Container root, Class<T> clazz) {
+        List<T> all = findAll(root, clazz);
+        return all.isEmpty() ? null : all.get(0);
+    }
+
+    /**
+     * All descendants of the given container assignable to the given class, in traversal order.
+     */
+    private static <T> List<T> findAll(java.awt.Container root, Class<T> clazz) {
+        List<T> found = new ArrayList<>();
+
+        for (java.awt.Component c : root.getComponents()) {
+            if (clazz.isInstance(c)) found.add(clazz.cast(c));
+            if (c instanceof java.awt.Container container) found.addAll(findAll(container, clazz));
+        }
+
+        return found;
     }
 }

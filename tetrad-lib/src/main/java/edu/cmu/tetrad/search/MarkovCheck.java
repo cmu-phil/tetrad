@@ -691,7 +691,13 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public Double checkAgainstAndersonDarlingTest(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
-        return generalAndersonDarlingTest.getP();
+        // A-squared evaluated against getProbTail, not getP(). The null here is a fully specified Uniform(0, 1)
+        // with no estimated parameters (case 0), but getP() returns Stephens' case-3 approximation, which both
+        // inflates the statistic by (1 + 0.75/n + 2.25/n^2) and evaluates it with the piecewise formulas for
+        // testing normality with an estimated mean and variance. On exactly uniform p-values that combination
+        // rejects at roughly 52-63% against a nominal 5%, and unlike a small-sample correction the error does not
+        // decay with n. See MarkovCheck.calcStats and TestAndersonDarlingCalibration.
+        return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), generalAndersonDarlingTest.getASquared());
     }
 
     /**
@@ -2250,10 +2256,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private void calcStats(boolean indep) {
         List<IndependenceResult> results = new ArrayList<>(getResultsLocal(indep));
 
+        double alpha = cachedQueries.getBaseTest().getAlpha();
+        boolean usableAlpha = isUsableAlpha(alpha);
+
         int dependent = 0;
 
-        for (IndependenceResult result : results) {
-            if (result.getPValue() <= cachedQueries.getBaseTest().getAlpha()) dependent++;
+        if (usableAlpha) {
+            for (IndependenceResult result : results) {
+                if (result.getPValue() <= alpha) dependent++;
+            }
         }
 
         List<Double> pValues = getPValues(results);
@@ -2262,11 +2273,25 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 
         double _aSquared = _generalAndersonDarlingTest.getASquared();
         double _aSquaredStar = _generalAndersonDarlingTest.getASquaredStar();
-        double adP = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquaredStar);
+
+        // The uniformity null here is fully specified (Uniform(0, 1)); no parameters are estimated from the
+        // p-values. The A-squared-star statistic carries Stephens' case-3 correction, which inflates A-squared by
+        // (1 + 0.75/n + 2.25/n^2) to account for a mean and variance estimated from the sample, whereas getProbTail
+        // is the asymptotic tail for the uninflated A-squared. Passing the inflated statistic to the uninflated
+        // null therefore made p-values systematically too small: on exactly uniform p-values the test rejected at
+        // about 9% at n = 5 and 8.5% at n = 6 against a nominal 5%, decaying to nominal as n grows (the inflation
+        // is 1.24 at n = 5 but 1.004 at n = 200). Since the Markov check is often run on a handful of implied
+        // independencies, the small-n regime is the common case. A-squared is the right statistic for this null.
+        // Note this does NOT apply to normality testing with an estimated mean and variance, as in the Descriptive
+        // Statistics dialog, where the case-3 correction is correct.
+        double adP = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquared);
         double ksP = UniformityTest.getKsPValue(pValues, 0, 1);
         double fishP = getFisherCombinedPValue(results);
         double binP = getBinomialPValue_(pValues);
-        double fracDep = dependent / (double) results.size();
+
+        // Without a usable alpha there is no threshold to count dependencies against; report the fraction as
+        // undefined rather than as zero, which would read as "no implied dependency was detected."
+        double fracDep = usableAlpha ? (dependent / (double) results.size()) : Double.NaN;
         int numTests = results.size();
 
         if (indep) {
@@ -2361,6 +2386,15 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private double getBinomialPValue_(List<Double> pValues) {
         int n = pValues.size();
         double q = cachedQueries.getBaseTest().getAlpha();
+
+        // Some IndependenceTest implementations do not have a meaningful alpha and signal this out of band:
+        // ScoreIndTest returns -1 (its "p-value" is a score bump, not a probability) and IndTestIndependenceFacts
+        // returns NaN. Feeding either to BinomialDistribution threw OutOfRangeException (for -1) or silently
+        // produced NaN (for NaN), so guard explicitly and report the statistic as undefined instead.
+        if (!isUsableAlpha(q) || n == 0) {
+            return Double.NaN;
+        }
+
         int k = (int) pValues.stream().filter(p -> p <= q).count();
 
         BinomialDistribution bd = new BinomialDistribution(n, q);
@@ -2369,6 +2403,32 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         double rightTail = 1.0 - bd.cumulativeProbability(k - 1);
 
         return TMath.min(1.0, 2.0 * TMath.min(leftTail, rightTail));
+    }
+
+    /**
+     * Returns true just in case the given alpha can be used as a probability threshold. An independence test that
+     * does not test at a level--a score wrapped as a test, or a test backed by an oracle of independence facts--
+     * reports an alpha outside [0, 1] (currently -1 or NaN), and the p-value-threshold statistics of the Markov
+     * check are undefined for it.
+     *
+     * @param alpha The alpha to check.
+     * @return True if the alpha is usable as a threshold.
+     */
+    private static boolean isUsableAlpha(double alpha) {
+        return !Double.isNaN(alpha) && alpha >= 0.0 && alpha <= 1.0;
+    }
+
+    /**
+     * Returns true just in case the base independence test of this Markov check reports p-values that can be
+     * compared against a threshold and tested for uniformity. This is false for score-based tests (whose
+     * "p-values" are score differences and may be any real number) and for oracle tests. When this is false, the
+     * fraction-dependent and binomial statistics are reported as {@link Double#NaN} rather than being computed from
+     * values that are not p-values.
+     *
+     * @return True if the base test reports usable p-values.
+     */
+    public boolean providesCalibratedPValues() {
+        return isUsableAlpha(cachedQueries.getBaseTest().getAlpha());
     }
 
     /**
@@ -2457,9 +2517,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         List<Double> pValues = getPValues(visiblePairs);
         if (pValues.isEmpty()) return Double.NaN;
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
-//        double aSquared = generalAndersonDarlingTest.getASquared();
-        double aSquaredStar = generalAndersonDarlingTest.getASquaredStar();
-        return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquaredStar);
+
+        // A-squared, not A-squared-star: the null is a fully specified Uniform(0, 1) with no estimated
+        // parameters, and getProbTail is the tail for the uninflated statistic. See calcStats for details.
+        double aSquared = generalAndersonDarlingTest.getASquared();
+        return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), aSquared);
     }
 
     /**

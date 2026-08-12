@@ -46,8 +46,8 @@ public final class NonlinearityChecks extends JPanel {
     private final JButton runButton = new JButton("Check Nonlinearity");
     private final JButton showStatsButton = new JButton("Show Stats");
 
-//    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity)", false);
-    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (Additivity)", false);
+    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity)", false);
+//    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (Additivity)", false);
 
     private final ResultsTableModel tableModel = new ResultsTableModel();
     private final JTable table = new JTable(tableModel);
@@ -177,19 +177,33 @@ public final class NonlinearityChecks extends JPanel {
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Footer note
+        // Footer: a short note plus a "Notes..." button that opens the full interpretation guidance.
         JTextArea note = new JTextArea(
                 "Notes:\n" +
-                        "- Results are about nonlinearity in the conditional mean E(Y|X).\n" +
-                        "- “Nonlinear” means the test rejected linearity at the chosen alpha.\n" +
-                        "- Use “Show Stats” for full statistics and p-values for the selected row."
+                        "- Results are about nonlinearity in the conditional mean E(Y|X); “Nonlinear” means the " +
+                        "test rejected linearity at the chosen alpha.\n" +
+                        "- Use “Show Stats” for full statistics and p-values for the selected row; see “Notes...” " +
+                        "for how to read disagreements between tests and the effect of regression direction."
         );
         note.setEditable(false);
         note.setOpaque(false);
         note.setLineWrap(true);
         note.setWrapStyleWord(true);
         note.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        add(note, BorderLayout.SOUTH);
+
+        JButton notesButton = new JButton("Notes...");
+        notesButton.setFocusable(false);
+        notesButton.addActionListener(e -> showFullNotes());
+
+        JPanel notesButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 6));
+        notesButtonPanel.setOpaque(false);
+        notesButtonPanel.add(notesButton);
+
+        JPanel footer = new JPanel(new BorderLayout());
+        footer.setOpaque(false);
+        footer.add(note, BorderLayout.CENTER);
+        footer.add(notesButtonPanel, BorderLayout.EAST);
+        add(footer, BorderLayout.SOUTH);
 
         installPrefsListeners();
         loadPrefs();
@@ -369,6 +383,51 @@ public final class NonlinearityChecks extends JPanel {
         return this;
     }
 
+    /**
+     * Shows the full interpretation guidance for the results table, in a scrollable dialog. The short footer keeps
+     * the panel compact; the details live here. The guidance mirrors the caveats documented in
+     * {@link edu.cmu.tetrad.search.utils.NonlinearityTests} and is grounded in the calibration harness results.
+     */
+    private void showFullNotes() {
+        JTextArea area = new JTextArea(
+                "What is tested\n" +
+                        "Each row tests whether the conditional mean E(Y|X) of that row's regression is linear; " +
+                        "“Nonlinear” means the test rejected linearity at the chosen alpha. The tests say nothing " +
+                        "about the variance or the distribution of Y.\n\n" +
+                        "Direction matters\n" +
+                        "The verdict is direction-relative. A linear non-Gaussian pair has a linear mean from " +
+                        "cause to effect but a genuinely nonlinear mean in the reverse regression, so a rejection " +
+                        "can mean “nonlinear relationship” or “linear non-Gaussian pair tested in the anticausal " +
+                        "direction.” Testing both directions disambiguates: linear both ways suggests a linear " +
+                        "near-Gaussian pair; linear one way only suggests a linear non-Gaussian pair, with the " +
+                        "linear direction the plausible causal one; nonlinear both ways suggests a genuinely " +
+                        "nonlinear relationship.\n\n" +
+                        "Reading disagreements between tests\n" +
+                        "RESET, Moment, and Additive assume homoskedastic errors and over-reject when errors are " +
+                        "heteroskedastic but the mean is linear. CV (run when “Include slow tests” is checked) " +
+                        "keeps its false-rejection rate under heteroskedasticity, so RESET/Moment rejecting while " +
+                        "CV does not is a hint of heteroskedasticity rather than a nonlinear mean; all tests " +
+                        "rejecting together is stronger evidence that the mean really is nonlinear.\n\n" +
+                        "Additivity (Parents)\n" +
+                        "This column answers a different question: whether the (possibly nonlinear) effects of " +
+                        "several parents combine additively, or whether interactions among them improve " +
+                        "prediction.\n\n" +
+                        "Statistics\n" +
+                        "Use “Show Stats” for full statistics and p-values for the selected row."
+        );
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setMargin(new Insets(8, 8, 8, 8));
+        area.setCaretPosition(0);
+
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setPreferredSize(new Dimension(560, 420));
+
+        JOptionPane.showMessageDialog(getThisComponent(), scroll,
+                "Nonlinearity Checks - Notes", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold) {
         double[] yy = col(y);
 
@@ -387,8 +446,8 @@ public final class NonlinearityChecks extends JPanel {
 
         final boolean doSlow = includeSlowTests.isSelected();
 
-//        NonlinearityTests.TestResult cv =
-//                doSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
+        NonlinearityTests.TestResult cv =
+                doSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
 
         NonlinearityTests.TestResult mom =
                 NonlinearityTests.conditionalMomentTest(yy, XX, alpha);
@@ -404,7 +463,7 @@ public final class NonlinearityChecks extends JPanel {
                 : xs.stream().map(Node::getName).collect(Collectors.joining(", "));
         String yLabel = y.getName();
 
-        return new ResultRow(index, xLabel, yLabel, reset, /*cv,*/ mom, add, addit);//, addNoise);
+        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add, addit);//, addNoise);
     }
 
     private double[] col(Node v) {
@@ -610,7 +669,7 @@ public final class NonlinearityChecks extends JPanel {
                         "X: " + row.xLabel + "\n" +
                         "Y: " + row.yLabel + "\n\n" +
                         "RESET: " + formatStats(row.reset) + "\n" +
-//                        "CV (linear vs nonlinear): " + formatStats(row.cv) + "\n" +
+                        "CV (linear vs nonlinear): " + formatStats(row.cv) + "\n" +
                         "Conditional-moment: " + formatStats(row.moment) + "\n" +
                         "Additive-component: " + formatStats(row.additive) + "\n" +
                         "Additivity (Additive vs RFF): " + row.additivity + "\n";
@@ -626,7 +685,7 @@ public final class NonlinearityChecks extends JPanel {
     // ---------------- table model ----------------
 
     private final class ResultsTableModel extends AbstractTableModel {
-        private final String[] cols = {"#", "X", "Y", "RESET", /*"CV",*/ "Moment", "Additive", "Additivity (Parents)"};//, "Additive Noise"}; // NEW
+        private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity (Parents)"};//, "Additive Noise"}; // NEW
         private List<ResultRow> rows = new ArrayList<>();
 
         @Override
@@ -637,10 +696,10 @@ public final class NonlinearityChecks extends JPanel {
                 case 1 -> row.xLabel;
                 case 2 -> row.yLabel;
                 case 3 -> summarize(row.reset, "");              // RESET always run
-//                case 4 -> summarize(row.cv, "Skipped");          // CV is slow
-                case 4 -> summarize(row.moment, "");             // Moment is fast-ish
-                case 5 -> summarize(row.additive, "");           // Additive-component is fast-ish
-                case 6 -> summarizeAdditivity(row.additivity);
+                case 4 -> summarize(row.cv, "Skipped");          // CV is slow
+                case 5 -> summarize(row.moment, "");             // Moment is fast-ish
+                case 6 -> summarize(row.additive, "");           // Additive-component is fast-ish
+                case 7 -> summarizeAdditivity(row.additivity);
                 default -> "";
             };
         }
@@ -693,14 +752,14 @@ public final class NonlinearityChecks extends JPanel {
         final String xLabel;
         final String yLabel;
         final NonlinearityTests.TestResult reset;
-//        final NonlinearityTests.TestResult cv;
+        final NonlinearityTests.TestResult cv;
         final NonlinearityTests.TestResult moment;
         final NonlinearityTests.TestResult additive;
         final NonlinearityTests.TestResult additivity;
 
         ResultRow(int index, String xLabel, String yLabel,
                   NonlinearityTests.TestResult reset,
-//                  NonlinearityTests.TestResult cv,
+                  NonlinearityTests.TestResult cv,
                   NonlinearityTests.TestResult moment,
                   NonlinearityTests.TestResult additive,
                   NonlinearityTests.TestResult additivity
@@ -709,7 +768,7 @@ public final class NonlinearityChecks extends JPanel {
             this.xLabel = xLabel;
             this.yLabel = yLabel;
             this.reset = reset;
-//            this.cv = cv;
+            this.cv = cv;
             this.moment = moment;
             this.additive = additive;
             this.additivity = additivity;

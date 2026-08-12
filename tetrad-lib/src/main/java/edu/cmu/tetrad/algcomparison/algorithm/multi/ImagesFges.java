@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractMultiBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -59,7 +60,7 @@ import java.util.List;
 //        dataType = DataType.All
 //)
 //@Bootstrapping
-public class ImagesFges implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
+public class ImagesFges extends AbstractMultiBootstrapAlgorithm implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -98,7 +99,7 @@ public class ImagesFges implements MultiDataSetAlgorithm, AcceptsKnowledge, Take
      * @throws IllegalArgumentException If the meta option is unrecognized.
      */
     @Override
-    public Graph search(List<DataModel> dataSets, Parameters parameters) throws InterruptedException {
+    protected Graph runSearch(List<DataModel> dataSets, Parameters parameters) throws InterruptedException {
         int meta = parameters.getInt(Params.IMAGES_META_ALG);
 
         List<DataModel> _dataSets = new ArrayList<>();
@@ -147,8 +148,8 @@ public class ImagesFges implements MultiDataSetAlgorithm, AcceptsKnowledge, Take
      * @return The resulting graph.
      */
     @Override
-    public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
-        return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
+    protected Graph runSearch(DataModel dataSet, Parameters parameters) throws InterruptedException {
+        return runSearch(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 
     /**

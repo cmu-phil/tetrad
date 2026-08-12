@@ -25,6 +25,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.Serial;
+import java.util.Map;
 
 /**
  * Applies a logarithmic transform.
@@ -48,16 +49,29 @@ public class LogData extends DataWrapper {
         DataModelList inList = wrapper.getDataModelList();
         DataModelList outList = new DataModelList();
 
+        // Per-variable specs, if any, are stored under "logVariableSpecs" in the encoding defined by
+        // LogTransformSpec. Sessions saved before per-variable transforms existed have no such parameter, so the
+        // decoded map is empty and the dataset-wide path below runs exactly as it did before.
+        Map<String, LogTransformSpec> specs =
+                LogTransformSpec.decode(params.getString("logVariableSpecs", ""));
+
         for (DataModel model : inList) {
             if (!(model instanceof DataSet dataSet)) {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            double a = params.getDouble("a");
-            boolean isUnlog = params.getBoolean("unlog");
-            int base = params.getInt("base");
+            DataSet dataSet2;
 
-            DataSet dataSet2 = DataTransforms.logData(dataSet, a, isUnlog, base);
+            if (specs.isEmpty()) {
+                double a = params.getDouble("a");
+                boolean isUnlog = params.getBoolean("unlog");
+                int base = params.getInt("base");
+
+                dataSet2 = DataTransforms.logData(dataSet, a, isUnlog, base);
+            } else {
+                dataSet2 = DataTransforms.logData(dataSet, specs);
+            }
+
             outList.add(dataSet2);
         }
 

@@ -860,6 +860,22 @@
                     edu.cmu.tetradapp.model.datamanip.ConcatenateDatasetsWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.ConcatenateDatasetsParamsEditor
+                </params-editor-class>
+            </model>
+            <model name="Thin Rows" acronym="Thinned" help="data"
+                   category="Row operations">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.datamanip.ThinRowsWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.ThinRowsParamsEditor
+                </params-editor-class>
             </model>
             <model name="Copy Continuous Variables" acronym="Copy Continuous"
                    help="data" category="Column operations">

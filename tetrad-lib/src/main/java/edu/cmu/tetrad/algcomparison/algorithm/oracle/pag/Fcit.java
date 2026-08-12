@@ -173,7 +173,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // run self-consistent, but not a no-op. If that is not wanted, drop the wrap for those tests.
         test = new CachedIndependenceQueries(test);
 
-        edu.cmu.tetrad.search.Fcit fcit = new edu.cmu.tetrad.search.Fcit(test, score);
+        edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations fcit = new edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations(test, score);
 
         // BOSS
         fcit.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -186,6 +186,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         fcit.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         fcit.setRbRadius(parameters.getInt(Params.RB_RADIUS));
         fcit.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
+        fcit.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 //        fcit.setCompletionPolicy(edu.cmu.tetrad.fcit.Fcit.CompletionPolicy.OFF);
 
 //        fcit.setUseMarkFlipEscalation(true);
@@ -203,13 +204,13 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         fcit.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.BOSS);
+            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.GRASP);
+            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.SP);
+            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.SP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
-            fcit.setStartWith(edu.cmu.tetrad.search.Fcit.START_WITH.COMPLETE_GRAPH);
+            fcit.setStartWith(edu.cmu.tetrad.search.FcitKeepKnowledgeOrientations.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
@@ -392,6 +393,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.RB_RADIUS);
         params.add(Params.RECURSIVE_DEPTH);
+        params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TEST_TIMEOUT);
 
         // General

@@ -19,7 +19,10 @@ import java.util.stream.Collectors;
  * <p>
  * Features:
  * <ul>
- *   <li>Two-list variable selector (available vs. selected).</li>
+ *   <li>Two-list variable selector (available vs. selected). All variables start in the Selected list, so
+ *       subsetting by dropping a few variables is a one-step removal.</li>
+ *   <li>Sort button (below the lists) to sort both lists A–Z or restore both to dataset order; membership is
+ *       unchanged, but the Selected list's order is the column order of the created subset.</li>
  *   <li>Row selection via comma-separated ranges (1-based),
  *       e.g. {@code "1-100, 150, 200-250"}.</li>
  *   <li>Sampling modes: use as-is, shuffle, subsample, or bootstrap.</li>
@@ -76,11 +79,18 @@ public class DataSubsetEditor extends JPanel {
     // GUI construction
     // ------------------------------------------------------------------------
 
+    /**
+     * Populates the variable lists. All variables start in the Selected list, in dataset order. This is a deliberate
+     * design decision: the dominant use of this editor is to drop a small number of variables (e.g., ones flagged by
+     * the data audit) while keeping the rest, and starting with everything selected makes that a one-step removal
+     * rather than requiring the user to first move all variables across. Subsetting down to a small keep-list is
+     * still one step via the "&lt;&lt;" button followed by selection or Paste.
+     */
     private void initVariableModels() {
         List<Node> variables = sourceDataSet.getVariables();
 
         for (Node v : variables) {
-            availableModel.addElement(v);
+            selectedModel.addElement(v);
         }
     }
 
@@ -88,56 +98,73 @@ public class DataSubsetEditor extends JPanel {
         Box popupBox = Box.createHorizontalBox();
         JButton sortButton = new JButton("Sort");
         sortButton.setFocusable(false);
-        JPopupMenu popup = buildAvailablePopupMenu();
+        JPopupMenu popup = buildSortPopupMenu();
         sortButton.addActionListener(e ->
                 popup.show(sortButton, 0, sortButton.getHeight()));
+        popupBox.add(Box.createHorizontalGlue());
         popupBox.add(sortButton);
+        popupBox.add(Box.createHorizontalGlue());
         return popupBox;
     }
 
-    private JPopupMenu buildAvailablePopupMenu() {
+    private JPopupMenu buildSortPopupMenu() {
         JPopupMenu menu = new JPopupMenu();
 
-        JMenuItem sortItem = new JMenuItem("Sort A–Z");
-        sortItem.addActionListener(e -> sortAvailableAlphabetically());
+        JMenuItem sortItem = new JMenuItem("Sort A–Z (both lists)");
+        sortItem.addActionListener(e -> sortBothAlphabetically());
         menu.add(sortItem);
 
-        JMenuItem restoreItem = new JMenuItem("Restore dataset order");
-        restoreItem.addActionListener(e -> restoreAvailableOriginalOrder());
+        JMenuItem restoreItem = new JMenuItem("Restore dataset order (both lists)");
+        restoreItem.addActionListener(e -> restoreBothOriginalOrder());
         menu.add(restoreItem);
 
         return menu;
     }
 
-    private void sortAvailableAlphabetically() {
-        // Extract current available nodes into a list
-        List<Node> avail = new ArrayList<>();
-        for (int i = 0; i < availableModel.size(); i++) {
-            avail.add(availableModel.get(i));
-        }
-
-        // Sort by name
-        avail.sort(Comparator.comparing(Node::getName, String.CASE_INSENSITIVE_ORDER));
-
-        // Rebuild the model
-        availableModel.clear();
-        for (Node v : avail) {
-            availableModel.addElement(v);
-        }
+    /**
+     * Sorts both the Available and Selected lists alphabetically by variable name, case-insensitively. Membership is
+     * unchanged: no variable moves between lists. Note that the order of the Selected list is the column order of the
+     * created subset, so sorting reorders the output columns.
+     */
+    void sortBothAlphabetically() {
+        Comparator<Node> byName = Comparator.comparing(Node::getName, String.CASE_INSENSITIVE_ORDER);
+        reorderModel(availableModel, byName);
+        reorderModel(selectedModel, byName);
     }
 
-    private void restoreAvailableOriginalOrder() {
-        // Selected nodes should stay selected; we only reorder what's in Available.
-        Set<Node> selectedNodes = new LinkedHashSet<>();
-        for (int i = 0; i < selectedModel.size(); i++) {
-            selectedNodes.add(selectedModel.get(i));
+    /**
+     * Restores both the Available and Selected lists to the original dataset variable order. Membership is unchanged:
+     * no variable moves between lists. Note that the order of the Selected list is the column order of the created
+     * subset, so restoring reorders the output columns.
+     */
+    void restoreBothOriginalOrder() {
+        Map<Node, Integer> index = new HashMap<>();
+
+        for (int i = 0; i < originalVarOrder.size(); i++) {
+            index.put(originalVarOrder.get(i), i);
         }
 
-        availableModel.clear();
-        for (Node v : originalVarOrder) {
-            if (!selectedNodes.contains(v)) {
-                availableModel.addElement(v);
-            }
+        Comparator<Node> byDatasetOrder =
+                Comparator.comparingInt(v -> index.getOrDefault(v, Integer.MAX_VALUE));
+        reorderModel(availableModel, byDatasetOrder);
+        reorderModel(selectedModel, byDatasetOrder);
+    }
+
+    /**
+     * Reorders the contents of the given list model by the given comparator, in place.
+     */
+    private static void reorderModel(DefaultListModel<Node> model, Comparator<Node> order) {
+        List<Node> items = new ArrayList<>();
+
+        for (int i = 0; i < model.size(); i++) {
+            items.add(model.get(i));
+        }
+
+        items.sort(order);
+        model.clear();
+
+        for (Node v : items) {
+            model.addElement(v);
         }
     }
 
@@ -207,15 +234,14 @@ public class DataSubsetEditor extends JPanel {
 
         Box centerPanel = Box.createHorizontalBox();
 
-        Box available = Box.createVerticalBox();
-        available.add(availableScroll);
-        available.add(buildSortPopup());
-
-        centerPanel.add(available);
+        centerPanel.add(availableScroll);
         centerPanel.add(buttonPanel);
         centerPanel.add(selectedScroll);
 
         availablePanel.add(centerPanel, BorderLayout.CENTER);
+
+        // Sort/restore acts on both lists, so it sits below the whole two-list panel rather than under one list.
+        availablePanel.add(buildSortPopup(), BorderLayout.SOUTH);
 
         return availablePanel;
     }

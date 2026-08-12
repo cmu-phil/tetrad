@@ -31,8 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.decomposition.qr.QRDecompositionHouseholder_DDRM;
+import edu.cmu.tetrad.util.TMath;
 
 /**
  * The {@code Embedding} class provides utilities for transforming datasets into embedded representations through basis
@@ -61,8 +60,8 @@ public class Embedding {
      *                        are as follows:
      *                        <ul>
      *                             <li> 0 = `g(x) = x^index [Polynomial basis]</li>
-     *                             <li> 1 = `g(x) = hermite1(index, x) [Probabilist's Hermite polynomial]</li>
-     *                             <li> 2 = `g(x) = legendre(index, x) [Legendre polynomial]</li>
+     *                             <li> 1 = `g(x) = legendre(index, x) [Legendre polynomial]</li>
+     *                             <li> 2 = `g(x) = hermite1(index, x) [Probabilist's Hermite polynomial]</li>
      *                             <li> 3 = `g(x) = chebyshev(index, x) [Chebyshev polynomial]</li>
      *                         </ul>
      * @param basisScale      The scaling factor for data transformation. Set to 0 for standardization, positive for
@@ -128,52 +127,130 @@ public class Embedding {
             } else {
                 List<Integer> indexList = new ArrayList<>();
 
-                // We'll build the raw basis block as an n x truncationLimit matrix.
-                // Column (p-1) corresponds to basis function p.
-                DMatrixRMaj block = new DMatrixRMaj(n, truncationLimit);
+                // Build the raw basis columns for this variable; raw[p - 1] corresponds to
+                // basis function p.
+                double[][] raw = new double[truncationLimit][n];
 
                 for (int p = 1; p <= truncationLimit; p++) {
-                    i++;
-
-                    Node vFunctional = new ContinuousVariable(v.getName() + ".P(" + p + ")");
-                    A.add(vFunctional);
-
-                    double[] functional = new double[n];
                     for (int j = 0; j < n; j++) {
-                        double val = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
-                        functional[j] = val;
-
-                        // Store into the block matrix (col p-1).
-                        block.set(j, p - 1, val);
+                        raw[p - 1][j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
                     }
-
-                    B.add(functional);
-                    indexList.add(i);
                 }
 
-                // Orthogonalize within this variable's block (only meaningful if >1 column).
-                // Replace the basis columns with the (compact) Q columns from QR: block = Q R,
-                // where Q has orthonormal columns spanning the same column space as the block.
+                // Orthonormalize within this variable's block (only meaningful if >1 column),
+                // keeping the natural low-order-first ordering so that the first embedded
+                // column always spans the linear term. (Callers such as doOneEquationOnly and
+                // the degenerate Gaussian classes rely on this ordering; truncationLimit = 1
+                // is left untouched, preserving the DG contract that the single column is x
+                // itself.)
+                //
+                // Changes from the pre-2026-8 implementation: the block was previously
+                // orthonormalized with a plain Householder QR, which for a rank-deficient
+                // block (e.g., a "continuous" variable with only a few distinct values, where
+                // higher-order polynomial columns are exactly linearly dependent on lower ones
+                // given an intercept) filled the trailing columns of Q with numerically
+                // arbitrary orthonormal vectors unrelated to the data. Those junk columns then
+                // entered every downstream regression as if they were real basis functions.
+                // The block is now orthonormalized by modified Gram-Schmidt in the natural
+                // order, and a column is DROPPED when its residual - after projecting out the
+                // intercept and the previously kept columns - is numerically zero relative to
+                // its centered magnitude. A binary-coded column thus keeps only its linear
+                // term; a c-valued column keeps at most c - 1 terms. The first column is
+                // always kept. This is a numerical-rank decision (relative tolerance 1e-8);
+                // statistical near-collinearity remains the job of the downstream singularity
+                // lambda / ridge machinery.
                 if (truncationLimit > 1) {
-                    QRDecompositionHouseholder_DDRM qr = new QRDecompositionHouseholder_DDRM();
-                    if (!qr.decompose(block)) {
-                        throw new IllegalStateException("QR decomposition failed for variable: " + v.getName());
-                    }
+                    final double relTol = 1e-8;
 
-                    // compact=true gives Q as n x truncationLimit (not n x n).
-                    DMatrixRMaj Q = qr.getQ(null, true);
+                    // Orthonormal basis for the DROP test: the normalized intercept direction
+                    // plus, for each kept column, its component orthogonal to everything kept
+                    // so far. Because this set is orthonormal, projections onto its span are
+                    // exact (a second pass is applied for numerical hygiene only).
+                    List<double[]> dropBasis = new ArrayList<>();
+                    double[] ones = new double[n];
+                    double invSqrtN = 1.0 / TMath.sqrt(n);
+                    for (int j = 0; j < n; j++) ones[j] = invSqrtN;
+                    dropBasis.add(ones);
 
-                    for (int col = 0; col < truncationLimit; col++) {
-                        int embeddedIndex = indexList.get(col);
+                    // Kept columns as stored in the embedded data set: orthonormalized against
+                    // the previously kept columns only (not the intercept), matching the span
+                    // produced by the previous QR-based implementation for full-rank blocks.
+                    List<double[]> keptStored = new ArrayList<>();
+                    List<Integer> keptOrders = new ArrayList<>();
 
-                        double[] qCol = new double[n];
-                        for (int row = 0; row < n; row++) {
-                            qCol[row] = Q.get(row, col);
+                    for (int p = 1; p <= truncationLimit; p++) {
+                        double[] col = raw[p - 1];
+
+                        // Centered magnitude of the original column, for the relative drop
+                        // test. A constant column has centered magnitude ~0.
+                        double mean = 0.0;
+                        for (double val : col) mean += val;
+                        mean /= n;
+                        double centeredNormSq = 0.0;
+                        for (double val : col) centeredNormSq += (val - mean) * (val - mean);
+                        double centeredNorm = TMath.sqrt(centeredNormSq);
+
+                        // Residual after projecting onto span{intercept, kept columns}.
+                        double[] resid = col.clone();
+                        for (int pass = 0; pass < 2; pass++) {
+                            for (double[] u : dropBasis) {
+                                double dot = 0.0;
+                                for (int j = 0; j < n; j++) dot += u[j] * resid[j];
+                                for (int j = 0; j < n; j++) resid[j] -= dot * u[j];
+                            }
+                        }
+                        double residNormSq = 0.0;
+                        for (double val : resid) residNormSq += val * val;
+                        double residNorm = TMath.sqrt(residNormSq);
+
+                        boolean dependent = residNorm <= relTol * TMath.max(centeredNorm, 1e-12);
+
+                        // The first column (the linear term) is always kept.
+                        if (p > 1 && dependent) {
+                            continue;
                         }
 
-                        // Overwrite the corresponding column in B with the orthonormalized one.
-                        B.set(embeddedIndex, qCol);
+                        // Extend the drop-test basis with the new independent direction.
+                        if (residNorm > 0.0) {
+                            double[] u = resid; // resid is not reused below; safe to normalize in place
+                            for (int j = 0; j < n; j++) u[j] /= residNorm;
+                            dropBasis.add(u);
+                        }
+
+                        // Stored value: modified Gram-Schmidt against the previously kept
+                        // (orthonormal) stored columns, then normalize.
+                        double[] qCol = col.clone();
+                        for (int pass = 0; pass < 2; pass++) {
+                            for (double[] q : keptStored) {
+                                double dot = 0.0;
+                                for (int j = 0; j < n; j++) dot += q[j] * qCol[j];
+                                for (int j = 0; j < n; j++) qCol[j] -= dot * q[j];
+                            }
+                        }
+                        double qNormSq = 0.0;
+                        for (double val : qCol) qNormSq += val * val;
+                        double qNorm = TMath.sqrt(qNormSq);
+                        if (qNorm > 0.0) {
+                            for (int j = 0; j < n; j++) qCol[j] /= qNorm;
+                        }
+
+                        keptStored.add(qCol);
+                        keptOrders.add(p);
                     }
+
+                    for (int k = 0; k < keptStored.size(); k++) {
+                        i++;
+                        Node vFunctional = new ContinuousVariable(v.getName() + ".P(" + keptOrders.get(k) + ")");
+                        A.add(vFunctional);
+                        B.add(keptStored.get(k));
+                        indexList.add(i);
+                    }
+                } else {
+                    i++;
+                    Node vFunctional = new ContinuousVariable(v.getName() + ".P(1)");
+                    A.add(vFunctional);
+                    B.add(raw[0]);
+                    indexList.add(i);
                 }
 
                 embedding.put(i_, indexList);

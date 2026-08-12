@@ -32,14 +32,14 @@ import java.util.List;
  * - minimaxLegendreIrlsIters (default 8)
  * - minimaxLegendreIrlsTol   (default 1e-6)
  */
-@edu.cmu.tetrad.annotation.Score(
-        name = "Legendre BIC Score",
-        command = "legendre-bic-score",
-        dataType = {DataType.Mixed}
-)
-@General
-@Mixed
-@Experimental
+//@edu.cmu.tetrad.annotation.Score(
+//        name = "Legendre BIC Score",
+//        command = "legendre-bic-score",
+//        dataType = {DataType.Mixed}
+//)
+//@General
+//@Mixed
+//@Experimental
 public class LegendreBicScore implements ScoreWrapper {
 
     @Serial

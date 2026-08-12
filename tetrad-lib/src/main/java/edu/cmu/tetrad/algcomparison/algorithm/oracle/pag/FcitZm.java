@@ -152,7 +152,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         }
 
         test = new CachedIndependenceQueries(test);
-        edu.cmu.tetrad.search.FcitZm search = new edu.cmu.tetrad.search.FcitZm(test, score);
+        edu.cmu.tetrad.search.FcitZmKeepKnowledgeOrientations search = new edu.cmu.tetrad.search.FcitZmKeepKnowledgeOrientations(test, score);
 
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
@@ -166,17 +166,18 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setRbRadius(parameters.getInt(Params.RB_RADIUS));
         search.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
         search.setTimeout(parameters.getLong(Params.TEST_TIMEOUT));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.BOSS);
+            search.setStartWith(edu.cmu.tetrad.search.FcitZmKeepKnowledgeOrientations.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.GRASP);
+            search.setStartWith(edu.cmu.tetrad.search.FcitZmKeepKnowledgeOrientations.START_WITH.GRASP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 3) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.SP);
+            search.setStartWith(edu.cmu.tetrad.search.FcitZmKeepKnowledgeOrientations.START_WITH.SP);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 4) {
-            search.setStartWith(edu.cmu.tetrad.search.FcitZm.START_WITH.COMPLETE_GRAPH);
+            search.setStartWith(edu.cmu.tetrad.search.FcitZmKeepKnowledgeOrientations.START_WITH.COMPLETE_GRAPH);
         } else {
             throw new IllegalArgumentException("Unknown start with option: " + parameters.getInt(Params.FCIT_STARTS_WITH));
         }
@@ -241,6 +242,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.RB_RADIUS);
         params.add(Params.RECURSIVE_DEPTH);
+        params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TEST_TIMEOUT);
 
         // General

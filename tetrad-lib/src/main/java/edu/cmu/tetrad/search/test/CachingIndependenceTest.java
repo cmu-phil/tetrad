@@ -21,6 +21,8 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.NaturalSort;
 
@@ -129,6 +131,59 @@ public class CachingIndependenceTest implements IndependenceTest {
      */
     public IndependenceTest getBaseTest() {
         return base;
+    }
+
+    /**
+     * Returns the alpha of the base test. Without this delegation, consumers relying on alpha (for instance,
+     * MarkovCheck's statistics) fail with UnsupportedOperationException when handed a cached test.
+     *
+     * @return the base test's alpha.
+     */
+    @Override
+    public double getAlpha() {
+        return this.base.getAlpha();
+    }
+
+    /**
+     * Sets the alpha of the base test and clears the cache, since cached independence judgments were made under the
+     * previous alpha and would otherwise be returned inconsistently.
+     *
+     * @param alpha the new alpha.
+     */
+    @Override
+    public void setAlpha(double alpha) {
+        this.base.setAlpha(alpha);
+        this.cache.clear();
+    }
+
+    /**
+     * Returns the sample size of the base test.
+     *
+     * @return the base test's sample size.
+     */
+    @Override
+    public int getSampleSize() {
+        return this.base.getSampleSize();
+    }
+
+    /**
+     * Returns the covariance matrix of the base test.
+     *
+     * @return the base test's covariance matrix.
+     */
+    @Override
+    public ICovarianceMatrix getCov() {
+        return this.base.getCov();
+    }
+
+    /**
+     * Returns the datasets of the base test.
+     *
+     * @return the base test's datasets.
+     */
+    @Override
+    public List<DataSet> getDataSets() {
+        return this.base.getDataSets();
     }
 
     // ---------------------------------------------------------------------

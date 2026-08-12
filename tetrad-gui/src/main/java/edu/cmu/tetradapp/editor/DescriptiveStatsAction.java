@@ -109,8 +109,10 @@ class DescriptiveStatsAction extends AbstractAction {
 
         JMenuBar bar = new JMenuBar();
         JMenuItem copyCells = new JMenuItem("Copy Cells");
+        // Platform menu shortcut mask (Command on macOS, Control elsewhere); hard-coded Control did not work on
+        // macOS and collided with the main menu bar's session-copy accelerator.
         copyCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         copyCells.addActionListener(e -> {
             Action copyAction = TransferHandler.getCopyAction();
             ActionEvent actionEvent = new ActionEvent(jTable,

@@ -70,6 +70,26 @@ import java.util.concurrent.ConcurrentHashMap;
  * here therefore recalls that seed collider set rather than recomputing colliders from the
  * current graph, which could re-derive marks stamped unsoundly at an earlier step.
  *
+ * <p><b>Reach repair (2026-8).</b> The separator search and the loop structure were narrower
+ * than Fcit's, in four ways that an exhaustive enumeration over small observed sizes is
+ * built to expose. All four are now closed; none of them touches the MAG-side legality gate
+ * or either commit route, which remain this algorithm's identity:
+ * <ol>
+ *   <li>NF candidates are the ambiguous seed-blocking-set members UNIONED with the ambiguous
+ *       common neighbors, not the seed alone (which left the NF layer empty on unblockable
+ *       views);</li>
+ *   <li>common neighbors the blocking search omitted can now be added BACK into the tested
+ *       set, not only removed from it;</li>
+ *   <li>conflict-driven mark-flip escalation retries the sweep on views distrusting one
+ *       load-bearing arrowhead at a time;</li>
+ *   <li>the single-edge removal fixpoint and the saturating pass now iterate to a JOINT
+ *       fixpoint instead of running once each in sequence.</li>
+ * </ol>
+ * Soundness is untouched by all four: views only ever propose candidates, and every
+ * separator committed is confirmed by the independence test and gated on MAG legality. What
+ * changes is reach -- which true separators the search can find -- so the expected effect is
+ * strictly fewer missed deletions.
+ *
  * @author josephramsey
  */
 public final class FcitZm implements IGraphSearch {
@@ -84,6 +104,15 @@ public final class FcitZm implements IGraphSearch {
     /**
      * Running sepsets
      */
+    /** Canonical node order, so candidate enumeration is deterministic. */
+    private static final Comparator<Node> NODE_ORDER = Comparator.comparing(Node::getName);
+    /**
+     * Whether the conflict-driven mark-flip escalation runs when the live-view sweep fails.
+     * Added in the 2026-8 reach repair; see findIndependenceCheckRecursive.
+     */
+    private boolean useMarkFlipEscalation = true;
+    /** Max flip hypotheses tried per pair; -1 unlimited. Hypotheses are name-sorted. */
+    private int maxMarkFlips = -1;
     private final SepsetMap sepsets = new SepsetMap();
     /**
      * The list of selection nodes in the graph.
@@ -311,6 +340,37 @@ public final class FcitZm implements IGraphSearch {
      * this each commit removes any reliance on prior colliders persisting through the
      * PAG<->MAG round trip. Null sepsets and still-adjacent pairs are skipped.
      */
+    /**
+     * R0 from the recorded separators, PAG side: for every recorded pair now non-adjacent,
+     * each common neighbor absent from the recorded set is oriented as a collider. The
+     * recorded set is the one whose independence test licensed the deletion, so the verdict
+     * is by membership and is never re-derived from the current graph.
+     */
+    private static void adjustForExtraSepsets(SepsetMap sepsets, Graph pag) {
+        for (Set<Node> pair : sepsets.keySet()) {
+            List<Node> arr = new ArrayList<>(pair);
+            if (arr.size() != 2) continue;
+
+            Node x = arr.get(0);
+            Node y = arr.get(1);
+
+            if (pag.isAdjacentTo(x, y)) continue;
+
+            Set<Node> sep = sepsets.get(x, y);
+            if (sep == null) continue;
+
+            List<Node> common = pag.getAdjacentNodes(x);
+            common.retainAll(pag.getAdjacentNodes(y));
+
+            for (Node node : common) {
+                if (sep.contains(node)) continue;
+                if (pag.isDefCollider(x, node, y)) continue;
+                pag.setEndpoint(x, node, Endpoint.ARROW);
+                pag.setEndpoint(y, node, Endpoint.ARROW);
+            }
+        }
+    }
+
     private static void orientSepsetCollidersInMag(Graph mag, SepsetMap sepsets) {
         for (Set<Node> pair : sepsets.keySet()) {
             List<Node> arr = new ArrayList<>(pair);
@@ -523,11 +583,47 @@ public final class FcitZm implements IGraphSearch {
         // orientation premise the argument consumes.
         this.initialColliders = noteInitialColliders(pag.getNodes(), pag);
 
+        // Outer fixpoint over {single-edge removal fixpoint, saturating pass}.
+        //
+        // Changes from the pre-2026 implementation: the removal fixpoint ran ONCE and the
+        // saturating pass ran ONCE after it, with no feedback. That ordering is incomplete
+        // in both directions. A successful saturation shrinks adjacencies, which can make
+        // previously unseparable pairs separable, so the single-edge phase deserves another
+        // sweep; and a single-edge removal accepted after the saturating pass would have
+        // re-populated the separable-but-standing set the saturating pass exists to clear.
+        // Iterating the two to a joint fixpoint closes both gaps. Termination: every
+        // productive iteration removes at least one edge, so there are at most |E| of them.
         int round = 0;
+        boolean progressed;
 
         do {
-            TetradLogger.getInstance().log("\nRound: " + (++round));
-        } while (removeEdgesRecursively(excludeSelectionBias));
+            progressed = false;
+
+            do {
+                TetradLogger.getInstance().log("\nRound: " + (++round));
+            } while (removeEdgesRecursively(excludeSelectionBias));
+
+            // Saturating step: fire whenever ANY test-separable adjacency survives, not only
+            // two or more. A lone survivor means the single-edge phase proposed and REVERTED
+            // it, which is exactly the case worth re-attempting in batch; skipping it would
+            // return a graph carrying an adjacency already certified absent.
+            List<Edge> spurious = findSpuriousEdges(interimPags.getLast());
+            TetradLogger.getInstance().log(spurious.isEmpty()
+                    ? "\nNo spurious edges remain."
+                    : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
+
+            if (!spurious.isEmpty()) {
+                boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
+                TetradLogger.getInstance().log(removed
+                        ? "\nSaturating step: spurious edges removed."
+                        : "\nSaturating step REFUSED: deleting the confirmed-separable set together "
+                        + "does not yield a legal MAG. In the oracle limit this is a certificate of "
+                        + "unfaithfulness (a true edge was certified independent); from sample it is "
+                        + "evidence of test error. Retaining the last gated PAG.");
+
+                if (removed) progressed = true;
+            }
+        } while (progressed);
 
         if (superVerbose) {
             TetradLogger.getInstance().log("Doing implied orientation, grabbing unshielded colliders from FciOrient.");
@@ -535,29 +631,12 @@ public final class FcitZm implements IGraphSearch {
 
         long stop2 = System.currentTimeMillis();
 
-        // Revert nodes made latent to latent.
+        // Revert nodes made latent to latent. Change from the pre-2026 implementation: this
+        // ran BEFORE the saturating step, so that step (and its MAG legality gate) saw node
+        // types the rest of the search had deliberately set to MEASURED. Reverting after the
+        // whole removal phase keeps every gated decision under one convention.
         for (Node node : latents) {
             node.setNodeType(NodeType.LATENT);
-        }
-
-        // Saturating step (the unconditional finalizer): fire whenever ANY test-separable
-        // adjacency survives, not only two or more. A lone survivor means the single-edge
-        // phase proposed and REVERTED it, which is exactly the case worth re-attempting in
-        // batch; skipping it would return a graph carrying an adjacency already certified
-        // absent.
-        List<Edge> spurious = findSpuriousEdges(interimPags.getLast());
-        TetradLogger.getInstance().log(spurious.isEmpty()
-                ? "\nNo spurious edges remain."
-                : "\n" + spurious.size() + " spurious edge(s) remain: " + spurious);
-
-        if (!spurious.isEmpty()) {
-            boolean removed = tryToModifyGraph(spurious, excludeSelectionBias);
-            TetradLogger.getInstance().log(removed
-                    ? "\nSaturating step: spurious edges removed."
-                    : "\nSaturating step REFUSED: deleting the confirmed-separable set together "
-                    + "does not yield a legal MAG. In the oracle limit this is a certificate of "
-                    + "unfaithfulness (a true edge was certified independent); from sample it is "
-                    + "evidence of test error. Retaining the last gated PAG.");
         }
 
         // Final orientation: re-derive marks from the test on the finished skeleton. Without
@@ -964,6 +1043,33 @@ public final class FcitZm implements IGraphSearch {
         return changedThisSweep;
     }
 
+    /**
+     * Finds a test-confirmed separator for the pair of {@code edge}, or null.
+     * <p>
+     * <b>Changes from the pre-2026 implementation.</b> The search reach was narrower than
+     * Fcit's in three ways, each of which is a place the exhaustive enumeration can expose a
+     * miss; all three are closed here, leaving the MAG-side legality gate and both commit
+     * routes untouched:
+     * <ol>
+     *   <li><b>NF pool.</b> Not-followed candidates were harvested from the seed blocking set
+     *       ALONE, and not at all when the seed run came back indeterminate or unblockable.
+     *       On a live view whose interim marks force conditioning that activates a collider
+     *       route, the seed set is null and the NF layer was therefore empty on exactly the
+     *       view that needs it. The pool is now the ambiguous members of the seed set UNIONED
+     *       with the ambiguous common neighbors of the pair (the skeleton-relative pool B' of
+     *       Def. rb-step).</li>
+     *   <li><b>Additions.</b> Only removals from the blocking set were enumerated. Recursive
+     *       blocking omits a common neighbor either because it conditioned around it or
+     *       because a definite mark made the path look blocked; when that mark is an artifact
+     *       of the edge under test, the omitted node must be enumerable back IN. Omitted
+     *       common neighbors are now an additive layer.</li>
+     *   <li><b>Mark-flip escalation.</b> Absent entirely. When the live-view sweep fails, the
+     *       load-bearing blocked-collider marks the walk relied on are now collected and the
+     *       sweep is retried on views that each distrust one of them.</li>
+     * </ol>
+     * Soundness is unchanged: the view only ever PROPOSES candidates, and every returned set
+     * is confirmed by the independence test.
+     */
     private IndependenceCheck findIndependenceCheckRecursive(Edge edge) throws InterruptedException {
         final Node x = edge.getNode1();
         final Node y = edge.getNode2();
@@ -976,7 +1082,7 @@ public final class FcitZm implements IGraphSearch {
         // Reuse a separator already found for this pair in an earlier sweep. The
         // independence is a data fact, invariant across rounds, so re-searching the
         // (evolved) PAG would only risk returning a *different* valid set — which is
-        // exactly the cross-round inconsistency. tryToModifyGraph still judges PAG
+        // exactly the cross-round inconsistency. tryToModifyGraph still judges MAG
         // legality; if it reverts, the edge is retried next round with the same set.
         Set<Node> cached = foundSepsets.get(Set.of(x, y));
         if (cached != null) {
@@ -991,105 +1097,225 @@ public final class FcitZm implements IGraphSearch {
                 ? Long.MAX_VALUE
                 : System.currentTimeMillis() + timeout;
 
-        // Candidate generation stays on the PAG so the NF/ambiguity search keeps its
-        // full toggle set; MAG-awareness lives only at the commit step. (This also drops
-        // the per-edge MAG rebuild, which was identical for every edge in the sweep.)
-        RecursiveBlocking.BlockingResult b0result = RecursiveBlocking.blockPathsRecursively(
-                interimPags.getLast(), x, y, Set.of(), Set.of(), recursiveDepth, depth, rbRadius, 1, true,
-                deadline);
+        // Candidates already tested for this pair, shared across the live sweep and every
+        // flip-view sweep so no subset is tested twice.
+        Set<Set<Node>> tried = new HashSet<>();
 
-        Set<Node> nfCandSet = new LinkedHashSet<>();
-        if (!b0result.indeterminate() && b0result.blockingSet() != null) {
-            for (Node v : b0result.blockingSet()) {
-                // Only ambiguous nodes — those with at least one circle endpoint
-                if (interimPags.getLast().getAdjacentNodes(v).stream().anyMatch(
-                        w -> interimPags.getLast().getEndpoint(v, w) == Endpoint.CIRCLE
-                                || interimPags.getLast().getEndpoint(w, v) == Endpoint.CIRCLE)) {
-                    nfCandSet.add(v);
-                }
+        // Live-view sweep. Under mark-flip escalation, collect the load-bearing
+        // blocked-collider marks the walk relied on: on failure, these are the
+        // escalation's flip hypotheses.
+        Set<RecursiveBlocking.Mark> conflicts = null;
+        SweepOutcome live;
+
+        if (useMarkFlipEscalation) {
+            RecursiveBlocking.beginConflictCollection();
+            try {
+                live = sweepForSepset(interimPags.getLast(), x, y, deadline, tried);
+            } finally {
+                conflicts = RecursiveBlocking.endConflictCollection();
             }
+        } else {
+            live = sweepForSepset(interimPags.getLast(), x, y, deadline, tried);
         }
 
-        List<Node> nfCand = new ArrayList<>(nfCandSet);
+        if (live.sepset() != null) {
+            return recordSepset(edge, x, y, live.sepset());
+        }
 
-        // Enumerate subsets of the "not-followed" set NF ⊆ nfCand
-        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
-        int[] nfChoice;
-        while ((nfChoice = nfGen.next()) != null) {
-            if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
-            if (!this.interimPags.getLast().isAdjacentTo(x, y)) break; // edge already removed upstream
-
-            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
-            RecursiveBlocking.BlockingResult result = null;
-
-            if (this.depth < 0) {
-                result = RecursiveBlocking.blockPathsRecursively(
-                        interimPags.getLast(), x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-                        deadline);
-
-            } else {
-                int depth = 0;
-                int maxDepth = this.depth;
-
-                do {
-                    depth++;
-
-                    if (depth > maxDepth) break;
-
-                    result = RecursiveBlocking.blockPathsRecursively(
-                            interimPags.getLast(), x, y, Set.of(), notFollowed, recursiveDepth, depth, rbRadius, 1, true,
-                            deadline);
-                } while (result.indeterminate());
-            }
-
-            if (result == null || result.indeterminate()) {
-                continue;
-            }
-
-            Set<Node> B = result.blockingSet();
-
-            if (B == null) {
-                continue; // No separating set possible for this NF; try another NF
-            }
-
-            List<Node> common = this.interimPags.getLast().getAdjacentNodes(x);
-            common.retainAll(this.interimPags.getLast().getAdjacentNodes(y));
-
-            List<Node> definitelyRemove = new ArrayList<>();
-            for (Node c : common) {
-                if (this.interimPags.getLast().isDefCollider(x, c, y)) {
-                    definitelyRemove.add(c);
-                }
-            }
-
-            List<Node> removalCandidates = new ArrayList<>(common);
-            removalCandidates.removeAll(definitelyRemove);
-
-            SublistGenerator cGen = new SublistGenerator(removalCandidates.size(), removalCandidates.size());
-            int[] cChoice;
-            while ((cChoice = cGen.next()) != null) {
-                if (System.currentTimeMillis() > deadline) return null; // per-edge budget exhausted
-                if (!this.interimPags.getLast().isAdjacentTo(x, y)) break;
-
-                Set<Node> S = new LinkedHashSet<>(B);
-                Set<Node> C = GraphUtils.asSet(cChoice, removalCandidates);
-
-                S.removeAll(C);
-
-                if (this.depth != -1 && S.size() > this.depth) continue;
-
-                checkCounter.increment("findIndependenceCheckRecursive (test executed)");
-
-                IndependenceResult independenceResult = this.test.checkIndependence(x, y, S);
-                if (independenceResult.isIndependent()) {
-                    foundSepsets.put(Set.of(x, y), S);   // remember the fact, survives revert
-                    foundPValues.put(Set.of(x, y), independenceResult.getPValue());
-                    return new IndependenceCheck(edge, S, independenceResult.getPValue());
-                }
+        // Conflict-driven mark-flip escalation: structure-guided -- the failed walk
+        // nominates the marks.
+        if (useMarkFlipEscalation && conflicts != null && !conflicts.isEmpty()) {
+            SweepOutcome flip = markFlipEscalation(x, y, conflicts, deadline, tried);
+            if (flip.sepset() != null) {
+                return recordSepset(edge, x, y, flip.sepset());
             }
         }
 
         return null;
+    }
+
+    /** Records a confirmed separator in the cross-round caches and wraps it for the caller. */
+    private IndependenceCheck recordSepset(Edge edge, Node x, Node y, Set<Node> s)
+            throws InterruptedException {
+        double p = this.test.checkIndependence(x, y, s).getPValue();
+        foundSepsets.put(Set.of(x, y), s);   // remember the fact, survives revert
+        foundPValues.put(Set.of(x, y), p);
+        return new IndependenceCheck(edge, s, p);
+    }
+
+    /**
+     * One sweep against one view of the graph. The view supplies proposals only; every
+     * returned set is test-confirmed. Candidate order is canonical (name-sorted lists,
+     * subsets in SublistGenerator order), so the first confirmed separator is a
+     * deterministic function of (view, x, y).
+     *
+     * <p>Layers: NF enumeration over the ambiguous (circle-bearing) members of the seed
+     * blocking set unioned with the ambiguous common neighbors; per NF, removals over the
+     * whole blocking set (common neighbors first) and additions over common neighbors the
+     * blocking set omitted. For every subset S of the swept common neighbors this family
+     * contains a candidate that conditions on S and withholds the rest both from traversal
+     * and from the tested set.</p>
+     */
+    private SweepOutcome sweepForSepset(Graph view, Node x, Node y, long deadline, Set<Set<Node>> tried)
+            throws InterruptedException {
+
+        boolean sawIndeterminate = false;
+
+        RecursiveBlocking.BlockingResult b0 = RecursiveBlocking.blockPathsRecursively(
+                view, x, y, Set.of(), Set.of(), recursiveDepth, this.depth, rbRadius, 1, true,
+                deadline);
+        if (b0.indeterminate()) {
+            sawIndeterminate = true;
+        }
+
+        List<Node> common = new ArrayList<>(view.getAdjacentNodes(x));
+        common.retainAll(view.getAdjacentNodes(y));
+        common.sort(NODE_ORDER);
+
+        // NF candidates: ambiguous seed members UNIONED with ambiguous common neighbors.
+        // The union is the fix for the empty-NF-layer case (see the method Javadoc above).
+        Set<Node> nfCandSet = new LinkedHashSet<>();
+        if (b0.blockingSet() != null) {
+            for (Node v : b0.blockingSet()) {
+                if (hasCircleEndpoint(view, v)) {
+                    nfCandSet.add(v);
+                }
+            }
+        }
+        for (Node c : common) {
+            if (hasCircleEndpoint(view, c)) {
+                nfCandSet.add(c);
+            }
+        }
+        List<Node> nfCand = new ArrayList<>(nfCandSet);
+        nfCand.sort(NODE_ORDER);
+
+        SublistGenerator nfGen = new SublistGenerator(nfCand.size(), nfCand.size());
+        int[] nfChoice;
+
+        while ((nfChoice = nfGen.next()) != null) {
+            if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
+            if (!view.isAdjacentTo(x, y)) break; // edge already removed upstream
+
+            Set<Node> notFollowed = GraphUtils.asSet(nfChoice, nfCand);
+
+            RecursiveBlocking.BlockingResult result = notFollowed.isEmpty() ? b0
+                    : RecursiveBlocking.blockPathsRecursively(
+                    view, x, y, Set.of(), notFollowed, recursiveDepth, this.depth, rbRadius, 1, true,
+                    deadline);
+
+            if (result.indeterminate()) {
+                sawIndeterminate = true;
+                continue;
+            }
+
+            Set<Node> B = result.blockingSet();
+            if (B == null) {
+                continue; // Unblockable under this NF; try another NF.
+            }
+
+            Set<Node> base = new LinkedHashSet<>(B);
+
+            // Removal candidates: the whole base, common neighbors first, each block
+            // name-sorted.
+            List<Node> removalCandidates = new ArrayList<>();
+            for (Node n : base) if (common.contains(n)) removalCandidates.add(n);
+            removalCandidates.sort(NODE_ORDER);
+            List<Node> restOfBase = new ArrayList<>();
+            for (Node n : base) if (!common.contains(n)) restOfBase.add(n);
+            restOfBase.sort(NODE_ORDER);
+            removalCandidates.addAll(restOfBase);
+
+            // Additive candidates: common neighbors the blocking search omitted.
+            List<Node> addCandidates = new ArrayList<>();
+            for (Node c : common) if (!base.contains(c)) addCandidates.add(c);
+
+            SublistGenerator aGen = new SublistGenerator(addCandidates.size(), addCandidates.size());
+            int[] aChoice;
+
+            while ((aChoice = aGen.next()) != null) {
+                if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
+
+                Set<Node> A = GraphUtils.asSet(aChoice, addCandidates);
+
+                SublistGenerator cGen = new SublistGenerator(removalCandidates.size(),
+                        removalCandidates.size());
+                int[] cChoice;
+
+                while ((cChoice = cGen.next()) != null) {
+                    if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
+
+                    Set<Node> S = new LinkedHashSet<>(base);
+                    S.removeAll(GraphUtils.asSet(cChoice, removalCandidates));
+                    S.addAll(A);
+
+                    if (this.depth != -1 && S.size() > this.depth) continue;
+
+                    if (!tried.add(S)) continue; // already tested this candidate
+
+                    checkCounter.increment("sepset sweep (test executed)");
+
+                    if (this.test.checkIndependence(x, y, S).isIndependent()) {
+                        return new SweepOutcome(S, sawIndeterminate);
+                    }
+                }
+            }
+        }
+
+        return new SweepOutcome(null, sawIndeterminate);
+    }
+
+    /**
+     * Conflict-driven mark-flip escalation. For each load-bearing arrowhead the failed live
+     * sweep reported, build a view with that arrowhead circled and re-run the sweep. The
+     * failure itself nominates the hypotheses, so the search is bounded by the marks the walk
+     * actually leaned on rather than by any pool's powerset.
+     */
+    private SweepOutcome markFlipEscalation(Node x, Node y, Set<RecursiveBlocking.Mark> conflicts,
+                                            long deadline, Set<Set<Node>> tried)
+            throws InterruptedException {
+        List<RecursiveBlocking.Mark> marks = new ArrayList<>(conflicts);
+        marks.sort(Comparator
+                .comparing((RecursiveBlocking.Mark m) -> m.at().getName())
+                .thenComparing(m -> m.from().getName()));
+
+        int cap = (maxMarkFlips < 0) ? marks.size() : Math.min(maxMarkFlips, marks.size());
+        boolean sawIndeterminate = false;
+
+        for (int i = 0; i < cap; i++) {
+            if (System.currentTimeMillis() > deadline) return new SweepOutcome(null, true);
+
+            RecursiveBlocking.Mark m = marks.get(i);
+
+            Graph flipped = new EdgeListGraph(interimPags.getLast());
+            flipped.setEndpoint(m.from(), m.at(), Endpoint.CIRCLE);
+
+            checkCounter.increment("mark-flip escalation (view swept)");
+
+            SweepOutcome out = sweepForSepset(flipped, x, y, deadline, tried);
+
+            if (out.sepset() != null) {
+                TetradLogger.getInstance().log("MARK-FLIP: separator for " + x + " *-* " + y
+                        + " found under distrust of the arrowhead at " + m.at()
+                        + " on " + m.from() + " *-> " + m.at() + ": " + out.sepset());
+                return out;
+            }
+
+            if (out.indeterminate()) sawIndeterminate = true;
+        }
+
+        return new SweepOutcome(null, sawIndeterminate);
+    }
+
+    /** True iff v has at least one circle endpoint in the view. */
+    private static boolean hasCircleEndpoint(Graph view, Node v) {
+        for (Node w : view.getAdjacentNodes(v)) {
+            if (view.getEndpoint(v, w) == Endpoint.CIRCLE
+                    || view.getEndpoint(w, v) == Endpoint.CIRCLE) {
+                return true;
+            }
+        }
+        return false;
     }
 
 //    private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias) {
@@ -1136,12 +1362,29 @@ public final class FcitZm implements IGraphSearch {
     private boolean tryToModifyGraph(Node x, Node y, Set<Node> b, double pValue, boolean excludeSelectionBias) {
         Edge _edge = interimPags.getLast().getEdge(x, y);
 
-        // --- legality gate: unchanged, still judged on the MAG ---
-        Graph _mag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(interimPags.getLast()));
-        _mag.removeEdge(x, y);
-
         Set<Node> prevSepset = sepsets.get(x, y);
         sepsets.set(x, y, b);
+
+        // --- legality gate: still judged on the MAG, but on the MAG of the REORIENTED
+        //     post-deletion PAG.
+        //
+        // Change from the pre-2026 implementation: the candidate MAG was the Zhang
+        // completion of the CURRENT PAG with the edge then deleted from it. Those
+        // orientations were derived while the edge was still present, so the completion
+        // resolved circles using stale marks and could manufacture an almost-cycle that the
+        // correctly reoriented graph does not have -- refusing a removal whose reorientation
+        // is in fact the true PAG. (Witness: the PKE14 model ca....aaaa.acccacacacaccc, where
+        // removing V2 *-* V5 on sepset {V6} was refused for "directed path exists from V3 to
+        // V2", arising from V3 o-o V6 completing as V3 --> V6; reorienting first stamps
+        // V6 o-> V3 from the recorded separator and the candidate is legal -- and is exactly
+        // G*.) The reorientation is the same one the PAG route already applied AFTER the
+        // gate, so this moves work rather than adding it; what is new is that the gate now
+        // judges the object the algorithm would actually carry forward.
+        Graph _pag = new EdgeListGraph(interimPags.getLast());
+        _pag.removeEdge(x, y);
+        reorientCandidate(_pag, excludeSelectionBias);
+
+        Graph _mag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(_pag));
         orientSepsetCollidersInMag(_mag, sepsets);
 
         PagLegalityCheck.LegalMagRet legal =
@@ -1169,28 +1412,36 @@ public final class FcitZm implements IGraphSearch {
             return true;
         }
 
-        Graph _pag = new EdgeListGraph(interimPags.getLast());
-        _pag.removeEdge(x, y);
-
-        // Reset to circles and RECALL THE SEED COLLIDERS before re-closing. Seed soundness
-        // is the single orientation premise the soundness argument consumes, so the seed
-        // set must be re-supplied at every reorientation; recomputing colliders from the
-        // current graph would instead re-derive whatever was stamped earlier, unsound marks
-        // included. (Passing an empty set here also left shielded colliders unseeded, so R4
-        // could not recover them and arrow precision dropped.)
-        _pag.reorientAllWith(Endpoint.CIRCLE);
-        fciOrient.orient(_pag, new HashSet<>(initialColliders), excludeSelectionBias);
-
+        // PAG route: carry forward the very graph the gate just certified.
         pushPag(_pag);
         return true;
     }
 
+    /**
+     * The candidate reorientation: reset to circles, RECALL THE SEED COLLIDERS, stamp R0 from
+     * the recorded separators, and close under the final rules.
+     * <p>
+     * Seed soundness is the single orientation premise the soundness argument consumes, so
+     * the seed set is re-supplied at every reorientation; recomputing colliders from the
+     * current graph would instead re-derive whatever was stamped earlier, unsound marks
+     * included. The {@code adjustForExtraSepsets} stamp is a change from the pre-2026
+     * implementation: without it the colliders created by this search's own removals were
+     * never seeded on the interim graphs (only the seed colliders were), which both
+     * under-oriented the carried state and -- through the Zhang completion -- produced the
+     * spurious almost-cycles that made the gate refuse sound removals.
+     */
+    private void reorientCandidate(Graph pag, boolean excludeSelectionBias) {
+        pag.reorientAllWith(Endpoint.CIRCLE);
+        fciOrient.orient(pag, new HashSet<>(initialColliders), excludeSelectionBias);
+        adjustForExtraSepsets(sepsets, pag);
+        fciOrient.finalOrientation(pag, excludeSelectionBias);
+    }
+
     private boolean tryToModifyGraph(List<Edge> edges,
                                      boolean excludeSelectionBias) {
-        Graph _pag = new EdgeListGraph(interimPags.getLast());
-        Graph _mag = GraphTransforms.zhangMagFromPag(_pag);   // one MAG of the current legal PAG
-
         Map<Edge, Set<Node>> prev = new LinkedHashMap<>();    // for clean rollback
+
+        Graph _pag = new EdgeListGraph(interimPags.getLast());
 
         for (Edge edge : edges) {
             Node m = edge.getNode1();
@@ -1203,8 +1454,17 @@ public final class FcitZm implements IGraphSearch {
             prev.put(edge, sepsets.get(m, n));
             sepsets.set(m, n, z);
 
-            _mag.removeEdge(m, n);
+            _pag.removeEdge(m, n);
         }
+
+        // Reorient the post-deletion PAG before completing it, for the same reason as the
+        // single-edge gate: a completion of the pre-deletion orientations can manufacture an
+        // almost-cycle the correctly reoriented graph does not have, and the saturating pass
+        // is precisely where a refusal is read as a certificate of unfaithfulness -- so a
+        // spurious refusal here is maximally misleading.
+        reorientCandidate(_pag, excludeSelectionBias);
+
+        Graph _mag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(_pag));
 
         // Stamp all sepset-implied colliders, then judge MAG legality once.
         orientSepsetCollidersInMag(_mag, sepsets);
@@ -1235,16 +1495,8 @@ public final class FcitZm implements IGraphSearch {
             return true;
         }
 
-        // PAG route: delete the whole set, then reset and re-close from the seed colliders,
-        // exactly as the single-edge commit does.
-        Graph _next = new EdgeListGraph(interimPags.getLast());
-        for (Edge edge : edges) {
-            _next.removeEdge(edge.getNode1(), edge.getNode2());
-        }
-        _next.reorientAllWith(Endpoint.CIRCLE);
-        fciOrient.orient(_next, new HashSet<>(initialColliders), excludeSelectionBias);
-
-        pushPag(_next);
+        // PAG route: carry forward the very graph the gate just certified.
+        pushPag(_pag);
         return true;
     }
 
@@ -1326,6 +1578,18 @@ public final class FcitZm implements IGraphSearch {
         finalPag.reorientAllWith(Endpoint.CIRCLE);
         GraphUtils.recallInitialColliders(finalPag, initialColliders, knowledge);
 
+        // Stamp R0 from the RECORDED separators. Change from the pre-2026 implementation:
+        // coldReorient recalled only the SEED colliders and then went straight to
+        // finalOrientation, which applies R1-R10 but never R0. The colliders created by this
+        // search's own removals -- for every recorded pair now non-adjacent, each common
+        // neighbor absent from the recorded separator -- were therefore never stamped. The
+        // missing arrowheads then let R9/R10 add tails that the true PAG leaves as circles,
+        // which shows up as an ORIENTATION-only miss on an otherwise exact skeleton. The
+        // verdict is by membership in the recorded set (the one whose test licensed the
+        // deletion), never re-derived from the current graph, matching Fcit's
+        // adjustForExtraSepsets.
+        adjustForExtraSepsets(sepsets, finalPag);
+
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setVerbose(false);
         fciOrient.setParallel(false);
@@ -1334,7 +1598,7 @@ public final class FcitZm implements IGraphSearch {
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setUseR4(true);
         fciOrient.setKnowledge(knowledge);
-        fciOrient.finalOrientation(finalPag);   // R0 + R1-R4 via R0R4StrategyTestBased; uses the test
+        fciOrient.finalOrientation(finalPag);   // R1-R10; R0 stamped above from the recorded sepsets
 
         return finalPag;
     }
@@ -1451,6 +1715,26 @@ public final class FcitZm implements IGraphSearch {
      *
      * @param rbRadius the radius for RA algorithm to be set
      */
+    /**
+     * Sets whether the conflict-driven mark-flip escalation runs when the live-view sweep
+     * fails to find a separator. True by default (2026-8 reach repair); set false to
+     * reproduce the pre-repair search reach.
+     *
+     * @param useMarkFlipEscalation whether to run the escalation.
+     */
+    public void setUseMarkFlipEscalation(boolean useMarkFlipEscalation) {
+        this.useMarkFlipEscalation = useMarkFlipEscalation;
+    }
+
+    /**
+     * Sets the maximum number of mark-flip hypotheses tried per pair; -1 for unlimited.
+     *
+     * @param maxMarkFlips the cap.
+     */
+    public void setMaxMarkFlips(int maxMarkFlips) {
+        this.maxMarkFlips = maxMarkFlips;
+    }
+
     public void setRbRadius(int rbRadius) {
         this.rbRadius = rbRadius;
     }
@@ -1798,6 +2082,11 @@ public final class FcitZm implements IGraphSearch {
     }
 
     private record RemovalHit(int index, Edge edge, Set<Node> cond, double pValue) {
+    }
+
+    /** Result of one sweep: a confirmed separator (or null) and whether any budget/blocking
+     *  search came back indeterminate, so "not found" can be distinguished from "none exists". */
+    private record SweepOutcome(Set<Node> sepset, boolean indeterminate) {
     }
 
     private record IndependenceCheck(Edge edge, Set<Node> cond, double pValue) {

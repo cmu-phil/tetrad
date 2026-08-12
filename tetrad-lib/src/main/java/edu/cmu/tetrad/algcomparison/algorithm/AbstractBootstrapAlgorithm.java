@@ -56,9 +56,10 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     // to garbage collect rather than calling System.gc() every run, which speeds things up. jdramsey
 
     /**
-     * The bootstrap graphs.
+     * The bootstrap graphs. Protected so that subclasses that override the resampling loop (e.g., the multi-dataset
+     * bootstrap base class) can populate the same list that {@link #getBootstrapGraphs()} returns.
      */
-    private transient List<Graph> bootstrapGraphs = new LinkedList<>();
+    protected transient List<Graph> bootstrapGraphs = new LinkedList<>();
     /**
      * Bootstrap count, printed out to track bootstraps.
      */

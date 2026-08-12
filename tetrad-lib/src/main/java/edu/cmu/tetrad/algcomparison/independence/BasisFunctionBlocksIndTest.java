@@ -42,13 +42,13 @@ import java.util.List;
  * @author bryanandrews
  * @version $Id: $Id
  */
-@TestOfIndependence(
-        name = "BF-Blocks-Test",
-        command = "bf-blocks-test",
-        dataType = DataType.Mixed
-)
-@Mixed
-@General
+//@TestOfIndependence(
+//        name = "BF-Blocks-Test",
+//        command = "bf-blocks-test",
+//        dataType = DataType.Mixed
+//)
+//@Mixed
+//@General
 public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
 
     @Serial

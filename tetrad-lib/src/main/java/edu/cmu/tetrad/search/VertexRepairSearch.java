@@ -503,7 +503,18 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public static double getAndersonDarlingP(List<Double> pValues) {
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
-        return generalAndersonDarlingTest.getP();
+        // A-squared evaluated against getProbTail, not getP(). The null here is a fully specified Uniform(0, 1)
+        // with no estimated parameters (case 0), but getP() returns Stephens' case-3 approximation, which both
+        // inflates the statistic by (1 + 0.75/n + 2.25/n^2) and evaluates it with the piecewise formulas for
+        // testing normality with an estimated mean and variance. On exactly uniform p-values that combination
+        // rejects at roughly 52-63% against a nominal 5%, and unlike a small-sample correction the error does not
+        // decay with n. See MarkovCheck.calcStats and TestAndersonDarlingCalibration.
+        //
+        // This value ranks candidate edits, so the miscalibration was not merely a shifted scale: candidates differ
+        // in how many implied independencies they have, and the distortion depends on that count, so it altered the
+        // ORDER of candidates rather than only their scores. Repair may therefore select different edits than it
+        // did before this fix.
+        return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), generalAndersonDarlingTest.getASquared());
     }
 
     // =========================================================================
@@ -623,6 +634,33 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
+     * Returns true if the given candidate graph is inconsistent with the background knowledge. This is stricter than
+     * {@link Knowledge#isViolatedBy(Graph)} alone: in addition to forbidden directed edges and undirected edges whose
+     * orientations are both forbidden, it rejects candidates containing an undirected edge exactly one of whose
+     * orientations is forbidden. Such an edge is not impossible, but it is under-oriented - a knowledge-respecting
+     * CPDAG would have compiled it to the allowed direction - and accepting it would let repair "erase" orientations
+     * that the knowledge determines. (A more permissive alternative would be to orient such edges rather than reject
+     * the candidate; rejection is the conservative choice and keeps candidate enumeration unchanged.)
+     */
+    private boolean violatesKnowledge(Graph g) {
+        if (this.knowledge == null || this.knowledge.isEmpty()) return false;
+        if (this.knowledge.isViolatedBy(g)) return true;
+
+        for (Edge edge : g.getEdges()) {
+            if (Edges.isUndirectedEdge(edge)) {
+                String a = edge.getNode1().getName();
+                String b = edge.getNode2().getName();
+
+                if (this.knowledge.isForbidden(a, b) != this.knowledge.isForbidden(b, a)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Sets the graph type that governs which edits are legal.
      *
      * @param graphType the graph type to use; must not be {@code null}
@@ -697,7 +735,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     public List<ScoredCandidate> searchForNode(Node node) {
         Graph base = prepareBase();
         if (base == null) return List.of();
-        if (knowledge != null && knowledge.isViolatedBy(base)) return List.of();
+        if (violatesKnowledge(base)) return List.of();
 
         Node nodeInBase = base.getNode(node.getName());
         if (nodeInBase == null) return List.of();
@@ -965,7 +1003,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             Graph g2 = candGraphByKey.computeIfAbsent(cand.key(),
                     k -> buildCandidateGraph(base, cand));
             if (g2 == null) continue;
-            if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
+            if (violatesKnowledge(g2)) continue;
 
             boolean useLocality = usesLocality();
             Set<String> affected = affectedVertices(base, node, g2);
@@ -1001,7 +1039,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             Graph g2 = candGraphByKey.computeIfAbsent(cand.key(),
                     k -> buildCandidateGraph(base, cand));
             if (g2 == null) continue;
-            if (knowledge != null && knowledge.isViolatedBy(g2)) continue;
+            if (violatesKnowledge(g2)) continue;
 
             Set<String> affected = affectedVertices(base, node, g2);
             int after = usesLocality()
@@ -1445,8 +1483,8 @@ public final class VertexRepairSearch implements IGraphSearch {
      * Whole-graph Model-P via the joint wild bootstrap. Unlike KS/AD this cannot be
      * reassembled from cached per-vertex p-values — the wild bootstrap is a joint
      * statistic over the full implied-fact set with a shared multiplier — so it is
-     * recomputed from all implied facts of {@code g}. NaN if <2 facts or data is not
-     * a DataSet.
+     * recomputed from all implied facts of {@code g}. NaN if &lt;2 facts or the data is
+     * not an all-continuous DataSet.
      */
     private double wildBootstrapModelP(Graph g) {
         if (g == null) return Double.NaN;
@@ -1457,23 +1495,39 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Joint wild-bootstrap Markov check over an explicit fact list against the data set
-     * backing the independence test; returns the sum-T^2 omnibus p-value (pMax is also
-     * on the Result). Residualization is OLS on Z, independent of the configured test.
-     * NaN if the data is not a DataSet, there are <2 facts, or the run is interrupted.
+     * backing the independence test; returns the max-|T| omnibus p-value (pSumSquares is
+     * also on the Result). The max statistic is used because repair alternatives are
+     * sparse — a single wrong edge perturbs only a few implied facts out of possibly
+     * thousands — and the sum-T^2 statistic dilutes a sparse signal linearly in the
+     * number of facts K: in simulation (one violated fact, shift d=0.2, rho=0.5, n=400)
+     * pSumSquares' power collapses to its size (~0.03) by K=200 while pMax retains ~0.71
+     * at K=1000. Residualization is OLS on Z, independent of the configured test, so the
+     * data must be all-continuous; discrete or mixed data would be silently regressed on
+     * category indices, so it is rejected here rather than mis-scored. NaN if the data is
+     * not an all-continuous DataSet, there are &lt;2 facts, or the run is interrupted.
      */
     private double wildBootstrapP(List<IndependenceFact> facts) {
         if (facts == null || facts.size() < 2) return Double.NaN;
         if (Q == null || Q.getTest() == null) return Double.NaN;
         Object dm = Q.getTest().getData();
         if (!(dm instanceof DataSet ds)) return Double.NaN;
+        if (!ds.isContinuous()) {
+            vlog("Wild bootstrap Model-P requires an all-continuous data set (OLS "
+                    + "residualization); data is discrete or mixed. Returning NaN.");
+            return Double.NaN;
+        }
         try {
             WildBootstrapMarkovCheck.Result r = new WildBootstrapMarkovCheck(ds)
                     .setNumBootstraps(wbNumBootstraps)
                     .setSeed(wbSeed)
                     .checkFacts(facts);
-            return (r == null) ? Double.NaN : r.pSumSquares;
+            return (r == null) ? Double.NaN : r.pMax;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Double.NaN;
         } catch (Exception e) {
-            if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+            vlog("Wild bootstrap Model-P failed (%s: %s); returning NaN.",
+                    e.getClass().getSimpleName(), e.getMessage());
             return Double.NaN;
         }
     }
