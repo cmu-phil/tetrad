@@ -818,8 +818,9 @@ public final class DataAudit {
      * flagged when the Ljung-Box p-value falls below {@code serialAlpha} AND the largest absolute autocorrelation is
      * at least {@code serialMinAbsAutocorrelation}; the magnitude condition keeps the check from flagging trivially
      * small dependence at large n. Flagged findings also report an AR(1) effective sample size,
-     * n_eff = m (1 - r1) / (1 + r1), when the lag-1 autocorrelation r1 is positive, since that communicates severity
-     * better than a correlation does.
+     * n_eff = m (1 - r1) / (1 + r1), when the lag-1 autocorrelation r1 is positive and the dependence looks
+     * AR(1)-like, since that communicates severity better than a correlation does; when the dependence instead looks
+     * periodic, the message notes that in place of the AR(1) approximation (see design decision (6) below).
      * <p>
      * Design decisions, deliberate and contestable: (1) The check is one-sided with respect to row order. File order
      * is treated as potentially meaningful (time, spatial sequence, batch); a flag establishes that rows are not
@@ -838,7 +839,15 @@ public final class DataAudit {
      * attribute grouped by town) centers to exact or near-exact zeros, and in the near-exact case (non-representable
      * decimals) the surviving c0 is rounding residue from which autocorrelations would be pure floating-point noise.
      * (5) Discrete variables are not checked in this version; a
-     * lag-1 Cramer's V or runs test could be added later under the same finding code.
+     * lag-1 Cramer's V or runs test could be added later under the same finding code. (6) When the largest absolute
+     * autocorrelation occurs at a lag greater than 1 while |r1| is below {@code serialMinAbsAutocorrelation}, the
+     * message notes possible periodic dependence at that lag (e.g., a block or seasonal design) in place of the
+     * AR(1) effective-sample-size clause: the AR(1) approximation is computed from r1 alone, so under periodic
+     * dependence with a small r1 it reports nearly the full sample size and would falsely reassure. The finding then
+     * also carries {@code periodicSuspect = 1} in its values, and {@code effectiveSampleSize} is still recorded there
+     * whenever r1 is in (0, 1), so nothing is withheld from downstream consumers; only the message changes. This case
+     * was observed on task fMRI data thinned to every kth row, where r1 fell to ~0.02 but a stimulus-locked
+     * autocorrelation of ~0.7 remained at the task period.
      */
     private void serialDependenceCheck() {
         int n = this.dataSet.getNumRows();
@@ -967,13 +976,30 @@ public final class DataAudit {
                 values.put("alpha", this.config.serialAlpha);
                 values.put("minAbsThreshold", this.config.serialMinAbsAutocorrelation);
 
+                boolean periodicSuspect = maxAbsLag > 1
+                        && Math.abs(r1) < this.config.serialMinAbsAutocorrelation;
+
+                if (periodicSuspect) {
+                    values.put("periodicSuspect", 1.0);
+                }
+
                 String effNote = "";
 
                 if (r1 > 0 && r1 < 1) {
                     double nEff = m * (1 - r1) / (1 + r1);
                     values.put("effectiveSampleSize", nEff);
-                    effNote = "; under an AR(1) approximation n = " + m + " behaves like n ~ "
-                            + Math.round(nEff);
+
+                    if (!periodicSuspect) {
+                        effNote = "; under an AR(1) approximation n = " + m + " behaves like n ~ "
+                                + Math.round(nEff);
+                    }
+                }
+
+                if (periodicSuspect) {
+                    effNote = "; the dominant autocorrelation is at lag " + maxAbsLag + " while |r1| = "
+                            + fmt(Math.abs(r1)) + " is small, consistent with periodic dependence (e.g., a block"
+                            + " or seasonal design); the AR(1) effective-sample-size approximation is not"
+                            + " informative here";
                 }
 
                 String groupNote = groupCol >= 0 ? ", within groups of " + this.names[groupCol] : "";

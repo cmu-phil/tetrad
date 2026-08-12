@@ -410,6 +410,69 @@ public class TestDataAudit {
         assertEquals(open, close);
     }
 
+    /**
+     * An AR(1) series with substantial lag-1 autocorrelation should fire SERIAL_DEPENDENCE with the AR(1)
+     * effective-sample-size clause in the message and without the periodicSuspect flag.
+     */
+    @Test
+    public void testSerialDependenceAr1Message() {
+        Random rand = new Random(31);
+        int n = 400;
+        double[][] data = new double[n][2];
+        double x = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            x = 0.8 * x + rand.nextGaussian();
+            data[i][0] = x;
+            data[i][1] = rand.nextGaussian();
+        }
+
+        DataAudit audit = new DataAudit(continuousDataSet(data));
+
+        List<AuditFinding> serial = audit.getFindings().stream()
+                .filter(f -> f.getCode() == FindingCode.SERIAL_DEPENDENCE)
+                .filter(f -> f.getVariables().contains("X1")).toList();
+
+        assertEquals(1, serial.size());
+        AuditFinding f = serial.get(0);
+        assertTrue(f.getMessage().contains("behaves like"));
+        assertFalse(f.getMessage().contains("periodic"));
+        assertFalse(f.getValues().containsKey("periodicSuspect"));
+        assertTrue(f.getValues().containsKey("effectiveSampleSize"));
+    }
+
+    /**
+     * A periodic series with near-zero lag-1 autocorrelation but a dominant autocorrelation at a deeper lag (here a
+     * period-4 cycle, whose lag-2 autocorrelation is near -1 while lag-1 is near 0) should fire SERIAL_DEPENDENCE
+     * with the periodic-dependence clause in place of the AR(1) effective-sample-size clause, and should carry
+     * periodicSuspect = 1 in its values. This is the thinned task-fMRI case: AR decay removed by thinning, but a
+     * stimulus-locked cycle remaining at the task period.
+     */
+    @Test
+    public void testSerialDependencePeriodicSuspectMessage() {
+        Random rand = new Random(37);
+        int n = 400;
+        double[][] data = new double[n][2];
+
+        for (int i = 0; i < n; i++) {
+            data[i][0] = Math.sin(2 * Math.PI * i / 4.0) + 0.1 * rand.nextGaussian();
+            data[i][1] = rand.nextGaussian();
+        }
+
+        DataAudit audit = new DataAudit(continuousDataSet(data));
+
+        List<AuditFinding> serial = audit.getFindings().stream()
+                .filter(f -> f.getCode() == FindingCode.SERIAL_DEPENDENCE)
+                .filter(f -> f.getVariables().contains("X1")).toList();
+
+        assertEquals(1, serial.size());
+        AuditFinding f = serial.get(0);
+        assertTrue(f.getMessage().contains("consistent with periodic dependence"));
+        assertFalse(f.getMessage().contains("behaves like"));
+        assertEquals(1.0, f.getValues().get("periodicSuspect"), 0.0);
+        assertEquals(2.0, f.getValues().get("maxAbsLag"), 0.0);
+    }
+
     //==================================== HELPERS ====================================//
 
     /**
