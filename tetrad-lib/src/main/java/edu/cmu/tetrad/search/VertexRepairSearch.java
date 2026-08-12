@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
@@ -641,6 +642,12 @@ public final class VertexRepairSearch implements IGraphSearch {
      * CPDAG would have compiled it to the allowed direction - and accepting it would let repair "erase" orientations
      * that the knowledge determines. (A more permissive alternative would be to orient such edges rather than reject
      * the candidate; rejection is the conservative choice and keeps candidate enumeration unchanged.)
+     *
+     * <p>Note (2026-8-12): knowledge-compelled orientations are now restored during CPDAG canonicalization by
+     * {@link #applyKnowledgeOrientations(Graph)}, so this check no longer rejects the canonicalized base graph or
+     * canonicalized candidates merely because {@link GraphTransforms#dagToCpdag} discarded orientations that the
+     * knowledge determines. It continues to reject genuinely under-oriented candidates (e.g., a proposed undirected
+     * edge one of whose orientations is forbidden, before canonicalization).
      */
     private boolean violatesKnowledge(Graph g) {
         if (this.knowledge == null || this.knowledge.isEmpty()) return false;
@@ -1592,17 +1599,78 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (h == null) return null;
         try {
             Graph h2 = new EdgeListGraph(h);
-            if (h2.paths().isLegalDag()) return GraphTransforms.dagToCpdag(h2);
+            if (h2.paths().isLegalDag()) return applyKnowledgeOrientations(GraphTransforms.dagToCpdag(h2));
             if (h2.paths().isLegalCpdag() || h2.paths().isLegalPdag()) {
                 Graph dag = GraphTransforms.dagFromCpdag(h2);
-                return GraphTransforms.dagToCpdag(dag);
+                return applyKnowledgeOrientations(GraphTransforms.dagToCpdag(dag));
             }
             Graph seed = seedDagFromAnyGraph(h2);
             if (seed == null) return null;
-            return GraphTransforms.dagToCpdag(seed);
+            return applyKnowledgeOrientations(GraphTransforms.dagToCpdag(seed));
         } catch (Throwable t) {
             return null;
         }
+    }
+
+    /**
+     * Restores background-knowledge-compelled orientations after CPDAG compilation, returning a
+     * knowledge-consistent PDAG in the same Markov equivalence class. (Change from the pre-2026-8-12
+     * behavior, which returned the raw CPDAG.)
+     *
+     * <p>{@link GraphTransforms#dagToCpdag} is knowledge-blind: it un-orients every edge whose
+     * direction is not compelled by unshielded colliders and the Meek rules. A graph whose
+     * orientations were forced by background knowledge (tiers, forbidden edges) therefore comes back
+     * under-oriented, and {@link #violatesKnowledge}, which deliberately rejects under-oriented
+     * edges, then rejects the canonicalized base graph itself. Since {@code searchForNode} returns no
+     * candidates when the base violates knowledge, repair with tier knowledge was a guaranteed no-op
+     * whenever the knowledge compelled any orientation the Meek rules did not.
+     *
+     * <p>Here each undirected edge with a required orientation, or exactly one forbidden
+     * orientation, is compiled to the knowledge-determined direction, and the Meek rules are then
+     * run with knowledge (without reverting to unshielded colliders, so the restored orientations
+     * persist) to close under the orientation rules. Undirected edges both of whose orientations are
+     * forbidden are left for {@link Knowledge#isViolatedBy(Graph)} to reject, unchanged from the
+     * previous behavior.
+     */
+    private Graph applyKnowledgeOrientations(Graph g) {
+        if (g == null || this.knowledge == null || this.knowledge.isEmpty()) return g;
+
+        for (Edge edge : new ArrayList<>(g.getEdges())) {
+            if (!Edges.isUndirectedEdge(edge)) continue;
+
+            Node a = edge.getNode1();
+            Node b = edge.getNode2();
+            String an = a.getName();
+            String bn = b.getName();
+
+            boolean abRequired = this.knowledge.isRequired(an, bn);
+            boolean baRequired = this.knowledge.isRequired(bn, an);
+            boolean abForbidden = this.knowledge.isForbidden(an, bn);
+            boolean baForbidden = this.knowledge.isForbidden(bn, an);
+
+            if (abRequired && !baRequired) {
+                g.removeEdge(edge);
+                g.addDirectedEdge(a, b);
+            } else if (baRequired && !abRequired) {
+                g.removeEdge(edge);
+                g.addDirectedEdge(b, a);
+            } else if (abForbidden != baForbidden) {
+                g.removeEdge(edge);
+                if (abForbidden) {
+                    g.addDirectedEdge(b, a);
+                } else {
+                    g.addDirectedEdge(a, b);
+                }
+            }
+        }
+
+        MeekRules meek = new MeekRules();
+        meek.setKnowledge(this.knowledge);
+        meek.setRevertToUnshieldedColliders(false);
+        meek.setVerbose(false);
+        meek.orientImplied(g);
+
+        return g;
     }
 
     private Graph canonicalizeToPagOrNull(Graph h) {
