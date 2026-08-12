@@ -8,6 +8,9 @@ import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -71,6 +74,7 @@ public final class CgCalibrationHarness {
         scenarioMarginalMixture(R, 1500);
         scenarioMarginalMixture(R, 5000);
         scenarioFloorSensitivity(R, 200);
+        scenarioIntegerValuedYBootstrap(R, 800);
 
         System.out.println();
         System.out.println("=== LEVEL 2: Markov-checker size on TRUE CG DAG (R = " + RMC + ") ===");
@@ -430,6 +434,81 @@ public final class CgCalibrationHarness {
      * arrays; then discrete. names must list continuous then discrete in the
      * SAME combined order used by the cont/disc arrays.
      */
+    /**
+     * S9: robustness with an integer-valued "continuous" target under bootstrap resampling (the
+     * contraceptive-method crash of 2026-8-12). X disc(4) and Y (integer counts) are independent given
+     * Z1 disc(4), Z2 disc(4), Z3 disc(2); each rep draws a base sample of size n and then a bootstrap
+     * resample of it, which readily makes Y constant within (X, Z) eligibility cells. Before the
+     * degeneracy screen this threw "Undefined likelihood" on most reps; the ASSERTION here is
+     * exceptions = 0. The rejection-rate line is diagnostic only and is expected to be far above
+     * nominal, for two reasons independent of the screen (verified by ablation 2026-8-13: Gaussian Y
+     * on the base sample, where the screen never fires, rejects 0.62): (1) the many-small-cells
+     * regime - 128 fine cells averaging ~6 rows - compounds the per-cell chi-square inflation that S3
+     * shows in miniature; (2) with-replacement resampling duplicates rows, violating the iid
+     * assumption of the LRT and pushing rejection to ~1. Size on bootstrap resamples is not a promise
+     * of this test; bootstrap search aggregates by edge frequency, not by calibrated p-values.
+     */
+    private static void scenarioIntegerValuedYBootstrap(int R, int n) {
+        Random rng = new Random(2026);
+        List<Double> ps = new ArrayList<>();
+        int exceptions = 0;
+
+        for (int rep = 0; rep < R; rep++) {
+            int[] x = new int[n];
+            int[] z1 = new int[n];
+            int[] z2 = new int[n];
+            int[] z3 = new int[n];
+            double[] y = new double[n];
+
+            for (int i = 0; i < n; i++) {
+                x[i] = rng.nextInt(4);
+                z1[i] = rng.nextInt(4);
+                z2[i] = rng.nextInt(4);
+                z3[i] = rng.nextInt(2);
+                // Small integer counts depending on Z only: many ties, cells easily constant.
+                double lambda = 0.5 + z1[i] * 0.7;
+                int count = 0;
+                double l = Math.exp(-lambda), q = 1.0;
+                do {
+                    q *= rng.nextDouble();
+                    if (q >= l) count++;
+                } while (q >= l && count < 12);
+                y[i] = count;
+            }
+
+            // Bootstrap resample of the base sample.
+            int[] xb = new int[n];
+            int[] z1b = new int[n];
+            int[] z2b = new int[n];
+            int[] z3b = new int[n];
+            double[] yb = new double[n];
+            for (int i = 0; i < n; i++) {
+                int r = rng.nextInt(n);
+                xb[i] = x[r];
+                z1b[i] = z1[r];
+                z2b[i] = z2[r];
+                z3b[i] = z3[r];
+                yb[i] = y[r];
+            }
+
+            DataSet data = mixed(n, new String[]{"Y", "X", "Z1", "Z2", "Z3"},
+                    new double[][]{yb}, new int[][]{xb, z1b, z2b, z3b}, new int[]{4, 4, 4, 2});
+
+            IndTestConditionalGaussianLrt test = new IndTestConditionalGaussianLrt(data, 0.05, true);
+            List<Node> vars = test.getVariables();
+            Set<Node> z = new HashSet<>(Arrays.asList(vars.get(2), vars.get(3), vars.get(4)));
+
+            try {
+                ps.add(test.checkIndependence(vars.get(1), vars.get(0), z).getPValue());
+            } catch (Exception e) {
+                exceptions++;
+            }
+        }
+
+        System.out.printf("S9 integer Y, bootstrap resample: exceptions=%d / %d (ASSERTION: 0)%n", exceptions, R);
+        report("S9 size, diagnostic only (inflated; see doc)", n, ps);
+    }
+
     private static DataSet mixed(int n, String[] names, double[][] cont, int[][] disc, int[] numCats) {
         List<Node> vars = new ArrayList<>();
         for (int j = 0; j < cont.length; j++) vars.add(new ContinuousVariable(names[j]));
