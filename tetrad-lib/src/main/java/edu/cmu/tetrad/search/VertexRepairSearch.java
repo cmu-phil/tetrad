@@ -1852,7 +1852,16 @@ public final class VertexRepairSearch implements IGraphSearch {
             case CPDAG -> g.paths().isLegalCpdag() || g.paths().isLegalPdag();
             case PDAG -> g.paths().isLegalPdag();
             case MAG -> g.paths().isLegalMag() && !hasSelectionBias(g);
-            case PAG -> g.paths().isLegalPag() && !hasSelectionBias(g);
+            // The isLegalPag() conjunct is commented out as of 2026-8-13.
+            // buildCandidateGraph now projects every PAG candidate through
+            // canonicalizeToPagOrNull, which returns magToPag of a graph that has already
+            // passed isLegalMag, so PAG legality holds by construction and the check is
+            // redundant. It was also the only call on the candidate path with a
+            // 20-second internal timeout (PagLegalityCheck), which under GC pressure or
+            // on a slow machine could silently drop candidates and make the search
+            // machine-dependent. Uncomment to restore the check if magToPag is ever
+            // suspected of emitting a non-legal PAG.
+            case PAG -> /* g.paths().isLegalPag() && */ !hasSelectionBias(g);
         };
     }
 
