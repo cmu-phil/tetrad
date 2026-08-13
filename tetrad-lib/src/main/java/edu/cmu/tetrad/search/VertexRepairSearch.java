@@ -71,6 +71,26 @@ import java.util.stream.Collectors;
  * Cancellation:
  * <p>
  * Call {@link #cancel()} from any thread to request early termination.
+ * <p>
+ * Performance (changes from the pre-2026-8-13 implementation):
+ * <p>
+ * The baseline evaluation bundle (canonicalized base graph, per-vertex Markov
+ * contributions, baseline violation count, and baseline Model-P) is now computed once
+ * per working-graph state and memoized, keyed on an internal graph-version counter,
+ * instead of being rebuilt once per node per queue pass and once per queue poll. This
+ * is a pure hoisting of identical computations and does not change which candidate is
+ * selected. A side effect is that all consumers of the base graph within one graph
+ * state see the same canonicalization, where previously each call to the (potentially
+ * tie-breaking) canonicalizer could in principle produce a different member of the
+ * equivalence class.
+ * <p>
+ * Optionally, {@link #setAffectedOnlyInvalidation(boolean)} restricts the
+ * per-edit candidate recomputation in {@link RepairStrategy#GLOBAL_QUEUE} to the
+ * vertices whose adjacency actually changed, rather than all vertices; see that
+ * method's documentation for the exact semantics, including the lazy revalidation of
+ * stale queue entries and the full verification sweep that certifies convergence.
+ * The default is {@code true} (as of 2026-8-13); pass {@code false} to restore the
+ * original full-invalidation behavior exactly.
  *
  * @author josephramsey (extracted from VertexRepairPanelGlobalRepair)
  */
@@ -267,6 +287,23 @@ public final class VertexRepairSearch implements IGraphSearch {
     private int wbNumBootstraps = 1000;
     private long wbSeed = 0L;
     private boolean verbose = false;
+    /**
+     * Monotone counter bumped whenever the working graph (or any setting that affects
+     * baseline evaluation) changes. Used to key the memoized {@link BaselineBundle} and
+     * to detect stale queue entries under affected-only invalidation.
+     */
+    private long graphVersion = 0L;
+    /**
+     * Memoized baseline bundle for the current {@link #graphVersion}; recomputed lazily
+     * by {@link #baselineBundle()} when stale.
+     */
+    private BaselineBundle baselineBundle = null;
+    /**
+     * When true (the default as of 2026-8-13), GLOBAL_QUEUE recomputes candidates only
+     * for vertices affected by each applied edit; see
+     * {@link #setAffectedOnlyInvalidation(boolean)}.
+     */
+    private boolean affectedOnlyInvalidation = true;
 
     // =========================================================================
     // Construction
@@ -623,6 +660,7 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setGraph(Graph graph) {
         this.workingGraph = safeCopy(Objects.requireNonNull(graph, "graph"));
+        bumpGraphVersion();
     }
 
     /**
@@ -632,6 +670,7 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge;
+        bumpGraphVersion();
     }
 
     /**
@@ -674,6 +713,7 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setGraphType(AdjustmentGraphType graphType) {
         this.graphType = Objects.requireNonNull(graphType, "graphType");
+        bumpGraphVersion();
     }
 
     // =========================================================================
@@ -687,6 +727,46 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setRepairStrategy(RepairStrategy repairStrategy) {
         this.repairStrategy = Objects.requireNonNull(repairStrategy, "repairStrategy");
+    }
+
+    /**
+     * When true, {@link RepairStrategy#GLOBAL_QUEUE} recomputes candidate lists after
+     * each applied edit only for the vertices plausibly affected by that edit
+     * (endpoints of every edge changed between the before/after graphs — including
+     * changes propagated by CPDAG canonicalization — closed under one hop of adjacency,
+     * plus the edited node), rather than for every vertex in the graph. Since a full
+     * recomputation costs roughly (number of vertices) x (candidates per vertex) x
+     * (candidate-graph canonicalization + evaluation), this typically reduces per-edit
+     * cost by a factor on the order of the ratio of graph size to edit-neighborhood
+     * size.
+     *
+     * <p>Semantics under this mode (change from the pre-2026-8-13 implementation, which
+     * always recomputed all vertices):
+     * <ul>
+     *   <li>Queue entries for untouched vertices survive across edits with scores
+     *       computed against an older graph state. When such a stale entry reaches the
+     *       head of the queue, it is re-evaluated fresh against the current graph, and
+     *       is applied only if the fresh evaluation beats a fresh no-op under
+     *       {@link #CANONICAL_TABLE_ORDER}; otherwise it is discarded. This check is
+     *       slightly better informed than the full-invalidation head check, since both
+     *       sides carry evaluated Model-P values.</li>
+     *   <li>When the queue drains, one full candidate rebuild is performed at the
+     *       current graph state ("verification sweep") before convergence is declared,
+     *       so the fixed point is identical in kind to full invalidation: convergence
+     *       means no single candidate anywhere improves on the current graph.</li>
+     *   <li>The greedy <em>path</em> to the fixed point may differ from full
+     *       invalidation, because stale scores can order the queue differently at ties;
+     *       every applied edit is still verified fresh before application.</li>
+     * </ul>
+     *
+     * <p>The default is {@code true} (as of 2026-8-13). Pass {@code false} to restore
+     * the original full-invalidation behavior exactly.
+     *
+     * @param affectedOnlyInvalidation true to restrict per-edit recomputation to
+     *                                 affected vertices
+     */
+    public void setAffectedOnlyInvalidation(boolean affectedOnlyInvalidation) {
+        this.affectedOnlyInvalidation = affectedOnlyInvalidation;
     }
 
     /**
@@ -740,8 +820,9 @@ public final class VertexRepairSearch implements IGraphSearch {
      * @return scored, ranked candidates (best first); empty if nothing legal was found
      */
     public List<ScoredCandidate> searchForNode(Node node) {
-        Graph base = prepareBase();
-        if (base == null) return List.of();
+        BaselineBundle bb = baselineBundle();
+        if (bb == null) return List.of();
+        Graph base = bb.base();
         if (violatesKnowledge(base)) return List.of();
 
         Node nodeInBase = base.getNode(node.getName());
@@ -751,7 +832,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
             candidates.addFirst(CandidateEdit.noOp());
         }
-        return scoreCandidates(base, nodeInBase, candidates);
+        return scoreCandidates(bb, nodeInBase, candidates);
     }
 
     /**
@@ -791,13 +872,16 @@ public final class VertexRepairSearch implements IGraphSearch {
                 while (true) {
                     if (stopRequested()) return;
 
-                    Graph base = prepareBase();
-                    if (base == null) {
+                    BaselineBundle bb = baselineBundle();
+                    if (bb == null) {
                         fireStatus("Canonicalization failed during repair.");
                         return;
                     }
 
-                    List<ScoredCandidate> candidates = computeScoredCandidatesForNode(base, current);
+                    Node currentInBase = bb.base().getNode(current.getName());
+                    if (currentInBase == null) break;
+
+                    List<ScoredCandidate> candidates = computeScoredCandidatesForNode(bb, currentInBase);
                     if (candidates.isEmpty()) break;
 
                     ScoredCandidate top = candidates.getFirst();
@@ -844,14 +928,30 @@ public final class VertexRepairSearch implements IGraphSearch {
             fireStatus("Pruning obvious false-positive edges...");
             pruneObviousFalsePositives(workingGraph, 2); // depth 3 is a reasonable default
             Q.clearCaches(); // flush cached results since graph changed
+            bumpGraphVersion();
         }
 
         fireStatus("Building global candidate queue...");
         if (!initGlobalQueue()) return;
-        // ... rest unchanged
+        long fullRebuildAtVersion = graphVersion;
 
-        while (!globalQueue.isEmpty()) {
+        while (true) {
             if (stopRequested()) return;
+
+            if (globalQueue.isEmpty()) {
+                // Under affected-only invalidation, entries for untouched vertices may
+                // have gone stale and been dropped; before declaring convergence, do one
+                // full rebuild at the current graph state to certify that no single
+                // candidate anywhere improves. This restores exactly the fixed-point
+                // guarantee of full invalidation, paying for a full pass only when the
+                // queue drains rather than after every edit.
+                if (!affectedOnlyInvalidation || fullRebuildAtVersion == graphVersion) break;
+                fireStatus("Verification sweep: rebuilding full candidate queue...");
+                if (!initGlobalQueue()) return;
+                fullRebuildAtVersion = graphVersion;
+                if (globalQueue.isEmpty()) break;
+                continue;
+            }
 
             QueueEntry entry = globalQueue.poll();
             if (entry == null) break;
@@ -871,10 +971,18 @@ public final class VertexRepairSearch implements IGraphSearch {
                 continue;
             }
 
-            if (withMp == null || withMp.edit() == null || withMp.edit().isNoOp()) continue;
-//        return true;
-            workingGraph.getNumEdges();
-            moveType(withMp.edit());
+            if (withMp.edit() == null || withMp.edit().isNoOp()) continue;
+
+            // Lazy revalidation: an entry scored against an older graph state must
+            // re-earn application by beating the fresh no-op for the current state.
+            // (Entries at the current version have already beaten the no-op via the
+            // head-of-list check, exactly as under full invalidation.) A dropped head
+            // is removed from its node's list so the next-best candidate can surface.
+            if (affectedOnlyInvalidation && entry.version() != graphVersion
+                    && !applyWorthy(withMp, entry.nodeName())) {
+                currentForNode.removeFirst();
+                continue;
+            }
 
             Graph before = safeCopy(workingGraph);
             applyCandidateInternal(withMp.edit());
@@ -891,23 +999,17 @@ public final class VertexRepairSearch implements IGraphSearch {
                 return;
             }
 
-            Set<String> affected = affectedVertices(before,
-                    resolveNode(before, entry.nodeName()), workingGraph)
-                    .stream().filter(n -> workingGraph.getNode(n) != null)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-
-            CandidateEdit edit = withMp.edit();
-            Edge editedEdge = edit.getEdge();
-            if (editedEdge != null) {
-                Node n1 = editedEdge.getNode1(), n2 = editedEdge.getNode2();
-                if (n1 != null && n1.getName() != null) affected.add(n1.getName());
-                if (n2 != null && n2.getName() != null) affected.add(n2.getName());
+            Set<String> namesToRecompute;
+            if (affectedOnlyInvalidation) {
+                namesToRecompute = invalidationSet(before, workingGraph,
+                        entry.nodeName(), withMp.edit());
+            } else {
+                namesToRecompute = workingGraph.getNodes().stream()
+                        .map(Node::getName)
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
             }
 
-            if (!invalidateAndRecompute(
-                    workingGraph.getNodes().stream()
-                            .map(Node::getName)
-                            .collect(Collectors.toCollection(LinkedHashSet::new)))) return;
+            if (!invalidateAndRecompute(namesToRecompute)) return;
 
             final int count = editsApplied;
             fireStatus("Global repair: " + count + " edits applied...");
@@ -925,8 +1027,8 @@ public final class VertexRepairSearch implements IGraphSearch {
         globalCandsByNode.clear();
         globalQueue = new PriorityQueue<>();
 
-        Graph base = prepareBase();
-        if (base == null) {
+        BaselineBundle bb = baselineBundle();
+        if (bb == null) {
             fireStatus("Canonicalization failed during queue init.");
             return false;
         }
@@ -937,23 +1039,25 @@ public final class VertexRepairSearch implements IGraphSearch {
         for (Node node : nodes) {
             if (stopRequested()) return false;
 
-            Node inBase = base.getNode(node.getName());
+            Node inBase = bb.base().getNode(node.getName());
             if (inBase == null) continue;
 
-            List<ScoredCandidate> scored = computeScoredCandidatesForNodeNoModelP(base, inBase);
+            List<ScoredCandidate> scored = computeScoredCandidatesForNodeNoModelP(bb, inBase);
             if (scored.isEmpty()) continue;
 
             globalCandsByNode.put(node.getName(), scored);
             for (ScoredCandidate sc : scored) {
-                if (!sc.edit().isNoOp()) globalQueue.offer(new QueueEntry(node.getName(), sc));
+                if (!sc.edit().isNoOp()) {
+                    globalQueue.offer(new QueueEntry(node.getName(), sc, graphVersion));
+                }
             }
         }
         return true;
     }
 
     private boolean invalidateAndRecompute(Set<String> affectedNames) {
-        Graph base = prepareBase();
-        if (base == null) {
+        BaselineBundle bb = baselineBundle();
+        if (bb == null) {
             fireStatus("Canonicalization failed during queue update.");
             return false;
         }
@@ -963,18 +1067,20 @@ public final class VertexRepairSearch implements IGraphSearch {
             if (name == null) continue;
 
             Node inGraph = workingGraph.getNode(name);
-            Node inBase = (inGraph != null) ? base.getNode(name) : null;
+            Node inBase = (inGraph != null) ? bb.base().getNode(name) : null;
 
             if (inBase == null) {
                 globalCandsByNode.remove(name);
                 continue;
             }
 
-            List<ScoredCandidate> fresh = computeScoredCandidatesForNodeNoModelP(base, inBase);
+            List<ScoredCandidate> fresh = computeScoredCandidatesForNodeNoModelP(bb, inBase);
             globalCandsByNode.put(name, fresh);
 
             for (ScoredCandidate sc : fresh) {
-                if (!sc.edit().isNoOp()) globalQueue.offer(new QueueEntry(name, sc));
+                if (!sc.edit().isNoOp()) {
+                    globalQueue.offer(new QueueEntry(name, sc, graphVersion));
+                }
             }
         }
         return true;
@@ -984,22 +1090,23 @@ public final class VertexRepairSearch implements IGraphSearch {
     // Private: graph type helpers
     // =========================================================================
 
-    private List<ScoredCandidate> computeScoredCandidatesForNode(Graph base, Node node) {
-        List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(base, node));
+    private List<ScoredCandidate> computeScoredCandidatesForNode(BaselineBundle bb, Node node) {
+        List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(bb.base(), node));
         if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
             candidates.addFirst(CandidateEdit.noOp());
         }
-        return scoreCandidates(base, node, candidates);
+        return scoreCandidates(bb, node, candidates);
     }
 
-    private List<ScoredCandidate> computeScoredCandidatesForNodeNoModelP(Graph base, Node node) {
+    private List<ScoredCandidate> computeScoredCandidatesForNodeNoModelP(BaselineBundle bb, Node node) {
+        Graph base = bb.base();
         List<CandidateEdit> candidates = new ArrayList<>(enumerateCandidates(base, node));
         if (candidates.stream().noneMatch(CandidateEdit::isNoOp)) {
             candidates.addFirst(CandidateEdit.noOp());
         }
 
-        GlobalEvalCache baseCache = buildBaselineCache(base);
-        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
+        GlobalEvalCache baseCache = bb.cache();
+        int baseline = bb.violations();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> result = new ArrayList<>();
@@ -1032,10 +1139,11 @@ public final class VertexRepairSearch implements IGraphSearch {
         return result;
     }
 
-    private List<ScoredCandidate> scoreCandidates(Graph base, Node node, List<CandidateEdit> candidates) {
-        GlobalEvalCache baseCache = buildBaselineCache(base);
-        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
-        double mpBefore = evalModelPLocality(baseCache, base, Set.of());
+    private List<ScoredCandidate> scoreCandidates(BaselineBundle bb, Node node, List<CandidateEdit> candidates) {
+        Graph base = bb.base();
+        GlobalEvalCache baseCache = bb.cache();
+        int baseline = bb.violations();
+        double mpBefore = bb.modelP();
 
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
@@ -1099,13 +1207,7 @@ public final class VertexRepairSearch implements IGraphSearch {
                     (mpAfter == null ? Double.NaN : mpAfter),
                     sc.edgesAfter(), true, Q.getAlpha());
 
-            boolean passes = true;
-            if (patched == null || patched.edit() == null || patched.edit().isNoOp()) {
-                passes = false;
-            } else {//        return true;
-                base.getNumEdges();
-                moveType(patched.edit());
-            }
+            boolean passes = !(patched.edit() == null || patched.edit().isNoOp());
             if (!passes && !patched.edit().isNoOp()) continue;
 
             result.add(new ScoredCandidate(
@@ -1119,8 +1221,9 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     private ScoredCandidate evalModelPForEntry(QueueEntry entry) {
-        Graph base = prepareBase();
-        if (base == null) return null;
+        BaselineBundle bb = baselineBundle();
+        if (bb == null) return null;
+        Graph base = bb.base();
 
         ScoredCandidate sc = entry.scored();
         CandidateEdit cand = sc.edit();
@@ -1131,18 +1234,25 @@ public final class VertexRepairSearch implements IGraphSearch {
         Node node = workingGraph.getNode(entry.nodeName());
         if (node == null) return null;
 
-        GlobalEvalCache baseCache = buildBaselineCache(base);
+        GlobalEvalCache baseCache = bb.cache();
         Set<String> affected = affectedVertices(base, node, g2);
 
-        double mpBefore = evalModelPLocality(baseCache, base, Set.of());
+        double mpBefore = bb.modelP();
         double mpAfter = evalModelPLocality(baseCache, g2, affected);
-        int baseline = evalGraphLocality(baseCache, base, Set.of()).violations();
+        int baseline = bb.violations();
         int after = usesLocality()
                 ? evalGraphLocality(baseCache, g2, affected).violations()
                 : evalViolationsOnly(g2);
 
+        // Under affected-only invalidation, a stale entry's node-P was computed against
+        // an older graph state; refresh it so the applyWorthy comparison against the
+        // fresh no-op is like-for-like all the way down the comparator tiers.
+        double nodePAfter = (affectedOnlyInvalidation && entry.version() != graphVersion)
+                ? nodePValue(g2, node)
+                : sc.nodePAfter();
+
         return new ScoredCandidate(cand, baseline, after,
-                sc.nodePAfter(), mpBefore, mpAfter, g2.getNumEdges(), true, Q.getAlpha());
+                nodePAfter, mpBefore, mpAfter, g2.getNumEdges(), true, Q.getAlpha());
     }
 
     private List<CandidateEdit> enumerateCandidates(Graph g, Node x) {
@@ -1346,6 +1456,66 @@ public final class VertexRepairSearch implements IGraphSearch {
         return base;
     }
 
+    /**
+     * Marks the memoized baseline bundle stale. Called whenever the working graph is
+     * replaced or a setting that affects baseline evaluation changes.
+     */
+    private void bumpGraphVersion() {
+        graphVersion++;
+    }
+
+    /**
+     * Returns the baseline bundle for the current working-graph state, computing and
+     * memoizing it if stale: the canonicalized base graph, the per-vertex Markov
+     * contribution cache over that base, the baseline violation count, and the baseline
+     * Model-P. All values are deterministic given the base graph (independence results
+     * depend only on the data, and the wild bootstrap is seeded), so memoization is
+     * exact. Returns {@code null} if canonicalization fails.
+     */
+    private BaselineBundle baselineBundle() {
+        BaselineBundle bb = this.baselineBundle;
+        if (bb != null && bb.version() == graphVersion) return bb;
+
+        Graph base = prepareBase();
+        if (base == null) {
+            this.baselineBundle = null;
+            return null;
+        }
+
+        GlobalEvalCache cache = buildBaselineCache(base);
+        GraphEval eval = evalGraphLocality(cache, base, Set.of());
+        double modelP = useWildBootstrap ? wildBootstrapModelP(base) : eval.modelP();
+
+        bb = new BaselineBundle(base, cache, eval.violations(), modelP, graphVersion);
+        this.baselineBundle = bb;
+        return bb;
+    }
+
+    /**
+     * Under affected-only invalidation, decides whether a freshly re-evaluated stale
+     * queue entry still deserves application: the fresh candidate must beat a fresh
+     * no-op for the current graph state under {@link #CANONICAL_TABLE_ORDER}. This is
+     * the localized analogue of the head-of-list check that full invalidation gets for
+     * free (the no-op is always in each node's candidate list, so under full
+     * invalidation a non-no-op head has already beaten the no-op). Note the stale-entry
+     * comparison here is better informed than the full-invalidation head check, since
+     * both sides carry evaluated Model-P values rather than NaNs.
+     */
+    private boolean applyWorthy(ScoredCandidate fresh, String nodeName) {
+        BaselineBundle bb = baselineBundle();
+        if (bb == null) return false;
+
+        Node node = bb.base().getNode(nodeName);
+        double noOpNodeP = (node == null) ? Double.NaN : nodePValue(bb.base(), node);
+
+        ScoredCandidate noOp = new ScoredCandidate(
+                CandidateEdit.noOp(), bb.violations(), bb.violations(),
+                noOpNodeP, bb.modelP(), bb.modelP(),
+                bb.base().getNumEdges(), true, Q.getAlpha());
+
+        return CANONICAL_TABLE_ORDER.compare(fresh, noOp) < 0;
+    }
+
     private void applyCandidateInternal(CandidateEdit cand) {
         if (cand == null || cand.isNoOp()) return;
 
@@ -1373,6 +1543,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return;
 
         workingGraph = g2;
+        bumpGraphVersion();
         vlog("APPLIED successfully");
     }
 
@@ -1380,7 +1551,6 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (g == null) return new GlobalEvalCache(Map.of());
         Map<String, VertexContribution> out = new HashMap<>();
         List<Node> nodes = g.getNodes();
-        RandomUtil.shuffle(nodes);
         for (Node v : nodes) {
             if (v == null) continue;
             out.put(v.getName(), evalVertexContribution(g, v));
@@ -1712,6 +1882,85 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
+    /**
+     * Computes the set of vertex names whose candidate lists must be recomputed after
+     * an applied edit, for affected-only invalidation. This is deliberately broader
+     * than {@link #affectedVertices(Graph, Node, Graph)} (which diffs only the edited
+     * node's adjacency): CPDAG canonicalization can reorient edges far from the edit
+     * via Meek propagation, and Markov-blanket conditioning reaches spouses. So this
+     * takes the endpoints of every edge in the symmetric difference of the before/after
+     * edge sets, closed under one hop of adjacency in the after graph, plus the edited
+     * node and the edit's own endpoints. Any residual staleness (e.g., under the
+     * ordered-local-Markov conditioning types, whose per-vertex facts depend on a
+     * whole-graph MAG transform) is caught by the lazy revalidation at poll time and
+     * the verification sweep at queue drain, so this set affects only the greedy path,
+     * never the convergence guarantee.
+     */
+    /**
+     * Canonical structural key for an edge: the two (name, endpoint-at-that-node) pairs
+     * sorted by node name, so that structurally identical edges from different graphs
+     * (or with reversed node1/node2 storage order) produce the same key.
+     */
+    private static String structuralEdgeKey(Edge e) {
+        if (e == null) return "null";
+        String a = (e.getNode1() == null || e.getNode1().getName() == null) ? "?" : e.getNode1().getName();
+        String b = (e.getNode2() == null || e.getNode2().getName() == null) ? "?" : e.getNode2().getName();
+        Endpoint ea = e.getEndpoint1();
+        Endpoint eb = e.getEndpoint2();
+        if (a.compareTo(b) <= 0) {
+            return a + "[" + ea + "]--[" + eb + "]" + b;
+        } else {
+            return b + "[" + eb + "]--[" + ea + "]" + a;
+        }
+    }
+
+    private Set<String> invalidationSet(Graph before, Graph after,
+                                        String editedNodeName, CandidateEdit edit) {
+        Set<String> out = new LinkedHashSet<>();
+        if (editedNodeName != null) out.add(editedNodeName);
+
+        if (edit != null && edit.getEdge() != null) {
+            Node n1 = edit.getEdge().getNode1(), n2 = edit.getEdge().getNode2();
+            if (n1 != null && n1.getName() != null) out.add(n1.getName());
+            if (n2 != null && n2.getName() != null) out.add(n2.getName());
+        }
+
+        if (before != null && after != null) {
+            Set<String> beforeKeys = new HashSet<>();
+            for (Edge e : before.getEdges()) beforeKeys.add(structuralEdgeKey(e));
+            Set<String> afterKeys = new HashSet<>();
+            for (Edge e : after.getEdges()) afterKeys.add(structuralEdgeKey(e));
+
+            Set<Node> touched = new LinkedHashSet<>();
+            for (Edge e : before.getEdges()) {
+                if (!afterKeys.contains(structuralEdgeKey(e))) {
+                    touched.add(e.getNode1());
+                    touched.add(e.getNode2());
+                }
+            }
+            for (Edge e : after.getEdges()) {
+                if (!beforeKeys.contains(structuralEdgeKey(e))) {
+                    touched.add(e.getNode1());
+                    touched.add(e.getNode2());
+                }
+            }
+
+            for (Node n : touched) {
+                if (n == null || n.getName() == null) continue;
+                out.add(n.getName());
+                Node inAfter = after.getNode(n.getName());
+                if (inAfter != null) {
+                    for (Node adj : after.getAdjacentNodes(inAfter)) {
+                        if (adj != null && adj.getName() != null) out.add(adj.getName());
+                    }
+                }
+            }
+        }
+
+        out.removeIf(name -> after == null || after.getNode(name) == null);
+        return out;
+    }
+
     private Set<String> affectedVertices(Graph base, Node x, Graph candidate) {
         Set<String> affected = new LinkedHashSet<>();
         if (x != null) affected.add(x.getName());
@@ -1755,6 +2004,7 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setUseAndersonDarling(boolean useAndersonDarling) {
         this.useAndersonDarling = useAndersonDarling;
+        bumpGraphVersion();
     }
 
     /**
@@ -1766,6 +2016,7 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setUseWildBootstrap(boolean useWildBootstrap) {
         this.useWildBootstrap = useWildBootstrap;
+        bumpGraphVersion();
     }
 
     /**
@@ -1777,6 +2028,7 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setWbNumBootstraps(int wbNumBootstraps) {
         this.wbNumBootstraps = wbNumBootstraps;
+        bumpGraphVersion();
     }
 
     /**
@@ -1788,6 +2040,7 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setWbSeed(long wbSeed) {
         this.wbSeed = wbSeed;
+        bumpGraphVersion();
     }
 
     /**
@@ -2431,7 +2684,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
     }
 
-    private record QueueEntry(String nodeName, ScoredCandidate scored)
+    private record QueueEntry(String nodeName, ScoredCandidate scored, long version)
             implements Comparable<QueueEntry> {
         @Override
         public int compareTo(QueueEntry other) {
@@ -2446,5 +2699,14 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     private record GlobalEvalCache(Map<String, VertexContribution> contribByVertexName) {
+    }
+
+    /**
+     * Memoized per-graph-state baseline evaluation: the canonicalized base graph, the
+     * per-vertex Markov contribution cache over it, the baseline violation count, the
+     * baseline Model-P, and the graph version this bundle was computed for.
+     */
+    private record BaselineBundle(Graph base, GlobalEvalCache cache, int violations,
+                                  double modelP, long version) {
     }
 }
