@@ -170,7 +170,7 @@ class DataAuditAction extends AbstractAction {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Findings", new JScrollPane(findingsTable));
         tabs.addTab("Variables", new JScrollPane(variablesTable));
-        tabs.addTab("Missingness & Advice", new JScrollPane(missingText));
+        tabs.addTab("Missingness", new JScrollPane(missingText));
         tabs.setPreferredSize(new Dimension(850, 450));
 
         JMenuBar bar = new JMenuBar();

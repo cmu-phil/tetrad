@@ -1473,9 +1473,10 @@ public final class VertexRepairSearch implements IGraphSearch {
         Graph base = safeCopy(workingGraph);
         if (graphType == AdjustmentGraphType.CPDAG) {
             base = canonicalizeToCpdagOrNull(base);
-        } else if (graphType == AdjustmentGraphType.PAG) {
-            base = canonicalizeToPagOrNull(base);
         }
+//        else if (graphType == AdjustmentGraphType.PAG) {
+//            base = canonicalizeToPagOrNull(base);
+//        }
         return base;
     }
 
@@ -1861,7 +1862,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             // on a slow machine could silently drop candidates and make the search
             // machine-dependent. Uncomment to restore the check if magToPag is ever
             // suspected of emitting a non-legal PAG.
-            case PAG -> /* g.paths().isLegalPag() && */ !hasSelectionBias(g);
+            case PAG -> g.paths().isLegalPag() && !hasSelectionBias(g);
         };
     }
 
