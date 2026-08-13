@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm;
 
+import edu.cmu.tetrad.annotation.Bootstrapping;
+
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -48,6 +50,7 @@ import static edu.cmu.tetrad.data.DataSampling.createDataSample;
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
+@Bootstrapping
 public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs {
 
     // 2025-6-10 Refactored this code so that bootstrap datasets are not all calculated up front but are calculated

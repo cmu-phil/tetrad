@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -49,6 +50,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 //@Experimental
+@Bootstrapping
 public class PagSamplingRfci extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge {
 
     /**

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
@@ -55,6 +56,7 @@ import java.util.List;
         dataType = DataType.Discrete
 )
 @Experimental
+@Bootstrapping
 public class RfciBsc extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge {
 
     @Serial

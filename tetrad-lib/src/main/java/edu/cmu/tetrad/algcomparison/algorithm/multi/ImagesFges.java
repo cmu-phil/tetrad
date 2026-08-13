@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
+import edu.cmu.tetrad.annotation.Bootstrapping;
+
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractMultiBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
@@ -59,7 +61,7 @@ import java.util.List;
 //        algoType = AlgType.forbid_latent_common_causes,
 //        dataType = DataType.All
 //)
-//@Bootstrapping
+@Bootstrapping
 public class ImagesFges extends AbstractMultiBootstrapAlgorithm implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial

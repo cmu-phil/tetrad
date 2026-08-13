@@ -1598,7 +1598,14 @@ public final class Params {
      * @return a {@link java.util.Set} object
      */
     public static Set<String> getBootstrappingParameters(Algorithm algorithm) {
-        return (algorithm.getClass().isAnnotationPresent(Bootstrapping.class))
+        // Changed 2026-8-13: the ability to bootstrap is determined by extending
+        // AbstractBootstrapAlgorithm (which is what actually implements the resampling at run time), not by the
+        // presence of the Bootstrapping annotation. Keeping capability and annotation as two separate sources of
+        // truth caused algorithms that could bootstrap to silently lose their bootstrapping parameters in the
+        // interface whenever the annotation was forgotten (RfciBsc, PagSamplingRfci, ImagesFges), and algorithms
+        // that cannot bootstrap to be offered parameters that did nothing (FgesConcatenated, FaskConcatenated,
+        // FaskVote). The annotation is retained as documentation and is now @Inherited from the abstract bases.
+        return (algorithm instanceof edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm)
                 ? Params.BOOTSTRAPPING_PARAMS
                 : Collections.emptySet();
     }
