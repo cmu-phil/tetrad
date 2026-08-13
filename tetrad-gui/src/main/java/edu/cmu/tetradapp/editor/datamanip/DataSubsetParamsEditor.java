@@ -49,6 +49,8 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
     private DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, 0), new ArrayList<>());
     private java.util.List<String> initialSelectedVarNames;
     private String initialRowSpec;
+
+    private String initialConditionSpec;
     private DataSubsetEditor.SamplingMode initialSamplingMode;
     private Integer initialSampleSize;
     private String initialSeedText;
@@ -79,6 +81,7 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
                 // NEW: persist UI state so it can be restored later.
                 parameters.set("dataSubsetSelectedVarNames", dataSubsetEditor.getSelectedVariableNames());
                 parameters.set("dataSubsetRowSpec", dataSubsetEditor.getRowSpec());
+                parameters.set("dataSubsetConditionSpec", dataSubsetEditor.getConditionSpec());
 
                 DataSubsetEditor.SamplingMode mode = dataSubsetEditor.getSamplingMode();
                 if (mode != null) {
@@ -121,6 +124,11 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
             this.initialRowSpec = (String) rowSpecObj;
         }
 
+        Object conditionSpecObj = params.get("dataSubsetConditionSpec");
+        if (conditionSpecObj instanceof String) {
+            this.initialConditionSpec = (String) conditionSpecObj;
+        }
+
         Object modeObj = params.get("dataSubsetSamplingMode");
         if (modeObj instanceof String) {
             try {
@@ -143,6 +151,7 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
         // If the editor already exists, apply immediately.
         if (dataSubsetEditor != null) {
             dataSubsetEditor.applyState(initialSelectedVarNames, initialRowSpec, initialSamplingMode, initialSampleSize, initialSeedText);
+            if (initialConditionSpec != null) dataSubsetEditor.setConditionSpec(initialConditionSpec);
         }
     }
 
@@ -196,9 +205,14 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
         dataSubsetEditor = new DataSubsetEditor(dataSet);
 
         // NEW: restore previous state if we have any.
+        if (initialConditionSpec != null) {
+            dataSubsetEditor.setConditionSpec(initialConditionSpec);
+        }
+
         if (initialSelectedVarNames != null || initialRowSpec != null || initialSamplingMode != null || initialSampleSize != null || initialSeedText != null) {
 
             dataSubsetEditor.applyState(initialSelectedVarNames, initialRowSpec, initialSamplingMode, initialSampleSize, initialSeedText);
+            if (initialConditionSpec != null) dataSubsetEditor.setConditionSpec(initialConditionSpec);
         }
 
         box.add(dataSubsetEditor);
