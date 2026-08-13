@@ -30,8 +30,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.search.utils.R0R4Strategy;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
@@ -1901,6 +1900,21 @@ public final class VertexRepairSearch implements IGraphSearch {
      * @return true if the graph exhibits selection bias
      */
     private boolean hasSelectionBias(Graph g) {
+        return exhibitsSelectionBias(g, this.graphType);
+    }
+
+    /**
+     * Returns true if {@code g} exhibits selection bias under {@code graphType}, the static form of
+     * the predicate used internally by this search. Exposed (2026-8-13) so that user interfaces can
+     * decline to offer an ancestral graph type for a graph carrying selection structure, rather than
+     * offering it and letting {@link #search()} throw.
+     *
+     * @param g         the graph to test; null returns false
+     * @param graphType the graph type under which to interpret the edges; null suppresses the edge
+     *                  test and leaves only the selection-node test
+     * @return true if the graph exhibits selection bias
+     */
+    public static boolean exhibitsSelectionBias(Graph g, AdjustmentGraphType graphType) {
         if (g == null) return false;
 
         for (Node n : g.getNodes()) {
@@ -1921,6 +1935,43 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
 
         return false;
+    }
+
+    /**
+     * Returns true if {@code g} is acceptable to this search as a PAG, given the background
+     * knowledge currently set. (Added 2026-8-13.)
+     *
+     * <p>This is the predicate callers should use in place of {@link Paths#isLegalPag()} when
+     * deciding whether a graph may be repaired as a PAG. Once knowledge is honored, the graphs this
+     * search produces are knowledge-refined PAGs -- legal PAGs carrying the marks knowledge forces --
+     * and such a graph is deliberately NOT strictly legal: {@code isLegalPag} reconstitutes the
+     * class-canonical PAG, which has circles exactly where knowledge placed marks, and the equality
+     * fails. A caller testing strict legality therefore rejects this search's own output, and in
+     * particular rejects the output of a knowledge-aware *-FCI run.
+     *
+     * <p>A graph is accepted if it is strictly legal, or if it is legal modulo knowledge in the sense
+     * of {@link #isPagModuloKnowledge(Graph)}. With empty knowledge the two coincide and
+     * this reduces to the strict test.
+     *
+     * @param g the graph to test; null returns false
+     * @return true if the graph may be repaired as a PAG under the current knowledge
+     */
+    public boolean isLegalPagGivenKnowledge(Graph g) {
+        if (g == null) return false;
+
+        if (this.knowledge != null && !this.knowledge.isEmpty()) {
+            try {
+                if (isPagModuloKnowledge(g)) return true;
+            } catch (Throwable ignored) {
+                // fall through to the strict test
+            }
+        }
+
+        try {
+            return g.paths().isLegalPag();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     private boolean usesLocality() {
@@ -2012,7 +2063,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             Graph h2 = new EdgeListGraph(h);
             Graph mag = GraphTransforms.zhangMagFromPag(h2);
             if (!mag.paths().isLegalMag()) return null;
-            return applyKnowledgePagOrientations(GraphTransforms.magToPag(mag, false, 15));
+            return applyKnowledgePagOrientations(GraphTransforms.magToPag(mag, false, 15), mag);
         } catch (Throwable t) {
             return null;
         }
@@ -2051,14 +2102,14 @@ public final class VertexRepairSearch implements IGraphSearch {
      * same conservative fallback {@code StarFciKeepKnowledgeOrientations} adopts. The alternative --
      * forcing knowledge through and repairing around it -- is a different and more invasive policy.
      */
-    private Graph applyKnowledgePagOrientations(Graph pag) {
+    private Graph applyKnowledgePagOrientations(Graph pag, Graph mag) {
         if (pag == null || this.knowledge == null || this.knowledge.isEmpty()) return pag;
 
         try {
-            FciOrient orient = buildKnowledgeFciOrient();
+            FciOrient orient = buildKnowledgeFciOrient(mag);
             Graph refined = refinePagWithKnowledge(pag, orient);
             if (refined.equals(pag)) return pag;
-            if (!isPagModuloKnowledge(refined, orient)) return pag;
+            if (!isPagModuloKnowledge(refined)) return pag;
             return refined;
         } catch (Throwable t) {
             return pag;
@@ -2066,13 +2117,32 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     /**
-     * Builds an FCI orientation engine bound to this search's independence test and knowledge, with
-     * the complete rule set and R4 enabled. The test passed is the cached query wrapper, so the
-     * discriminating-path work done by R4 shares the cache with the rest of repair.
+     * Builds an FCI orientation engine for knowledge refinement, bound to m-separation in
+     * {@code mag} rather than to the data.
+     *
+     * <p>(Changed 2026-8-13; the previous version used
+     * {@code R0R4StrategyTestBased.specialConfiguration(Q, knowledge, false)}, i.e. the data test.
+     * That was wrong. {@link GraphTransforms#magToPag} orients using {@code MsepTest} on the MAG --
+     * a purely graph-based engine -- so refining its output with a data-based engine mixed two
+     * different notions of separation. On simulated data drawn from the very DAG the PAG came from
+     * the two agree and nothing looks amiss; on real data, R4's discriminating-path resolution
+     * disagrees, the refinement picks up marks the reconstituted graph does not, and
+     * {@link #isPagModuloKnowledge} then rejects perfectly good knowledge-refined PAGs. It also made
+     * refinement a function of the data rather than of the graph and knowledge alone.)
+     *
+     * <p>This uses the same strategy {@code MagToPag} itself uses, so refining a {@code magToPag}
+     * output is a fixed point when knowledge is empty and adds exactly the knowledge-forced marks
+     * and their closure otherwise.
      */
-    private FciOrient buildKnowledgeFciOrient() {
-        R0R4Strategy strategy = R0R4StrategyTestBased.specialConfiguration(this.Q, this.knowledge, false);
-        FciOrient orient = new FciOrient(strategy);
+    private FciOrient buildKnowledgeFciOrient(Graph mag) {
+        Map<Node, Set<Node>> ancestorCache = new LinkedHashMap<>();
+        for (Node n : mag.getNodes()) {
+            ancestorCache.put(n, new LinkedHashSet<>(mag.paths().getAncestors(n)));
+        }
+
+        FciOrient orient = new FciOrient(
+                MagToPag.getFinalStrategyUsingDsep(mag, this.knowledge, false, ancestorCache));
+        orient.setKnowledge(this.knowledge);
         orient.setCompleteRuleSetUsed(true);
         orient.setUseR4(true);
         orient.setVerbose(false);
@@ -2106,11 +2176,11 @@ public final class VertexRepairSearch implements IGraphSearch {
      * is certified here rather than taken on faith. The cost is paid only when knowledge is
      * non-empty and the refinement actually changed something.
      */
-    private boolean isPagModuloKnowledge(Graph refined, FciOrient orient) throws InterruptedException {
+    private boolean isPagModuloKnowledge(Graph refined) throws InterruptedException {
         Graph mag = GraphTransforms.zhangMagFromPag(refined);
         if (!mag.paths().isLegalMag()) return false;
         Graph reconstituted = GraphTransforms.magToPag(mag, false, 15);
-        return refined.equals(refinePagWithKnowledge(reconstituted, orient));
+        return refined.equals(refinePagWithKnowledge(reconstituted, buildKnowledgeFciOrient(mag)));
     }
 
     private IndependenceResult checkIndependence(IndependenceFact f) {
