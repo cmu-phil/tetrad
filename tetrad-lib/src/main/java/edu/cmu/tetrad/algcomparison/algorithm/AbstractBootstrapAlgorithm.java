@@ -106,6 +106,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
 
         Graph graph;
+        Graph medianMemberGraph = null;
         if (Thread.currentThread().isInterrupted()) {
             graph = new EdgeListGraph();
         } else {
@@ -138,6 +139,15 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
                         this.bootstrapGraphs.addAll(graphs);
                     }
                     graph = GraphSampling.createGraphWithHighProbabilityEdges(graphs);
+
+                    // Median member graph, added 2026-8-13: the single member graph closest to the ensemble
+                    // edge frequencies. Unlike the composite - whose edges are drawn from different member
+                    // graphs and taken together are generally NOT a legal member of the algorithm's output
+                    // class - this graph is one the algorithm actually produced, so it inherits the algorithm's
+                    // legality guarantee. It is computed unconditionally (it cannot be recomputed later from the
+                    // composite alone) and stored as the ancillary "medianGraph" on the sampling graph, so the
+                    // Ensemble Display menu can switch to it regardless of the ensemble used at search time.
+                    medianMemberGraph = GraphSampling.selectMedianEnsembleGraph(graphs);
                 } else {
                     graph = graphs.getFirst();
                 }
@@ -153,6 +163,16 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         // graph without these edges so that, e.g., accuracies or other graph operations can be performed on the
         // graph that is displayed in the interface. jdramsey 2025-6-22
         ((EdgeListGraph) graph).setAncillaryGraph("samplingGraph", graph);
+
+        if (medianMemberGraph != null) {
+            ((EdgeListGraph) graph).setAncillaryGraph("medianGraph", medianMemberGraph);
+            ((EdgeListGraph) medianMemberGraph).setAncillaryGraph("samplingGraph", graph);
+
+            // resamplingEnsemble = 4 selects the median member as the returned display graph.
+            if (parameters.getInt(Params.RESAMPLING_ENSEMBLE) == 4) {
+                return GraphUtils.fixDirections(medianMemberGraph);
+            }
+        }
 
         Graph displayGraph = GraphSampling.createDisplayGraph(graph, ResamplingEdgeEnsemble.Highest);
         ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", graph);

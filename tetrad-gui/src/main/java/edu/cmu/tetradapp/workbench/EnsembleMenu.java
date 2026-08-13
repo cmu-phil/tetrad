@@ -85,6 +85,7 @@ public class EnsembleMenu extends JMenu {
         JMenuItem majorityEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Majority.name());
         JMenuItem preservedEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Preserved.name());
         JMenuItem thresholdEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Threshold.name());
+        JMenuItem medianEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Median.name());
 
         highestEnsemble.addActionListener(action -> {
             Graph workbenchGraph = graphWorkbench.getGraph();
@@ -183,10 +184,40 @@ public class EnsembleMenu extends JMenu {
             graphWorkbench.setGraph(displayGraph);
         });
 
+        medianEnsemble.addActionListener(action -> {
+            Graph workbenchGraph = graphWorkbench.getGraph();
+            Graph samplingGraph = ((EdgeListGraph) workbenchGraph).getAncillaryGraph("samplingGraph");
+
+            if (samplingGraph == null) {
+                throw new IllegalStateException("Cannot find sampling graph");
+            }
+
+            // The median member graph cannot be recomputed from the composite sampling graph alone (the member
+            // graphs are needed), so it is computed at search time and stored as an ancillary graph on the
+            // sampling graph; see AbstractBootstrapAlgorithm.search. Added 2026-8-13.
+            Graph medianGraph = ((EdgeListGraph) samplingGraph).getAncillaryGraph("medianGraph");
+
+            if (medianGraph == null) {
+                JOptionPane.showMessageDialog(graphWorkbench,
+                        "No median member graph is stored with this search result. The Median display is\n"
+                        + "available for bootstrap searches run after this option was introduced; please\n"
+                        + "re-run the search.",
+                        "Median", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            ((EdgeListGraph) medianGraph).setAncillaryGraph("samplingGraph", samplingGraph);
+
+            resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Median;
+
+            graphWorkbench.setGraph(GraphUtils.fixDirections(medianGraph));
+        });
+
         add(highestEnsemble);
         add(majorityEnsemble);
         add(preservedEnsemble);
         add(thresholdEnsemble);
+        add(medianEnsemble);
     }
 
 }
