@@ -28,7 +28,10 @@ import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.RowsSettable;
+import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.utils.R0R4Strategy;
+import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TMath;
@@ -702,6 +705,19 @@ public final class VertexRepairSearch implements IGraphSearch {
     private boolean violatesKnowledge(Graph g) {
         if (this.knowledge == null || this.knowledge.isEmpty()) return false;
         if (this.knowledge.isViolatedBy(g)) return true;
+
+        // The under-orientation rejection below is deliberately NOT applied to the ancestral
+        // types. (Added 2026-8-13.) In a CPDAG, an undirected edge one of whose orientations is
+        // forbidden is genuinely under-oriented: the knowledge determines the direction. The
+        // analogous inference fails in a PAG. A circle-circle edge x o-o y with x -> y forbidden
+        // is NOT thereby determined, because x <-> y remains available -- the arrowhead at y is
+        // still possible and the circle is honest about that. Rejecting such candidates would
+        // discard legitimate PAGs on a CPDAG intuition that does not survive the move to
+        // ancestral graphs. Knowledge-forced marks are instead installed positively by
+        // applyKnowledgePagOrientations, which is where PAG knowledge handling belongs.
+        if (graphType == AdjustmentGraphType.MAG || graphType == AdjustmentGraphType.PAG) {
+            return false;
+        }
 
         for (Edge edge : g.getEdges()) {
             if (Edges.isUndirectedEdge(edge)) {
@@ -1996,10 +2012,105 @@ public final class VertexRepairSearch implements IGraphSearch {
             Graph h2 = new EdgeListGraph(h);
             Graph mag = GraphTransforms.zhangMagFromPag(h2);
             if (!mag.paths().isLegalMag()) return null;
-            return GraphTransforms.magToPag(mag, false, 15);
+            return applyKnowledgePagOrientations(GraphTransforms.magToPag(mag, false, 15));
         } catch (Throwable t) {
             return null;
         }
+    }
+
+    /**
+     * Restores background-knowledge-forced orientations after PAG compilation, the ancestral-graph
+     * analogue of {@link #applyKnowledgeOrientations(Graph)}. (Added 2026-8-13.)
+     *
+     * <p>The problem is the same one {@code applyKnowledgeOrientations} solves for CPDAGs.
+     * {@link GraphTransforms#magToPag} is knowledge-blind: it returns the canonical PAG of the
+     * equivalence class, in which every mark not forced by the class itself is a circle. Marks that
+     * background knowledge had forced (tiers, required edges) are therefore erased on every
+     * canonicalization, so with PAG canonicalization in place repair under knowledge would steadily
+     * undo the knowledge rather than respect it.
+     *
+     * <p>The mechanism follows the one adopted for the Star-FCI family in
+     * {@code StarFciKeepKnowledgeOrientations.refineWithKnowledge}: apply
+     * {@link FciOrient#fciOrientbk} for the required/forbidden-edge marks, then close under the
+     * complete FCI final rules with {@link FciOrient#finalOrientation} so the restored marks
+     * propagate (R1-R4). {@code excludeSelectionBias} is passed true throughout, consistent with the
+     * exclusion of selection bias adopted 2026-8-13. When knowledge is empty this is the identity
+     * and costs nothing.
+     *
+     * <p>OUTPUT CONTRACT, and a change in what "canonical" means here. The returned graph is a legal
+     * PAG <em>refined by background knowledge</em>: it is generally NOT the canonical PAG of the
+     * equivalence class, but denotes the subset of that class consistent with the knowledge. This
+     * matches the Star-FCI output contract, and it is the only coherent option once knowledge is
+     * honored at all -- but callers that assume the working graph is the class-canonical PAG should
+     * be aware that it is only so when knowledge is empty.
+     *
+     * <p>CONFLICT POLICY (contestable, so called out). When knowledge conflicts with the
+     * data-derived invariant marks, the refined graph will fail to be recoverable as the
+     * knowledge-refined canonical PAG of its own implied MAG. Here knowledge loses: the unrefined
+     * canonical PAG is returned and the candidate proceeds without the knowledge marks. This is the
+     * same conservative fallback {@code StarFciKeepKnowledgeOrientations} adopts. The alternative --
+     * forcing knowledge through and repairing around it -- is a different and more invasive policy.
+     */
+    private Graph applyKnowledgePagOrientations(Graph pag) {
+        if (pag == null || this.knowledge == null || this.knowledge.isEmpty()) return pag;
+
+        try {
+            FciOrient orient = buildKnowledgeFciOrient();
+            Graph refined = refinePagWithKnowledge(pag, orient);
+            if (refined.equals(pag)) return pag;
+            if (!isPagModuloKnowledge(refined, orient)) return pag;
+            return refined;
+        } catch (Throwable t) {
+            return pag;
+        }
+    }
+
+    /**
+     * Builds an FCI orientation engine bound to this search's independence test and knowledge, with
+     * the complete rule set and R4 enabled. The test passed is the cached query wrapper, so the
+     * discriminating-path work done by R4 shares the cache with the rest of repair.
+     */
+    private FciOrient buildKnowledgeFciOrient() {
+        R0R4Strategy strategy = R0R4StrategyTestBased.specialConfiguration(this.Q, this.knowledge, false);
+        FciOrient orient = new FciOrient(strategy);
+        orient.setCompleteRuleSetUsed(true);
+        orient.setUseR4(true);
+        orient.setVerbose(false);
+        return orient;
+    }
+
+    /**
+     * Applies the knowledge marks and closes under the complete FCI final rules, on a copy. Can only
+     * add arrow/tail marks to a graph already closed under the final rules; a no-op on a graph that
+     * is already a knowledge-refined fixed point.
+     */
+    private Graph refinePagWithKnowledge(Graph pag, FciOrient orient) throws InterruptedException {
+        Graph g = pag.copy();
+        orient.fciOrientbk(this.knowledge, g, g.getNodes(), true);
+        orient.finalOrientation(g, true);
+        return g;
+    }
+
+    /**
+     * The acceptance certificate for a knowledge-refined PAG: legal PAG <em>modulo knowledge</em>.
+     * The implied MAG must be a legal MAG, and the graph must be recoverable as the
+     * knowledge-refined canonical PAG of that MAG. This replaces the strict round-trip equality that
+     * a knowledge-refined graph necessarily fails (it carries marks the class alone does not force)
+     * with equality after the same refinement is applied to the reconstituted canonical PAG. A graph
+     * that fails this carries marks forced neither by the equivalence class nor by knowledge, which
+     * is the signature of a knowledge/data conflict.
+     *
+     * <p>This also restores the safety the commented-out {@code isLegalPag} check used to provide on
+     * the candidate path. That check was dropped because {@code magToPag} output is a legal PAG by
+     * construction; refining with knowledge afterwards breaks that argument, so the refined result
+     * is certified here rather than taken on faith. The cost is paid only when knowledge is
+     * non-empty and the refinement actually changed something.
+     */
+    private boolean isPagModuloKnowledge(Graph refined, FciOrient orient) throws InterruptedException {
+        Graph mag = GraphTransforms.zhangMagFromPag(refined);
+        if (!mag.paths().isLegalMag()) return false;
+        Graph reconstituted = GraphTransforms.magToPag(mag, false, 15);
+        return refined.equals(refinePagWithKnowledge(reconstituted, orient));
     }
 
     private IndependenceResult checkIndependence(IndependenceFact f) {
