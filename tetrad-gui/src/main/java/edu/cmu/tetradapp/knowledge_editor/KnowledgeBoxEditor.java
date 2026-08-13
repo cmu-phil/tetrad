@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serial;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -92,6 +93,12 @@ public class KnowledgeBoxEditor extends JPanel {
      * The tabbed pane.
      */
     private final JTabbedPane tabbedPane;
+
+    /**
+     * The text area of the "Text" tab, showing the knowledge in the form written by
+     * {@code Save Knowledge...}. Recreated by {@link #resetTabbedPane()}.
+     */
+    private JTextArea knowledgeTextArea;
 
     /**
      * The knowledge.
@@ -411,6 +418,7 @@ public class KnowledgeBoxEditor extends JPanel {
         this.tabbedPane.add("Tiers", tierDisplay());
         this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge, this.knowledge.getVariables()));
         this.tabbedPane.add("Edges", edgeDisplay());
+        this.tabbedPane.add("Text", textDisplay());
 
         this.tabbedPane.addChangeListener((e) -> {
             JTabbedPane pane = (JTabbedPane) e.getSource();
@@ -418,8 +426,56 @@ public class KnowledgeBoxEditor extends JPanel {
                 setNumDisplayTiers(TMath.max(getNumTiers(), this.knowledge.getNumTiers()));
             } else if (pane.getSelectedIndex() == 2) {
                 resetEdgeDisplay(null);
+            } else if (pane.getSelectedIndex() == 3) {
+                refreshTextDisplay();
             }
         });
+    }
+
+    /**
+     * Builds the "Text" tab: a read-only monospaced view of the knowledge in the same text form
+     * {@code Save Knowledge...} writes to disk, so that what is displayed is exactly what would be
+     * saved. The content is regenerated whenever the tab is selected, since the other tabs edit the
+     * knowledge in place.
+     *
+     * @return the scrolling text display
+     */
+    private JScrollPane textDisplay() {
+        JTextArea area = new JTextArea();
+        area.setEditable(false);
+        area.setLineWrap(false);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.knowledgeTextArea = area;
+
+        refreshTextDisplay();
+
+        JScrollPane scroll = new JScrollPane(area,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scroll.setPreferredSize(new Dimension(400, 400));
+        return scroll;
+    }
+
+    /**
+     * Regenerates the "Text" tab content from the current knowledge, using the same writer
+     * {@code Save Knowledge...} uses so the two cannot drift apart.
+     */
+    private void refreshTextDisplay() {
+        if (this.knowledgeTextArea == null) return;
+
+        String text;
+
+        try {
+            StringWriter writer = new StringWriter();
+            DataWriter.saveKnowledge(this.knowledge, writer);
+            text = writer.toString();
+        } catch (IOException e) {
+            text = "Could not render the knowledge as text: " + e.getMessage();
+        }
+
+        this.knowledgeTextArea.setText(text);
+        this.knowledgeTextArea.setCaretPosition(0);
     }
 
     private Box tierDisplay() {
