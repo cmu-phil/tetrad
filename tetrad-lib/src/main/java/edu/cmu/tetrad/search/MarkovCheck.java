@@ -222,8 +222,12 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     public static Set<IndependenceFact> computeAllImpliedFacts(Graph g, ConditioningSetType setType) {
         Set<IndependenceFact> allImpliedFacts = new HashSet<>();
 
+        // Prepare the graph-level MAG transform once (relevant for the ordered-local-Markov
+        // types); null for other types, in which case the per-vertex path is unchanged.
+        Graph preparedMag = prepareMagForVertexFacts(g, setType);
+
         for (Node x : g.getNodes()) {
-            allImpliedFacts.addAll(computeImpliedFactsForVertex(g, x, setType));
+            allImpliedFacts.addAll(computeImpliedFactsForVertex(g, x, setType, preparedMag));
         }
 
         return allImpliedFacts;
@@ -246,6 +250,73 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @throws RuntimeException         If a computation is interrupted during recursive blocking.
      */
     public static List<IndependenceFact> computeImpliedFactsForVertex(Graph graph, Node x, ConditioningSetType conditioningSetType) {
+        return computeImpliedFactsForVertex(graph, x, conditioningSetType, null);
+    }
+
+    /**
+     * Precomputes the graph-level transform (the MAG) used by the ordered-local-Markov
+     * conditioning types, so that callers evaluating facts for many vertices of the
+     * <em>same</em> graph can run the graph-type legality checks and the CPDAG-to-DAG-to-MAG
+     * conversion once rather than once per vertex. The preparation logic mirrors the
+     * per-vertex path exactly (legal DAG: {@code dagToMag}; legal CPDAG/PDAG:
+     * {@code dagFromCpdag} then {@code dagToMag}, which is deterministic — Kahn peeling
+     * with name tie-breaks — so the shared MAG is identical to the one each per-vertex
+     * call would have built; otherwise {@code zhangMagFromPag}). Returns {@code null}
+     * for conditioning types that do not consume a precomputed MAG, or for a null graph;
+     * passing that {@code null} to
+     * {@link #computeImpliedFactsForVertex(Graph, Node, ConditioningSetType, Graph)}
+     * simply falls back to the per-vertex preparation, so the pattern
+     * {@code prepare once, pass to every vertex} is always safe.
+     *
+     * @param graph   the graph whose MAG transform is to be prepared
+     * @param setType the conditioning set type the facts will be computed under
+     * @return the prepared MAG, or {@code null} if the type does not use one
+     */
+    public static Graph prepareMagForVertexFacts(Graph graph, ConditioningSetType setType) {
+        if (graph == null) return null;
+        if (setType != ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY
+                && setType != ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION) {
+            return null;
+        }
+        if (graph.paths().isLegalDag()) {
+            return GraphTransforms.dagToMag(graph);
+        } else if (graph.paths().isLegalCpdag() || graph.paths().isLegalPdag()) {
+            Graph dag = GraphTransforms.dagFromCpdag(graph);
+            return GraphTransforms.dagToMag(dag);
+        } else {
+            return GraphTransforms.zhangMagFromPag(graph);
+        }
+    }
+
+    /**
+     * Variant of {@link #computeImpliedFactsForVertex(Graph, Node, ConditioningSetType)}
+     * accepting a MAG prepared once per graph by
+     * {@link #prepareMagForVertexFacts(Graph, ConditioningSetType)}. For the
+     * ordered-local-Markov conditioning types, a non-null {@code preparedMag} skips the
+     * per-call legality checks and graph conversions, which otherwise dominate the cost
+     * of evaluating many vertices of the same graph. A null {@code preparedMag} (or any
+     * other conditioning type) behaves exactly as the three-argument method. (Added
+     * 2026-8-13; the three-argument method's behavior is unchanged.)
+     *
+     * @param graph               the graph within which the independence facts are computed
+     * @param x                   the vertex for which independence facts are to be computed
+     * @param conditioningSetType the type of conditioning set to be used
+     * @param preparedMag         a MAG prepared for this graph and type, or null
+     * @return the implied independence facts for the vertex
+     */
+    public static List<IndependenceFact> computeImpliedFactsForVertex(Graph graph, Node x, ConditioningSetType conditioningSetType, Graph preparedMag) {
+        if (preparedMag != null) {
+            if (conditioningSetType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY) {
+                Node _x = preparedMag.getNode(x.getName());
+                Set<IndependenceFact> raw = OrderedLocalMarkovProperty.getModelForNode(preparedMag, _x);
+                return new ArrayList<>(raw);
+            }
+            if (conditioningSetType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION) {
+                Node _x = preparedMag.getNode(x.getName());
+                Set<IndependenceFact> raw = OrderedLocalMarkovPropertySinkElimination.getModelForNode(preparedMag, _x);
+                return new ArrayList<>(raw);
+            }
+        }
         switch (conditioningSetType) {
 
             // ---------------- uniform-Z families ----------------

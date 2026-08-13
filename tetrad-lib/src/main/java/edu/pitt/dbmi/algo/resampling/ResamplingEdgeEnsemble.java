@@ -49,5 +49,13 @@ public enum ResamplingEdgeEnsemble {
      * edge).
      */
     Threshold,
+
+    /**
+     * Instead of assembling a composite of edges drawn from different bootstrap graphs (which in general is not a
+     * legal member of the algorithm's output class), display the single bootstrap graph closest to the ensemble
+     * edge frequencies. The displayed graph is one the algorithm actually produced, so it inherits the algorithm's
+     * legality guarantee (e.g., a legal CPDAG or PAG). See GraphSampling.selectMedianEnsembleGraph. Added 2026-8-13.
+     */
+    Median,
 }
 

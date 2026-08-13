@@ -122,17 +122,33 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         wireActions();
         updateButtons();
 
-        if (!graphIsLegal) {
-            SwingUtilities.invokeLater(() ->
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "The supplied graph does not match any recognised legal graph type\n"
-                                    + "(DAG, CPDAG, PDAG, MAG, or PAG).",
-                            "Unrecognised Graph Type",
-                            JOptionPane.WARNING_MESSAGE));
-        }
+        // The graph type must be redetermined after the caller has had a chance to install
+        // knowledge (VertexCheckEditor.openRepairTab calls setKnowledge immediately after
+        // construction), because knowledge changes which types are legal: a knowledge-refined
+        // PAG is not strictly legal, so the constructor-time pass above rejects it, falls back
+        // to offering every type, and selects the first -- CPDAG -- silently repairing a PAG as
+        // a CPDAG. Deferring to invokeLater puts this after setKnowledge on the EDT.
+        // (Changed 2026-8-13.)
+        SwingUtilities.invokeLater(() -> {
+            boolean legalNow = initGraphTypeComboFromGraph(repairSearch.getGraph());
+            syncSearchFromUI();
 
-        SwingUtilities.invokeLater(() -> startWatched("Searching", this::runSearchWatched, null));
+            if (!legalNow) {
+                // Do not auto-start a search under a guessed graph type; repairing a PAG as a
+                // CPDAG destroys it. Let the user pick a type and press the button.
+                JOptionPane.showMessageDialog(
+                        this,
+                        "The supplied graph does not match any recognised legal graph type\n"
+                                + "(DAG, CPDAG, PDAG, MAG, or PAG).\n\n"
+                                + "No search has been started. Choose a graph type and press\n"
+                                + "the search button if you wish to proceed.",
+                        "Unrecognised Graph Type",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            startWatched("Searching", this::runSearchWatched, null);
+        });
         setPreferredSize(new Dimension(650, 600));
     }
 
@@ -146,6 +162,9 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
     public void setKnowledge(Knowledge knowledge) {
         repairSearch.setKnowledge(knowledge);
+        // Knowledge changes which graph types are legal for this graph, so redetermine.
+        initGraphTypeComboFromGraph(repairSearch.getGraph());
+        syncSearchFromUI();
     }
 
     public void setUseAndersonDarling(boolean useAndersonDarling) {
@@ -698,6 +717,8 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     // =========================================================================
 
     private boolean initGraphTypeComboFromGraph(Graph g) {
+        AdjustmentGraphType previous = (AdjustmentGraphType) graphTypeCombo.getSelectedItem();
+
         List<AdjustmentGraphType> plausible = new ArrayList<>();
         for (AdjustmentGraphType gt : AdjustmentGraphType.values()) {
             try {
@@ -710,17 +731,28 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
         graphTypeCombo.setModel(new DefaultComboBoxModel<>(
                 plausible.toArray(new AdjustmentGraphType[0])));
-        graphTypeCombo.setSelectedIndex(0);
+
+        // Keep the user's current choice when it is still on offer; this method is
+        // re-run when knowledge arrives, and must not stomp a deliberate selection.
+        int idx = (previous == null) ? -1 : plausible.indexOf(previous);
+        graphTypeCombo.setSelectedIndex(idx >= 0 ? idx : 0);
         return legal;
     }
 
-    private static boolean isLegalGraphType(Graph g, AdjustmentGraphType gt) {
+    private boolean isLegalGraphType(Graph g, AdjustmentGraphType gt) {
+        // Selection bias is out of scope for repair, and search() throws on such an input,
+        // so do not offer an ancestral type for a graph carrying selection structure.
+        if (VertexRepairSearch.exhibitsSelectionBias(g, gt)) return false;
+
         return switch (gt) {
 //            case DAG -> g.paths().isLegalDag();
             case CPDAG -> g.paths().isLegalCpdag() || g.paths().isLegalPdag();
 //            case PDAG -> g.paths().isLegalPdag();
 //            case MAG -> g.paths().isLegalMag();
-            case PAG -> g.paths().isLegalPag();
+            // Knowledge-aware: a knowledge-refined PAG is deliberately not strictly legal,
+            // so Paths.isLegalPag rejects this search's own output (and the output of a
+            // knowledge-aware *-FCI run). See VertexRepairSearch.isLegalPagGivenKnowledge.
+            case PAG -> repairSearch.isLegalPagGivenKnowledge(g);
             default -> false;
         };
     }

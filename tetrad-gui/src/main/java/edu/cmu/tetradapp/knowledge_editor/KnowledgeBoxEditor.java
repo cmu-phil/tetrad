@@ -34,6 +34,9 @@ import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -43,6 +46,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serial;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -92,6 +98,25 @@ public class KnowledgeBoxEditor extends JPanel {
      * The tabbed pane.
      */
     private final JTabbedPane tabbedPane;
+
+    /**
+     * The text area of the "Text" tab, showing the knowledge in the form written by
+     * {@code Save Knowledge...}. Recreated by {@link #resetTabbedPane()}.
+     */
+    private JTextArea knowledgeTextArea;
+
+    /**
+     * Apply/Revert buttons of the "Text" tab, enabled only while the tab has unapplied edits.
+     */
+    private JButton textApplyButton;
+
+    private JButton textRevertButton;
+
+    /**
+     * True when the "Text" tab holds edits that have not been applied. Suppresses the automatic
+     * re-render so that switching tabs does not discard work in progress.
+     */
+    private boolean textDirty;
 
     /**
      * The knowledge.
@@ -411,6 +436,14 @@ public class KnowledgeBoxEditor extends JPanel {
         this.tabbedPane.add("Tiers", tierDisplay());
         this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge, this.knowledge.getVariables()));
         this.tabbedPane.add("Edges", edgeDisplay());
+        this.tabbedPane.add("Text", textDisplay());
+
+        // removeAll() does not remove change listeners, and this method now runs on every
+        // Apply from the Text tab as well as on Load, so clear them first; otherwise the
+        // handlers below fire once per past reset. (Changed 2026-8-13.)
+        for (ChangeListener cl : this.tabbedPane.getChangeListeners()) {
+            this.tabbedPane.removeChangeListener(cl);
+        }
 
         this.tabbedPane.addChangeListener((e) -> {
             JTabbedPane pane = (JTabbedPane) e.getSource();
@@ -418,8 +451,155 @@ public class KnowledgeBoxEditor extends JPanel {
                 setNumDisplayTiers(TMath.max(getNumTiers(), this.knowledge.getNumTiers()));
             } else if (pane.getSelectedIndex() == 2) {
                 resetEdgeDisplay(null);
+            } else if (pane.getSelectedIndex() == 3) {
+                refreshTextDisplay();
             }
         });
+    }
+
+    /**
+     * Builds the "Text" tab: a read-only monospaced view of the knowledge in the same text form
+     * {@code Save Knowledge...} writes to disk, so that what is displayed is exactly what would be
+     * saved. The content is regenerated whenever the tab is selected, since the other tabs edit the
+     * knowledge in place.
+     *
+     * @return the scrolling text display
+     */
+    private JComponent textDisplay() {
+        JTextArea area = new JTextArea();
+        area.setEditable(true);
+        area.setLineWrap(false);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setBorder(new EmptyBorder(5, 5, 5, 5));
+        this.knowledgeTextArea = area;
+
+        JButton apply = new JButton("Apply");
+        JButton revert = new JButton("Revert");
+        apply.setEnabled(false);
+        revert.setEnabled(false);
+        this.textApplyButton = apply;
+        this.textRevertButton = revert;
+
+        this.textDirty = false;
+        refreshTextDisplay();
+
+        area.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                markTextDirty();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                markTextDirty();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                markTextDirty();
+            }
+        });
+
+        apply.addActionListener((e) -> applyTextKnowledge());
+        revert.addActionListener((e) -> {
+            this.textDirty = false;
+            refreshTextDisplay();
+        });
+
+        JScrollPane scroll = new JScrollPane(area,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scroll.setPreferredSize(new Dimension(400, 400));
+
+        Box buttons = Box.createHorizontalBox();
+        applyPanelTheme(buttons);
+        buttons.setBorder(new EmptyBorder(5, 5, 5, 5));
+        buttons.add(new JLabel("Edit or paste a knowledge specification, then Apply."));
+        buttons.add(Box.createHorizontalGlue());
+        buttons.add(revert);
+        buttons.add(Box.createHorizontalStrut(5));
+        buttons.add(apply);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        applyPanelTheme(panel);
+        panel.add(scroll, BorderLayout.CENTER);
+        panel.add(buttons, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private void markTextDirty() {
+        this.textDirty = true;
+        if (this.textApplyButton != null) this.textApplyButton.setEnabled(true);
+        if (this.textRevertButton != null) this.textRevertButton.setEnabled(true);
+    }
+
+    /**
+     * Parses the contents of the "Text" tab and, if it parses, installs it as the editor's knowledge:
+     * the model is updated, the other tabs are rebuilt from it, and listeners (hence child boxes) are
+     * notified. Parsing goes through {@link SimpleDataLoader#loadKnowledge(Reader, DelimiterType,
+     * String)}, the same parser {@code Load Knowledge...} uses, so text that loads from a file
+     * behaves identically when pasted here.
+     *
+     * <p>On a parse failure the text is left exactly as the user typed it and the error is reported,
+     * so nothing is lost to a typo.
+     */
+    private void applyTextKnowledge() {
+        if (this.knowledgeTextArea == null) return;
+
+        String text = this.knowledgeTextArea.getText();
+        Knowledge parsed;
+
+        try {
+            parsed = SimpleDataLoader.loadKnowledge(
+                    new StringReader(text), DelimiterType.WHITESPACE, "//");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "The knowledge specification could not be parsed:\n\n"
+                            + ex.getMessage()
+                            + "\n\nThe text has been left unchanged.",
+                    "Could Not Parse Knowledge", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        setKnowledge(parsed);
+        this.textDirty = false;
+
+        initComponents();
+        resetTabbedPane();
+        notifyKnowledge();
+
+        // Rebuilding replaced the tab contents; return the user to the Text tab, now
+        // showing the canonical rendering of what was just parsed.
+        if (this.tabbedPane.getTabCount() > 3) {
+            this.tabbedPane.setSelectedIndex(3);
+        }
+    }
+
+    /**
+     * Regenerates the "Text" tab content from the current knowledge, using the same writer
+     * {@code Save Knowledge...} uses so the two cannot drift apart. Does nothing when the user has
+     * unapplied edits in the tab, so that switching away and back does not discard them.
+     */
+    private void refreshTextDisplay() {
+        if (this.knowledgeTextArea == null) return;
+        if (this.textDirty) return;
+
+        String text;
+
+        try {
+            StringWriter writer = new StringWriter();
+            DataWriter.saveKnowledge(this.knowledge, writer);
+            text = writer.toString();
+        } catch (IOException e) {
+            text = "Could not render the knowledge as text: " + e.getMessage();
+        }
+
+        this.knowledgeTextArea.setText(text);
+        this.knowledgeTextArea.setCaretPosition(0);
+
+        this.textDirty = false;
+        if (this.textApplyButton != null) this.textApplyButton.setEnabled(false);
+        if (this.textRevertButton != null) this.textRevertButton.setEnabled(false);
     }
 
     private Box tierDisplay() {

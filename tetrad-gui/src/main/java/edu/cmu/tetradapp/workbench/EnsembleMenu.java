@@ -25,7 +25,9 @@ import edu.cmu.tetrad.util.GraphSampling;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import javax.swing.*;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
@@ -36,11 +38,23 @@ import java.util.prefs.Preferences;
  */
 public class EnsembleMenu extends JMenu {
 
-    public static ResamplingEdgeEnsemble resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Majority;
+    /**
+     * The ensemble currently shown, shared across workbenches so a freshly built menu (one is constructed per
+     * right-click popup) can reflect the last selection. The median member graph is the default initial display
+     * as of 2026-8-13, so this starts at Median.
+     */
+    public static ResamplingEdgeEnsemble resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Median;
+
     /**
      * The workbench graph.
      */
     private final GraphWorkbench graphWorkbench;
+
+    /**
+     * The checkable menu items, one per ensemble, kept so the checked state can be re-synced when a selection is
+     * cancelled (e.g., the Threshold dialog is dismissed) or unavailable (no stored median graph).
+     */
+    private final Map<ResamplingEdgeEnsemble, JRadioButtonMenuItem> items = new EnumMap<>(ResamplingEdgeEnsemble.class);
 
     /**
      * <p>Constructor for EnsembleMenu.</p>
@@ -81,113 +95,128 @@ public class EnsembleMenu extends JMenu {
     }
 
     private void initComponents() {
-        JMenuItem highestEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Highest.name());
-        JMenuItem majorityEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Majority.name());
-        JMenuItem preservedEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Preserved.name());
-        JMenuItem thresholdEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Threshold.name());
+        // Checkable items in a button group so the current selection is visible in the menu; Median first,
+        // since the median member graph is the default initial display. Added 2026-8-13.
+        ButtonGroup group = new ButtonGroup();
 
-        highestEnsemble.addActionListener(action -> {
-            Graph workbenchGraph = graphWorkbench.getGraph();
-            Graph samplingGraph = ((EdgeListGraph) workbenchGraph).getAncillaryGraph("samplingGraph");
+        for (ResamplingEdgeEnsemble ensemble : new ResamplingEdgeEnsemble[]{
+                ResamplingEdgeEnsemble.Median,
+                ResamplingEdgeEnsemble.Highest,
+                ResamplingEdgeEnsemble.Majority,
+                ResamplingEdgeEnsemble.Preserved,
+                ResamplingEdgeEnsemble.Threshold}) {
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(ensemble.name());
+            items.put(ensemble, item);
+            group.add(item);
+            add(item);
+        }
 
-            if (samplingGraph == null) {
-                throw new IllegalStateException("Cannot find sampling graph");
-            }
+        syncSelection();
 
-            Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
-                    ResamplingEdgeEnsemble.Highest);
-            ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", samplingGraph);
+        items.get(ResamplingEdgeEnsemble.Median).addActionListener(action -> showMedian());
+        items.get(ResamplingEdgeEnsemble.Highest).addActionListener(action -> showComposite(ResamplingEdgeEnsemble.Highest));
+        items.get(ResamplingEdgeEnsemble.Majority).addActionListener(action -> showComposite(ResamplingEdgeEnsemble.Majority));
+        items.get(ResamplingEdgeEnsemble.Preserved).addActionListener(action -> showComposite(ResamplingEdgeEnsemble.Preserved));
+        items.get(ResamplingEdgeEnsemble.Threshold).addActionListener(action -> showThreshold());
+    }
 
-            resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Highest;
+    /**
+     * Checks the item for the ensemble currently shown; used at construction and to revert the checked state when a
+     * selection is cancelled or unavailable.
+     */
+    private void syncSelection() {
+        JRadioButtonMenuItem item = items.get(resamplingEdgeEnsemble);
+        if (item != null) {
+            item.setSelected(true);
+        }
+    }
 
-            displayGraph = GraphUtils.fixDirections(displayGraph);
+    private Graph getSamplingGraph() {
+        Graph workbenchGraph = graphWorkbench.getGraph();
+        Graph samplingGraph = ((EdgeListGraph) workbenchGraph).getAncillaryGraph("samplingGraph");
 
-            graphWorkbench.setGraph(displayGraph);
-        });
-        majorityEnsemble.addActionListener(action -> {
-            Graph workbenchGraph = graphWorkbench.getGraph();
-            Graph samplingGraph = ((EdgeListGraph) workbenchGraph).getAncillaryGraph("samplingGraph");
+        if (samplingGraph == null) {
+            throw new IllegalStateException("Cannot find sampling graph");
+        }
 
-            if (samplingGraph == null) {
-                throw new IllegalStateException("Cannot find sampling graph");
-            }
+        return samplingGraph;
+    }
 
-            Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
-                    ResamplingEdgeEnsemble.Majority);
-            ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", samplingGraph);
+    private void showMedian() {
+        Graph samplingGraph = getSamplingGraph();
 
-            resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Majority;
+        // The median member graph cannot be recomputed from the composite sampling graph alone (the member
+        // graphs are needed), so it is computed at search time and stored as an ancillary graph on the
+        // sampling graph; see AbstractBootstrapAlgorithm.search. Added 2026-8-13.
+        Graph medianGraph = ((EdgeListGraph) samplingGraph).getAncillaryGraph("medianGraph");
 
-            displayGraph = GraphUtils.fixDirections(displayGraph);
+        if (medianGraph == null) {
+            JOptionPane.showMessageDialog(graphWorkbench,
+                    "No median member graph is stored with this search result. The Median display is\n"
+                    + "available for bootstrap searches run after this option was introduced; please\n"
+                    + "re-run the search.",
+                    "Median", JOptionPane.INFORMATION_MESSAGE);
+            syncSelection();
+            return;
+        }
 
-            graphWorkbench.setGraph(displayGraph);
-        });
-        preservedEnsemble.addActionListener(action -> {
-            Graph workbenchGraph = graphWorkbench.getGraph();
-            Graph samplingGraph = ((EdgeListGraph) workbenchGraph).getAncillaryGraph("samplingGraph");
+        ((EdgeListGraph) medianGraph).setAncillaryGraph("samplingGraph", samplingGraph);
 
-            if (samplingGraph == null) {
-                throw new IllegalStateException("Cannot find sampling graph");
-            }
+        resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Median;
+        syncSelection();
 
-            Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
-                    ResamplingEdgeEnsemble.Preserved);
-            ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", samplingGraph);
+        graphWorkbench.setGraph(GraphUtils.fixDirections(medianGraph));
+    }
 
-            resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Preserved;
+    private void showComposite(ResamplingEdgeEnsemble ensemble) {
+        Graph samplingGraph = getSamplingGraph();
 
-            displayGraph = GraphUtils.fixDirections(displayGraph);
+        Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph, ensemble);
+        ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", samplingGraph);
 
-            graphWorkbench.setGraph(displayGraph);
-        });
-        thresholdEnsemble.addActionListener(action -> {
-            Graph workbenchGraph = graphWorkbench.getGraph();
-            Graph samplingGraph = ((EdgeListGraph) workbenchGraph).getAncillaryGraph("samplingGraph");
+        resamplingEdgeEnsemble = ensemble;
+        syncSelection();
 
-            if (samplingGraph == null) {
-                throw new IllegalStateException("Cannot find sampling graph");
-            }
+        graphWorkbench.setGraph(GraphUtils.fixDirections(displayGraph));
+    }
 
-            while (true) {
-                String response = JOptionPane.showInputDialog(graphWorkbench,
-                        "Please enter a treshold between 0 and 1:",
-                        "Threshold",
-                        JOptionPane.QUESTION_MESSAGE);
+    private void showThreshold() {
+        Graph samplingGraph = getSamplingGraph();
 
-                if (response != null) {
-                    try {
-                        double threshold = Double.parseDouble(response);
+        while (true) {
+            String response = JOptionPane.showInputDialog(graphWorkbench,
+                    "Please enter a treshold between 0 and 1:",
+                    "Threshold",
+                    JOptionPane.QUESTION_MESSAGE);
 
-                        if (threshold < 0 || threshold > 1) {
-                            throw new NumberFormatException();
-                        }
+            if (response != null) {
+                try {
+                    double threshold = Double.parseDouble(response);
 
-                        Preferences.userRoot().putDouble("edge.ensemble.threshold", threshold);
-                        break;
-                    } catch (NumberFormatException e) {
-                        // try again.
+                    if (threshold < 0 || threshold > 1) {
+                        throw new NumberFormatException();
                     }
-                } else {
-                    return;
+
+                    Preferences.userRoot().putDouble("edge.ensemble.threshold", threshold);
+                    break;
+                } catch (NumberFormatException e) {
+                    // try again.
                 }
+            } else {
+                // Cancelled: keep the previously shown ensemble checked.
+                syncSelection();
+                return;
             }
+        }
 
-            Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
-                    ResamplingEdgeEnsemble.Threshold);
-            ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", samplingGraph);
+        Graph displayGraph = GraphSampling.createDisplayGraph(samplingGraph,
+                ResamplingEdgeEnsemble.Threshold);
+        ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", samplingGraph);
 
-            resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Threshold;
+        resamplingEdgeEnsemble = ResamplingEdgeEnsemble.Threshold;
+        syncSelection();
 
-            displayGraph = GraphUtils.fixDirections(displayGraph);
-
-            graphWorkbench.setGraph(displayGraph);
-        });
-
-        add(highestEnsemble);
-        add(majorityEnsemble);
-        add(preservedEnsemble);
-        add(thresholdEnsemble);
+        graphWorkbench.setGraph(GraphUtils.fixDirections(displayGraph));
     }
 
 }
-

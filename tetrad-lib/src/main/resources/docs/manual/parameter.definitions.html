@@ -4784,16 +4784,22 @@ Source:
     <h3 class="parameter_description" id="resamplingEnsemble">resamplingEnsemble</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="resamplingEnsemble_short_desc">Ensemble method: Preserved (1),
-        Highest (2), Majority (3)</span></li>
+        Highest (2), Majority (3), Median (4)</span></li>
         <li>Long Description: <span id="resamplingEnsemble_long_desc"> Preserved = keep the highest frequency
         edges; Highest = keep the highest frequency edges but ignore the no edge
         case if maximal; Majority = keep edges only if their frequency is
-        greater than 0.5. </span></li>
-        <li>Default Value: <span id="resamplingEnsemble_default_value">1</span></li>
+        greater than 0.5; Median = instead of assembling a composite of edges from different bootstrap
+        graphs (which in general is not a legal member of the algorithm's output class), display the
+        single bootstrap graph closest to the ensemble edge frequencies. The displayed graph is one the
+        algorithm actually produced, so it is legal for its class (e.g., a legal CPDAG or PAG), and its
+        edges are annotated with the ensemble frequencies. As of 2026-8-13 the Median graph is always the
+        initial display for bootstrap searches; the other ensemble views can be selected afterwards from
+        the Ensemble Display menu (right-click the graph). </span></li>
+        <li>Default Value: <span id="resamplingEnsemble_default_value">4</span></li>
         <li>Lower Bound:
             <span id="resamplingEnsemble_lower_bound">1</span></li>
         <li>Upper
-            Bound: <span id="resamplingEnsemble_upper_bound">3</span></li>
+            Bound: <span id="resamplingEnsemble_upper_bound">4</span></li>
         <li>Value Type: <span id="resamplingEnsemble_value_type">Integer</span></li>
     </ul>
 
@@ -4803,8 +4809,8 @@ Source:
     <ul class="parameter_description_list">
         <li>Short Description: <span id="resamplingWithReplacement_short_desc">Yes, if sampling with
         replacement (bootstrapping)</span></li>
-        <li>Long Description: <span id="resamplingWithReplacement_long_desc"> Yes if resampling can be
-        done with replacement, No if not. or without replacement. If with
+        <li>Long Description: <span id="resamplingWithReplacement_long_desc"> Yes if resampling is to be
+        done with replacement, No if without replacement. If with
         replacement, it is possible to have more than one copy of some of the
         records in the original dataset being included in the
         bootstrap.</span></li>

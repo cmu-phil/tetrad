@@ -155,6 +155,109 @@ public final class GraphSampling {
         return graph;
     }
 
+    /**
+     * Selects, from among the given member graphs (the actual outputs of the bootstrap searches), the single graph
+     * whose edges best agree with the ensemble edge-type frequencies, and returns a copy of it annotated with those
+     * frequencies.
+     *
+     * <p>Motivation (2026-8-13): {@link #createGraphWithHighProbabilityEdges(List)} assembles per-pair majority
+     * edges drawn from DIFFERENT member graphs into a composite. Taken together those edges in general belong to no
+     * output equivalence class: the composite of legal PAGs or CPDAGs is typically not itself a legal PAG or CPDAG,
+     * which misleads users and breaks downstream operations that assume legality. The graph returned here IS one of
+     * the member graphs, so it inherits whatever legality guarantee the underlying algorithm provides.</p>
+     *
+     * <p>It is a median in the following sense: it maximizes, over member graphs G, the sum across node pairs of the
+     * ensemble frequency of G's own edge state on that pair (where "no edge" is a state like any other) -
+     * equivalently, it minimizes the total frequency-weighted disagreement with the ensemble. Ties are broken by the
+     * first maximizer in the given list order, so the result is deterministic for a fixed list of graphs. Each edge
+     * of the returned copy carries the full list of ensemble edge-type probabilities for its node pair, exactly as
+     * composite edges do, so frequency display in the interface works unchanged.</p>
+     *
+     * @param graphs the member graphs produced by the individual bootstrap searches
+     * @return an annotated copy of the member graph closest to the ensemble frequencies
+     */
+    public static Graph selectMedianEnsembleGraph(List<Graph> graphs) {
+        List<Graph> members = graphs.stream()
+                .filter(Objects::nonNull)
+                .map(GraphSampling::addEdgeSpecializationMarkups)
+                .collect(Collectors.toList());
+
+        if (members.isEmpty()) {
+            return new EdgeListGraph();
+        }
+
+        Set<NodePair> nodePairs = getEdgeNodePairs(members);
+
+        Map<NodePair, List<EdgeTypeProbability>> etpsByPair = new HashMap<>();
+        for (NodePair nodePair : nodePairs) {
+            etpsByPair.put(nodePair, getEdgeTypeProbabilities(nodePair.getNode1(), nodePair.getNode2(), members));
+        }
+
+        int bestIndex = 0;
+        double bestScore = Double.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < members.size(); i++) {
+            Graph member = members.get(i);
+            double score = 0.0;
+
+            for (NodePair nodePair : nodePairs) {
+                Node n1 = member.getNode(nodePair.getNode1());
+                Node n2 = member.getNode(nodePair.getNode2());
+                if (n1 == null || n2 == null) continue;
+
+                Edge edge = member.getEdge(n1, n2);
+                EdgeType state = (edge == null) ? EdgeType.nil : getEdgeType(edge, n1, n2);
+
+                for (EdgeTypeProbability etp : etpsByPair.get(nodePair)) {
+                    if (etp.getEdgeType() == state) {
+                        score += etp.getProbability();
+                        break;
+                    }
+                }
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestIndex = i;
+            }
+        }
+
+        Graph winner = members.get(bestIndex);
+
+        // Annotated copy: same nodes and edges as the winner, with the ensemble edge-type probabilities attached
+        // to each edge, mirroring the composite's annotation so the interface displays frequencies identically.
+        Graph result = createNewGraph(winner.getNodes());
+
+        for (NodePair nodePair : nodePairs) {
+            Node w1 = winner.getNode(nodePair.getNode1());
+            Node w2 = winner.getNode(nodePair.getNode2());
+            Node n1 = result.getNode(nodePair.getNode1());
+            Node n2 = result.getNode(nodePair.getNode2());
+            if (w1 == null || w2 == null || n1 == null || n2 == null) continue;
+
+            Edge winnerEdge = winner.getEdge(w1, w2);
+            if (winnerEdge == null) continue; // frequencies for absent pairs remain in the sampling graph
+
+            Edge edge = new Edge(n1, n2, winnerEdge.getProximalEndpoint(w1), winnerEdge.getProximalEndpoint(w2), false);
+            winnerEdge.getProperties().forEach(edge::addProperty);
+
+            List<EdgeTypeProbability> etps = etpsByPair.get(nodePair);
+            if (nodePair.getNode1().equals(edge.getNode1().getName()) && nodePair.getNode2().equals(edge.getNode2().getName())) {
+                etps.forEach(edge::addEdgeTypeProbability);
+            } else {
+                etps.forEach(etp -> {
+                    etp.setEdgeType(getReversed(etp.getEdgeType()));
+                    edge.addEdgeTypeProbability(etp);
+                });
+            }
+
+            result.addEdge(edge);
+        }
+
+        setEdgeProbabilitiesOfNonNullEdges(result);
+        return result;
+    }
+
     private static void setEdgeProbabilitiesOfNonNullEdges(Graph graph) {
         graph.getEdges().forEach(edge -> {
             List<EdgeTypeProbability> etps = edge.getEdgeTypeProbabilities();

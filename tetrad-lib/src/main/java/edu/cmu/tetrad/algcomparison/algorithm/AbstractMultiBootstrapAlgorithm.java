@@ -153,6 +153,7 @@ public abstract class AbstractMultiBootstrapAlgorithm extends AbstractBootstrapA
         RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
 
         Graph graph;
+        Graph medianMemberGraph = null;
         if (Thread.currentThread().isInterrupted()) {
             graph = new EdgeListGraph();
         } else {
@@ -182,6 +183,11 @@ public abstract class AbstractMultiBootstrapAlgorithm extends AbstractBootstrapA
                 }
 
                 graph = GraphSampling.createGraphWithHighProbabilityEdges(graphs);
+
+                // Median member graph; see the corresponding comment in AbstractBootstrapAlgorithm.search.
+                if (parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
+                    medianMemberGraph = GraphSampling.selectMedianEnsembleGraph(graphs);
+                }
             }
         }
 
@@ -191,6 +197,15 @@ public abstract class AbstractMultiBootstrapAlgorithm extends AbstractBootstrapA
         // bootstrapping information; the display graph is the proper display version whose ancillary "samplingGraph"
         // allows ensemble choices from the right-click menu in the interface.
         ((EdgeListGraph) graph).setAncillaryGraph("samplingGraph", graph);
+
+        if (medianMemberGraph != null) {
+            ((EdgeListGraph) graph).setAncillaryGraph("medianGraph", medianMemberGraph);
+            ((EdgeListGraph) medianMemberGraph).setAncillaryGraph("samplingGraph", graph);
+
+            // As of 2026-8-13 the median member graph is the default initial display for every bootstrap
+            // search; see the corresponding comment in AbstractBootstrapAlgorithm.search.
+            return GraphUtils.fixDirections(medianMemberGraph);
+        }
 
         Graph displayGraph = GraphSampling.createDisplayGraph(graph, ResamplingEdgeEnsemble.Highest);
         ((EdgeListGraph) displayGraph).setAncillaryGraph("samplingGraph", graph);

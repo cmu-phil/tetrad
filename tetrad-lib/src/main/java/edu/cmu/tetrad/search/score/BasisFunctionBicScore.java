@@ -85,8 +85,7 @@ public class BasisFunctionBicScore implements Score {
         this.variables = dataSet.getVariables();
 
         // Using the Legendre basis.
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1
-        );
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1);
         this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 

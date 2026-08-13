@@ -1,6 +1,7 @@
 package edu.cmu.tetradapp.editor.datamanip;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -8,6 +9,8 @@ import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.*;
@@ -45,6 +48,8 @@ public class DataSubsetEditor extends JPanel {
 
     // Row & sampling controls.
     private final JTextField rowSpecField = new JTextField();
+    private final JTextField conditionField = new JTextField();
+    private final JLabel conditionCountLabel = new JLabel(" ");
     private final JComboBox<SamplingMode> samplingModeCombo =
             new JComboBox<>(SamplingMode.values());
     private final JSpinner sampleSizeSpinner =
@@ -262,8 +267,36 @@ public class DataSubsetEditor extends JPanel {
         JLabel rowSpecLabel = new JLabel("Rows:");
         rowSpecField.setToolTipText("Comma-separated ranges, e.g. 1-100, 150, 200-250; blank = all rows");
 
+        JLabel conditionLabel = new JLabel("Conditions:");
+        conditionField.setToolTipText(
+                "<html>Restrict to rows satisfying all conditions, joined by 'and'.<br>"
+                        + "A = cat1&nbsp;&nbsp;A != cat1&nbsp;&nbsp;A in {cat1, cat2}&nbsp;&nbsp;A not in {cat1}<br>"
+                        + "X = 1&nbsp;&nbsp;X &lt; 1&nbsp;&nbsp;X &lt;= 1&nbsp;&nbsp;X &gt; 1&nbsp;&nbsp;X &gt;= 1<br>"
+                        + "X in (1, 2)&nbsp;&nbsp;X in [1, 2]&nbsp;&nbsp;X not in (1, 2]<br>"
+                        + "Quote names or values containing spaces. Blank = no conditions.</html>");
+
         JLabel modeLabel = new JLabel("Sampling mode:");
         samplingModeCombo.addActionListener(e -> updateSamplingControls());
+
+        DocumentListener countUpdater = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateConditionCount();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateConditionCount();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateConditionCount();
+            }
+        };
+        conditionField.getDocument().addDocumentListener(countUpdater);
+        rowSpecField.getDocument().addDocumentListener(countUpdater);
+        updateConditionCount();
 
         JLabel sampleSizeLabel = new JLabel("Sample size:");
         JLabel seedLabel = new JLabel("Seed:");
@@ -283,35 +316,55 @@ public class DataSubsetEditor extends JPanel {
         c.weightx = 1.0;
         panel.add(rowSpecField, c);
 
-        // Row 1: sampling mode
+        // Row 1: conditions
         c.gridx = 0;
         c.gridy = 1;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
         c.weightx = 0;
-        panel.add(modeLabel, c);
+        panel.add(conditionLabel, c);
         c.gridx = 1;
         c.gridy = 1;
         c.anchor = GridBagConstraints.WEST;
-        panel.add(samplingModeCombo, c);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
+        panel.add(conditionField, c);
+        c.gridx = 2;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.weightx = 0;
+        panel.add(conditionCountLabel, c);
 
-        // Row 2: sample size
+        // Row 2: sampling mode
         c.gridx = 0;
         c.gridy = 2;
         c.anchor = GridBagConstraints.EAST;
-        panel.add(sampleSizeLabel, c);
+        c.fill = GridBagConstraints.NONE;
+        c.weightx = 0;
+        panel.add(modeLabel, c);
         c.gridx = 1;
         c.gridy = 2;
         c.anchor = GridBagConstraints.WEST;
-        panel.add(sampleSizeSpinner, c);
+        panel.add(samplingModeCombo, c);
 
-        // Row 3: seed
+        // Row 3: sample size
         c.gridx = 0;
         c.gridy = 3;
         c.anchor = GridBagConstraints.EAST;
-        panel.add(seedLabel, c);
+        panel.add(sampleSizeLabel, c);
         c.gridx = 1;
         c.gridy = 3;
+        c.anchor = GridBagConstraints.WEST;
+        panel.add(sampleSizeSpinner, c);
+
+        // Row 4: seed
+        c.gridx = 0;
+        c.gridy = 4;
+        c.anchor = GridBagConstraints.EAST;
+        panel.add(seedLabel, c);
+        c.gridx = 1;
+        c.gridy = 4;
         c.anchor = GridBagConstraints.WEST;
         panel.add(seedField, c);
 
@@ -611,6 +664,540 @@ public class DataSubsetEditor extends JPanel {
     }
 
     // ------------------------------------------------------------------------
+    // Row conditions
+    // ------------------------------------------------------------------------
+
+    /**
+     * The comparison used by a single row condition.
+     */
+    private enum ConditionOp {
+        EQ, NE, LT, LE, GT, GE, IN_SET, NOT_IN_SET, IN_INTERVAL, NOT_IN_INTERVAL
+    }
+
+    /**
+     * A single parsed row condition, bound to a column of the source data set.
+     *
+     * <p>Rows whose value for the condition's variable is missing never satisfy the condition, for
+     * any operator -- including the negated ones. A missing value is not knowably outside a set or a
+     * range, so {@code A != cat1} excludes missing rows just as {@code A = cat1} does.
+     */
+    private static final class RowCondition {
+        private final Node variable;
+        private final int column;
+        private final ConditionOp op;
+        private final boolean discrete;
+
+        /**
+         * Category indices, for the discrete operators.
+         */
+        private final Set<Integer> categoryIndices;
+
+        /**
+         * Comparison values, for the continuous scalar and set operators.
+         */
+        private final double[] values;
+
+        /**
+         * Interval bounds and closure, for the interval operators.
+         */
+        private final double low;
+        private final double high;
+        private final boolean lowClosed;
+        private final boolean highClosed;
+
+        private RowCondition(Node variable, int column, ConditionOp op, boolean discrete,
+                             Set<Integer> categoryIndices, double[] values,
+                             double low, double high, boolean lowClosed, boolean highClosed) {
+            this.variable = variable;
+            this.column = column;
+            this.op = op;
+            this.discrete = discrete;
+            this.categoryIndices = categoryIndices;
+            this.values = values;
+            this.low = low;
+            this.high = high;
+            this.lowClosed = lowClosed;
+            this.highClosed = highClosed;
+        }
+
+        static RowCondition discrete(Node variable, int column, ConditionOp op, Set<Integer> indices) {
+            return new RowCondition(variable, column, op, true, indices, null, 0, 0, false, false);
+        }
+
+        static RowCondition continuous(Node variable, int column, ConditionOp op, double[] values) {
+            return new RowCondition(variable, column, op, false, null, values, 0, 0, false, false);
+        }
+
+        static RowCondition interval(Node variable, int column, ConditionOp op,
+                                     double low, double high, boolean lowClosed, boolean highClosed) {
+            return new RowCondition(variable, column, op, false, null, null,
+                    low, high, lowClosed, highClosed);
+        }
+
+        boolean holds(DataSet data, int row) {
+            if (discrete) {
+                int v = data.getInt(row, column);
+                if (v == DiscreteVariable.MISSING_VALUE || v < 0) return false;
+
+                boolean in = categoryIndices.contains(v);
+                return (op == ConditionOp.NOT_IN_SET || op == ConditionOp.NE) != in;
+            }
+
+            double v = data.getDouble(row, column);
+            if (Double.isNaN(v)) return false;
+
+            switch (op) {
+                case EQ:
+                    return v == values[0];
+                case NE:
+                    return v != values[0];
+                case LT:
+                    return v < values[0];
+                case LE:
+                    return v <= values[0];
+                case GT:
+                    return v > values[0];
+                case GE:
+                    return v >= values[0];
+                case IN_SET:
+                case NOT_IN_SET: {
+                    boolean in = false;
+                    for (double value : values) {
+                        if (v == value) {
+                            in = true;
+                            break;
+                        }
+                    }
+                    return (op == ConditionOp.NOT_IN_SET) != in;
+                }
+                case IN_INTERVAL:
+                case NOT_IN_INTERVAL: {
+                    boolean in = (lowClosed ? v >= low : v > low)
+                            && (highClosed ? v <= high : v < high);
+                    return (op == ConditionOp.NOT_IN_INTERVAL) != in;
+                }
+                default:
+                    return false;
+            }
+        }
+    }
+
+    /**
+     * Parses a condition specification into a list of conditions, all of which must hold for a row to
+     * be kept.
+     *
+     * <p>Conditions are joined by the keyword {@code and}; {@code in}, {@code not in} and {@code and}
+     * are recognized in any capitalization. Variable names and category values are matched as typed,
+     * falling back to a case-insensitive match when that is unambiguous. Names or values containing
+     * spaces, commas or keywords may be double-quoted.
+     *
+     * <pre>
+     *   A = cat1                     discrete equality
+     *   A != cat1                    discrete inequality
+     *   A in {cat1, cat2}            discrete set membership
+     *   A not in {cat1, cat2}        discrete set exclusion
+     *   X = 1                        continuous equality (exact)
+     *   X &lt; 1   X &lt;= 1  X &gt; 1  X &gt;= 1  continuous comparison
+     *   X in (1, 2)                  open interval; [ or ] closes an endpoint
+     *   X not in [1, 2]              interval exclusion
+     *   X in {1, 2.5}                exact match against any listed value
+     *   A = cat1 and X in (1, 2]     conjunction
+     * </pre>
+     *
+     * @param spec the specification; blank means no conditions
+     * @return the parsed conditions, possibly empty
+     * @throws IllegalArgumentException if the specification cannot be parsed, names an unknown
+     *                                  variable or category, or applies an operator to a variable of
+     *                                  the wrong type
+     */
+    private List<RowCondition> parseConditions(String spec) {
+        List<RowCondition> conditions = new ArrayList<>();
+        if (spec == null || spec.trim().isEmpty()) return conditions;
+
+        for (String clause : splitOnAnd(spec)) {
+            String c = clause.trim();
+            if (c.isEmpty()) continue;
+            conditions.add(parseCondition(c));
+        }
+
+        return conditions;
+    }
+
+    /**
+     * Splits a specification on the keyword {@code and}, ignoring occurrences inside quotes or inside
+     * a bracketed set or interval, and requiring word boundaries so that a variable named e.g.
+     * "brand" is not mistaken for a separator.
+     */
+    private static List<String> splitOnAnd(String spec) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+
+        int depth = 0;
+        boolean inQuotes = false;
+
+        for (int i = 0; i < spec.length(); i++) {
+            char ch = spec.charAt(i);
+
+            if (ch == '"') {
+                inQuotes = !inQuotes;
+                current.append(ch);
+                continue;
+            }
+
+            if (!inQuotes) {
+                if (ch == '{' || ch == '(' || ch == '[') depth++;
+                else if (ch == '}' || ch == ')' || ch == ']') depth--;
+
+                if (depth == 0 && (ch == 'a' || ch == 'A') && matchesKeywordAt(spec, i, "and")) {
+                    parts.add(current.toString());
+                    current.setLength(0);
+                    i += 2;
+                    continue;
+                }
+            }
+
+            current.append(ch);
+        }
+
+        if (inQuotes) {
+            throw new IllegalArgumentException("Unbalanced quotation marks.");
+        }
+        if (depth != 0) {
+            throw new IllegalArgumentException("Unbalanced brackets.");
+        }
+
+        parts.add(current.toString());
+        return parts;
+    }
+
+    /**
+     * True if the keyword occurs at the given index, case-insensitively, bounded by non-word
+     * characters on both sides.
+     */
+    private static boolean matchesKeywordAt(String s, int i, String keyword) {
+        int end = i + keyword.length();
+        if (end > s.length()) return false;
+        if (!s.substring(i, end).equalsIgnoreCase(keyword)) return false;
+        if (i > 0 && isWordChar(s.charAt(i - 1))) return false;
+        return end >= s.length() || !isWordChar(s.charAt(end));
+    }
+
+    private static boolean isWordChar(char ch) {
+        return Character.isLetterOrDigit(ch) || ch == '_' || ch == '.';
+    }
+
+    /**
+     * Parses one condition clause.
+     */
+    private RowCondition parseCondition(String clause) {
+        // Locate the operator: the earliest one occurring outside quotes. Two-character
+        // operators are tested before their one-character prefixes.
+        int opIndex = -1;
+        int opLength = 0;
+        ConditionOp op = null;
+        boolean negatedKeyword = false;
+
+        boolean inQuotes = false;
+
+        for (int i = 0; i < clause.length() && opIndex < 0; i++) {
+            char ch = clause.charAt(i);
+
+            if (ch == '"') {
+                inQuotes = !inQuotes;
+                continue;
+            }
+            if (inQuotes) continue;
+
+            if (clause.startsWith("!=", i)) {
+                opIndex = i;
+                opLength = 2;
+                op = ConditionOp.NE;
+            } else if (clause.startsWith("<=", i)) {
+                opIndex = i;
+                opLength = 2;
+                op = ConditionOp.LE;
+            } else if (clause.startsWith(">=", i)) {
+                opIndex = i;
+                opLength = 2;
+                op = ConditionOp.GE;
+            } else if (ch == '=') {
+                opIndex = i;
+                opLength = 1;
+                op = ConditionOp.EQ;
+            } else if (ch == '<') {
+                opIndex = i;
+                opLength = 1;
+                op = ConditionOp.LT;
+            } else if (ch == '>') {
+                opIndex = i;
+                opLength = 1;
+                op = ConditionOp.GT;
+            } else if (matchesKeywordAt(clause, i, "not")) {
+                int j = i + 3;
+                while (j < clause.length() && Character.isWhitespace(clause.charAt(j))) j++;
+                if (!matchesKeywordAt(clause, j, "in")) {
+                    throw new IllegalArgumentException(
+                            "Expected \"not in\" in condition: \"" + clause + "\"");
+                }
+                opIndex = i;
+                opLength = (j + 2) - i;
+                op = ConditionOp.IN_SET;   // refined below by operand shape
+                negatedKeyword = true;
+            } else if (matchesKeywordAt(clause, i, "in")) {
+                opIndex = i;
+                opLength = 2;
+                op = ConditionOp.IN_SET;   // refined below by operand shape
+            }
+        }
+
+        if (opIndex < 0) {
+            throw new IllegalArgumentException(
+                    "No comparison found in condition: \"" + clause + "\". Expected one of "
+                            + "=, !=, <, <=, >, >=, in, not in.");
+        }
+
+        String nameText = clause.substring(0, opIndex).trim();
+        String operandText = clause.substring(opIndex + opLength).trim();
+
+        if (nameText.isEmpty()) {
+            throw new IllegalArgumentException("Missing variable name in condition: \"" + clause + "\"");
+        }
+        if (operandText.isEmpty()) {
+            throw new IllegalArgumentException("Missing value in condition: \"" + clause + "\"");
+        }
+
+        Node variable = lookUpVariable(unquote(nameText));
+        int column = sourceDataSet.getColumnIndex(variable);
+        boolean isDiscrete = variable instanceof DiscreteVariable;
+
+        boolean keywordOp = (opLength >= 2 && (op == ConditionOp.IN_SET))
+                && (operandText.startsWith("{") || operandText.startsWith("(")
+                || operandText.startsWith("["));
+
+        if (op == ConditionOp.IN_SET && !keywordOp) {
+            throw new IllegalArgumentException(
+                    "After \"in\", expected a set in braces or an interval in brackets: \""
+                            + clause + "\"");
+        }
+
+        if (operandText.startsWith("{")) {
+            List<String> items = parseBracketedList(operandText, '{', '}', clause);
+            ConditionOp setOp = negatedKeyword ? ConditionOp.NOT_IN_SET : ConditionOp.IN_SET;
+
+            if (isDiscrete) {
+                Set<Integer> indices = new LinkedHashSet<>();
+                for (String item : items) {
+                    indices.add(lookUpCategory((DiscreteVariable) variable, unquote(item)));
+                }
+                return RowCondition.discrete(variable, column, setOp, indices);
+            } else {
+                double[] values = new double[items.size()];
+                for (int i = 0; i < items.size(); i++) {
+                    values[i] = parseNumber(unquote(items.get(i)), clause);
+                }
+                return RowCondition.continuous(variable, column, setOp, values);
+            }
+        }
+
+        if (operandText.startsWith("(") || operandText.startsWith("[")) {
+            if (isDiscrete) {
+                throw new IllegalArgumentException(
+                        "Interval conditions do not apply to the discrete variable \""
+                                + variable.getName() + "\"; use = , != , in {...} or not in {...}.");
+            }
+
+            boolean lowClosed = operandText.startsWith("[");
+            char close = operandText.charAt(operandText.length() - 1);
+            if (close != ')' && close != ']') {
+                throw new IllegalArgumentException(
+                        "Interval must end with ) or ]: \"" + clause + "\"");
+            }
+            boolean highClosed = close == ']';
+
+            List<String> bounds = parseBracketedList(operandText,
+                    operandText.charAt(0), close, clause);
+            if (bounds.size() != 2) {
+                throw new IllegalArgumentException(
+                        "An interval needs exactly two endpoints: \"" + clause + "\"");
+            }
+
+            double low = parseNumber(unquote(bounds.get(0)), clause);
+            double high = parseNumber(unquote(bounds.get(1)), clause);
+
+            if (low > high) {
+                throw new IllegalArgumentException(
+                        "Interval lower bound exceeds upper bound: \"" + clause + "\"");
+            }
+
+            ConditionOp intervalOp = negatedKeyword
+                    ? ConditionOp.NOT_IN_INTERVAL : ConditionOp.IN_INTERVAL;
+            return RowCondition.interval(variable, column, intervalOp, low, high, lowClosed, highClosed);
+        }
+
+        // Scalar comparison.
+        String value = unquote(operandText);
+
+        if (isDiscrete) {
+            if (op != ConditionOp.EQ && op != ConditionOp.NE) {
+                throw new IllegalArgumentException(
+                        "The operator in \"" + clause + "\" does not apply to the discrete variable \""
+                                + variable.getName() + "\"; use = , != , in {...} or not in {...}.");
+            }
+            Set<Integer> indices = new LinkedHashSet<>();
+            indices.add(lookUpCategory((DiscreteVariable) variable, value));
+            return RowCondition.discrete(variable, column, op, indices);
+        }
+
+        return RowCondition.continuous(variable, column, op, new double[]{parseNumber(value, clause)});
+    }
+
+    /**
+     * Splits the interior of a bracketed set or interval on commas, respecting quotes.
+     */
+    private static List<String> parseBracketedList(String text, char open, char close, String clause) {
+        if (text.length() < 2 || text.charAt(0) != open || text.charAt(text.length() - 1) != close) {
+            throw new IllegalArgumentException("Malformed list or interval: \"" + clause + "\"");
+        }
+
+        String inner = text.substring(1, text.length() - 1);
+        List<String> items = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < inner.length(); i++) {
+            char ch = inner.charAt(i);
+            if (ch == '"') {
+                inQuotes = !inQuotes;
+                current.append(ch);
+            } else if (ch == ',' && !inQuotes) {
+                items.add(current.toString().trim());
+                current.setLength(0);
+            } else {
+                current.append(ch);
+            }
+        }
+        items.add(current.toString().trim());
+
+        for (String item : items) {
+            if (item.isEmpty()) {
+                throw new IllegalArgumentException("Empty entry in: \"" + clause + "\"");
+            }
+        }
+
+        return items;
+    }
+
+    private static String unquote(String s) {
+        String t = s.trim();
+        if (t.length() >= 2 && t.startsWith("\"") && t.endsWith("\"")) {
+            return t.substring(1, t.length() - 1);
+        }
+        return t;
+    }
+
+    private static double parseNumber(String s, String clause) {
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Expected a number but found \"" + s + "\" in: \""
+                    + clause + "\"");
+        }
+    }
+
+    /**
+     * Resolves a variable name against the source data set: exact match first, then a unique
+     * case-insensitive match.
+     */
+    private Node lookUpVariable(String name) {
+        Node exact = sourceDataSet.getVariable(name);
+        if (exact != null) return exact;
+
+        Node found = null;
+        for (Node node : sourceDataSet.getVariables()) {
+            if (node.getName().equalsIgnoreCase(name)) {
+                if (found != null) {
+                    throw new IllegalArgumentException(
+                            "The variable name \"" + name + "\" is ambiguous apart from case.");
+                }
+                found = node;
+            }
+        }
+
+        if (found == null) {
+            throw new IllegalArgumentException("No such variable in this data set: \"" + name + "\"");
+        }
+
+        return found;
+    }
+
+    /**
+     * Resolves a category name against a discrete variable: exact match first, then a unique
+     * case-insensitive match.
+     */
+    private static int lookUpCategory(DiscreteVariable variable, String category) {
+        List<String> categories = variable.getCategories();
+
+        int index = categories.indexOf(category);
+        if (index >= 0) return index;
+
+        int found = -1;
+        for (int i = 0; i < categories.size(); i++) {
+            if (categories.get(i).equalsIgnoreCase(category)) {
+                if (found >= 0) {
+                    throw new IllegalArgumentException("The category \"" + category
+                            + "\" of \"" + variable.getName() + "\" is ambiguous apart from case.");
+                }
+                found = i;
+            }
+        }
+
+        if (found < 0) {
+            throw new IllegalArgumentException("\"" + category + "\" is not a category of \""
+                    + variable.getName() + "\". Categories are: " + categories);
+        }
+
+        return found;
+    }
+
+    /**
+     * Keeps the rows of {@code baseRows} satisfying every condition.
+     */
+    private List<Integer> applyConditions(List<Integer> baseRows, List<RowCondition> conditions) {
+        if (conditions.isEmpty()) return baseRows;
+
+        List<Integer> kept = new ArrayList<>(baseRows.size());
+
+        outer:
+        for (int row : baseRows) {
+            for (RowCondition condition : conditions) {
+                if (!condition.holds(sourceDataSet, row)) continue outer;
+            }
+            kept.add(row);
+        }
+
+        return kept;
+    }
+
+    /**
+     * Updates the label beside the condition field with the number of rows surviving the row
+     * specification and the conditions, or with a short indication that the specification does not
+     * yet parse.
+     */
+    private void updateConditionCount() {
+        try {
+            List<Integer> base = parseRowSpec(rowSpecField.getText(), sourceDataSet.getNumRows());
+            List<RowCondition> conditions = parseConditions(conditionField.getText());
+            int kept = applyConditions(base, conditions).size();
+
+            conditionCountLabel.setText(kept + " of " + base.size() + " rows");
+            conditionCountLabel.setToolTipText(null);
+        } catch (IllegalArgumentException e) {
+            conditionCountLabel.setText("\u2014");
+            conditionCountLabel.setToolTipText(e.getMessage());
+        }
+    }
+
+    // ------------------------------------------------------------------------
     // Public API
     // ------------------------------------------------------------------------
 
@@ -648,7 +1235,19 @@ public class DataSubsetEditor extends JPanel {
             }
         }
 
-        List<Integer> finalRows = applySampling(baseRows);
+        // Apply row conditions before sampling, so that a requested sample size is drawn from
+        // the rows satisfying the conditions rather than being thinned by them afterwards.
+        // Unlike an invalid row specification, an invalid condition is NOT tolerated: falling
+        // back to all rows here would silently analyze the whole data set while the user
+        // believed it had been restricted.
+        List<Integer> conditionedRows;
+        try {
+            conditionedRows = applyConditions(baseRows, parseConditions(conditionField.getText()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid condition: " + e.getMessage(), e);
+        }
+
+        List<Integer> finalRows = applySampling(conditionedRows);
 
         // 3. Create the subset DataSet.
         DataSet columnSubset = sourceDataSet.subsetColumns(selectedVars);
@@ -679,6 +1278,25 @@ public class DataSubsetEditor extends JPanel {
      */
     public String getRowSpec() {
         return rowSpecField.getText();
+    }
+
+    /**
+     * The raw condition specification string, e.g. "A = cat1 and X in (1, 2]".
+     *
+     * @return The condition specification string
+     */
+    public String getConditionSpec() {
+        return conditionField.getText();
+    }
+
+    /**
+     * Sets the condition specification string.
+     *
+     * @param spec The condition specification string
+     */
+    public void setConditionSpec(String spec) {
+        conditionField.setText(spec == null ? "" : spec);
+        updateConditionCount();
     }
 
     /**

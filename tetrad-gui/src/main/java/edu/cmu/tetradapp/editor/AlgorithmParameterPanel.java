@@ -171,22 +171,30 @@ public class AlgorithmParameterPanel extends JPanel {
                 this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
-            if (algorithmRunner.getSourceGraph() == null) {
-
-                // Only show bootstrapping parameters if the algorithm is a bootstrap algorithm.
-                if (algorithm instanceof AbstractBootstrapAlgorithm) {
-                    params = Params.getBootstrappingParameters(algorithm);
-                    if (!params.isEmpty()) {
-                        this.mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
-                        this.mainPanel.add(Box.createVerticalStrut(10));
-                    }
-                } else {
-                    JLabel label = new JLabel("This algorithm is not configured to do bootstrapping.");
-                    JPanel panel = new JPanel(new BorderLayout());
-                    panel.setBorder(BorderFactory.createTitledBorder("Bootstrapping"));
-                    panel.add(label, BorderLayout.WEST);
-                    this.mainPanel.add(panel);
+            // Changed 2026-8-13: bootstrapping parameters are shown for every algorithm that can actually
+            // bootstrap (i.e., extends AbstractBootstrapAlgorithm - the same test Params.getBootstrappingParameters
+            // uses), and every other case shows an explanatory label instead of silently showing nothing. The old
+            // code additionally required the Bootstrapping annotation, so capable algorithms missing the annotation
+            // lost the section without explanation; and when a source graph was supplied, the section vanished
+            // silently as well.
+            if (algorithmRunner.getSourceGraph() != null) {
+                JLabel label = new JLabel("Bootstrapping is unavailable when a source graph is supplied.");
+                JPanel panel = new JPanel(new BorderLayout());
+                panel.setBorder(BorderFactory.createTitledBorder("Bootstrapping"));
+                panel.add(label, BorderLayout.WEST);
+                this.mainPanel.add(panel);
+            } else if (algorithm instanceof AbstractBootstrapAlgorithm) {
+                params = Params.getBootstrappingParameters(algorithm);
+                if (!params.isEmpty()) {
+                    this.mainPanel.add(createSubPanel("Bootstrapping", params, parameters));
+                    this.mainPanel.add(Box.createVerticalStrut(10));
                 }
+            } else {
+                JLabel label = new JLabel("This algorithm is not configured to do bootstrapping.");
+                JPanel panel = new JPanel(new BorderLayout());
+                panel.setBorder(BorderFactory.createTitledBorder("Bootstrapping"));
+                panel.add(label, BorderLayout.WEST);
+                this.mainPanel.add(panel);
             }
         }
 
