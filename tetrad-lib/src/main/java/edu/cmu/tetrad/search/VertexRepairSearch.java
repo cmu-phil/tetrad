@@ -1557,13 +1557,25 @@ public final class VertexRepairSearch implements IGraphSearch {
         Graph g2 = cand.applyTo(base);
         if (g2 == null) return;
 
+        boolean intentAlreadyChecked = false;
+
         if (graphType == AdjustmentGraphType.CPDAG) {
             g2 = canonicalizeToCpdagOrNull(g2);
+            if (g2 == null) return;
+        } else if (graphType == AdjustmentGraphType.PAG) {
+            // Project the applied graph back to canonical PAG form, checking the edit
+            // was realized first; see buildCandidateGraph for the ordering rationale.
+            // (Added 2026-8-13; previously the applied PAG was left in whatever form the
+            // edit produced, so the working graph could drift out of canonical form.)
+            if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return;
+            intentAlreadyChecked = true;
+            g2 = canonicalizeToPagOrNull(g2);
             if (g2 == null) return;
         }
 
         if (g2.equals(base)) return;
-        if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return;
+        if (!intentAlreadyChecked
+                && requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return;
 
         workingGraph = g2;
         bumpGraphVersion();
@@ -1798,12 +1810,34 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (base == null || cand == null) return null;
         Graph g2 = cand.applyTo(safeCopy(base));
         if (g2 == null) return null;
-        if (graphType == AdjustmentGraphType.CPDAG) {
-            g2 = canonicalizeToCpdagOrNull(g2);
+        if (graphType == AdjustmentGraphType.PAG) {
+            // PAG candidates are projected back to canonical form, mirroring the CPDAG
+            // branch below. (Added 2026-8-13; previously PAG candidates were only gated
+            // on isLegalPag, so any edit whose consequences needed propagating by the
+            // FCI orientation rules was discarded rather than completed.)
+            //
+            // The intended-edge check runs BEFORE projection here, unlike the CPDAG
+            // branch, which runs it after. Rationale: the FCI rules routinely strengthen
+            // an edited endpoint (o-> becomes --> when a tail is forced), and
+            // containsStructuralEdge demands an exact endpoint match, so checking after
+            // projection would discard precisely the orientation moves whose
+            // consequences propagate -- the moves this change exists to enable. Checking
+            // first asks the weaker and more apt question: was the edit actually
+            // realized, before the rules were allowed to run? This is a contestable
+            // choice, and it is deliberately NOT applied to the CPDAG branch, whose
+            // check-after-canonicalization behavior is left exactly as it was.
+            if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return null;
+            g2 = canonicalizeToPagOrNull(g2);
             if (g2 == null) return null;
             if (!cand.isNoOp() && g2.equals(base)) return null;
+        } else {
+            if (graphType == AdjustmentGraphType.CPDAG) {
+                g2 = canonicalizeToCpdagOrNull(g2);
+                if (g2 == null) return null;
+                if (!cand.isNoOp() && g2.equals(base)) return null;
+            }
+            if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return null;
         }
-        if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return null;
         try {
             if (graphType != null && !isLegalGraphType(g2)) return null;
         } catch (Exception ignored) {
