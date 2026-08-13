@@ -82,6 +82,7 @@ public final class VertexRepairSpeedBenchmark {
      * Entry point.
      *
      * @param args ignored
+     * @throws Exception if something goes wrong
      */
     public static void main(String[] args) throws Exception {
         boolean hasAffectedOnly = affectedOnlySetter() != null;

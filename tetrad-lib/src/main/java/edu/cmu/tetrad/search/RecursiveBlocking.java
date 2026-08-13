@@ -103,6 +103,9 @@ public class RecursiveBlocking {
      * A single endpoint mark: the endpoint at {@code at} on the edge between
      * {@code from} and {@code at}. Used to report the load-bearing arrowheads
      * behind blocked-collider verdicts (conflict collection, below).
+     *
+     * @param from the starting node of the edge
+     * @param at the ending node of the edge
      */
     public record Mark(Node from, Node at) {
     }

@@ -14,6 +14,14 @@ public final class ReproPke14Violation {
     private ReproPke14Violation() {
     }
 
+    /**
+     * The main method serves as the entry point for the program. It demonstrates the process of
+     * creating a graph using nodes and edges, performs checks for MAG legality, identifies separating sets,
+     * and applies different analysis methods on the graph structure.
+     *
+     * @param args command-line arguments passed to the application
+     * @throws Exception if any error occurs during the execution of the program
+     */
     public static void main(String[] args) throws Exception {
         List<Node> nodes = new ArrayList<>();
         for (int i = 1; i <= 6; i++) nodes.add(new GraphNode("V" + i));

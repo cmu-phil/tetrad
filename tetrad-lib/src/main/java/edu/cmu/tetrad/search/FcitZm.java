@@ -1735,6 +1735,11 @@ public final class FcitZm implements IGraphSearch {
         this.maxMarkFlips = maxMarkFlips;
     }
 
+    /**
+     * Sets the radius value for the rbRadius property.
+     *
+     * @param rbRadius the radius value to be set, typically a positive integer.
+     */
     public void setRbRadius(int rbRadius) {
         this.rbRadius = rbRadius;
     }

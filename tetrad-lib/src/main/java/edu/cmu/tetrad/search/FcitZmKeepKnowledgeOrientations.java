@@ -1822,6 +1822,11 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
         this.maxMarkFlips = maxMarkFlips;
     }
 
+    /**
+     * Sets the radius for RB (Recursive Blocking) algorithm.
+     *
+     * @param rbRadius the radius for RB algorithm to be set
+     */
     public void setRbRadius(int rbRadius) {
         this.rbRadius = rbRadius;
     }
