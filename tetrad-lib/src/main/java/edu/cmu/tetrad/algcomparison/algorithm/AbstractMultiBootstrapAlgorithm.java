@@ -202,10 +202,9 @@ public abstract class AbstractMultiBootstrapAlgorithm extends AbstractBootstrapA
             ((EdgeListGraph) graph).setAncillaryGraph("medianGraph", medianMemberGraph);
             ((EdgeListGraph) medianMemberGraph).setAncillaryGraph("samplingGraph", graph);
 
-            // resamplingEnsemble = 4 selects the median member as the returned display graph.
-            if (parameters.getInt(Params.RESAMPLING_ENSEMBLE) == 4) {
-                return GraphUtils.fixDirections(medianMemberGraph);
-            }
+            // As of 2026-8-13 the median member graph is the default initial display for every bootstrap
+            // search; see the corresponding comment in AbstractBootstrapAlgorithm.search.
+            return GraphUtils.fixDirections(medianMemberGraph);
         }
 
         Graph displayGraph = GraphSampling.createDisplayGraph(graph, ResamplingEdgeEnsemble.Highest);
