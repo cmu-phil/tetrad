@@ -471,6 +471,24 @@ public class SimpleDataLoader {
      */
     public static Knowledge loadKnowledge(File file, DelimiterType delimiter, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);
+        return loadKnowledge(reader, delimiter, commentMarker);
+    }
+
+    /**
+     * Loads knowledge from an arbitrary character stream, in the same tetrad2 format
+     * {@link #loadKnowledge(File, DelimiterType, String)} reads and {@code DataWriter.saveKnowledge}
+     * writes. Added 2026-8-13 so that callers holding the specification as text -- in particular the
+     * editable "Text" tab of the knowledge editor -- can parse it through exactly the same path as
+     * the file loader, rather than round-tripping through a temporary file or reimplementing the
+     * parse.
+     *
+     * @param reader        the character stream to read the specification from
+     * @param delimiter     one of the options in the DelimiterType enum
+     * @param commentMarker the comment marker as a string -- e.g., "//"
+     * @return the parsed knowledge
+     * @throws java.io.IOException if any.
+     */
+    public static Knowledge loadKnowledge(Reader reader, DelimiterType delimiter, String commentMarker) throws IOException {
         Lineizer lineizer = new Lineizer(reader, commentMarker);
         Knowledge knowledge = loadKnowledge(lineizer, delimiter.getPattern());
         TetradLogger.getInstance().reset();
