@@ -545,15 +545,17 @@ public class SessionNode implements Node {
 
         List<Object> expandedModels = new ArrayList<>(parentModels);
 
+        Object oldModelInPool = null;
         if (this.oldModel != null && (!(DoNotAddOldModel.class.isAssignableFrom(modelClass)))) {
             expandedModels.add(this.oldModel);
+            oldModelInPool = this.oldModel;
         }
 
         if (param != null) {
             expandedModels.add(param);
         }
 
-        createModelUsingArguments(modelClass, expandedModels);
+        createModelUsingArguments(modelClass, expandedModels, oldModelInPool);
 
         if (this.model == null) {
             expandedModels = new ArrayList<>(parentModels);
@@ -562,11 +564,11 @@ public class SessionNode implements Node {
                 expandedModels.add(param);
             }
 
-            createModelUsingArguments(modelClass, expandedModels);
+            createModelUsingArguments(modelClass, expandedModels, null);
         }
 
         if (this.model == null) {
-            createModelUsingArguments(modelClass, parentModels);
+            createModelUsingArguments(modelClass, parentModels, null);
         }
 
         if (this.model == null) {
@@ -1364,6 +1366,20 @@ public class SessionNode implements Node {
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
+        return assignParameters(parameterTypes, objects, null);
+    }
+
+    /**
+     * As above, but restricting the given old-model object (if non-null) to parameter slots declared as exactly its
+     * own class; see createModelUsingArguments(Class, List, Object) for the rationale. Added 2026-8-13.
+     *
+     * @param parameterTypes the constructor parameter types
+     * @param objects        the candidate argument objects
+     * @param oldModelInPool the resurrected old model, if present among the candidates, else null
+     * @return an assignment of candidates to slots, or null if none exists
+     */
+    public Object[] assignParameters(Class[] parameterTypes, List objects, Object oldModelInPool)
+            throws RuntimeException {
 
         for (Class parameterType : parameterTypes) {
             if (parameterType == null) {
@@ -1380,7 +1396,7 @@ public class SessionNode implements Node {
         Object[] arguments = new Object[parameterTypes.length];
         boolean[] used     = new boolean[candidates.size()];
 
-        if (matchByBacktrack(parameterTypes, candidates, arguments, used, 0)) {
+        if (matchByBacktrack(parameterTypes, candidates, arguments, used, 0, oldModelInPool)) {
             return arguments;
         }
 
@@ -1396,7 +1412,8 @@ public class SessionNode implements Node {
                                      List<Object> candidates,
                                      Object[] arguments,
                                      boolean[] used,
-                                     int slot) {
+                                     int slot,
+                                     Object oldModelInPool) {
         if (Thread.currentThread().isInterrupted()) {
             return false;
         }
@@ -1411,10 +1428,18 @@ public class SessionNode implements Node {
             if (used[i]) continue;
 
             if (needed.isAssignableFrom(candidates.get(i).getClass())) {
+                // The resurrected old model of this node may only fill a slot declared as exactly its own
+                // class (the "old model" parameter convention); binding it to a supertype slot such as
+                // GraphSource would silently pass the node's previous state off as a genuine parent input.
+                // See createModelUsingArguments(Class, List, Object). Added 2026-8-13.
+                if (candidates.get(i) == oldModelInPool && needed != candidates.get(i).getClass()) {
+                    continue;
+                }
+
                 arguments[slot] = candidates.get(i);
                 used[i] = true;
 
-                if (matchByBacktrack(parameterTypes, candidates, arguments, used, slot + 1)) {
+                if (matchByBacktrack(parameterTypes, candidates, arguments, used, slot + 1, oldModelInPool)) {
                     return true;
                 }
 
@@ -1627,6 +1652,29 @@ public class SessionNode implements Node {
      */
     private void createModelUsingArguments(Class modelClass, List<Object> models)
             throws Exception {
+        createModelUsingArguments(modelClass, models, null);
+    }
+
+    /**
+     * As above, but additionally identifying which object in the pool (if any) is the resurrected old model of this
+     * node. Added 2026-8-13: when a node's structure changes (e.g., a knowledge box is removed from a search box),
+     * createModel destroys the current model and re-creates it with the OLD model added to the constructor argument
+     * pool so that constructors can preserve user selections. The old model must only ever bind to a constructor
+     * parameter declared as exactly its own class - the established "old model" parameter convention (e.g.,
+     * GeneralAlgorithmRunner(DataWrapper, GeneralAlgorithmRunner, Parameters)) - and never to a parameter of a
+     * broader supertype. Without this restriction the binding was reflection-order roulette: a destroyed
+     * GeneralAlgorithmRunner, which is also a GraphSource, could be bound into the GraphSource slot of
+     * GeneralAlgorithmRunner(DataWrapper, GraphSource, Parameters), silently installing the box's own previous
+     * RESULT graph as the new box's source graph - suppressing bootstrapping options and changing search behavior
+     * for algorithms that take an initial graph, with no visible cause. Genuine parent models are unrestricted, so
+     * connecting a previous search box as an actual initial-graph parent continues to work.
+     *
+     * @param modelClass     the model class being constructed
+     * @param models         the constructor argument pool
+     * @param oldModelInPool the resurrected old model, if it was added to the pool, else null
+     */
+    private void createModelUsingArguments(Class modelClass, List<Object> models, Object oldModelInPool)
+            throws Exception {
         if (!(SessionModel.class.isAssignableFrom(modelClass))) {
             throw new ClassCastException(
                     "Model class must implement SessionModel: " + modelClass);
@@ -1677,7 +1725,9 @@ public class SessionNode implements Node {
                 for (Object value : models) {
                     Class<?> c2 = value.getClass();
 
-                    if ((c1.isAssignableFrom(c2))) {
+                    // The resurrected old model may only be used where the declared type is exactly its
+                    // own class; see createModelUsingArguments(Class, List, Object).
+                    if ((c1.isAssignableFrom(c2)) && !(value == oldModelInPool && c1 != c2)) {
                         _objects.add(value);
                     }
 
@@ -1715,7 +1765,7 @@ public class SessionNode implements Node {
             }
 
             if (arguments == null) {
-                arguments = assignParameters(constructorTypes, models);
+                arguments = assignParameters(constructorTypes, models, oldModelInPool);
             }
 
             if (arguments != null) {
