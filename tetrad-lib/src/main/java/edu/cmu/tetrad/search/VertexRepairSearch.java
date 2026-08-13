@@ -608,6 +608,17 @@ public final class VertexRepairSearch implements IGraphSearch {
     public Graph search() throws InterruptedException {
         cancelRequested = false;
 
+        // Selection bias is out of scope for repair; reject such an input up front
+        // rather than silently repairing around it. (Added 2026-8-13.)
+        if (hasSelectionBias(workingGraph)) {
+            throw new IllegalArgumentException(
+                    "The graph to be repaired exhibits selection bias (a selection node, or a "
+                            + "tail-tail or circle-tail edge under graph type " + graphType
+                            + "). Vertex repair does not model selection bias; remove the "
+                            + "selection structure or repair the graph under a graph type in "
+                            + "which such edges are unoriented rather than selection-induced.");
+        }
+
         long previousSeed = RandomUtil.getInstance().nextLong();
         RandomUtil.getInstance().setSeed(seed);
 
@@ -1355,9 +1366,17 @@ public final class VertexRepairSearch implements IGraphSearch {
                 Edge ne;
                 if (graphType == AdjustmentGraphType.PAG) {
                     Endpoint eyKeep = endpointAt(old, y);
+                    // Selection bias is excluded, so a tail at x is only compatible with
+                    // an arrow at y: x --- y and x o-- y are inadmissible. Orienting the
+                    // edge out of x therefore forces the arrowhead at y, rather than
+                    // keeping y's existing circle or tail. Orienting into x can keep y's
+                    // endpoint, since y o-> x, y <-> x and y --> x are all admissible.
+                    // (Changed 2026-8-13; the previous code kept y's endpoint in both
+                    // directions, silently emitting the selection-bias edge y o-- x for
+                    // every o-o edge oriented out of x.)
                     ne = intoX
                             ? new Edge(y, x, eyKeep, Endpoint.ARROW)
-                            : new Edge(y, x, eyKeep, Endpoint.TAIL);
+                            : new Edge(y, x, Endpoint.ARROW, Endpoint.TAIL);
                 } else {
                     ne = intoX
                             ? new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)
@@ -1399,13 +1418,16 @@ public final class VertexRepairSearch implements IGraphSearch {
                 variants.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));
             }
             case PAG -> {
+                // Selection bias is excluded, so the admissible PAG edge types are
+                // o-o, o->, --> and <->. The selection-bias-only types --- and o--
+                // are deliberately not offered. (Changed 2026-8-13; --- was previously
+                // offered while o-- was not, which was not a coherent restriction.)
                 variants.add(new Edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE));
                 variants.add(new Edge(x, y, Endpoint.CIRCLE, Endpoint.ARROW));
                 variants.add(new Edge(y, x, Endpoint.CIRCLE, Endpoint.ARROW));
                 variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));
                 variants.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));
                 variants.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));
-                variants.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));
             }
         }
         return variants;
@@ -1434,13 +1456,14 @@ public final class VertexRepairSearch implements IGraphSearch {
                 adds.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));
             }
             case PAG -> {
+                // Selection bias excluded; see edgeMenuForPair. Admissible added edge
+                // types are o-o, o->, --> and <->.
                 adds.add(new Edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE));
                 adds.add(new Edge(x, y, Endpoint.CIRCLE, Endpoint.ARROW));
                 adds.add(new Edge(y, x, Endpoint.CIRCLE, Endpoint.ARROW));
                 adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW));
                 adds.add(new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW));
                 adds.add(new Edge(x, y, Endpoint.ARROW, Endpoint.ARROW));
-                adds.add(new Edge(x, y, Endpoint.TAIL, Endpoint.TAIL));
             }
         }
         return adds;
@@ -1794,9 +1817,50 @@ public final class VertexRepairSearch implements IGraphSearch {
             case DAG -> g.paths().isLegalDag();
             case CPDAG -> g.paths().isLegalCpdag() || g.paths().isLegalPdag();
             case PDAG -> g.paths().isLegalPdag();
-            case MAG -> g.paths().isLegalMag();
-            case PAG -> g.paths().isLegalPag();
+            case MAG -> g.paths().isLegalMag() && !hasSelectionBias(g);
+            case PAG -> g.paths().isLegalPag() && !hasSelectionBias(g);
         };
+    }
+
+    /**
+     * Returns true if {@code g} exhibits selection bias. Two things count: an explicit
+     * selection node ({@link NodeType#SELECTION}), which is checked for every graph
+     * type; and, for the ancestral types (MAG, PAG), an edge whose endpoints are
+     * tail-tail ({@code ---}) or circle-tail ({@code o--}), which in a MAG or PAG arise
+     * only under selection. The edge check is deliberately not applied to DAG, CPDAG or
+     * PDAG, where a tail-tail edge is an ordinary unoriented edge and carries no
+     * selection interpretation.
+     *
+     * <p>Selection bias is out of scope for repair as of 2026-8-13: the PAG and MAG edit
+     * menus do not offer {@code ---} or {@code o--}, so no edit can introduce one, and
+     * this predicate additionally rejects candidates and inputs that already contain
+     * one. See {@link #search()}, which fails fast on such an input rather than
+     * silently repairing around it.
+     *
+     * @param g the graph to test; null returns false
+     * @return true if the graph exhibits selection bias
+     */
+    private boolean hasSelectionBias(Graph g) {
+        if (g == null) return false;
+
+        for (Node n : g.getNodes()) {
+            if (n != null && n.getNodeType() == NodeType.SELECTION) return true;
+        }
+
+        if (graphType != AdjustmentGraphType.MAG && graphType != AdjustmentGraphType.PAG) {
+            return false;
+        }
+
+        for (Edge e : g.getEdges()) {
+            if (e == null) continue;
+            Endpoint e1 = e.getEndpoint1();
+            Endpoint e2 = e.getEndpoint2();
+            if (e1 == Endpoint.TAIL && e2 == Endpoint.TAIL) return true;
+            if (e1 == Endpoint.TAIL && e2 == Endpoint.CIRCLE) return true;
+            if (e1 == Endpoint.CIRCLE && e2 == Endpoint.TAIL) return true;
+        }
+
+        return false;
     }
 
     private boolean usesLocality() {
