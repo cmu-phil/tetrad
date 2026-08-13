@@ -1122,7 +1122,7 @@ public final class VertexRepairSearch implements IGraphSearch {
             boolean useLocality = usesLocality();
             Set<String> affected = affectedVertices(base, node, g2);
             int after = useLocality
-                    ? evalGraphLocality(baseCache, g2, affected).violations()
+                    ? evalGraphLocality(baseCache, g2, affected, false).violations()
                     : evalViolationsOnly(g2);
 
             ScoredCandidate sc = new ScoredCandidate(
@@ -1158,7 +1158,7 @@ public final class VertexRepairSearch implements IGraphSearch {
 
             Set<String> affected = affectedVertices(base, node, g2);
             int after = usesLocality()
-                    ? evalGraphLocality(baseCache, g2, affected).violations()
+                    ? evalGraphLocality(baseCache, g2, affected, false).violations()
                     : evalViolationsOnly(g2);
 
             scored.add(new ScoredCandidate(cand, baseline, after,
@@ -1241,7 +1241,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         double mpAfter = evalModelPLocality(baseCache, g2, affected);
         int baseline = bb.violations();
         int after = usesLocality()
-                ? evalGraphLocality(baseCache, g2, affected).violations()
+                ? evalGraphLocality(baseCache, g2, affected, false).violations()
                 : evalViolationsOnly(g2);
 
         // Under affected-only invalidation, a stale entry's node-P was computed against
@@ -1551,19 +1551,34 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (g == null) return new GlobalEvalCache(Map.of());
         Map<String, VertexContribution> out = new HashMap<>();
         List<Node> nodes = g.getNodes();
+        // Prepare the graph-level MAG transform once for all vertices of this graph
+        // rather than once per vertex inside computeImpliedFactsForVertex. (Changed
+        // from the pre-2026-8-13 implementation, which redid the legality checks and
+        // CPDAG-to-DAG-to-MAG conversion for every vertex; the conversion is
+        // deterministic, so the facts are identical.)
+        Graph preparedMag = MarkovCheck.prepareMagForVertexFacts(g, type);
         for (Node v : nodes) {
             if (v == null) continue;
-            out.put(v.getName(), evalVertexContribution(g, v));
+            out.put(v.getName(), evalVertexContribution(g, v, preparedMag));
         }
         return new GlobalEvalCache(out);
     }
 
     private VertexContribution evalVertexContribution(Graph g, Node vInGraph) {
+        return evalVertexContribution(g, vInGraph, null);
+    }
+
+    /**
+     * Per-vertex contribution with an optional MAG prepared once per graph via
+     * {@link MarkovCheck#prepareMagForVertexFacts}. A null {@code preparedMag} behaves
+     * exactly as before, preparing per call.
+     */
+    private VertexContribution evalVertexContribution(Graph g, Node vInGraph, Graph preparedMag) {
         if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of());
         Node v = g.getNode(vInGraph.getName());
         if (v == null) return new VertexContribution(Map.of(), Map.of());
 
-        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type);
+        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type, preparedMag);
         if (facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
 
         Map<String, Boolean> viol = new LinkedHashMap<>();
@@ -1586,6 +1601,24 @@ public final class VertexRepairSearch implements IGraphSearch {
     private GraphEval evalGraphLocality(GlobalEvalCache baseCache,
                                         Graph candidateGraph,
                                         Set<String> affectedVertexNames) {
+        return evalGraphLocality(baseCache, candidateGraph, affectedVertexNames, true);
+    }
+
+    /**
+     * Locality-aware graph evaluation. When {@code computeModelP} is false, the global
+     * p-value map is not assembled and the uniformity (AD/KS) Model-P is not computed;
+     * the returned eval carries {@code Double.NaN} for Model-P. Violation counting is
+     * identical in both modes. Callers that immediately discard Model-P — the Pass-1
+     * violation loops in {@code computeScoredCandidatesForNode(NoModelP)},
+     * {@code scoreCandidates}, and {@code evalModelPForEntry} — use the false mode,
+     * skipping an O(K log K) uniformity test per candidate over the K global implied
+     * facts. (Changed from the pre-2026-8-13 implementation, which always computed
+     * Model-P and discarded it at those call sites.)
+     */
+    private GraphEval evalGraphLocality(GlobalEvalCache baseCache,
+                                        Graph candidateGraph,
+                                        Set<String> affectedVertexNames,
+                                        boolean computeModelP) {
         if (candidateGraph == null) return new GraphEval(0, Double.NaN, 0);
 
         Map<String, VertexContribution> contrib = new HashMap<>();
@@ -1593,7 +1626,12 @@ public final class VertexRepairSearch implements IGraphSearch {
             contrib.putAll(baseCache.contribByVertexName());
         }
 
-        if (affectedVertexNames != null) {
+        if (affectedVertexNames != null && !affectedVertexNames.isEmpty()) {
+            // Prepare the candidate graph's MAG transform once and share it across all
+            // affected vertices, instead of redoing the legality checks and
+            // CPDAG-to-DAG-to-MAG conversion per vertex. (Changed from the pre-2026-8-13
+            // implementation; the conversion is deterministic, so the facts are identical.)
+            Graph preparedMag = MarkovCheck.prepareMagForVertexFacts(candidateGraph, type);
             for (String name : affectedVertexNames) {
                 if (name == null) continue;
                 Node v = candidateGraph.getNode(name);
@@ -1601,7 +1639,7 @@ public final class VertexRepairSearch implements IGraphSearch {
                     contrib.remove(name);
                     continue;
                 }
-                contrib.put(name, evalVertexContribution(candidateGraph, v));
+                contrib.put(name, evalVertexContribution(candidateGraph, v, preparedMag));
             }
         }
 
@@ -1634,8 +1672,10 @@ public final class VertexRepairSearch implements IGraphSearch {
             for (Map.Entry<String, Boolean> e : vc.violationByKey().entrySet()) {
                 globalViolationByKey.put(e.getKey(), e.getValue());
             }
-            for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
-                globalPByKey.put(e.getKey(), e.getValue());
+            if (computeModelP) {
+                for (Map.Entry<String, Double> e : vc.pByKey().entrySet()) {
+                    globalPByKey.put(e.getKey(), e.getValue());
+                }
             }
         }
 
@@ -1643,7 +1683,7 @@ public final class VertexRepairSearch implements IGraphSearch {
         for (boolean isViol : globalViolationByKey.values()) if (isViol) violations++;
 
         double modelP = Double.NaN;
-        if (globalPByKey.size() >= 2) {
+        if (computeModelP && globalPByKey.size() >= 2) {
             modelP = getUniformityP(new ArrayList<>(globalPByKey.values()));
         }
 
