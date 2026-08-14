@@ -61,7 +61,7 @@ public class ProbabilisticTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Probabilistic Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "Probabilistic Test");
         IndTestProbabilistic test = new IndTestProbabilistic(SimpleDataLoader.getDiscreteDataSet(dataSet));
         test.setThreshold(parameters.getBoolean(Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE));
         test.setCutoff(parameters.getDouble(Params.CUTOFF_IND_TEST));

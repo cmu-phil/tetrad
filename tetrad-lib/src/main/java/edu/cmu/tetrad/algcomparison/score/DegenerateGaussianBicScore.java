@@ -70,7 +70,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, true, "DG-BIC (Degenerate Gaussian BIC Score)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of(), "DG-BIC (Degenerate Gaussian BIC Score)");
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
         DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,

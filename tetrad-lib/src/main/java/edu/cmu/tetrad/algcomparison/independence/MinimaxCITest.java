@@ -71,7 +71,7 @@ public class MinimaxCITest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Minimax Conditional Independence Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "Minimax Conditional Independence Test");
 
         var test = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));

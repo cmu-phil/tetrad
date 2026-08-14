@@ -67,7 +67,8 @@ public class PoissonBicTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Poisson Prior Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("em"), "Poisson Prior Test");
+        dataSet = MissingDataUtils.emCovarianceIfRequested(dataSet, parameters, "Poisson Prior Test");
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         PoissonPriorScore score;
@@ -118,6 +119,10 @@ public class PoissonBicTest implements IndependenceWrapper {
         params.add(Params.POISSON_LAMBDA);
         params.add(Params.SINGULARITY_LAMBDA);
         params.add(Params.MISSING_DATA_POLICY);
+        params.add(Params.MISSING_EM_RIDGE);
+        params.add(Params.MISSING_EM_TOLERANCE);
+        params.add(Params.MISSING_EM_MAX_ITERATIONS);
+        params.add(Params.MISSING_ESS_MODE);
         return params;
     }
 }

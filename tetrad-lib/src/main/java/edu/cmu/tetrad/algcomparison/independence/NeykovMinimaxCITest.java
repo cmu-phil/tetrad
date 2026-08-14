@@ -69,7 +69,7 @@ public class NeykovMinimaxCITest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Neykov Minimax Conditional Independence Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "Neykov Minimax Conditional Independence Test");
 
         var test = new edu.cmu.tetrad.search.test.NeykovMinimaxCITest((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
