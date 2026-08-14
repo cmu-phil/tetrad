@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.BasisFunctionBicScoreFullSample;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -68,6 +69,7 @@ public class BasisFunctionBicScoreTabular implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BasisFunctionBicScoreTabular");
         this.dataSet = dataSet;
         BasisFunctionBicScoreFullSample score = new BasisFunctionBicScoreFullSample(
                 SimpleDataLoader.getMixedDataSet(dataSet),
@@ -104,6 +106,7 @@ public class BasisFunctionBicScoreTabular implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.DO_ONE_EQUATION_ONLY);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

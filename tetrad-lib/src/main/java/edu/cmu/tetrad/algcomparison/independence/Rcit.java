@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -65,6 +66,7 @@ public class Rcit implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "RCIT (Random Conditional Independence Test)");
         edu.cmu.tetrad.search.test.Rcit test = new edu.cmu.tetrad.search.test.Rcit((DataSet) dataSet);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
@@ -118,6 +120,7 @@ public class Rcit implements IndependenceWrapper {
         params.add(Params.RCIT_APPROX);
         params.add(Params.RCIT_NUM_FEATURES_XY);
         params.add(Params.RCIT_NUM_FEATURES_Z);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

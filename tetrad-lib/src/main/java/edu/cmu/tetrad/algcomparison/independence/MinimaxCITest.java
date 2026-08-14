@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -70,6 +71,7 @@ public class MinimaxCITest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Minimax Conditional Independence Test");
 
         var test = new edu.cmu.tetrad.search.test.MinimaxCITest((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
@@ -143,6 +145,7 @@ public class MinimaxCITest implements IndependenceWrapper {
         params.add(Params.MIN_STRATUM_SIZE);
         params.add(Params.USE_MAX_ACROSS_STRATA);
         params.add(Params.MINIMAX_PERMUTATIONS);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestMvpLrt;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -63,6 +64,7 @@ public class Mvplrt implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Mixed Variable Polynomial Likelihood Ratio Test");
         return new IndTestMvpLrt(SimpleDataLoader.getMixedDataSet(dataSet), parameters.getDouble("alpha"), parameters.getInt("fDegree"), parameters.getBoolean("discretize"));
     }
 
@@ -91,6 +93,7 @@ public class Mvplrt implements IndependenceWrapper {
         parameters.add(Params.ALPHA);
         parameters.add("fDegree");
         parameters.add(Params.DISCRETIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

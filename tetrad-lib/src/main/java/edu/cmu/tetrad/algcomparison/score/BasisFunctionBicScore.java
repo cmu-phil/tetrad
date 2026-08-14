@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -68,6 +69,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BF-BIC (Basis Function BIC)");
         this.dataSet = dataSet;
 
         // Changes from the pre-2026-8 implementation: the singularity lambda was previously read
@@ -111,6 +113,7 @@ public class BasisFunctionBicScore implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.DO_ONE_EQUATION_ONLY);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

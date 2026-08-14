@@ -276,11 +276,7 @@ public class AlgorithmCard extends JPanel {
         add(westMainPanel, BorderLayout.WEST);
         add(centerMainPanel, BorderLayout.CENTER);
 
-        if (this.algorithmRunner.hasMissingValues()) {
-            setPreferredSize(new Dimension(308, 291));
-        } else {
-            setPreferredSize(new Dimension(308, 241));
-        }
+        setPreferredSize(new Dimension(308, 241));
     }
 
 //    private void saveGlobalPreferences() {
@@ -1330,121 +1326,55 @@ public class AlgorithmCard extends JPanel {
             testLabel.setText("Test:");
             scoreLabel.setText("Score:");
 
-            if (algorithmRunner.hasMissingValues()) {
-                JLabel missingValueAlert = new JLabel();
-                JLabel testwiseDeletionAlert = new JLabel();
+            GroupLayout layout = new GroupLayout(this);
+            setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                            .addComponent(testLabel)
+                                                            .addComponent(scoreLabel))
+                                                    .addPreferredGap(ComponentPlacement.RELATED)
+                                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                                            .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE)
+                                                            .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)))
+                                            .addComponent(assumptionsLabel)
+                                            .addGroup(layout.createSequentialGroup()
+                                                    .addGap(6, 6, 6)
+                                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                            .addComponent(mixedRadBtn)
+                                                            .addComponent(linearGaussianRadBtn)
+                                                            .addComponent(generalRadBtn)
+                                                            .addComponent(allRadBtn))))
+                                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addComponent(assumptionsLabel)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(linearGaussianRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(mixedRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(generalRadBtn)
+//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(allRadBtn)
+                                    .addGap(18, 18, 18)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                            .addComponent(testLabel)
+                                            .addComponent(indTestComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addPreferredGap(ComponentPlacement.RELATED)
+                                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                            .addComponent(AlgorithmCard.this.scoreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(scoreLabel))
+                                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
 
-                Color red = new Color(255, 0, 0);
-                missingValueAlert.setForeground(red);
-                missingValueAlert.setText("Dataset contains missing values;");
-
-                testwiseDeletionAlert.setForeground(red);
-                testwiseDeletionAlert.setText("testwise deletion will be used.");
-
-                GroupLayout layout = new GroupLayout(this);
-                setLayout(layout);
-                layout.setHorizontalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                .addComponent(testLabel)
-                                                                .addComponent(scoreLabel))
-//                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                                                                .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE)
-                                                                .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)))
-                                                .addComponent(assumptionsLabel)
-                                                .addGroup(layout.createSequentialGroup()
-//                                                        .addGap(6, 6, 6)
-                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                .addComponent(mixedRadBtn)
-                                                                .addComponent(linearGaussianRadBtn)
-                                                                .addComponent(generalRadBtn)
-                                                                .addComponent(allRadBtn)))
-                                                .addComponent(missingValueAlert)
-                                                .addComponent(testwiseDeletionAlert))
-                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                );
-                layout.setVerticalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(assumptionsLabel)
-//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(linearGaussianRadBtn)
-//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(mixedRadBtn)
-//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(generalRadBtn)
-//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(allRadBtn)
-                                        .addPreferredGap(ComponentPlacement.UNRELATED)
-                                        .addComponent(missingValueAlert)
-                                        .addPreferredGap(ComponentPlacement.RELATED)
-                                        .addComponent(testwiseDeletionAlert)
-                                        .addPreferredGap(ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(testLabel)
-                                                .addComponent(indTestComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(scoreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(scoreLabel))
-                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                );
-            } else {
-                GroupLayout layout = new GroupLayout(this);
-                setLayout(layout);
-                layout.setHorizontalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                .addComponent(testLabel)
-                                                                .addComponent(scoreLabel))
-                                                        .addPreferredGap(ComponentPlacement.RELATED)
-                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                                                                .addComponent(indTestComboBox, 0, 239, Short.MAX_VALUE)
-                                                                .addComponent(scoreComboBox, 0, 239, Short.MAX_VALUE)))
-                                                .addComponent(assumptionsLabel)
-                                                .addGroup(layout.createSequentialGroup()
-                                                        .addGap(6, 6, 6)
-                                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                                .addComponent(mixedRadBtn)
-                                                                .addComponent(linearGaussianRadBtn)
-                                                                .addComponent(generalRadBtn)
-                                                                .addComponent(allRadBtn))))
-                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                );
-                layout.setVerticalGroup(
-                        layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .addComponent(assumptionsLabel)
-//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(linearGaussianRadBtn)
-//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(mixedRadBtn)
-//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(generalRadBtn)
-//                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(allRadBtn)
-                                        .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(testLabel)
-                                                .addComponent(indTestComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                .addComponent(AlgorithmCard.this.scoreComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(scoreLabel))
-                                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                );
-            }
         }
     }
 

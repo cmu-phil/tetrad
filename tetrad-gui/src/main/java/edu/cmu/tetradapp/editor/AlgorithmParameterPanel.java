@@ -268,7 +268,12 @@ public class AlgorithmParameterPanel extends JPanel {
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
+            if (!paramDesc.getAllowedValues().isEmpty()) {
+                component = getStringSelectionBox(parameter, parameters, (String) defaultValue,
+                        paramDesc.getAllowedValues());
+            } else {
+                component = getStringField(parameter, parameters, (String) defaultValue);
+            }
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
@@ -493,6 +498,50 @@ public class AlgorithmParameterPanel extends JPanel {
      * @param defaultValue a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetradapp.util.StringTextField} object
      */
+    /**
+     * A dropdown for an enumerated String parameter (one whose {@link ParamDescription} declares a fixed list of
+     * allowed values), replacing the free-text field so that illegal values are impossible rather than discovered as
+     * exceptions at search time.
+     *
+     * @param parameter     The parameter name.
+     * @param parameters    The parameters object to read from and write to.
+     * @param defaultValue  The default value.
+     * @param allowedValues The legal values, in display order.
+     * @return The combo box.
+     */
+    protected JComboBox<String> getStringSelectionBox(String parameter, Parameters parameters, String defaultValue,
+                                                      java.util.List<String> allowedValues) {
+        JComboBox<String> comboBox = new JComboBox<>(allowedValues.toArray(new String[0]));
+
+        String current = parameters.getString(parameter, defaultValue);
+        int index = -1;
+
+        for (int i = 0; i < allowedValues.size(); i++) {
+            if (allowedValues.get(i).equalsIgnoreCase(current)) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index >= 0) {
+            comboBox.setSelectedIndex(index);
+        } else {
+            comboBox.setSelectedItem(defaultValue);
+            parameters.set(parameter, defaultValue);
+        }
+
+        comboBox.addActionListener(e -> {
+            Object selected = comboBox.getSelectedItem();
+            if (selected != null) {
+                parameters.set(parameter, selected.toString());
+            }
+        });
+
+        comboBox.setMaximumSize(comboBox.getPreferredSize());
+
+        return comboBox;
+    }
+
     protected StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 

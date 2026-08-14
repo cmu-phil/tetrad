@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.MvpScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -66,6 +67,7 @@ public class MVPBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Mixed Variable Polynomial BIC Score");
         return new MvpScore(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getDouble("structurePrior", 0),
                 parameters.getInt("fDegree", -1),
@@ -105,6 +107,7 @@ public class MVPBicScore implements ScoreWrapper {
         parameters.add("fDegree");
         parameters.add(Params.DISCRETIZE);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

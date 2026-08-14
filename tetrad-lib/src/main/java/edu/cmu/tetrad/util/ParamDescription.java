@@ -44,6 +44,14 @@ public class ParamDescription {
     private long upperBoundLong = Long.MAX_VALUE;
 
     /**
+     * For String-valued parameters that take one of a fixed set of values (e.g., the missing-data policy), the legal
+     * values, in display order. Empty for free-text String parameters and for non-String parameters. Interfaces can
+     * use this to render a selection control instead of a free-text field, so that typos are impossible rather than
+     * discovered as exceptions at search time.
+     */
+    private java.util.List<String> allowedValues = java.util.Collections.emptyList();
+
+    /**
      * <p>Constructor for ParamDescription.</p>
      *
      * @param paramName        a {@link java.lang.String} object
@@ -310,6 +318,26 @@ public class ParamDescription {
      */
     public void setUpperBoundLong(long upperBoundLong) {
         this.upperBoundLong = upperBoundLong;
+    }
+
+    /**
+     * The legal values for an enumerated String parameter, in display order, or an empty list for free-text and
+     * non-String parameters.
+     *
+     * @return The allowed values; never null.
+     */
+    public java.util.List<String> getAllowedValues() {
+        return this.allowedValues;
+    }
+
+    /**
+     * Sets the legal values for an enumerated String parameter.
+     *
+     * @param allowedValues The allowed values; null is treated as an empty list.
+     */
+    public void setAllowedValues(java.util.List<String> allowedValues) {
+        this.allowedValues = allowedValues == null ? java.util.Collections.emptyList()
+                : java.util.List.copyOf(allowedValues);
     }
 
 }

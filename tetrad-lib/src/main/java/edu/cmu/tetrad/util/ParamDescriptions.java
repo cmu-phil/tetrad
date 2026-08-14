@@ -151,6 +151,20 @@ public final class ParamDescriptions {
                 }
             }
         }
+
+        // Enumerated String parameters: register the legal values so interfaces can render selection controls
+        // instead of free-text fields.
+        ParamDescription missingDataPolicy = this.map.get(Params.MISSING_DATA_POLICY);
+        if (missingDataPolicy != null) {
+            missingDataPolicy.setAllowedValues(java.util.List.of(
+                    "default", "fail", "listwise", "testwise", "em", "mi"));
+        }
+
+        ParamDescription missingEssMode = this.map.get(Params.MISSING_ESS_MODE);
+        if (missingEssMode != null) {
+            missingEssMode.setAllowedValues(java.util.List.of(
+                    "fullN", "minPairwise", "meanPairwise"));
+        }
     }
 
     /**

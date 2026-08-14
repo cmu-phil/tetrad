@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestBasisFunctionBlocks;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -65,6 +66,7 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BF-Blocks-Test");
         IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
@@ -98,6 +100,7 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.BASIS_TYPE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 }

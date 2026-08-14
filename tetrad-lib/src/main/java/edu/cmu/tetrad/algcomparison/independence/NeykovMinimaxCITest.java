@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -68,6 +69,7 @@ public class NeykovMinimaxCITest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Neykov Minimax Conditional Independence Test");
 
         var test = new edu.cmu.tetrad.search.test.NeykovMinimaxCITest((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
@@ -147,6 +149,7 @@ public class NeykovMinimaxCITest implements IndependenceWrapper {
         params.add(Params.MAX_OBSERVED_LEVELS_PER_VAR);
         params.add(Params.MIN_STRATUM_SIZE);
         params.add(Params.MINIMAX_PERMUTATIONS);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

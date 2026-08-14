@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -65,6 +66,7 @@ public class Gcm implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "GCM (Generalized Covariance Measure)");
 
         edu.cmu.tetrad.search.test.Gcm gcm = new edu.cmu.tetrad.search.test.Gcm((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));
@@ -113,6 +115,7 @@ public class Gcm implements IndependenceWrapper {
         params.add(Params.GCM_RIDGE);
         params.add(Params.GCM_RFF_FEATURES);
         params.add(Params.GCM_RFF_SIGMA);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

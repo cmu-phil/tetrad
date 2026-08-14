@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestDegenerateGaussianLrt;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -62,6 +63,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "DG-LRT (Degenerate Gaussian Likelihood Ratio Test)");
         IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt(SimpleDataLoader.getMixedDataSet(dataSet));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
@@ -94,6 +96,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
         parameters.add(Params.ALPHA);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

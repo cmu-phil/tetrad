@@ -70,6 +70,7 @@ public class FisherZ implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, true, "Fisher Z");
         double alpha = parameters.getDouble(Params.ALPHA);
 
         IndTestFisherZ test;

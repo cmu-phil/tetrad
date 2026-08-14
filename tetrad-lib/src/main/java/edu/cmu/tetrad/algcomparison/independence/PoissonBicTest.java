@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.score.PoissonPriorScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -66,6 +67,7 @@ public class PoissonBicTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Poisson Prior Test");
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         PoissonPriorScore score;
@@ -115,6 +117,7 @@ public class PoissonBicTest implements IndependenceWrapper {
         params.add(Params.PRECOMPUTE_COVARIANCES);
         params.add(Params.POISSON_LAMBDA);
         params.add(Params.SINGULARITY_LAMBDA);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

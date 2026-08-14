@@ -69,6 +69,7 @@ public class SemBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, true, "Sem BIC Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.SemBicScore semBicScore;

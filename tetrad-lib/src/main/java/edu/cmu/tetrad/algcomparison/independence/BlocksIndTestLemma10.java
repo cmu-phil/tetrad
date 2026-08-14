@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.IndTestBlocksLemma10;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -86,6 +87,7 @@ public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        BlockSpec blockSpec = MissingDataUtils.gate(this.blockSpec, parameters, "Blocks-Test-Lemma10");
         IndTestBlocksLemma10 test = new IndTestBlocksLemma10(blockSpec);
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
@@ -123,6 +125,7 @@ public class BlocksIndTestLemma10 implements BlockIndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 }

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.InstanceAugmentedSemBicScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -53,6 +54,7 @@ public final class InstanceAugmentedSemBicScoreWrapper implements ScoreWrapper, 
      */
     @Override
     public Score getScore(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "Instance-specific Augmented Sem BIC Score");
         if (!(dataModel instanceof DataSet train) || !train.isContinuous()) {
             throw new IllegalArgumentException("Requires a continuous DataSet.");
         }
@@ -132,6 +134,7 @@ public final class InstanceAugmentedSemBicScoreWrapper implements ScoreWrapper, 
         ps.add(Params.INSTANCE_ROW);
         ps.add(Params.PENALTY_DISCOUNT);
         // Params.TESTING_DATA is passed via Parameters by the algorithm wrapper.
+        ps.add(Params.MISSING_DATA_POLICY);
         return ps;
     }
 

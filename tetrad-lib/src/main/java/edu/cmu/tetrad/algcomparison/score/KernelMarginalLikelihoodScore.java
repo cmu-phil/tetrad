@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.FfMlContinuous;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -69,6 +70,7 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "KML Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.KernelMarginalLikelihoodScore score;
@@ -127,6 +129,8 @@ public class KernelMarginalLikelihoodScore implements ScoreWrapper {
         parameters.add(Params.BW_MAX_ROWS);
         parameters.add(Params.KML_JITTER);
         parameters.add(Params.CAT_RHO);
+
+        parameters.add(Params.MISSING_DATA_POLICY);
 
         return parameters;
     }

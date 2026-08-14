@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.test.IndTestBlocksWilkes;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -71,6 +72,7 @@ public class RankIndependenceTestWilkesSingletons implements IndependenceWrapper
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "Rank Independence Test Wilkes Singletons");
         List<Node> nodes = dataModel.getVariables();
         List<Node> blockVars = new ArrayList<>();
         List<List<Integer>> blocks = new ArrayList<>();
@@ -116,6 +118,7 @@ public class RankIndependenceTestWilkesSingletons implements IndependenceWrapper
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.ALPHA);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

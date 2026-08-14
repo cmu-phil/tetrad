@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -69,6 +70,7 @@ public class RffBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "RFF BIC Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.RffBicScore score;
@@ -119,6 +121,7 @@ public class RffBicScore implements ScoreWrapper {
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.RCIT_CENTER_FEATURES);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

@@ -69,6 +69,7 @@ public class ConditionalGaussianBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, true, "CG-BIC (Conditional Gaussian BIC Score)");
         this.dataSet = dataSet;
         ConditionalGaussianScore conditionalGaussianScore =
                 new ConditionalGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet),

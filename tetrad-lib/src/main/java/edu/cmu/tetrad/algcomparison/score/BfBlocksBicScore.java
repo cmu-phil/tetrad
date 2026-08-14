@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.BlocksBicScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -76,6 +77,7 @@ public class BfBlocksBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel model, Parameters parameters) {
+        model = MissingDataUtils.gate(model, parameters, false, "BF-Blocks-BIC");
         if (!(model instanceof DataSet dataSet)) {
             throw new IllegalArgumentException("BF-Blocks-BIC requires a DataSet.");
         }
@@ -151,6 +153,7 @@ public class BfBlocksBicScore implements ScoreWrapper {
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.BASIS_TYPE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -68,6 +69,7 @@ public class EbicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "EBIC Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.EbicScore score;
@@ -112,6 +114,7 @@ public class EbicScore implements ScoreWrapper {
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

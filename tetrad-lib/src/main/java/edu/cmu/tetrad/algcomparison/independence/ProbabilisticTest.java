@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -60,6 +61,7 @@ public class ProbabilisticTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Probabilistic Test");
         IndTestProbabilistic test = new IndTestProbabilistic(SimpleDataLoader.getDiscreteDataSet(dataSet));
         test.setThreshold(parameters.getBoolean(Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE));
         test.setCutoff(parameters.getDouble(Params.CUTOFF_IND_TEST));
@@ -92,6 +94,7 @@ public class ProbabilisticTest implements IndependenceWrapper {
         parameters.add(Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE);
         parameters.add(Params.CUTOFF_IND_TEST);
         parameters.add(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

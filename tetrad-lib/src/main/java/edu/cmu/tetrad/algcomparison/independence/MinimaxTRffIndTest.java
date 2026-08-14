@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.score.TRffBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MinimaxTRffTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -65,6 +66,7 @@ public final class MinimaxTRffIndTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Minimax-t-RFF-LR-Test");
         // Build the score from the mixed dataset
         TRffBicScore score = new TRffBicScore(SimpleDataLoader.getMixedDataSet(dataSet));
 
@@ -104,6 +106,8 @@ public final class MinimaxTRffIndTest implements IndependenceWrapper {
         p.add(Params.MINIMAX_FF_FEATURES);
         p.add(Params.PENALTY_DISCOUNT);
         p.add(Params.VERBOSE);
+
+        p.add(Params.MISSING_DATA_POLICY);
 
         return p;
     }

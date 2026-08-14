@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.score.LegendreBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.LegendreLrIndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -66,6 +67,7 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Legendre-LR-Test");
         // Build the score from the mixed dataset
         LegendreBicScore score = new LegendreBicScore(SimpleDataLoader.getMixedDataSet(dataSet));
 
@@ -123,6 +125,8 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
 
         p.add(Params.PENALTY_DISCOUNT);
         p.add(Params.VERBOSE);
+
+        p.add(Params.MISSING_DATA_POLICY);
 
         return p;
     }
