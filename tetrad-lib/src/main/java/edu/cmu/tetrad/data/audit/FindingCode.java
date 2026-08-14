@@ -116,6 +116,41 @@ public enum FindingCode {
     MISSING_DATA,
 
     /**
+     * Two columns are exact affine functions of one another on the rows where both are observed (identical columns,
+     * complementary indicators such as y = 1 - x, or rescaled copies). Unlike EXACT_LINEAR_DEPENDENCE, which reports
+     * a rank deficiency it cannot localize, this finding names the specific pair; the values carry the number of
+     * jointly observed rows the identity is based on. One of each such pair carries no information the other does
+     * not, on the observed overlap.
+     */
+    DUPLICATE_COLUMNS,
+
+    /**
+     * The pairwise-complete correlation matrix of the continuous variables has at least one negative eigenvalue.
+     * Because each entry is computed on a different subset of rows, the assembled matrix is not the correlation
+     * matrix of any single sample; joint quantities derived from it (rank, variance inflation factors, partial
+     * correlations) can therefore be incoherent. Individual pairwise correlations remain interpretable, each on its
+     * own row subset.
+     */
+    PAIRWISE_CORRELATION_NOT_PSD,
+
+    /**
+     * The number of complete rows minus one is smaller than the number of continuous variables, so ANY covariance or
+     * correlation matrix computed on complete cases is singular by arithmetic, regardless of what the variables
+     * measure. When this holds, joint linear-dependence findings cannot be attributed to relationships among
+     * specific variables: the singularity is forced by the complete-case count. Localizable exact dependencies, if
+     * any, are reported separately as DUPLICATE_COLUMNS.
+     */
+    COMPLETE_CASES_FORCE_SINGULARITY,
+
+    /**
+     * A variable is constant within every level of the configured serial grouping variable (e.g., a subject-level
+     * attribute in a repeated-measures file). Its effective sample size for correlational judgments is the number of
+     * groups, not the number of rows, and with few groups such variables are frequently exactly collinear with one
+     * another by accident.
+     */
+    GROUP_CONSTANT_VARIABLE,
+
+    /**
      * A continuous variable is serially dependent in file order (autocorrelated across consecutive rows), so rows are
      * not exchangeable as given and independence tests that assume i.i.d. rows may be anticonservative. This check is
      * one-sided with respect to row order: a flag means rows are dependent in the order given, but the absence of a

@@ -208,10 +208,12 @@ public final class DataAudit {
         this.continuousIndices = contIdx.stream().mapToInt(Integer::intValue).toArray();
 
         smallCellChecks();
+        duplicateColumnChecks();
         this.continuousCorrelation = correlationChecks();
         nearDeterminismDiscreteContinuousCheck();
         nonGaussianityCheck();
         serialDependenceCheck();
+        groupConstantCheck();
         sampleRatioCheck();
         missingnessCheck();
     }
@@ -660,6 +662,7 @@ public final class DataAudit {
             corr[a][a] = 1.0;
 
             for (int b = a + 1; b < pc; b++) {
+                int nUsed = pairwiseCompleteCount(this.continuousIndices[a], this.continuousIndices[b]);
                 double r = pairwiseCorrelation(this.continuousIndices[a], this.continuousIndices[b]);
                 corr[a][b] = r;
                 corr[b][a] = r;
@@ -668,9 +671,11 @@ public final class DataAudit {
                     this.findings.add(new AuditFinding(FindingCode.HIGH_CORRELATION,
                             AuditFinding.Severity.WARNING,
                             List.of(this.continuousNames.get(a), this.continuousNames.get(b)),
-                            Map.of("correlation", r, "threshold", this.config.highCorrelation),
+                            Map.of("correlation", r, "threshold", this.config.highCorrelation,
+                                    "nUsed", (double) nUsed),
                             "Continuous pair (" + this.continuousNames.get(a) + ", " + this.continuousNames.get(b)
-                                    + ") has correlation " + fmt(r) + "."));
+                                    + ") has correlation " + fmt(r) + " on " + nUsed
+                                    + " jointly observed rows."));
                 }
             }
         }
@@ -684,14 +689,73 @@ public final class DataAudit {
             }
         }
 
+        // If the complete-case count itself forces singularity, say so: the rank deficiency below is then a
+        // consequence of arithmetic, not of relationships among specific variables.
+        int numCompleteRows = this.missingDataAudit == null
+                ? this.dataSet.getNumRows() : this.missingDataAudit.getNumCompleteRows();
+        boolean forced = numCompleteRows - 1 < pc;
+
+        if (forced && this.missingDataAudit != null) {
+            this.findings.add(new AuditFinding(FindingCode.COMPLETE_CASES_FORCE_SINGULARITY,
+                    AuditFinding.Severity.WARNING, List.of(),
+                    Map.of("numCompleteRows", (double) numCompleteRows, "numContinuous", (double) pc),
+                    "There are " + numCompleteRows + " complete rows for " + pc + " continuous variables; any "
+                            + "covariance or correlation matrix computed on complete cases has rank at most "
+                            + Math.max(0, numCompleteRows - 1) + " and is singular by arithmetic. Joint "
+                            + "linear-dependence findings on these variables cannot be attributed to specific "
+                            + "variable relationships. See DUPLICATE_COLUMNS findings, if any, for the "
+                            + "localizable exact dependencies."));
+        }
+
+        // A pairwise-complete matrix assembled from different row subsets need not be positive semidefinite; if it
+        // is not, it is not the correlation matrix of any single sample, and joint quantities computed from it
+        // (rank, VIFs, partial correlations) can be incoherent.
+        double minEig = Double.NaN;
+        int numNegative = 0;
+
+        try {
+            org.ejml.simple.SimpleEVD<org.ejml.simple.SimpleMatrix> evd
+                    = new org.ejml.simple.SimpleMatrix(corr).eig();
+            minEig = Double.POSITIVE_INFINITY;
+
+            for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
+                double ev = evd.getEigenvalue(i).getReal();
+                if (ev < minEig) minEig = ev;
+                if (ev < -1e-8) numNegative++;
+            }
+        } catch (Exception e) {
+            // Tolerated; the PSD check is then unavailable.
+        }
+
+        boolean notPsd = numNegative > 0;
+
+        if (notPsd) {
+            this.findings.add(new AuditFinding(FindingCode.PAIRWISE_CORRELATION_NOT_PSD,
+                    AuditFinding.Severity.WARNING, List.of(),
+                    Map.of("minEigenvalue", minEig, "numNegativeEigenvalues", (double) numNegative),
+                    "The pairwise-complete correlation matrix of the continuous variables has " + numNegative
+                            + " negative eigenvalue(s) (minimum " + fmt(minEig) + "); because each entry uses a "
+                            + "different row subset, this matrix is not the correlation matrix of any single "
+                            + "sample, and joint quantities derived from it (rank, R^2 on others, partial "
+                            + "correlations) may be incoherent. Individual pairwise correlations remain "
+                            + "interpretable, each on its own row count."));
+        }
+
         boolean singular = c.rank() < pc;
 
         if (singular) {
             this.findings.add(new AuditFinding(FindingCode.EXACT_LINEAR_DEPENDENCE,
                     AuditFinding.Severity.WARNING, List.copyOf(this.continuousNames),
                     Map.of("rank", (double) c.rank(), "numContinuous", (double) pc),
-                    "The correlation matrix of the continuous variables is singular (rank " + c.rank()
-                            + " of " + pc + "): some variable is an exact linear function of the others."));
+                    "The pairwise-complete correlation matrix of the continuous variables is singular (rank "
+                            + c.rank() + " of " + pc + ")."
+                            + (forced ? " Note: with " + numCompleteRows + " complete rows this is forced by the "
+                            + "complete-case count (see COMPLETE_CASES_FORCE_SINGULARITY) and does not identify "
+                            + "relationships among specific variables."
+                            : " Some variable is an exact linear function of the others.")
+                            + (notPsd ? " The matrix is also not positive semidefinite (see "
+                            + "PAIRWISE_CORRELATION_NOT_PSD), so this rank statement describes the assembled "
+                            + "pairwise matrix, not any single sample." : "")));
         }
 
         try {
@@ -1067,6 +1131,129 @@ public final class DataAudit {
     //==================================== HELPERS ====================================//
 
     /**
+     * Flags pairs of columns that are exact affine functions of one another on the rows where both are observed:
+     * identical columns, complementary indicators (y = 1 - x), or rescaled copies. This applies to discrete and
+     * continuous columns alike (discrete columns are compared through their integer category codes), requires at
+     * least five jointly observed rows and both columns nonconstant on them, and reports the overlap count, since
+     * an identity established on few rows is weaker evidence of redundancy than one established on many. Unlike the
+     * rank-based EXACT_LINEAR_DEPENDENCE finding, which cannot localize a deficiency, each finding here names a
+     * specific pair; these are the exact dependencies that survive any choice of row subset containing the overlap.
+     */
+    private void duplicateColumnChecks() {
+        int p = this.dataSet.getNumColumns();
+        int n = this.dataSet.getNumRows();
+
+        for (int a = 0; a < p; a++) {
+            if (this.constant[a]) continue;
+
+            for (int b = a + 1; b < p; b++) {
+                if (this.constant[b]) continue;
+
+                double sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+                int m = 0;
+
+                for (int i = 0; i < n; i++) {
+                    if (MissingDataAudit.isMissing(this.dataSet, i, a)
+                            || MissingDataAudit.isMissing(this.dataSet, i, b)) continue;
+                    double x = this.discrete[a] ? this.dataSet.getInt(i, a) : this.dataSet.getDouble(i, a);
+                    double y = this.discrete[b] ? this.dataSet.getInt(i, b) : this.dataSet.getDouble(i, b);
+                    sa += x;
+                    sb += y;
+                    saa += x * x;
+                    sbb += y * y;
+                    sab += x * y;
+                    m++;
+                }
+
+                if (m < 5) continue;
+                double va = saa - sa * sa / m;
+                double vb = sbb - sb * sb / m;
+                if (va <= 0 || vb <= 0) continue;
+
+                double r = (sab - sa * sb / m) / Math.sqrt(va * vb);
+
+                if (Math.abs(r) >= 1.0 - 1e-12) {
+                    this.findings.add(new AuditFinding(FindingCode.DUPLICATE_COLUMNS,
+                            AuditFinding.Severity.WARNING, List.of(this.names[a], this.names[b]),
+                            Map.of("correlation", r, "nOverlap", (double) m),
+                            "Columns " + this.names[a] + " and " + this.names[b] + " are exact "
+                                    + (r > 0 ? "" : "sign-reversed ") + "affine copies of one another on all "
+                                    + m + " jointly observed rows; on that overlap, one carries no information "
+                                    + "the other does not."));
+                }
+            }
+        }
+    }
+
+    /**
+     * If a serial grouping variable is configured, flags every other variable that is constant within each level of
+     * it (e.g., subject-level attributes in a repeated-measures file). The effective sample size of such a variable
+     * for correlational judgments is the number of groups, not the number of rows, and when the number of groups is
+     * small, group-constant variables are frequently exactly collinear with one another by accident of the group
+     * sample. No finding is emitted when no grouping variable is configured, since group structure cannot be
+     * inferred from the data alone.
+     */
+    private void groupConstantCheck() {
+        if (this.config.serialGroupVariable == null) return;
+
+        int groupCol = -1;
+
+        for (int j = 0; j < this.names.length; j++) {
+            if (this.names[j].equals(this.config.serialGroupVariable)) {
+                groupCol = j;
+                break;
+            }
+        }
+
+        if (groupCol < 0 || !this.discrete[groupCol]) return;
+
+        int n = this.dataSet.getNumRows();
+        Set<Integer> groups = new HashSet<>();
+
+        for (int i = 0; i < n; i++) {
+            if (!MissingDataAudit.isMissing(this.dataSet, i, groupCol)) {
+                groups.add(this.dataSet.getInt(i, groupCol));
+            }
+        }
+
+        int numGroups = groups.size();
+        if (numGroups < 2 || numGroups >= n) return;
+
+        for (int j = 0; j < this.names.length; j++) {
+            if (j == groupCol || this.constant[j]) continue;
+
+            Map<Integer, Double> firstValue = new LinkedHashMap<>();
+            boolean groupConstant = true;
+
+            K:
+            for (int i = 0; i < n; i++) {
+                if (MissingDataAudit.isMissing(this.dataSet, i, groupCol)
+                        || MissingDataAudit.isMissing(this.dataSet, i, j)) continue;
+                int g = this.dataSet.getInt(i, groupCol);
+                double v = this.discrete[j] ? this.dataSet.getInt(i, j) : this.dataSet.getDouble(i, j);
+                Double seen = firstValue.get(g);
+
+                if (seen == null) {
+                    firstValue.put(g, v);
+                } else if (seen != v) {
+                    groupConstant = false;
+                    break K;
+                }
+            }
+
+            if (groupConstant && firstValue.size() >= 2) {
+                this.findings.add(new AuditFinding(FindingCode.GROUP_CONSTANT_VARIABLE,
+                        AuditFinding.Severity.WARNING, List.of(this.names[j]),
+                        Map.of("numGroups", (double) numGroups),
+                        "Variable " + this.names[j] + " is constant within every level of "
+                                + this.config.serialGroupVariable + "; its effective sample size for "
+                                + "correlational judgments is the number of groups (" + numGroups + "), not the "
+                                + "number of rows (" + n + ")."));
+            }
+        }
+    }
+
+    /**
      * Computes the Pearson correlation between two continuous columns over rows where both are observed, or NaN if
      * fewer than three such rows or either column is constant on them.
      *
@@ -1097,6 +1284,26 @@ public final class DataAudit {
         double vb = sbb - sb * sb / m;
         if (va <= 0 || vb <= 0) return Double.NaN;
         return (sab - sa * sb / m) / Math.sqrt(va * vb);
+    }
+
+    /**
+     * Counts the rows on which both of the given columns are observed.
+     *
+     * @param ja the first column index.
+     * @param jb the second column index.
+     * @return the count.
+     */
+    private int pairwiseCompleteCount(int ja, int jb) {
+        int n = this.dataSet.getNumRows();
+        int m = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (MissingDataAudit.isMissing(this.dataSet, i, ja)
+                    || MissingDataAudit.isMissing(this.dataSet, i, jb)) continue;
+            m++;
+        }
+
+        return m;
     }
 
     /**
