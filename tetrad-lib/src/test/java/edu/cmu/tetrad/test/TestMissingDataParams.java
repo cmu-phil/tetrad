@@ -94,9 +94,10 @@ public class TestMissingDataParams {
     }
 
     /**
-     * Wrapper flow: with no policy parameter the SemBicScore wrapper reproduces legacy behavior; with the "em"
-     * policy it produces a different (EM-based) score on MAR data; with "listwise" the FisherZ wrapper's sample
-     * size drops to the complete rows.
+     * Wrapper flow under the missing-data gate: with no policy parameter and incomplete data, the SemBicScore
+     * wrapper refuses to run (the Phase 1 contract; silent test-wise deletion is no longer the default); with the
+     * "testwise" policy it runs and scores; with the "em" policy it produces a different (EM-based) score on MAR
+     * data; with "listwise" the FisherZ wrapper's sample size drops to the complete rows.
      */
     @Test
     public void testWrapperFlow() {
@@ -123,18 +124,25 @@ public class TestMissingDataParams {
         edu.cmu.tetrad.algcomparison.score.SemBicScore wrapper
                 = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
 
-        // The wrapper applies its own Parameters defaults (lambda, rule type, precompute flag), so it is not
-        // compared against a bare direct construction. The invariant tested is: no policy parameter == explicit
-        // "testwise" policy, through the same wrapper code path.
-        double legacyDefault = wrapper.getScore(ds, new Parameters()).localScore(2, 1, 3);
+        // Phase 1 contract: incomplete data with no policy (or "default") is refused with an instructive message,
+        // rather than silently falling back to test-wise deletion.
+        try {
+            wrapper.getScore(ds, new Parameters());
+            throw new AssertionError("Expected an IllegalArgumentException for missing data with no policy.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("missingDataPolicy"));
+        }
+
+        // With an explicit policy, the wrapper runs; testwise reproduces the pre-gate behavior.
         Parameters testwise = new Parameters();
         testwise.set(Params.MISSING_DATA_POLICY, "testwise");
-        assertEquals(wrapper.getScore(ds, testwise).localScore(2, 1, 3), legacyDefault, 0.0);
+        double testwiseScore = wrapper.getScore(ds, testwise).localScore(2, 1, 3);
+        assertTrue(Double.isFinite(testwiseScore));
 
         Parameters em = new Parameters();
         em.set(Params.MISSING_DATA_POLICY, "em");
         double emScore = wrapper.getScore(ds, em).localScore(2, 1, 3);
-        assertTrue(emScore != legacyDefault);
+        assertTrue(emScore != testwiseScore);
 
         Parameters lw = new Parameters();
         lw.set(Params.MISSING_DATA_POLICY, "listwise");
