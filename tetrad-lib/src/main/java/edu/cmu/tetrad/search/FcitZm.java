@@ -1575,7 +1575,21 @@ public final class FcitZm implements IGraphSearch {
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setVerbose(false);
+        fciOrient.setParallel(false);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(recursiveDepth);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setUseR4(true);
+        fciOrient.setKnowledge(knowledge);
+
         finalPag.reorientAllWith(Endpoint.CIRCLE);
+        // Re-apply background-knowledge endpoint marks before recalling colliders, mirroring
+        // ruleR0's ordering. Previously this cold pass discarded the knowledge marks placed by
+        // dagToPag and never restored them (reorientCandidate does, via fciOrient.orient), so
+        // the returned graph ignored tier knowledge entirely.
+        fciOrient.fciOrientbk(knowledge, finalPag, finalPag.getNodes(), excludeSelectionBias);
         GraphUtils.recallInitialColliders(finalPag, initialColliders, knowledge);
 
         // Stamp R0 from the RECORDED separators. Change from the pre-2026 implementation:
@@ -1590,14 +1604,6 @@ public final class FcitZm implements IGraphSearch {
         // adjustForExtraSepsets.
         adjustForExtraSepsets(sepsets, finalPag);
 
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setVerbose(false);
-        fciOrient.setParallel(false);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursiveDepth(recursiveDepth);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setUseR4(true);
-        fciOrient.setKnowledge(knowledge);
         fciOrient.finalOrientation(finalPag);   // R1-R10; R0 stamped above from the recorded sepsets
 
         return finalPag;

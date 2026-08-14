@@ -189,4 +189,72 @@ public class TestFciKnowledgeOrientation {
         assertTrue("The fi-en edge must not be deleted on a later-tier conditioning set",
                 g.isAdjacentTo(g.getNode("fi"), g.getNode("en")));
     }
+
+    /**
+     * Exact covariance for the latent scenario a -&gt; b &lt;- L -&gt; c, b -&gt; d; see
+     * {@link #testForbiddenEdgeDoesNotDeleteColliderArrowhead}.
+     */
+    private static CovarianceMatrix latentCov() {
+        return cov(new String[]{"a", "b", "c", "d"}, new double[][]{
+                {1, 1, 0, 1},
+                {1, 2.25, 1, 2.25},
+                {0, 1, 1.25, 1},
+                {1, 2.25, 1, 2.5}}, 3000);
+    }
+
+    /**
+     * Fcit, FcitZm, and FcitSl must honor tier knowledge in both selection-bias settings, in both the chain and the
+     * latent-confounder scenario. Two prior defects are pinned here: (1) Fcit's redoGfciOrientation and FcitZm's
+     * coldReorient wiped all marks to circles and restored only the colliders, never re-applying fciOrientbk, so
+     * knowledge marks placed by dagToPag in round 1 were silently lost on re-orientation (FcitZm's final output
+     * ignored tiers entirely); (2) Fcit's legality gates used the strict round-trip certificate, under which
+     * knowledge-refined marks (a tier arrowhead sharpening a class circle) always fail the equality, so sound edge
+     * removals were rolled back once knowledge marks were pinned. The gates now use
+     * PagLegalityCheck.isLegalPagModuloKnowledge.
+     */
+    @Test
+    public void testFcitFamilyHonorsTiersInBothSettings() throws InterruptedException {
+        for (int alg = 0; alg < 3; alg++) {
+            for (boolean flag : new boolean[]{false, true}) {
+                Graph g1 = runFcitFamily(alg, chainCov(), tiers(new String[][]{{"a"}, {"b"}, {"c"}}), flag);
+                assertMarks(g1, "a", "b", Endpoint.CIRCLE, Endpoint.ARROW);
+                assertMarks(g1, "b", "c", Endpoint.TAIL, Endpoint.ARROW);
+
+                Graph g2 = runFcitFamily(alg, latentCov(),
+                        tiers(new String[][]{{"a"}, {"b"}, {"c"}, {"d"}}), flag);
+                assertMarks(g2, "a", "b", Endpoint.CIRCLE, Endpoint.ARROW);
+                assertMarks(g2, "b", "c", Endpoint.ARROW, Endpoint.ARROW); // b <-> c
+                assertMarks(g2, "b", "d", Endpoint.TAIL, Endpoint.ARROW);
+            }
+        }
+    }
+
+    private static Graph runFcitFamily(int alg, CovarianceMatrix cov, Knowledge k, boolean flag)
+            throws InterruptedException {
+        SemBicScore score = new SemBicScore(cov);
+        score.setPenaltyDiscount(1.0);
+        IndTestFisherZ test = new IndTestFisherZ(cov, 0.01);
+        Graph g;
+        switch (alg) {
+            case 0 -> {
+                Fcit a = new Fcit(test, score);
+                a.setKnowledge(k);
+                a.setExcludeSelectionBias(flag);
+                g = a.search();
+            }
+            case 1 -> {
+                FcitZm a = new FcitZm(test, score);
+                a.setKnowledge(k);
+                a.setExcludeSelectionBias(flag);
+                g = a.search();
+            }
+            default -> {
+                FcitSl a = new FcitSl(test, score);
+                a.setKnowledge(k);
+                a.setExcludeSelectionBias(flag);
+                g = a.search();
+            }
+        }
+        return g;
+    }
 }

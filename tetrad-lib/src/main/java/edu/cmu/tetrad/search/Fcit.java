@@ -418,6 +418,11 @@ public final class Fcit implements IGraphSearch {
                                             Set<Triple> initialColliders, SepsetMap sepsets, boolean excludeSelectionBias,
                                             boolean superVerbose) {
         GraphUtils.reorientWithCircles(pag, superVerbose);
+        // Re-apply background-knowledge endpoint marks before recalling colliders, mirroring
+        // ruleR0's ordering. Previously the circle-wipe here discarded the knowledge marks
+        // placed by dagToPag in round 1, and only the colliders were restored, so tier
+        // arrowheads were silently lost on every re-orientation round.
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
         GraphUtils.recallInitialColliders(pag, initialColliders, knowledge);
         adjustForExtraSepsets(sepsets, pag);
         fciOrient.finalOrientation(pag, excludeSelectionBias);
@@ -1268,7 +1273,16 @@ public final class Fcit implements IGraphSearch {
 
         PagLegalityCheck.LegalPagRet legalPagQuiet = null;
         if (!orientationFailed) {
-            legalPagQuiet = PagLegalityCheck.isLegalPag(this.pag, new HashSet<>(selection));
+            // Modulo-knowledge certificate: knowledge-refined marks (e.g., tier arrowheads sharpening class
+            // circles) must not fail the round-trip equality; all structural protections are retained.
+            try {
+                legalPagQuiet = PagLegalityCheck.isLegalPagModuloKnowledge(this.pag, new HashSet<>(selection),
+                        knowledge, fciOrient, excludeSelectionBias);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                orientationFailed = true;
+                failureReason = "interrupted during legality check";
+            }
         }
 
         if (orientationFailed || !legalPagQuiet.isLegalPag()) {
@@ -1399,7 +1413,14 @@ public final class Fcit implements IGraphSearch {
 
         PagLegalityCheck.LegalPagRet legal = null;
         if (!orientationFailed) {
-            legal = PagLegalityCheck.isLegalPag(this.pag, new HashSet<>(selection));
+            // Modulo-knowledge certificate; see tryToModifyGraph.
+            try {
+                legal = PagLegalityCheck.isLegalPagModuloKnowledge(this.pag, new HashSet<>(selection),
+                        knowledge, fciOrient, excludeSelectionBias);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                orientationFailed = true;
+            }
         }
 
         if (orientationFailed || !legal.isLegalPag()) {

@@ -834,63 +834,11 @@ public abstract class StarFciKeepKnowledgeOrientations implements IGraphSearch {
      */
     private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Set<Node> selection, FciOrient orient)
             throws InterruptedException {
-        if (knowledge.isEmpty()) {
-            return PagLegalityCheck.isLegalPag(pag, selection);
-        }
-
-        for (Node n : pag.getNodes()) {
-            if (n.getNodeType() != NodeType.MEASURED) {
-                return new PagLegalityCheck.LegalPagRet(false, "Node " + n + " is not measured");
-            }
-        }
-
-        Graph mag;
-        try {
-            mag = GraphTransforms.zhangMagFromPag(pag);
-        } catch (Exception e) {
-            return new PagLegalityCheck.LegalPagRet(false, "PAG to MAG failed");
-        }
-
-        PagLegalityCheck.LegalMagRet legalMag = PagLegalityCheck.isLegalMag(mag, selection);
-
-        if (!legalMag.isLegalMag()) {
-            return new PagLegalityCheck.LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
-        }
-
-        Graph pag2;
-        try {
-            MagToPag magToPag = new MagToPag(mag);
-            pag2 = magToPag.convert(false, false);
-        } catch (IllegalStateException e) {
-            return new PagLegalityCheck.LegalPagRet(false, "Legal PAG status could not be determined");
-        }
-
-        Graph pag2k = refineWithKnowledge(pag2, orient);
-
-        if (!pag.equals(pag2k)) {
-            String edgeMismatch = "";
-
-            for (Edge e : pag.getEdges()) {
-                Edge e2 = pag2k.getEdge(e.getNode1(), e.getNode2());
-                if (!e.equals(e2)) {
-                    edgeMismatch = "For example, the candidate has edge " + e
-                            + " whereas the knowledge-refined reconstituted graph has edge " + e2;
-                    break;
-                }
-            }
-
-            String reason = "The MAG implied by this graph was a legal MAG, but the graph is not recoverable as the "
-                    + "knowledge-refined canonical PAG of that MAG -- it carries marks forced neither by the "
-                    + "equivalence class nor by background knowledge";
-
-            if (!edgeMismatch.isEmpty()) {
-                reason += ". " + edgeMismatch;
-            }
-
-            return new PagLegalityCheck.LegalPagRet(false, reason);
-        }
-
-        return new PagLegalityCheck.LegalPagRet(true, "This is a legal PAG refined by background knowledge");
+        // The certificate now lives in PagLegalityCheck so that other knowledge-pinning searches (e.g., Fcit's
+        // legality gates) can share it; the semantics are unchanged (the shared method's refinement step is
+        // copy + fciOrientbk + finalOrientation with this class's selection-bias policy, exactly as
+        // refineWithKnowledge does).
+        return PagLegalityCheck.isLegalPagModuloKnowledge(pag, selection, knowledge, orient, excludeSelectionBias);
     }
 
     /**
