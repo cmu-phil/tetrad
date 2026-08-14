@@ -21,7 +21,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.audit.AuditFinding;
+import edu.cmu.tetrad.data.audit.CovarianceAudit;
 import edu.cmu.tetrad.data.audit.DataAudit;
 import edu.cmu.tetrad.data.missing.MissingDataAudit;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -49,9 +51,14 @@ import java.util.List;
  * </ul>
  * All computation is done by the library classes, so this dialog reports exactly what causal-cmd and py-tetrad
  * report for the same dataset.
+ * <p>
+ * When the selected model is a covariance (or correlation) matrix rather than a tabular dataset, the dialog instead
+ * shows the covariance matrix audit ({@link CovarianceAudit}): a Findings tab and a Report tab containing the
+ * audit's full text report, which also states the scope limits of auditing second moments alone.
  *
  * @author josephramsey
  * @see DataAudit
+ * @see CovarianceAudit
  * @see MissingDataAudit
  */
 class DataAuditAction extends AbstractAction {
@@ -75,8 +82,31 @@ class DataAuditAction extends AbstractAction {
      * {@inheritDoc}
      */
     public void actionPerformed(ActionEvent e) {
+        if (this.dataEditor.getSelectedDataModel() instanceof ICovarianceMatrix cov) {
+            if (cov.getDimension() == 0) {
+                JOptionPane.showMessageDialog(findOwner(), "Cannot audit an empty covariance matrix.");
+                return;
+            }
+
+            JComponent covPanel;
+
+            try {
+                covPanel = createCovarianceAuditPanel(cov);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(findOwner(), "Could not compute the covariance matrix audit: "
+                        + ex.getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            EditorWindow covWindow = new EditorWindow(covPanel,
+                    "Covariance Matrix Audit", null, false, (JComponent) this.dataEditor);
+            DesktopController.getInstance().addEditorWindow(covWindow, JLayeredPane.PALETTE_LAYER);
+            covWindow.setVisible(true);
+            return;
+        }
+
         if (!(this.dataEditor.getSelectedDataModel() instanceof DataSet dataSet)) {
-            JOptionPane.showMessageDialog(findOwner(), "Need a tabular dataset to audit.");
+            JOptionPane.showMessageDialog(findOwner(), "Need a tabular dataset or covariance matrix to audit.");
             return;
         }
 
@@ -216,6 +246,81 @@ class DataAuditAction extends AbstractAction {
         box.add(panel);
 
         return box;
+    }
+
+    /**
+     * Builds the covariance matrix audit panel: a summary line, then tabs for the findings and for the audit's full
+     * text report (which states the scope limits of auditing second moments alone). Per-variable, missingness, and
+     * serial-dependence tabs do not apply here, since a covariance matrix carries no row-level information. Package
+     * visible so that it can be exercised headlessly in tests.
+     */
+    static JComponent createCovarianceAuditPanel(ICovarianceMatrix cov) {
+        CovarianceAudit audit = new CovarianceAudit(cov);
+
+        DataAuditJTable findingsTable =
+                new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
+        sizeFindingsColumns(findingsTable);
+
+        JTextArea reportText = new JTextArea(audit.report());
+        reportText.setEditable(false);
+        reportText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, reportText.getFont().getSize()));
+        reportText.setLineWrap(true);
+        reportText.setWrapStyleWord(true);
+        reportText.setMargin(new Insets(8, 8, 8, 8));
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Findings", new JScrollPane(findingsTable));
+        tabs.addTab("Report", new JScrollPane(reportText));
+        tabs.setPreferredSize(new Dimension(850, 450));
+
+        JMenuBar bar = new JMenuBar();
+        int menuMask = menuShortcutMask();
+
+        JMenuItem selectAllCells = new JMenuItem("Select All Cells");
+        selectAllCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, menuMask));
+        selectAllCells.addActionListener(e -> findingsTable.selectAll());
+
+        JMenuItem copyCells = new JMenuItem("Copy Cells");
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
+        copyCells.addActionListener(e -> {
+            ensureCellSelection(findingsTable);
+            Action copyAction = TransferHandler.getCopyAction();
+            copyAction.actionPerformed(new ActionEvent(findingsTable, ActionEvent.ACTION_PERFORMED, "copy"));
+        });
+
+        JMenu editMenu = new JMenu("Edit");
+        editMenu.add(selectAllCells);
+        editMenu.add(copyCells);
+        bar.add(editMenu);
+
+        JLabel summary = new JLabel(covarianceSummaryLine(cov, audit));
+        summary.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(bar, BorderLayout.NORTH);
+        north.add(summary, BorderLayout.CENTER);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(north, BorderLayout.NORTH);
+        panel.add(tabs, BorderLayout.CENTER);
+
+        Box box = Box.createVerticalBox();
+        box.add(panel);
+
+        return box;
+    }
+
+    /**
+     * The always-visible one-line summary above the covariance audit tabs.
+     */
+    static String covarianceSummaryLine(ICovarianceMatrix cov, CovarianceAudit audit) {
+        long warnings = audit.getFindings().stream()
+                .filter(f -> f.getSeverity() == AuditFinding.Severity.WARNING).count();
+        long infos = audit.getFindings().size() - warnings;
+
+        return cov.getDimension() + " variables, stated sample size " + cov.getSampleSize()
+                + (audit.isCorrelationInput() ? " (correlation matrix)" : "") + "; "
+                + warnings + " warning(s), " + infos + " informational.";
     }
 
     /**
