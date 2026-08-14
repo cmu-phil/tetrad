@@ -67,7 +67,7 @@ public class SemBicTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "SEM BIC Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, true, "SEM BIC Test");
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         SemBicScore score;
@@ -75,7 +75,8 @@ public class SemBicTest implements IndependenceWrapper {
         if (dataSet instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dataSet);
         } else {
-            score = new SemBicScore((DataSet) dataSet, precomputeCovariances);
+            score = new SemBicScore((DataSet) dataSet, precomputeCovariances,
+                    MissingDataUtils.fromParameters(parameters));
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
@@ -117,6 +118,10 @@ public class SemBicTest implements IndependenceWrapper {
         params.add(Params.PRECOMPUTE_COVARIANCES);
         params.add(Params.SINGULARITY_LAMBDA);
         params.add(Params.MISSING_DATA_POLICY);
+        params.add(Params.MISSING_EM_RIDGE);
+        params.add(Params.MISSING_EM_TOLERANCE);
+        params.add(Params.MISSING_EM_MAX_ITERATIONS);
+        params.add(Params.MISSING_ESS_MODE);
         return params;
     }
 }

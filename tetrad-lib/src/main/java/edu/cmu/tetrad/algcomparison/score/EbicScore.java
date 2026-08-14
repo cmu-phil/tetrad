@@ -69,7 +69,8 @@ public class EbicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "EBIC Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("em"), "EBIC Score");
+        dataSet = MissingDataUtils.emCovarianceIfRequested(dataSet, parameters, "EBIC Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.EbicScore score;
@@ -115,6 +116,10 @@ public class EbicScore implements ScoreWrapper {
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_EM_RIDGE);
+        parameters.add(Params.MISSING_EM_TOLERANCE);
+        parameters.add(Params.MISSING_EM_MAX_ITERATIONS);
+        parameters.add(Params.MISSING_ESS_MODE);
         return parameters;
     }
 

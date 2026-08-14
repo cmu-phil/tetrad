@@ -406,4 +406,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
 
         this.rows = copy;
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Each likelihood-ratio calculation uses the rows complete on the variables involved in that calculation (the candidate rows are intersected with the rows having no missingness on those variables), i.e., test-wise deletion, unbiased only under MCAR.
+     *
+     * @return {@link edu.cmu.tetrad.data.missing.MissingValueSupport#TESTWISE}.
+     */
+    @Override
+    public edu.cmu.tetrad.data.missing.MissingValueSupport getMissingValueSupport() {
+        return edu.cmu.tetrad.data.missing.MissingValueSupport.TESTWISE;
+    }
 }

@@ -163,8 +163,10 @@ public class TestMissingDataPolicyGate {
         assertNotNull(new FisherZ().getTest(cont, policy("em")));
         assertNotNull(new SemBicScore().getScore(cont, policy("testwise")));
 
-        // Chi Square has no native support; testwise and em throw with a pointer to listwise.
-        assertThrows(IllegalArgumentException.class, () -> new ChiSquare().getTest(disc, policy("testwise")));
+        // As of Phase 2, Chi Square is natively test-wise (the count-sample cell table skips rows with the missing
+        // code per conditional table), but it has no EM-covariance route, so em still throws with a pointer to
+        // listwise.
+        assertNotNull(new ChiSquare().getTest(disc, policy("testwise")));
         assertThrows(IllegalArgumentException.class, () -> new ChiSquare().getTest(disc, policy("em")));
     }
 

@@ -262,6 +262,28 @@ public final class MissingDataUtils {
      * @throws IllegalArgumentException As described above.
      */
     public static DataModel gate(DataModel dataModel, Parameters parameters, boolean specAware, String caller) {
+        return gate(dataModel, parameters, specAware
+                ? java.util.Set.of("testwise", "em")
+                : java.util.Set.of(), caller);
+    }
+
+    /**
+     * The finer-grained form of {@link #gate(DataModel, Parameters, boolean, String)}, for components that support
+     * some native policies but not others (e.g., the Chi-Square test performs test-wise deletion natively but has
+     * no EM-covariance route, while Fisher Z supports both). The boolean form delegates here with
+     * {@code {"testwise", "em"}} or the empty set.
+     *
+     * @param dataModel      The data model handed to the wrapper; may be null or a non-tabular model.
+     * @param parameters     The parameters, from which {@link Params#MISSING_DATA_POLICY} is read.
+     * @param nativePolicies The policies the underlying component implements natively, from among "testwise" and
+     *                       "em". ("fail" and "listwise" are implemented here for every component, and "mi" is a
+     *                       search-level policy.)
+     * @param caller         The user-facing name of the test or score, for error messages.
+     * @return The data model, possibly replaced by its complete-case version under the "listwise" policy.
+     * @throws IllegalArgumentException As for the boolean form.
+     */
+    public static DataModel gate(DataModel dataModel, Parameters parameters, java.util.Set<String> nativePolicies,
+                                 String caller) {
         if (!(dataModel instanceof DataSet dataSet)) {
             return dataModel;
         }
@@ -294,14 +316,21 @@ public final class MissingDataUtils {
                 return complete;
             }
             case "testwise", "em", "emcovariance", "em_covariance" -> {
-                if (specAware) {
+                String canonical = policy.startsWith("em") ? "em" : "testwise";
+
+                if (nativePolicies.contains(canonical)) {
                     return dataModel;
                 } else {
+                    StringBuilder supported = new StringBuilder("'listwise' (analyze complete cases only) and 'fail'");
+                    for (String p : new String[]{"testwise", "em"}) {
+                        if (nativePolicies.contains(p)) supported.append(", and natively '").append(p).append("'");
+                    }
+
                     throw new IllegalArgumentException(caller
-                            + ": This test/score does not support the missing-data policy '" + policy + "'. "
-                            + "It supports 'listwise' (analyze complete cases only) and 'fail'. Either set "
+                            + ": This test/score does not support the missing-data policy '" + canonical + "'. "
+                            + "It supports " + supported + ". Either set "
                             + Params.MISSING_DATA_POLICY + " = 'listwise', or choose a test/score with native "
-                            + "support for '" + policy + "' (e.g., Fisher Z, SEM BIC, BDeu, Discrete BIC, "
+                            + "support for '" + canonical + "' (e.g., Fisher Z, SEM BIC, BDeu, Discrete BIC, "
                             + "Conditional Gaussian BIC, Degenerate Gaussian BIC).");
                 }
             }
@@ -340,5 +369,55 @@ public final class MissingDataUtils {
         }
 
         return new BlockSpec((DataSet) gated, blockSpec.blocks(), blockSpec.blockVariables(), blockSpec.ranks());
+    }
+
+    /**
+     * Implements the "em" missing-data policy at the wrapper level for covariance-consuming scores that have an
+     * {@link edu.cmu.tetrad.data.ICovarianceMatrix} constructor but no native {@link MissingDataSpec} handling
+     * (EBIC, GIC, Poisson prior, Zhang-Shen bound, and the like). Called after
+     * {@link #gate(DataModel, Parameters, java.util.Set, String)} with "em" in the native set: if the data model is
+     * a dataset with missing values and the chosen policy is "em", the EM-estimated covariance matrix (valid under
+     * MAR for approximately multivariate normal data) is returned in its place, with its sample size adjusted per
+     * the spec's effective-sample-size mode if a pairwise mode is chosen; the wrapper's covariance branch then
+     * constructs the score from it. In every other case the data model is returned unchanged.
+     *
+     * @param dataModel  The data model, already passed through the gate.
+     * @param parameters The parameters.
+     * @param caller     The user-facing name of the score, for the log message.
+     * @return The data model, or the EM-estimated covariance matrix in its place under the "em" policy.
+     */
+    public static DataModel emCovarianceIfRequested(DataModel dataModel, Parameters parameters, String caller) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            return dataModel;
+        }
+
+        if (!dataSet.existsMissingValue()) {
+            return dataModel;
+        }
+
+        String policy = parameters.getString(Params.MISSING_DATA_POLICY, "default").trim().toLowerCase();
+
+        if (!(policy.equals("em") || policy.equals("emcovariance") || policy.equals("em_covariance"))) {
+            return dataModel;
+        }
+
+        MissingDataSpec spec = fromParameters(parameters);
+
+        edu.cmu.tetrad.data.EmCovarianceEstimator estimator = new edu.cmu.tetrad.data.EmCovarianceEstimator(dataSet);
+        estimator.setRidge(spec.getEmRidge());
+        estimator.setTolerance(spec.getEmTolerance());
+        estimator.setMaxIterations(spec.getEmMaxIterations());
+        edu.cmu.tetrad.data.ICovarianceMatrix cov = estimator.estimate();
+
+        int ess = effectiveSampleSize(dataSet, spec);
+        if (ess >= 0) {
+            cov.setSampleSize(ess);
+        }
+
+        TetradLogger.getInstance().log(caller + ": Missing-data policy 'em': using the EM-estimated covariance "
+                + "matrix (MAR, approximately multivariate normal), sample size " + cov.getSampleSize() + ". "
+                + briefSummary(dataSet));
+
+        return cov;
     }
 }

@@ -66,7 +66,7 @@ public class ChiSquare implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Chi Square Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "Chi Square Test");
         IndTestChiSquare test = new IndTestChiSquare(SimpleDataLoader.getDiscreteDataSet(dataSet), parameters.getDouble(Params.ALPHA));
         test.setMinCountPerCell(parameters.getDouble(Params.MIN_COUNT_PER_CELL));
 

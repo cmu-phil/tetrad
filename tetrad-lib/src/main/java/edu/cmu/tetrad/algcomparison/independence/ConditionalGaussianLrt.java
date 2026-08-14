@@ -64,7 +64,7 @@ public class ConditionalGaussianLrt implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "CG-LRT (Conditional Gaussian Likelihood Ratio Test)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "CG-LRT (Conditional Gaussian Likelihood Ratio Test)");
         IndTestConditionalGaussianLrt test
                 = new IndTestConditionalGaussianLrt(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA),

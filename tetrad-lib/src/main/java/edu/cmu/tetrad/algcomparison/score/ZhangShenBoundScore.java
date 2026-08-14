@@ -76,7 +76,8 @@ public class ZhangShenBoundScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "ZS Bound Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("em"), "ZS Bound Score");
+        dataSet = MissingDataUtils.emCovarianceIfRequested(dataSet, parameters, "ZS Bound Score");
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
@@ -130,6 +131,10 @@ public class ZhangShenBoundScore implements ScoreWrapper {
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_EM_RIDGE);
+        parameters.add(Params.MISSING_EM_TOLERANCE);
+        parameters.add(Params.MISSING_EM_MAX_ITERATIONS);
+        parameters.add(Params.MISSING_ESS_MODE);
         return parameters;
     }
 
