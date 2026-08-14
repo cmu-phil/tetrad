@@ -29,8 +29,9 @@ import java.util.List;
  *       does not keep the tail.</li>
  *   <li>MAG LEGALITY: the variant's output with knowledge still implies a legal MAG (FcitZm's
  *       own output contract), and its canonical strip is a strictly legal PAG.</li>
- *   <li>TIERS / 2-NODE: the X1-&gt;X2 tier scenario gives o-o by default and o-&gt; with
- *       selection bias excluded, matching the rest of the keep-knowledge family.</li>
+ *   <li>TIERS / 2-NODE: the X1-&gt;X2 tier scenario gives o-&gt; in both selection-bias
+ *       settings; forbidden-edge (tier) enforcement is no longer gated on
+ *       excludeSelectionBias (see FciOrient.fciOrientbk).</li>
  * </ol>
  */
 public final class TestFcitZmKeepKnowledgeOrientations {
@@ -64,7 +65,7 @@ public final class TestFcitZmKeepKnowledgeOrientations {
         for (boolean excl : new boolean[]{false, true}) {
             Graph g = runKeep(twoData, tiers, FcitZm.COMMIT_ROUTE.MAG, excl);
             String edges = g.getEdges().toString();
-            boolean ok = excl ? edges.contains("o->") : edges.contains("o-o");
+            boolean ok = edges.contains("o->"); // tiers enforced in both selection-bias settings
             System.out.println("  excludeSelectionBias=" + excl + " -> " + edges
                     + " : " + (ok ? "PASS" : "FAIL"));
             if (!ok) failures++;

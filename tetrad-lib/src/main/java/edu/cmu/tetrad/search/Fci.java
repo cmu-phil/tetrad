@@ -387,6 +387,7 @@ public final class Fci implements IGraphSearch {
                 Set<Node> d = new HashSet<>(pag.paths().possibleDsep(x, 3));
                 d.remove(x);
                 d.remove(y);
+                removeLaterTierVariables(d, x, y);
                 if (test.checkIndependence(x, y, d).isIndependent()) {
                     if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                     pag.removeEdge(x, y);
@@ -396,6 +397,7 @@ public final class Fci implements IGraphSearch {
                     d = new HashSet<>(pag.paths().possibleDsep(y, 3));
                     d.remove(x);
                     d.remove(y);
+                    removeLaterTierVariables(d, x, y);
                     if (test.checkIndependence(x, y, d).isIndependent()) {
                         if (verbose) TetradLogger.getInstance().log("Removed " + pag.getEdge(x, y) + " by possible dsep");
                         pag.removeEdge(x, y);
@@ -670,6 +672,29 @@ public final class Fci implements IGraphSearch {
     // -------------------------
     // Utility helpers
     // -------------------------
+    /**
+     * Removes from the candidate conditioning set every variable that tier knowledge places in a strictly later tier
+     * than both x and y. Tier knowledge forbids every later-to-earlier edge, so a variable in a later tier than both x
+     * and y cannot be an ancestor of either; if x and y are d-separated by any set at all, they are d-separated by a
+     * set of non-descendants (e.g., by the parents of one of them), which contains no such variable. Restricting
+     * possible-dsep tests to knowledge-admissible sets therefore preserves correctness while preventing spurious
+     * finite-sample edge removals conditioned on later-tier variables that no admissible separating set would contain.
+     *
+     * @param d The candidate conditioning set; modified in place.
+     * @param x The first endpoint of the edge under test.
+     * @param y The second endpoint of the edge under test.
+     */
+    private void removeLaterTierVariables(Set<Node> d, Node x, Node y) {
+        if (knowledge == null || knowledge.getNumTiers() == 0) return;
+
+        int tx = knowledge.isInWhichTier(x);
+        int ty = knowledge.isInWhichTier(y);
+        if (tx < 0 || ty < 0) return;
+
+        int later = Math.max(tx, ty);
+        d.removeIf(z -> knowledge.isInWhichTier(z) > later);
+    }
+
     private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
         if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
         if (!FciOrient.isArrowheadAllowed(x, z, g, knowledge) || !FciOrient.isArrowheadAllowed(y, z, g, knowledge))

@@ -148,6 +148,17 @@ public class FciOrient {
     /**
      * Determines if an arrowhead can be placed at node Y in the given graph, based on the adjacency relationships,
      * endpoint types, and any provided prior knowledge constraints.
+     * <p>
+     * Knowledge semantics. An arrowhead at Y on the edge X *-* Y asserts that Y is not an ancestor of X (nor of any
+     * selection variable). This assertion is contradicted by knowledge REQUIRING Y --&gt; X, so that case is vetoed. It
+     * is NOT contradicted by knowledge FORBIDDING X --&gt; Y: whether X causes Y says nothing about an arrowhead at Y.
+     * An earlier version of this method vetoed the arrowhead at Y whenever X --&gt; Y was forbidden; under tier
+     * knowledge (which forbids every later--&gt;earlier edge) that veto deleted correct collider arrowheads at earlier
+     * variables and thereby erased the record of possible latent confounding. For example, with the true MAG a --&gt; b,
+     * b &lt;-&gt; c and the (true) tiers b &lt; c, the forbidden edge c --&gt; b blocked the collider arrowhead at b, and
+     * the output entailed a _||_ c | b, which the data reject. The forbidden-edge veto has therefore been removed;
+     * forbidden edges are instead enforced as endpoint marks in
+     * {@link #fciOrientbk(Knowledge, Graph, List, boolean)}.
      *
      * @param x     The first node under consideration in the graph.
      * @param y     The second node under consideration in the graph, where the arrowhead placement is evaluated.
@@ -167,11 +178,10 @@ public class FciOrient {
         // Tail fixed at Y => cannot put an arrowhead at Y.
         if (eXY == Endpoint.TAIL) return false;
 
-        // If knowledge REQUIRES y->x, disallow arrowhead at Y (bidirected would violate the requirement).
+        // If knowledge REQUIRES y->x, disallow arrowhead at Y (the arrowhead would deny that y is an ancestor of x).
         if (K != null && K.isRequired(y.getName(), x.getName())) return false;
 
-        // If knowledge FORBIDS x->y, disallow arrowhead at Y.
-        if (K != null && K.isForbidden(x.getName(), y.getName())) return false;
+        // NOTE: knowledge FORBIDDING x->y does NOT veto an arrowhead at Y; see the Javadoc above.
 
         // Otherwise, circle at Y is orientable.
         return eXY == Endpoint.CIRCLE;
@@ -1482,13 +1492,26 @@ public class FciOrient {
 
     /**
      * Orient the edges of a graph based on the given knowledge.
+     * <p>
+     * Forbidden edges. A forbidden edge from --&gt; to is enforced by orienting to *-&gt; from (an arrowhead at
+     * 'from'), the standard FCI treatment of background knowledge. This enforcement is applied whether or not
+     * selection bias is excluded. When selection is allowed, an arrowhead at 'from' asserts that 'from' is an ancestor
+     * neither of 'to' nor of any selection variable; Tetrad interprets user-supplied background knowledge forbidding
+     * from --&gt; to in this stronger ancestral sense (in particular, tier knowledge is read as a statement of causal
+     * order that also excludes later-tier variables causing selection into the sample through earlier-tier variables).
+     * Users who believe a forbidden cause may nonetheless be an ancestor of a selection variable should not supply
+     * that forbidding. An earlier version of this method skipped forbidden-edge enforcement entirely whenever
+     * selection bias was allowed, which silently discarded tier knowledge (tiers compile to forbidden edges only) and
+     * coupled the use of background knowledge to an unrelated modeling flag.
+     * <p>
+     * Required edges. A required edge from --&gt; to is enforced by orienting from --&gt; to; this is unaffected by the
+     * selection bias policy.
      *
      * @param bk                   The knowledge containing forbidden and required edges.
      * @param graph                The graph to be oriented.
      * @param variables            The list of nodes in the graph.
-     * @param excludeSelectionBias If true, selection bias is excluded and forbidden edges are enforced in the standard
-     *                             way. If false (default), selection bias is allowed and we do NOT enforce forbidden
-     *                             edges by forcing an arrowhead.
+     * @param excludeSelectionBias Retained for signature compatibility; no longer gates whether background knowledge
+     *                             is enforced (see above).
      */
     public void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables, boolean excludeSelectionBias) {
         if (verbose) {
@@ -1497,12 +1520,8 @@ public class FciOrient {
 
         // -------------------------------------------------------------------------
         // Forbidden edges: "from -> to" is forbidden.
-        //
-        // If selection bias is EXCLUDED (excludeSelectionBias == true):
-        //     enforce by orienting  to  *-> from  (standard FCI behavior)
-        //
-        // If selection bias is ALLOWED (excludeSelectionBias == false):
-        //     do NOT enforce via orientation; leave endpoints unchanged.
+        // Enforce by orienting  to *-> from  (arrowhead at 'from'), regardless of
+        // the selection bias policy; see the Javadoc for the interpretation.
         // -------------------------------------------------------------------------
         for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
             if (Thread.currentThread().isInterrupted()) {
@@ -1521,12 +1540,7 @@ public class FciOrient {
                 continue;
             }
 
-            // If we ALLOW selection bias, we skip enforcement entirely.
-            if (!excludeSelectionBias) {
-                continue;
-            }
-
-            // Enforce forbidden edge when selection bias is excluded.
+            // Enforce forbidden edge.
             if (!FciOrient.isArrowheadAllowed(to, from, graph, knowledge)) {
                 continue;
             }
