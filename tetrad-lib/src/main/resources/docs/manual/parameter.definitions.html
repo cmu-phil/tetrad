@@ -5,17 +5,24 @@ Source:
     === rescueAction ===
     <h3 class="parameter_description" id="rescueAction">rescueAction</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="rescueAction_short_desc">What to do with a detected adjacency-faithfulness clash: 0=off, 1=mark, 2=recover</span></li>
+        <li>Short Description: <span id="rescueAction_short_desc">What to do with a detected adjacency-faithfulness clash: 0=off, 1=mark, 2=recover, 3=recover corroborated only</span></li>
         <li>Long Description: <span id="rescueAction_long_desc">
-            Controls the action taken on a tier-1 orientation-clash detection (PcAR, Sec. 14 of
-            the unfaithful-triangles analysis). 0 (OFF) runs no detection. 1 (MARK) records the
-            deletion as contested but leaves the skeleton exactly as FAS produced it. 2 (RECOVER)
-            reinstates the edge and re-runs orientation, but only when the configured recovery-odds
-            threshold is met by a supplied odds estimator; with no estimator wired, RECOVER behaves
-            identically to MARK.</span></li>
+        Controls the action taken on a tier-1 orientation-clash detection (PcAR, Sec. 14 of
+        the unfaithful-triangles analysis). 0 (OFF) runs no detection. 1 (MARK, the default)
+        records the deletion as contested but leaves the skeleton exactly as FAS produced it.
+        2 (RECOVER) reinstates a flagged edge when the posterior odds -- base rate times a
+        likelihood ratio from a discriminating re-test of the pair, computed by the wired
+        odds estimator -- meet the recovery-odds threshold; note that the discriminating
+        re-test is only reliable when the clash's collider claim about the pivot is genuine,
+        so RECOVER can reinstate false edges where the pivot is in truth a mediator or common
+        cause of the pair. 3 (RECOVER_CORROBORATED) reinstates only pairs independently
+        flagged by both the tier-1 clash pass and the tier-2 Markov audit, ignoring the odds
+        threshold; with no Markov auditor wired it behaves identically to MARK. Recovery
+        modes (2 and 3) modify the skeleton and can introduce false edges; MARK is free of
+        skeleton risk.</span></li>
         <li>Default Value: <span id="rescueAction_default_value">1</span></li>
         <li>Lower Bound: <span id="rescueAction_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="rescueAction_upper_bound">2</span></li>
+        <li>Upper Bound: <span id="rescueAction_upper_bound">3</span></li>
         <li>Value Type: <span id="rescueAction_value_type">Integer</span></li>
     </ul>
 

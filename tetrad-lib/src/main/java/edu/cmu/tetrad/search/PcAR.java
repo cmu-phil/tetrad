@@ -426,6 +426,89 @@ public class PcAR implements IGraphSearch {
     }
 
     /**
+     * A {@link RecoveryOddsEstimator} implementing Sec. 14's full posterior-odds factorization,
+     * base rate TIMES likelihood ratio, replacing the earlier base-rate-only default whose
+     * pair-blindness made every flag score identically (0.282... at n=1000, all 14 flags on one
+     * logged run byte-identical).
+     * <p>
+     * <b>The discriminating test.</b> Per the Sec. 14 worked trace (step 6: clash on Y-Z implicates
+     * deleted X-Z with sepset {}; re-test rho_XZ.Y; "conditioning on Y blocks the indirect path"),
+     * the re-test of a flagged pair (x, y) with sepset S and pivot z is the pair under S with the
+     * pivot's membership TOGGLED: {@code S u {z}} when z is not in S (the trace's case -- adding
+     * the pivot blocks the indirect path so the direct edge shows through, proportional to c), and
+     * {@code S \ {z}} when z is in S (the shielded-collider locus -- removing the demanded-collider
+     * pivot closes the collider-opened path the cancellation was cancelling against; the graph's
+     * entailed marginal dependence of the pair is exactly what Clark's note Sec. 3 identifies as
+     * the fact the shielded-collider case leaves testable). Every currently recovery-eligible flag
+     * (collider-noncollider-clash) has z in S, so the removal branch is the live one; the union
+     * branch is implemented for fidelity to the trace and for any future locus that flags with
+     * z outside S.
+     * <p>
+     * <b>The likelihood ratio.</b> Sec. 14's LR is power/alpha against the unknown effect size vc,
+     * which is not computable per-pair. This class substitutes the Vovk-Sellke bound on the Bayes
+     * factor implied by the discriminating test's p-value: {@code LR &lt;= 1 / (-e * p * ln p)} for
+     * p &lt; 1/e, and 1 otherwise (Sellke, Bayarri &amp; Berger 2001, Am. Stat. 55(1)). This is an
+     * UPPER bound -- it credits the rejection with the most evidence any alternative could claim
+     * -- so it is anti-conservative on the LR term; the small base rate is what keeps the product
+     * in check (at n=1000, base odds 0.282, the threshold-1.0 recovery bar works out to roughly
+     * p &lt; 0.02 on the discriminating test).
+     * <p>
+     * <b>Two honest limits, stated up front.</b> (1) The paper's claim that the discriminating
+     * test has size alpha under a genuine non-edge holds WITHIN its model, where the clash's
+     * collider demands are genuine. On real data a clash can itself be a test error: if the pivot
+     * z is in truth a plain common cause of the pair (not a collider), then removing z from the
+     * conditioning set opens the path THROUGH z, the discriminating test rejects through that
+     * confounding, and the "size alpha" guarantee does not hold -- the rejection is real
+     * dependence, wrongly attributed to a direct edge. Expect this estimator to over-recover
+     * exactly where the clash pass over-flags. (2) Sec. 14 explicitly owes a multiplicity
+     * correction (BH or Bonferroni over one discriminating test per flag); this class scores each
+     * flag in isolation and applies none, because the family size isn't known until all flags are
+     * in. Raising the threshold is the crude compensation available today; a proper family-wise
+     * pass is future work.
+     */
+    public static class DiscriminatingTestOddsEstimator implements RecoveryOddsEstimator {
+        private final IndependenceTest test;
+        private final int sampleSize;
+
+        /**
+         * @param test the test to run the discriminating re-test with; sample size for the
+         *             base-rate term is taken from {@code test.getSampleSize()}
+         */
+        public DiscriminatingTestOddsEstimator(IndependenceTest test) {
+            this.test = test;
+            this.sampleSize = test.getSampleSize();
+        }
+
+        @Override
+        public double posteriorOdds(Node x, Node y, Node z, Set<Node> sepset) throws InterruptedException {
+            double baseOdds = paperCancellationBaseRateOdds(sampleSize);
+            if (Double.isNaN(baseOdds)) return Double.NaN; // n too small for the bound; falls to MARK
+
+            // Toggle the pivot's membership in the sepset (Sec. 14 worked trace, step 6).
+            Set<Node> discriminating = new LinkedHashSet<>(sepset);
+            if (!discriminating.remove(z)) {
+                discriminating.add(z);
+            }
+
+            IndependenceResult r = test.checkIndependence(x, y, discriminating);
+            double p = r.getPValue();
+
+            // Vovk-Sellke bound on the LR from the discriminating p-value. Clamp p away from 0 so
+            // p=0.0 (which real runs produce) yields a large finite LR rather than NaN from
+            // 0 * -Infinity.
+            double lr;
+            if (Double.isNaN(p) || p >= 1.0 / Math.E) {
+                lr = 1.0; // no evidence credited beyond the base rate
+            } else {
+                double pc = Math.max(p, 1e-16);
+                lr = 1.0 / (-Math.E * pc * Math.log(pc));
+            }
+
+            return baseOdds * lr;
+        }
+    }
+
+    /**
      * Functional hook for a real Markov-audit implication pass, given the finished graph and the
      * test. No default is wired; the built-in fallback only re-checks the non-collider unshielded
      * triples PC already enumerated.

@@ -176,30 +176,26 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         search.setRecoveryOddsThreshold(parameters.getDouble(Params.RECOVERY_ODDS_THRESHOLD));
 
         // Fixed rather than exposed as a Parameters entry, per instruction: R (maxRescuePasses)
-        // only has any effect when RECOVER is selected AND a pass actually recovers something, and
-        // with only the BASE_RATE_ONLY estimator wired below, successful recoveries should already
-        // be rare (see that estimator's own comment on realistic odds vs. the default threshold).
-        // A small constant is enough to let a cascading recovery play out without paying for
-        // repeated full clash passes on every search call; promote to a registered Params entry
-        // once there's a reason to tune it per-run rather than per-build.
+        // only has any effect when a pass actually recovers something. A small constant is enough
+        // to let a cascading recovery play out without paying for repeated full clash passes on
+        // every search call; promote to a registered Params entry once there's a reason to tune it
+        // per-run rather than per-build.
         search.setMaxRescuePasses(MAX_RESCUE_PASSES);
 
-        // BASE_RATE_ONLY estimator: uses the paper's closed-form q_cancel(n) ~= 6.95/sqrt(n-3)
-        // (Secs. 7-8, edu.cmu.tetrad.search.PcAR#paperCancellationBaseRateOdds) as the *base-rate*
-        // term of the Sec. 14 posterior odds. It does NOT include the likelihood-ratio term (the
-        // rescue test's own power/alpha against the discriminating statistic at this specific
-        // triangle) -- nothing here computes that -- so this implicitly treats every clash
-        // detection as carrying no evidentiary weight beyond the base rate. That's a real,
-        // paper-derived number rather than a fabricated one, but it's still derived under (A1)-
-        // (A3): Erdos-Renyi skeleton, coefficients uniform(-1,1), disturbance variances
-        // uniform(1/2,2), an isolated triangle. It is not locus-specific (see the javadoc on
-        // paperCancellationBaseRate for the three-way split) and does not know your actual
-        // data-generating process. Recalibrate before trusting RECOVER output past a smoke test.
-        int sampleSize = (dataModel instanceof DataSet ds) ? ds.getNumRows() : -1;
-        double baseRateOdds = sampleSize > 3
-                ? edu.cmu.tetrad.search.PcAR.paperCancellationBaseRateOdds(sampleSize)
-                : Double.NEGATIVE_INFINITY; // unknown/too-small n => never recovers, falls back to MARK
-        search.setRecoveryOddsEstimator((x, y, z, sepset) -> baseRateOdds);
+        // Full Sec. 14 posterior odds: base rate q(n)/(1-q(n)) TIMES a per-pair likelihood ratio
+        // from the discriminating re-test (pair re-tested with the pivot's sepset membership
+        // toggled; LR via the Vovk-Sellke bound on the discriminating p-value). This replaces the
+        // earlier base-rate-only lambda, whose pair-blindness scored every flag identically. See
+        // PcAR.DiscriminatingTestOddsEstimator's javadoc for the two honest limits: (1) the
+        // size-alpha guarantee on the discriminating test holds within the paper's model, where
+        // the clash's collider demands are genuine -- a pivot that is in truth a plain common
+        // cause of the pair makes the re-test reject through the confounding, so expect
+        // over-recovery exactly where the clash pass over-flags; (2) no multiplicity correction is
+        // applied across flags, which Sec. 14 explicitly owes -- raise the threshold as the crude
+        // compensation. NOTE: the estimator runs one extra CI test per flagged pair, using the
+        // same (cached) test as the search itself.
+        search.setRecoveryOddsEstimator(
+                new edu.cmu.tetrad.search.PcAR.DiscriminatingTestOddsEstimator(test));
 
         // determinismGuard intentionally left unset (null) -- see class javadoc. Wire here once
         // you have a concrete implementation, e.g.:
