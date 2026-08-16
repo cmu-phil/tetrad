@@ -21,18 +21,15 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.NaturalSort;
-import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.TMath;
 
 import java.util.*;
 
@@ -130,31 +127,6 @@ import java.util.*;
 public class PcAR implements IGraphSearch {
 
     /**
-     * Boole upper bound on the per-triangle probability that a true triangle is silently
-     * collapsed by genuine cancellation (not a weak-edge miss), summed over the three
-     * cancellation loci (Secs. 7-8): {@code Sigma_canc = f_XZ(0) + f_YZ(0) + f_XY.Z(0) ~= 1.774},
-     * {@code c0_cancel = 2*z* * Sigma_canc ~= 6.95}. Table 1 shows the true rate settling a few
-     * percent below this as n grows (6.87 at n=1e5 vs. the 6.95 bound), so it over- rather than
-     * under-states the base rate.
-     * <p>
-     * DERIVED UNDER (A1)-(A3): Erdos-Renyi skeleton, coefficients uniform on (-1,1), disturbance
-     * variances uniform on (1/2, 2), an <i>isolated</i> triangle (no exogenous parent on any of
-     * the three vertices -- Sec. 2's closing paragraph), Fisher z at alpha=0.05. It is the right
-     * default only to the extent your data matches that generative story; recalibrate for
-     * anything else rather than trusting the number on its face.
-     * <p>
-     * Does NOT distinguish which of the three loci is in play (mediator-hidden f_XZ(0)~=0.598,
-     * source-hidden f_YZ(0)~=0.505 -- never detects via the clash pass, per the Sec. 12 Lemma --
-     * shielded-collider f_XY.Z(0)~=0.671, detectable only via a Markov audit, not this class's
-     * clash pass). If you want a locus-specific rate rather than the pooled one, that's the split
-     * to make; {@link #getContestedDeletions()}'s {@code locus} field doesn't currently map
-     * cleanly onto these three surfaces (it records which clash mechanism fired, not which
-     * cancellation surface produced it), so that mapping would need doing by hand per flag.
-     */
-    public static final double PAPER_CANCELLATION_C0 = 6.95;
-    private final List<ContestedDeletion> contestedDeletions = new ArrayList<>();
-    private final List<MarkovAuditFailure> markovAuditFailures = new ArrayList<>();
-    /**
      * The independence test used to evaluate the statistical independence of variables during the structure learning
      * process in the PC algorithm. This test is a critical component of the algorithm as it dictates the conditional
      * independence relationships to be used for constructing the causal graph.
@@ -204,8 +176,6 @@ public class PcAR implements IGraphSearch {
      * disallow bidirected edges as needed.
      */
     private AllowBidirected allowBidirected = AllowBidirected.DISALLOW;
-
-    // MAX-P options
     /**
      * Indicates whether verbose logging is enabled for this instance. When set to true, additional detailed information
      * about the internal operations and processes is logged, aiding in debugging and analysis. When false, minimal or
@@ -226,7 +196,7 @@ public class PcAR implements IGraphSearch {
      */
     private long startTimeMs = 0;
 
-    // Optional tie logging for MAX_P
+    // MAX-P options
     /**
      * Indicates whether to apply global, order-independent MAX-P collider orientation.
      * <p>
@@ -254,6 +224,8 @@ public class PcAR implements IGraphSearch {
      * based on p-value rankings without further constraints.
      */
     private double maxPMargin = 0.0;            // margin guard; 0 => off
+
+    // Optional tie logging for MAX_P
     /**
      * A flag indicating whether to log details about ties in p-values during the MAX-P collider orientation process.
      * Ties occur when multiple separation sets result in the same best p-value for a collider determination.
@@ -265,15 +237,11 @@ public class PcAR implements IGraphSearch {
      * effect if such information is not required.
      */
     private boolean logMaxPTies = false;
-
-    // ---------------- NEW: cycle-safety knobs ----------------
     /**
      * The output stream used for logging operations within the class. By default, this is set to the standard output
      * stream (System.out). This stream can be redirected to a different output stream as needed.
      */
     private java.io.PrintStream logStream = System.out;
-
-    // ---------------- NEW: adjacency-rescue (PcAR) knobs ----------------
     /**
      * The `fas` variable holds an instance of the Fast Adjacency Search (FAS) algorithm used to construct the skeleton
      * of a graphical model.
@@ -282,6 +250,7 @@ public class PcAR implements IGraphSearch {
      * utilized within the context of the causal discovery process.
      */
     private Fas fas = null; // expose via getFas()
+
     /**
      * Indicates whether the graph replication process is currently active.
      * This variable is used to track the state of graph replication,
@@ -289,15 +258,291 @@ public class PcAR implements IGraphSearch {
      * synchronization, or fault tolerance mechanisms.
      */
     private boolean replicatingGraph = false;
-    /**
-     * If true, do not allow any orientation that creates a directed cycle.
-     */
+
+    // ---------------- NEW: cycle-safety knobs ----------------
+    /** If true, do not allow any orientation that creates a directed cycle. */
     private boolean forbidDirectedCycles = true;
+
+    // ---------------- NEW: adjacency-rescue (PcAR) knobs ----------------
+
+    /**
+     * What to do with a tier-1 (orientation-clash) positive.
+     */
+    public enum RescueAction {
+        /** Run detection but take no action; {@link #getContestedDeletions()} stays empty. */
+        OFF,
+        /** Annotate the deletion as contested; skeleton is left exactly as FAS produced it. */
+        MARK,
+        /** Reinstate the edge and re-run orientation, subject to {@link #recoveryOddsThreshold}. */
+        RECOVER,
+        /**
+         * Reinstate a contested deletion only when the Markov audit independently flags the SAME
+         * pair -- i.e. tier one says the deletion's orientation demands don't cohere AND tier two
+         * says an independence the resulting graph entails for that pair is rejected by the data.
+         * On the first ground-truth run (20 nodes, avg degree 4, n=1000), the intersection
+         * contained two pairs: one a truly missing edge (X3-X8), one not (X12-X18, whose audit
+         * failure was actually caused by a DIFFERENT missing edge, X8-X12, that made the graph
+         * entail a false independence for the X12-X18 pair). So this mode's precision was 1/2
+         * there, against 1/14 for the raw tier-1 list -- much better, not clean. The residual
+         * failure mode is inherited from the audit's localization limit: an audit failure names
+         * the pair whose entailment fails, not necessarily the pair whose edge is missing, so
+         * corroborated recovery repairs correctly only when those coincide. Requires a
+         * {@link MarkovAuditor} to be wired; without one the audit is empty, nothing is ever
+         * corroborated, and this behaves exactly like MARK. The {@link #recoveryOddsThreshold} is
+         * NOT consulted in this mode: the corroboration itself is the evidence gate.
+         */
+        RECOVER_CORROBORATED
+    }
+
+    /**
+     * A candidate rescuer: the deleted pair, the sepset that removed it, which clash test caught
+     * it, and whether a RECOVER action was actually taken for this deletion.
+     *
+     * @param x        one endpoint of the deleted pair
+     * @param y        the other endpoint of the deleted pair
+     * @param z        the pivot (mediator/sink/source) of the triple that produced the flag
+     * @param sepset   the sepset FAS recorded for (x, y)
+     * @param locus    "bidirected-clash" or "collider-noncollider-clash", the two contradiction
+     *                 types of CLASH-PASS (Clark's note Sec. 5)
+     * @param recovered whether a RECOVER action was actually taken for this deletion
+     */
+    public record ContestedDeletion(Node x, Node y, Node z, Set<Node> sepset, String locus, boolean recovered) {
+    }
+
+    /**
+     * A bidirected orientation clash: the edge {@code u}-{@code z}, present in the graph, that two
+     * different unshielded triples demand carry an arrowhead in opposite directions (CLASH-PASS
+     * lines 6-7). Localizes to an <i>adjacency that cannot be consistently oriented</i>, not to a
+     * deleted pair -- u and z are adjacent, so there is no separating set for them and nothing to
+     * reinstate. Detection-only: {@link RescueAction} never acts on these. A cluster of them
+     * indicates the accepted independence facts in that neighborhood do not cohere, but tracing
+     * that back to a specific recoverable deletion is not mechanical and is not attempted here.
+     *
+     * @param u one endpoint of the unorientable edge (lexicographically first)
+     * @param z the other endpoint
+     * @param witnesses the pivot vertices of the triples that raised the conflicting demands
+     */
+    public record OrientationClash(Node u, Node z, Set<Node> witnesses) {
+    }
+
+    /**
+     * A diagnostic Markov-audit flag: an implied independence x _||_ y | conditioningSet that did
+     * not hold under a fresh test. Carries the full conditioning set rather than a single pivot
+     * Node -- the built-in fallback audit only ever populates it with one element, but that is a
+     * known limitation of the fallback (see {@link #runMarkovAudit}'s javadoc), not a property of
+     * Markov violations in general: the separator implied by a graph is frequently more than one
+     * vertex, and a record that could only name one would force a real {@link MarkovAuditor}
+     * (e.g. one delegating to a proper graph-implication enumeration) to either drop information
+     * or abuse the field. Not traced back to a specific recoverable edge automatically; see the
+     * class javadoc.
+     *
+     * @param x first endpoint
+     * @param y second endpoint
+     * @param conditioningSet the conditioning set the fresh test used
+     * @param pValue the p-value of the fresh test
+     */
+    public record MarkovAuditFailure(Node x, Node y, Set<Node> conditioningSet, double pValue) {
+    }
+
+    /**
+     * PcAR reuses {@link Fas.DeterminismGuard} rather than defining its own: the same guard is now
+     * forwarded to the internal {@link Fas} instance (see {@link #search(List)}), so a single guard
+     * wired once via {@link #setDeterminismGuard} covers both places determinism matters -- the
+     * adjacency phase, where it can decline a contaminated deletion outright (Clark's note, "Two
+     * Detection Tiers...", Aug 15 2026: "the determinism guard is placed where it can only add
+     * edges"), and this class's own clash pass, where it still gates which flagged pairs get
+     * treated as candidate cancellations. Previously this class defined its own structurally
+     * identical interface and only ever applied it downstream of FAS, which the note correctly
+     * identified as unable to prevent a contaminated deletion FAS had already made before this
+     * class's search() even runs.
+     */
+    /**
+     * Functional hook supplying posterior odds that a flagged deletion is a genuine edge, for the
+     * RECOVER decision. No default is wired; see class javadoc.
+     */
+    @FunctionalInterface
+    public interface RecoveryOddsEstimator {
+        double posteriorOdds(Node x, Node y, Node z, Set<Node> sepset) throws InterruptedException;
+    }
+
+    /**
+     * Boole upper bound on the per-triangle probability that a true triangle is silently
+     * collapsed by genuine cancellation (not a weak-edge miss), summed over the three
+     * cancellation loci (Secs. 7-8): {@code Sigma_canc = f_XZ(0) + f_YZ(0) + f_XY.Z(0) ~= 1.774},
+     * {@code c0_cancel = 2*z* * Sigma_canc ~= 6.95}. Table 1 shows the true rate settling a few
+     * percent below this as n grows (6.87 at n=1e5 vs. the 6.95 bound), so it over- rather than
+     * under-states the base rate.
+     * <p>
+     * DERIVED UNDER (A1)-(A3): Erdos-Renyi skeleton, coefficients uniform on (-1,1), disturbance
+     * variances uniform on (1/2, 2), an <i>isolated</i> triangle (no exogenous parent on any of
+     * the three vertices -- Sec. 2's closing paragraph), Fisher z at alpha=0.05. It is the right
+     * default only to the extent your data matches that generative story; recalibrate for
+     * anything else rather than trusting the number on its face.
+     * <p>
+     * Does NOT distinguish which of the three loci is in play (mediator-hidden f_XZ(0)~=0.598,
+     * source-hidden f_YZ(0)~=0.505 -- never detects via the clash pass, per the Sec. 12 Lemma --
+     * shielded-collider f_XY.Z(0)~=0.671, detectable only via a Markov audit, not this class's
+     * clash pass). If you want a locus-specific rate rather than the pooled one, that's the split
+     * to make; {@link #getContestedDeletions()}'s {@code locus} field doesn't currently map
+     * cleanly onto these three surfaces (it records which clash mechanism fired, not which
+     * cancellation surface produced it), so that mapping would need doing by hand per flag.
+     */
+    public static final double PAPER_CANCELLATION_C0 = 6.95;
+
+    /**
+     * {@code q_cancel(n) ~= PAPER_CANCELLATION_C0 / sqrt(n - 3)}, per Secs. 7-8. Returns NaN for
+     * n &lt;= 3 (linearization doesn't apply) and also for n small enough that the bound exceeds 1
+     * (below n~=51: 6.95/sqrt(48)~=1.003) -- past that point the union bound is vacuous, not "cancellation
+     * is certain," and clamping it to 1 would silently assert a confidence the bound doesn't
+     * support. Callers (including {@link #paperCancellationBaseRateOdds}) should treat NaN as "this
+     * estimator doesn't apply at this n," not as a large or small odds value.
+     */
+    public static double paperCancellationBaseRate(int n) {
+        if (n <= 3) return Double.NaN;
+        double q = PAPER_CANCELLATION_C0 / Math.sqrt(n - 3);
+        return q < 1.0 ? q : Double.NaN;
+    }
+
+    /**
+     * The base rate above, expressed as odds ({@code q/(1-q)}) rather than a probability -- i.e.
+     * exactly the "base rate" term of the Sec. 14 posterior-odds factorization, and nothing more:
+     * it does NOT include the likelihood-ratio term (the rescue test's own power/alpha against the
+     * specific discriminating statistic at this triangle), which the paper treats as a separate,
+     * per-test factor and which nothing in this class computes for you. Using this value alone as
+     * a {@link RecoveryOddsEstimator} implicitly sets that likelihood ratio to 1 -- i.e. treats a
+     * clash detection as carrying no evidentiary weight of its own beyond the base rate, which is
+     * conservative for real detections and overstates recovery odds for weak/coincidental ones.
+     * It is a real default in the sense that it isn't fabricated, but it is not the paper's actual
+     * calibrated odds, and shouldn't be presented as such.
+     * <p>
+     * Returns NaN wherever {@link #paperCancellationBaseRate} does (n too small either way); a NaN
+     * compared against any {@link #recoveryOddsThreshold} in {@code x >= threshold} form is always
+     * false in Java, so this correctly falls back to MARK behavior rather than throwing or
+     * producing a nonsensical negative "odds" from {@code q/(1-q)} with q &gt;= 1.
+     */
+    public static double paperCancellationBaseRateOdds(int n) {
+        double q = paperCancellationBaseRate(n);
+        return Double.isNaN(q) ? Double.NaN : q / (1 - q);
+    }
+
+    /**
+     * Functional hook for a real Markov-audit implication pass, given the finished graph and the
+     * test. No default is wired; the built-in fallback only re-checks the non-collider unshielded
+     * triples PC already enumerated.
+     */
+    @FunctionalInterface
+    public interface MarkovAuditor {
+        List<MarkovAuditFailure> audit(Graph g, IndependenceTest test) throws InterruptedException;
+    }
+
     private RescueAction rescueAction = RescueAction.MARK;
     private double recoveryOddsThreshold = Double.POSITIVE_INFINITY; // never met => RECOVER acts like MARK until an estimator is set
-    private DeterminismGuard determinismGuard = null;
+    private int maxRescuePasses = 1; // R; default 1 preserves this class's pre-loop single-pass behavior exactly
+    private Fas.DeterminismGuard determinismGuard = null;
     private RecoveryOddsEstimator recoveryOddsEstimator = null;
     private MarkovAuditor markovAuditor = null;
+    private boolean warnedNoAuditor = false; // one-shot guard for the "tier two inactive" warning
+    private final List<ContestedDeletion> contestedDeletions = new ArrayList<>();
+    private final List<OrientationClash> orientationClashes = new ArrayList<>();
+    private final List<MarkovAuditFailure> markovAuditFailures = new ArrayList<>();
+
+    /**
+     * Sets what to do with a tier-1 clash positive. Default {@link RescueAction#MARK}.
+     */
+    public void setRescueAction(RescueAction action) {
+        this.rescueAction = action;
+    }
+
+    /**
+     * Sets the posterior-odds threshold at or above which a clash triggers RECOVER rather than
+     * MARK. Meaningless unless a {@link RecoveryOddsEstimator} is also set.
+     */
+    public void setRecoveryOddsThreshold(double threshold) {
+        this.recoveryOddsThreshold = threshold;
+    }
+
+    /**
+     * Sets R, the maximum number of clash-detect-then-recover passes {@link #search(List)} will
+     * run (AUGMENTED-SEARCH's bounded iteration, Clark's note Sec. 5-6). Values below 1 are
+     * treated as 1. Default 1: exactly the single-pass behavior this class had before this loop
+     * existed. Only matters when {@link #rescueAction} is {@link RescueAction#RECOVER} and at
+     * least one pass actually recovers something -- under MARK or OFF, or under RECOVER with no
+     * successful recovery, the loop always stops after its first pass regardless of this value,
+     * since nothing changes for a later pass to act on. There is no guarantee of monotone
+     * convergence in R, which is exactly why this is a bounded loop rather than a while-until-fixed-point
+     * one; a larger R costs more search time for potentially no additional detections.
+     */
+    public void setMaxRescuePasses(int r) {
+        this.maxRescuePasses = r;
+    }
+
+    /**
+     * Supplies the Var(v|S)=0 determinism check. Forwarded to the internal {@link Fas} instance at
+     * the start of {@link #search(List)} (so it can decline a contaminated deletion before it ever
+     * reaches this class's own passes) AND applied again in this class's own clash pass (so a
+     * pair that already made it into the skeleton some other way -- e.g. from a differently
+     * configured upstream search whose graph was handed in some other way -- is still checked here
+     * too). See class javadoc.
+     */
+    public void setDeterminismGuard(Fas.DeterminismGuard guard) {
+        this.determinismGuard = guard;
+    }
+
+    /**
+     * Supplies the posterior-odds calculation (base rate x likelihood ratio, Sec. 14) used for
+     * the MARK/RECOVER decision. See class javadoc.
+     */
+    public void setRecoveryOddsEstimator(RecoveryOddsEstimator estimator) {
+        this.recoveryOddsEstimator = estimator;
+    }
+
+    /**
+     * Supplies a real Markov-audit implication pass over the finished graph. Without this only
+     * the built-in non-collider-triple sanity check runs.
+     */
+    public void setMarkovAuditor(MarkovAuditor auditor) {
+        this.markovAuditor = auditor;
+    }
+
+    /**
+     * Returns every tier-1 positive recorded during the last {@link #search()} call, in the order
+     * detected. Empty if {@link RescueAction#OFF} or before search() has run.
+     */
+    public List<ContestedDeletion> getContestedDeletions() {
+        return Collections.unmodifiableList(contestedDeletions);
+    }
+
+    /**
+     * Returns every bidirected orientation clash found during the last {@link #search()} call --
+     * edges that cannot be consistently oriented given the accepted separating sets. Distinct from
+     * {@link #getContestedDeletions()}: these name present adjacencies, not deleted pairs, and are
+     * never acted on by {@link RescueAction}. Empty if {@link RescueAction#OFF} or before search()
+     * has run.
+     */
+    public List<OrientationClash> getOrientationClashes() {
+        return Collections.unmodifiableList(orientationClashes);
+    }
+
+    /**
+     * Returns the diagnostic Markov-audit flags from the last {@link #search()} call. See class
+     * javadoc: these are not auto-traced to a recoverable edge.
+     */
+    public List<MarkovAuditFailure> getMarkovAuditFailures() {
+        return Collections.unmodifiableList(markovAuditFailures);
+    }
+
+    /**
+     * Passthrough to the internal {@link Fas} instance's {@link Fas#getBlocked()}: every deletion
+     * the adjacency phase declined to make because the only accepting separating sets it found
+     * were contaminated by determinism. Distinct from both {@link #getContestedDeletions()} (a
+     * deletion FAS DID make, that this class's own passes flag after the fact) and
+     * {@link #getMarkovAuditFailures()} (an implied independence the finished graph entails that
+     * the data rejected). Always empty if no {@link #setDeterminismGuard} was set, or before
+     * search() has run.
+     */
+    public List<Fas.BlockedDeletion> getBlockedDeletions() {
+        return fas == null ? Collections.emptyList() : fas.getBlocked();
+    }
 
     /**
      * Constructs a new instance of the PcAR algorithm with the specified independence test.
@@ -308,33 +553,6 @@ public class PcAR implements IGraphSearch {
         this.test = test;
     }
 
-    /**
-     * Calculates the base rate for paper cancellation based on the given input.
-     *
-     * @param n the number of items considered; must be greater than 3 for a valid calculation
-     * @return the calculated base rate if valid; otherwise, returns {@code Double.NaN} if the input is invalid or the result exceeds 1.0
-     */
-    public static double paperCancellationBaseRate(int n) {
-        if (n <= 3) return Double.NaN;
-        double q = PAPER_CANCELLATION_C0 / Math.sqrt(n - 3);
-        return q < 1.0 ? q : Double.NaN;
-    }
-
-    /**
-     * Calculates the base rate odds for paper cancellation using the given input.
-     * <p>
-     * The method computes the base rate using the `paperCancellationBaseRate` method
-     * and transforms it into odds. If the base rate is undefined (NaN), this method
-     * will also return NaN.
-     *
-     * @param n an integer input representing the parameter to calculate the base rate
-     * @return the base rate odds as a double, or NaN if the base rate is NaN
-     */
-    public static double paperCancellationBaseRateOdds(int n) {
-        double q = paperCancellationBaseRate(n);
-        return Double.isNaN(q) ? Double.NaN : q / (1 - q);
-    }
-
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
         String f = from.getName();
@@ -343,76 +561,7 @@ public class PcAR implements IGraphSearch {
                 && !knowledge.isForbidden(f, t); // disallow f->t if f->t is forbidden
     }
 
-    private static String stringifySet(Set<Node> S) {
-        List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        names.sort(NaturalSort.naturalComparator());
-        return "{" + String.join(",", names) + "}";
-    }
-
-    /**
-     * Sets the rescue action to be performed.
-     *
-     * @param action the RescueAction object representing the action to be set
-     */
-    public void setRescueAction(RescueAction action) {
-        this.rescueAction = action;
-    }
-
-    /**
-     * Sets the threshold value for recovery odds.
-     *
-     * @param threshold The new threshold value to set for recovery odds.
-     */
-    public void setRecoveryOddsThreshold(double threshold) {
-        this.recoveryOddsThreshold = threshold;
-    }
-
-    /**
-     * Sets the determinism guard to control or enforce rules around deterministic behavior.
-     *
-     * @param guard the DeterminismGuard instance to be set
-     */
-    public void setDeterminismGuard(DeterminismGuard guard) {
-        this.determinismGuard = guard;
-    }
-
-    /**
-     * Sets the recovery odds estimator used to calculate or evaluate
-     * the likelihood of recovery within the system or workflow.
-     *
-     * @param estimator the RecoveryOddsEstimator instance to be used for
-     *                  determining recovery odds.
-     */
-    public void setRecoveryOddsEstimator(RecoveryOddsEstimator estimator) {
-        this.recoveryOddsEstimator = estimator;
-    }
-
-    /**
-     * Sets the MarkovAuditor instance for the current object.
-     *
-     * @param auditor the MarkovAuditor instance to be assigned
-     */
-    public void setMarkovAuditor(MarkovAuditor auditor) {
-        this.markovAuditor = auditor;
-    }
-
-    /**
-     * Retrieves an unmodifiable list of contested deletions.
-     *
-     * @return a list containing all contested deletions, which cannot be modified.
-     */
-    public List<ContestedDeletion> getContestedDeletions() {
-        return Collections.unmodifiableList(contestedDeletions);
-    }
-
-    /**
-     * Retrieves an unmodifiable list of Markov audit failures.
-     *
-     * @return an unmodifiable list containing instances of MarkovAuditFailure.
-     */
-    public List<MarkovAuditFailure> getMarkovAuditFailures() {
-        return Collections.unmodifiableList(markovAuditFailures);
-    }
+    // ----- Configuration setters -----
 
     /**
      * Sets the knowledge object for this instance by creating a new instance based on the provided knowledge.
@@ -465,8 +614,6 @@ public class PcAR implements IGraphSearch {
     public void setAllowBidirected(AllowBidirected allow) {
         this.allowBidirected = allow;
     }
-
-    // ----- Configuration setters -----
 
     /**
      * Sets whether this instance and its associated test will print verbose output.
@@ -537,9 +684,9 @@ public class PcAR implements IGraphSearch {
      *                If true, directed cycles are not allowed. If false, directed
      *                cycles are permitted.
      */
-    public void setForbidDirectedCycles(boolean enabled) {
-        this.forbidDirectedCycles = enabled;
-    }
+    public void setForbidDirectedCycles(boolean enabled) { this.forbidDirectedCycles = enabled; }
+
+    // ----- Entry points -----
 
     /**
      * Performs a search operation based on the test variables associated with the instance. Delegates the search to the
@@ -566,6 +713,7 @@ public class PcAR implements IGraphSearch {
         checkVars(nodes);
         this.startTimeMs = System.currentTimeMillis();
         this.contestedDeletions.clear();
+        this.orientationClashes.clear();
         this.markovAuditFailures.clear();
 
         // Phase 1: skeleton
@@ -575,88 +723,208 @@ public class PcAR implements IGraphSearch {
         fas.setDepth(depth);
         fas.setStable(fasStable);
         fas.setVerbose(verbose);
+        fas.setDeterminismGuard(determinismGuard); // null is safe: Fas treats null as "off", same as before this hook existed
         Graph g = fas.search(nodes);
         SepsetMap sepsets = fas.getSepsets();
 
         // Phase 2: orient v-structures
         orientUnshieldedTriples(g, sepsets);
 
-        // Phase 2.5 (PcAR): tier-1 clash detection and, if configured, recovery. Runs on the
-        // skeleton/sepsets FAS produced, independently of the collider orientation style chosen
-        // for the graph itself (Sec. 14: "the procedure sees the same masquerades no matter where
-        // the knob is").
-        boolean anyRecovered = false;
+        // Phase 2.5 (PcAR): tier-1 clash detection and, if configured, recovery, iterated up to
+        // maxRescuePasses times (Clark's note, "Two Detection Tiers...", Aug 15 2026, Sec. 6,
+        // sixth reason: "the iteration ... is bounded at R passes because a recovery changes the
+        // skeleton and so changes the entailed facts, and there is no guarantee of monotone
+        // convergence"). Each pass runs on the skeleton/sepsets FAS produced, independently of the
+        // collider orientation style chosen for the graph itself (Sec. 14: "the procedure sees the
+        // same masquerades no matter where the knob is"). A pass that recovers nothing ends the
+        // loop early -- in particular, under RescueAction.MARK or OFF, nothing ever mutates g, so
+        // exactly one pass runs regardless of maxRescuePasses, matching this class's pre-loop
+        // behavior exactly. flagAndAct dedupes by pair, so later passes don't duplicate
+        // ContestedDeletion entries for a still-unresolved clash.
+        //
+        // Under RECOVER_CORROBORATED, the recovery decision is made after clash detection by
+        // intersecting with a fresh Markov audit of the current oriented graph (which is why it
+        // runs here, on the oriented-but-pre-Meek graph, rather than inside flagAndAct): only
+        // pairs both tiers independently point at are reinstated. Note this consumes audit calls
+        // inside the loop, in addition to the final diagnostic audit below.
+        int passes = Math.max(1, maxRescuePasses);
         if (rescueAction != RescueAction.OFF) {
-            anyRecovered = runClashDetection(g, sepsets);
-        }
+            // Config echo: the MARK log lines alone cannot distinguish "MARK selected" from
+            // "RECOVER selected but odds never clear the threshold" -- they print identically.
+            // This line makes the effective configuration verifiable from the log.
+            if (verbose) {
+                TetradLogger.getInstance().log(
+                        "[PcAR config] rescueAction=" + rescueAction
+                                + ", recoveryOddsThreshold=" + recoveryOddsThreshold
+                                + ", oddsEstimator=" + (recoveryOddsEstimator != null ? "wired" : "ABSENT")
+                                + ", markovAuditor=" + (markovAuditor != null ? "wired" : "ABSENT")
+                                + ", determinismGuard=" + (determinismGuard != null ? "wired" : "absent")
+                                + ", maxRescuePasses=" + passes);
+            }
 
-        if (anyRecovered) {
-            // Recovered pairs were spliced back into g as plain undirected edges (Sec. 14:
-            // "reinstate the edge and re-run orientation"). Re-running the same collider pass over
-            // the updated skeleton is idempotent for every triple recovery didn't touch -- their
-            // sepset lookup and outcome are unchanged -- and orients the newly-adjacent pairs
-            // consistently with the rest of the graph instead of leaving them as bare undirected
-            // edges. Ambiguous-triple bookkeeping is fully recomputed on this pass, which is
-            // correct since it derives from current adjacency, not accumulated across passes.
-            orientUnshieldedTriples(g, sepsets);
+            for (int pass = 0; pass < passes; pass++) {
+                boolean anyRecovered = runClashDetection(g, sepsets);
+
+                if (rescueAction == RescueAction.RECOVER_CORROBORATED) {
+                    // Clash detection above only records under CORROBORATED; the actual
+                    // reinstatements happen here, gated on tier-2 agreement.
+                    anyRecovered = recoverCorroborated(g, sepsets);
+                }
+
+                if (!anyRecovered) break;
+
+                // Recovered pairs were spliced back into g as plain undirected edges (Sec. 14:
+                // "reinstate the edge and re-run orientation"). Re-running the same collider pass
+                // over the updated skeleton is idempotent for every triple recovery didn't touch
+                // -- their sepset lookup and outcome are unchanged -- and orients the
+                // newly-adjacent pairs consistently with the rest of the graph, exposing whatever
+                // new unshielded triples they create for the next pass to check. Ambiguous-triple
+                // bookkeeping is fully recomputed on this pass, which is correct since it derives
+                // from current adjacency, not accumulated across passes.
+                orientUnshieldedTriples(g, sepsets);
+            }
         }
 
         // Phase 3: Meek R1-R4 to closure
         applyMeekRules(g);
 
-        // Phase 3.5 (PcAR): diagnostic-only Markov audit of the finished graph.
+        // Phase 3.5 (PcAR): diagnostic-only Markov audit of the finished graph. A single pass on
+        // the final graph, not part of the recovery loop above -- see class javadoc on why tier-2
+        // stays diagnostic-only (auto-tracing an audit failure to a specific recoverable edge is
+        // locus-specific and not soundly generalizable, per Clark's note Sec. 3-4).
         markovAuditFailures.addAll(runMarkovAudit(g));
 
         return g;
     }
 
+    // ------------------------------------------------------------------------------------
+    // PcAR: tier-1 orientation-clash detection and mark/recover
+    // ------------------------------------------------------------------------------------
+
     /**
-     * For every unshielded triple (x, z, y), tests all candidate sepsets for (x, y) (CPC-style)
-     * and records a {@link ContestedDeletion} when either (a) the sepsets disagree about whether z
-     * is a collider (CPC ambiguity), or (b) orienting the collider the sepsets favor would require
-     * an arrowhead into a node that already has an arrowhead pointing out along that same edge
-     * (bidirected clash) &mdash; the two clash types Sec. 12 shows a sink or mediator rescuer
-     * producing. Pairs the {@link #determinismGuard} flags as functionally determined are skipped.
-     * On a positive, applies {@link #rescueAction}.
+     * Tier-one orientation-clash pass, implementing CLASH-PASS from Clark's note ("Two Detection
+     * Tiers...", Aug 15 2026, Sec. 5). Builds, from the accepted separating sets alone, the set of
+     * arrowhead demands (each unshielded triple whose sepset excludes its pivot demands a collider
+     * there) and non-collider demands (each triple whose sepset includes its pivot), then reports
+     * two structurally different kinds of contradiction:
+     * <ul>
+     *   <li><b>Bidirected clash</b> (CLASH-PASS lines 6-7): an edge U-Z that two different triples
+     *       demand carry an arrowhead in opposite directions. This localizes to an <i>adjacency
+     *       that cannot be consistently oriented</i>, NOT to a deleted pair -- U and Z are adjacent
+     *       in g, so there is no sepset for them and nothing to reinstate. Reported through
+     *       {@link #getOrientationClashes()} as {@link OrientationClash} records and is
+     *       <b>detection-only</b>: {@link #rescueAction} never acts on it. An earlier revision
+     *       reported these against the deleted pair of whichever triple raised the demand, which
+     *       silently converted an orientation contradiction into an adjacency claim about a
+     *       different pair of variables; that was wrong and produced badly inflated counts (43
+     *       flags on a 20-variable n=1000 run).</li>
+     *   <li><b>Collider/non-collider clash</b> (CLASH-PASS lines 8-9): a triple (X,Z,Y) whose own
+     *       sepset demands Z NOT be a collider, where two other triples independently demand
+     *       arrowheads (X,Z) and (Y,Z) into that same Z. This one genuinely localizes to the
+     *       deleted pair X,Y (unshielded triple means X,Y non-adjacent), so it is reported as a
+     *       {@link ContestedDeletion} and IS recovery-eligible. This is what a clean cause of the
+     *       sink produces at the shielded-collider locus.</li>
+     * </ul>
+     * Both are logical contradictions among facts the search has already accepted, so this pass
+     * runs no independence tests of its own and has no threshold of its own: per Sec. 2 of the
+     * note, its false-alarm rate is that of the tests that produced the sepsets. SCALING CAVEAT:
+     * the note's measured 0.03 false-alarm rate is from four-variable blocks. The demand set grows
+     * with the number of triples, so at twenty-plus variables both counts run higher; a large
+     * count is a real statement about how many accepted facts fail to cohere, not necessarily a
+     * count of recoverable cancellations.
+     * <p>
+     * Each contradiction is reported once per pair (bidirected) or once per deleted pair
+     * (collider/non-collider), not once per witnessing pivot; the witnessing pivots are carried on
+     * the record instead.
+     * <p>
+     * HISTORICAL NOTE: an earlier revision also flagged a {@code cpc-ambiguous} case,
+     * re-enumerating every candidate sepset per triple and flagging disagreement about the pivot's
+     * collider status. That was not part of CLASH-PASS and has been removed: it was the CPC
+     * ambiguity heuristic rather than an exactness check, and it swamped the output (35 of 41
+     * flags on the same run). Use {@link ColliderOrientationStyle#CONSERVATIVE} for CPC-style
+     * ambiguity handling; per Sec. 2 of the note that is also the collider style this pass
+     * performs best under.
+     * <p>
+     * Pairs the {@link #determinismGuard} flags as functionally determined are skipped.
      *
      * @return true if at least one deletion was actually recovered (edge spliced back into g)
      */
     private boolean runClashDetection(Graph g, SepsetMap fasSepsets) throws InterruptedException {
-        boolean anyRecovered = false;
+        List<Triple> triples = collectUnshieldedTriples(g);
 
-        for (Triple t : collectUnshieldedTriples(g)) {
+        // Pass 1: collect demands from accepted sepsets (CLASH-PASS lines 1-4). For each demanded
+        // arrowhead (from -> into), remember which pivots witnessed it, for reporting.
+        Map<List<Node>, Set<Node>> arrowWitnesses = new LinkedHashMap<>();
+        List<Triple> nonColliderDemand = new ArrayList<>();
+
+        for (Triple t : triples) {
             checkTimeout();
+            if (g.isAdjacentTo(t.x, t.y)) continue; // recovered earlier this pass; sepset no longer applies
+            Set<Node> s = fasSepsets.get(t.x, t.y);
+            if (s == null) continue;
+            if (isDetermined(t.x, s) || isDetermined(t.y, s)) continue;
 
-            Node x = t.x, y = t.y, z = t.z;
-
-            // A pair recovered earlier in this same pass (by a different pivot) is no longer
-            // unshielded; skip it rather than re-flagging against a sepset that no longer applies.
-            if (g.isAdjacentTo(x, y)) continue;
-
-            Set<Node> baseSepset = fasSepsets.get(x, y);
-            if (baseSepset == null) continue; // shouldn't happen for an unshielded triple, but be safe
-
-            if (isDetermined(x, baseSepset) || isDetermined(y, baseSepset)) continue;
-
-            boolean sawIncludesZ = false, sawExcludesZ = false;
-            for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
-                if (!cand.independent) continue;
-                if (isDetermined(x, cand.S) || isDetermined(y, cand.S)) continue;
-                if (cand.S.contains(z)) sawIncludesZ = true;
-                else sawExcludesZ = true;
+            if (!s.contains(t.z)) {
+                arrowWitnesses.computeIfAbsent(List.of(t.x, t.z), k -> new LinkedHashSet<>()).add(t.y);
+                arrowWitnesses.computeIfAbsent(List.of(t.y, t.z), k -> new LinkedHashSet<>()).add(t.x);
+            } else {
+                nonColliderDemand.add(t);
             }
+        }
 
-            if (sawIncludesZ && sawExcludesZ) {
-                anyRecovered |= flagAndAct(g, x, y, z, baseSepset, "cpc-ambiguous");
-                continue;
+        // Pass 2a: bidirected clashes (CLASH-PASS lines 6-7). Edge-localized, deduped, and
+        // detection-only -- see this method's javadoc for why these are not recovery candidates.
+        Set<List<Node>> seenEdges = new LinkedHashSet<>();
+        for (List<Node> demand : arrowWitnesses.keySet()) {
+            checkTimeout();
+            Node u = demand.get(0), z = demand.get(1);
+            if (!arrowWitnesses.containsKey(List.of(z, u))) continue; // not demanded both ways
+
+            // Canonical unordered key so U-Z and Z-U report once.
+            List<Node> key = u.getName().compareTo(z.getName()) <= 0 ? List.of(u, z) : List.of(z, u);
+            if (!seenEdges.add(key)) continue;
+
+            Set<Node> witnesses = new LinkedHashSet<>(arrowWitnesses.get(demand));
+            witnesses.addAll(arrowWitnesses.get(List.of(z, u)));
+            orientationClashes.add(new OrientationClash(key.get(0), key.get(1), witnesses));
+        }
+
+        // Pass 2b: collider vs. non-collider clash at a shared vertex (CLASH-PASS lines 8-9).
+        // Deduped by deleted pair; the first witnessing pivot is the one recorded on the record.
+        boolean anyRecovered = false;
+        Set<List<Node>> seenPairs = new LinkedHashSet<>();
+        for (Triple t : nonColliderDemand) {
+            checkTimeout();
+            if (g.isAdjacentTo(t.x, t.y)) continue;
+            if (!arrowWitnesses.containsKey(List.of(t.x, t.z))
+                    || !arrowWitnesses.containsKey(List.of(t.y, t.z))) continue;
+
+            List<Node> key = t.x.getName().compareTo(t.y.getName()) <= 0
+                    ? List.of(t.x, t.y) : List.of(t.y, t.x);
+            if (!seenPairs.add(key)) continue;
+
+            Set<Node> s = fasSepsets.get(t.x, t.y);
+            if (s == null) continue;
+            anyRecovered |= flagAndAct(g, t.x, t.y, t.z, s, "collider-noncollider-clash");
+        }
+
+        // Detection-only logging for bidirected clashes, capped: at twenty-plus variables these
+        // can run to dozens, and dumping every one buries the recovery-eligible flags below them.
+        if (verbose && !orientationClashes.isEmpty()) {
+            int cap = 20;
+            int shown = 0;
+            for (OrientationClash oc : orientationClashes) {
+                if (shown++ >= cap) break;
+                TetradLogger.getInstance().log(
+                        "[PcAR bidirected-clash] " + oc.u().getName() + " -- " + oc.z().getName()
+                                + " cannot be consistently oriented (witnesses " + oc.witnesses()
+                                + "); detection-only, not a recovery candidate");
             }
-
-            // Bidirected-clash check: would the collider orientation the sepsets favor at z
-            // require an arrowhead on an edge that already carries one pointing the other way?
-            if (sawExcludesZ && !sawIncludesZ) {
-                if (g.isParentOf(z, x) || g.isParentOf(z, y)) {
-                    anyRecovered |= flagAndAct(g, x, y, z, baseSepset, "bidirected-clash");
-                }
+            if (orientationClashes.size() > cap) {
+                TetradLogger.getInstance().log(
+                        "[PcAR bidirected-clash] ... " + (orientationClashes.size() - cap)
+                                + " more (total " + orientationClashes.size()
+                                + "). See getOrientationClashes().");
             }
         }
 
@@ -676,15 +944,30 @@ public class PcAR implements IGraphSearch {
      * place, using the discriminating rescuer statistic at that enlarged set) -- this method does
      * not re-test independently, to avoid running the discriminating test twice with two different
      * notions of what the enlarged set is.
+     * <p>
+     * Under {@link RescueAction#RECOVER_CORROBORATED} this records only (like MARK); the recovery
+     * decision is deferred to {@link #recoverCorroborated}, which needs the Markov audit of the
+     * whole oriented graph and therefore cannot run per-flag from here.
+     * <p>
+     * Duplicate protection: a pair already present in {@link #contestedDeletions} is not recorded
+     * again (later rescue passes re-run detection on a changed skeleton, and a still-unresolved
+     * clash would otherwise re-flag every pass).
      *
      * @return true if the edge is now present in g (either just added, or already added earlier
      * in the same pass by a different pivot)
      */
     private boolean flagAndAct(Graph g, Node x, Node y, Node z, Set<Node> sepset, String locus) throws InterruptedException {
+        for (ContestedDeletion cd : contestedDeletions) {
+            if ((cd.x() == x && cd.y() == y) || (cd.x() == y && cd.y() == x)) {
+                return false; // already flagged on an earlier pass; don't duplicate
+            }
+        }
+
         boolean recovered = false;
+        double odds = Double.NaN; // only meaningful under RECOVER; carried into the log line below
 
         if (rescueAction == RescueAction.RECOVER) {
-            double odds = (recoveryOddsEstimator != null)
+            odds = (recoveryOddsEstimator != null)
                     ? recoveryOddsEstimator.posteriorOdds(x, y, z, sepset)
                     : Double.NEGATIVE_INFINITY; // no estimator => never clears the threshold => acts like MARK
             if (odds >= recoveryOddsThreshold) {
@@ -698,16 +981,70 @@ public class PcAR implements IGraphSearch {
         }
 
         if (verbose && !recovered) {
+            // Say WHY this is a mark, so a declined recovery is distinguishable in the log from
+            // plain MARK mode -- previously both printed identically.
+            String reason = switch (rescueAction) {
+                case RECOVER -> (recoveryOddsEstimator == null)
+                        ? "; RECOVER selected but no odds estimator wired"
+                        : "; RECOVER selected, odds=" + odds + " < threshold=" + recoveryOddsThreshold;
+                case RECOVER_CORROBORATED -> "; corroboration decision deferred to audit intersection";
+                default -> "";
+            };
             TetradLogger.getInstance().log(
                     "[PcAR MARK] " + x.getName() + " - " + y.getName()
-                            + " (pivot " + z.getName() + ", locus " + locus + ")");
+                            + " (pivot " + z.getName() + ", locus " + locus + reason + ")");
         }
 
         contestedDeletions.add(new ContestedDeletion(x, y, z, sepset, locus, recovered));
         return recovered;
     }
 
-    // ----- Entry points -----
+    /**
+     * The RECOVER_CORROBORATED decision step: intersects the not-yet-recovered contested deletions
+     * with the pairs the Markov audit of the current oriented graph flags, reinstates exactly the
+     * pairs appearing in both, and rewrites their {@link ContestedDeletion} records with
+     * {@code recovered=true}. Corroboration is by unordered pair identity -- a tier-2 failure
+     * x _||_ y | S corroborates a tier-1 flag on the same {x, y} regardless of S or pivot, since
+     * the two tiers arrive at the pair by structurally different routes and agreement on the pair
+     * is the whole signal. Runs the audit fresh on the current graph (not a cached one), because
+     * the graph may have changed since the last audit if this is a later rescue pass.
+     *
+     * @return true if at least one pair was recovered
+     */
+    private boolean recoverCorroborated(Graph g, SepsetMap fasSepsets) throws InterruptedException {
+        List<MarkovAuditFailure> audit = runMarkovAudit(g);
+        if (audit.isEmpty()) return false; // includes the no-auditor-wired case: behaves like MARK
+
+        Set<List<Node>> auditPairs = new LinkedHashSet<>();
+        for (MarkovAuditFailure maf : audit) {
+            Node a = maf.x(), b = maf.y();
+            auditPairs.add(a.getName().compareTo(b.getName()) <= 0 ? List.of(a, b) : List.of(b, a));
+        }
+
+        boolean any = false;
+        for (int i = 0; i < contestedDeletions.size(); i++) {
+            ContestedDeletion cd = contestedDeletions.get(i);
+            if (cd.recovered()) continue;
+            if (g.isAdjacentTo(cd.x(), cd.y())) continue;
+
+            List<Node> key = cd.x().getName().compareTo(cd.y().getName()) <= 0
+                    ? List.of(cd.x(), cd.y()) : List.of(cd.y(), cd.x());
+            if (!auditPairs.contains(key)) continue;
+
+            reinstateEdge(g, cd.x(), cd.y());
+            contestedDeletions.set(i, new ContestedDeletion(
+                    cd.x(), cd.y(), cd.z(), cd.sepset(), cd.locus(), true));
+            any = true;
+
+            if (verbose) {
+                TetradLogger.getInstance().log(
+                        "[PcAR RECOVER-CORROBORATED] " + cd.x().getName() + " - " + cd.y().getName()
+                                + " (pivot " + cd.z().getName() + ", locus " + cd.locus()
+                                + "; tier-1 clash corroborated by tier-2 audit failure on the same pair)");
+            }
+        }
+        return any;
+    }
 
     /**
      * Splices (x, y) back into g as a plain undirected edge, i.e. exactly the state every skeleton
@@ -715,7 +1052,7 @@ public class PcAR implements IGraphSearch {
      * re-run of {@link #orientUnshieldedTriples} treats it like any other freshly-discovered edge.
      * Idempotent: if the pair is already adjacent (e.g. recovered earlier in the same pass by a
      * different pivot), this is a no-op that still reports the edge as present.
-     * <p>
+     *
      * ASSUMPTION FLAGGED: uses {@code Edges.undirectedEdge}, which I'm inferring is available
      * from the same {@code edu.cmu.tetrad.graph} package as {@code GraphUtils.orientCollider}
      * (already used elsewhere in this class) and {@code EdgeListGraph}/{@code Graph} (already
@@ -729,37 +1066,62 @@ public class PcAR implements IGraphSearch {
         return true;
     }
 
+    // ------------------------------------------------------------------------------------
+    // PcAR: diagnostic Markov audit (see class javadoc for scope)
+    // ------------------------------------------------------------------------------------
+
     private List<MarkovAuditFailure> runMarkovAudit(Graph g) throws InterruptedException {
+        List<MarkovAuditFailure> out;
+
         if (markovAuditor != null) {
-            return markovAuditor.audit(g, test);
+            out = markovAuditor.audit(g, test);
+        } else {
+            // No built-in fallback. The previous one re-tested x _||_ y | {z} using only the
+            // triple's own pivot as the conditioning set, which silently assumed z alone separates
+            // x and y in the WHOLE graph. That is wrong in both directions and was confirmed wrong
+            // on real output (Clark's note, "Two Detection Tiers...", Aug 15 2026, Sec. 3; and a
+            // 20-variable n=1000 run where 11 of 12 checkable flags conditioned on something other
+            // than what the graph entailed -- six of them testing x _||_ y | {z} where the graph
+            // entailed plain MARGINAL independence, so the rejection was guaranteed and meant
+            // nothing). It also missed the shielded-collider case tier two exists for, by skipping
+            // collider triples entirely.
+            //
+            // Returning nothing is strictly better than returning that: a silent empty tier two is
+            // a known gap, whereas a confidently wrong tier two invites acting on flags that are
+            // artifacts of the checker. Wire setMarkovAuditor(...) -- see the PcAr algcomparison
+            // wrapper for a MarkovCheck-delegating implementation -- to get a real tier two.
+            if (verbose && !warnedNoAuditor) {
+                warnedNoAuditor = true;
+                TetradLogger.getInstance().log(
+                        "[PcAR markov-audit] No MarkovAuditor wired; tier two is INACTIVE and "
+                                + "getMarkovAuditFailures() will be empty. This is not a clean bill of "
+                                + "health -- it means no Markov audit ran. Use setMarkovAuditor(...).");
+            }
+            out = List.of();
         }
 
-        // Minimal built-in fallback: re-test the implied x _||_ y | z for every non-collider
-        // unshielded triple in the finished graph. This only catches failures among relations PC
-        // already enumerated during FAS/orientation; it will not surface the shielded-mediator
-        // case (Sec. 12, locus a) or anything requiring a variable outside the triple. Wire
-        // setMarkovAuditor(...) for a real implication-enumeration pass.
-        List<MarkovAuditFailure> out = new ArrayList<>();
-        for (Triple t : collectUnshieldedTriples(g)) {
-            checkTimeout();
-            boolean isCollider = g.isParentOf(t.x, t.z) && g.isParentOf(t.y, t.z);
-            if (isCollider) continue;
-
-            IndependenceResult r = test.checkIndependence(t.x, t.y, Set.of(t.z));
-            if (!r.isIndependent()) {
-                out.add(new MarkovAuditFailure(t.x, t.y, t.z, r.getPValue()));
+        // Live per-flag logging, matching flagAndAct's convention for tier-1 clashes -- previously
+        // this was silent from inside PcAR itself, so a direct caller (or a wired MarkovAuditor)
+        // got no visibility unless something downstream (e.g. the algcomparison wrapper) chose to
+        // print getMarkovAuditFailures() afterward. Covers both branches above, not just the
+        // fallback, so a real MarkovAuditor's findings get the same live visibility.
+        if (verbose) {
+            for (MarkovAuditFailure maf : out) {
+                TetradLogger.getInstance().log(
+                        "[PcAR markov-audit] " + maf.x().getName() + " _||_ " + maf.y().getName()
+                                + " | " + maf.conditioningSet() + " failed (p=" + maf.pValue() + ")");
             }
         }
+
         return out;
     }
 
-    // ------------------------------------------------------------------------------------
-    // PcAR: tier-1 orientation-clash detection and mark/recover
-    // ------------------------------------------------------------------------------------
+    public IndependenceTest getTest() { return test; }
 
-    public IndependenceTest getTest() {
-        return test;
-    }
+
+    // ------------------------------------------------------------------------------------
+    // Triple classification APIs (unshielded only), deterministic order
+    // ------------------------------------------------------------------------------------
 
     /**
      * Sets the independence test for this instance. The provided test must have the same list of variables as the
@@ -785,9 +1147,7 @@ public class PcAR implements IGraphSearch {
      *
      * @return the Fas object associated with this instance.
      */
-    public Fas getFas() {
-        return fas;
-    }
+    public Fas getFas() { return fas; }
 
     /**
      * Retrieves all colliders from the provided graph based on specific criteria. A collider is an unshielded triple
@@ -807,18 +1167,16 @@ public class PcAR implements IGraphSearch {
         return result;
     }
 
-    // ------------------------------------------------------------------------------------
-    // PcAR: diagnostic Markov audit (see class javadoc for scope)
-    // ------------------------------------------------------------------------------------
-
     /**
      * Sets the value that determines whether the graph is in a replicating state.
      *
      * @param replicatingGraph a boolean indicating whether the graph is replicating.
      */
-    public void setReplicatingGraph(boolean replicatingGraph) {
-        this.replicatingGraph = replicatingGraph;
-    }
+    public void setReplicatingGraph(boolean replicatingGraph) { this.replicatingGraph = replicatingGraph; }
+
+    // ------------------------------------------------------------------------------------
+    // Triple helpers
+    // ------------------------------------------------------------------------------------
 
     private List<Triple> collectUnshieldedTriples(Graph g) {
         List<Node> nodes = new ArrayList<>(g.getNodes());
@@ -836,9 +1194,7 @@ public class PcAR implements IGraphSearch {
                     if (!g.isAdjacentTo(xi, yj)) {
                         Node x = xi, y = yj;
                         if (x.getName().compareTo(y.getName()) > 0) {
-                            Node tmp = x;
-                            x = y;
-                            y = tmp;
+                            Node tmp = x; x = y; y = tmp;
                         }
                         triples.add(new Triple(x, z, y));
                     }
@@ -851,9 +1207,14 @@ public class PcAR implements IGraphSearch {
         return triples;
     }
 
+    private static String stringifySet(Set<Node> S) {
+        List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
+        names.sort(NaturalSort.naturalComparator());
+        return "{" + String.join(",", names) + "}";
+    }
 
     // ------------------------------------------------------------------------------------
-    // Triple classification APIs (unshielded only), deterministic order
+    // Collider orientation (cycle-safe)
     // ------------------------------------------------------------------------------------
 
     private void orientUnshieldedTriples(Graph g, SepsetMap fasSepsets)
@@ -888,8 +1249,7 @@ public class PcAR implements IGraphSearch {
 
             switch (outcome) {
                 case INDEPENDENT -> toOrient.add(t);
-                case DEPENDENT, NO_SEPSET -> {
-                }
+                case DEPENDENT, NO_SEPSET -> { }
                 case AMBIGUOUS -> {
                     if (allowBidirected == AllowBidirected.ALLOW)
                         ambiguousTriples.add(t);
@@ -925,11 +1285,11 @@ public class PcAR implements IGraphSearch {
 
     /**
      * Cycle/knowledge/bidirected-safe collider orientation gate.
-     * <p>
+     *
      * Forbids:
-     * - violating knowledge arrowhead constraints
-     * - creating bidirected (unless allowed)
-     * - creating a directed cycle (if enabled)
+     *  - violating knowledge arrowhead constraints
+     *  - creating bidirected (unless allowed)
+     *  - creating a directed cycle (if enabled)
      */
     private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
         if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
@@ -948,6 +1308,10 @@ public class PcAR implements IGraphSearch {
 
         return true;
     }
+
+    // ------------------------------------------------------------------------------------
+    // MAX-P / Conservative logic (same as your code, but left intact)
+    // ------------------------------------------------------------------------------------
 
     private void orientMaxPGlobal(Graph g, List<Triple> triples) throws InterruptedException {
         List<MaxPDecision> winners = new ArrayList<>();
@@ -1005,11 +1369,7 @@ public class PcAR implements IGraphSearch {
 
     private ColliderOutcome judgeConservative(Triple t, Graph g) throws InterruptedException {
         Node x = t.x, y = t.y;
-        if (x.getName().compareTo(y.getName()) > 0) {
-            Node tmp = x;
-            x = y;
-            y = tmp;
-        }
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
 
         boolean sawIncludesZ = false, sawExcludesZ = false, sawAny = false;
 
@@ -1027,21 +1387,13 @@ public class PcAR implements IGraphSearch {
         return ColliderOutcome.AMBIGUOUS;
     }
 
-    // ------------------------------------------------------------------------------------
-    // Triple helpers
-    // ------------------------------------------------------------------------------------
-
     private ColliderOutcome judgeMaxP(Triple t, Graph g) throws InterruptedException {
         return decideMaxPDetail(t, g).outcome;
     }
 
     private MaxPDecision decideMaxPDetail(Triple t, Graph g) throws InterruptedException {
         Node x = t.x, y = t.y;
-        if (x.getName().compareTo(y.getName()) > 0) {
-            Node tmp = x;
-            x = y;
-            y = tmp;
-        }
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
 
         List<SepCandidate> indep = new ArrayList<>();
         for (SepCandidate cand : enumerateSepsetsWithPvals(x, y, g)) {
@@ -1084,10 +1436,6 @@ public class PcAR implements IGraphSearch {
         }
     }
 
-    // ------------------------------------------------------------------------------------
-    // Collider orientation (cycle-safe)
-    // ------------------------------------------------------------------------------------
-
     private Set<Node> firstTieMatchingContainsZ(List<SepCandidate> indep, Node z, boolean containsZ, double targetP) {
         List<SepCandidate> ties = new ArrayList<>();
         for (SepCandidate c : indep) if (c.p == targetP && c.S.contains(z) == containsZ) ties.add(c);
@@ -1097,11 +1445,7 @@ public class PcAR implements IGraphSearch {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private Iterable<SepCandidate> enumerateSepsetsWithPvals(Node x, Node y, Graph g) throws InterruptedException {
-        if (x.getName().compareTo(y.getName()) > 0) {
-            Node tmp = x;
-            x = y;
-            y = tmp;
-        }
+        if (x.getName().compareTo(y.getName()) > 0) { Node tmp = x; x = y; y = tmp; }
 
         Map<String, SepCandidate> uniq = new LinkedHashMap<>();
 
@@ -1136,14 +1480,9 @@ public class PcAR implements IGraphSearch {
         return uniq.values();
     }
 
-    // ------------------------------------------------------------------------------------
-    // MAX-P / Conservative logic (same as your code, but left intact)
-    // ------------------------------------------------------------------------------------
-
     private String setKey(Set<Node> S) {
         List<String> names = new ArrayList<>(S.stream().map(Node::getName).toList());
-        names.sort(NaturalSort.naturalComparator());
-        ;
+        names.sort(NaturalSort.naturalComparator());;
         return String.join("\u0001", names);
     }
 
@@ -1154,6 +1493,10 @@ public class PcAR implements IGraphSearch {
         meekRules.setRevertToUnshieldedColliders(false);
         meekRules.orientImplied(g);
     }
+
+    // ------------------------------------------------------------------------------------
+    // Checks / timeouts
+    // ------------------------------------------------------------------------------------
 
     private void checkVars(List<Node> nodes) {
         if (!new HashSet<>(test.getVariables()).containsAll(nodes)) {
@@ -1170,23 +1513,9 @@ public class PcAR implements IGraphSearch {
         }
     }
 
-    /**
-     * What to do with a tier-1 (orientation-clash) positive.
-     */
-    public enum RescueAction {
-        /**
-         * Run detection but take no action; {@link #getContestedDeletions()} stays empty.
-         */
-        OFF,
-        /**
-         * Annotate the deletion as contested; skeleton is left exactly as FAS produced it.
-         */
-        MARK,
-        /**
-         * Reinstate the edge and re-run orientation, subject to {@link #recoveryOddsThreshold}.
-         */
-        RECOVER
-    }
+    // ------------------------------------------------------------
+    // Enums & small records
+    // ------------------------------------------------------------
 
     /**
      * An enumeration that defines the styles of collider orientation in a graph or network.
@@ -1210,8 +1539,7 @@ public class PcAR implements IGraphSearch {
         /**
          * Represents the collider orientation style for the PC-Max algorithm.
          */
-        MAX_P
-    }
+        MAX_P }
 
     /**
      * Enum representing whether bidirected edges are allowed in the graph.
@@ -1230,8 +1558,7 @@ public class PcAR implements IGraphSearch {
          * Used as part of the AllowBidirected enumeration to specify that
          * bidirected edges are not permissible in the graph structure.
          */
-        DISALLOW
-    }
+        DISALLOW }
 
     /**
      * Represents the possible outcomes for a collider relationship in a causal
@@ -1271,107 +1598,7 @@ public class PcAR implements IGraphSearch {
          * graph-based algorithm. This outcome indicates the absence of a conditioning set
          * that can render the variables independent.
          */
-        NO_SEPSET
-    }
-
-    // ------------------------------------------------------------------------------------
-    // Checks / timeouts
-    // ------------------------------------------------------------------------------------
-
-    /**
-     * Functional hook for the determinism guard (Sec. 14): return true if {@code S} functionally
-     * determines {@code v} (Var(v|S) = 0), in which case the pair is skipped by the clash pass
-     * rather than treated as a candidate cancellation. No default is wired; see class javadoc.
-     */
-    @FunctionalInterface
-    public interface DeterminismGuard {
-
-        /**
-         * Determines whether the specified set of nodes functionally determines the given node.
-         * Functional determination implies that the variance of the node given the set is zero,
-         * leading to the pair being skipped in further processing.
-         *
-         * @param v the node to check for functional determination.
-         * @param S the set of nodes against which functional determination is evaluated.
-         * @return {@code true} if the set of nodes functionally determines the given node,
-         *         {@code false} otherwise.
-         * @throws InterruptedException if the operation is interrupted.
-         */
-        boolean determines(Node v, Set<Node> S) throws InterruptedException;
-    }
-
-    /**
-     * Functional hook supplying posterior odds that a flagged deletion is a genuine edge, for the
-     * RECOVER decision. No default is wired; see class javadoc.
-     */
-    @FunctionalInterface
-    public interface RecoveryOddsEstimator {
-        /**
-         * Calculates the posterior odds that a flagged deletion is a genuine edge in a graph given
-         * the context defined by three nodes and their separation set.
-         *
-         * @param x the node representing one end of the potential edge
-         * @param y the node representing the other end of the potential edge
-         * @param z the node representing a conditioning variable or mediator
-         * @param sepset the set of nodes that separates x and y in this graph
-         * @return the posterior odds that the flagged deletion represents a true edge
-         * @throws InterruptedException if the execution is interrupted during computation
-         */
-        double posteriorOdds(Node x, Node y, Node z, Set<Node> sepset) throws InterruptedException;
-    }
-
-    // ------------------------------------------------------------
-    // Enums & small records
-    // ------------------------------------------------------------
-
-    /**
-     * Functional hook for a real Markov-audit implication pass, given the finished graph and the
-     * test. No default is wired; the built-in fallback only re-checks the non-collider unshielded
-     * triples PC already enumerated.
-     */
-    @FunctionalInterface
-    public interface MarkovAuditor {
-
-        /**
-         * Performs a Markov audit on the provided graph and independence test.
-         * This process re-checks the independence assertions for non-collider
-         * unshielded triples to identify inconsistencies or potential failures.
-         *
-         * @param g    the graph to be audited
-         * @param test the independence test to be applied during the audit
-         * @return a list of {@link MarkovAuditFailure} instances representing
-         *         any inconsistencies observed during the audit
-         * @throws InterruptedException if the audit process is interrupted
-         */
-        List<MarkovAuditFailure> audit(Graph g, IndependenceTest test) throws InterruptedException;
-    }
-
-    /**
-     * A candidate rescuer: the deleted pair, the sepset that removed it, which clash test caught
-     * it, and whether a RECOVER action was actually taken for this deletion.
-     *
-     * @param x         one endpoint of the deleted pair
-     * @param y         the other endpoint of the deleted pair
-     * @param z         the pivot (mediator/sink/source) of the triple that produced the flag
-     * @param sepset    the sepset FAS recorded for (x, y)
-     * @param locus     "cpc-ambiguous" or "bidirected-clash", per Sec. 12/14 of the paper
-     * @param recovered whether a RECOVER action was actually taken for this deletion
-     */
-    public record ContestedDeletion(Node x, Node y, Node z, Set<Node> sepset, String locus, boolean recovered) {
-    }
-
-    /**
-     * A diagnostic-only Markov-audit flag: a non-collider unshielded triple whose implied
-     * independence x _||_ y | z did not hold under a fresh test. See the class javadoc: this is
-     * not traced back to a specific recoverable edge automatically.
-     *
-     * @param x      first endpoint
-     * @param y      second endpoint
-     * @param z      conditioning pivot
-     * @param pValue the p-value of the fresh test
-     */
-    public record MarkovAuditFailure(Node x, Node y, Node z, double pValue) {
-    }
+        NO_SEPSET }
 
     /**
      * A utility class that encapsulates a triplet of nodes.
@@ -1404,11 +1631,7 @@ public class PcAR implements IGraphSearch {
          * @param z the second node in the triplet
          * @param y the third node in the triplet
          */
-        public Triple(Node x, Node z, Node y) {
-            this.x = x;
-            this.z = z;
-            this.y = y;
-        }
+        public Triple(Node x, Node z, Node y) { this.x = x; this.z = z; this.y = y; }
     }
 
     private static final class SepCandidate {
