@@ -68,16 +68,29 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     private final JSpinner pruneAlphaSpinner;
 
     /**
-     * Checkbox offering to restrict repair to the vertices a PcAR run implicated, populated only
-     * when the incoming graph carries the "PcAR.implicatedVertices" attribute (stamped by the
-     * PC-AR algcomparison wrapper; graph attributes survive the box-to-box copy). Enabled only
-     * under GLOBAL_QUEUE, since VertexRepairSearch rejects seeded LOCAL_SWEEP loudly; the GUI
-     * disables rather than throws.
+     * Checkbox restricting repair to audit-implicated vertices. Always present: the seed set
+     * comes either from a seed attribute on the incoming graph (stamped upstream, free) or --
+     * when no attribute travelled -- from a Markov audit computed here on demand the first time
+     * the box is checked, which makes the restriction available for ANY input graph regardless of
+     * which search produced it. Enabled only under GLOBAL_QUEUE, since VertexRepairSearch rejects
+     * seeded LOCAL_SWEEP loudly; the GUI disables rather than throws.
      */
     private final JCheckBox seedAtImplicatedCheck = new JCheckBox();
 
-    /** Names parsed from the "PcAR.implicatedVertices" graph attribute; null if absent. */
-    private Set<String> pcarImplicatedNames = null;
+    /**
+     * Seed vertex names: from the graph attribute if one travelled, else from the locally
+     * computed audit once {@link #computeAuditSeedsWatched} has run. Null = not yet known.
+     */
+    private Set<String> auditSeedNames = null;
+
+    /**
+     * True once a local audit has been computed for the current working graph, whatever its
+     * result -- distinguishes "not yet computed" (null seeds, compute on demand) from "computed
+     * and found nothing" (empty seeds, box disabled with an explanatory label). Reset if the
+     * audit should ever be recomputed for a changed graph; deliberately NOT reset per repair
+     * edit, since the restriction seeds the run that is about to make those edits.
+     */
+    private boolean auditComputed = false;
 
     private Node x;
 
@@ -127,11 +140,14 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         this.x = resolveInitialNode(wg, x);
         searchButton.setText("Adjust " + this.x.getName());
 
-        // Pick up the seed handoff, if the incoming graph carries it: the canonical
-        // search-agnostic key (MarkovAuditUtils.SEED_ATTRIBUTE) first, falling back to the
-        // legacy PC-AR-specific key from the first revision of this feature. Names are validated
-        // against the working graph; unknown names are dropped silently (the graph may have been
-        // edited between boxes). Absent or empty => checkbox never appears, behavior unchanged.
+        // Seed-source resolution, in priority order: (1) a seed attribute stamped on the incoming
+        // graph by an upstream wrapper (canonical MarkovAuditUtils.SEED_ATTRIBUTE key, legacy
+        // "PcAR.implicatedVertices" fallback) -- free, already computed; (2) absent that, the
+        // audit is computed HERE, on demand, the first time the user checks the box (see
+        // computeAuditSeedsWatched) -- which is what makes the restriction available for ANY
+        // input graph (BOSS, FGES, hand-drawn, ...), not just searches whose wrappers stamp the
+        // attribute. Names from an attribute are validated against the working graph; unknown
+        // names are dropped silently (the graph may have been edited between boxes).
         Object attr = wg.getAllAttributes().get(edu.cmu.tetrad.search.MarkovAuditUtils.SEED_ATTRIBUTE);
         if (!(attr instanceof String s0) || s0.isBlank()) {
             attr = wg.getAllAttributes().get("PcAR.implicatedVertices");
@@ -143,16 +159,10 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
                 if (!t.isEmpty() && wg.getNode(t) != null) names.add(t);
             }
             if (!names.isEmpty()) {
-                this.pcarImplicatedNames = names;
-                seedAtImplicatedCheck.setText(
-                        "Restrict to " + names.size() + " audit-implicated vertices");
-                seedAtImplicatedCheck.setToolTipText(
-                        "Seed repair at the vertices the upstream search's Markov-audit "
-                                + "diagnostics implicated. Repair may still spread to neighbors "
-                                + "as edits propagate; vertices never reached are unrepaired by "
-                                + "design. GLOBAL_QUEUE only.");
+                this.auditSeedNames = names;
             }
         }
+        updateSeedCheckLabel();
 
         boolean graphIsLegal = initGraphTypeComboFromGraph(wg);
         syncSearchFromUI();  // push initial UI selections into the search object
@@ -332,18 +342,33 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         ((JSpinner.DefaultEditor) pruneAlphaSpinner.getEditor()).getTextField().setColumns(6);
         controls.add(pruneAlphaSpinner, c);
 
-        // PcAR seed handoff checkbox: only present when the incoming graph carried the
-        // attribute; only enabled under GLOBAL_QUEUE (seeded LOCAL_SWEEP is rejected loudly at
-        // the API level -- the GUI disables instead of throwing).
-        if (pcarImplicatedNames != null) {
-            c.gridx = 0; c.gridy = 4; c.gridwidth = 3; c.weightx = 1;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            controls.add(seedAtImplicatedCheck, c);
-            c.gridwidth = 1;
+        // Audit-seed checkbox: always present (seed source is either an upstream attribute or a
+        // local on-demand audit -- see the field javadoc); enabled only under GLOBAL_QUEUE
+        // (seeded LOCAL_SWEEP is rejected loudly at the API level -- the GUI disables instead of
+        // throwing).
+        c.gridx = 0; c.gridy = 4; c.gridwidth = 3; c.weightx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        controls.add(seedAtImplicatedCheck, c);
+        c.gridwidth = 1;
 
-            seedAtImplicatedCheck.addActionListener(e -> syncSearchFromUI());
-            updateSeedCheckEnabled();
-        }
+        seedAtImplicatedCheck.addActionListener(e -> {
+            if (seedAtImplicatedCheck.isSelected() && auditSeedNames == null && !auditComputed) {
+                // No attribute travelled and no local audit yet: compute one in the background,
+                // then re-sync. Uncheck while computing so an intervening repair can't run
+                // half-configured; the completion callback re-checks if seeds were found.
+                seedAtImplicatedCheck.setSelected(false);
+                startWatched("Auditing", this::computeAuditSeedsWatched, () -> {
+                    updateSeedCheckLabel();
+                    if (auditSeedNames != null && !auditSeedNames.isEmpty()) {
+                        seedAtImplicatedCheck.setSelected(true);
+                    }
+                    syncSearchFromUI();
+                });
+                return;
+            }
+            syncSearchFromUI();
+        });
+        updateSeedCheckEnabled();
 
         JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         topButtons.add(backButton);
@@ -470,17 +495,18 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 //        repairSearch.setSeed(System.currentTimeMillis());
         repairSearch.setPruneAlpha(((Number) pruneAlphaSpinner.getValue()).doubleValue());
 
-        // PcAR seed restriction: resolve names against the CURRENT working graph at every sync
+        // Audit-seed restriction: resolve names against the CURRENT working graph at every sync
         // (the working graph is replaced as repairs apply), pushing null when unchecked, disabled,
         // or under a non-GLOBAL_QUEUE strategy -- the last guard makes the GUI path unable to
         // trip setSeedVertices' loud LOCAL_SWEEP exception.
-        if (pcarImplicatedNames != null
+        if (auditSeedNames != null
+                && !auditSeedNames.isEmpty()
                 && seedAtImplicatedCheck.isSelected()
                 && seedAtImplicatedCheck.isEnabled()
                 && rs == RepairStrategy.GLOBAL_QUEUE) {
             Set<Node> seeds = new LinkedHashSet<>();
             Graph wg = repairSearch.getGraph();
-            for (String name : pcarImplicatedNames) {
+            for (String name : auditSeedNames) {
                 Node n = wg.getNode(name);
                 if (n != null) seeds.add(n);
             }
@@ -491,14 +517,67 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     }
 
     /**
-     * Enables the PcAR seed checkbox only under GLOBAL_QUEUE; unchecks it when disabling so a
-     * strategy round-trip can't leave a stale selection that silently re-arms.
+     * Enables the audit-seed checkbox only under GLOBAL_QUEUE, and only while the audit hasn't
+     * already come back empty; unchecks it when disabling so a strategy round-trip can't leave a
+     * stale selection that silently re-arms.
      */
     private void updateSeedCheckEnabled() {
-        if (pcarImplicatedNames == null) return;
         boolean queue = repairStrategyCombo.getSelectedItem() == RepairStrategy.GLOBAL_QUEUE;
-        seedAtImplicatedCheck.setEnabled(queue);
-        if (!queue) seedAtImplicatedCheck.setSelected(false);
+        boolean knownEmpty = auditComputed && (auditSeedNames == null || auditSeedNames.isEmpty());
+        seedAtImplicatedCheck.setEnabled(queue && !knownEmpty);
+        if (!seedAtImplicatedCheck.isEnabled()) seedAtImplicatedCheck.setSelected(false);
+    }
+
+    /**
+     * Sets the checkbox text for the current seed-knowledge state: a count when seeds are known,
+     * an offer to compute when they aren't, and an all-clear when a computed audit found nothing.
+     */
+    private void updateSeedCheckLabel() {
+        if (auditSeedNames != null && !auditSeedNames.isEmpty()) {
+            seedAtImplicatedCheck.setText(
+                    "Restrict to " + auditSeedNames.size() + " audit-implicated vertices");
+            seedAtImplicatedCheck.setToolTipText(
+                    "Seed repair at the vertices the Markov audit implicated. Repair may still "
+                            + "spread to neighbors as edits propagate; vertices never reached are "
+                            + "unrepaired by design. GLOBAL_QUEUE only.");
+        } else if (auditComputed) {
+            seedAtImplicatedCheck.setText(
+                    "Restrict to audit-implicated vertices (audit found none)");
+            seedAtImplicatedCheck.setToolTipText(
+                    "The FDR-corrected Markov audit rejected no implied independence of this "
+                            + "graph, so there is nothing to restrict to. This is evidence of "
+                            + "Markov consistency at this family and level, not a certificate of "
+                            + "correctness.");
+        } else {
+            seedAtImplicatedCheck.setText(
+                    "Restrict to audit-implicated vertices (computes a Markov audit)");
+            seedAtImplicatedCheck.setToolTipText(
+                    "Checking this runs an FDR-corrected Markov audit of the current graph and "
+                            + "seeds repair at the vertices of the rejected implied "
+                            + "independencies. Runs in the background; the box re-checks itself "
+                            + "when done if the audit found anything. GLOBAL_QUEUE only.");
+        }
+        updateSeedCheckEnabled();
+    }
+
+    /**
+     * Background body for the on-demand audit (run via startWatched): audits the CURRENT working
+     * graph with the editor's test and conditioning-set type, FDR level = the test's alpha
+     * (matching the PC-AR wrapper's choice), plain BH. Stores endpoint names; never touches Swing
+     * (the completion callback does the UI updates on the EDT).
+     */
+    private void computeAuditSeedsWatched() {
+        Graph wg = repairSearch.getGraph();
+        double q = baseModel.getIndependenceTest().getAlpha();
+        Set<Node> seeds = edu.cmu.tetrad.search.MarkovAuditUtils.implicatedVertices(
+                wg, baseModel.getIndependenceTest(),
+                baseModel.getConditioningSetType(), q, false);
+        Set<String> names = new LinkedHashSet<>();
+        for (Node n : seeds) {
+            if (n != null && n.getName() != null) names.add(n.getName());
+        }
+        this.auditSeedNames = names;
+        this.auditComputed = true;
     }
 
     // =========================================================================
