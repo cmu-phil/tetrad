@@ -97,13 +97,49 @@ public final class MarkovAuditUtils {
     public static List<IndependenceResult> auditFailures(Graph graph, IndependenceTest test,
                                                          ConditioningSetType setType, double q,
                                                          boolean negativelyCorrelated) {
+        return auditFailures(graph, test, setType, q, negativelyCorrelated, null);
+    }
+
+    /**
+     * As {@link #auditFailures(Graph, IndependenceTest, ConditioningSetType, double, boolean)},
+     * with a determinism screen: an implied fact x _||_ y | S is EXCLUDED from the audited family
+     * (before FDR) when {@code guard} reports S functionally determines x or y, or some member of
+     * S is determined by the rest of S. This is the soundness condition Sec. 14 places on both
+     * detection tiers: a variable functionally fixed by the conditioning set makes the fact's
+     * test statistic degenerate (0/0 partial correlation), and the resulting p-value fires the
+     * audit falsely -- observed concretely on the Figure 4 harness, where C = A + B produced four
+     * artifact failures of the form C _||_ . | [A, B] at p = 0, all of which are TRUE (vacuously:
+     * given A and B, C is a constant) and all of which then drove a downstream seeded repair to
+     * add two spurious edges. Screened facts are simply not part of the family; they neither fire
+     * nor count toward the BH correction's m.
+     * <p>
+     * A guard that throws {@link InterruptedException} marks the fact screened (fail-safe: an
+     * unevaluated fact is not reported) and re-asserts the thread's interrupt status, matching
+     * {@code Fas}'s handling. Pass {@code null} for no screening (the other overload's behavior).
+     *
+     * @param guard the determinism check, or null for none
+     */
+    public static List<IndependenceResult> auditFailures(Graph graph, IndependenceTest test,
+                                                         ConditioningSetType setType, double q,
+                                                         boolean negativelyCorrelated,
+                                                         Fas.DeterminismGuard guard) {
         MarkovCheck mc = new MarkovCheck(graph, test, setType);
         mc.generateResults(true, true);
         List<IndependenceResult> all = mc.getResults(true);
         if (all.isEmpty()) return new ArrayList<>();
 
-        List<Double> pValues = new ArrayList<>(all.size());
+        List<IndependenceResult> family = new ArrayList<>(all.size());
         for (IndependenceResult r : all) {
+            if (guard != null && isDegenerate(guard,
+                    r.getFact().getX(), r.getFact().getY(), r.getFact().getZ())) {
+                continue;
+            }
+            family.add(r);
+        }
+        if (family.isEmpty()) return new ArrayList<>();
+
+        List<Double> pValues = new ArrayList<>(family.size());
+        for (IndependenceResult r : family) {
             double p = r.getPValue();
             pValues.add(Double.isNaN(p) ? 1.0 : p); // NaN = no evidence against the fact
         }
@@ -111,13 +147,34 @@ public final class MarkovAuditUtils {
         double cutoff = StatUtils.fdrCutoff(q, pValues, negativelyCorrelated, false);
 
         List<IndependenceResult> rejected = new ArrayList<>();
-        for (IndependenceResult r : all) {
+        for (IndependenceResult r : family) {
             double p = r.getPValue();
             if (!Double.isNaN(p) && p <= cutoff) {
                 rejected.add(r);
             }
         }
         return rejected;
+    }
+
+    /**
+     * True if the fact x _||_ y | S is degenerate per the guard: S determines x or y, or some
+     * member of S is determined by the rest of S. Interruption from within the guard reports
+     * degenerate (screened) and re-asserts interrupt status.
+     */
+    private static boolean isDegenerate(Fas.DeterminismGuard guard, Node x, Node y, Set<Node> S) {
+        try {
+            if (guard.determines(x, S)) return true;
+            if (guard.determines(y, S)) return true;
+            for (Node v : S) {
+                Set<Node> rest = new LinkedHashSet<>(S);
+                rest.remove(v);
+                if (guard.determines(v, rest)) return true;
+            }
+            return false;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return true;
+        }
     }
 
     /**

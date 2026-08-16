@@ -929,15 +929,21 @@ public class PcAR implements IGraphSearch {
      * two structurally different kinds of contradiction:
      * <ul>
      *   <li><b>Bidirected clash</b> (CLASH-PASS lines 6-7): an edge U-Z that two different triples
-     *       demand carry an arrowhead in opposite directions. This localizes to an <i>adjacency
-     *       that cannot be consistently oriented</i>, NOT to a deleted pair -- U and Z are adjacent
-     *       in g, so there is no sepset for them and nothing to reinstate. Reported through
-     *       {@link #getOrientationClashes()} as {@link OrientationClash} records and is
-     *       <b>detection-only</b>: {@link #rescueAction} never acts on it. An earlier revision
-     *       reported these against the deleted pair of whichever triple raised the demand, which
-     *       silently converted an orientation contradiction into an adjacency claim about a
-     *       different pair of variables; that was wrong and produced badly inflated counts (43
-     *       flags on a 20-variable n=1000 run).</li>
+     *       demand carry an arrowhead in opposite directions. The EDGE localizes an <i>adjacency
+     *       that cannot be consistently oriented</i> -- U and Z are adjacent in g, so there is
+     *       nothing to reinstate at the edge itself -- and is reported through
+     *       {@link #getOrientationClashes()} as a diagnostic {@link OrientationClash}. The clash's
+     *       RECOVERY CANDIDATES are the deleted pairs of the witness triples that raised the
+     *       conflicting demands, each flagged as a {@link ContestedDeletion} with locus
+     *       "bidirected-clash" and adjudicated by the current {@link RescueAction}; this is the
+     *       Figure 4 recovery path (Sec. 14 worked trace), which one intermediate revision lost by
+     *       making bidirected clashes wholly detection-only, and which the revision before THAT
+     *       mis-implemented by flagging whichever pair per-triple scanning happened upon (43
+     *       inflated flags on a 20-variable n=1000 run). NOTE: the discriminating re-test alone is
+     *       unreliable across a clash's candidates (on Figure 4 it endorses both the genuine
+     *       cancellation AND the pair whose pivot is a true collider), so plain RECOVER
+     *       over-recovers here; RECOVER_CORROBORATED's audit intersection is what selects
+     *       correctly.</li>
      *   <li><b>Collider/non-collider clash</b> (CLASH-PASS lines 8-9): a triple (X,Z,Y) whose own
      *       sepset demands Z NOT be a collider, where two other triples independently demand
      *       arrowheads (X,Z) and (Y,Z) into that same Z. This one genuinely localizes to the
@@ -992,9 +998,22 @@ public class PcAR implements IGraphSearch {
             }
         }
 
-        // Pass 2a: bidirected clashes (CLASH-PASS lines 6-7). Edge-localized, deduped, and
-        // detection-only -- see this method's javadoc for why these are not recovery candidates.
+        // Pass 2a: bidirected clashes (CLASH-PASS lines 6-7). The EDGE record stays diagnostic --
+        // an adjacency demanded to point both ways has nothing to reinstate at the edge itself --
+        // but the clash's RECOVERY CANDIDATES are the deleted pairs of the witness triples that
+        // raised the conflicting demands: demand (u -> z) with witness w came from the unshielded
+        // triple (u, z, w) whose deleted pair is (u, w), and it is one of those deletions that
+        // manufactured the contradiction if a cancellation is in play. This restores the paper's
+        // Figure 4 recovery, which an earlier revision lost by making bidirected clashes wholly
+        // detection-only: there, the clash on Y-Z has witness deleted pairs (X,Z) and (V,Y); the
+        // Sec. 14 discriminating re-test endorses BOTH (rho_VY.Z is nonzero in truth, Z being a
+        // genuine collider for V,Y -- the re-test rejects for the wrong reason), while the Markov
+        // audit flags only (X,Z) -- so RECOVER_CORROBORATED selects exactly the right pair, and
+        // plain RECOVER should be expected to over-recover here just as on random graphs. Each
+        // witness pair is flagged through flagAndAct as locus "bidirected-clash", subject to the
+        // usual pair-level dedup and the current RescueAction.
         Set<List<Node>> seenEdges = new LinkedHashSet<>();
+        boolean anyRecovered = false;
         for (List<Node> demand : arrowWitnesses.keySet()) {
             checkTimeout();
             Node u = demand.get(0), z = demand.get(1);
@@ -1007,11 +1026,22 @@ public class PcAR implements IGraphSearch {
             Set<Node> witnesses = new LinkedHashSet<>(arrowWitnesses.get(demand));
             witnesses.addAll(arrowWitnesses.get(List.of(z, u)));
             orientationClashes.add(new OrientationClash(key.get(0), key.get(1), witnesses));
+
+            // Witness deleted pairs, from both demand directions: for demand (a -> b) with
+            // witness w, the deleted pair is (a, w) and the triple's pivot is b.
+            for (List<Node> dir : List.of(demand, List.of(z, u))) {
+                Node a = dir.get(0), b = dir.get(1);
+                for (Node w : arrowWitnesses.get(dir)) {
+                    if (g.isAdjacentTo(a, w)) continue; // recovered earlier this pass
+                    Set<Node> s = fasSepsets.get(a, w);
+                    if (s == null) continue;
+                    anyRecovered |= flagAndAct(g, a, w, b, s, "bidirected-clash");
+                }
+            }
         }
 
         // Pass 2b: collider vs. non-collider clash at a shared vertex (CLASH-PASS lines 8-9).
         // Deduped by deleted pair; the first witnessing pivot is the one recorded on the record.
-        boolean anyRecovered = false;
         Set<List<Node>> seenPairs = new LinkedHashSet<>();
         for (Triple t : nonColliderDemand) {
             checkTimeout();
