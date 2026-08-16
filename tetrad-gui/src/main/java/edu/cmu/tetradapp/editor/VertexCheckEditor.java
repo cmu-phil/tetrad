@@ -140,7 +140,16 @@ public class VertexCheckEditor extends JPanel {
         if (this.knowledge.isViolatedBy(model.getGraph()))
             throw new IllegalArgumentException("Knowledge conflicts with current graph structure.");
 
-        modelUniformityTest = new JComboBox<>(new String[]{"Use KS", "Use AD", "Use WB"});
+        // The wild bootstrap needs row data to residualize; with a covariance matrix it can
+        // only ever return NaN, so it is not offered. If a session saved WB mode and the data
+        // is now a covariance matrix, fall back to KS rather than presenting NaN columns.
+        boolean rowData = model.getDataModel() instanceof DataSet;
+        modelUniformityTest = new JComboBox<>(rowData
+                ? new String[]{"Use KS", "Use AD", "Use WB"}
+                : new String[]{"Use KS", "Use AD"});
+        if (!rowData && VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(model.getUniformityTest())) {
+            model.setUniformityTest(VertexCheckIndTestModel.KOLMOGOROV_SMIRNOFF);
+        }
         modelUniformityTest.setSelectedIndex(uniformityTestIndex(model.getUniformityTest()));
         modelUniformityTest.addActionListener(e -> {
             if (initializing) return;

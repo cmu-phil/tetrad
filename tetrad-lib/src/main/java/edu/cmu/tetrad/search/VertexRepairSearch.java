@@ -345,7 +345,15 @@ public final class VertexRepairSearch implements IGraphSearch {
         this.workingGraph = safeCopy(graph);
         this.type = type;
 
-        if (test instanceof RowsSettable) {
+        // Row assignment only applies to row data. Tests backed by a covariance matrix
+        // (e.g. IndTestFisherZ(ICovarianceMatrix, alpha)) have no rows to set; the test
+        // computes directly from the matrix, so repair proceeds without this step. Prior
+        // to 2026-8-16 the unguarded cast in getSubsampleRows threw ClassCastException
+        // for covariance input, which was the only obstacle to covariance support here.
+        // (Note: at fraction 1.0 this sets ALL rows, in shuffled order, which is
+        // statistically an identity for order-invariant tests; it is retained for row
+        // data to preserve existing behavior exactly.)
+        if (test instanceof RowsSettable && test.getData() instanceof DataSet) {
             ((RowsSettable) test).setRows(getSubsampleRows(1.0));
         }
     }
