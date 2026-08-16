@@ -127,10 +127,15 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         this.x = resolveInitialNode(wg, x);
         searchButton.setText("Adjust " + this.x.getName());
 
-        // Pick up the PcAR seed handoff, if the incoming graph carries it. Names are validated
+        // Pick up the seed handoff, if the incoming graph carries it: the canonical
+        // search-agnostic key (MarkovAuditUtils.SEED_ATTRIBUTE) first, falling back to the
+        // legacy PC-AR-specific key from the first revision of this feature. Names are validated
         // against the working graph; unknown names are dropped silently (the graph may have been
         // edited between boxes). Absent or empty => checkbox never appears, behavior unchanged.
-        Object attr = wg.getAllAttributes().get("PcAR.implicatedVertices");
+        Object attr = wg.getAllAttributes().get(edu.cmu.tetrad.search.MarkovAuditUtils.SEED_ATTRIBUTE);
+        if (!(attr instanceof String s0) || s0.isBlank()) {
+            attr = wg.getAllAttributes().get("PcAR.implicatedVertices");
+        }
         if (attr instanceof String s && !s.isBlank()) {
             Set<String> names = new LinkedHashSet<>();
             for (String name : s.split(",")) {
@@ -140,11 +145,10 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
             if (!names.isEmpty()) {
                 this.pcarImplicatedNames = names;
                 seedAtImplicatedCheck.setText(
-                        "Restrict to " + names.size() + " PcAR-implicated vertices");
+                        "Restrict to " + names.size() + " audit-implicated vertices");
                 seedAtImplicatedCheck.setToolTipText(
-                        "Seed repair at the vertices the PC-AR run's diagnostics implicated "
-                                + "(contested deletions, orientation clashes, blocked deletions, "
-                                + "Markov-audit failures). Repair may still spread to neighbors "
+                        "Seed repair at the vertices the upstream search's Markov-audit "
+                                + "diagnostics implicated. Repair may still spread to neighbors "
                                 + "as edits propagate; vertices never reached are unrepaired by "
                                 + "design. GLOBAL_QUEUE only.");
             }

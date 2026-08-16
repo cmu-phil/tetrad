@@ -201,50 +201,34 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         // you have a concrete implementation, e.g.:
         //   search.setDeterminismGuard((v, S) -> ...);
 
-        // Tier two, delegating to MarkovCheck. PcAR has NO built-in fallback auditor any more:
-        // the old triple-based one was unsound in both directions (see runMarkovAudit's comment),
-        // so without this wiring getMarkovAuditFailures() is simply empty. Clark's note (Sec. 4)
-        // reports this substitution verified working: MarkovCheck derives conditioning sets from
-        // separation in the graph rather than from a triple, which is exactly what tier two needs.
+        // Tier two, delegating to MarkovAuditUtils.auditFailures: a MarkovCheck audit with the
+        // family-wise Benjamini-Hochberg correction MARKOV-AUDIT line 6 specifies (Clark's note
+        // Sec. 4-6). This replaces the earlier uncorrected adapter, whose per-test-alpha failure
+        // list grew with n even on fixed-quality graphs (the family of implied facts is large and
+        // power rises with n), overstating the violation count and -- when failures seeded the
+        // repair region -- saturating the seed set at high n (a 20-node run at n=5000 excluded
+        // zero vertices). Post-BH, getMarkovAuditFailures() reports only failures that survive
+        // FDR at the level below.
         //
-        // API ASSUMPTIONS FLAGGED -- I don't have MarkovCheck's source, so the four lines marked
-        // below are inferred from the note's description ("constructed on a graph, an independence
-        // test, and a conditioning-set type", "reports the number of implied facts tested and the
-        // fraction of them the data reject", "with the local conditioning-set type"). If any name
-        // is off, these are the only lines to fix; the adapter shape around them is correct.
+        // FDR LEVEL: the test's own alpha, for lack of a better-motivated number -- a dedicated
+        // parameter would be cleaner but adds a knob before there's evidence one is needed. Note
+        // this is NOT Params.FDR_Q, which governs the separate FDR loop over the SEARCH's own
+        // tests below; conflating the two would tie the audit's stringency to an unrelated
+        // setting whose default (0.0) would disable the audit entirely.
+        final double auditQ = test.getAlpha();
         search.setMarkovAuditor((auditGraph, auditTest) -> {
             List<edu.cmu.tetrad.search.PcAR.MarkovAuditFailure> failures = new ArrayList<>();
-
-            // (1) constructor: (graph, test, conditioningSetType)
-            edu.cmu.tetrad.search.MarkovCheck mc = new edu.cmu.tetrad.search.MarkovCheck(
+            for (edu.cmu.tetrad.search.test.IndependenceResult r
+                    : edu.cmu.tetrad.search.MarkovAuditUtils.auditFailures(
                     auditGraph, auditTest,
-                    // (2) enum constant for the "local" conditioning-set type
-                    edu.cmu.tetrad.search.ConditioningSetType.LOCAL_MARKOV);
-
-            // (3) run the check
-            mc.generateResults(true, true);
-
-            // (4) pull the per-fact results; each carries the fact (x, y, conditioning set) and
-            // its p-value. Only the rejected ones become MarkovAuditFailures.
-            for (edu.cmu.tetrad.search.test.IndependenceResult r : mc.getResults(true)) {
-                if (!r.isIndependent()) {
-                    failures.add(new edu.cmu.tetrad.search.PcAR.MarkovAuditFailure(
-                            r.getFact().getX(), r.getFact().getY(),
-                            r.getFact().getZ(), r.getPValue()));
-                }
+                    edu.cmu.tetrad.search.ConditioningSetType.LOCAL_MARKOV,
+                    auditQ, false)) {
+                failures.add(new edu.cmu.tetrad.search.PcAR.MarkovAuditFailure(
+                        r.getFact().getX(), r.getFact().getY(),
+                        r.getFact().getZ(), r.getPValue()));
             }
             return failures;
         });
-
-        // NOTE ON CALIBRATION, not yet implemented: the audit is a FAMILY of tests, so per-test
-        // alpha is the wrong criterion for the derived claim "this graph is Markov-consistent"
-        // (Clark's note Sec. 4 and Sec. 6, fifth reason). MARKOV-AUDIT line 6 calls for FDR at
-        // level q over the family. The adapter above applies no family-level correction -- it
-        // reports every individually-rejected fact -- so expect more flags than an FDR-controlled
-        // audit would yield, particularly on larger graphs where the family is big. Do not read
-        // the raw count as a violation count. (The note also cautions against the Anderson-Darling
-        // uniformity statistic MarkovCheck reports: it tests a different question and is
-        // uninterpretable for families of two or three facts.)
 
         double fdrQ = parameters.getDouble(Params.FDR_Q);
 
@@ -274,16 +258,26 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         graph.addAttribute("PcAR.orientationClashes", search.getOrientationClashes().size());
         graph.addAttribute("PcAR.markovAuditFailures", search.getMarkovAuditFailures().size());
 
-        // Seed handoff for targeted repair: the implicated-vertex names travel with the graph
-        // (EdgeListGraph's copy constructor preserves attributes), so a downstream Vertex Repair
-        // session can detect this attribute on its input graph and offer to seed
-        // VertexRepairSearch at exactly these vertices. Names, not Node references, because the
-        // graph gets copied between boxes and nodes are re-resolved by name.
-        java.util.List<String> implicated = search.implicatedVertices().stream()
-                .map(edu.cmu.tetrad.graph.Node::getName).toList();
-        if (!implicated.isEmpty()) {
-            graph.addAttribute("PcAR.implicatedVertices", String.join(",", implicated));
+        // Seed handoff for targeted repair, stamped under MarkovAuditUtils.SEED_ATTRIBUTE (the
+        // search-agnostic key the Vertex Repair GUI reads; names travel, since graphs are copied
+        // between boxes and nodes re-resolved by name). NARROW set: endpoints of the (now
+        // BH-corrected) Markov-audit failures plus endpoints of determinism-guard-blocked
+        // deletions -- NOT clash or contested endpoints. Rationale: those diagnostics spread over
+        // symptoms (dozens of endpoint pairs on ordinary 20-node runs), and seeding at them
+        // saturated the seed set at n=5000 (zero excluded vertices, i.e. no restriction at all).
+        // The strong evidence seeds; the frontier-growth mechanism in VertexRepairSearch reaches
+        // the orientation-scrambled surroundings as edits propagate. PcAR#implicatedVertices()
+        // still exposes the full union programmatically for anyone who wants the wide set.
+        java.util.Set<edu.cmu.tetrad.graph.Node> seeds = new java.util.LinkedHashSet<>();
+        for (edu.cmu.tetrad.search.PcAR.MarkovAuditFailure maf : search.getMarkovAuditFailures()) {
+            seeds.add(maf.x());
+            seeds.add(maf.y());
         }
+        for (edu.cmu.tetrad.search.Fas.BlockedDeletion bd : search.getBlockedDeletions()) {
+            seeds.add(bd.x());
+            seeds.add(bd.y());
+        }
+        edu.cmu.tetrad.search.MarkovAuditUtils.stampSeedAttribute(graph, seeds);
 
         if (parameters.getBoolean(Params.VERBOSE)) {
             for (edu.cmu.tetrad.search.PcAR.ContestedDeletion cd : search.getContestedDeletions()) {
