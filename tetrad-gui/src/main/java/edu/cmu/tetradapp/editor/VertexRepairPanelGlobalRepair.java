@@ -310,10 +310,17 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         controls.add(graphTypeCombo, c);
 
         c.gridx = 2; c.gridy = 2; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 1;
+        // Default flipped from LOCAL_SWEEP to GLOBAL_QUEUE (2026-8-16): everything built since
+        // the memoization work -- affected-only invalidation, seeded restriction, the
+        // verification-sweep convergence semantics -- lives on the GLOBAL_QUEUE path, and the
+        // LOCAL_SWEEP default left the seeded-repair checkbox disabled out of the box with no
+        // visible reason. Local sweep remains selectable; a user's previously SAVED strategy
+        // preference still wins over this default, so existing installs keep whatever they last
+        // selected.
         repairStrategyCombo.setSelectedItem(
                 RepairStrategy.valueOf(
                         Preferences.userRoot().get("vertexRepairStrategy",
-                                RepairStrategy.LOCAL_SWEEP.name())));
+                                RepairStrategy.GLOBAL_QUEUE.name())));
         controls.add(repairStrategyCombo, c);
 
         repairStrategyCombo.addActionListener(e -> {
@@ -519,13 +526,34 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     /**
      * Enables the audit-seed checkbox only under GLOBAL_QUEUE, and only while the audit hasn't
      * already come back empty; unchecks it when disabling so a strategy round-trip can't leave a
-     * stale selection that silently re-arms.
+     * stale selection that silently re-arms. When disabled because of the strategy, says so in
+     * the tooltip -- a disabled control with no visible reason reads as broken.
      */
     private void updateSeedCheckEnabled() {
         boolean queue = repairStrategyCombo.getSelectedItem() == RepairStrategy.GLOBAL_QUEUE;
         boolean knownEmpty = auditComputed && (auditSeedNames == null || auditSeedNames.isEmpty());
         seedAtImplicatedCheck.setEnabled(queue && !knownEmpty);
-        if (!seedAtImplicatedCheck.isEnabled()) seedAtImplicatedCheck.setSelected(false);
+        if (!seedAtImplicatedCheck.isEnabled()) {
+            seedAtImplicatedCheck.setSelected(false);
+            if (!queue) {
+                seedAtImplicatedCheck.setToolTipText(
+                        "Seeded repair requires the Global queue strategy; select it in the "
+                                + "strategy dropdown to enable this restriction. (Under Local "
+                                + "sweep, seeding has no defined convergence semantics and the "
+                                + "search would reject it.)");
+            }
+            // knownEmpty case: updateSeedCheckLabel already set the "(audit found none)" label
+            // and its explanatory tooltip; leave them in place.
+        } else {
+            // Re-enabling after a strategy round-trip: restore the state-appropriate label and
+            // tooltip, which the strategy-disable tooltip above may have replaced. Guarded to
+            // avoid mutual recursion: updateSeedCheckLabel calls back into this method, so only
+            // re-derive the label when the tooltip is currently the strategy-disable one.
+            String tip = seedAtImplicatedCheck.getToolTipText();
+            if (tip != null && tip.startsWith("Seeded repair requires")) {
+                updateSeedCheckLabel();
+            }
+        }
     }
 
     /**
