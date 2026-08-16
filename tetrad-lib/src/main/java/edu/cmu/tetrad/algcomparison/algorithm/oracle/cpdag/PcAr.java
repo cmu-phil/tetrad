@@ -274,6 +274,17 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         graph.addAttribute("PcAR.orientationClashes", search.getOrientationClashes().size());
         graph.addAttribute("PcAR.markovAuditFailures", search.getMarkovAuditFailures().size());
 
+        // Seed handoff for targeted repair: the implicated-vertex names travel with the graph
+        // (EdgeListGraph's copy constructor preserves attributes), so a downstream Vertex Repair
+        // session can detect this attribute on its input graph and offer to seed
+        // VertexRepairSearch at exactly these vertices. Names, not Node references, because the
+        // graph gets copied between boxes and nodes are re-resolved by name.
+        java.util.List<String> implicated = search.implicatedVertices().stream()
+                .map(edu.cmu.tetrad.graph.Node::getName).toList();
+        if (!implicated.isEmpty()) {
+            graph.addAttribute("PcAR.implicatedVertices", String.join(",", implicated));
+        }
+
         if (parameters.getBoolean(Params.VERBOSE)) {
             for (edu.cmu.tetrad.search.PcAR.ContestedDeletion cd : search.getContestedDeletions()) {
                 TetradLogger.getInstance().log(

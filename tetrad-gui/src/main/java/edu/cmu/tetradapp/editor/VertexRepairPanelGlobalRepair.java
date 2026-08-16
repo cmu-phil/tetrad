@@ -67,6 +67,18 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     private boolean populatingNodeCombo = false;
     private final JSpinner pruneAlphaSpinner;
 
+    /**
+     * Checkbox offering to restrict repair to the vertices a PcAR run implicated, populated only
+     * when the incoming graph carries the "PcAR.implicatedVertices" attribute (stamped by the
+     * PC-AR algcomparison wrapper; graph attributes survive the box-to-box copy). Enabled only
+     * under GLOBAL_QUEUE, since VertexRepairSearch rejects seeded LOCAL_SWEEP loudly; the GUI
+     * disables rather than throws.
+     */
+    private final JCheckBox seedAtImplicatedCheck = new JCheckBox();
+
+    /** Names parsed from the "PcAR.implicatedVertices" graph attribute; null if absent. */
+    private Set<String> pcarImplicatedNames = null;
+
     private Node x;
 
     /** The shared search object that owns the working graph and all repair logic. */
@@ -114,6 +126,29 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         Graph wg = repairSearch.getGraph();
         this.x = resolveInitialNode(wg, x);
         searchButton.setText("Adjust " + this.x.getName());
+
+        // Pick up the PcAR seed handoff, if the incoming graph carries it. Names are validated
+        // against the working graph; unknown names are dropped silently (the graph may have been
+        // edited between boxes). Absent or empty => checkbox never appears, behavior unchanged.
+        Object attr = wg.getAllAttributes().get("PcAR.implicatedVertices");
+        if (attr instanceof String s && !s.isBlank()) {
+            Set<String> names = new LinkedHashSet<>();
+            for (String name : s.split(",")) {
+                String t = name.trim();
+                if (!t.isEmpty() && wg.getNode(t) != null) names.add(t);
+            }
+            if (!names.isEmpty()) {
+                this.pcarImplicatedNames = names;
+                seedAtImplicatedCheck.setText(
+                        "Restrict to " + names.size() + " PcAR-implicated vertices");
+                seedAtImplicatedCheck.setToolTipText(
+                        "Seed repair at the vertices the PC-AR run's diagnostics implicated "
+                                + "(contested deletions, orientation clashes, blocked deletions, "
+                                + "Markov-audit failures). Repair may still spread to neighbors "
+                                + "as edits propagate; vertices never reached are unrepaired by "
+                                + "design. GLOBAL_QUEUE only.");
+            }
+        }
 
         boolean graphIsLegal = initGraphTypeComboFromGraph(wg);
         syncSearchFromUI();  // push initial UI selections into the search object
@@ -272,6 +307,8 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
             if (s != null) {
                 Preferences.userRoot().put("vertexRepairStrategy", s.name());
                 repairSearch.setRepairStrategy(s);
+                updateSeedCheckEnabled();
+                syncSearchFromUI();
             }
         });
 
@@ -290,6 +327,19 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         c.gridx = 1; c.fill = GridBagConstraints.HORIZONTAL; c.weightx = 0.5;
         ((JSpinner.DefaultEditor) pruneAlphaSpinner.getEditor()).getTextField().setColumns(6);
         controls.add(pruneAlphaSpinner, c);
+
+        // PcAR seed handoff checkbox: only present when the incoming graph carried the
+        // attribute; only enabled under GLOBAL_QUEUE (seeded LOCAL_SWEEP is rejected loudly at
+        // the API level -- the GUI disables instead of throwing).
+        if (pcarImplicatedNames != null) {
+            c.gridx = 0; c.gridy = 4; c.gridwidth = 3; c.weightx = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            controls.add(seedAtImplicatedCheck, c);
+            c.gridwidth = 1;
+
+            seedAtImplicatedCheck.addActionListener(e -> syncSearchFromUI());
+            updateSeedCheckEnabled();
+        }
 
         JPanel topButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         topButtons.add(backButton);
@@ -415,6 +465,36 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         repairSearch.setSeed((Integer) seedSpinner.getValue());
 //        repairSearch.setSeed(System.currentTimeMillis());
         repairSearch.setPruneAlpha(((Number) pruneAlphaSpinner.getValue()).doubleValue());
+
+        // PcAR seed restriction: resolve names against the CURRENT working graph at every sync
+        // (the working graph is replaced as repairs apply), pushing null when unchecked, disabled,
+        // or under a non-GLOBAL_QUEUE strategy -- the last guard makes the GUI path unable to
+        // trip setSeedVertices' loud LOCAL_SWEEP exception.
+        if (pcarImplicatedNames != null
+                && seedAtImplicatedCheck.isSelected()
+                && seedAtImplicatedCheck.isEnabled()
+                && rs == RepairStrategy.GLOBAL_QUEUE) {
+            Set<Node> seeds = new LinkedHashSet<>();
+            Graph wg = repairSearch.getGraph();
+            for (String name : pcarImplicatedNames) {
+                Node n = wg.getNode(name);
+                if (n != null) seeds.add(n);
+            }
+            repairSearch.setSeedVertices(seeds.isEmpty() ? null : seeds);
+        } else {
+            repairSearch.setSeedVertices(null);
+        }
+    }
+
+    /**
+     * Enables the PcAR seed checkbox only under GLOBAL_QUEUE; unchecks it when disabling so a
+     * strategy round-trip can't leave a stale selection that silently re-arms.
+     */
+    private void updateSeedCheckEnabled() {
+        if (pcarImplicatedNames == null) return;
+        boolean queue = repairStrategyCombo.getSelectedItem() == RepairStrategy.GLOBAL_QUEUE;
+        seedAtImplicatedCheck.setEnabled(queue);
+        if (!queue) seedAtImplicatedCheck.setSelected(false);
     }
 
     // =========================================================================

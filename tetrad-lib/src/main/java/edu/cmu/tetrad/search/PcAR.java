@@ -628,6 +628,43 @@ public class PcAR implements IGraphSearch {
     }
 
     /**
+     * The union of all vertices this search's diagnostics implicate: endpoints of contested
+     * deletions, endpoints of orientation clashes, endpoints of blocked deletions, and the tested
+     * pair of every Markov-audit failure. Intended as the seed set for a targeted repair pass
+     * (see {@code VertexRepairSearch#setSeedVertices}), on the division of labor the ground-truth
+     * runs supported: PcAR's diagnostics name the broken NEIGHBORHOODS well (both runs, every
+     * true error touched this set) even where they name the specific broken EDGES badly (1/14 and
+     * 3/11 precision as direct recovery proposals) -- so they are used here as a prioritizer, not
+     * a decision rule, and the repair search's own model-level objective makes the edit decisions.
+     * Pivots and audit conditioning-set members are deliberately NOT included: they locate the
+     * evidence, not the suspect region, and including them on the two ground-truth runs would have
+     * pulled in most of the graph, defeating the point of seeding. Empty before {@link #search()}
+     * has run. Deduplicated by node identity, ordered by first appearance.
+     */
+    public Set<Node> implicatedVertices() {
+        Set<Node> out = new LinkedHashSet<>();
+        for (ContestedDeletion cd : contestedDeletions) {
+            out.add(cd.x());
+            out.add(cd.y());
+        }
+        for (OrientationClash oc : orientationClashes) {
+            out.add(oc.u());
+            out.add(oc.z());
+        }
+        if (fas != null) {
+            for (Fas.BlockedDeletion bd : fas.getBlocked()) {
+                out.add(bd.x());
+                out.add(bd.y());
+            }
+        }
+        for (MarkovAuditFailure maf : markovAuditFailures) {
+            out.add(maf.x());
+            out.add(maf.y());
+        }
+        return out;
+    }
+
+    /**
      * Constructs a new instance of the PcAR algorithm with the specified independence test.
      *
      * @param test the independence test to be used by the algorithm
