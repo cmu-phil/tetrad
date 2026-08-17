@@ -440,8 +440,11 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         } while (pag.getNumEdges() < edgesBefore);
 
         // Pass 2 (optional): possible-D-SEP removal. The original GFCI step that *-FCI dropped,
-        // restored here for parity. Always runs on an oriented PAG and is always legality-gated,
-        // since Possible-D-SEP presupposes FCI-oriented colliders.
+        // restored here for parity. Always runs on an oriented PAG, since Possible-D-SEP
+        // presupposes FCI-oriented colliders; that precondition is met by the standalone
+        // orientation below (ungated path) or by the gate's per-step reorientation (gated path).
+        // Removals honor doLegalityGating exactly as in Pass 1: gated runs gate them, ungated
+        // runs remove unconditionally (original greedy *-FCI).
         if (usePossibleDsep) {
             // Ensure colliders are oriented as in FCI before computing Possible-D-SEP. In the GATED
             // path pag already carries the last-accepted, gate-legal full orientation (commitRemoval
@@ -497,7 +500,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
                     continue;
                 }
 
-                pag = commitRemoval(pag, a, c, sepset, "possible-D-SEP", true,
+                pag = commitRemoval(pag, a, c, sepset, "possible-D-SEP", doLegalityGating,
                         cpdag, nodes, sepsetMap, unshieldedColliders, selection);
             }
         }
