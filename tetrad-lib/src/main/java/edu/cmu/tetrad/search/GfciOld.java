@@ -52,7 +52,10 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * removal step tests edges in the CPDAG for conditional independence, followed by a possible d-sep removal step
  * that searches a broader candidate separating set. Third, colliders from the CPDAG are copied into the working
  * PAG, additional colliders are oriented using the sepsets found during edge removal, and the FCI final orientation
- * rules are applied.
+ * rules are applied. Collider orientation in the working PAG is restricted to triples that are unshielded there
+ * (the adjacency check of GFCI's R0'): arrowheads in a PAG assert marks invariant across the Markov equivalence
+ * class, and only unshielded colliders carry that invariance, so orienting a shielded triple could produce a
+ * non-PAG.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
@@ -327,7 +330,7 @@ public class GfciOld implements IGraphSearch {
                     IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
                     double pValue = result.getPValue();
                     TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
-                                                   + sepset + ", p-value = " + pValue + ".");
+                            + sepset + ", p-value = " + pValue + ".");
                 }
             }
         }
@@ -361,7 +364,14 @@ public class GfciOld implements IGraphSearch {
                 Node z = adjacentNodes.get(combination[1]);
 
                 if (cpdag.isDefCollider(x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
+
+                    // Per the published GFCI R0' (Ogarrio et al., 2016), colliders are oriented in the working
+                    // graph only at triples that are unshielded there. Arrowheads in a PAG assert marks invariant
+                    // across the Markov equivalence class; only unshielded colliders carry that invariance, so
+                    // stamping a shielded triple would write non-invariant marks and can yield a non-PAG. If x and
+                    // z lose their adjacency in a later removal phase, the subsequent collider sweep picks the
+                    // triple up with this condition then satisfied.
+                    if (!pag.isAdjacentTo(x, z) && colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
                         unshieldedColliders.add(new Triple(x, y, z));
@@ -374,13 +384,15 @@ public class GfciOld implements IGraphSearch {
                     Set<Node> sepset = sepsetMap.get(x, z);
 
                     if (sepset != null && !sepset.contains(y)) {
-                        if (colliderAllowed(pag, x, y, z, knowledge)) {
+
+                        // Unshieldedness in the working graph is a precondition of orientation itself (GFCI R0'),
+                        // not merely of the unshieldedColliders bookkeeping. (A sepset entry currently implies the
+                        // edge was removed, so this guard is expected to hold; enforcing it makes the invariant
+                        // explicit rather than accidental.)
+                        if (!pag.isAdjacentTo(x, z) && colliderAllowed(pag, x, y, z, knowledge)) {
                             pag.setEndpoint(x, y, Endpoint.ARROW);
                             pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                            if (!pag.isAdjacentTo(x, z)) {
-                                unshieldedColliders.add(new Triple(x, y, z));
-                            }
+                            unshieldedColliders.add(new Triple(x, y, z));
 
                             if (verbose) {
                                 TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " *-> " + y + " <-* " + z);
@@ -413,7 +425,7 @@ public class GfciOld implements IGraphSearch {
                     IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
                     double pValue = result.getPValue();
                     TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
-                                                   + sepset + ", p-value = " + pValue + ".");
+                            + sepset + ", p-value = " + pValue + ".");
                 }
             }
 
@@ -431,7 +443,7 @@ public class GfciOld implements IGraphSearch {
                         IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
                         double pValue = result.getPValue();
                         TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " in extra-edge removal step; sepset = "
-                                                       + sepset + ", p-value = " + pValue + ".");
+                                + sepset + ", p-value = " + pValue + ".");
                     }
                 }
             }
@@ -448,29 +460,33 @@ public class GfciOld implements IGraphSearch {
                 Node z = adjacentNodes.get(combination[1]);
 
                 if (cpdag.isDefCollider(x, y, z)) {
-                    if (colliderAllowed(pag, x, y, z, knowledge)) {
+
+                    // See the corresponding comment in the first collider sweep: colliders are oriented only at
+                    // triples unshielded in the working graph (GFCI R0'). Triples shielded during the first sweep
+                    // whose x--z shield was removed by the possible d-sep step become orientable here.
+                    if (!pag.isAdjacentTo(x, z) && colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
                         unshieldedColliders.add(new Triple(x, y, z));
 
                         if (verbose) {
-                            TetradLogger.getInstance().log("Copied collider " + x + " â " + y + " â " + z + " from CPDAG.");
+                            TetradLogger.getInstance().log("Copied collider " + x + " *-> " + y + " <-* " + z + " from CPDAG.");
                         }
                     }
                 } else if (cpdag.isAdjacentTo(x, z)) {
                     Set<Node> sepset = sepsetMap.get(x, z);
 
                     if (sepset != null && !sepset.contains(y)) {
-                        if (colliderAllowed(pag, x, y, z, knowledge)) {
+
+                        // As in the first sweep: unshieldedness in the working graph is a precondition of
+                        // orientation itself (GFCI R0'), not merely of the unshieldedColliders bookkeeping.
+                        if (!pag.isAdjacentTo(x, z) && colliderAllowed(pag, x, y, z, knowledge)) {
                             pag.setEndpoint(x, y, Endpoint.ARROW);
                             pag.setEndpoint(z, y, Endpoint.ARROW);
-
-                            if (!pag.isAdjacentTo(x, z)) {
-                                unshieldedColliders.add(new Triple(x, y, z));
-                            }
+                            unshieldedColliders.add(new Triple(x, y, z));
 
                             if (verbose) {
-                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " â " + y + " â " + z);
+                                TetradLogger.getInstance().log("Oriented collider by separating set: " + x + " *-> " + y + " <-* " + z);
                             }
                         }
                     }
