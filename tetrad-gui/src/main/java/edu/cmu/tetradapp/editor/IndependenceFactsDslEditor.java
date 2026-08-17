@@ -29,6 +29,7 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
@@ -211,7 +212,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
         buildUI();
         refreshEngines();
         restoreState();              // only restore once
-        getEvaluatorFromSelection(true); // optional: make paramsButton correct for restored engine
+        safeGetEvaluatorFromSelection(true); // optional: make paramsButton correct for restored engine
 
         // lightweight live parse feedback
         dslPane.getDocument().addDocumentListener(new DocumentListener() {
@@ -734,7 +735,12 @@ public final class IndependenceFactsDslEditor extends JPanel {
 
         // wiring
         engineCombo.addActionListener(e -> {
-            FactEvaluator ev = getEvaluatorFromSelection(false);
+            // Populating the combo fires this listener once per addItem, with the first item
+            // auto-selected. Building an evaluator then is both wasted work and a crash risk
+            // (the exception escapes to the EDT from inside refreshEngines), so defer to the
+            // explicit getEvaluatorFromSelection call that follows restoreState().
+            if (restoring) return;
+            FactEvaluator ev = safeGetEvaluatorFromSelection(false);
             paramsButton.setEnabled(ev != null && ev.hasParams());
             // reset model; require preview/run
             resultsModel.setRows(List.of());
@@ -753,7 +759,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
             pane.createDialog(this, "Set Parameters").setVisible(true);
 
             // After params change, rebuild test/cache if statistical engine selected.
-            getEvaluatorFromSelection(true);
+            safeGetEvaluatorFromSelection(true);
         });
 
         previewButton.addActionListener(e -> preview());
@@ -813,7 +819,20 @@ public final class IndependenceFactsDslEditor extends JPanel {
             List<IndependenceTestModel> models =
                     new ArrayList<>(IndependenceTestModels.getInstance().getModels(dt));
 
-            models.removeFirst();
+            models.removeIf(IndependenceFactsDslEditor::requiresBlockSpec);
+
+            // A covariance matrix supports only the tests that read one (Fisher Z, SEM BIC,
+            // Poisson Prior); the rest need raw rows and throw from getTest. Probe once here
+            // and offer only what actually builds, rather than letting the selection throw
+            // onto the EDT. The probe is cheap in this case: covariance-capable tests just
+            // wrap the p x p matrix, and incompatible ones fail immediately on a type check.
+            // Row data is NOT probed -- constructing e.g. KCI on a large sample is expensive,
+            // and a test that fails only for a fixable reason (a Causal Learn test with an
+            // unset Python interpreter) must stay selectable so the user can fix it.
+            if (!(dataModel instanceof DataSet)) {
+                models.removeIf(m -> !buildsAgainstData(m));
+            }
+
             for (IndependenceTestModel m : models) {
                 engineCombo.addItem(m);
             }
@@ -822,8 +841,44 @@ public final class IndependenceFactsDslEditor extends JPanel {
                 engineCombo.addItem(MSEP_ENGINE_LABEL);
             }
 
+            if (engineCombo.getItemCount() == 0) {
+                warningsLabel.setText("No independence test available for this data.");
+            }
+
         } finally {
             restoring = false;
+        }
+    }
+
+    /**
+     * True for wrappers that need a {@link edu.cmu.tetrad.search.blocks.BlockSpec} supplied via
+     * {@code setBlockSpec} before {@code getTest} will work. This editor has no block structure to
+     * give them, so they cannot be offered: selecting one threw
+     * {@code IllegalArgumentException: blockspec == null} out of the combo's action listener.
+     * The failure was not specific to covariance input -- it occurred for any data type, and fired
+     * during construction because the wrapper happened to sort first in the list and was therefore
+     * auto-selected by the first {@code addItem}.
+     */
+    private static boolean requiresBlockSpec(IndependenceTestModel m) {
+        if (m == null) return false;
+        Class<?> clazz = m.getIndependenceTest().clazz();
+        return BlockIndependenceWrapper.class.isAssignableFrom(clazz);
+    }
+
+    /**
+     * True if this test can actually be constructed against the editor's data model. Used to filter
+     * the engine list for non-tabular data (covariance matrices); see {@link #refreshEngines()} for
+     * why row data is exempt. Any failure -- a declared type check, a cast, a reflective error --
+     * counts as incompatible.
+     */
+    private boolean buildsAgainstData(IndependenceTestModel m) {
+        try {
+            Class<?> clazz = m.getIndependenceTest().clazz();
+            IndependenceWrapper w = (IndependenceWrapper) clazz.getDeclaredConstructor().newInstance();
+            w.getTest(dataModel, parameters);
+            return true;
+        } catch (Throwable t) {
+            return false;
         }
     }
 
@@ -834,6 +889,32 @@ public final class IndependenceFactsDslEditor extends JPanel {
      *
      * @param forceRebuild if true, rebuild independence test/cache even if already set.
      */
+    /**
+     * {@link #getEvaluatorFromSelection(boolean)} with construction failures reported in a dialog
+     * instead of thrown. Building a test can fail for reasons outside this editor's control -- an
+     * unset Python interpreter, a test that turns out to need data the model does not carry -- and
+     * an exception raised inside a combo listener or a button handler otherwise escapes onto the
+     * event dispatch thread and takes down the window with a stack trace. Returns null on failure.
+     */
+    private FactEvaluator safeGetEvaluatorFromSelection(boolean forceRebuild) {
+        try {
+            return getEvaluatorFromSelection(forceRebuild);
+        } catch (RuntimeException ex) {
+            Throwable cause = (ex.getCause() != null) ? ex.getCause() : ex;
+            TetradLogger.getInstance().log("Could not build independence test: " + cause.getMessage());
+            independenceTest = null;
+            independenceWrapper = null;
+            Q = null;
+            warningsLabel.setText("Selected test unavailable for this data.");
+            JOptionPane.showMessageDialog(this,
+                    "This independence test could not be used with this data:\n\n"
+                            + cause.getMessage()
+                            + "\n\nPlease choose a different test.",
+                    "Test Unavailable", JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+    }
+
     private FactEvaluator getEvaluatorFromSelection(boolean forceRebuild) {
         Object sel = engineCombo.getSelectedItem();
         if (sel == null) return null;
@@ -969,7 +1050,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
             return;
         }
 
-        FactEvaluator ev = getEvaluatorFromSelection(true);
+        FactEvaluator ev = safeGetEvaluatorFromSelection(true);
         if (ev == null) {
             statusLabel.setText("No engine selected.");
             return;
