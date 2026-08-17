@@ -52,10 +52,11 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * removal step tests edges in the CPDAG for conditional independence, followed by a possible d-sep removal step
  * that searches a broader candidate separating set. Third, colliders from the CPDAG are copied into the working
  * PAG, additional colliders are oriented using the sepsets found during edge removal, and the FCI final orientation
- * rules are applied. Collider orientation in the working PAG is restricted to triples that are unshielded there
- * (the adjacency check of GFCI's R0'): arrowheads in a PAG assert marks invariant across the Markov equivalence
- * class, and only unshielded colliders carry that invariance, so orienting a shielded triple could produce a
- * non-PAG.
+ * rules are applied. Collider orientation in the working PAG follows steps C'/F' of the GFCI paper: the triple
+ * must be unshielded in the working graph (arrowheads in a PAG assert marks invariant across the Markov
+ * equivalence class, and only unshielded colliders carry that invariance), and CPDAG colliders are copied only
+ * at triples also unshielded in the CPDAG -- triples shielded in the CPDAG are adjudicated by the recorded
+ * sepset instead, since FGES oriented them in the presence of an edge later judged spurious.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
@@ -363,14 +364,18 @@ public class GfciOld implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (cpdag.isDefCollider(x, y, z)) {
+                if (cpdag.isDefCollider(x, y, z) && !cpdag.isAdjacentTo(x, z)) {
 
-                    // Per the published GFCI R0' (Ogarrio et al., 2016), colliders are oriented in the working
-                    // graph only at triples that are unshielded there. Arrowheads in a PAG assert marks invariant
-                    // across the Markov equivalence class; only unshielded colliders carry that invariance, so
-                    // stamping a shielded triple would write non-invariant marks and can yield a non-PAG. If x and
-                    // z lose their adjacency in a later removal phase, the subsequent collider sweep picks the
-                    // triple up with this condition then satisfied.
+                    // Step C' of the GFCI paper (Ogarrio et al., 2016): orient <x, y, z>, unshielded in the
+                    // working graph, as a collider if it is an UNSHIELDED collider in the CPDAG. Both conjuncts
+                    // matter. Unshielded in the working graph: arrowheads in a PAG assert marks invariant across
+                    // the Markov equivalence class, and only unshielded colliders carry that invariance (this is
+                    // implied by CPDAG-unshieldedness, since working-graph adjacencies are a subset of CPDAG
+                    // adjacencies, but is kept explicit as the rule's stated precondition). Unshielded in the
+                    // CPDAG: a collider FGES oriented at a triple shielded in the CPDAG was oriented in the
+                    // presence of the x--z edge; if that edge is later removed as spurious, the orientation is
+                    // no longer trustworthy, and the triple must instead be adjudicated by the sepset test in
+                    // the branch below.
                     if (!pag.isAdjacentTo(x, z) && colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
@@ -449,6 +454,20 @@ public class GfciOld implements IGraphSearch {
             }
         }
 
+        // As in FCI (Spirtes et al.), re-orient from scratch after the possible d-sep removal step
+        // (step E of the GFCI paper: unorient all edges that remain). A collider stamped in the first
+        // sweep may have had a leg removed as spurious by the possible d-sep step; the arrowhead on
+        // the surviving leg is then unjustified residue, since the collider inference required both
+        // legs to be genuine adjacencies. Blanking to circles and re-deriving unshielded colliders
+        // below (from the CPDAG and the recorded sepsets, which now include the
+        // possible-d-sep-phase sepsets) removes such residue before the final rules run. First-sweep
+        // marks exist to support the Possible-D-SEP computation and are not carried forward;
+        // unshieldedColliders is likewise rebuilt so the set handed to guaranteePag reflects only
+        // colliders justified in the final graph.
+        pag.reorientAllWith(Endpoint.CIRCLE);
+        fciOrient.fciOrientbk(knowledge, pag, pag.getNodes(), excludeSelectionBias);
+        unshieldedColliders.clear();
+
         for (Node y : nodes) {
             List<Node> adjacentNodes = new ArrayList<>(pag.getAdjacentNodes(y));
 
@@ -459,11 +478,12 @@ public class GfciOld implements IGraphSearch {
                 Node x = adjacentNodes.get(combination[0]);
                 Node z = adjacentNodes.get(combination[1]);
 
-                if (cpdag.isDefCollider(x, y, z)) {
+                if (cpdag.isDefCollider(x, y, z) && !cpdag.isAdjacentTo(x, z)) {
 
-                    // See the corresponding comment in the first collider sweep: colliders are oriented only at
-                    // triples unshielded in the working graph (GFCI R0'). Triples shielded during the first sweep
-                    // whose x--z shield was removed by the possible d-sep step become orientable here.
+                    // Step F' of the GFCI paper: same rule as step C' -- see the comment on the first sweep.
+                    // Unshielded colliders in the CPDAG are copied; colliders at triples shielded in the CPDAG
+                    // are adjudicated by the sepset test in the branch below. Triples whose x--z shield was
+                    // removed by the possible d-sep step become orientable here.
                     if (!pag.isAdjacentTo(x, z) && colliderAllowed(pag, x, y, z, knowledge)) {
                         pag.setEndpoint(x, y, Endpoint.ARROW);
                         pag.setEndpoint(z, y, Endpoint.ARROW);
