@@ -39,7 +39,7 @@ import edu.cmu.tetrad.util.TetradLogger;
  * @see StarFci
  * @see Boss
  */
-public final class Bfci extends StarFciKeepKnowledgeOrientations {
+public final class Bfci extends StarFciGuaranteePag {
     /**
      * The score.
      */
