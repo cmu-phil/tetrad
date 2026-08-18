@@ -718,6 +718,10 @@ public final class Params {
      */
     public static final String VERBOSE = "verbose";
     /**
+     * Constant <code>SCORE_TEST_CALIBRATED_P_VALUES="scoreTestCalibratedPValues"</code>
+     */
+    public static final String SCORE_TEST_CALIBRATED_P_VALUES = "scoreTestCalibratedPValues";
+    /**
      * Constant <code>SEM_BIC_RULE="semBicRule"</code>
      */
     public static final String SEM_BIC_RULE = "semBicRule";

@@ -77,7 +77,7 @@ import static edu.cmu.tetrad.util.TMath.log;
  * @see edu.cmu.tetrad.search.Grasp
  * @see edu.cmu.tetrad.search.Boss
  */
-public class SemBicScore implements Score, EffectiveSampleSizeSettable {
+public class SemBicScore implements Score, EffectiveSampleSizeSettable, ProvidesCalibratedPValue {
 
     /**
      * The sample size of the covariance matrix.
@@ -909,6 +909,63 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable {
      */
     public String toString() {
         return "SEM BIC Score";
+    }
+
+    /**
+     * Returns true just in case the likelihood-ratio statistic can be recovered from the local score difference,
+     * which requires a zero structure prior. With a non-zero structure prior the score difference carries a
+     * prior term that depends on the size of the conditioning set, so the effective rejection threshold varies
+     * from fact to fact and no single alpha describes the rule.
+     *
+     * @return True if calibrated p-values are available.
+     */
+    @Override
+    public boolean providesCalibratedPValue() {
+        return abs(getStructurePrior()) <= 0;
+    }
+
+    /**
+     * Returns the p-value of the likelihood-ratio test for x _||_ y | z, recovered from the local score
+     * difference. Under either rule type the local score difference is
+     * <p>
+     * v = G - c * ln(N),
+     * <p>
+     * where G = 2 * (log-likelihood with x added minus log-likelihood without) is the likelihood-ratio statistic
+     * for the single extra parameter (the coefficient of x in the regression of y on z and x), c is the penalty
+     * discount, and N is the effective sample size. So G = v + c * ln(N), which is asymptotically chi-square on 1
+     * degree of freedom under the null. NOTE that the resulting p-value does not depend on the penalty discount:
+     * c cancels between v and the added term. Only the score's accept/reject DECISION depends on c.
+     *
+     * @param x The index of the first variable.
+     * @param y The index of the second variable.
+     * @param z The indices of the conditioning variables.
+     * @return The p-value, in [0, 1].
+     */
+    @Override
+    public double calibratedPValue(int x, int y, int[] z) {
+        double v = localScoreDiff(x, y, z);
+
+        if (Double.isNaN(v)) {
+            return Double.NaN;
+        }
+
+        // Floor at zero: the recovered statistic is non-negative in exact arithmetic, but a singular or
+        // near-singular fit can push it slightly below zero.
+        double g = TMath.max(0.0, v + getPenaltyDiscount() * this.logN);
+
+        return StatUtils.getChiSquareP(1, g);
+    }
+
+    /**
+     * Returns the significance level at which this score's sign rule operates, P(chi-square(1) &gt; c * ln(N)).
+     * Rejecting when the calibrated p-value is at or below this level reproduces the rule "dependent iff the local
+     * score difference is positive".
+     *
+     * @return The implied alpha, in [0, 1].
+     */
+    @Override
+    public double impliedAlpha() {
+        return StatUtils.getChiSquareP(1, getPenaltyDiscount() * this.logN);
     }
 
     private double getStructurePrior(int parents) {

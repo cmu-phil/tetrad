@@ -5095,6 +5095,39 @@ Source:
     </ul>
 
 
+    === scoreTestCalibratedPValues ===
+    <h3 class="parameter_description" id="scoreTestCalibratedPValues">scoreTestCalibratedPValues</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="scoreTestCalibratedPValues_short_desc">
+        Report calibrated p-values instead of raw score differences
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="scoreTestCalibratedPValues_long_desc">
+        A score used as an independence test normally reports its local score
+        difference, which is negative for independence and is not a probability.
+        With this set to Yes, the test instead reports the p-value of the
+        corresponding likelihood-ratio test, which is asymptotically Uniform(0, 1)
+        under the null, and reports the significance level at which its own sign
+        rule operates. This does NOT change the accept/reject decision or the
+        graph a search returns; it makes the p-value diagnostics of the Markov
+        check (Anderson-Darling, KS, Fisher, binomial) well defined for a
+        score-based test. Ignored when the score cannot supply a calibrated
+        p-value, as when the structure prior is non-zero.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="scoreTestCalibratedPValues_default_value">false</span>
+        </li>
+        <li>Lower Bound: <span id="scoreTestCalibratedPValues_lower_bound"></span></li>
+        <li>Upper Bound: <span id="scoreTestCalibratedPValues_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="scoreTestCalibratedPValues_value_type">Boolean</span>
+        </li>
+    </ul>
+
+
     === semBicRule ===
     <h3 class="parameter_description" id="semBicRule">semBicRule</h3>
     <ul class="parameter_description_list">

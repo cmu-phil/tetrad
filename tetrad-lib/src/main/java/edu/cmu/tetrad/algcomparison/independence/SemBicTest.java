@@ -82,7 +82,13 @@ public class SemBicTest implements IndependenceWrapper {
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
 
-        return new ScoreIndTest(score, dataSet);
+        ScoreIndTest test = new ScoreIndTest(score, dataSet);
+
+        // Optional: report likelihood-ratio p-values instead of raw score differences. Does not change the
+        // test's accept/reject decisions; see ScoreIndTest.setCalibratePValues.
+        test.setCalibratePValues(parameters.getBoolean(Params.SCORE_TEST_CALIBRATED_P_VALUES));
+
+        return test;
     }
 
     /**
@@ -115,6 +121,7 @@ public class SemBicTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
+        params.add(Params.SCORE_TEST_CALIBRATED_P_VALUES);
         params.add(Params.PRECOMPUTE_COVARIANCES);
         params.add(Params.SINGULARITY_LAMBDA);
         params.add(Params.MISSING_DATA_POLICY);

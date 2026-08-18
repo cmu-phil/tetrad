@@ -2242,12 +2242,22 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 boolean indep = result.isIndependent();
                 double pValue = result.getPValue();
 
-                if (pValue >= 0.0) {
-                    if (msep) {
-                        resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                    } else {
-                        resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                    }
+                // A test that reports probabilities can only produce a negative value if something has gone
+                // wrong, so that sanity filter is kept for those. A score wrapped as a test (ScoreIndTest)
+                // reports a score DIFFERENCE in this slot, which is negative precisely when the fact holds;
+                // applying the same filter there silently discarded every independent result, so the check
+                // reported zero tests on the m-separation side and kept only the dependent ones -- whose
+                // positive "p-values" then made Fisher's combined statistic negative and threw out of
+                // StatUtils.getChiSquareP. Keep such results; the statistics that require calibrated
+                // p-values are reported as NaN in calcStats instead.
+                if (independenceTest.isPValueAProbability() && pValue < 0.0) {
+                    return;
+                }
+
+                if (msep) {
+                    resultsIndep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                } else {
+                    resultsDep.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
                 }
             }
         }
@@ -2327,15 +2337,17 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     private void calcStats(boolean indep) {
         List<IndependenceResult> results = new ArrayList<>(getResultsLocal(indep));
 
-        double alpha = cachedQueries.getBaseTest().getAlpha();
-        boolean usableAlpha = isUsableAlpha(alpha);
+        boolean calibrated = providesCalibratedPValues();
 
+        // The fraction of implied independencies the test rejects is well defined for EVERY test: ask the test
+        // for its own verdict rather than thresholding a reported p-value. For a test that reports probabilities
+        // this is identical to counting p <= alpha (that is exactly how such tests decide), and for a score
+        // wrapped as a test it is the fraction the score judges dependent -- the one Markov-check statistic that
+        // remains meaningful without calibrated p-values.
         int dependent = 0;
 
-        if (usableAlpha) {
-            for (IndependenceResult result : results) {
-                if (result.getPValue() <= alpha) dependent++;
-            }
+        for (IndependenceResult result : results) {
+            if (!result.isIndependent()) dependent++;
         }
 
         List<Double> pValues = getPValues(results);
@@ -2355,14 +2367,21 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         // independencies, the small-n regime is the common case. A-squared is the right statistic for this null.
         // Note this does NOT apply to normality testing with an estimated mean and variance, as in the Descriptive
         // Statistics dialog, where the case-3 correction is correct.
-        double adP = 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquared);
-        double ksP = UniformityTest.getKsPValue(pValues, 0, 1);
-        double fishP = getFisherCombinedPValue(results);
-        double binP = getBinomialPValue_(pValues);
+        // All four of these test the p-values against a Uniform(0, 1) null, so they are defined only when the
+        // base test reports calibrated p-values. With a score wrapped as a test the reported values are score
+        // differences; computing these anyway produced meaningless numbers (and Fisher's method threw).
+        double adP = calibrated ? 1. - _generalAndersonDarlingTest.getProbTail(pValues.size(), _aSquared) : Double.NaN;
+        double ksP = calibrated ? UniformityTest.getKsPValue(pValues, 0, 1) : Double.NaN;
+        double fishP = calibrated ? getFisherCombinedPValue(results) : Double.NaN;
+        double binP = calibrated ? getBinomialPValue_(pValues) : Double.NaN;
 
-        // Without a usable alpha there is no threshold to count dependencies against; report the fraction as
-        // undefined rather than as zero, which would read as "no implied dependency was detected."
-        double fracDep = usableAlpha ? (dependent / (double) results.size()) : Double.NaN;
+        // The A-squared statistics themselves are likewise computed against the Uniform(0, 1) null.
+        if (!calibrated) {
+            _aSquared = Double.NaN;
+            _aSquaredStar = Double.NaN;
+        }
+
+        double fracDep = results.isEmpty() ? Double.NaN : (dependent / (double) results.size());
         int numTests = results.size();
 
         if (indep) {
@@ -2499,7 +2518,27 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return True if the base test reports usable p-values.
      */
     public boolean providesCalibratedPValues() {
-        return isUsableAlpha(cachedQueries.getBaseTest().getAlpha());
+        IndependenceTest baseTest = cachedQueries.getBaseTest();
+        return baseTest.isPValueAProbability() && isUsableAlpha(baseTest.getAlpha());
+    }
+
+    /**
+     * Returns true just in case every value in the list can be read as a probability. The uniformity statistics
+     * (Anderson-Darling, KS, Fisher's method) are defined only for p-values in [0, 1]; feeding them score
+     * differences produces meaningless numbers at best and exceptions at worst (Fisher's method sums log(p), so
+     * values above 1 make the combined chi-square negative).
+     *
+     * @param pValues The values to check.
+     * @return True if all values lie in [0, 1] and none is NaN.
+     */
+    private static boolean allProbabilities(List<Double> pValues) {
+        for (double p : pValues) {
+            if (Double.isNaN(p) || p < 0.0 || p > 1.0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -2549,7 +2588,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getKsPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
-        if (pValues.isEmpty()) return Double.NaN;
+        if (pValues.isEmpty() || !allProbabilities(pValues)) return Double.NaN;
         return UniformityTest.getKsPValue(pValues, 0.0, 1.0);
     }
 
@@ -2561,7 +2600,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getBinomialPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
-        if (pValues.isEmpty()) return Double.NaN;
+        if (pValues.isEmpty() || !allProbabilities(pValues)) return Double.NaN;
         return getBinomialPValue_(pValues);
     }
 
@@ -2573,7 +2612,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getAndersonDarlingA2(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
-        if (pValues.isEmpty()) return Double.NaN;
+        if (pValues.isEmpty() || !allProbabilities(pValues)) return Double.NaN;
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
         return generalAndersonDarlingTest.getASquared();
     }
@@ -2586,7 +2625,7 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getAndersonDarlingPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
-        if (pValues.isEmpty()) return Double.NaN;
+        if (pValues.isEmpty() || !allProbabilities(pValues)) return Double.NaN;
         GeneralAndersonDarlingTest generalAndersonDarlingTest = new GeneralAndersonDarlingTest(pValues, new UniformRealDistribution(0, 1));
 
         // A-squared, not A-squared-star: the null is a fully specified Uniform(0, 1) with no estimated
@@ -2604,6 +2643,14 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public double getFisherCombinedPValue(List<IndependenceResult> visiblePairs) {
         List<Double> pValues = getPValues(visiblePairs);
+
+        // Fisher's method is defined only for p-values. A score wrapped as a test reports score differences,
+        // for which log(p) is positive whenever the value exceeds 1 (and undefined when it is negative), making
+        // the combined statistic negative and throwing out of StatUtils.getChiSquareP. Report the statistic as
+        // undefined rather than computing it from values that are not p-values.
+        if (!allProbabilities(pValues)) {
+            return Double.NaN;
+        }
 
         double sum = 0.0;
 
