@@ -138,6 +138,39 @@ public class RecursiveDiscriminatingPathRule {
                                                    int depth, PreserveMarkov preserveMarkovHelper,
                                                    IndependenceCheckCounter counter, long timeout)
             throws InterruptedException {
+        return findDdpSepsetRecursive(test, pag, x, y, recursiveDepth, maxDdpPathLength, depth,
+                preserveMarkovHelper, counter, timeout, false);
+    }
+
+    /**
+     * As the other overloads, with control over how the separating set is chosen when more than one candidate
+     * blocking set renders x and y independent.
+     * <p>
+     * With {@code useMaxP} false (the default everywhere else) the FIRST passing candidate is returned, so the
+     * result depends on the order in which {@link SublistGenerator} happens to enumerate the not-followed subsets.
+     * With it true, every candidate is evaluated and the one with the STRONGEST evidence of independence is
+     * returned, which removes that order dependence. The choice is not cosmetic: R4 reads the returned set twice,
+     * once to check that it contains the collider path and once to decide (by whether it contains V) whether V is
+     * a collider on the discriminating path, and the set is recorded in the caller's sepset map.
+     * <p>
+     * Two caveats. First, max-p forces the full enumeration on every call rather than exiting at the first hit;
+     * the enumeration is over subsets of the ambiguous pool, so the cost is bounded by the same worst case the
+     * greedy version already faces, but the average case is worse. Second, when a {@link PreserveMarkov} helper is
+     * supplied the greedy rule is used regardless of this flag: that helper's accept path MUTATES its running
+     * p-value bookkeeping, so evaluating every candidate would fold rejected candidates' updates into the state
+     * that later calls depend on. That restriction can be lifted if PreserveMarkov grows a side-effect-free query.
+     *
+     * @param useMaxP Whether to return the candidate with the strongest evidence of independence rather than the
+     *                first one found.
+     * @return A separating set, or {@code null} if none was found.
+     * @throws InterruptedException If the execution is interrupted while running.
+     */
+    public static Set<Node> findDdpSepsetRecursive(IndependenceTest test, Graph pag, Node x, Node y,
+                                                   int recursiveDepth, int maxDdpPathLength,
+                                                   int depth, PreserveMarkov preserveMarkovHelper,
+                                                   IndependenceCheckCounter counter, long timeout,
+                                                   boolean useMaxP)
+            throws InterruptedException {
 
         if (pag.isAdjacentTo(x, y)) {
             throw new IllegalArgumentException("Nodes must be non-adjacent to each other.");
@@ -183,6 +216,12 @@ public class RecursiveDiscriminatingPathRule {
         SublistGenerator gen = new SublistGenerator(notFollowedSuperset.size(), notFollowedSuperset.size());
         int[] choice;
         Set<Set<Node>> testSets = new HashSet<>();
+
+        // Max-p state. The greedy rule returns at the first hit, so these stay unused unless useMaxP is on and
+        // no PreserveMarkov helper is in play (see the javadoc for why that helper forces the greedy rule).
+        boolean maxP = useMaxP && preserveMarkovHelper == null;
+        Set<Node> bestSet = null;
+        double bestStrength = Double.NEGATIVE_INFINITY;
 
         while ((choice = gen.next()) != null) {
             if (System.currentTimeMillis() > deadlineMs) {
@@ -234,8 +273,28 @@ public class RecursiveDiscriminatingPathRule {
             }
 
             if (independent) {
-                return testSet;
+                if (!maxP) {
+                    return testSet;
+                }
+
+                // Rank by strength of independence, which is LARGER-is-stronger for a p-value test and
+                // SMALLER-is-stronger for a score wrapped as a test; see IndependenceTest.isPValueAProbability.
+                // Comparing raw reported values would select the weakest sepset whenever the test is score-based.
+                IndependenceResult r = test.checkIndependence(x, y, testSet);
+                double strength = test.isPValueAProbability() ? r.getPValue() : -r.getScore();
+
+                if (strength > bestStrength) {
+                    bestStrength = strength;
+                    bestSet = testSet;
+                }
             }
+        }
+
+        // Under max-p this is the strongest candidate seen; note that if the deadline broke the loop early it is
+        // the strongest among those reached, which is still a better answer than the null the greedy rule
+        // returns on timeout.
+        if (maxP && bestSet != null) {
+            return bestSet;
         }
 
 //        TetradLogger.getInstance().log("\tRecursive DDP: No sepset found for " + x + " and " + y);

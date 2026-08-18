@@ -88,6 +88,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     private PreserveMarkov preserveMarkovHelper = null;
     /**
+     * Whether R4's recursive discriminating-path search returns the candidate separating set with the strongest
+     * evidence of independence rather than the first one it finds. Off by default, which preserves the historical
+     * (order-dependent) behavior exactly. See
+     * {@link edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule#findDdpSepsetRecursive(IndependenceTest, Graph,
+     * Node, Node, int, int, int, PreserveMarkov, IndependenceCheckCounter, long, boolean)}.
+     */
+    private boolean ddpMaxP = false;
+    /**
      * A private instance of the SepsetMap used to manage and store separating sets within the
      * FciOrientDataExaminationStrategy. The separating sets are used to capture conditional independencies in a graph.
      * This map preserves that proper independence relationships are maintained during the execution of the strategy.
@@ -256,7 +264,8 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
                     ? sepsetGraph : graph;
 
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, refGraph, x, y,
-                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
+                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, null, timeout,
+                    ddpMaxP);
 
             if (blocking != null) {
                 sepsets.set(x, y, blocking);
@@ -438,6 +447,18 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
     /**
      * Sets the PreserveMarkov object used by the R0R4StrategyTestBased.
+     *
+     * Sets whether R4's recursive discriminating-path search picks the strongest candidate separating set
+     * (max-p) rather than the first one found. Off by default.
+     *
+     * @param ddpMaxP whether to use the max-p rule
+     */
+    public void setDdpMaxP(boolean ddpMaxP) {
+        this.ddpMaxP = ddpMaxP;
+    }
+
+    /**
+     * Sets the PreserveMarkov helper.
      *
      * @param preserveMarkovHelper the PreserveMarkov object to be set
      */

@@ -563,6 +563,7 @@ public final class Fcit implements IGraphSearch {
         strategy.setVerbose(superVerbose);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
+        strategy.setDdpMaxP(false);
         this.r0r4Strategy = strategy;
 
         fciOrient = new FciOrient(strategy);
