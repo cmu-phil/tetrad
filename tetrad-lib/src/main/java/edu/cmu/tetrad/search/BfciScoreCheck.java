@@ -170,8 +170,8 @@ public final class BfciScoreCheck implements IGraphSearch {
     private boolean useScoreCheck = true;
     /**
      * Penalty discount c in bic = 2 * logLik - c * k * ln(n) for the MAG score check. Default 1 (classical BIC).
-     * This knob is independent of the penalty discount inside the BOSS score, though the algcomparison wrapper
-     * sets both from the same parameter for convenience.
+     * This knob is independent of the penalty discount inside the BOSS score; the algcomparison wrapper sets it
+     * from its own parameter, Params.SCORE_CHECK_PENALTY_DISCOUNT.
      */
     private double scoreCheckPenaltyDiscount = 1.0;
     /**
@@ -183,6 +183,25 @@ public final class BfciScoreCheck implements IGraphSearch {
      * "unavailable". Reset at the start of every search() and updated on every accepted commitment.
      */
     private Double currentMagBic = null;
+
+    // ---------------- instrumentation (reset per search) ----------------
+    /**
+     * Per-run tallies for the removal machinery, reset at the start of every search() and reported in an
+     * UNCONDITIONAL summary line at the end (accepted removals are also logged unconditionally as they happen,
+     * so a run with verbose off still shows every removal). A "proposal" is a commitRemoval call, i.e., a pair
+     * for which some test found a separating set.
+     */
+    private int tallyProposalsAdjacency = 0;
+    private int tallyProposalsPDsep = 0;
+    private int tallyLegalityVetoes = 0;
+    private int tallyScoreVetoes = 0;
+    private int tallyAcceptedSingle = 0;
+    private int tallyAcceptedSaturating = 0;
+    /**
+     * BIC gap (current - trial, > 0) for every score veto, single-edge and saturating, for the summary's
+     * min/median/max report against c * ln(n).
+     */
+    private final List<Double> scoreVetoGaps = new ArrayList<>();
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -210,6 +229,36 @@ public final class BfciScoreCheck implements IGraphSearch {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Strength of the evidence for x _||_ y | set, on a scale where LARGER always means stronger independence,
+     * for both genuine hypothesis tests and scores wrapped as tests. A score-based test reports a score
+     * difference that is negative for independence, so its value is negated here; see
+     * {@link IndependenceTest#isPValueAProbability()}. Ranking candidate sepsets by the raw reported value
+     * instead selects the WEAKEST separating set whenever the test is score-based.
+     */
+    private static double independenceStrength(Node x, Node y, Set<Node> set, IndependenceTest test) {
+        try {
+            IndependenceResult result = test.checkIndependence(x, y, set);
+            return test.isPValueAProbability() ? result.getPValue() : -result.getScore();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Whether x _||_ y | set holds according to the test. Correct for every test, unlike comparing the reported
+     * p-value against test.getAlpha(), which is meaningless for a test that does not test at a level (a score
+     * wrapped as a test reports alpha = -1).
+     */
+    private static boolean independenceHolds(Node x, Node y, Set<Node> set, IndependenceTest test) {
+        try {
+            return test.checkIndependence(x, y, set).isIndependent();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     /**
      * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
@@ -306,14 +355,11 @@ public final class BfciScoreCheck implements IGraphSearch {
             return sepset2;
         }
 
-        try {
-            double p1 = test.checkIndependence(x, y, sepset1).getPValue();
-            double p2 = test.checkIndependence(x, y, sepset2).getPValue();
+        // Direction-aware: larger strength = stronger independence for every kind of test.
+        double s1 = independenceStrength(x, y, sepset1, test);
+        double s2 = independenceStrength(x, y, sepset2, test);
 
-            return p1 > p2 ? sepset1 : sepset2;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        return s1 > s2 ? sepset1 : sepset2;
     }
 
     /**
@@ -326,9 +372,9 @@ public final class BfciScoreCheck implements IGraphSearch {
             // Max p for stability...
             Stream<Set<Node>> setStream = parallelized ? choices.parallelStream() : choices.stream();
             return setStream
-                    .max(Comparator.comparingDouble(set -> computePValue(x, y, set, test))) // Find max
-                    .filter(set -> computePValue(x, y, set, test) > test.getAlpha()) // Filter by threshold
-                    .orElse(null); // Return best set or null if none pass the threshold
+                    .filter(set -> independenceHolds(x, y, set, test))   // keep only separating sets
+                    .max(Comparator.comparingDouble(set -> independenceStrength(x, y, set, test)))
+                    .orElse(null); // Return the STRONGEST separating set, or null if there is none
         } else { // Greedy
             // Greedy: lazy enumeration (smallest subsets first), batched parallel testing,
             // short-circuit on the first separating set. Nothing is materialized up front.
@@ -385,6 +431,15 @@ public final class BfciScoreCheck implements IGraphSearch {
 
         // SCORE CHECK: reset per-search state.
         this.currentMagBic = null;
+
+        // Instrumentation: reset per-search tallies.
+        this.tallyProposalsAdjacency = 0;
+        this.tallyProposalsPDsep = 0;
+        this.tallyLegalityVetoes = 0;
+        this.tallyScoreVetoes = 0;
+        this.tallyAcceptedSingle = 0;
+        this.tallyAcceptedSaturating = 0;
+        this.scoreVetoGaps.clear();
 
         Graph cpdag = getMarkovDag(verbose);
         Graph pag = GraphTransforms.dagToPag(cpdag, false);
@@ -563,11 +618,56 @@ public final class BfciScoreCheck implements IGraphSearch {
 
         pag = GraphUtils.replaceNodes(pag, nodes);
 
+        // Instrumentation: UNCONDITIONAL summary, so a run with verbose off still reports what the removal
+        // machinery did (and, in particular, whether zero removals means zero proposals or all-vetoed).
+        TetradLogger.getInstance().log(removalSummary());
+
         if (verbose) {
             TetradLogger.getInstance().log("BFCI-Score-Check finished.");
         }
 
         return pag;
+    }
+
+    /**
+     * The score check's veto threshold context, c * ln(n), or NaN if no covariance is available.
+     */
+    private double cLogN() {
+        ICovarianceMatrix cov = resolveCovariance();
+        return cov == null ? Double.NaN : scoreCheckPenaltyDiscount * Math.log(cov.getSampleSize());
+    }
+
+    /**
+     * One-line per-run summary of the removal machinery's tallies, including the score-veto BIC-gap
+     * distribution against c * ln(n) (a removal that costs no likelihood improves BIC by exactly c * ln(n),
+     * so gaps of that order are borderline calls while gaps far above it are decisive vetoes).
+     */
+    private String removalSummary() {
+        StringBuilder sb = new StringBuilder("BFCI-Score-Check removal summary: proposals = ")
+                .append(tallyProposalsAdjacency + tallyProposalsPDsep)
+                .append(" (adjacency ").append(tallyProposalsAdjacency)
+                .append(", pDsep ").append(tallyProposalsPDsep)
+                .append("), accepted = ").append(tallyAcceptedSingle + tallyAcceptedSaturating)
+                .append(" (single ").append(tallyAcceptedSingle)
+                .append(", saturating ").append(tallyAcceptedSaturating)
+                .append("), legality-vetoed = ").append(tallyLegalityVetoes)
+                .append(", score-vetoed = ").append(tallyScoreVetoes).append(".");
+
+        if (!scoreVetoGaps.isEmpty()) {
+            List<Double> gaps = new ArrayList<>(scoreVetoGaps);
+            Collections.sort(gaps);
+            double min = gaps.get(0);
+            double max = gaps.get(gaps.size() - 1);
+            double median = gaps.size() % 2 == 1
+                    ? gaps.get(gaps.size() / 2)
+                    : (gaps.get(gaps.size() / 2 - 1) + gaps.get(gaps.size() / 2)) / 2.0;
+            sb.append(" Score-veto BIC gaps: min = ").append(min)
+                    .append(", median = ").append(median)
+                    .append(", max = ").append(max)
+                    .append("; c*ln(n) = ").append(cLogN()).append(".");
+        }
+
+        return sb.toString();
     }
 
     /**
@@ -635,13 +735,22 @@ public final class BfciScoreCheck implements IGraphSearch {
     private Graph commitRemoval(Graph pag, Node a, Node c, Set<Node> sepset, String type, boolean doLegalityGating,
                                 Graph cpdag, List<Node> nodes, SepsetMap sepsetMap, Set<Triple> unshieldedColliders,
                                 Set<Node> selection) throws InterruptedException {
+        // Instrumentation: a commitRemoval call is a test proposal (a sepset was found for this pair).
+        if ("possible-D-SEP".equals(type)) {
+            tallyProposalsPDsep++;
+        } else {
+            tallyProposalsAdjacency++;
+        }
+
         if (!doLegalityGating) {
             pag.removeEdge(a, c);
             sepsetMap.set(a, c, sepset);
+            tallyAcceptedSingle++;
+            TetradLogger.getInstance().log("REMOVED edge " + a + " -- " + c + " (" + type + ", ungated); sepset = "
+                    + sepset + ".");
             if (verbose) {
                 IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
-                TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " (" + type + "); sepset = "
-                        + sepset + ", p-value = " + result.getPValue() + ".");
+                TetradLogger.getInstance().log("\t... p-value = " + result.getPValue() + ".");
             }
             return pag;
         }
@@ -663,6 +772,7 @@ public final class BfciScoreCheck implements IGraphSearch {
         PagLegalityCheck.LegalPagRet legal = legalPagModuloKnowledge(_pag, new LinkedHashSet<>(selection), trialOrient);
 
         if (!legal.isLegalPag()) {
+            tallyLegalityVetoes++;
             if (verbose) {
                 TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
                         + "), but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
@@ -683,10 +793,14 @@ public final class BfciScoreCheck implements IGraphSearch {
                 }
 
                 if (currentMagBic != null && trialBic < currentMagBic) {
+                    double gap = currentMagBic - trialBic;
+                    tallyScoreVetoes++;
+                    scoreVetoGaps.add(gap);
                     if (verbose) {
                         TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
                                 + "); legal PAG but SCORE CHECK failed (reverted): MAG BIC " + trialBic
-                                + " < current " + currentMagBic + ".");
+                                + " < current " + currentMagBic + "; gap = " + gap
+                                + ", c*ln(n) = " + cLogN() + ".");
                     }
                     return pag;                        // committed sepset map untouched
                 }
@@ -699,12 +813,14 @@ public final class BfciScoreCheck implements IGraphSearch {
         // Accepted: commit only the deliberate sepset write and carry the reoriented PAG forward.
         sepsetMap.set(a, c, sepset);
         currentMagBic = trialBic;   // SCORE CHECK cache; null forces recomputation on the next trial.
+        tallyAcceptedSingle++;
 
+        TetradLogger.getInstance().log("REMOVED edge " + a + " -- " + c + " (" + type
+                + ", legal PAG" + (useScoreCheck && trialBic != null ? ", score check passed" : "")
+                + "); sepset = " + sepset + ".");
         if (verbose) {
             IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
-            TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " (" + type
-                    + ", legal PAG, score check passed); sepset = " + sepset + ", p-value = "
-                    + result.getPValue() + ".");
+            TetradLogger.getInstance().log("\t... p-value = " + result.getPValue() + ".");
         }
 
         return _pag;
@@ -778,10 +894,14 @@ public final class BfciScoreCheck implements IGraphSearch {
                         }
 
                         if (currentMagBic != null && trialBic < currentMagBic) {
+                            double gap = currentMagBic - trialBic;
+                            tallyScoreVetoes++;
+                            scoreVetoGaps.add(gap);
                             if (verbose) {
                                 TetradLogger.getInstance().log("\tSaturating step: joint removal of " + batch.size()
                                         + " edge(s) legal but SCORE CHECK failed (reverted): MAG BIC " + trialBic
-                                        + " < current " + currentMagBic + ".");
+                                        + " < current " + currentMagBic + "; gap = " + gap
+                                        + ", c*ln(n) = " + cLogN() + ".");
                             }
                             continue;   // try the next batch
                         }
@@ -795,12 +915,14 @@ public final class BfciScoreCheck implements IGraphSearch {
                 for (Set<Node> pair : batch) {
                     List<Node> pn = new ArrayList<>(pair);
                     sepsetMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
+                    TetradLogger.getInstance().log("REMOVED edge " + pn.get(0) + " -- " + pn.get(1)
+                            + " (saturating joint removal); sepset = " + foundSepsets.get(pair) + ".");
                 }
                 currentMagBic = trialBic;   // SCORE CHECK cache; null forces recomputation later.
-                if (verbose) {
-                    TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
-                            + stalled.size() + " edge(s) jointly (legal PAG, score check passed).");
-                }
+                tallyAcceptedSaturating += batch.size();
+                TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
+                        + stalled.size() + " edge(s) jointly (legal PAG"
+                        + (useScoreCheck && trialBic != null ? ", score check passed" : "") + ").");
                 return trial;
             } else if (verbose) {
                 TetradLogger.getInstance().log("\tSaturating step: joint removal of " + batch.size()

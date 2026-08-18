@@ -174,12 +174,27 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
+     * Returns false: the value this test reports in the p-value slot is a score difference (negative for
+     * independence, positive for dependence), not a probability, so SMALLER values mean stronger evidence of
+     * independence. Callers ranking sepsets by strength must reverse their comparison accordingly.
+     *
+     * @return False, always.
+     */
+    @Override
+    public boolean isPValueAProbability() {
+        return false;
+    }
+
+    /**
      * Returns the significance level of the independence test.
      *
      * @return This level.
      * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
+        // Sentinel: this test does not test at a level. The value is deliberately outside [0, 1] so that callers
+        // (e.g. MarkovCheck.isUsableAlpha) can detect the absence of a meaningful alpha; do not "fix" it to 0.
+        // Callers must not use it as an independence threshold -- use IndependenceResult.isIndependent().
         return -1;
     }
 

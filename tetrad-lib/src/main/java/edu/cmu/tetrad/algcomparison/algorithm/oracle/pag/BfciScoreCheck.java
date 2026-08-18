@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -51,9 +52,10 @@ import java.util.List;
  * candidate graph. See {@link edu.cmu.tetrad.search.BfciScoreCheck} for the semantics, the fail-soft contract, and
  * the invariance argument for scoring the Zhang MAG.
  * <p>
- * The score check's penalty discount is taken from {@link Params#PENALTY_DISCOUNT} (the same knob the SEM BIC score
- * wrapper reads); to decouple the two, set the search class's penalty discount programmatically via
- * {@link edu.cmu.tetrad.search.BfciScoreCheck#setScoreCheckPenaltyDiscount(double)}.
+ * The score check's penalty discount is its own parameter, {@link Params#SCORE_CHECK_PENALTY_DISCOUNT} (default 1,
+ * the classical BIC test), independent of {@link Params#PENALTY_DISCOUNT}, which the initializer score wrapper
+ * (e.g., SEM BIC for BOSS) reads. The two can therefore be set separately from the interface and from
+ * algcomparison.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -64,6 +66,7 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
+@Experimental
 public class BfciScoreCheck extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix, LatentStructureAlgorithm {
@@ -150,9 +153,9 @@ public class BfciScoreCheck extends AbstractBootstrapAlgorithm implements Algori
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        // Score check configuration. The penalty discount is shared with the SEM BIC score wrapper's knob;
-        // set it programmatically on the search class to decouple the two.
-        search.setScoreCheckPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+        // Score check configuration. The gate's penalty discount is its own parameter (default 1, the
+        // classical BIC test), decoupled from the initializer score's penaltyDiscount.
+        search.setScoreCheckPenaltyDiscount(parameters.getDouble(Params.SCORE_CHECK_PENALTY_DISCOUNT));
 
         // Hand the score check its covariance directly when the data model provides one; otherwise the search
         // class resolves it lazily from the test or its data.
@@ -220,7 +223,7 @@ public class BfciScoreCheck extends AbstractBootstrapAlgorithm implements Algori
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.LV_HEURISTIC_ONLY);
         params.add(Params.DO_POSSIBLE_DSEP);
-        params.add(Params.PENALTY_DISCOUNT);
+        params.add(Params.SCORE_CHECK_PENALTY_DISCOUNT);
         params.add(Params.PARALLELIZED);
         params.add(Params.VERBOSE);
 

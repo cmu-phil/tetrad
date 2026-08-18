@@ -534,6 +534,10 @@ public final class Params {
      */
     public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
     /**
+     * Constant <code>SCORE_CHECK_PENALTY_DISCOUNT="scoreCheckPenaltyDiscount"</code>
+     */
+    public static final String SCORE_CHECK_PENALTY_DISCOUNT = "scoreCheckPenaltyDiscount";
+    /**
      * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
      */
     public static final String TRUNCATION_LIMIT = "truncationLimit";

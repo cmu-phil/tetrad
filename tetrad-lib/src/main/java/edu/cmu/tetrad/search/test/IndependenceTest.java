@@ -192,6 +192,25 @@ public interface IndependenceTest {
     }
 
     /**
+     * Returns true just in case {@link IndependenceResult#getPValue()} for this test is a probability, so that
+     * larger values mean stronger evidence of independence. This is the case for genuine hypothesis tests. It is
+     * NOT the case for a score wrapped as a test (see
+     * {@link edu.cmu.tetrad.search.test.ScoreIndTest}), whose reported "p-value" is a score difference that may be
+     * any real number and for which SMALLER (more negative) values mean stronger evidence of independence.
+     * <p>
+     * Callers that rank candidate separating sets by strength of independence -- the max-p heuristic, or a
+     * tie-break between two competing sepsets -- must consult this flag and reverse their comparison when it is
+     * false; otherwise they will systematically select the WEAKEST separating set found rather than the
+     * strongest. Callers that only ask whether a fact holds should use {@link IndependenceResult#isIndependent()},
+     * which is correct for every test.
+     *
+     * @return True if the reported p-value is a probability (the default), false if it is a score difference.
+     */
+    default boolean isPValueAProbability() {
+        return true;
+    }
+
+    /**
      * Returns the covariance matrix.
      *
      * @return This matrix.

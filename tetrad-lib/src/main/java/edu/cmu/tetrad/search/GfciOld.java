@@ -192,14 +192,11 @@ public class GfciOld implements IGraphSearch {
             return sepset2;
         }
 
-        try {
-            double p1 = test.checkIndependence(x, y, sepset1).getPValue();
-            double p2 = test.checkIndependence(x, y, sepset2).getPValue();
+        // Direction-aware: larger strength = stronger independence for every kind of test.
+        double s1 = independenceStrength(x, y, sepset1, test);
+        double s2 = independenceStrength(x, y, sepset2, test);
 
-            return p1 > p2 ? sepset1 : sepset2;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        return s1 > s2 ? sepset1 : sepset2;
     }
 
     /**
@@ -227,9 +224,9 @@ public class GfciOld implements IGraphSearch {
         if (useMaxP) {
             // Max p for stability...
             return choices.parallelStream()
-                    .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
-                    .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
-                    .orElse(null); // Return best set or null if none pass the threshold
+                    .filter(set -> independenceHolds(x, y, set, test))   // keep only separating sets
+                    .max(Comparator.comparingDouble(set -> independenceStrength(x, y, set, test)))
+                    .orElse(null); // Return the STRONGEST separating set, or null if there is none
         } else { // Greedy
 
             // Parallelize processing for adjx
@@ -254,6 +251,36 @@ public class GfciOld implements IGraphSearch {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Strength of the evidence for x _||_ y | set, on a scale where LARGER always means stronger independence,
+     * for both genuine hypothesis tests and scores wrapped as tests. A score-based test reports a score
+     * difference that is negative for independence, so its value is negated here; see
+     * {@link IndependenceTest#isPValueAProbability()}. Ranking candidate sepsets by the raw reported value
+     * instead selects the WEAKEST separating set whenever the test is score-based.
+     */
+    private static double independenceStrength(Node x, Node y, Set<Node> set, IndependenceTest test) {
+        try {
+            IndependenceResult result = test.checkIndependence(x, y, set);
+            return test.isPValueAProbability() ? result.getPValue() : -result.getScore();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Whether x _||_ y | set holds according to the test. Correct for every test, unlike comparing the reported
+     * p-value against test.getAlpha(), which is meaningless for a test that does not test at a level (a score
+     * wrapped as a test reports alpha = -1).
+     */
+    private static boolean independenceHolds(Node x, Node y, Set<Node> set, IndependenceTest test) {
+        try {
+            return test.checkIndependence(x, y, set).isIndependent();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     /**
      * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth

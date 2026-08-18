@@ -5010,6 +5010,41 @@ Source:
     </ul>
 
 
+    === scoreCheckPenaltyDiscount ===
+    <h3 class="parameter_description" id="scoreCheckPenaltyDiscount">scoreCheckPenaltyDiscount</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="scoreCheckPenaltyDiscount_short_desc">
+        Penalty discount for the RICF-BIC score check (default = 1.0; min > 0.0)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="scoreCheckPenaltyDiscount_long_desc">
+        The parameter c in the MAG BIC used by the per-removal score check,
+        2L – c k ln N, where L is the RICF log-likelihood of the Zhang MAG
+        implied by the candidate PAG, k is the number of MAG parameters
+        (error variances plus edges), and N is the sample size. With c = 1
+        the acceptance rule is the classical BIC test. Larger values make
+        the gate more willing to remove edges; smaller values make it more
+        conservative. Independent of the penalty discount used by the
+        initializer score.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="scoreCheckPenaltyDiscount_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="scoreCheckPenaltyDiscount_lower_bound">4.9E-324</span>
+        </li>
+        <li>Upper Bound:
+            <span id="scoreCheckPenaltyDiscount_upper_bound">1.7976931348623157E308</span>
+        </li>
+        <li>Value Type:
+            <span id="scoreCheckPenaltyDiscount_value_type">Double</span>
+        </li>
+    </ul>
+
+
     === seed ===
     <h3 class="parameter_description" id="seed">seed</h3>
     <ul class="parameter_description_list">
