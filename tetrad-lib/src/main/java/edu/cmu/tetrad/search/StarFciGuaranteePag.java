@@ -801,6 +801,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         strategy.setDepth(this.depth);
         strategy.setMaxLength(this.maxDiscriminatingPathLength);
         strategy.setSepsetMap(sepsetMap);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
         strategy.setVerbose(false);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
