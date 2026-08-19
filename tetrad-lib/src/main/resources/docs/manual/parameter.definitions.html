@@ -2992,6 +2992,37 @@ Source:
         <li>Value Type: <span id="recursiveDepth_value_type">Integer</span></li>
     </ul>
 
+    === lvBossAllowAdditions ===
+    <h3 class="parameter_description" id="lvBossAllowAdditions">lvBossAllowAdditions</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="lvBossAllowAdditions_short_desc">
+        Allow LV-BOSS to add edges, not only delete and re-type them
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="lvBossAllowAdditions_long_desc">
+        LV-BOSS improves a BOSS-seeded MAG by greedy search under the MAG BIC.
+        With this set to Yes, the move set includes ADDING a directed or
+        bidirected edge between a non-adjacent pair, which is what lets the
+        search restore an adjacency the BOSS seed missed. With it set to No the
+        search may only delete edges, reverse them, or change their type, which
+        is the comparison that isolates what additions contribute. Additions
+        cost one model fit per non-adjacent ordered pair per sweep, so turning
+        them off is also much faster.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="lvBossAllowAdditions_default_value">true</span>
+        </li>
+        <li>Lower Bound: <span id="lvBossAllowAdditions_lower_bound"></span></li>
+        <li>Upper Bound: <span id="lvBossAllowAdditions_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="lvBossAllowAdditions_value_type">Boolean</span>
+        </li>
+    </ul>
+
+
     === maxCategories ===
     <h3 class="parameter_description" id="maxCategories">maxCategories</h3>
     <ul class="parameter_description_list">

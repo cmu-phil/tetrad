@@ -538,6 +538,10 @@ public final class Params {
      */
     public static final String SCORE_CHECK_PENALTY_DISCOUNT = "scoreCheckPenaltyDiscount";
     /**
+     * Constant <code>LV_BOSS_ALLOW_ADDITIONS="lvBossAllowAdditions"</code>
+     */
+    public static final String LV_BOSS_ALLOW_ADDITIONS = "lvBossAllowAdditions";
+    /**
      * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
      */
     public static final String TRUNCATION_LIMIT = "truncationLimit";
