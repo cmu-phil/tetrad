@@ -37,7 +37,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * LV-BOSS: a latent-variable search that uses NO independence tests at all. A BOSS CPDAG is projected to a PAG and
+ * GMAS: a latent-variable search that uses NO independence tests at all. A BOSS CPDAG is projected to a PAG and
  * then to its Zhang MAG, and that MAG is improved by steepest-ascent greedy search under the Gaussian MAG BIC
  * (RICF likelihood), moving only among legal MAGs. The final MAG is projected back to a PAG.
  * <p>
@@ -69,7 +69,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author josephramsey
  */
-public final class LvBoss implements IGraphSearch {
+public final class Gmas implements IGraphSearch {
 
     /**
      * The score used by BOSS for the seed CPDAG.
@@ -102,7 +102,7 @@ public final class LvBoss implements IGraphSearch {
      * graph. A cap on first moves rather than on composed pairs keeps the truncation deterministic under parallel
      * scoring: the first moves are expanded in the fixed order the generator produces them.
      */
-    private int maxLookaheadFirstMoves = 1000;
+    private int maxLookaheadFirstMoves = 500;
     /**
      * BOSS knobs.
      */
@@ -129,7 +129,7 @@ public final class LvBoss implements IGraphSearch {
      * @param score The score for BOSS. For the MAG score to be available this should be a score carrying a
      *              covariance matrix (e.g. SemBicScore), or the covariance should be set explicitly.
      */
-    public LvBoss(Score score) {
+    public Gmas(Score score) {
         if (score == null) {
             throw new NullPointerException("Score was null.");
         }
@@ -167,8 +167,13 @@ public final class LvBoss implements IGraphSearch {
         PermutationSearch permutationSearch = new PermutationSearch(boss);
         permutationSearch.setKnowledge(knowledge);
 
-        Graph cpdag = permutationSearch.search();
-        Graph seedPag = GraphTransforms.dagToPag(cpdag, excludeSelectionBias);
+        // NOTE the argument: search(false) returns the DAG, search() the CPDAG. dagToPag requires a DAG -- it
+        // projects through MagToPag, which rejects anything that is not a legal MAG, and a CPDAG's undirected
+        // component can fail that check ("Not legal mag"). Passing the CPDAG happens to work on sparse problems
+        // and throws on denser ones. This is also the idiom FcitSl uses for its own BOSS seed, so the seed PAG
+        // here is exactly LV-Heuristic's output, which keeps the two comparable.
+        Graph dag = permutationSearch.search(false);
+        Graph seedPag = GraphTransforms.dagToPag(dag, excludeSelectionBias);
         Graph mag = GraphTransforms.zhangMagFromPag(seedPag);
 
         long tSeed = System.currentTimeMillis();
@@ -176,13 +181,13 @@ public final class LvBoss implements IGraphSearch {
         Double currentBic = magBic(mag);
 
         if (currentBic == null) {
-            TetradLogger.getInstance().log("LV-BOSS: the seed MAG could not be scored (no covariance, a selection "
+            TetradLogger.getInstance().log("GMAS: the seed MAG could not be scored (no covariance, a selection "
                                            + "edge, or a singular fit); returning the seed PAG unchanged.");
             return GraphUtils.replaceNodes(seedPag, nodes);
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("LV-BOSS: seed MAG has " + mag.getNumEdges() + " edge(s), BIC "
+            TetradLogger.getInstance().log("GMAS: seed MAG has " + mag.getNumEdges() + " edge(s), BIC "
                                            + currentBic + ".");
         }
 
@@ -209,7 +214,7 @@ public final class LvBoss implements IGraphSearch {
 
                     if (pairBic != null && pairBic > currentBic) {
                         if (verbose) {
-                            TetradLogger.getInstance().log("LV-BOSS sweep " + (sweep + 1)
+                            TetradLogger.getInstance().log("GMAS sweep " + (sweep + 1)
                                                            + ": two-move escape; BIC " + currentBic + " -> "
                                                            + pairBic + " (+" + (pairBic - currentBic) + ").");
                         }
@@ -225,14 +230,14 @@ public final class LvBoss implements IGraphSearch {
 
             if (bestGraph == null) {
                 if (verbose) {
-                    TetradLogger.getInstance().log("LV-BOSS: no improving move at sweep " + (sweep + 1)
+                    TetradLogger.getInstance().log("GMAS: no improving move at sweep " + (sweep + 1)
                                                    + "; local optimum reached.");
                 }
                 break;
             }
 
             if (verbose) {
-                TetradLogger.getInstance().log("LV-BOSS sweep " + (sweep + 1) + ": " + bestMove
+                TetradLogger.getInstance().log("GMAS sweep " + (sweep + 1) + ": " + bestMove
                                                + "; BIC " + currentBic + " -> " + bestBic
                                                + " (+" + (bestBic - currentBic) + ").");
             }
@@ -246,7 +251,7 @@ public final class LvBoss implements IGraphSearch {
 
         long t1 = System.currentTimeMillis();
 
-        TetradLogger.getInstance().log("LV-BOSS summary: seed MAG " + seedPag.getNumEdges()
+        TetradLogger.getInstance().log("GMAS summary: seed MAG " + seedPag.getNumEdges()
                                        + " edge(s); moves applied = " + tallyMovesApplied
                                        + "; final MAG " + mag.getNumEdges() + " edge(s), BIC " + currentBic
                                        + "; two-move escapes = " + tallyPairEscapes
@@ -430,7 +435,7 @@ public final class LvBoss implements IGraphSearch {
         int limit = Math.min(firsts.size(), maxLookaheadFirstMoves);
 
         if (verbose && limit < firsts.size()) {
-            TetradLogger.getInstance().log("LV-BOSS: two-move escape considering the first " + limit
+            TetradLogger.getInstance().log("GMAS: two-move escape considering the first " + limit
                                            + " of " + firsts.size() + " first moves.");
         }
 

@@ -1969,6 +1969,67 @@ Source:
     </ul>
 
 
+    === gmasAllowAdditions ===
+    <h3 class="parameter_description" id="gmasAllowAdditions">gmasAllowAdditions</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gmasAllowAdditions_short_desc">
+        Allow GMAS to add edges, not only delete and re-type them
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="gmasAllowAdditions_long_desc">
+        GMAS improves a BOSS-seeded MAG by greedy search under the MAG BIC.
+        With this set to Yes, the move set includes ADDING a directed or
+        bidirected edge between a non-adjacent pair, which is what lets the
+        search restore an adjacency the BOSS seed missed. With it set to No the
+        search may only delete edges, reverse them, or change their type, which
+        is the comparison that isolates what additions contribute. Additions
+        cost one model fit per non-adjacent ordered pair per sweep, so turning
+        them off is also much faster.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gmasAllowAdditions_default_value">true</span>
+        </li>
+        <li>Lower Bound: <span id="gmasAllowAdditions_lower_bound"></span></li>
+        <li>Upper Bound: <span id="gmasAllowAdditions_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="gmasAllowAdditions_value_type">Boolean</span>
+        </li>
+    </ul>
+
+
+    === gmasLookaheadDepth ===
+    <h3 class="parameter_description" id="gmasLookaheadDepth">gmasLookaheadDepth</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gmasLookaheadDepth_short_desc">
+        How many moves deep GMAS looks when its sweep stalls (1 or 2)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="gmasLookaheadDepth_long_desc">
+        With 1, GMAS is plain steepest ascent and stops at the first graph no
+        single move improves. With 2, a stall triggers a search over PAIRS of
+        moves that share a node, which reaches corrections whose two halves are
+        individually non-improving -- deleting a spurious edge and re-typing a
+        neighbouring directed edge to bidirected, for instance, where neither
+        step improves the score alone. Depth 2 recovers such cases and is
+        markedly slower; the pair search is capped internally.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gmasLookaheadDepth_default_value">2</span>
+        </li>
+        <li>Lower Bound: <span id="gmasLookaheadDepth_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="gmasLookaheadDepth_upper_bound">2</span></li>
+        <li>Value Type:
+            <span id="gmasLookaheadDepth_value_type">Integer</span>
+        </li>
+    </ul>
+
+
     === graspAlg ===
     <h3 class="parameter_description" id="graspAlg">graspAlg</h3>
     <ul class="parameter_description_list">
@@ -2991,67 +3052,6 @@ Source:
             Bound: <span id="recursiveDepth_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="recursiveDepth_value_type">Integer</span></li>
     </ul>
-
-    === lvBossLookaheadDepth ===
-    <h3 class="parameter_description" id="lvBossLookaheadDepth">lvBossLookaheadDepth</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="lvBossLookaheadDepth_short_desc">
-        How many moves deep LV-BOSS looks when its sweep stalls (1 or 2)
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="lvBossLookaheadDepth_long_desc">
-        With 1, LV-BOSS is plain steepest ascent and stops at the first graph no
-        single move improves. With 2, a stall triggers a search over PAIRS of
-        moves that share a node, which reaches corrections whose two halves are
-        individually non-improving -- deleting a spurious edge and re-typing a
-        neighbouring directed edge to bidirected, for instance, where neither
-        step improves the score alone. Depth 2 recovers such cases and is
-        markedly slower; the pair search is capped internally.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="lvBossLookaheadDepth_default_value">2</span>
-        </li>
-        <li>Lower Bound: <span id="lvBossLookaheadDepth_lower_bound">1</span></li>
-        <li>Upper Bound: <span id="lvBossLookaheadDepth_upper_bound">2</span></li>
-        <li>Value Type:
-            <span id="lvBossLookaheadDepth_value_type">Integer</span>
-        </li>
-    </ul>
-
-
-    === lvBossAllowAdditions ===
-    <h3 class="parameter_description" id="lvBossAllowAdditions">lvBossAllowAdditions</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="lvBossAllowAdditions_short_desc">
-        Allow LV-BOSS to add edges, not only delete and re-type them
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="lvBossAllowAdditions_long_desc">
-        LV-BOSS improves a BOSS-seeded MAG by greedy search under the MAG BIC.
-        With this set to Yes, the move set includes ADDING a directed or
-        bidirected edge between a non-adjacent pair, which is what lets the
-        search restore an adjacency the BOSS seed missed. With it set to No the
-        search may only delete edges, reverse them, or change their type, which
-        is the comparison that isolates what additions contribute. Additions
-        cost one model fit per non-adjacent ordered pair per sweep, so turning
-        them off is also much faster.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="lvBossAllowAdditions_default_value">true</span>
-        </li>
-        <li>Lower Bound: <span id="lvBossAllowAdditions_lower_bound"></span></li>
-        <li>Upper Bound: <span id="lvBossAllowAdditions_upper_bound"></span></li>
-        <li>Value Type:
-            <span id="lvBossAllowAdditions_value_type">Boolean</span>
-        </li>
-    </ul>
-
 
     === maxCategories ===
     <h3 class="parameter_description" id="maxCategories">maxCategories</h3>

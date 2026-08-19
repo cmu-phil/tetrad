@@ -43,22 +43,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * LV-BOSS: a latent-variable search that uses no independence tests. A BOSS CPDAG is projected to a PAG and then
+ * GMAS: a latent-variable search that uses no independence tests. A BOSS CPDAG is projected to a PAG and then
  * to its Zhang MAG, and that MAG is improved by steepest-ascent greedy search under the Gaussian MAG BIC, moving
  * only among legal MAGs, with deletion, reversal, type change (directed to bidirected and back), and addition as
  * moves. The final MAG is projected back to a PAG.
  *
  * @author josephramsey
- * @see edu.cmu.tetrad.search.LvBoss
+ * @see edu.cmu.tetrad.search.Gmas
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-BOSS",
-        command = "lv-boss",
+        name = "GMAS",
+        command = "gmas",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, AcceptsKnowledge,
+public class Gmas extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, AcceptsKnowledge,
         ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
     @Serial
@@ -77,15 +77,15 @@ public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, Tak
     /**
      * Used for reflection; do not delete.
      */
-    public LvBoss() {
+    public Gmas() {
     }
 
     /**
-     * Constructs an LV-BOSS algorithm with the given score.
+     * Constructs a GMAS algorithm with the given score.
      *
      * @param score The score to use.
      */
-    public LvBoss(ScoreWrapper score) {
+    public Gmas(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -115,7 +115,7 @@ public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, Tak
 
         Score score = this.score.getScore(dataModel, parameters);
 
-        edu.cmu.tetrad.search.LvBoss search = new edu.cmu.tetrad.search.LvBoss(score);
+        edu.cmu.tetrad.search.Gmas search = new edu.cmu.tetrad.search.Gmas(score);
 
         // BOSS seed.
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
@@ -125,8 +125,8 @@ public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         // MAG-space search. The MAG score's penalty discount is its own parameter, independent of the
         // penaltyDiscount the BOSS score wrapper reads.
         search.setMagPenaltyDiscount(parameters.getDouble(Params.SCORE_CHECK_PENALTY_DISCOUNT));
-        search.setAllowAdditions(parameters.getBoolean(Params.LV_BOSS_ALLOW_ADDITIONS));
-        search.setLookaheadDepth(parameters.getInt(Params.LV_BOSS_LOOKAHEAD_DEPTH));
+        search.setAllowAdditions(parameters.getBoolean(Params.GMAS_ALLOW_ADDITIONS));
+        search.setLookaheadDepth(parameters.getInt(Params.GMAS_LOOKAHEAD_DEPTH));
 //        search.setMaxLookaheadFirstMoves(150);
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
@@ -154,7 +154,7 @@ public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, Tak
      */
     @Override
     public String getDescription() {
-        return "LV-BOSS (BOSS seed, greedy MAG-BIC search in MAG space, no tests) using "
+        return "GMAS (BOSS seed, greedy MAG-BIC search in MAG space, no tests) using "
                + this.score.getDescription();
     }
 
@@ -182,10 +182,10 @@ public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 
-        // LV-BOSS
+        // GMAS
         params.add(Params.SCORE_CHECK_PENALTY_DISCOUNT);
-        params.add(Params.LV_BOSS_ALLOW_ADDITIONS);
-        params.add(Params.LV_BOSS_LOOKAHEAD_DEPTH);
+        params.add(Params.GMAS_ALLOW_ADDITIONS);
+        params.add(Params.GMAS_LOOKAHEAD_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
 
         // General

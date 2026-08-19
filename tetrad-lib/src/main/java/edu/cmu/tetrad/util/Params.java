@@ -538,13 +538,13 @@ public final class Params {
      */
     public static final String SCORE_CHECK_PENALTY_DISCOUNT = "scoreCheckPenaltyDiscount";
     /**
-     * Constant <code>LV_BOSS_ALLOW_ADDITIONS="lvBossAllowAdditions"</code>
+     * Constant <code>GMAS_ALLOW_ADDITIONS="gmasAllowAdditions"</code>
      */
-    public static final String LV_BOSS_ALLOW_ADDITIONS = "lvBossAllowAdditions";
+    public static final String GMAS_ALLOW_ADDITIONS = "gmasAllowAdditions";
     /**
-     * Constant <code>LV_BOSS_LOOKAHEAD_DEPTH="lvBossLookaheadDepth"</code>
+     * Constant <code>GMAS_LOOKAHEAD_DEPTH="gmasLookaheadDepth"</code>
      */
-    public static final String LV_BOSS_LOOKAHEAD_DEPTH = "lvBossLookaheadDepth";
+    public static final String GMAS_LOOKAHEAD_DEPTH = "gmasLookaheadDepth";
     /**
      * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
      */
