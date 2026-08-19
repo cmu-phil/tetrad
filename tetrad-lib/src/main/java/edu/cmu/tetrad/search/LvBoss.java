@@ -90,6 +90,16 @@ public final class LvBoss implements IGraphSearch {
      */
     private int maxSweeps = 100;
     /**
+     * How many moves deep the search looks when the single-move sweep stalls. 1 is plain steepest ascent; 2 adds
+     * a paired-move escape from single-move local optima. Higher values are not implemented.
+     */
+    private int lookaheadDepth = 2;
+    /**
+     * Cap on the number of composed pairs examined per stall, so the quadratic escape cannot run away on a large
+     * graph. When it bites, the escape is a partial search of the pairs rather than an exhaustive one.
+     */
+    private int maxLookaheadPairs = 20000;
+    /**
      * BOSS knobs.
      */
     private boolean useBes = false;
@@ -106,6 +116,8 @@ public final class LvBoss implements IGraphSearch {
     private int tallyIllegal = 0;
     private int tallyUnscorable = 0;
     private int tallyMovesApplied = 0;
+    private int tallyPairEscapes = 0;
+    private int tallyPairsExamined = 0;
 
     /**
      * Constructor.
@@ -135,6 +147,8 @@ public final class LvBoss implements IGraphSearch {
         this.tallyIllegal = 0;
         this.tallyUnscorable = 0;
         this.tallyMovesApplied = 0;
+        this.tallyPairEscapes = 0;
+        this.tallyPairsExamined = 0;
 
         List<Node> nodes = new ArrayList<>(score.getVariables());
 
@@ -178,8 +192,8 @@ public final class LvBoss implements IGraphSearch {
             double bestBic = currentBic;
             String bestMove = null;
 
-            for (Graph[] candidate : candidates(mag, nodes)) {
-                Graph g = candidate[0];
+            for (Move candidate : candidates(mag, nodes)) {
+                Graph g = candidate.graph();
 
                 tallyCandidates++;
 
@@ -199,6 +213,31 @@ public final class LvBoss implements IGraphSearch {
                     bestBic = bic;
                     bestGraph = g;
                     bestMove = describe(mag, g);
+                }
+            }
+
+            if (bestGraph == null && lookaheadDepth >= 2) {
+                // Single-move stall. Some corrections need TWO moves that are individually non-improving --
+                // adding a confounded pair's edge and then re-orienting around it, for instance -- so the
+                // single-move optimum is not the end of the story. Search pairs before giving up.
+                Graph pair = bestImprovingPair(mag, nodes, currentBic);
+
+                if (pair != null) {
+                    Double pairBic = magBic(pair);
+
+                    if (pairBic != null && pairBic > currentBic) {
+                        if (verbose) {
+                            TetradLogger.getInstance().log("LV-BOSS sweep " + (sweep + 1)
+                                                           + ": two-move escape; BIC " + currentBic + " -> "
+                                                           + pairBic + " (+" + (pairBic - currentBic) + ").");
+                        }
+
+                        mag = pair;
+                        currentBic = pairBic;
+                        tallyMovesApplied += 2;
+                        tallyPairEscapes++;
+                        continue;
+                    }
                 }
             }
 
@@ -228,7 +267,9 @@ public final class LvBoss implements IGraphSearch {
         TetradLogger.getInstance().log("LV-BOSS summary: seed MAG " + seedPag.getNumEdges()
                                        + " edge(s); moves applied = " + tallyMovesApplied
                                        + "; final MAG " + mag.getNumEdges() + " edge(s), BIC " + currentBic
+                                       + "; two-move escapes = " + tallyPairEscapes
                                        + "; candidates examined = " + tallyCandidates
+                                       + ", pairs examined = " + tallyPairsExamined
                                        + " (illegal " + tallyIllegal + ", unscorable " + tallyUnscorable + ")"
                                        + "; BOSS " + (tSeed - t0) + " ms, MAG search " + (t1 - tSeed) + " ms.");
 
@@ -236,12 +277,26 @@ public final class LvBoss implements IGraphSearch {
     }
 
     /**
+     * One candidate move: the resulting graph and the pair of nodes whose edge the move touched. The pair is what
+     * lets the two-move lookahead pair a move only with moves that share a node with it.
+     *
+     * @param graph The graph resulting from the move.
+     * @param a     One endpoint of the touched pair.
+     * @param b     The other endpoint of the touched pair.
+     */
+    private record Move(Graph graph, Node a, Node b) {
+        boolean touches(Node x, Node y) {
+            return a == x || a == y || b == x || b == y;
+        }
+    }
+
+    /**
      * The candidate neighbours of the current MAG under the move set: for each adjacent pair, deletion, reversal,
      * and type change; for each non-adjacent pair, addition as directed (either orientation) or bidirected. Each
      * candidate is a fresh graph; legality is checked by the caller.
      */
-    private List<Graph[]> candidates(Graph mag, List<Node> nodes) {
-        List<Graph[]> out = new ArrayList<>();
+    private List<Move> candidates(Graph mag, List<Node> nodes) {
+        List<Move> out = new ArrayList<>();
 
         for (Edge e : mag.getEdges()) {
             Node x = e.getNode1();
@@ -250,7 +305,7 @@ public final class LvBoss implements IGraphSearch {
             // Delete.
             Graph g = new EdgeListGraph(mag);
             g.removeEdge(e);
-            out.add(new Graph[]{g});
+            out.add(new Move(g, x, y));
 
             if (Edges.isDirectedEdge(e)) {
                 Node tail = Edges.getDirectedEdgeTail(e);
@@ -260,25 +315,25 @@ public final class LvBoss implements IGraphSearch {
                 g = new EdgeListGraph(mag);
                 g.removeEdge(e);
                 g.addDirectedEdge(head, tail);
-                out.add(new Graph[]{g});
+                out.add(new Move(g, x, y));
 
                 // Directed -> bidirected: the move BOSS cannot make, and the only way a pure latent common
                 // cause can be expressed at all.
                 g = new EdgeListGraph(mag);
                 g.removeEdge(e);
                 g.addBidirectedEdge(tail, head);
-                out.add(new Graph[]{g});
+                out.add(new Move(g, x, y));
             } else if (Edges.isBidirectedEdge(e)) {
                 // Bidirected -> directed, either orientation.
                 g = new EdgeListGraph(mag);
                 g.removeEdge(e);
                 g.addDirectedEdge(x, y);
-                out.add(new Graph[]{g});
+                out.add(new Move(g, x, y));
 
                 g = new EdgeListGraph(mag);
                 g.removeEdge(e);
                 g.addDirectedEdge(y, x);
-                out.add(new Graph[]{g});
+                out.add(new Move(g, x, y));
             }
         }
 
@@ -294,20 +349,86 @@ public final class LvBoss implements IGraphSearch {
 
                     Graph g = new EdgeListGraph(mag);
                     g.addDirectedEdge(x, y);
-                    out.add(new Graph[]{g});
+                    out.add(new Move(g, x, y));
 
                     g = new EdgeListGraph(mag);
                     g.addDirectedEdge(y, x);
-                    out.add(new Graph[]{g});
+                    out.add(new Move(g, x, y));
 
                     g = new EdgeListGraph(mag);
                     g.addBidirectedEdge(x, y);
-                    out.add(new Graph[]{g});
+                    out.add(new Move(g, x, y));
                 }
             }
         }
 
         return out;
+    }
+
+    /**
+     * The best graph reachable by TWO moves from {@code mag} that scores above {@code currentBic}, or null if no
+     * such pair is found. Called only when the single-move sweep has stalled.
+     * <p>
+     * Two restrictions keep this affordable and are the reason it is a heuristic escape rather than an exhaustive
+     * depth-2 search. First, the second move must SHARE A NODE with the first: the corrections this is meant to
+     * reach are local repairs around one edge -- add the edge a confounded pair needs, then fix the orientation it
+     * forces on a neighbour -- and unrelated pairs of moves would each have to improve the score on their own,
+     * which the single-move sweep has already ruled out. Second, the number of composed pairs is capped by
+     * {@link #setMaxLookaheadPairs(int)}.
+     * <p>
+     * NOTE that the INTERMEDIATE graph need not be a legal MAG. Requiring it would defeat the purpose: the useful
+     * pairs are exactly those whose first move is not on its own a step to a better legal model. Only the composed
+     * result is required to be legal and scorable.
+     */
+    private @Nullable Graph bestImprovingPair(Graph mag, List<Node> nodes, double currentBic)
+            throws InterruptedException {
+        List<Move> firsts = candidates(mag, nodes);
+
+        Graph best = null;
+        double bestBic = currentBic;
+
+        for (Move m1 : firsts) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+
+            if (tallyPairsExamined >= maxLookaheadPairs) {
+                if (verbose) {
+                    TetradLogger.getInstance().log("LV-BOSS: two-move escape truncated at "
+                                                   + maxLookaheadPairs + " pairs.");
+                }
+                break;
+            }
+
+            for (Move m2 : candidates(m1.graph(), nodes)) {
+                if (!m2.touches(m1.a(), m1.b())) {
+                    continue;
+                }
+
+                tallyPairsExamined++;
+
+                Graph g = m2.graph();
+
+                if (!g.paths().isLegalMag()) {
+                    tallyIllegal++;
+                    continue;
+                }
+
+                Double bic = magBic(g);
+
+                if (bic == null) {
+                    tallyUnscorable++;
+                    continue;
+                }
+
+                if (bic > bestBic) {
+                    bestBic = bic;
+                    best = g;
+                }
+            }
+        }
+
+        return best;
     }
 
     /**
@@ -426,6 +547,30 @@ public final class LvBoss implements IGraphSearch {
      */
     public void setAllowAdditions(boolean allowAdditions) {
         this.allowAdditions = allowAdditions;
+    }
+
+    /**
+     * Sets how many moves deep the search looks when the single-move sweep stalls. 1 is plain steepest ascent; 2
+     * (the default) adds a paired-move escape, which is what allows corrections whose two halves are individually
+     * non-improving -- adding a confounded pair's edge and re-orienting around it, for instance.
+     *
+     * @param lookaheadDepth 1 or 2.
+     */
+    public void setLookaheadDepth(int lookaheadDepth) {
+        if (lookaheadDepth < 1 || lookaheadDepth > 2) {
+            throw new IllegalArgumentException("Lookahead depth must be 1 or 2: " + lookaheadDepth);
+        }
+
+        this.lookaheadDepth = lookaheadDepth;
+    }
+
+    /**
+     * Sets the cap on composed pairs examined per stall.
+     *
+     * @param maxLookaheadPairs The cap.
+     */
+    public void setMaxLookaheadPairs(int maxLookaheadPairs) {
+        this.maxLookaheadPairs = maxLookaheadPairs;
     }
 
     /**

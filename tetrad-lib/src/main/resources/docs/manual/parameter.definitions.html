@@ -2992,6 +2992,36 @@ Source:
         <li>Value Type: <span id="recursiveDepth_value_type">Integer</span></li>
     </ul>
 
+    === lvBossLookaheadDepth ===
+    <h3 class="parameter_description" id="lvBossLookaheadDepth">lvBossLookaheadDepth</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="lvBossLookaheadDepth_short_desc">
+        How many moves deep LV-BOSS looks when its sweep stalls (1 or 2)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="lvBossLookaheadDepth_long_desc">
+        With 1, LV-BOSS is plain steepest ascent and stops at the first graph no
+        single move improves. With 2, a stall triggers a search over PAIRS of
+        moves that share a node, which reaches corrections whose two halves are
+        individually non-improving -- deleting a spurious edge and re-typing a
+        neighbouring directed edge to bidirected, for instance, where neither
+        step improves the score alone. Depth 2 recovers such cases and is
+        markedly slower; the pair search is capped internally.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="lvBossLookaheadDepth_default_value">2</span>
+        </li>
+        <li>Lower Bound: <span id="lvBossLookaheadDepth_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="lvBossLookaheadDepth_upper_bound">2</span></li>
+        <li>Value Type:
+            <span id="lvBossLookaheadDepth_value_type">Integer</span>
+        </li>
+    </ul>
+
+
     === lvBossAllowAdditions ===
     <h3 class="parameter_description" id="lvBossAllowAdditions">lvBossAllowAdditions</h3>
     <ul class="parameter_description_list">

@@ -542,6 +542,10 @@ public final class Params {
      */
     public static final String LV_BOSS_ALLOW_ADDITIONS = "lvBossAllowAdditions";
     /**
+     * Constant <code>LV_BOSS_LOOKAHEAD_DEPTH="lvBossLookaheadDepth"</code>
+     */
+    public static final String LV_BOSS_LOOKAHEAD_DEPTH = "lvBossLookaheadDepth";
+    /**
      * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
      */
     public static final String TRUNCATION_LIMIT = "truncationLimit";

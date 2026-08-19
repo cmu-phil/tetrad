@@ -126,6 +126,7 @@ public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         // penaltyDiscount the BOSS score wrapper reads.
         search.setMagPenaltyDiscount(parameters.getDouble(Params.SCORE_CHECK_PENALTY_DISCOUNT));
         search.setAllowAdditions(parameters.getBoolean(Params.LV_BOSS_ALLOW_ADDITIONS));
+        search.setLookaheadDepth(parameters.getInt(Params.LV_BOSS_LOOKAHEAD_DEPTH));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         search.setKnowledge(this.knowledge);
@@ -183,6 +184,7 @@ public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         // LV-BOSS
         params.add(Params.SCORE_CHECK_PENALTY_DISCOUNT);
         params.add(Params.LV_BOSS_ALLOW_ADDITIONS);
+        params.add(Params.LV_BOSS_LOOKAHEAD_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
 
         // General
