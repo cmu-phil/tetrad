@@ -2030,6 +2030,39 @@ Source:
     </ul>
 
 
+    === gmasTriangleEscapeOnly ===
+    <h3 class="parameter_description" id="gmasTriangleEscapeOnly">gmasTriangleEscapeOnly</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gmasTriangleEscapeOnly_short_desc">
+        Restrict GMAS's two-move escape to triangle pairs (faster, slightly less thorough)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="gmasTriangleEscapeOnly_long_desc">
+        With this set to Yes, the two-move escape considers only pairs of moves
+        whose touched edges share a node and whose far endpoints are adjacent in
+        the pre-move MAG -- the GFCI situation, where a score-induced extra edge
+        shields a collider and the deletion and its accompanying re-orientation
+        lie in a common triangle. This captures nearly all of the repairs the
+        full escape finds and is typically two to four times faster, mostly
+        because declaring a local optimum requires exhausting the escape
+        neighbourhood and the triangle neighbourhood is far smaller. With it set
+        to No (the default), the escape searches all pairs sharing a node, which
+        is exact but slower.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gmasTriangleEscapeOnly_default_value">false</span>
+        </li>
+        <li>Lower Bound: <span id="gmasTriangleEscapeOnly_lower_bound"></span></li>
+        <li>Upper Bound: <span id="gmasTriangleEscapeOnly_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="gmasTriangleEscapeOnly_value_type">Boolean</span>
+        </li>
+    </ul>
+
+
     === graspAlg ===
     <h3 class="parameter_description" id="graspAlg">graspAlg</h3>
     <ul class="parameter_description_list">

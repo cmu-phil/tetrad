@@ -104,6 +104,19 @@ public final class Gmas implements IGraphSearch {
      */
     private int maxLookaheadFirstMoves = 500;
     /**
+     * Whether the two-move escape considers ONLY triangle pairs: pairs whose two touched edges share a node and
+     * whose far endpoints are adjacent (or coincide) in the pre-move MAG. The triangle case is the GFCI
+     * situation -- a score-induced extra edge shields a collider, so the deletion and its accompanying
+     * re-orientation lie in a common triangle -- and measured on 15-node problems it captures nearly all of the
+     * repairs the full share-a-node escape finds, 2-3.6x faster. The speedup comes mostly from the FINAL,
+     * failing escape: declaring a local optimum requires exhausting the neighbourhood, and the triangle
+     * neighbourhood is far smaller. (A triangles-first-with-fallback design was tried and buys nothing, since
+     * the fallback must still exhaust the full neighbourhood on exactly that final stall.) Off by default: the
+     * full escape is the exact one, and the small accuracy cost of restricting it -- an occasional missed
+     * non-triangle repair -- should be paid knowingly.
+     */
+    private boolean triangleEscapeOnly = false;
+    /**
      * BOSS knobs.
      */
     private boolean useBes = false;
@@ -503,6 +516,10 @@ public final class Gmas implements IGraphSearch {
             // Only moves touching m1's pair are wanted, so generate only those rather than building the whole
             // neighbourhood and discarding most of it.
             List<Move> seconds = candidates(m1.graph(), nodes, m1.a(), m1.b());
+
+            if (triangleEscapeOnly) {
+                seconds.removeIf(m2 -> !closesTriangle(mag, m1, m2));
+            }
             tallyPairsExamined.addAndGet(seconds.size());
 
             Scored winner = bestOf(seconds, bestBic);
@@ -647,6 +664,39 @@ public final class Gmas implements IGraphSearch {
         }
 
         this.lookaheadDepth = lookaheadDepth;
+    }
+
+    /**
+     * Whether the edges touched by the two moves close a triangle in the pre-move MAG: they share a node, and
+     * their far endpoints are adjacent (or coincide, the two-moves-on-one-edge case).
+     */
+    private static boolean closesTriangle(Graph mag, Move m1, Move m2) {
+        Node f1;
+        Node f2;
+
+        if (m2.a() == m1.a()) {
+            f1 = m1.b(); f2 = m2.b();
+        } else if (m2.a() == m1.b()) {
+            f1 = m1.a(); f2 = m2.b();
+        } else if (m2.b() == m1.a()) {
+            f1 = m1.b(); f2 = m2.a();
+        } else if (m2.b() == m1.b()) {
+            f1 = m1.a(); f2 = m2.a();
+        } else {
+            return false;
+        }
+
+        return f1 == f2 || mag.isAdjacentTo(f1, f2);
+    }
+
+    /**
+     * Sets whether the two-move escape considers only triangle pairs. Default false (the exact, full escape).
+     * See the field javadoc for the tradeoff.
+     *
+     * @param triangleEscapeOnly True to restrict the escape to triangle pairs.
+     */
+    public void setTriangleEscapeOnly(boolean triangleEscapeOnly) {
+        this.triangleEscapeOnly = triangleEscapeOnly;
     }
 
     /**

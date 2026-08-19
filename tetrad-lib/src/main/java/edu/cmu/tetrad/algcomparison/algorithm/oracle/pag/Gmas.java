@@ -127,6 +127,7 @@ public class Gmas extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setMagPenaltyDiscount(parameters.getDouble(Params.SCORE_CHECK_PENALTY_DISCOUNT));
         search.setAllowAdditions(parameters.getBoolean(Params.GMAS_ALLOW_ADDITIONS));
         search.setLookaheadDepth(parameters.getInt(Params.GMAS_LOOKAHEAD_DEPTH));
+        search.setTriangleEscapeOnly(parameters.getBoolean(Params.GMAS_TRIANGLE_ESCAPE_ONLY));
 //        search.setMaxLookaheadFirstMoves(150);
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
@@ -186,6 +187,7 @@ public class Gmas extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.SCORE_CHECK_PENALTY_DISCOUNT);
         params.add(Params.GMAS_ALLOW_ADDITIONS);
         params.add(Params.GMAS_LOOKAHEAD_DEPTH);
+        params.add(Params.GMAS_TRIANGLE_ESCAPE_ONLY);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
 
         // General

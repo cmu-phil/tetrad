@@ -546,6 +546,10 @@ public final class Params {
      */
     public static final String GMAS_LOOKAHEAD_DEPTH = "gmasLookaheadDepth";
     /**
+     * Constant <code>GMAS_TRIANGLE_ESCAPE_ONLY="gmasTriangleEscapeOnly"</code>
+     */
+    public static final String GMAS_TRIANGLE_ESCAPE_ONLY = "gmasTriangleEscapeOnly";
+    /**
      * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
      */
     public static final String TRUNCATION_LIMIT = "truncationLimit";
