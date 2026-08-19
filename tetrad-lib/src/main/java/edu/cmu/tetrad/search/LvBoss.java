@@ -31,7 +31,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * LV-BOSS: a latent-variable search that uses NO independence tests at all. A BOSS CPDAG is projected to a PAG and
@@ -95,10 +98,11 @@ public final class LvBoss implements IGraphSearch {
      */
     private int lookaheadDepth = 2;
     /**
-     * Cap on the number of composed pairs examined per stall, so the quadratic escape cannot run away on a large
-     * graph. When it bites, the escape is a partial search of the pairs rather than an exhaustive one.
+     * Cap on the number of FIRST moves expanded per stall, so the quadratic escape cannot run away on a large
+     * graph. A cap on first moves rather than on composed pairs keeps the truncation deterministic under parallel
+     * scoring: the first moves are expanded in the fixed order the generator produces them.
      */
-    private int maxLookaheadPairs = 20000;
+    private int maxLookaheadFirstMoves = 1000;
     /**
      * BOSS knobs.
      */
@@ -112,12 +116,12 @@ public final class LvBoss implements IGraphSearch {
     /**
      * Per-run tallies, reported unconditionally at the end of the search.
      */
-    private int tallyCandidates = 0;
-    private int tallyIllegal = 0;
-    private int tallyUnscorable = 0;
+    private final AtomicInteger tallyCandidates = new AtomicInteger();
+    private final AtomicInteger tallyIllegal = new AtomicInteger();
+    private final AtomicInteger tallyUnscorable = new AtomicInteger();
     private int tallyMovesApplied = 0;
     private int tallyPairEscapes = 0;
-    private int tallyPairsExamined = 0;
+    private final AtomicInteger tallyPairsExamined = new AtomicInteger();
 
     /**
      * Constructor.
@@ -143,12 +147,12 @@ public final class LvBoss implements IGraphSearch {
     public Graph search() throws InterruptedException {
         long t0 = System.currentTimeMillis();
 
-        this.tallyCandidates = 0;
-        this.tallyIllegal = 0;
-        this.tallyUnscorable = 0;
+        this.tallyCandidates.set(0);
+        this.tallyIllegal.set(0);
+        this.tallyUnscorable.set(0);
         this.tallyMovesApplied = 0;
         this.tallyPairEscapes = 0;
-        this.tallyPairsExamined = 0;
+        this.tallyPairsExamined.set(0);
 
         List<Node> nodes = new ArrayList<>(score.getVariables());
 
@@ -188,33 +192,11 @@ public final class LvBoss implements IGraphSearch {
                 throw new InterruptedException();
             }
 
-            Graph bestGraph = null;
-            double bestBic = currentBic;
-            String bestMove = null;
+            Scored winner = bestOf(candidates(mag, nodes), currentBic);
 
-            for (Move candidate : candidates(mag, nodes)) {
-                Graph g = candidate.graph();
-
-                tallyCandidates++;
-
-                if (!g.paths().isLegalMag()) {
-                    tallyIllegal++;
-                    continue;
-                }
-
-                Double bic = magBic(g);
-
-                if (bic == null) {
-                    tallyUnscorable++;
-                    continue;
-                }
-
-                if (bic > bestBic) {
-                    bestBic = bic;
-                    bestGraph = g;
-                    bestMove = describe(mag, g);
-                }
-            }
+            Graph bestGraph = winner == null ? null : winner.graph();
+            double bestBic = winner == null ? currentBic : winner.bic();
+            String bestMove = winner == null ? null : describe(mag, winner.graph());
 
             if (bestGraph == null && lookaheadDepth >= 2) {
                 // Single-move stall. Some corrections need TWO moves that are individually non-improving --
@@ -268,9 +250,9 @@ public final class LvBoss implements IGraphSearch {
                                        + " edge(s); moves applied = " + tallyMovesApplied
                                        + "; final MAG " + mag.getNumEdges() + " edge(s), BIC " + currentBic
                                        + "; two-move escapes = " + tallyPairEscapes
-                                       + "; candidates examined = " + tallyCandidates
-                                       + ", pairs examined = " + tallyPairsExamined
-                                       + " (illegal " + tallyIllegal + ", unscorable " + tallyUnscorable + ")"
+                                       + "; candidates examined = " + tallyCandidates.get()
+                                       + ", pairs examined = " + tallyPairsExamined.get()
+                                       + " (illegal " + tallyIllegal.get() + ", unscorable " + tallyUnscorable.get() + ")"
                                        + "; BOSS " + (tSeed - t0) + " ms, MAG search " + (t1 - tSeed) + " ms.");
 
         return GraphUtils.replaceNodes(pag, nodes);
@@ -296,11 +278,28 @@ public final class LvBoss implements IGraphSearch {
      * candidate is a fresh graph; legality is checked by the caller.
      */
     private List<Move> candidates(Graph mag, List<Node> nodes) {
+        return candidates(mag, nodes, null, null);
+    }
+
+    /**
+     * As {@link #candidates(Graph, List)}, but when {@code restrictA} is non-null only moves TOUCHING
+     * {@code restrictA} or {@code restrictB} are generated.
+     * <p>
+     * The two-move escape only ever uses touching moves, and building the full neighbourhood and then filtering
+     * was the dominant cost of that search: at 20 nodes the full set is about 570 candidates, of which roughly
+     * 120 touch a given pair, so more than three quarters of the graph copies were built only to be discarded.
+     * Generating the restricted set directly is exact -- the same moves, in the same order.
+     */
+    private List<Move> candidates(Graph mag, List<Node> nodes, @Nullable Node restrictA, @Nullable Node restrictB) {
         List<Move> out = new ArrayList<>();
 
         for (Edge e : mag.getEdges()) {
             Node x = e.getNode1();
             Node y = e.getNode2();
+
+            if (restrictA != null && x != restrictA && x != restrictB && y != restrictA && y != restrictB) {
+                continue;
+            }
 
             // Delete.
             Graph g = new EdgeListGraph(mag);
@@ -347,6 +346,10 @@ public final class LvBoss implements IGraphSearch {
                         continue;
                     }
 
+                    if (restrictA != null && x != restrictA && x != restrictB && y != restrictA && y != restrictB) {
+                        continue;
+                    }
+
                     Graph g = new EdgeListGraph(mag);
                     g.addDirectedEdge(x, y);
                     out.add(new Move(g, x, y));
@@ -363,6 +366,47 @@ public final class LvBoss implements IGraphSearch {
         }
 
         return out;
+    }
+
+    /**
+     * A scored candidate. The index is carried so that ties are broken the same way a sequential scan would break
+     * them -- by the earliest candidate -- which keeps the parallel search deterministic.
+     */
+    private record Scored(Graph graph, double bic, int index) {
+    }
+
+    /**
+     * Scores the given moves in PARALLEL and returns the best one strictly above {@code floor}, or null if none
+     * is. Candidates are independent -- each owns its graph, the covariance matrix is read-only, and a fresh RICF
+     * instance is used per fit -- so this is a pure speedup with no change in result: ties are broken by the
+     * lowest index, which is exactly what a sequential scan keeping the first strict improvement would pick.
+     */
+    private @Nullable Scored bestOf(List<Move> moves, double floor) {
+        return java.util.stream.IntStream.range(0, moves.size())
+                .parallel()
+                .mapToObj(i -> {
+                    Graph g = moves.get(i).graph();
+
+                    tallyCandidates.incrementAndGet();
+
+                    if (!g.paths().isLegalMag()) {
+                        tallyIllegal.incrementAndGet();
+                        return null;
+                    }
+
+                    Double bic = magBic(g);
+
+                    if (bic == null) {
+                        tallyUnscorable.incrementAndGet();
+                        return null;
+                    }
+
+                    return bic > floor ? new Scored(g, bic, i) : null;
+                })
+                .filter(Objects::nonNull)
+                .max(Comparator.comparingDouble(Scored::bic)
+                        .thenComparing(Comparator.comparingInt(Scored::index).reversed()))
+                .orElse(null);
     }
 
     /**
@@ -383,48 +427,33 @@ public final class LvBoss implements IGraphSearch {
     private @Nullable Graph bestImprovingPair(Graph mag, List<Node> nodes, double currentBic)
             throws InterruptedException {
         List<Move> firsts = candidates(mag, nodes);
+        int limit = Math.min(firsts.size(), maxLookaheadFirstMoves);
+
+        if (verbose && limit < firsts.size()) {
+            TetradLogger.getInstance().log("LV-BOSS: two-move escape considering the first " + limit
+                                           + " of " + firsts.size() + " first moves.");
+        }
 
         Graph best = null;
         double bestBic = currentBic;
 
-        for (Move m1 : firsts) {
+        for (int i = 0; i < limit; i++) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
 
-            if (tallyPairsExamined >= maxLookaheadPairs) {
-                if (verbose) {
-                    TetradLogger.getInstance().log("LV-BOSS: two-move escape truncated at "
-                                                   + maxLookaheadPairs + " pairs.");
-                }
-                break;
-            }
+            Move m1 = firsts.get(i);
 
-            for (Move m2 : candidates(m1.graph(), nodes)) {
-                if (!m2.touches(m1.a(), m1.b())) {
-                    continue;
-                }
+            // Only moves touching m1's pair are wanted, so generate only those rather than building the whole
+            // neighbourhood and discarding most of it.
+            List<Move> seconds = candidates(m1.graph(), nodes, m1.a(), m1.b());
+            tallyPairsExamined.addAndGet(seconds.size());
 
-                tallyPairsExamined++;
+            Scored winner = bestOf(seconds, bestBic);
 
-                Graph g = m2.graph();
-
-                if (!g.paths().isLegalMag()) {
-                    tallyIllegal++;
-                    continue;
-                }
-
-                Double bic = magBic(g);
-
-                if (bic == null) {
-                    tallyUnscorable++;
-                    continue;
-                }
-
-                if (bic > bestBic) {
-                    bestBic = bic;
-                    best = g;
-                }
+            if (winner != null) {
+                bestBic = winner.bic();
+                best = winner.graph();
             }
         }
 
@@ -565,12 +594,25 @@ public final class LvBoss implements IGraphSearch {
     }
 
     /**
-     * Sets the cap on composed pairs examined per stall.
+     * Sets the cap on the number of first moves expanded per stall by the two-move escape.
      *
-     * @param maxLookaheadPairs The cap.
+     * @param maxLookaheadFirstMoves The cap.
      */
+    public void setMaxLookaheadFirstMoves(int maxLookaheadFirstMoves) {
+        this.maxLookaheadFirstMoves = maxLookaheadFirstMoves;
+    }
+
+    /**
+     * Superseded by {@link #setMaxLookaheadFirstMoves(int)}, which caps first moves rather than composed pairs so
+     * that truncation stays deterministic under parallel scoring. Retained so existing callers still compile; the
+     * value is not used.
+     *
+     * @param maxLookaheadPairs Ignored.
+     * @deprecated Use {@link #setMaxLookaheadFirstMoves(int)}.
+     */
+    @Deprecated
     public void setMaxLookaheadPairs(int maxLookaheadPairs) {
-        this.maxLookaheadPairs = maxLookaheadPairs;
+        // No longer used; see setMaxLookaheadFirstMoves.
     }
 
     /**

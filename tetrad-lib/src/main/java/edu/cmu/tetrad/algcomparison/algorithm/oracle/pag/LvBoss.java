@@ -127,6 +127,7 @@ public class LvBoss extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setMagPenaltyDiscount(parameters.getDouble(Params.SCORE_CHECK_PENALTY_DISCOUNT));
         search.setAllowAdditions(parameters.getBoolean(Params.LV_BOSS_ALLOW_ADDITIONS));
         search.setLookaheadDepth(parameters.getInt(Params.LV_BOSS_LOOKAHEAD_DEPTH));
+//        search.setMaxLookaheadFirstMoves(150);
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         search.setKnowledge(this.knowledge);
