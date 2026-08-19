@@ -381,20 +381,31 @@ public final class Gmas implements IGraphSearch {
     }
 
     /**
-     * Scores the given moves in PARALLEL and returns the best one strictly above {@code floor}, or null if none
-     * is. Candidates are independent -- each owns its graph, the covariance matrix is read-only, and a fresh RICF
-     * instance is used per fit -- so this is a pure speedup with no change in result: ties are broken by the
-     * lowest index, which is exactly what a sequential scan keeping the first strict improvement would pick.
+     * Scores the given moves in PARALLEL and returns the best LEGAL one strictly above {@code floor}, or null if
+     * none is. Candidates are independent -- each owns its graph, the covariance matrix is read-only, and a fresh
+     * RICF instance is used per fit -- so the parallelism changes no result: ties are broken by the lowest index,
+     * exactly what a sequential scan keeping the first strict improvement would pick.
+     * <p>
+     * LAZY LEGALITY. The full MAG legality certificate is dominated by the MAXIMALITY half (an inducing-path
+     * search over non-adjacent pairs), and it was being paid for every candidate. But maximality has no effect on
+     * the FIT: an ancestral graph that happens to be non-maximal is still a perfectly well-defined RICF model
+     * with the same likelihood and parameter count, so its BIC is computed identically. Only whether the graph is
+     * ADMISSIBLE as a MAG depends on it. So candidates are filtered here by the cheap ANCESTRALITY check alone
+     * (no directed cycles, no almost-directed cycles -- which RICF fitting presupposes), scored, sorted best
+     * first, and the expensive maximality check is run only down that sorted list until the first fully legal
+     * candidate is found -- typically one or two checks per sweep instead of one per candidate. The winner is
+     * identical to checking every candidate up front: any non-maximal graph that outscored it would have been
+     * rejected by the full check there too.
      */
     private @Nullable Scored bestOf(List<Move> moves, double floor) {
-        return java.util.stream.IntStream.range(0, moves.size())
+        List<Scored> improving = java.util.stream.IntStream.range(0, moves.size())
                 .parallel()
                 .mapToObj(i -> {
                     Graph g = moves.get(i).graph();
 
                     tallyCandidates.incrementAndGet();
 
-                    if (!g.paths().isLegalMag()) {
+                    if (!isAncestral(g)) {
                         tallyIllegal.incrementAndGet();
                         return null;
                     }
@@ -409,9 +420,49 @@ public final class Gmas implements IGraphSearch {
                     return bic > floor ? new Scored(g, bic, i) : null;
                 })
                 .filter(Objects::nonNull)
-                .max(Comparator.comparingDouble(Scored::bic)
-                        .thenComparing(Comparator.comparingInt(Scored::index).reversed()))
-                .orElse(null);
+                .sorted(Comparator.comparingDouble(Scored::bic).reversed()
+                        .thenComparing(Scored::index))
+                .toList();
+
+        // Full legality, lazily: walk the improving candidates best-first and commit the first legal one.
+        for (Scored s : improving) {
+            if (s.graph().paths().isLegalMag()) {
+                return s;
+            }
+
+            tallyIllegal.incrementAndGet();
+        }
+
+        return null;
+    }
+
+    /**
+     * The ANCESTRALITY half of MAG legality: no directed cycles and no almost-directed cycles. Checked per edge
+     * by directed reachability, which is far cheaper than the maximality half of the full certificate; see
+     * {@link #bestOf(List, double)} for how the two halves are split.
+     */
+    private boolean isAncestral(Graph g) {
+        for (Edge e : g.getEdges()) {
+            if (Edges.isDirectedEdge(e)) {
+                Node tail = Edges.getDirectedEdgeTail(e);
+                Node head = Edges.getDirectedEdgeHead(e);
+
+                // A directed cycle exists iff some edge's head reaches its tail by a directed path.
+                if (g.paths().existsDirectedPath(head, tail, -1)) {
+                    return false;
+                }
+            } else if (Edges.isBidirectedEdge(e)) {
+                Node x = e.getNode1();
+                Node y = e.getNode2();
+
+                // An almost-directed cycle exists iff some bidirected pair is also ordered by a directed path.
+                if (g.paths().existsDirectedPath(x, y, -1) || g.paths().existsDirectedPath(y, x, -1)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
