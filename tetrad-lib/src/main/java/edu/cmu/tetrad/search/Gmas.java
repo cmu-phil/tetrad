@@ -262,6 +262,8 @@ public final class Gmas implements IGraphSearch {
 
         Graph pag = new MagToPag(mag).convert(false, excludeSelectionBias);
 
+        refineWithKnowledge(pag);
+
         long t1 = System.currentTimeMillis();
 
         TetradLogger.getInstance().log("GMAS summary: seed MAG " + seedPag.getNumEdges()
@@ -311,6 +313,8 @@ public final class Gmas implements IGraphSearch {
     private List<Move> candidates(Graph mag, List<Node> nodes, @Nullable Node restrictA, @Nullable Node restrictB) {
         List<Move> out = new ArrayList<>();
 
+        boolean noKnowledge = knowledge.isEmpty();
+
         for (Edge e : mag.getEdges()) {
             Node x = e.getNode1();
             Node y = e.getNode2();
@@ -319,38 +323,58 @@ public final class Gmas implements IGraphSearch {
                 continue;
             }
 
+            // KNOWLEDGE: a required edge in either direction pins the adjacency, so neither the deletion nor any
+            // move that changes what the edge asserts (reversal, re-typing) is admissible for a required directed
+            // edge; and no move may create a directed edge that is forbidden. The seed respects knowledge via
+            // BOSS, and with these guards no move can introduce a violation, so knowledge-consistency is
+            // invariant across the whole search.
+            boolean requiredXy = !noKnowledge && knowledge.isRequired(x.getName(), y.getName());
+            boolean requiredYx = !noKnowledge && knowledge.isRequired(y.getName(), x.getName());
+
             // Delete.
-            Graph g = new EdgeListGraph(mag);
-            g.removeEdge(e);
-            out.add(new Move(g, x, y));
+            if (!requiredXy && !requiredYx) {
+                Graph g = new EdgeListGraph(mag);
+                g.removeEdge(e);
+                out.add(new Move(g, x, y));
+            }
 
             if (Edges.isDirectedEdge(e)) {
                 Node tail = Edges.getDirectedEdgeTail(e);
                 Node head = Edges.getDirectedEdgeHead(e);
+                boolean requiredThis = !noKnowledge && knowledge.isRequired(tail.getName(), head.getName());
 
                 // Reverse.
-                g = new EdgeListGraph(mag);
-                g.removeEdge(e);
-                g.addDirectedEdge(head, tail);
-                out.add(new Move(g, x, y));
+                if (!requiredThis && (noKnowledge || !knowledge.isForbidden(head.getName(), tail.getName()))) {
+                    Graph g = new EdgeListGraph(mag);
+                    g.removeEdge(e);
+                    g.addDirectedEdge(head, tail);
+                    out.add(new Move(g, x, y));
+                }
 
                 // Directed -> bidirected: the move BOSS cannot make, and the only way a pure latent common
-                // cause can be expressed at all.
-                g = new EdgeListGraph(mag);
-                g.removeEdge(e);
-                g.addBidirectedEdge(tail, head);
-                out.add(new Move(g, x, y));
+                // cause can be expressed at all. A required directed edge asserts ancestry, which the
+                // bidirected edge denies, so re-typing a required edge is inadmissible.
+                if (!requiredThis) {
+                    Graph g = new EdgeListGraph(mag);
+                    g.removeEdge(e);
+                    g.addBidirectedEdge(tail, head);
+                    out.add(new Move(g, x, y));
+                }
             } else if (Edges.isBidirectedEdge(e)) {
-                // Bidirected -> directed, either orientation.
-                g = new EdgeListGraph(mag);
-                g.removeEdge(e);
-                g.addDirectedEdge(x, y);
-                out.add(new Move(g, x, y));
+                // Bidirected -> directed, either orientation, neither into a forbidden direction.
+                if (noKnowledge || !knowledge.isForbidden(x.getName(), y.getName())) {
+                    Graph g = new EdgeListGraph(mag);
+                    g.removeEdge(e);
+                    g.addDirectedEdge(x, y);
+                    out.add(new Move(g, x, y));
+                }
 
-                g = new EdgeListGraph(mag);
-                g.removeEdge(e);
-                g.addDirectedEdge(y, x);
-                out.add(new Move(g, x, y));
+                if (noKnowledge || !knowledge.isForbidden(y.getName(), x.getName())) {
+                    Graph g = new EdgeListGraph(mag);
+                    g.removeEdge(e);
+                    g.addDirectedEdge(y, x);
+                    out.add(new Move(g, x, y));
+                }
             }
         }
 
@@ -368,17 +392,28 @@ public final class Gmas implements IGraphSearch {
                         continue;
                     }
 
-                    Graph g = new EdgeListGraph(mag);
-                    g.addDirectedEdge(x, y);
-                    out.add(new Move(g, x, y));
+                    // KNOWLEDGE: no addition may create a forbidden directed edge, and a required pair may only
+                    // be restored as the required directed edge, not as a bidirected one.
+                    boolean reqXy = !noKnowledge && knowledge.isRequired(x.getName(), y.getName());
+                    boolean reqYx = !noKnowledge && knowledge.isRequired(y.getName(), x.getName());
 
-                    g = new EdgeListGraph(mag);
-                    g.addDirectedEdge(y, x);
-                    out.add(new Move(g, x, y));
+                    if (noKnowledge || !knowledge.isForbidden(x.getName(), y.getName())) {
+                        Graph g = new EdgeListGraph(mag);
+                        g.addDirectedEdge(x, y);
+                        out.add(new Move(g, x, y));
+                    }
 
-                    g = new EdgeListGraph(mag);
-                    g.addBidirectedEdge(x, y);
-                    out.add(new Move(g, x, y));
+                    if (noKnowledge || !knowledge.isForbidden(y.getName(), x.getName())) {
+                        Graph g = new EdgeListGraph(mag);
+                        g.addDirectedEdge(y, x);
+                        out.add(new Move(g, x, y));
+                    }
+
+                    if (!reqXy && !reqYx) {
+                        Graph g = new EdgeListGraph(mag);
+                        g.addBidirectedEdge(x, y);
+                        out.add(new Move(g, x, y));
+                    }
                 }
             }
         }
@@ -690,6 +725,38 @@ public final class Gmas implements IGraphSearch {
     }
 
     /**
+     * Stamps background knowledge onto the output PAG's marks, as StarFci's refineWithKnowledge does. The
+     * committed MAG satisfies the knowledge, but MagToPag reports only marks invariant across the whole Markov
+     * equivalence class, and other class members need not satisfy the knowledge -- so a required tail comes back
+     * as a circle. Refining narrows the reported class to its knowledge-consistent members: a required a -> b is
+     * stamped as tail at a, arrow at b; a forbidden a -> b with a circle at a is stamped with an arrow at a
+     * (a is not an ancestor of b along that edge).
+     */
+    private void refineWithKnowledge(Graph pag) {
+        if (knowledge.isEmpty()) {
+            return;
+        }
+
+        for (Edge e : new ArrayList<>(pag.getEdges())) {
+            Node a = e.getNode1();
+            Node b = e.getNode2();
+
+            for (int flip = 0; flip < 2; flip++) {
+                Node u = flip == 0 ? a : b;
+                Node v = flip == 0 ? b : a;
+
+                if (knowledge.isRequired(u.getName(), v.getName())) {
+                    pag.setEndpoint(u, v, Endpoint.ARROW);
+                    pag.setEndpoint(v, u, Endpoint.TAIL);
+                } else if (knowledge.isForbidden(u.getName(), v.getName())
+                           && pag.getEndpoint(v, u) == Endpoint.CIRCLE) {
+                    pag.setEndpoint(v, u, Endpoint.ARROW);
+                }
+            }
+        }
+    }
+
+    /**
      * Sets whether the two-move escape considers only triangle pairs. Default false (the exact, full escape).
      * See the field javadoc for the tradeoff.
      *
@@ -758,8 +825,14 @@ public final class Gmas implements IGraphSearch {
     }
 
     /**
-     * Sets the background knowledge. NOTE that knowledge is passed to BOSS for the seed only; the MAG-space moves
-     * are knowledge-neutral in this prototype.
+     * Sets the background knowledge. Knowledge is respected in BOTH stages: BOSS receives it for the seed, and
+     * the MAG-space move generator refuses any move that would delete or re-type a required directed edge or
+     * create a forbidden one (explicitly forbidden or forbidden by tiers). Since the seed is knowledge-consistent
+     * and no admissible move can introduce a violation, the output is knowledge-consistent by invariance. NOTE
+     * the limits: knowledge here constrains EDGES; it does not forbid directed PATHS from later to earlier tiers
+     * that pass through admissible edges (BOSS's seed makes these unlikely but the moves do not re-check them),
+     * and circle marks in the output PAG are not refined against knowledge as StarFci's refineWithKnowledge
+     * does.
      *
      * @param knowledge The knowledge.
      */

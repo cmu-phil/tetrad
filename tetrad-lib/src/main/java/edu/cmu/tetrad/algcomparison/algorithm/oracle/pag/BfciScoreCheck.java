@@ -60,13 +60,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BFCI-Score-Check",
-        command = "bfci-score-check",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BFCI-Score-Check",
+//        command = "bfci-score-check",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class BfciScoreCheck extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         TakesIndependenceWrapper, AcceptsKnowledge, ReturnsBootstrapGraphs,
         TakesCovarianceMatrix, LatentStructureAlgorithm {

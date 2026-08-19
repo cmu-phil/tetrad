@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -26,8 +26,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -47,12 +46,13 @@ import java.util.List;
 /**
  * The GFCI class represents the Greedy Fast Causal Inference algorithm, adjusted as in *-FCI.
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "GFCI-Old",
-        command = "gfci-old",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "GFCI-Old",
+//        command = "gfci-old",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class GfciOld extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 

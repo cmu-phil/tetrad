@@ -61,13 +61,13 @@ import java.util.List;
  * @author josephramsey
  * @see edu.cmu.tetrad.search.FcitSlScoreCheck
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "FCIT-SL-Score-Check",
-        command = "fcit-sl-score-check",
-        algoType = AlgType.allow_latent_common_causes
-)
-@Bootstrapping
-@Experimental
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "FCIT-SL-Score-Check",
+//        command = "fcit-sl-score-check",
+//        algoType = AlgType.allow_latent_common_causes
+//)
+//@Bootstrapping
+//@Experimental
 public class FcitSlScoreCheck extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper, TakesIndependenceWrapper,
         AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
 
