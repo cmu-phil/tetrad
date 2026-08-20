@@ -1,0 +1,32 @@
+Graph Nodes:
+CRIM;ZN;INDUS;NOX;RM;AGE;DIS;RAD;TAX;PTRATIO;B;LSTAT;CMEDV
+
+Graph Edges:
+1. CMEDV --> DIS dd nl
+2. CMEDV --> RM dd nl
+3. AGE --> LSTAT dd pl
+4. CMEDV --> LSTAT pd nl
+5. CRIM --> CMEDV dd pl
+6. CRIM --> LSTAT dd pl
+7. CRIM --> RM dd pl
+8. DIS --> INDUS pd nl
+9. LSTAT --> DIS pd nl
+10. LSTAT --> RM pd nl
+11. NOX --> DIS dd pl
+12. NOX --> INDUS dd pl
+13. RAD --> PTRATIO dd pl
+14. RAD --> RM dd pl
+15. RM --> INDUS pd nl
+16. RM --> PTRATIO pd nl
+17. TAX --> INDUS pd nl
+18. ZN --> CMEDV dd pl
+19. ZN --> DIS dd pl
+20. AGE o-o NOX
+21. AGE o-o ZN
+22. CRIM o-o B
+23. NOX o-o RAD
+24. NOX o-> TAX
+25. RAD o-o CRIM
+26. RAD o-> TAX
+27. TAX <-> CMEDV
+

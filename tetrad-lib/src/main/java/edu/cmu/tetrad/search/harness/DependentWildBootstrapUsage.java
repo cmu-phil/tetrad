@@ -100,6 +100,9 @@ public final class DependentWildBootstrapUsage {
         // ---- Load the data: numeric columns -> continuous DataSet; string columns kept aside.
         List<String> header = new ArrayList<>();
         List<String[]> rows = new ArrayList<>();
+
+        System.out.println("Loading data from " + new File(dataPath).getAbsolutePath());
+
         try (BufferedReader r = new BufferedReader(new FileReader(dataPath))) {
             String line = r.readLine();
             for (String h : line.split("\t")) header.add(h.trim());
