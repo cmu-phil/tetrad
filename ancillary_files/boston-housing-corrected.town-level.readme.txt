@@ -1,0 +1,50 @@
+boston-housing-corrected.town-level.txt
+========================================
+
+Town-level aggregation of boston-housing-corrected.mixed.maximum.92.txt
+(cmu-phil/example-causal-datasets, real/boston-housing). 92 rows, one per
+town, in the original file order of towns (which is roughly geographic).
+Tab-delimited. NTRACTS sums to 506; NTRACTS-weighted town means reproduce
+the tract-level grand means exactly (verified for CMEDV).
+
+Aggregation rules
+-----------------
+TOWN                 identifier, carried through verbatim. Not a search
+                     variable.
+NTRACTS              number of census tracts in the town (1..30). Design
+                     variable, useful for weighted analyses; not a
+                     substantive causal variable.
+ZN, INDUS, RAD,
+TAX, PTRATIO         town-level attributes; verified EXACTLY constant
+                     within every town and taken verbatim (no averaging,
+                     no float round-trip).
+LON, LAT, CRIM, NOX,
+RM, AGE, DIS, B,
+LSTAT, CMEDV         unweighted mean over the town's tracts.
+CHAS_PROP            proportion of the town's tracts bounding the Charles
+                     River (replaces the binary CHAS; 11 towns nonzero,
+                     1 town all-river). Continuous in [0,1].
+
+Caveats (inherited or introduced)
+---------------------------------
+1. CMEDV top-coding. 16 tracts are censored at 50; town means built from
+   censored tracts understate true values. 3 towns have every tract
+   top-coded (town mean exactly 50).
+2. B is the nonlinear transform 1000(Bk-0.63)^2 of a proportion; the mean
+   of the transform is not the transform of the mean. Averaged as-is.
+3. CRIM is documented as "per capita crime rate by town" in the original
+   readme but varies across tracts in the corrected data; averaged like
+   the other tract-level variables.
+4. Unweighted means treat tracts, not populations, as units. No
+   population weights are available in this file.
+5. Spatial dependence between ADJACENT TOWNS remains. Lag-1
+   autocorrelations in town file order are still large (LAT 0.93, LON
+   0.88, RAD 0.88, CRIM 0.86, DIS 0.81, TAX 0.79, NOX 0.75, ...).
+   Aggregation removes the within-town pseudo-replication (the dominant
+   problem) but the 92 towns are still not exchangeable: neighboring
+   towns resemble each other. A data audit on this file with no grouping
+   variable will (correctly) still flag SERIAL_DEPENDENCE in file order.
+   Shuffling the rows would silence the flag without changing the fact.
+6. RAD and TAX: in this data the town-level values are heavily tied
+   (e.g., the RAD=24 / TAX=666 block covering the Boston towns), so
+   near-determinism between them persists at town level.
