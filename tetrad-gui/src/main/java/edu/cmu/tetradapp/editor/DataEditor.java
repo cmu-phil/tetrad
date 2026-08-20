@@ -733,11 +733,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         JMenu tools = new JMenu("Tools");
         menuBar.add(tools);
 
+        tools.add(new DataAuditAction(this));
+        tools.add(new NonlinearityChecksAction(this));
+        tools.add(new DescriptiveStatsAction(this));
         tools.add(new PlotMatrixAction(this));
         tools.add(new QQPlotAction(this));
-        tools.add(new DataAuditAction(this));
-        tools.add(new DescriptiveStatsAction(this));
-        tools.add(new NonlinearityChecksAction(this));
         tools.add(new CheckIndependenceFacts(this));
 
         return menuBar;
