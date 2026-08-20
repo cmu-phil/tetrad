@@ -16,12 +16,7 @@ import edu.cmu.tetrad.search.WildBootstrapMarkovCheck.Multiplier;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Hand-run harness comparing the i.i.d. wild bootstrap Markov check against the two
@@ -57,6 +52,11 @@ import java.util.Set;
  * the i.i.d. check fails and the dependence-aware checks pass across a sensible grid of
  * scales, the failure was plausibly a row-dependence artifact. Blocks give the cleaner level;
  * the kernel has more power but is more bandwidth-sensitive.
+ * <p>
+ * Program arguments:
+ * <code>
+ * ancillary_files/boston-housing-corrected.town-level.txt ancillary_files/gmas-pag.txt --facts olmp --blocksCol TOWN --coords LON,LAT --cell auto --bandwidth auto --B 2000
+ * </code>
  */
 public final class DependentWildBootstrapUsage {
 
@@ -160,7 +160,7 @@ public final class DependentWildBootstrapUsage {
         outer:
         for (IndependenceFact f : factSet) {
             if (data.getVariable(f.getX().getName()) == null
-                || data.getVariable(f.getY().getName()) == null) {
+                    || data.getVariable(f.getY().getName()) == null) {
                 skipped++;
                 continue;
             }
@@ -174,7 +174,7 @@ public final class DependentWildBootstrapUsage {
         }
         facts.sort(Comparator.comparing(IndependenceFact::toString));   // deterministic order
         System.out.println("facts (" + factsKind + "): " + facts.size() + " usable"
-                           + (skipped > 0 ? ", " + skipped + " skipped (variables not in data)" : ""));
+                + (skipped > 0 ? ", " + skipped + " skipped (variables not in data)" : ""));
         if (facts.isEmpty()) {
             System.out.println("Nothing to test.");
             return;
@@ -240,7 +240,7 @@ public final class DependentWildBootstrapUsage {
             if (bandwidthSpec != null) {
                 String[] hs = bandwidthSpec.equals("auto")
                         ? new String[]{Double.toString(2.0 * mnn), Double.toString(3.0 * mnn),
-                                       Double.toString(4.0 * mnn)}
+                        Double.toString(4.0 * mnn)}
                         : bandwidthSpec.split(",");
                 for (String hstr : hs) {
                     double h = Double.parseDouble(hstr.trim());
