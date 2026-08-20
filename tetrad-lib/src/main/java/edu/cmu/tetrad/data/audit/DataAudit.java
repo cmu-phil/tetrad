@@ -47,6 +47,12 @@ import java.util.Set;
  * Anderson-Darling p-values, R-squared and eta-squared values, distinct-value counts) are available from accessors so
  * that downstream tools can display or reason over the numbers, not just the flags.
  * <p>
+ * Separately from the findings, {@link #notes()} returns cross-references to other diagnostics whose scope overlaps
+ * a finding that fired, for cases where the finding on its own is ambiguous between explanations that a different
+ * tool can distinguish. Notes are kept out of {@link AuditFinding} messages and out of the "findings" array of
+ * {@link #toJson()} precisely so that the findings-only contract above stays literally true: a note says what else
+ * could be measured, never what the user should do about the data.
+ * <p>
  * Columns found to be exactly constant (see {@link FindingCode#CONSTANT_COLUMN}) are flagged and then excluded from
  * all subsequent checks in the same audit: constant columns contribute nothing to small-cell, correlation,
  * near-determinism, non-Gaussianity, or serial-dependence diagnostics, and a constant continuous column would
@@ -67,6 +73,27 @@ import java.util.Set;
  * @see MissingDataAudit
  */
 public final class DataAudit {
+
+    /**
+     * The note attached by {@link #notes()} when at least one {@link FindingCode#NON_GAUSSIAN} finding fired.
+     * <p>
+     * The Anderson-Darling check is a marginal one, and a non-Gaussian marginal has more than one explanation. The
+     * error term may itself be non-Gaussian, with the variable a linear additive function of its parents, which is
+     * the case the LiNGAM family exploits. Or the variable may be a nonlinear function of its parents, or a
+     * non-additive one, with Gaussian errors throughout: pushing Gaussian parents through a nonlinearity, or through
+     * an interaction, produces a non-Gaussian marginal by itself. Marginal non-Gaussianity does not separate these,
+     * and the second case violates the functional form that the first case's methods assume, so the cross-reference
+     * is to a check of the conditional mean and of additivity across parents rather than to another marginal test.
+     */
+    public static final String NON_GAUSSIAN_NOTE =
+            "Non-Gaussianity was flagged for at least one continuous variable. The Anderson-Darling check is "
+                    + "marginal, and a non-Gaussian marginal is consistent both with a non-Gaussian error term in a "
+                    + "linear additive model (the case LiNGAM-family methods exploit) and with a nonlinear or "
+                    + "non-additive dependence on parents with Gaussian errors, which violates the functional form "
+                    + "those methods assume. The nonlinearity checks tool (Tools > Nonlinearity Checks... in the "
+                    + "Tetrad GUI) tests the conditional mean E(Y|X) directly and reports whether the effects of "
+                    + "several parents combine additively, which distinguishes these cases; note that its verdicts "
+                    + "are direction-relative, so both regression directions are informative.";
 
     /**
      * The dataset being audited.
@@ -341,6 +368,21 @@ public final class DataAudit {
     }
 
     /**
+     * Returns cross-references to other diagnostics bearing on the findings that fired, in a fixed order, or an empty
+     * list if none apply. These are not recommendations about the data or the analysis; each note names a further
+     * measurement that would resolve an ambiguity the audit cannot resolve on its own, and the audit takes no
+     * position on whether the user should make it.
+     *
+     * @return This list of notes.
+     * @see #NON_GAUSSIAN_NOTE
+     */
+    public List<String> notes() {
+        List<String> notes = new ArrayList<>();
+        if (hasFinding(FindingCode.NON_GAUSSIAN)) notes.add(NON_GAUSSIAN_NOTE);
+        return notes;
+    }
+
+    /**
      * Returns a human-readable multi-section report of the audit.
      *
      * @return This report.
@@ -368,13 +410,22 @@ public final class DataAudit {
             sb.append('\n').append(this.missingDataAudit.report());
         }
 
+        List<String> notes = notes();
+
+        if (!notes.isEmpty()) {
+            sb.append("\nNotes (cross-references to other diagnostics, not recommendations):\n");
+            for (String note : notes) sb.append("  ").append(note).append('\n');
+        }
+
         return sb.toString();
     }
 
     /**
      * Returns the findings and summary statistics as a JSON string, suitable for consumption by py-tetrad or other
-     * tools. The schema has top-level fields "numRows", "numVariables", "numContinuous", "numDiscrete", and
-     * "findings", the last an array of objects with fields "code", "severity", "variables", "values", and "message".
+     * tools. The schema has top-level fields "numRows", "numVariables", "numContinuous", "numDiscrete", "findings",
+     * and "notes". "findings" is an array of objects with fields "code", "severity", "variables", "values", and
+     * "message"; "notes" is an array of the strings returned by {@link #notes()}, kept separate from the findings so
+     * that a consumer reading "findings" alone sees findings only.
      *
      * @return This JSON string.
      */
@@ -408,6 +459,14 @@ public final class DataAudit {
             }
 
             sb.append("},\"message\":\"").append(escape(f.getMessage())).append("\"}");
+        }
+
+        sb.append("],\"notes\":[");
+        List<String> notes = notes();
+
+        for (int i = 0; i < notes.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append("\"").append(escape(notes.get(i))).append("\"");
         }
 
         sb.append("]}");

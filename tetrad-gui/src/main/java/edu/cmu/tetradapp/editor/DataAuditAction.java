@@ -49,6 +49,10 @@ import java.util.List;
  * <li><b>Missingness &amp; Advice</b>: dataset-level missingness facts, Little's MCAR test where applicable, and
  * the missing-data handling advice from {@link MissingDataAudit#advice()}.</li>
  * </ul>
+ * Below the tabs, when the audit produced any ({@link DataAudit#notes()}), sits a notes footer cross-referencing
+ * other diagnostics bearing on the findings that fired - for instance, pointing a non-Gaussianity finding at
+ * Tools &gt; Nonlinearity Checks..., since a non-Gaussian marginal is equally consistent with a non-Gaussian error
+ * term and with a nonlinear or non-additive dependence on parents. The footer is absent when there are no notes.
  * All computation is done by the library classes, so this dialog reports exactly what causal-cmd and py-tetrad
  * report for the same dataset.
  * <p>
@@ -242,10 +246,41 @@ class DataAuditAction extends AbstractAction {
         panel.add(north, BorderLayout.NORTH);
         panel.add(tabs, BorderLayout.CENTER);
 
+        JComponent notes = createNotesFooter(pooledAudit.notes());
+
+        if (notes != null) {
+            panel.add(notes, BorderLayout.SOUTH);
+        }
+
         Box box = Box.createVerticalBox();
         box.add(panel);
 
         return box;
+    }
+
+    /**
+     * Builds the footer holding the audit's cross-reference notes ({@link DataAudit#notes()}), or null when the audit
+     * produced none, in which case no footer is shown at all. The notes are displayed outside the Findings tab
+     * deliberately: they name further diagnostics bearing on a finding that fired, and the findings themselves are
+     * contracted to carry no such content. Package visible so that it can be exercised headlessly in tests.
+     *
+     * @param notes the notes to display.
+     * @return the footer component, or null if there are no notes.
+     */
+    static JComponent createNotesFooter(List<String> notes) {
+        if (notes.isEmpty()) return null;
+
+        StringBuilder sb = new StringBuilder("Notes:");
+        for (String note : notes) sb.append("\n- ").append(note);
+
+        JTextArea area = new JTextArea(sb.toString());
+        area.setEditable(false);
+        area.setOpaque(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+
+        return area;
     }
 
     /**
