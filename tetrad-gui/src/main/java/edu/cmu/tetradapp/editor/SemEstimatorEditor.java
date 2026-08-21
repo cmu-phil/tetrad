@@ -797,8 +797,6 @@ public final class SemEstimatorEditor extends JPanel {
             }
             if (columnIndex == 0) {
                 return getColumnName(rowIndex);
-            } else if (rowIndex < columnIndex) {
-                return null;
             } else {
                 return this.nf.format(this.matrix[rowIndex - 1][columnIndex - 1]);
             }
@@ -821,6 +819,7 @@ public final class SemEstimatorEditor extends JPanel {
 
                     if (d4 <= 1.0 || Double.isNaN(d4)) {
                         corr[i][j] = d4;
+                        corr[j][i] = d4;
                     } else {
                         throw new IllegalArgumentException(
                                 "Off-diagonal element at (" + i + ", " + j

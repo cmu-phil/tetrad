@@ -117,7 +117,7 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-            (matrixCol <= matrixRow)) {
+            (col >= firstDataCol) && (col < lastDataCol)) {
             return getValue(matrixRow, matrixCol);
         }
 
@@ -150,13 +150,15 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-            (col >= firstDataCol) && (matrixCol < matrixRow)) {
+            (col >= firstDataCol) && (col < lastDataCol) &&
+            (matrixCol != matrixRow)) {
             return true;
         }
 
         return !(this.covMatrix instanceof CorrelationMatrix) &&
                (row >= firstDataRow) && (row < lastDataRow) &&
-               (col >= firstDataCol) && (matrixCol == matrixRow);
+               (col >= firstDataCol) && (col < lastDataCol) &&
+               (matrixCol == matrixRow);
 
     }
 
@@ -191,7 +193,7 @@ class CovMatrixTable extends AbstractTableModel {
         }
 
         if ((row >= firstDataRow) && (row < lastDataRow) &&
-            (col >= firstDataCol) && (matrixCol <= matrixRow)) {
+            (col >= firstDataCol) && (col < lastDataCol)) {
             String value = (String) aValue;
             double v = Double.parseDouble(value);
             setEditingValue(matrixRow, matrixCol, v);
