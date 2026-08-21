@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
-// Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
+// Copyright (C) 2026 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
 // and Richard Scheines.                                                     //
 //                                                                           //
 // This program is free software: you can redistribute it and/or modify      //
@@ -22,10 +22,13 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -42,51 +45,62 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * CCD (Cyclic Causal Discovery)
+ * BOSS-CCD (Cyclic Causal Discovery with a BOSS adjacency superstructure).
+ *
+ * <p>Runs BOSS to obtain a CPDAG, then runs Richardson's CCD with the BOSS skeleton as an adjacency superstructure.
+ * Both phases require only second-order statistics, so this works from a covariance/correlation matrix alone,
+ * unlike non-Gaussian cyclic methods (FASK, Two-Step).</p>
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "CCD",
-        command = "ccd",
+        name = "BOSS-CCD",
+        command = "boss-ccd",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
-        ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm, AcceptsKnowledge {
+@Experimental
+public class BossCcd extends AbstractBootstrapAlgorithm implements Algorithm, TakesIndependenceWrapper,
+        TakesScoreWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm, AcceptsKnowledge {
     @Serial
     private static final long serialVersionUID = 23L;
 
     /**
-     * The independence test to use.
+     * The independence test to use (CCD phase).
      */
     private IndependenceWrapper test;
+
     /**
-     * Represents the knowledge structure associated with the CCD (Cyclic Causal Discovery) algorithm.
-     * The knowledge object typically holds domain-specific constraints or background knowledge
-     * that is used to guide the search process in the algorithm.
+     * The score to use (BOSS phase).
+     */
+    private ScoreWrapper score;
+
+    /**
+     * Background knowledge (forbidden directed edges only).
      */
     private Knowledge knowledge;
 
     /**
-     * Constructs a new CCD algorithm.
+     * Constructs a new BOSS-CCD algorithm.
      */
-    public Ccd() {
+    public BossCcd() {
         // Used in reflection; do not delete.
     }
 
     /**
-     * Constructs a new CCD algorithm with the given independence test.
+     * Constructs a new BOSS-CCD algorithm with the given independence test and score.
      *
-     * @param test the independence test
+     * @param test  the independence test (CCD phase)
+     * @param score the score (BOSS phase)
      */
-    public Ccd(IndependenceWrapper test) {
+    public BossCcd(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
+        this.score = score;
     }
 
     /**
-     * Runs the CCD (Cyclic Causal Discovery) search algorithm on the given data set using the specified parameters.
+     * Runs the BOSS-CCD search algorithm on the given data set using the specified parameters.
      *
      * @param dataModel  the data set to search on
      * @param parameters the parameters for the search algorithm
@@ -96,11 +110,19 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     public Graph runSearch(DataModel dataModel, Parameters parameters) throws InterruptedException {
         IndependenceTest _test = test.getTest(dataModel, parameters);
         _test = new CachedIndependenceQueries(_test);
-        edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(_test);
+
+        edu.cmu.tetrad.search.BossCcd search
+                = new edu.cmu.tetrad.search.BossCcd(_test, this.score.getScore(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
+        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        search.setKnowledge(knowledge);
+
+        if (knowledge != null) {
+            search.setKnowledge(knowledge);
+        }
 
         Graph graph;
         double fdrQ = parameters.getDouble(Params.FDR_Q);
@@ -135,7 +157,8 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      */
     @Override
     public String getDescription() {
-        return "CCD (Cyclic Causal Discovery using " + test.getDescription();
+        return "BOSS-CCD (Cyclic Causal Discovery with BOSS adjacency superstructure) using "
+                + test.getDescription() + " and " + score.getDescription();
     }
 
     /**
@@ -149,8 +172,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     }
 
     /**
-     * Retrieves the parameters for the search algorithm. This method combines the parameters obtained from the
-     * underlying test with additional parameters specific to the CCD (Cyclic Causal Discovery) algorithm.
+     * Retrieves the parameters for the search algorithm.
      *
      * @return A list of String names for parameters.
      */
@@ -159,6 +181,9 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
         parameters.add(Params.APPLY_R1);
+        parameters.add(Params.USE_BES);
+        parameters.add(Params.NUM_STARTS);
+        parameters.add(Params.USE_DATA_ORDER);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.VERBOSE);
         return parameters;
@@ -185,9 +210,27 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     }
 
     /**
+     * Returns the ScoreWrapper object associated with this instance.
+     *
+     * @return the ScoreWrapper object
+     */
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
+    }
+
+    /**
+     * Updates the score wrapper for this algorithm.
+     *
+     * @param score the score wrapper to set
+     */
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
+
+    /**
      * Retrieves the knowledge object associated with this instance.
-     * The knowledge object typically contains prior knowledge or constraints
-     * to guide the algorithm's behavior.
      *
      * @return the {@code Knowledge} object associated with this instance
      */
@@ -198,16 +241,11 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
 
     /**
      * Sets the knowledge object for this instance.
-     * The knowledge object typically contains prior assumptions or constraints
-     * to guide the algorithm's behavior.
      *
-     * @param knowledge the {@code Knowledge} object to set; this object
-     *                  encapsulates domain-specific knowledge or constraints
-     *                  relevant to the algorithm.
+     * @param knowledge the {@code Knowledge} object to set
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 }
-

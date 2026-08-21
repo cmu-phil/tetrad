@@ -24,7 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
-import edu.cmu.tetrad.search.utils.SepsetsMaxP;
+import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -77,6 +77,15 @@ public final class Ccd implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     /**
+     * Optional adjacency superstructure. If non-null, the adjacency phase (Step A) starts from the edges of this graph
+     * (matched to test variables by name) instead of the complete graph, and the sepset search at each level is
+     * restricted to current adjacencies. Edges may be removed from the superstructure by the sepset search but never
+     * added. Intended use: pass the skeleton of a score-based search (e.g., BOSS) run on the same variables, as in
+     * {@link BossCcd}. Null (the default) reproduces the classic behavior (FAS from the complete graph).
+     */
+    private Graph superstructure = null;
+
+    /**
      * Constructs a Ccd object with the given independence test.
      *
      * @param test the IndependenceTest to be used within the CCD algorithm. If the test is not an instance of
@@ -107,13 +116,29 @@ public final class Ccd implements IGraphSearch {
     public Graph search() throws InterruptedException {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();
 
-        if (verbose) TetradLogger.getInstance().log("CCD: Step A — Fast Adjacency Search (FAS)");
-        Fas fas = new Fas(this.test);
-        Graph psi = fas.search();
+        Graph psi;
+
+        if (this.superstructure == null) {
+            if (verbose) TetradLogger.getInstance().log("CCD: Step A — Fast Adjacency Search (FAS)");
+            Fas fas = new Fas(this.test);
+            fas.setDepth(this.depth);
+            fas.setKnowledge(this.knowledge);
+            fas.setVerbose(this.verbose);
+            psi = fas.search();
+        } else {
+            if (verbose) TetradLogger.getInstance().log("CCD: Step A — Restricted FAS from superstructure");
+            psi = restrictedFas();
+        }
+
         psi.reorientAllWith(Endpoint.CIRCLE);
 
-        // Use Max-P sepsets (depth-aware) for stability downstream.
-        SepsetProducer sepsets = new SepsetsMaxP(psi, test, depth);
+        // Use minimal-cardinality-first sepsets (smallest subsets of adj(x) or adj(y), empty set first), matching
+        // Richardson's Step A semantics. This matters for cyclic models: unlike the acyclic case, a node b may lie
+        // in SOME valid sepsets of (a, c) but not others (e.g., for a 2-cycle X<->Y with parents A, B, both {} and
+        // {X, Y} separate A from B). Max-p sepset selection tends to pick the larger sets, which converts the
+        // colliders Step B needs into underlines, so Step D never finds dotted underlines and no cycle is ever
+        // detected. Richardson's correctness argument goes through with the minimal sepsets found in Step A.
+        SepsetProducer sepsets = new SepsetsGreedy(psi, test, depth);
 
         stepB(psi, sepsets);
         stepC(psi, sepsets);
@@ -211,7 +236,118 @@ public final class Ccd implements IGraphSearch {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Sets an optional adjacency superstructure for Step A. If non-null, the adjacency search starts from the edges of
+     * this graph (matched to the test's variables by name) rather than from the complete graph, and sepsets at each
+     * level are sought among current adjacencies of the endpoints. Edges may be removed but never added, so the final
+     * adjacencies are a subset of the superstructure's. Passing the skeleton of a score-based search (e.g., BOSS) here
+     * is sound for linear cyclic models in the large-sample limit, since any DAG I-map of the data distribution must
+     * be adjacent for every inseparable pair (including Richardson's "virtual edges" induced by cycles).
+     *
+     * @param superstructure the superstructure graph, or null for the classic complete-graph start.
+     */
+    public void setSuperstructure(Graph superstructure) {
+        this.superstructure = superstructure;
+    }
+
     // ------------------------------ Algorithm --------------------------------
+
+    /**
+     * Step A variant — PC-stable style adjacency search seeded with the superstructure's edges rather than the
+     * complete graph. At level d, for each remaining edge x*-*y, subsets of size d of adj(x)\{y} and adj(y)\{x}
+     * (adjacencies frozen per level) are tested; the edge is removed if a separating set is found. Knowledge edges
+     * forbidden in both directions are removed upfront, mirroring {@link Fas}.
+     */
+    private Graph restrictedFas() throws InterruptedException {
+        Graph psi = new EdgeListGraph(this.nodes);
+
+        // Transfer superstructure adjacencies onto the test's variables, matching by name.
+        Map<String, Node> byName = new HashMap<>();
+        for (Node node : this.nodes) byName.put(node.getName(), node);
+
+        for (Edge edge : this.superstructure.getEdges()) {
+            Node x = byName.get(edge.getNode1().getName());
+            Node y = byName.get(edge.getNode2().getName());
+            if (x == null || y == null) {
+                throw new IllegalArgumentException("Superstructure node not among test variables: "
+                        + (x == null ? edge.getNode1().getName() : edge.getNode2().getName()));
+            }
+            if (x != y && !psi.isAdjacentTo(x, y)) psi.addUndirectedEdge(x, y);
+        }
+
+        // Apply forbidden-both-ways knowledge upfront, as in Fas.
+        for (Edge edge : new ArrayList<>(psi.getEdges())) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
+            if (this.knowledge.isForbidden(x.getName(), y.getName())
+                    && this.knowledge.isForbidden(y.getName(), x.getName())) {
+                psi.removeEdge(x, y);
+                if (verbose) {
+                    TetradLogger.getInstance().log("Edge removed by knowledge: " + x.getName() + " *-* " + y.getName());
+                }
+            }
+        }
+
+        final int n = this.nodes.size();
+        final int depthCap = (this.depth < 0) ? (n - 1) : this.depth;
+
+        for (int d = 0; d <= depthCap; d++) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            if (verbose) TetradLogger.getInstance().log("Restricted FAS depth: " + d);
+
+            // Freeze adjacencies for this level (PC-stable).
+            Map<Node, List<Node>> frozenAdj = new HashMap<>();
+            for (Node node : psi.getNodes()) frozenAdj.put(node, new ArrayList<>(psi.getAdjacentNodes(node)));
+
+            boolean removedAny = false;
+
+            for (Edge edge : new ArrayList<>(psi.getEdges())) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+
+                Node x = edge.getNode1();
+                Node y = edge.getNode2();
+                if (!psi.isAdjacentTo(x, y)) continue;
+
+                if (findSepsetAtLevel(x, y, frozenAdj.get(x), d) || findSepsetAtLevel(y, x, frozenAdj.get(y), d)) {
+                    psi.removeEdge(x, y);
+                    removedAny = true;
+                }
+            }
+
+            // Termination: nothing removed and no node has enough neighbors for level d + 1.
+            int maxFree = 0;
+            for (Node node : psi.getNodes()) maxFree = TMath.max(maxFree, psi.getAdjacentNodes(node).size() - 1);
+            if (!removedAny && maxFree <= d) break;
+        }
+
+        return psi;
+    }
+
+    /**
+     * Searches subsets of size d of {@code pool}\{other} for a set separating {@code from} and {@code other}.
+     * Returns true if one is found (the edge should be removed).
+     */
+    private boolean findSepsetAtLevel(Node from, Node other, List<Node> pool, int d) throws InterruptedException {
+        List<Node> candidates = new ArrayList<>(pool);
+        candidates.remove(other);
+        if (candidates.size() < d) return false;
+
+        ChoiceGenerator cg = new ChoiceGenerator(candidates.size(), d);
+        int[] choice;
+
+        while ((choice = cg.next()) != null) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            Set<Node> S = GraphUtils.asSet(choice, candidates);
+            if (this.test.checkIndependence(from, other, S).isIndependent()) {
+                if (verbose) {
+                    TetradLogger.getInstance().log("Restricted FAS removal: " + from + " _||_ " + other + " | " + S);
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Step B — Add underlines (non-colliders) and colliders for unshielded triples.
@@ -236,7 +372,7 @@ public final class Ccd implements IGraphSearch {
                 // Only unshielded triples
                 if (psi.isAdjacentTo(a, c)) continue;
 
-                Set<Node> S = sepsets.getSepset(a, c, -1, null);
+                Set<Node> S = sepsets.getSepset(a, c, this.depth, null);
                 if (S == null) continue;
 
                 if (S.contains(b)) {
@@ -312,7 +448,7 @@ public final class Ccd implements IGraphSearch {
                         continue;
                     }
 
-                    Set<Node> sepset = sepsets.getSepset(a, y, -1, null);
+                    Set<Node> sepset = sepsets.getSepset(a, y, this.depth, null);
                     if (sepset == null) continue;
                     if (sepset.contains(x)) continue;
 
@@ -364,7 +500,7 @@ public final class Ccd implements IGraphSearch {
 
             if (!psi.isDefCollider(a, b, c) && !psi.isAmbiguousTriple(a, b, c)) continue;
 
-            Set<Node> S = sepsets.getSepset(a, c, -1, null);
+            Set<Node> S = sepsets.getSepset(a, c, this.depth, null);
             if (S == null) continue;
 
             ArrayList<Node> TT = new ArrayList<>(local.getOrDefault(a, Collections.emptyList()));

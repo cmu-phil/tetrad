@@ -3704,6 +3704,48 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         Yes if verbose output should be printed.</p>
 
 
+    <h3>The BOSS-CCD Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="boss-ccd">
+
+        <p>BOSS-CCD runs BOSS first and uses the skeleton of the resulting
+            CPDAG as an adjacency superstructure for CCD (Richardson's Cyclic
+            Causal Discovery). For linear cyclic models, every pair that CCD
+            would judge adjacent (including the "virtual edges" induced by
+            cycles) must be adjacent in any DAG that the data distribution is
+            Markov to, so in the large-sample limit the BOSS skeleton contains
+            all CCD adjacencies. Handing the adjacency decisions to a global
+            score-based search improves finite-sample adjacency quality and
+            stabilizes CCD's orientation steps, while greatly reducing the
+            number of independence tests. Like CCD, and unlike non-Gaussian
+            cyclic methods (e.g., FASK), BOSS-CCD needs only second-order
+            statistics, so it can be run from a covariance or correlation
+            matrix alone. Cycle detectability follows CCD's identifiability
+            limits: for example, a feedback loop is marked (via
+            dotted-underlined colliders) when it has two nonadjacent external
+            parents. See Richardson, T. S. (2013). A discovery algorithm for
+            directed cyclic graphs. arXiv preprint arXiv:1302.3599.</p></div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Data from a possibly cyclic (feedback) linear model without latent
+        variables, for which both a score (for BOSS) and an independence test
+        (for CCD) are available; a covariance matrix suffices.</p>
+
+    <h4>Output Format</h4>
+
+    <p>A cyclic PAG, as for CCD.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Cutoff for alpha, penalty discount (or other score parameters),
+        maximum size of conditioning set, Yes if orient away from arrow rule
+        should be applied, Yes if BES should be used in BOSS, number of random
+        restarts for BOSS, Yes if verbose output should be printed.</p>
+
+
     <h3>The FGES-MB Algorithm</h3>
 
     <h4>Description</h4>
