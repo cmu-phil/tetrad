@@ -494,6 +494,22 @@ Source:
     </ul>
 
 
+    === useBossAdjacencies ===
+    <h3 class="parameter_description" id="useBossAdjacencies">useBossAdjacencies</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useBossAdjacencies_short_desc"> Yes if BOSS (rather than FAS-Stable)
+        should supply the initial adjacency skeleton</span></li>
+        <li>Long Description: <span id="useBossAdjacencies_long_desc"> If set to "Yes", the initial adjacency
+        skeleton for the search is taken from the skeleton of a BOSS CPDAG estimated with the supplied score,
+        instead of running FAS-Stable. A global score-based search typically yields better finite-sample
+        adjacencies than FAS; subsequent orientation steps proceed identically. Ignored if an external graph
+        is supplied.</span></li>
+        <li>Default Value: <span id="useBossAdjacencies_default_value">false</span></li>
+        <li>Lower Bound: <span id="useBossAdjacencies_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useBossAdjacencies_upper_bound"></span></li>
+        <li>Value Type: <span id="useBossAdjacencies_value_type">Boolean</span></li>
+    </ul>
+
     === applyR1 ===
     <h3 class="parameter_description" id="applyR1">applyR1</h3>
     <ul class="parameter_description_list">

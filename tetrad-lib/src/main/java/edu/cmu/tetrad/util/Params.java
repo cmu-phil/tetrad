@@ -521,6 +521,11 @@ public final class Params {
      * Constant <code>PARALLELIZED="parallelized"</code>
      */
     public static final String PARALLELIZED = "parallelized";
+
+    /**
+     * Constant <code>USE_BOSS_ADJACENCIES="useBossAdjacencies"</code>
+     */
+    public static final String USE_BOSS_ADJACENCIES = "useBossAdjacencies";
     /**
      * Constant <code>PENALTY_DISCOUNT="penaltyDiscount"</code>
      */

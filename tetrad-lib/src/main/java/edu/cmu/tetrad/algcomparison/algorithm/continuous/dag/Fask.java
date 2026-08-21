@@ -134,6 +134,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         fask.setTwoCycleAlpha(parameters.getDouble(TWO_CYCLE_ALPHA));
         fask.setExtraEdgeThreshold(parameters.getDouble(SKEW_EDGE_THRESHOLD));
         fask.setUseFasAdjacencies(true);
+        fask.setUseBossAdjacencies(parameters.getBoolean(USE_BOSS_ADJACENCIES));
         fask.setUseSkewAdjacencies(true);
 
         if (algorithm != null) {
@@ -194,6 +195,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(SKEW_EDGE_THRESHOLD);
         parameters.add(TWO_CYCLE_ALPHA);
         parameters.add(FASK_LEFT_RIGHT_RULE);
+        parameters.add(USE_BOSS_ADJACENCIES);
 
         return parameters;
     }
