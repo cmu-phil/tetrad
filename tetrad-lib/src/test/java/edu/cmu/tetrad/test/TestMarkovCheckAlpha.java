@@ -44,8 +44,15 @@ import static org.junit.Assert.assertTrue;
  * {@link ScoreIndTest} reports an alpha of -1 (its "p-value" is a score difference, not a probability), and
  * {@code IndTestIndependenceFacts} reports NaN. Passing either to {@code BinomialDistribution} threw
  * {@code OutOfRangeException: -1 out of [0, 1] range} from {@code generateResults}, crashing the Markov Checker in
- * the GUI; the fraction-dependent statistic was meanwhile silently computed as zero against a nonsense threshold.
- * Both statistics are now reported as NaN, which the editor displays as "-".
+ * the GUI. The statistics that test p-values against a Uniform(0, 1) null (Anderson-Darling, KS, Fisher combined,
+ * binomial) are reported as NaN for such tests, which the editor displays as "-".
+ * <p>
+ * Fraction dependent is the exception: it is defined for EVERY test, because it counts the test's own verdicts
+ * ({@code IndependenceResult#isIndependent()}) rather than thresholding reported p-values. For a p-value test this
+ * is identical to counting p &lt;= alpha; for a score wrapped as a test it is the fraction of implied independencies
+ * the score judges dependent -- the one Markov-check statistic that remains meaningful without calibrated p-values.
+ * (An earlier version of this test asserted NaN here, reflecting an earlier fix that blanked all statistics; the
+ * verdict-based definition supersedes it.)
  *
  * @author josephramsey
  */
@@ -100,8 +107,16 @@ public class TestMarkovCheckAlpha {
                 mc.providesCalibratedPValues());
         assertTrue("Binomial p-value must be undefined without a usable alpha",
                 Double.isNaN(mc.getBinomialPValue_(true)));
-        assertTrue("Fraction dependent must be undefined (not 0.0) without a usable alpha",
-                Double.isNaN(mc.getFractionDependent(true)));
+
+        // Fraction dependent counts the test's own verdicts, so it is defined even without a usable alpha. Here
+        // the model's single implied independence (A _||_ B) is judged independent by the score on this dataset,
+        // so the fraction is a genuine 0.0 -- not the fabricated 0.0 the original bug produced by thresholding
+        // score differences against a nonsense alpha.
+        double fracDep = mc.getFractionDependent(true);
+        assertFalse("Fraction dependent must be defined for a score-based test (verdict-based)",
+                Double.isNaN(fracDep));
+        assertTrue("Fraction dependent must lie in [0, 1]",
+                fracDep >= 0.0 && fracDep <= 1.0);
     }
 
     /**
