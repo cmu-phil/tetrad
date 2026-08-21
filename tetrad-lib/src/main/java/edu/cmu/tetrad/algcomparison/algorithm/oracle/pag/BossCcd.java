@@ -114,6 +114,7 @@ public class BossCcd extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         edu.cmu.tetrad.search.BossCcd search
                 = new edu.cmu.tetrad.search.BossCcd(_test, this.score.getScore(dataModel, parameters));
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
         search.setUseBes(parameters.getBoolean(Params.USE_BES));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -180,6 +181,7 @@ public class BossCcd extends AbstractBootstrapAlgorithm implements Algorithm, Ta
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.PARALLELIZED);
         parameters.add(Params.APPLY_R1);
         parameters.add(Params.USE_BES);
         parameters.add(Params.NUM_STARTS);

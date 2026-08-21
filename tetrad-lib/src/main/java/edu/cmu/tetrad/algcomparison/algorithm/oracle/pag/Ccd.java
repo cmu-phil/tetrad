@@ -98,6 +98,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         _test = new CachedIndependenceQueries(_test);
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(_test);
         search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setKnowledge(knowledge);
@@ -158,6 +159,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.PARALLELIZED);
         parameters.add(Params.APPLY_R1);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.VERBOSE);

@@ -72,6 +72,14 @@ public final class Ccd implements IGraphSearch {
     private int depth = -1;
 
     /**
+     * Whether Step D (dotted-underline discovery) distributes its per-node searches over all available processor
+     * cores (default: false). The parallel path produces output identical to the sequential path: each unshielded
+     * triple is examined by exactly one task, tasks only read the Step-B graph, and results are applied on the
+     * calling thread after all tasks complete.
+     */
+    private boolean parallelized = false;
+
+    /**
      * Background knowledge: only forbidden directed edges are honored.
      */
     private Knowledge knowledge = new Knowledge();
@@ -219,6 +227,16 @@ public final class Ccd implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    /**
+     * Sets whether Step D (dotted-underline discovery) distributes its per-node searches across all available
+     * processor cores. The parallel path produces output identical to the sequential path. Default: false.
+     *
+     * @param parallelized true to parallelize Step D.
+     */
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
     }
 
     /**
@@ -477,16 +495,54 @@ public final class Ccd implements IGraphSearch {
             local.put(node, local(psi, node));
         }
 
-        for (Node node : this.nodes) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-            doNodeStepD(psi, sepsets, supSepsets, local, node);
+        // Each middle node's search is independent and only reads psi, so the per-node searches may run
+        // concurrently. Results are collected per node and applied here afterward, so the parallel path
+        // produces exactly the sequential output.
+        if (this.parallelized) {
+            java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(
+                    Runtime.getRuntime().availableProcessors());
+            try {
+                List<java.util.concurrent.Future<List<Object[]>>> futures = new ArrayList<>();
+                for (Node node : this.nodes) {
+                    futures.add(pool.submit(() -> doNodeStepD(psi, sepsets, local, node)));
+                }
+                for (java.util.concurrent.Future<List<Object[]>> future : futures) {
+                    List<Object[]> results;
+                    try {
+                        results = future.get();
+                    } catch (java.util.concurrent.ExecutionException e) {
+                        if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
+                        if (e.getCause() instanceof RuntimeException) throw (RuntimeException) e.getCause();
+                        throw new RuntimeException(e.getCause());
+                    }
+                    for (Object[] r : results) {
+                        Triple triple = (Triple) r[0];
+                        psi.addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+                        //noinspection unchecked
+                        supSepsets.put(triple, (Set<Node>) r[1]);
+                    }
+                }
+            } finally {
+                pool.shutdownNow();
+            }
+        } else {
+            for (Node node : this.nodes) {
+                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                for (Object[] r : doNodeStepD(psi, sepsets, local, node)) {
+                    Triple triple = (Triple) r[0];
+                    psi.addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+                    //noinspection unchecked
+                    supSepsets.put(triple, (Set<Node>) r[1]);
+                }
+            }
         }
     }
 
-    private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
-                             Map<Node, List<Node>> local, Node b) throws InterruptedException {
+    private List<Object[]> doNodeStepD(Graph psi, SepsetProducer sepsets,
+                                       Map<Node, List<Node>> local, Node b) throws InterruptedException {
+        List<Object[]> results = new ArrayList<>();
         List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
-        if (adj.size() < 2) return;
+        if (adj.size() < 2) return results;
 
         ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
         int[] choice;
@@ -503,12 +559,19 @@ public final class Ccd implements IGraphSearch {
             Set<Node> S = sepsets.getSepset(a, c, this.depth, null);
             if (S == null) continue;
 
+            // The candidate sup-sepset is B = S ∪ {b} ∪ T with T drawn from Local(a). Depth caps the size of
+            // EVERY issued conditioning set, so |B| = |S| + 1 + |T| must not exceed depth: T is enumerated only
+            // up to depth − |S| − 1. If even S ∪ {b} is over the cap, no admissible sup-sepset exists at this
+            // depth and the triple is skipped. (Formerly only |T| was capped at depth, so tests could condition
+            // on as many as 2·depth + 1 variables.)
+            if (this.depth >= 0 && S.size() + 1 > this.depth) continue;
+
             ArrayList<Node> TT = new ArrayList<>(local.getOrDefault(a, Collections.emptyList()));
             TT.removeAll(S);
             TT.remove(b);
             TT.remove(c);
 
-            int kMax = (depth < 0) ? -1 : TMath.min(depth, TT.size());
+            int kMax = (depth < 0) ? -1 : TMath.min(depth - S.size() - 1, TT.size());
             SublistGenerator gen2 = new SublistGenerator(TT.size(), kMax);
             int[] choice2;
 
@@ -521,12 +584,13 @@ public final class Ccd implements IGraphSearch {
                 B.add(b);
 
                 if (sepsets.isIndependent(a, c, new HashSet<>(B))) {
-                    psi.addDottedUnderlineTriple(a, b, c);
-                    supSepsets.put(new Triple(a, b, c), B);
+                    results.add(new Object[]{new Triple(a, b, c), B});
                     break;
                 }
             }
         }
+
+        return results;
     }
 
     /**
@@ -601,6 +665,9 @@ public final class Ccd implements IGraphSearch {
 
                 Set<Node> supSepUnionD = new HashSet<>(sup);
                 supSepUnionD.add(d);
+
+                // Depth caps every issued conditioning set; skip candidates whose test would exceed it.
+                if (this.depth >= 0 && supSepUnionD.size() > this.depth) continue;
 
                 if (!sepsets.isIndependent(a, c, new HashSet<>(supSepUnionD))) {
                     // Try B -> D (vetoable)

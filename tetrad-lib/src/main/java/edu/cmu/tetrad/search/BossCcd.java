@@ -92,6 +92,11 @@ public final class BossCcd implements IGraphSearch {
     private int depth = -1;
 
     /**
+     * Whether CCD Step D is parallelized (default: false).
+     */
+    private boolean parallelized = false;
+
+    /**
      * Whether to apply CCD's R1 push-away rule (default: true).
      */
     private boolean applyR1 = true;
@@ -169,6 +174,7 @@ public final class BossCcd implements IGraphSearch {
         Ccd ccd = new Ccd(this.test);
         ccd.setKnowledge(this.knowledge);
         ccd.setDepth(this.depth);
+        ccd.setParallelized(this.parallelized);
         ccd.setApplyR1(this.applyR1);
         ccd.setVerbose(this.verbose);
         ccd.setSuperstructure(superstructure);
@@ -223,6 +229,16 @@ public final class BossCcd implements IGraphSearch {
      */
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    /**
+     * Sets whether CCD's Step D (dotted-underline discovery) is parallelized across processor cores. Output is
+     * identical either way. Default: false.
+     *
+     * @param parallelized true to parallelize Step D.
+     */
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
     }
 
     /**
