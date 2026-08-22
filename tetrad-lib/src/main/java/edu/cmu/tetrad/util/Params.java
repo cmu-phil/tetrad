@@ -1177,6 +1177,10 @@ public final class Params {
      */
     public static final String GCM_Z_TRUNCATION_LIMIT = "gcmZTruncationLimit";
     /**
+     * Constant <code>GCM_CONTROL_FUNCTION="gcmControlFunction"</code>
+     */
+    public static final String GCM_CONTROL_FUNCTION = "gcmControlFunction";
+    /**
      * Constant <code>MIMBUILD_TYPE="mimbuildType"</code>
      */
     public static final String MIMBUILD_TYPE = "mimbuildType";

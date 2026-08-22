@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
 import edu.cmu.tetrad.search.utils.Embedding;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TMath;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.ejml.simple.SimpleMatrix;
@@ -131,6 +132,22 @@ public class IndTestBasisExpandedGcm implements IndependenceTest, RawMarginalInd
      * Number of Rademacher multiplier bootstrap samples; 0 = use the Sidak bound instead.
      */
     private int numMultiplierSamples = 500;
+    /**
+     * If true, each side's regression design is augmented with a univariate Legendre basis in that side's
+     * first-stage fitted mean (a control function). Rationale: the additive Z-sieve cannot represent interactions
+     * among Z's components, yet even under purely ADDITIVE truth X = g(A) + h(B) + eps, the higher grid cells have
+     * conditional means containing products such as g(A)h(B) -- powers of sums create interactions -- so the
+     * product-of-errors bias is nonzero at |Z| &gt;= 2 no matter how large the univariate Z-truncation is, and the
+     * test over-rejects true conditional independencies (visible as an excess of implied CIs judged dependent in
+     * the Markov Checker). If X = mu(Z) + eps with eps independent of Z, then E[f_j(X) | Z] is a function of mu(Z)
+     * alone, so a univariate basis in the fitted mean m-hat(Z) captures exactly the compositions the additive sieve
+     * misses, including the interaction terms, and also absorbs slowly-converging univariate compositions (kinked
+     * or saturating links). Under heteroskedastic or non-additive noise the collapse to mu(Z) is approximate rather
+     * than exact, and the fitted mean is a generated regressor (the design depends on the data), so the fixed
+     * linear-smoother argument no longer applies exactly; calibration with this option should be (and has been)
+     * checked empirically rather than assumed.
+     */
+    private boolean controlFunction = false;
     /**
      * The significance level.
      */
@@ -322,8 +339,25 @@ public class IndTestBasisExpandedGcm implements IndependenceTest, RawMarginalInd
         SimpleMatrix Bx = A.solve(Gt.mult(Xb));
         SimpleMatrix By = A.solve(Gt.mult(Yb));
 
-        SimpleMatrix E = Xb.minus(G.mult(Bx));
-        SimpleMatrix F = Yb.minus(G.mult(By));
+        SimpleMatrix E, F;
+
+        if (controlFunction && !zCols.isEmpty()) {
+            // Two-stage control-function fit; see the controlFunction field Javadoc. Each side's design is
+            // augmented with Legendre basis columns (orders 2..zTruncationLimit; order 1 is already in the span
+            // of G) in that side's first-stage fitted mean, then the side is re-residualized on its augmented
+            // design. Degenerate fitted means (no spread) leave that side's design unaugmented.
+            SimpleMatrix mx = G.mult(Bx.extractVector(false, 0));
+            SimpleMatrix my = G.mult(By.extractVector(false, 0));
+
+            int cfOrders = TMath.max(zTruncationLimit - 1, 0);
+            if (n < q + 2 * cfOrders + 3) return 1.0;
+
+            E = residualizeAugmented(G, Xb, mx, cfOrders, ridge);
+            F = residualizeAugmented(G, Yb, my, cfOrders, ridge);
+        } else {
+            E = Xb.minus(G.mult(Bx));
+            F = Yb.minus(G.mult(By));
+        }
 
         // Residual products, per grid cell: W[:, j * dy + k] = E[:, j] .* F[:, k].
         int d = dx * dy;
@@ -409,6 +443,44 @@ public class IndTestBasisExpandedGcm implements IndependenceTest, RawMarginalInd
     }
 
     /**
+     * Residualizes the block on the design [G | Legendre(m-hat, orders 2..1+cfOrders)], where m-hat is the
+     * first-stage fitted mean, min-max scaled to [-1, 1]. If the fitted mean has no usable spread or cfOrders is 0,
+     * residualizes on G alone.
+     */
+    private SimpleMatrix residualizeAugmented(SimpleMatrix G, SimpleMatrix block, SimpleMatrix mHat,
+                                              int cfOrders, double ridge) {
+        int n = G.getNumRows();
+        int q = G.getNumCols();
+
+        double lo = Double.POSITIVE_INFINITY, hi = Double.NEGATIVE_INFINITY;
+        for (int r = 0; r < n; r++) {
+            double v = mHat.get(r, 0);
+            if (v < lo) lo = v;
+            if (v > hi) hi = v;
+        }
+
+        boolean degenerate = !(hi - lo > 1e-12) || cfOrders <= 0;
+        int qa = q + (degenerate ? 0 : cfOrders);
+
+        SimpleMatrix Ga = new SimpleMatrix(n, qa);
+        for (int r = 0; r < n; r++) {
+            for (int c = 0; c < q; c++) Ga.set(r, c, G.get(r, c));
+            if (!degenerate) {
+                double u = 2.0 * (mHat.get(r, 0) - lo) / (hi - lo) - 1.0;
+                for (int k = 0; k < cfOrders; k++) {
+                    Ga.set(r, q + k, StatUtils.basisFunctionValue(basisType, k + 2, u));
+                }
+            }
+        }
+
+        SimpleMatrix Gat = Ga.transpose();
+        SimpleMatrix Aa = Gat.mult(Ga);
+        for (int i = 0; i < qa; i++) Aa.set(i, i, Aa.get(i, i) + ridge);
+        SimpleMatrix B = Aa.solve(Gat.mult(block));
+        return block.minus(Ga.mult(B));
+    }
+
+    /**
      * The rows to use for the next test: the caller-set subset, or all rows.
      */
     private int[] currentRows() {
@@ -452,6 +524,7 @@ public class IndTestBasisExpandedGcm implements IndependenceTest, RawMarginalInd
         IndTestBasisExpandedGcm test = new IndTestBasisExpandedGcm(ds, truncationLimit, zTruncationLimit,
                 basisType, lambda, adaptiveBasisSelection);
         test.setNumMultiplierSamples(numMultiplierSamples);
+        test.setControlFunction(controlFunction);
 
         IndependenceResult r = test.checkIndependence(ds.getVariable("X"), ds.getVariable("Y"),
                 Collections.emptySet());
@@ -571,6 +644,17 @@ public class IndTestBasisExpandedGcm implements IndependenceTest, RawMarginalInd
     }
 
     /**
+     * Sets whether each side's regression design is augmented with a univariate basis in that side's first-stage
+     * fitted mean (a control function), which captures the interaction and composition terms the additive Z-sieve
+     * cannot represent. See the field documentation for the rationale and caveats.
+     *
+     * @param controlFunction true to enable the control-function augmentation.
+     */
+    public void setControlFunction(boolean controlFunction) {
+        this.controlFunction = controlFunction;
+    }
+
+    /**
      * Returns the current row subset, or null for all rows.
      *
      * @return the rows.
@@ -611,6 +695,7 @@ public class IndTestBasisExpandedGcm implements IndependenceTest, RawMarginalInd
     public String toString() {
         return "BE-GCM (Basis-Expanded GCM Test), trunc = " + truncationLimit
                 + ", zTrunc = " + zTruncationLimit
-                + (adaptiveBasisSelection ? ", adaptive" : "");
+                + (adaptiveBasisSelection ? ", adaptive" : "")
+                + (controlFunction ? ", control-function" : "");
     }
 }

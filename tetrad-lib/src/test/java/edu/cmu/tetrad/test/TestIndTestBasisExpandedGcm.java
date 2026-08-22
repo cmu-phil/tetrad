@@ -126,6 +126,103 @@ public class TestIndTestBasisExpandedGcm {
     }
 
     /**
+     * Even under purely additive truth, conditioning on two or more parents makes the higher grid cells'
+     * conditional means contain interaction terms the additive sieve cannot represent, and the plain test
+     * over-rejects; the control-function augmentation must restore approximate calibration without losing power.
+     * The comparison is paired (same datasets) so the pin is stable.
+     */
+    @Test
+    public void testControlFunctionRestoresMultiParentCalibration() {
+        int reps = 15, n = 600, k = 4;
+        int rejPlain = 0, rejCf = 0;
+
+        for (int rep = 0; rep < reps; rep++) {
+            Random rng = new Random(43000 + rep);
+            double[][] d = new double[n][k + 2];
+            for (int i = 0; i < n; i++) {
+                double sx = 0, sy = 0;
+                for (int a = 0; a < k; a++) {
+                    double z = rng.nextGaussian();
+                    d[i][2 + a] = z;
+                    sx += switch (a % 3) { case 0 -> z * z; case 1 -> Math.tanh(1.5 * z); default -> Math.abs(z); };
+                    sy += switch ((a + 1) % 3) { case 0 -> z * z; case 1 -> Math.tanh(1.5 * z); default -> Math.abs(z); };
+                }
+                d[i][0] = sx + 0.5 * rng.nextGaussian();
+                d[i][1] = sy + 0.5 * rng.nextGaussian();
+            }
+            List<Node> vars = new ArrayList<>();
+            for (int j = 1; j <= k + 2; j++) vars.add(new ContinuousVariable("V" + j));
+            DataSet ds = new BoxDataSet(new DoubleDataBox(d), vars);
+
+            Set<Node> z = new HashSet<>();
+            for (int a = 0; a < k; a++) z.add(ds.getVariable("V" + (3 + a)));
+
+            for (int c = 0; c < 2; c++) {
+                IndTestBasisExpandedGcm test = new IndTestBasisExpandedGcm(ds, 3, 0, 1, 0.0, false);
+                test.setNumMultiplierSamples(199);
+                test.setControlFunction(c == 1);
+                double p = test.checkIndependence(ds.getVariable("V1"), ds.getVariable("V2"), z).getPValue();
+                if (p <= 0.05) {
+                    if (c == 0) rejPlain++;
+                    else rejCf++;
+                }
+            }
+        }
+
+        assertTrue("Control function should not reject more often than the plain test on true CIs; plain = "
+                + rejPlain + ", cf = " + rejCf, rejCf <= rejPlain);
+        assertTrue("Control function should be approximately calibrated on the additive multi-parent null; got "
+                + rejCf + "/" + reps + " rejections", rejCf <= 3);
+    }
+
+    /**
+     * The control function must not destroy power: dependence carried purely by X^2, conditioning on two nonlinear
+     * parents, must still be detected.
+     */
+    @Test
+    public void testControlFunctionRetainsPower() {
+        Random rng = new Random(77);
+        int n = 600;
+        double[][] d = new double[n][4];
+        for (int i = 0; i < n; i++) {
+            double z1 = rng.nextGaussian(), z2 = rng.nextGaussian(), x = rng.nextGaussian();
+            d[i][0] = x;
+            d[i][1] = z1 * z1 + Math.tanh(1.5 * z2) + 0.5 * x * x + 0.5 * rng.nextGaussian();
+            d[i][2] = z1;
+            d[i][3] = z2;
+        }
+        List<Node> vars = new ArrayList<>();
+        for (int j = 1; j <= 4; j++) vars.add(new ContinuousVariable("V" + j));
+        DataSet ds = new BoxDataSet(new DoubleDataBox(d), vars);
+
+        IndTestBasisExpandedGcm test = new IndTestBasisExpandedGcm(ds, 3, 0, 1, 0.0, false);
+        test.setNumMultiplierSamples(499);
+        test.setControlFunction(true);
+        Set<Node> z = new HashSet<>(List.of(ds.getVariable("V3"), ds.getVariable("V4")));
+        assertTrue(test.checkIndependence(ds.getVariable("V1"), ds.getVariable("V2"), z).getPValue() <= 0.01);
+    }
+
+    /**
+     * The control function must preserve the sieve-repair property on the single-Z nonlinear null.
+     */
+    @Test
+    public void testControlFunctionKeepsNonlinearNullCalibrated() {
+        int rejections = 0;
+        for (int rep = 0; rep < 10; rep++) {
+            DataSet ds = nonlinearNullData(800, 21000 + rep);
+            IndTestBasisExpandedGcm test = new IndTestBasisExpandedGcm(ds, 4, 0, 1, 0.0, false);
+            test.setNumMultiplierSamples(499);
+            test.setControlFunction(true);
+            Set<Node> z = new HashSet<>();
+            z.add(ds.getVariable("Z"));
+            double p = test.checkIndependence(ds.getVariable("X"), ds.getVariable("Y"), z).getPValue();
+            if (p <= 0.05) rejections++;
+        }
+        assertTrue("Control-function BE-GCM should stay calibrated on the nonlinear null; got "
+                + rejections + "/10 rejections", rejections <= 2);
+    }
+
+    /**
      * P-values must be deterministic per independence fact regardless of call order (the multiplier bootstrap is
      * seeded from the fact), so that search caching and repeated checks are consistent.
      */

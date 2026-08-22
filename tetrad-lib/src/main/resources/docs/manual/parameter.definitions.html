@@ -1481,6 +1481,37 @@ Source:
     </ul>
 
 
+    === gcmControlFunction ===
+    <h3 class="parameter_description" id="gcmControlFunction">gcmControlFunction</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="gcmControlFunction_short_desc">
+                    Yes if the BE-GCM regressions should be augmented with a control function in the fitted mean
+                    </span>
+        </li>
+        <li>Long Description: <span id="gcmControlFunction_long_desc">
+                    The BE-GCM regression basis is additive over the conditioning variables' basis columns and
+                    cannot represent interactions among them; yet even under purely additive data-generating
+                    functions, the conditional means of the higher-order tested grid cells contain interaction
+                    terms (powers of sums), so the test over-rejects true conditional independencies when
+                    conditioning on two or more variables -- typically visible as an excess of implied conditional
+                    independencies judged dependent in the Markov Checker, at any Z-truncation. If Yes, each side's
+                    regression design is augmented with a univariate basis in that side's first-stage fitted mean (a
+                    control function): under additive-noise mechanisms the conditional means of all grid cells are
+                    functions of the fitted mean alone, so this captures the missing interaction and composition
+                    terms. Power is essentially unaffected. The fitted mean is a generated regressor, so exact
+                    finite-sample arguments no longer apply; calibration with this option has been checked
+                    empirically on additive nonlinear systems.
+                    </span>
+        </li>
+        <li>Default Value: <span id="gcmControlFunction_default_value">false</span></li>
+        <li>Lower
+            Bound: <span id="gcmControlFunction_lower_bound"></span></li>
+        <li>Upper Bound: <span id="gcmControlFunction_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="gcmControlFunction_value_type">Boolean</span></li>
+    </ul>
+
+
     === doOneEquationOnly ===
     <h3 class="parameter_description" id="doOneEquationOnly">doOneEquationOnly</h3>
     <ul class="parameter_description_list">

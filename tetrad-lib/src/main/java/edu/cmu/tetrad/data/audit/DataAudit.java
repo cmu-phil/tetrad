@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -238,6 +239,7 @@ public final class DataAudit {
         duplicateColumnChecks();
         this.continuousCorrelation = correlationChecks();
         nearDeterminismDiscreteContinuousCheck();
+        cellDeterminismCheck();
         nonGaussianityCheck();
         serialDependenceCheck();
         groupConstantCheck();
@@ -900,6 +902,240 @@ public final class DataAudit {
     }
 
     /**
+     * Flags variables that are (near-)deterministic functions of small sets of few-valued variables, by direct cell
+     * inspection: for each target variable and each candidate determining set (variables with at most the configured
+     * number of distinct observed values, sets up to the configured size, smallest first), the target is scanned
+     * within the joint-value cells of the set over the rows where the target and the whole set are observed. The
+     * finding DETERMINISTIC_RELATION is emitted when the target is constant, within tolerance, in every cell
+     * containing at least two rows, provided the scan is non-vacuous: at least 20 usable rows, at least 5 multi-row
+     * cells, and at least half of the usable rows lying in multi-row cells (single-row cells are vacuously constant
+     * and prove nothing). For a continuous target, "constant within tolerance" means the cell's range is at most the
+     * configured tolerance times the target's standard deviation on the scanned rows; for a discrete target it means
+     * a single observed category. Only minimal determining sets are reported, and a pair already reported as
+     * DUPLICATE_COLUMNS is not re-reported as a one-element determinism. Each set size is admitted only if its full
+     * enumeration fits a fixed work budget, so the check degrades deterministically (whole sizes are skipped, never
+     * partial enumerations) on wide datasets with many few-valued columns.
+     */
+    private void cellDeterminismCheck() {
+        int maxSize = this.config.cellDeterminismMaxSetSize;
+        if (maxSize <= 0) return;
+
+        int n = this.dataSet.getNumRows();
+        int p = this.dataSet.getNumColumns();
+
+        // Candidate determiners: non-constant variables with few distinct observed values.
+        List<Integer> determiners = new ArrayList<>();
+        for (int j = 0; j < p; j++) {
+            if (this.constant[j]) continue;
+            Integer d = this.observedDistinct.get(this.names[j]);
+            if (d != null && d >= 2 && d <= this.config.cellDeterminismMaxCardinality) determiners.add(j);
+        }
+        if (determiners.isEmpty()) return;
+
+        // Pairs already reported as duplicates: skip the corresponding one-element determinisms.
+        Set<String> duplicatePairs = new HashSet<>();
+        for (AuditFinding f : this.findings) {
+            if (f.getCode() == FindingCode.DUPLICATE_COLUMNS && f.getVariables().size() == 2) {
+                String a = f.getVariables().get(0), b = f.getVariables().get(1);
+                duplicatePairs.add(a.compareTo(b) < 0 ? a + "|" + b : b + "|" + a);
+            }
+        }
+
+        final double tol = this.config.cellDeterminismTolerance;
+        final long budget = 200_000_000L; // total row-scans admitted per set size; see the method Javadoc
+
+        // Minimal determining sets found so far, per target.
+        Map<Integer, List<int[]>> foundSets = new HashMap<>();
+
+        for (int size = 1; size <= maxSize; size++) {
+            // Deterministic budget rule: admit this size only if enumerating it fully, for every target, fits the
+            // budget. (Choose over the determiner pool less the target itself when it is in the pool.)
+            long ops = 0;
+            for (int t = 0; t < p; t++) {
+                if (this.constant[t]) continue;
+                int d = determiners.size() - (determiners.contains(t) ? 1 : 0);
+                ops += choose(d, size) * (long) n;
+                if (ops > budget) break;
+            }
+            if (ops > budget) break;
+
+            for (int t = 0; t < p; t++) {
+                if (this.constant[t]) continue;
+
+                List<Integer> pool = new ArrayList<>(determiners);
+                pool.remove(Integer.valueOf(t));
+                if (pool.size() < size) continue;
+
+                List<int[]> found = foundSets.computeIfAbsent(t, k -> new ArrayList<>());
+
+                int[] comb = new int[size];
+                for (int i = 0; i < size; i++) comb[i] = i;
+
+                while (true) {
+                    int[] set = new int[size];
+                    for (int i = 0; i < size; i++) set[i] = pool.get(comb[i]);
+
+                    if (!containsFoundSubset(found, set)
+                            && !(size == 1 && duplicatePairs.contains(pairKey(this.names[t], this.names[set[0]])))) {
+                        AuditFinding finding = scanCells(t, set, tol);
+                        if (finding != null) {
+                            this.findings.add(finding);
+                            found.add(set);
+                        }
+                    }
+
+                    // next combination
+                    int i = size - 1;
+                    while (i >= 0 && comb[i] == pool.size() - size + i) i--;
+                    if (i < 0) break;
+                    comb[i]++;
+                    for (int k = i + 1; k < size; k++) comb[k] = comb[k - 1] + 1;
+                }
+            }
+        }
+    }
+
+    /**
+     * Scans the target within the joint-value cells of the given determining set and returns a
+     * DETERMINISTIC_RELATION finding if the target is constant (within tolerance) in every multi-row cell and the
+     * scan is non-vacuous, else null. See {@link #cellDeterminismCheck()} for the criteria.
+     */
+    private AuditFinding scanCells(int target, int[] set, double tol) {
+        int n = this.dataSet.getNumRows();
+        boolean discreteTarget = this.discrete[target];
+
+        // Per cell: [count, min, max] for a continuous target; [count, firstCategory, mixedFlag] for a discrete one.
+        Map<String, double[]> cells = new HashMap<>();
+        int m = 0;
+        double sum = 0, sumSq = 0;
+
+        StringBuilder key = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            if (MissingDataAudit.isMissing(this.dataSet, i, target)) continue;
+            boolean ok = true;
+            for (int j : set) {
+                if (MissingDataAudit.isMissing(this.dataSet, i, j)) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (!ok) continue;
+
+            key.setLength(0);
+            for (int j : set) {
+                if (this.discrete[j]) key.append(this.dataSet.getInt(i, j));
+                else key.append(Double.doubleToLongBits(this.dataSet.getDouble(i, j)));
+                key.append(',');
+            }
+
+            double y = discreteTarget ? this.dataSet.getInt(i, target) : this.dataSet.getDouble(i, target);
+            m++;
+            sum += y;
+            sumSq += y * y;
+
+            double[] cell = cells.get(key.toString());
+            if (cell == null) {
+                cells.put(key.toString(), new double[]{1, y, y});
+            } else {
+                cell[0]++;
+                if (discreteTarget) {
+                    if (y != cell[1]) cell[2] = 1; // mixed
+                } else {
+                    if (y < cell[1]) cell[1] = y;
+                    if (y > cell[2]) cell[2] = y;
+                }
+            }
+        }
+
+        if (m < 20) return null;
+
+        double var = (sumSq - sum * sum / m) / m;
+        double sd = var > 0 ? Math.sqrt(var) : 0.0;
+        if (sd <= 0) return null; // target constant on the scanned rows; not a determinism of the set
+
+        int multiCells = 0;
+        long coveredRows = 0;
+        double maxRelRange = 0.0;
+
+        for (double[] cell : cells.values()) {
+            if (cell[0] < 2) continue;
+            multiCells++;
+            coveredRows += (long) cell[0];
+
+            if (discreteTarget) {
+                if (cell[2] != 0) return null; // mixed categories in a multi-row cell
+            } else {
+                double relRange = (cell[2] - cell[1]) / sd;
+                if (relRange > tol) return null;
+                if (relRange > maxRelRange) maxRelRange = relRange;
+            }
+        }
+
+        if (multiCells < 5) return null;
+        double coverage = coveredRows / (double) m;
+        if (coverage < 0.5) return null;
+
+        List<String> vars = new ArrayList<>();
+        vars.add(this.names[target]); // determined variable first; see FindingCode.DETERMINISTIC_RELATION
+        StringBuilder setNames = new StringBuilder();
+        for (int j : set) {
+            vars.add(this.names[j]);
+            if (setNames.length() > 0) setNames.append(", ");
+            setNames.append(this.names[j]);
+        }
+
+        Map<String, Double> values = new LinkedHashMap<>();
+        values.put("usedRows", (double) m);
+        values.put("cells", (double) cells.size());
+        values.put("multiRowCells", (double) multiCells);
+        values.put("coverage", coverage);
+        values.put("tolerance", tol);
+        values.put("maxWithinCellRelRange", maxRelRange);
+
+        return new AuditFinding(FindingCode.DETERMINISTIC_RELATION,
+                AuditFinding.Severity.WARNING, vars, values,
+                "Variable " + this.names[target] + " is constant within every multi-row cell of {" + setNames
+                        + "} (" + m + " rows, " + cells.size() + " cells, " + multiCells
+                        + " with >= 2 rows covering " + fmt(100 * coverage) + "% of rows): " + this.names[target]
+                        + " is a function of these variables on the analyzed rows, up to tolerance.");
+    }
+
+    /**
+     * Returns true if any already-found determining set is a subset of the candidate set (both sorted ascending).
+     */
+    private static boolean containsFoundSubset(List<int[]> found, int[] candidate) {
+        outer:
+        for (int[] f : found) {
+            int i = 0;
+            for (int c : candidate) {
+                if (i < f.length && f[i] == c) i++;
+            }
+            if (i == f.length) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Order-independent key for an unordered pair of variable names.
+     */
+    private static String pairKey(String a, String b) {
+        return a.compareTo(b) < 0 ? a + "|" + b : b + "|" + a;
+    }
+
+    /**
+     * Binomial coefficient, saturating at Long.MAX_VALUE / 2 to keep budget sums overflow-safe.
+     */
+    private static long choose(int n, int k) {
+        if (k < 0 || k > n) return 0;
+        long r = 1;
+        for (int i = 1; i <= k; i++) {
+            r = r * (n - k + i) / i;
+            if (r > Long.MAX_VALUE / 2) return Long.MAX_VALUE / 2;
+        }
+        return r;
+    }
+
+    /**
      * Flags continuous variables whose marginal distribution deviates from Gaussian by the Anderson-Darling test, at
      * the configured alpha, using non-missing values. Variables with fewer non-missing values than the configured
      * minimum are skipped. These findings are informational: non-Gaussianity threatens linear-Gaussian machinery but
@@ -1512,6 +1748,25 @@ public final class DataAudit {
         private final String serialGroupVariable;
 
         /**
+         * The largest determining-set size searched by the cell-determinism check (DETERMINISTIC_RELATION); 0
+         * disables the check. Default 3.
+         */
+        private final int cellDeterminismMaxSetSize;
+
+        /**
+         * The largest number of distinct observed values a variable may have to serve as a member of a determining
+         * set in the cell-determinism check. Default 30.
+         */
+        private final int cellDeterminismMaxCardinality;
+
+        /**
+         * The tolerance of the cell-determinism check for a continuous target: a cell counts as constant when its
+         * range is at most this fraction of the target's standard deviation on the scanned rows. Default 1e-9
+         * (essentially exact, while immune to floating-point noise).
+         */
+        private final double cellDeterminismTolerance;
+
+        /**
          * Constructs a config with default thresholds.
          */
         public Config() {
@@ -1572,6 +1827,24 @@ public final class DataAudit {
                       double lowSampleRatio, double nearConstantFrequency, double nearConstantVariance,
                       int serialMaxLag, double serialAlpha, double serialMinAbsAutocorrelation,
                       int minSerialSampleSize, String serialGroupVariable) {
+            this(fewContinuousValues, manyDiscreteLevels, smallCellCount, minExpectedPairwiseCell, highCorrelation,
+                    r2Determinism, etaSquaredDeterminism, adAlpha, minAdSampleSize, lowSampleRatio,
+                    nearConstantFrequency, nearConstantVariance, serialMaxLag, serialAlpha,
+                    serialMinAbsAutocorrelation, minSerialSampleSize, serialGroupVariable, 3, 30, 1e-9);
+        }
+
+        /**
+         * The full constructor, including the cell-determinism settings; private so the public constructors keep
+         * their existing signatures while the with-methods can preserve every field.
+         */
+        private Config(int fewContinuousValues, int manyDiscreteLevels, int smallCellCount,
+                       double minExpectedPairwiseCell, double highCorrelation, double r2Determinism,
+                       double etaSquaredDeterminism, double adAlpha, int minAdSampleSize,
+                       double lowSampleRatio, double nearConstantFrequency, double nearConstantVariance,
+                       int serialMaxLag, double serialAlpha, double serialMinAbsAutocorrelation,
+                       int minSerialSampleSize, String serialGroupVariable,
+                       int cellDeterminismMaxSetSize, int cellDeterminismMaxCardinality,
+                       double cellDeterminismTolerance) {
             this.fewContinuousValues = fewContinuousValues;
             this.manyDiscreteLevels = manyDiscreteLevels;
             this.smallCellCount = smallCellCount;
@@ -1589,6 +1862,9 @@ public final class DataAudit {
             this.serialMinAbsAutocorrelation = serialMinAbsAutocorrelation;
             this.minSerialSampleSize = minSerialSampleSize;
             this.serialGroupVariable = serialGroupVariable;
+            this.cellDeterminismMaxSetSize = cellDeterminismMaxSetSize;
+            this.cellDeterminismMaxCardinality = cellDeterminismMaxCardinality;
+            this.cellDeterminismTolerance = cellDeterminismTolerance;
         }
 
         /**
@@ -1598,11 +1874,9 @@ public final class DataAudit {
          * @return the new config.
          */
         public Config withHighCorrelation(double highCorrelation) {
-            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
-                    this.minExpectedPairwiseCell, highCorrelation, this.r2Determinism, this.etaSquaredDeterminism,
-                    this.adAlpha, this.minAdSampleSize, this.lowSampleRatio, this.nearConstantFrequency,
-                    this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
-                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable);
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
+                    this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
         }
 
         /**
@@ -1612,11 +1886,9 @@ public final class DataAudit {
          * @return the new config.
          */
         public Config withSmallCellCount(int smallCellCount) {
-            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, smallCellCount,
-                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
-                    this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
-                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
-                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable);
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
+                    this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
         }
 
         /**
@@ -1626,11 +1898,9 @@ public final class DataAudit {
          * @return the new config.
          */
         public Config withAdAlpha(double adAlpha) {
-            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
-                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
-                    this.etaSquaredDeterminism, adAlpha, this.minAdSampleSize, this.lowSampleRatio,
-                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
-                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable);
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, adAlpha, this.minAdSampleSize,
+                    this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
         }
 
         /**
@@ -1640,11 +1910,9 @@ public final class DataAudit {
          * @return the new config.
          */
         public Config withSerialGroupVariable(String serialGroupVariable) {
-            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
-                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
-                    this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
-                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
-                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, serialGroupVariable);
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
+                    this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
         }
 
         /**
@@ -1653,12 +1921,58 @@ public final class DataAudit {
          * @param serialAlpha the new alpha.
          * @return the new config.
          */
-        public Config withSerialAlpha(double serialAlpha) {
+        /**
+         * Returns a config identical to this one but with the given maximum determining-set size for the
+         * cell-determinism check (0 disables the check).
+         *
+         * @param cellDeterminismMaxSetSize the new maximum set size.
+         * @return the new config.
+         */
+        public Config withCellDeterminismMaxSetSize(int cellDeterminismMaxSetSize) {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
                     this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
                     this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
-                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, serialAlpha,
-                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable);
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given maximum distinct-value count for members of
+         * determining sets in the cell-determinism check.
+         *
+         * @param cellDeterminismMaxCardinality the new maximum cardinality.
+         * @return the new config.
+         */
+        public Config withCellDeterminismMaxCardinality(int cellDeterminismMaxCardinality) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
+                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
+                    this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given relative tolerance for the cell-determinism
+         * check.
+         *
+         * @param cellDeterminismTolerance the new tolerance.
+         * @return the new config.
+         */
+        public Config withCellDeterminismTolerance(double cellDeterminismTolerance) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
+                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
+                    this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, cellDeterminismTolerance);
+        }
+
+        public Config withSerialAlpha(double serialAlpha) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
+                    this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
         }
     }
 }

@@ -92,6 +92,7 @@ public class BasisExpandedGcm implements IndependenceWrapper {
                 parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setNumMultiplierSamples(parameters.getInt(Params.GCM_MULTIPLIER_SAMPLES));
+        test.setControlFunction(parameters.getBoolean(Params.GCM_CONTROL_FUNCTION));
         return test;
     }
 
@@ -123,6 +124,7 @@ public class BasisExpandedGcm implements IndependenceWrapper {
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.GCM_Z_TRUNCATION_LIMIT);
         parameters.add(Params.GCM_MULTIPLIER_SAMPLES);
+        parameters.add(Params.GCM_CONTROL_FUNCTION);
         parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }

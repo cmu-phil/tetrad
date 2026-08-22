@@ -148,6 +148,30 @@ public enum FindingCode {
     COMPLETE_CASES_FORCE_SINGULARITY,
 
     /**
+     * A variable is constant, within tolerance, inside every multi-row cell of the joint values of a small set of
+     * other few-valued variables: on the analyzed rows, the variable is a function of that set (up to tolerance).
+     * Exact or near-exact functional determinism violates faithfulness and destabilizes conditional-independence
+     * judgments: conditioning sets containing the determining variables render the determined variable
+     * pseudo-independent of everything, sepsets become pathological, and constraint-based orientation can produce
+     * arrowheads that no data-generating mechanism supports (a computed or derived column "causing" its inputs).
+     * <p>
+     * The determined variable is listed FIRST in the finding's variable list; the determining set follows. Only
+     * minimal determining sets are reported: once a set is found for a variable, its supersets are not searched. A
+     * pair already reported as DUPLICATE_COLUMNS is not re-reported here as a one-element determinism. The linear
+     * whole-matrix analog is EXACT_LINEAR_DEPENDENCE; the regression- and eta-squared-based near-determinism
+     * findings (NEAR_DETERMINISM_CONTINUOUS, NEAR_DETERMINISM_DISCRETE_CONTINUOUS) cover linear and single-discrete
+     * mechanisms, while this finding is nonparametric and joint, so it detects nonlinear functions of variable
+     * combinations (e.g., a boundary-layer quantity computed from several experimental settings) that those checks
+     * miss.
+     * <p>
+     * The check is bounded: determining sets up to a configured size, determiner variables up to a configured
+     * distinct-value count, and a fixed work budget; single-row cells are vacuous and are excluded, with coverage
+     * and multi-row-cell minimums guarding against vacuously "deterministic" fine grids. The absence of this finding
+     * therefore does not rule out determinism beyond those bounds.
+     */
+    DETERMINISTIC_RELATION,
+
+    /**
      * A variable is constant within every level of the configured serial grouping variable (e.g., a subject-level
      * attribute in a repeated-measures file). Its effective sample size for correlational judgments is the number of
      * groups, not the number of rows, and with few groups such variables are frequently exactly collinear with one
