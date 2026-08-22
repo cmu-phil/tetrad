@@ -1169,6 +1169,14 @@ public final class Params {
      */
     public static final String ADAPTIVE_BASIS_SELECTION = "adaptiveBasisSelection";
     /**
+     * Constant <code>GCM_MULTIPLIER_SAMPLES="gcmMultiplierSamples"</code>
+     */
+    public static final String GCM_MULTIPLIER_SAMPLES = "gcmMultiplierSamples";
+    /**
+     * Constant <code>GCM_Z_TRUNCATION_LIMIT="gcmZTruncationLimit"</code>
+     */
+    public static final String GCM_Z_TRUNCATION_LIMIT = "gcmZTruncationLimit";
+    /**
      * Constant <code>MIMBUILD_TYPE="mimbuildType"</code>
      */
     public static final String MIMBUILD_TYPE = "mimbuildType";

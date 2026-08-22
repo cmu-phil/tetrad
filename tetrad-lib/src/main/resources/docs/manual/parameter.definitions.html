@@ -1429,6 +1429,58 @@ Source:
     </ul>
 
 
+    === gcmMultiplierSamples ===
+    <h3 class="parameter_description" id="gcmMultiplierSamples">gcmMultiplierSamples</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="gcmMultiplierSamples_short_desc">
+                    Number of multiplier bootstrap samples for the BE-GCM max statistic (0 = Sidak bound)
+                    </span>
+        </li>
+        <li>Long Description: <span id="gcmMultiplierSamples_long_desc">
+                    The p-value of the basis-expanded GCM test is computed by a Rademacher multiplier bootstrap of
+                    the maximum studentized residual cross-covariance over the basis-pair grid, which accounts for
+                    the dependence among the grid cells. This parameter sets the number of bootstrap samples; the
+                    p-value granularity is 1 / (samples + 1). Setting it to 0 uses a Sidak bound over the grid with
+                    the normal tail instead, which is faster but conservative. The bootstrap is seeded
+                    deterministically from the tested independence fact, so results are reproducible.
+                    </span>
+        </li>
+        <li>Default Value: <span id="gcmMultiplierSamples_default_value">500</span></li>
+        <li>Lower
+            Bound: <span id="gcmMultiplierSamples_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="gcmMultiplierSamples_upper_bound">1000000</span></li>
+        <li>Value Type:
+            <span id="gcmMultiplierSamples_value_type">Integer</span></li>
+    </ul>
+
+
+    === gcmZTruncationLimit ===
+    <h3 class="parameter_description" id="gcmZTruncationLimit">gcmZTruncationLimit</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="gcmZTruncationLimit_short_desc">
+                    Truncation limit for the BE-GCM regression (Z-side) basis; 0 = twice the grid truncation
+                    </span>
+        </li>
+        <li>Long Description: <span id="gcmZTruncationLimit_long_desc">
+                    The BE-GCM test residualizes the tested basis grid of X and Y on a basis expansion of Z. The
+                    GCM guarantee requires this regression sieve to approximate the conditional means of the tested
+                    grid functions, which under nonlinear relations are compositions of higher degree than the grid
+                    itself; if the regression basis is too small, the test over-rejects true conditional
+                    independence. This parameter sets the truncation of the Z-side regression basis separately from
+                    the tested grid. The default 0 selects twice the grid truncation limit, which covers quadratic
+                    relations exactly; raise it for more strongly nonlinear systems. Values below the grid
+                    truncation are raised to it. The Z-side basis is never pruned by adaptive basis selection.
+                    </span>
+        </li>
+        <li>Default Value: <span id="gcmZTruncationLimit_default_value">0</span></li>
+        <li>Lower
+            Bound: <span id="gcmZTruncationLimit_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="gcmZTruncationLimit_upper_bound">1000</span></li>
+        <li>Value Type:
+            <span id="gcmZTruncationLimit_value_type">Integer</span></li>
+    </ul>
+
+
     === doOneEquationOnly ===
     <h3 class="parameter_description" id="doOneEquationOnly">doOneEquationOnly</h3>
     <ul class="parameter_description_list">
