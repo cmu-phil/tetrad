@@ -1403,6 +1403,32 @@ Source:
     </ul>
 
 
+    === adaptiveBasisSelection ===
+    <h3 class="parameter_description" id="adaptiveBasisSelection">adaptiveBasisSelection</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="adaptiveBasisSelection_short_desc">
+                    Yes if uninformative higher-order basis functions should be dropped by a BIC screen
+                    </span>
+        </li>
+        <li>Long Description: <span id="adaptiveBasisSelection_long_desc">
+                    If Yes, each continuous variable's higher-order basis columns are screened once, on the full
+                    sample, and a column is kept only if its correlation with some other variable's embedded block
+                    crosses the single-regressor BIC threshold (with a multiplicity adjustment for the number of
+                    columns scanned). The linear term is always kept. With this screen, the effective truncation is
+                    chosen by the data, so raising the truncation limit past the data-supported order does not
+                    degrade the basis function score or test; results converge instead. The screen is marginal
+                    (pairwise), so basis directions relevant only conditionally may be dropped.
+                    </span>
+        </li>
+        <li>Default Value: <span id="adaptiveBasisSelection_default_value">true</span></li>
+        <li>Lower
+            Bound: <span id="adaptiveBasisSelection_lower_bound"></span></li>
+        <li>Upper Bound: <span id="adaptiveBasisSelection_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="adaptiveBasisSelection_value_type">Boolean</span></li>
+    </ul>
+
+
     === doOneEquationOnly ===
     <h3 class="parameter_description" id="doOneEquationOnly">doOneEquationOnly</h3>
     <ul class="parameter_description_list">

@@ -1165,6 +1165,10 @@ public final class Params {
      */
     public static final String DO_ONE_EQUATION_ONLY = "doOneEquationOnly";
     /**
+     * Constant <code>ADAPTIVE_BASIS_SELECTION="adaptiveBasisSelection"</code>
+     */
+    public static final String ADAPTIVE_BASIS_SELECTION = "adaptiveBasisSelection";
+    /**
      * Constant <code>MIMBUILD_TYPE="mimbuildType"</code>
      */
     public static final String MIMBUILD_TYPE = "mimbuildType";

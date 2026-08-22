@@ -82,15 +82,41 @@ public class BasisFunctionBicScore implements Score {
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda) {
+        this(dataSet, truncationLimit, lambda, false);
+    }
+
+    /**
+     * Constructs a BasisFunctionBicScore object with the specified parameters.
+     *
+     * @param dataSet                the data set on which the score is to be calculated.
+     * @param truncationLimit        the truncation limit of the basis.
+     * @param lambda                 Singularity lambda
+     * @param adaptiveBasisSelection if true, basis columns beyond the linear term that fail a BIC-crossing screen
+     *                               against every other variable's embedded block are dropped from the embedding
+     *                               before scoring, so that the effective truncation is chosen by the data and the
+     *                               score converges as the truncation limit is raised past the data-supported order.
+     *                               The screen is computed once from the full-sample embedded correlation matrix,
+     *                               independently of any graph, so the pruned embedding is a single fixed embedding
+     *                               and score equivalence is preserved.
+     * @see Embedding#pruneUninformativeBasisColumns(DataSet, Map, edu.cmu.tetrad.data.ICovarianceMatrix)
+     * @see StatUtils#basisFunctionValue(int, int, double)
+     */
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection) {
         this.variables = dataSet.getVariables();
 
         // Using the Legendre basis.
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1);
-        this.embedding = result.embedding();
         DataSet embeddedData = result.embeddedData();
 
         // We will zero out the correlations that are very close to zero.
         CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
+
+        // With adaptive basis selection, higher-order basis columns that cannot produce a BIC-positive pairwise
+        // association with any other variable's block are dropped from the embedding. The correlation matrix and
+        // the underlying SemBicScore are left at full size; the pruned columns are simply never referenced.
+        this.embedding = adaptiveBasisSelection
+                ? Embedding.pruneUninformativeBasisColumns(dataSet, result.embedding(), correlationMatrix)
+                : result.embedding();
 
         this.bic = new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);

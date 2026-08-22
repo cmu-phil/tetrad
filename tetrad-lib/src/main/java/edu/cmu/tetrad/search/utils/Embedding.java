@@ -270,6 +270,111 @@ public class Embedding {
     }
 
     /**
+     * Prunes uninformative basis columns from an embedding using a BIC-crossing screen, so that the effective
+     * truncation of each continuous variable is chosen by the data rather than by the truncationLimit parameter.
+     * <p>
+     * For each continuous variable's embedded block (columns in low-order-first order, orthonormalized within the
+     * block by {@link #getEmbeddedData}), the first column (spanning the linear term) is always kept. A higher-order
+     * column is kept if and only if there exists at least one embedded column of some OTHER variable with which its
+     * squared sample correlation crosses the single-regressor BIC threshold, adjusted for the number of partner
+     * columns scanned (an RIC/EBIC-style multiplicity guard):
+     * <pre>
+     *     n * log(1 / (1 - r^2))  &gt;  log(n) + 2 * log(M),
+     * </pre>
+     * where n is the sample size and M is the number of partner columns. The left side is the deviance gain of a
+     * single-regressor Gaussian regression in either direction, so the screen keeps exactly those basis directions
+     * that could produce a BIC-positive pairwise association somewhere in the system at unit penalty discount. A
+     * column that fails the screen for every partner can only ever contribute penalty, never a BIC-positive
+     * likelihood gain, in any pairwise relation; dropping it discounts the uninformative basis function to zero.
+     * <p>
+     * The screen is computed once, from the full-sample correlation matrix of the embedded data, independently of any
+     * particular graph or test. Because the pruned embedding is a single fixed embedding of the data, downstream
+     * scores computed over it remain (penalized) joint likelihoods, and score equivalence across Markov-equivalent
+     * DAGs is preserved. As the truncation limit is raised past the data-supported order, newly added columns are
+     * either dropped as numerically rank-deficient by {@link #getEmbeddedData} or screened out here, so the pruned
+     * embedding -- and hence the score and test -- converge rather than degrade.
+     * <p>
+     * Limitations, by design: (1) the screen is marginal (pairwise, unconditional), so a basis direction that is
+     * uncorrelated with every other variable's block marginally but relevant conditionally (a suppression pattern)
+     * will be dropped; (2) the screen uses unit penalty discount, which is deliberately more inclusive than any
+     * penalty discount &ge; 1 used by a downstream score; (3) the screen uses the full-sample size, not any
+     * caller-set effective sample size. Discrete variables' indicator blocks are not nested expansions and are left
+     * untouched, as is any continuous block with a single column.
+     *
+     * @param dataSet      the ORIGINAL (pre-embedding) dataset, used to distinguish discrete from continuous
+     *                     variables; must have variable indices aligned with the keys of {@code embedding}.
+     * @param embedding    the embedding map produced by {@link #getEmbeddedData}, mapping each original variable
+     *                     index to its embedded column indices in low-order-first order.
+     * @param embeddedCorr the correlation matrix of the embedded dataset (e.g., {@code new
+     *                     CorrelationMatrix(embeddedData)}); its sample size is used for the BIC threshold.
+     * @return a new map with the same keys, in which each continuous variable's column list has been pruned to its
+     * screened-in columns (first column always retained). The input map is not modified.
+     */
+    public static Map<Integer, List<Integer>> pruneUninformativeBasisColumns(
+            DataSet dataSet, Map<Integer, List<Integer>> embedding, ICovarianceMatrix embeddedCorr) {
+        if (dataSet == null) throw new IllegalArgumentException("dataSet == null");
+        if (embedding == null) throw new IllegalArgumentException("embedding == null");
+        if (embeddedCorr == null) throw new IllegalArgumentException("embeddedCorr == null");
+
+        int n = embeddedCorr.getSampleSize();
+        List<Node> variables = dataSet.getVariables();
+
+        // Owner of each embedded column, so partners can exclude same-variable columns.
+        Map<Integer, Integer> owner = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> e : embedding.entrySet()) {
+            for (Integer c : e.getValue()) owner.put(c, e.getKey());
+        }
+
+        List<Integer> allColumns = new ArrayList<>(owner.keySet());
+
+        Map<Integer, List<Integer>> pruned = new HashMap<>();
+
+        for (Map.Entry<Integer, List<Integer>> e : embedding.entrySet()) {
+            int v = e.getKey();
+            List<Integer> cols = e.getValue();
+
+            // Discrete indicator blocks and single-column blocks are left untouched.
+            if (variables.get(v) instanceof DiscreteVariable || cols.size() <= 1) {
+                pruned.put(v, new ArrayList<>(cols));
+                continue;
+            }
+
+            // Partner columns: all embedded columns belonging to other variables.
+            List<Integer> partners = new ArrayList<>();
+            for (Integer c : allColumns) {
+                if (owner.get(c) != v) partners.add(c);
+            }
+
+            int m = TMath.max(partners.size(), 1);
+            double threshold = TMath.log(n) + 2.0 * TMath.log(m);
+
+            List<Integer> kept = new ArrayList<>();
+            kept.add(cols.get(0)); // The linear-spanning column is always kept.
+
+            for (int k = 1; k < cols.size(); k++) {
+                int c = cols.get(k);
+
+                boolean informative = false;
+                for (Integer f : partners) {
+                    double r = embeddedCorr.getValue(c, f);
+                    double r2 = TMath.min(r * r, 1.0 - 1e-12);
+                    double deviance = n * TMath.log(1.0 / (1.0 - r2));
+                    if (deviance > threshold) {
+                        informative = true;
+                        break;
+                    }
+                }
+
+                if (informative) kept.add(c);
+            }
+
+            pruned.put(v, kept);
+        }
+
+        return pruned;
+    }
+
+    /**
      * Represents the embedded data result, holding the original dataset, the transformed embedded dataset, and a
      * mapping between the indices of original variables and their corresponding transformed variables.
      * <p>

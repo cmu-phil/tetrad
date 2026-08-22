@@ -92,7 +92,8 @@ public class BasisFunctionLrt implements IndependenceWrapper {
         IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT),
-                LEGENDRE_BASIS_TYPE);
+                LEGENDRE_BASIS_TYPE,
+                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
@@ -122,6 +123,7 @@ public class BasisFunctionLrt implements IndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.TRUNCATION_LIMIT);
+        parameters.add(Params.ADAPTIVE_BASIS_SELECTION);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;

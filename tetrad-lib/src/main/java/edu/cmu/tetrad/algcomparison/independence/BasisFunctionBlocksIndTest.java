@@ -68,7 +68,8 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BF-Blocks-Test");
         IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(SimpleDataLoader.getMixedDataSet(dataSet),
-                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE));
+                parameters.getInt(Params.TRUNCATION_LIMIT), parameters.getInt(Params.BASIS_TYPE),
+                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
@@ -98,6 +99,7 @@ public class BasisFunctionBlocksIndTest implements IndependenceWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.ALPHA);
         parameters.add(Params.TRUNCATION_LIMIT);
+        parameters.add(Params.ADAPTIVE_BASIS_SELECTION);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.BASIS_TYPE);
         parameters.add(Params.MISSING_DATA_POLICY);
