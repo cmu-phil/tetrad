@@ -1390,6 +1390,12 @@ public final class Params {
      */
     public static final String FFML_RIDGE = "ffmlRidge";
     /**
+     * Constant <code>FFML_INTERACTION_LAMBDA="ffmlInteractionLambda"</code> Weight of the
+     * discrete-continuous interaction (product-kernel) term in the FFML score; 0 = additive
+     * (BF/DG-style) discrete handling.
+     */
+    public static final String FFML_INTERACTION_LAMBDA = "ffmlInteractionLambda";
+    /**
      * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
      */
     public static final String MINIMAX_FF_FEATURES = "minimaxFfFeatures";

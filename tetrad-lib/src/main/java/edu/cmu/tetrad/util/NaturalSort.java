@@ -8,9 +8,18 @@ import java.util.Comparator;
  * are considered, for example, sorting "X1", "X2", and "X10" in that order
  * rather than lexicographically as "X1", "X10", "X2".
  *
- * <p>For strings containing a ":" separator (e.g. "X1:2"), the portion after
- * the colon is treated as a lag index. Such strings are sorted first by lag,
- * then by the natural order of the node name before the colon.
+ * <p>Lagged names. A string of the form {@code "name:lag"} — exactly one colon,
+ * with the portion after the colon parseable as an integer — is treated as a
+ * lagged node name. Lagged names are grouped in order of <em>decreasing</em> lag
+ * (deepest lag first), and within a lag group are ordered by the natural order
+ * of the name before the colon. All strings that are not valid lagged names
+ * (no colon, more than one colon, or a non-integer suffix) come <em>last</em>,
+ * ordered naturally among themselves. This matches the layout convention for
+ * time-lagged data, where the deepest lag slice is displayed first and the
+ * contemporaneous (unlagged) variables are displayed last.
+ *
+ * <p>The comparators here are total on arbitrary strings and never throw:
+ * malformed inputs are simply treated as unlagged names.
  */
 public class NaturalSort {
 
@@ -23,9 +32,10 @@ public class NaturalSort {
 
     /**
      * A comparator that sorts strings in natural order (e.g. "X1", "X2", "X10"
-     * rather than "X1", "X10", "X2"). For strings containing a ":" separator,
-     * sorts first by lag (the part after ":"), then by natural order of the node
-     * name (the part before ":").
+     * rather than "X1", "X10", "X2"). Valid lagged names ({@code "name:lag"})
+     * are grouped first, in order of decreasing lag, each group ordered by the
+     * natural order of the base name; all other strings come last, in natural
+     * order. Never throws on malformed input.
      */
     public static final Comparator<String> NATURAL_NAME_COMPARATOR =
             Comparator.comparing(LaggedNaturalKey::from);
@@ -33,8 +43,9 @@ public class NaturalSort {
     /**
      * Returns a comparator that sorts objects of any type in natural order,
      * using each object's {@link Object#toString()} representation as the sort key.
-     * For strings containing a ":" separator, sorts first by lag, then by natural
-     * order of the node name.
+     * Valid lagged names ({@code "name:lag"}) group first in order of decreasing
+     * lag, then natural order of the base name; everything else comes last in
+     * natural order. Never throws on malformed input.
      *
      * @param <T> the type of objects to compare
      * @return a natural-order comparator for T
@@ -45,46 +56,60 @@ public class NaturalSort {
 
     /**
      * Represents a natural key for a possibly-lagged node name of the form
-     * {@code "name"} or {@code "name:lag"}. Sorting is performed first by lag
-     * (ascending, with no-lag nodes sorted before lagged nodes), then by the
-     * natural order of the node name.
+     * {@code "name"} or {@code "name:lag"}. Valid lagged names sort before all
+     * unlagged names, grouped in order of decreasing lag; within a lag group,
+     * and among the unlagged names, ordering is by the natural order of the
+     * name. A string is a valid lagged name only if it contains exactly one
+     * colon and the portion after the colon parses as an integer; anything
+     * else — including strings with multiple colons or non-integer suffixes —
+     * is treated as an unlagged name, so construction never throws.
      *
      * <p>Instances of this class are immutable.
      */
     public static final class LaggedNaturalKey implements Comparable<LaggedNaturalKey> {
-        final NaturalKey name;  // natural key of the part before ":"
-        final int lag;          // 0 if no ":" present, otherwise the integer after ":"
+        final NaturalKey name;   // natural key of the part before ":" (or the whole string)
+        final boolean lagged;    // true iff the string is a valid "name:lag" form
+        final int lag;           // the integer after ":" when lagged; unused otherwise
 
-        private LaggedNaturalKey(NaturalKey name, int lag) {
+        private LaggedNaturalKey(NaturalKey name, boolean lagged, int lag) {
             this.name = name;
+            this.lagged = lagged;
             this.lag = lag;
         }
 
         /**
          * Creates a {@code LaggedNaturalKey} from the given string. If the string
-         * contains a ":" character, the portion before it is used as the node name
-         * and the portion after it is parsed as the lag index. Otherwise, the whole
-         * string is the node name and the lag defaults to 0.
+         * contains exactly one ":" whose suffix parses as an integer, the portion
+         * before the colon is the node name and the suffix is the lag index.
+         * Otherwise the whole string is treated as an unlagged node name. Note
+         * that a suffix containing a further colon (e.g. {@code "A:1:2"}) fails
+         * the integer parse, so multi-colon strings are treated as unlagged.
          *
          * @param s the input string to be parsed
          * @return a {@code LaggedNaturalKey} constructed from the given string
-         * @throws NumberFormatException if the lag portion cannot be parsed as an {@code int}
          */
         public static LaggedNaturalKey from(String s) {
             int colon = s.indexOf(':');
             if (colon >= 0) {
-                NaturalKey name = NaturalKey.from(s.substring(0, colon));
-                int lag = Integer.parseInt(s.substring(colon + 1));
-                return new LaggedNaturalKey(name, lag);
-            } else {
-                return new LaggedNaturalKey(NaturalKey.from(s), 0);
+                try {
+                    int lag = Integer.parseInt(s.substring(colon + 1));
+                    return new LaggedNaturalKey(NaturalKey.from(s.substring(0, colon)), true, lag);
+                } catch (NumberFormatException e) {
+                    // fall through: not a valid lagged name
+                }
             }
+            return new LaggedNaturalKey(NaturalKey.from(s), false, 0);
         }
 
         @Override
         public int compareTo(LaggedNaturalKey o) {
-            int c = Integer.compare(this.lag, o.lag);
-            if (c != 0) return c;
+            if (this.lagged != o.lagged) {
+                return this.lagged ? -1 : 1;   // lagged names first; unlagged last
+            }
+            if (this.lagged) {
+                int c = Integer.compare(o.lag, this.lag);   // decreasing lag
+                if (c != 0) return c;
+            }
             return this.name.compareTo(o.name);
         }
     }
@@ -112,8 +137,9 @@ public class NaturalSort {
          * otherwise, the suffix is {@code null}.
          *
          * @param s the input string to be parsed into a {@code NaturalKey}
-         * @return a {@code NaturalKey} constructed from the given string's prefix and suffix
-         * @throws NumberFormatException if the numeric suffix cannot be parsed as an {@code Integer}
+         * @return a {@code NaturalKey} constructed from the given string's prefix and suffix;
+         *         if the trailing digit run is too long to parse as an {@code int}, the whole
+         *         string is used as the prefix (never throws)
          */
         public static NaturalKey from(String s) {
             int i = s.length();
@@ -121,12 +147,15 @@ public class NaturalSort {
                 i--;
             }
 
-            String prefix = s.substring(0, i);
-            Integer suffix = (i < s.length())
-                    ? Integer.parseInt(s.substring(i))
-                    : null;
+            if (i < s.length()) {
+                try {
+                    return new NaturalKey(s.substring(0, i), Integer.parseInt(s.substring(i)));
+                } catch (NumberFormatException e) {
+                    // Digit run too long for an int; treat the whole string as the prefix.
+                }
+            }
 
-            return new NaturalKey(prefix, suffix);
+            return new NaturalKey(s, null);
         }
 
         @Override

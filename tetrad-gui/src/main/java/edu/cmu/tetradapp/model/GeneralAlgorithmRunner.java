@@ -537,7 +537,16 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     if (this.algorithm instanceof AcceptsKnowledge) {
-                        ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                        // Prefer knowledge supplied via a Knowledge box; otherwise pass along the
+                        // knowledge carried by the data sets (knowledge1, stamped from the first
+                        // data set above), which previously was stamped onto the data sets but
+                        // never handed to the algorithm - so knowledge attached to the data was
+                        // silently ignored by multi-data-set algorithms such as IMaGES.
+                        Knowledge effectiveKnowledge =
+                                (this.knowledge != null && !this.knowledge.isEmpty())
+                                        ? this.knowledge
+                                        : (knowledge1 != null ? knowledge1 : new Knowledge());
+                        ((AcceptsKnowledge) this.algorithm).setKnowledge(effectiveKnowledge.copy());
                     }
 
                     try {

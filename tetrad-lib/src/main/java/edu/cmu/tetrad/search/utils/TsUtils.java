@@ -521,6 +521,35 @@ public class TsUtils {
             }
         }
 
+        // The expanded tiers above interleave time blocks with the input tiers:
+        // tier(X:a) = (numLags - a) * k + t(X). That total order forbids future-to-past
+        // edges (source lag a < target lag b) and within-lag tier violations (a == b with
+        // t(X) > t(Y)), but it CANNOT also forbid the remaining cross-lag tier violations,
+        // where a deeper-lag variable in a later input tier points into a more recent
+        // variable in an earlier input tier (a > b with t(X) > t(Y)) - e.g., with weather
+        // in a later tier than day, Rain:4 --> day is not tier-forbidden, because Rain:4's
+        // expanded tier index is necessarily smaller than day's. No total tier order can
+        // express the intended product order (time x input tier): Rain:4 --> Rain:3 must be
+        // allowed while Rain:4 --> day is forbidden, which would require
+        // tier(Rain:4) <= tier(Rain:3) < tier(day) < tier(Rain:4). So the input tier order
+        // is applied to the base variables at every pair of lags via explicit forbidden
+        // edges for exactly the cases the tiers do not cover (a > b).
+        for (int tFrom = 1; tFrom < k; tFrom++) {
+            for (int tTo = 0; tTo < tFrom; tTo++) {
+                for (String fromBase : nonEmptyTiers.get(tFrom)) {
+                    for (String toBase : nonEmptyTiers.get(tTo)) {
+                        for (int a = numLags; a >= 1; a--) {
+                            String laggedFrom = fromBase + ":" + a;
+                            for (int b = a - 1; b >= 0; b--) {
+                                String laggedTo = (b == 0) ? toBase : toBase + ":" + b;
+                                expandedKnowledge.setForbidden(laggedFrom, laggedTo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Replicate explicit forbidden edges within each lag
         Iterator<KnowledgeEdge> forbiddenIt = knowledge.forbiddenEdgesIterator();
         while (forbiddenIt.hasNext()) {
