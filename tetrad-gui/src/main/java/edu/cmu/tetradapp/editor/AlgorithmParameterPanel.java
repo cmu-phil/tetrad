@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSamplingRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
+import edu.cmu.tetrad.algcomparison.utils.ParameterSettingsText;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.Score;
@@ -42,6 +43,7 @@ import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.io.Serial;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -90,6 +92,11 @@ public class AlgorithmParameterPanel extends JPanel {
 
         Algorithm algorithm = algorithmRunner.getAlgorithm();
         Parameters parameters = algorithmRunner.getParameters();
+
+        // A button that pops up a copyable plain-text rendering of the effective settings
+        // shown on this panel, for pasting into emails, notes, or scripts.
+        this.mainPanel.add(createSettingsTextRow(algorithmRunner));
+        this.mainPanel.add(Box.createVerticalStrut(10));
 
         // Hard-coded parameter groups for Rfci-Bsc
         if (algorithm instanceof RfciBsc) {
@@ -199,6 +206,46 @@ public class AlgorithmParameterPanel extends JPanel {
             }
         }
 
+    }
+
+    /**
+     * Creates the row holding the "Settings as Text..." button.
+     */
+    private JPanel createSettingsTextRow(GeneralAlgorithmRunner algorithmRunner) {
+        JButton button = new JButton("Settings as Text...");
+        button.setToolTipText("Show the settings on this panel as plain text that can be "
+                + "selected and copied.");
+        button.addActionListener(e -> showSettingsTextDialog(algorithmRunner));
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        row.add(button);
+        return row;
+    }
+
+    /**
+     * Pops up a dialog containing the effective parameter settings as selectable text, with
+     * a copy-to-clipboard option.
+     */
+    private void showSettingsTextDialog(GeneralAlgorithmRunner algorithmRunner) {
+        String text = ParameterSettingsText.render(
+                algorithmRunner.getAlgorithm(),
+                algorithmRunner.getParameters(),
+                algorithmRunner.getSourceGraph() != null);
+
+        JTextArea area = new JTextArea(text, 25, 60);
+        area.setEditable(false);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+
+        Object[] options = {"Copy to Clipboard", "Close"};
+        int choice = JOptionPane.showOptionDialog(this, scroll, "Parameter Settings",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                options[1]);
+
+        if (choice == 0) {
+            Toolkit.getDefaultToolkit().getSystemClipboard()
+                    .setContents(new StringSelection(text), null);
+        }
     }
 
     /**
