@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -128,6 +129,99 @@ public class BasisFunctionBicScore implements Score {
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
         this.bic.setStructurePrior(0);
 
+    }
+
+    /**
+     * Constructs a BasisFunctionBicScore that scores against an externally supplied embedding - a map from
+     * variable index to the embedded columns to use for that variable. The correlation matrix and the underlying
+     * SemBicScore are built at full size from this data set's own embedding, exactly as in the other constructors;
+     * the supplied map only controls which columns are referenced. This is how a multi-data-set algorithm aiming
+     * at a single common model (e.g. IMaGES) shares one basis-column decision across all of its data sets, so
+     * that every data set scores the identical parameterization: with per-data-set adaptive selection, different
+     * data sets can keep different columns, and the summed score then compares models whose effective embeddings
+     * differ across data sets.
+     *
+     * <p>The supplied embedding must be consistent with this data set's own (unpruned) embedding layout: same
+     * variable keys, and for each variable a subsequence of its unpruned columns. This holds automatically when
+     * the map is derived (e.g. by union) from per-data-set decisions over data sets with the same variables,
+     * types, and categories, as {@code Embedding.getEmbeddedData} lays such data sets out identically.
+     *
+     * @param dataSet         the data set on which the score is to be calculated.
+     * @param truncationLimit the truncation limit of the basis.
+     * @param lambda          Singularity lambda.
+     * @param embedding       the embedding (variable index to embedded columns) to score against.
+     */
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda,
+                                 Map<Integer, List<Integer>> embedding) {
+        this.variables = dataSet.getVariables();
+
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1);
+        DataSet embeddedData = result.embeddedData();
+
+        CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
+
+        // Validate consistency with this data set's own layout.
+        Map<Integer, List<Integer>> own = result.embedding();
+        if (!own.keySet().equals(embedding.keySet())) {
+            throw new IllegalArgumentException("Supplied embedding has different variable keys than this data "
+                    + "set's embedding.");
+        }
+        for (Map.Entry<Integer, List<Integer>> e : embedding.entrySet()) {
+            if (!own.get(e.getKey()).containsAll(e.getValue())) {
+                throw new IllegalArgumentException("Supplied embedding references columns not present in this "
+                    + "data set's embedding for variable index " + e.getKey() + ".");
+            }
+        }
+
+        this.embedding = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> e : embedding.entrySet()) {
+            this.embedding.put(e.getKey(), new ArrayList<>(e.getValue()));
+        }
+
+        this.bic = new SemBicScore(correlationMatrix);
+        this.bic.setPenaltyDiscount(penaltyDiscount);
+        this.bic.setLambda(lambda);
+        this.bic.setStructurePrior(0);
+    }
+
+    /**
+     * Computes the adaptive basis-column decision for a single data set: the embedding that
+     * {@code new BasisFunctionBicScore(dataSet, truncationLimit, lambda, true)} would score against. Exposed so
+     * that multi-data-set callers can combine per-data-set decisions (e.g. by union) into one common embedding.
+     *
+     * @param dataSet         the data set.
+     * @param truncationLimit the truncation limit of the basis.
+     * @return the pruned embedding for this data set.
+     */
+    public static Map<Integer, List<Integer>> adaptivePrunedEmbedding(DataSet dataSet, int truncationLimit) {
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1);
+        CorrelationMatrix correlationMatrix = new CorrelationMatrix(result.embeddedData());
+        return Embedding.pruneUninformativeBasisColumns(dataSet, result.embedding(), correlationMatrix);
+    }
+
+    /**
+     * Computes the unpruned embedding layout for a single data set, for callers that need to combine or
+     * validate basis-column decisions across data sets.
+     *
+     * @param dataSet         the data set.
+     * @param truncationLimit the truncation limit of the basis.
+     * @return the full (unpruned) embedding for this data set.
+     */
+    public static Map<Integer, List<Integer>> fullEmbedding(DataSet dataSet, int truncationLimit) {
+        return Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1).embedding();
+    }
+
+    /**
+     * Returns a copy of the embedding this score is scoring against (variable index to embedded columns).
+     *
+     * @return a copy of the embedding.
+     */
+    public Map<Integer, List<Integer>> getEmbedding() {
+        Map<Integer, List<Integer>> copy = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> e : this.embedding.entrySet()) {
+            copy.put(e.getKey(), new ArrayList<>(e.getValue()));
+        }
+        return copy;
     }
     
     /**

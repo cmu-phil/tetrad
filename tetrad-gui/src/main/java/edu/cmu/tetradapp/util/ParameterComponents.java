@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  * A utility for creating parameter components for GUI.
  * <p>
  * May 24, 2019 11:37:33 AM
- *
+ *˚
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @version $Id: $Id
  */

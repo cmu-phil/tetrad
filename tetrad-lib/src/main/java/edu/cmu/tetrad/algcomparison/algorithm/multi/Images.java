@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.MultiDataSetScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -151,11 +152,21 @@ public class Images extends AbstractMultiBootstrapAlgorithm implements MultiData
             dataSets = _dataSets;
         }
 
-        List<Score> scores = new ArrayList<>();
+        List<Score> scores;
 
-        for (DataModel dataModel : dataSets) {
-            Score s = score.getScore(dataModel, parameters);
-            scores.add(s);
+        // A wrapper implementing MultiDataSetScoreWrapper coordinates data-dependent
+        // representation choices (e.g. adaptive basis-column selection) across the data
+        // sets, so that every data set scores the identical parameterization - which IMaGES,
+        // as a common-model algorithm, requires of its summed score. Other wrappers are
+        // constructed per data set as before.
+        if (score instanceof MultiDataSetScoreWrapper multiWrapper) {
+            scores = multiWrapper.getScores(dataSets, parameters);
+        } else {
+            scores = new ArrayList<>();
+            for (DataModel dataModel : dataSets) {
+                Score s = score.getScore(dataModel, parameters);
+                scores.add(s);
+            }
         }
 
         ImagesScore score = new ImagesScore(scores);
