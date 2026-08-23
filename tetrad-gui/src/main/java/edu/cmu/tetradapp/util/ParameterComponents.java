@@ -117,12 +117,16 @@ public final class ParameterComponents {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getDouble(parameter, defaultValue)));
 
         return field;
     }
@@ -156,12 +160,16 @@ public final class ParameterComponents {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getInt(parameter, defaultValue)));
 
         return field;
     }
@@ -195,12 +203,16 @@ public final class ParameterComponents {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getLong(parameter, defaultValue)));
 
         return field;
     }
@@ -242,6 +254,7 @@ public final class ParameterComponents {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, true);
+                ParameterFieldSync.valueChanged(parameters, parameter, selectionBox);
             }
         });
 
@@ -250,6 +263,16 @@ public final class ParameterComponents {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, false);
+                ParameterFieldSync.valueChanged(parameters, parameter, selectionBox);
+            }
+        });
+
+        ParameterFieldSync.register(parameters, parameter, selectionBox, () -> {
+            boolean b = parameters.getBoolean(parameter, defaultValue);
+            if (b && !yesButton.isSelected()) {
+                yesButton.setSelected(true);
+            } else if (!b && !noButton.isSelected()) {
+                noButton.setSelected(true);
             }
         });
 
@@ -274,12 +297,16 @@ public final class ParameterComponents {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getString(parameter, defaultValue)));
 
         return field;
     }

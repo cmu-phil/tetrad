@@ -37,6 +37,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LongTextField;
+import edu.cmu.tetradapp.util.ParameterFieldSync;
 import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
@@ -349,12 +350,16 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getDouble(parameter, defaultValue)));
 
         return field;
     }
@@ -388,12 +393,16 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getInt(parameter, defaultValue)));
 
         return field;
     }
@@ -427,12 +436,16 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getLong(parameter, defaultValue)));
 
         return field;
     }
@@ -476,6 +489,7 @@ public class AlgorithmParameterPanel extends JPanel {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, true);
+                ParameterFieldSync.valueChanged(parameters, parameter, selectionBox);
             }
         });
 
@@ -484,6 +498,16 @@ public class AlgorithmParameterPanel extends JPanel {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, false);
+                ParameterFieldSync.valueChanged(parameters, parameter, selectionBox);
+            }
+        });
+
+        ParameterFieldSync.register(parameters, parameter, selectionBox, () -> {
+            boolean b = parameters.getBoolean(parameter, defaultValue);
+            if (b && !yesButton.isSelected()) {
+                yesButton.setSelected(true);
+            } else if (!b && !noButton.isSelected()) {
+                noButton.setSelected(true);
             }
         });
 
@@ -534,6 +558,20 @@ public class AlgorithmParameterPanel extends JPanel {
             Object selected = comboBox.getSelectedItem();
             if (selected != null) {
                 parameters.set(parameter, selected.toString());
+                ParameterFieldSync.valueChanged(parameters, parameter, comboBox);
+            }
+        });
+
+        ParameterFieldSync.register(parameters, parameter, comboBox, () -> {
+            String value = parameters.getString(parameter, defaultValue);
+            Object selected = comboBox.getSelectedItem();
+            if (selected == null || !selected.toString().equalsIgnoreCase(value)) {
+                for (int i = 0; i < comboBox.getItemCount(); i++) {
+                    if (comboBox.getItemAt(i).equalsIgnoreCase(value)) {
+                        comboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
             }
         });
 
@@ -552,12 +590,16 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getString(parameter, defaultValue)));
 
         return field;
     }
