@@ -111,7 +111,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         } else if (parameters.getInt(Params.NUMBER_RESAMPLING) == 0) {
             Graph graph = runSearch(dataModel, parameters);
 
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
+            if (parameters.getInt(Params.TIME_LAG) > 0 || LayoutUtil.isLaggedGraph(graph)) {
                 LayoutUtil.layoutByKnowledgeIndices(graph);
             }
 
@@ -221,7 +221,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             // member of its output class. The composite views (Preserved / Highest / Majority / Threshold)
             // remain available from the Ensemble Display menu via the ancillary sampling graph.
             Graph median = GraphUtils.fixDirections(medianMemberGraph);
-            if (lagged) LayoutUtil.layoutByKnowledgeIndices(median);
+            if (lagged || LayoutUtil.isLaggedGraph(median)) LayoutUtil.layoutByKnowledgeIndices(median);
             return median;
         }
 
@@ -231,7 +231,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         // Make double sure that all directable edges point to the right before returning this graph.
         // jdramsey 2025-6-21
         graph = GraphUtils.fixDirections(displayGraph);
-        if (lagged) LayoutUtil.layoutByKnowledgeIndices(graph);
+        if (lagged || LayoutUtil.isLaggedGraph(graph)) LayoutUtil.layoutByKnowledgeIndices(graph);
 
         return graph;
     }
@@ -313,7 +313,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
 
             if (!bootstrap) {
                 Graph graph = runSearch(nominal, params);
-                if (lagged) LayoutUtil.layoutByKnowledgeIndices(graph);
+                if (lagged || LayoutUtil.isLaggedGraph(graph)) LayoutUtil.layoutByKnowledgeIndices(graph);
                 return graph;
             }
 

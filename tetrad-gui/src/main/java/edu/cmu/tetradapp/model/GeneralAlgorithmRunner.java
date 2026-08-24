@@ -713,13 +713,19 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             this.elapsedTime = stop - start;
         }
 
-        // Final layout pass by knowledge tiers (if any)
-        if (knowledge != null && knowledge.getNumTiers() > 0) {
-            for (Graph graph : graphList) {
+        // Final layout pass. Lagged (time-series) graphs are ALWAYS laid out by lag index - current slice at the
+        // bottom, earlier lags in rows above - whether the lag came from the algorithm's timeLag parameter or from
+        // pre-lagged data, and whether or not knowledge tiers are present: the knowledge here is the user's base
+        // (unlagged) knowledge, so laying a lagged graph out by its tiers misplaces or drops the lagged nodes, and
+        // the default layout hides the lag structure, which is the main thing a time-series graph is for. (This pass
+        // previously overwrote the by-index layout the bootstrap base class had already applied.) Other graphs are
+        // laid out by knowledge tiers if any, else by the default layout.
+        for (Graph graph : graphList) {
+            if (LayoutUtil.isLaggedGraph(graph)) {
+                LayoutUtil.layoutByKnowledgeIndices(graph);
+            } else if (knowledge != null && knowledge.getNumTiers() > 0) {
                 LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
-            }
-        } else {
-            for (Graph graph : graphList) {
+            } else {
                 LayoutUtil.defaultLayout(graph);
             }
         }

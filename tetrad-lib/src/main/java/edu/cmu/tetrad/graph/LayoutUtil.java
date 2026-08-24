@@ -103,6 +103,43 @@ public class LayoutUtil {
     }
 
     /**
+     * Returns the lag index encoded in a lagged variable name of the form {@code base:k} (as produced by
+     * TsUtils.createLagData), or 0 if the name carries no integer lag suffix. Names whose suffix after the last colon
+     * is not a non-negative integer are treated as unlagged rather than throwing.
+     *
+     * @param name the variable name.
+     * @return the lag index, or 0.
+     */
+    public static int lagIndex(String name) {
+        int i = name.lastIndexOf(':');
+        if (i < 0 || i == name.length() - 1) return 0;
+        String suffix = name.substring(i + 1);
+        for (int k = 0; k < suffix.length(); k++) {
+            if (!Character.isDigit(suffix.charAt(k))) return 0;
+        }
+        try {
+            return Integer.parseInt(suffix);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Returns true if the graph is a lagged (time-series) graph, i.e., at least one node has a positive lag index
+     * in its name. Such graphs should be laid out by {@link #layoutByKnowledgeIndices(Graph)}, with the current time
+     * slice in the bottom row and each earlier lag in a row above, regardless of any knowledge tiers.
+     *
+     * @param graph the graph.
+     * @return true if some node name has a lag suffix {@code :k} with k &gt; 0.
+     */
+    public static boolean isLaggedGraph(Graph graph) {
+        for (Node node : graph.getNodes()) {
+            if (lagIndex(node.getName()) > 0) return true;
+        }
+        return false;
+    }
+
+    /**
      * Arranges the nodes of the given graph in tiers based on numerical indices
      * derived from the node names, and positions them accordingly in a 2D layout.
      * The method processes the nodes to determine their tier, sorts them, and
@@ -115,11 +152,7 @@ public class LayoutUtil {
         int maxLag = 0;
 
         for (Node node : graph.getNodes()) {
-            String name = node.getName();
-
-            String[] tokens1 = name.split(":");
-
-            int index = tokens1.length > 1 ? Integer.parseInt(tokens1[tokens1.length - 1]) : 0;
+            int index = lagIndex(node.getName());
 
             if (index >= maxLag) {
                 maxLag = index;
@@ -133,11 +166,7 @@ public class LayoutUtil {
         }
 
         for (Node node : graph.getNodes()) {
-            String name = node.getName();
-
-            String[] tokens = name.split(":");
-
-            int index = tokens.length > 1 ? Integer.parseInt(tokens[tokens.length - 1]) : 0;
+            int index = lagIndex(node.getName());
 
             if (!tiers.get(index).contains(node)) {
                 tiers.get(index).add(node);
