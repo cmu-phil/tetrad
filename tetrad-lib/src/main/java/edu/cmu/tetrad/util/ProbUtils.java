@@ -707,9 +707,16 @@ public class ProbUtils {
      * @return a double
      */
     public static double chisqCdf(double x, double df) {
-        return new ChiSquaredDistribution(df).cumulativeProbability(x);
-//        return gammaCdf(0.5 * df, 0.5 * x);
+        // Constructing a ChiSquaredDistribution seeds a Well19937c random generator (never used here), which made
+        // each call ~100x more expensive than the CDF evaluation itself (30 us vs 0.3 us). The distribution is
+        // immutable apart from that generator, so one instance per df is cached; cumulativeProbability is
+        // thread-safe. This function sits on the hot path of every pooled (Fisher) independence test and every
+        // likelihood-ratio test, where it is called once per independence fact.
+        return CHISQ_CACHE.computeIfAbsent(df, ChiSquaredDistribution::new).cumulativeProbability(x);
     }
+
+    private static final java.util.concurrent.ConcurrentHashMap<Double, ChiSquaredDistribution> CHISQ_CACHE
+            = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * <p>poissonCdf.</p>
