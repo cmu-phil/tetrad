@@ -134,6 +134,10 @@ public class TestGuidedAlgorithmCard {
     /**
      * The card's experimental switch governs tests and scores as well as algorithms, independently of the global
      * preference. Fails on the unpatched card, which drew tests and scores from the global-flag registry.
+     * <p>
+     * The family filter is set to "all" so the check does not depend on which experimental tests and scores happen to
+     * carry a family annotation; and each half is asserted only if the registry actually contains an experimental
+     * entry for mixed data that the card could list, since that set changes as work is promoted out of experimental.
      */
     @Test
     public void experimentalSwitchAlsoExposesExperimentalTestsAndScores() {
@@ -141,22 +145,41 @@ public class TestGuidedAlgorithmCard {
         try {
             edu.cmu.tetradapp.Tetrad.enableExperimental = false;
             GeneralAlgorithmRunner runner = runner();
+            runner.getUserAlgoSelections().put("dataset_filter", "all");
             GuidedAlgorithmCard card = new GuidedAlgorithmCard(runner, null);
             card.setLatentChoice(LatentChoice.YES);
-            // Pick an algorithm that needs both a test and a score.
             AlgorithmModel both = card.getListedAlgorithms().stream()
                     .filter(m -> m.isRequiredTest() && m.isRequiredScore()).findFirst().orElseThrow();
             card.setSelectedAlgorithmForTest(both);
+
+            boolean anyExpTest = edu.cmu.tetradapp.ui.model.IndependenceTestModels.getInstance(true)
+                    .getModels(DataType.Mixed).stream()
+                    .anyMatch(m -> m.getIndependenceTest().clazz().isAnnotationPresent(edu.cmu.tetrad.annotation.Experimental.class)
+                                   && !edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper.class
+                            .isAssignableFrom(m.getIndependenceTest().clazz()));
+            boolean anyExpScore = edu.cmu.tetradapp.ui.model.ScoreModels.getInstance(true)
+                    .getModels(DataType.Mixed).stream()
+                    .anyMatch(m -> m.getScore().clazz().isAnnotationPresent(edu.cmu.tetrad.annotation.Experimental.class)
+                                   && !edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper.class
+                            .isAssignableFrom(m.getScore().clazz()));
+            org.junit.Assume.assumeTrue("registry has no experimental test or score for mixed data; nothing to check",
+                    anyExpTest || anyExpScore);
+
             card.setExperimental(false);
-            int testsOff = card.listedTestNames().size();
-            int scoresOff = card.listedScoreNames().size();
+            List<String> testsOff = card.listedTestNames();
+            List<String> scoresOff = card.listedScoreNames();
             card.setExperimental(true);
-            int testsOn = card.listedTestNames().size();
-            int scoresOn = card.listedScoreNames().size();
-            assertTrue("experimental tests must appear when the switch is on", testsOn > testsOff);
-            assertTrue("experimental scores must appear when the switch is on", scoresOn > scoresOff);
-            // And the algorithm list grows too.
-            assertTrue(card.getListedAlgorithms().size() > 0);
+            List<String> testsOn = card.listedTestNames();
+            List<String> scoresOn = card.listedScoreNames();
+
+            assertTrue(testsOn.containsAll(testsOff));
+            assertTrue(scoresOn.containsAll(scoresOff));
+            if (anyExpTest) assertTrue("experimental tests must appear when the switch is on", testsOn.size() > testsOff.size());
+            if (anyExpScore) assertTrue("experimental scores must appear when the switch is on", scoresOn.size() > scoresOff.size());
+            // Off again: the experimental ones leave.
+            card.setExperimental(false);
+            assertEquals(testsOff, card.listedTestNames());
+            assertEquals(scoresOff, card.listedScoreNames());
         } finally {
             edu.cmu.tetradapp.Tetrad.enableExperimental = saved;
         }
