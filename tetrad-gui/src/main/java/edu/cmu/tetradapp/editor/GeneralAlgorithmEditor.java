@@ -33,6 +33,7 @@ import edu.cmu.tetradapp.model.LatentStructureRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.ErrorDialogs;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
@@ -309,10 +310,15 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
                     if (!isInterrupted() && !closing.get()) showGraphCard();
                 } catch (Exception exception) {
+                    // Changed 2026-8-24: show the exception type, message, and (on request) the stack trace on the
+                    // EDT, instead of a "Stopped with error: null" message from the worker thread with the trace on
+                    // stderr. A user-initiated stop is not reported as an error.
                     exception.printStackTrace(System.err);
                     disposeStopDialog();
-                    JOptionPane.showMessageDialog(getTopLevelAncestor(),
-                            "Stopped with error:\n" + exception.getMessage());
+                    if (!isInterrupted() && !ErrorDialogs.isInterruption(exception)) {
+                        ErrorDialogs.showError(GeneralAlgorithmEditor.this, "Search Failed",
+                                "The search did not complete.", exception);
+                    }
                 } finally {
                     running.set(false);
                 }

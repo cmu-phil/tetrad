@@ -97,20 +97,29 @@ public abstract class WatchedProcess {
 
     private synchronized void startLongRunningThread() {
         longRunningThread = new Thread(() -> {
+            // Changed 2026-8-24: (1) catch Throwable, not just Exception, so an OutOfMemoryError or
+            // StackOverflowError in a search no longer skips cleanup and leaves the modal "Processing" dialog up
+            // with no explanation; (2) always dispose that dialog, in a finally; (3) report anything that is not a
+            // user-initiated stop through ErrorDialogs, so the user sees the type and message rather than a log
+            // line saying "see console".
             try {
                 watch();
             } catch (InterruptedException e) {
                 longRunningThread.interrupt();
-                TetradLogger.getInstance().log("Thread was interrupted while watching. Stopping; see console for stack trace.");
-                e.printStackTrace();
-            } catch (Exception e) {
+                TetradLogger.getInstance().log("Process stopped by user.");
+            } catch (Throwable e) {
                 longRunningThread.interrupt();
-                TetradLogger.getInstance().log("Exception while watching; see console for stack trace.");
                 e.printStackTrace();
-            }
-
-            if (dialog != null) {
-                SwingUtilities.invokeLater(() -> dialog.dispose());
+                disposeStopDialog(); // queued before the error dialog, so it is gone when the error appears
+                if (!interrupted && !ErrorDialogs.isInterruption(e)) {
+                    ErrorDialogs.showError(frame, "Error", "The operation did not complete.", e);
+                } else {
+                    TetradLogger.getInstance().log("Process stopped by user.");
+                }
+            } finally {
+                if (dialog != null) {
+                    SwingUtilities.invokeLater(() -> dialog.dispose());
+                }
             }
         });
 

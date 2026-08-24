@@ -337,10 +337,8 @@ public final class ParameterComponents {
         Box paramRow = Box.createHorizontalBox();
 
         JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
-        String longDescription = paramDesc.getLongDescription();
-        if (longDescription != null) {
-            paramLabel.setToolTipText(longDescription);
-        }
+        // Changed 2026-8-24: see ParameterToolTips.
+        ParameterToolTips.apply(paramDesc, paramLabel, component);
         paramRow.add(paramLabel);
         paramRow.add(Box.createHorizontalGlue());
         paramRow.add(component);

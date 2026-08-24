@@ -39,6 +39,7 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LongTextField;
 import edu.cmu.tetradapp.util.ParameterFieldSync;
+import edu.cmu.tetradapp.util.ParameterToolTips;
 import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
@@ -341,10 +342,9 @@ public class AlgorithmParameterPanel extends JPanel {
         Box paramRow = Box.createHorizontalBox();
 
         JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
-        String longDescription = paramDesc.getLongDescription();
-        if (longDescription != null) {
-            paramLabel.setToolTipText(longDescription);
-        }
+        // Changed 2026-8-24: wrapped HTML tooltip with the parameter ID, default, and range, on both the label
+        // and the field (was the raw long description, unwrapped, on the label only).
+        ParameterToolTips.apply(paramDesc, paramLabel, component);
         paramRow.add(paramLabel);
         paramRow.add(Box.createHorizontalGlue());
         paramRow.add(component);
