@@ -717,45 +717,78 @@ public final class SessionEditorNode extends DisplayNode {
         });
 
         // Build the parameter editor item once, disabled by default.
+        //
+        // IMPORTANT: nothing in the construction of this popup, and nothing in
+        // its popupMenuWillBecomeVisible listener, may open a dialog. This
+        // popup is built inside mousePressed, and a modal dialog opened there
+        // (or while the popup is becoming visible) swallows the mouse release
+        // and leaves MenuSelectionManager with a half-installed popup that
+        // then refuses to go away. determineTheModelClass() can open the model
+        // chooser when the box is empty (e.g. after the upstream data set was
+        // changed and this box's model was destroyed), so it must only be
+        // called from the menu item's action, after the popup has closed.
         JMenuItem editParamsItem = new JMenuItem("Edit Parameters...");
         editParamsItem.setEnabled(false);
         editParamsItem.addActionListener((e) -> {
-            SessionModel model = getSessionNode().getModel();
-            Class<?> mc = (model == null)
-                    ? determineTheModelClass(getSessionNode())
-                    : model.getClass();
+            Class<?> mc = resolveModelClassQuietly();
+
+            // The box is empty and the class could not be inferred; now it is
+            // safe to ask the user, since the popup has already been dismissed.
+            if (mc == null) {
+                mc = determineTheModelClass(getSessionNode());
+            }
+
+            if (mc == null) {
+                return;
+            }
+
             Parameters param = getSessionNode().getParam(mc);
             Object[] arguments = getSessionNode().getModelConstructorArguments(mc);
-            if (param != null) {
-                try {
-                    editParameters(mc, param, arguments);
-                    int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                            "Should I overwrite the contents of this box and delete the contents\n"
-                                    + "of all boxes downstream?",
-                            "Double check...", JOptionPane.YES_NO_OPTION);
-                    if (ret == JOptionPane.YES_OPTION) {
-                        getSessionNode().destroyModel();
-                        getSessionNode().createModel(mc, true);
-                    }
-                } catch (Exception e1) {
-                    e1.printStackTrace();
+
+            if (param == null) {
+                return;
+            }
+
+            try {
+                boolean edited = editParameters(mc, param, arguments);
+
+                // The user canceled (or the editor declined to finalize); do
+                // not offer to blow away the existing contents.
+                if (!edited) {
+                    return;
                 }
+
+                int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                        "Should I overwrite the contents of this box and delete the contents\n"
+                                + "of all boxes downstream?",
+                        "Double check...", JOptionPane.YES_NO_OPTION);
+                if (ret == JOptionPane.YES_OPTION) {
+                    getSessionNode().destroyModel();
+                    getSessionNode().createModel(mc, true);
+                }
+            } catch (Exception e1) {
+                // Previously this was swallowed with printStackTrace(), so a
+                // stale parameter (e.g. a Data Subset condition naming a
+                // variable that no longer exists) failed silently.
+                String msg = e1.getMessage();
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "Could not apply the edited parameters"
+                                + (msg == null || msg.isEmpty() ? "." : ":\n" + msg),
+                        "Edit Parameters", JOptionPane.ERROR_MESSAGE);
+                e1.printStackTrace();
             }
         });
         popup.add(editParamsItem);
 
         // Enable/disable the parameter editor item dynamically when the
-        // popup is about to show, reflecting the current model state.
+        // popup is about to show, reflecting the current model state. This
+        // must not open any dialog (see above), so the model class is resolved
+        // quietly; if it cannot be, the item is enabled provided some
+        // constructible model class has a parameter editor, and the class is
+        // settled interactively in the action.
         popup.addPopupMenuListener(new PopupMenuListener() {
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                SessionModel model = getSessionNode().getModel();
-                Class<?> mc = (model == null)
-                        ? determineTheModelClass(getSessionNode())
-                        : model.getClass();
-                editParamsItem.setEnabled(
-                        mc != null
-                                && getSessionNode().existsParameterizedConstructor(mc)
-                                && getParameterEditor(mc) != null);
+                editParamsItem.setEnabled(hasEditableParameters());
             }
 
             public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
@@ -764,40 +797,6 @@ public final class SessionEditorNode extends DisplayNode {
             public void popupMenuCanceled(PopupMenuEvent e) {
             }
         });
-
-        SessionModel model = getSessionNode().getModel();
-        Class<?> modelClass = (model == null)
-                ? determineTheModelClass(getSessionNode())
-                : model.getClass();
-        if (getSessionNode().existsParameterizedConstructor(modelClass)) {
-            ParameterEditor paramEditor = getParameterEditor(modelClass);
-
-            if (paramEditor != null) {
-                JMenuItem editSimulationParameters = new JMenuItem("Edit Parameters...");
-                editSimulationParameters.setToolTipText("<html>");
-                editSimulationParameters.addActionListener((e) -> {
-                    Parameters param = getSessionNode().getParam(modelClass);
-                    Object[] arguments = getSessionNode().getModelConstructorArguments(modelClass);
-
-                    if (param != null) {
-                        try {
-                            editParameters(modelClass, param, arguments);
-                            int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                                    "Should I overwrite the contents of this box and all delete the contents\n"
-                                            + "of all boxes downstream?",
-                                    "Double check...", JOptionPane.YES_NO_OPTION);
-                            if (ret == JOptionPane.YES_OPTION) {
-                                getSessionNode().destroyModel();
-                                getSessionNode().createModel(modelClass, true);
-                            }
-                        } catch (Exception e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                });
-                popup.add(editSimulationParameters);
-            }
-        }
 
         popup.add(createModel);
 
@@ -820,6 +819,90 @@ public final class SessionEditorNode extends DisplayNode {
     private ParameterEditor getParameterEditor(Class<?> modelClass) {
         SessionNodeModelConfig modelConfig = this.config.getModelConfig(modelClass);
         return modelConfig.getParameterEditorInstance();
+    }
+
+    /**
+     * Resolves the model class for this box without ever opening a dialog. Returns the class of the current model if
+     * there is one; otherwise the class of the last model this box held, provided it is still constructible from the
+     * current parents; otherwise the unique constructible class if there is exactly one; otherwise null.
+     * <p>
+     * Unlike {@link #determineTheModelClass(SessionNode)}, this is safe to call from mouse handlers and popup menu
+     * listeners.
+     *
+     * @return the model class, or null if it cannot be determined without asking the user.
+     */
+    private Class<?> resolveModelClassQuietly() {
+        SessionNode sessionNode = getSessionNode();
+
+        if (sessionNode.getModel() == null) {
+            SessionEditorNode.loadModelClassesFromConfig(sessionNode);
+        }
+
+        return SessionEditorNode.quietModelClass(sessionNode);
+    }
+
+    /**
+     * The non-interactive core of {@link #resolveModelClassQuietly()}, factored out so that it can be tested without a
+     * GUI. Assumes the session node's model classes have already been set.
+     *
+     * @param sessionNode the session node.
+     * @return the model class, or null if it cannot be determined without asking the user.
+     */
+    static Class<?> quietModelClass(SessionNode sessionNode) {
+        SessionModel model = sessionNode.getModel();
+
+        if (model != null) {
+            return model.getClass();
+        }
+
+        Class[] consistent = sessionNode.getConsistentModelClasses(true);
+
+        if (consistent == null || consistent.length == 0) {
+            return null;
+        }
+
+        Class<?> last = sessionNode.getLastModelClass();
+
+        if (last != null) {
+            for (Class c : consistent) {
+                if (c == last) {
+                    return last;
+                }
+            }
+        }
+
+        return consistent.length == 1 ? consistent[0] : null;
+    }
+
+    /**
+     * True iff "Edit Parameters..." should be offered for this box. Never opens a dialog. If the model class can be
+     * resolved quietly, checks that class; otherwise checks whether any currently constructible model class has a
+     * parameterized constructor and a parameter editor.
+     *
+     * @return a boolean
+     */
+    private boolean hasEditableParameters() {
+        SessionNode sessionNode = getSessionNode();
+        Class<?> mc = resolveModelClassQuietly();
+
+        if (mc != null) {
+            return sessionNode.existsParameterizedConstructor(mc) && getParameterEditor(mc) != null;
+        }
+
+        SessionEditorNode.loadModelClassesFromConfig(sessionNode);
+        Class[] consistent = sessionNode.getConsistentModelClasses(true);
+
+        if (consistent == null) {
+            return false;
+        }
+
+        for (Class c : consistent) {
+            if (sessionNode.existsParameterizedConstructor(c) && getParameterEditor(c) != null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

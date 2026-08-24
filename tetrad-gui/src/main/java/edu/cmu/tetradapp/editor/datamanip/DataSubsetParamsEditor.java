@@ -199,6 +199,11 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
      */
     @Override
     public void setup() {
+        // setup() is called from the constructor (against an empty placeholder data set) and again by the
+        // framework after setParentModels(). Without this, the second call stacks a second editor into
+        // BorderLayout.CENTER on top of the first, which remains a (hidden) child of this panel.
+        removeAll();
+
         Box box = Box.createVerticalBox();
         box.setBorder(new EmptyBorder(5, 5, 5, 5));
 
