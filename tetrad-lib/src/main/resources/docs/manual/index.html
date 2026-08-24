@@ -3259,11 +3259,11 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         GRaSP.</p>
 
-    <h3>The BOSS-FCI Algorithm</h3>
+    <h3>The BFCI (BOSS-FCI) Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="boss-fci">
+    <div id="bfci">
         <p>Uses BOSS in place of FGES for the initial step in the GFCI algorithm. This tends to produce a accurate PAG
             than GFCI as a result, for the latent variables case. This is a simple substitution; the reference for GFCI
             is here:</p>
@@ -4728,6 +4728,112 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Input Assumptions</h4>
 
 
+
+    <h3>The BOSS-TopK Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="boss-topk">
+        <p>BOSS-TopK runs the BOSS (Best Order Score Search, see) permutation search but retains the top k distinct variable orderings by score rather than only the best one. Each hill-climbing run records the ordering it converges to; orderings whose score is within a split threshold (splitDelta) of the one being pursued are deferred and later explored to convergence themselves, reusing the same score cache, until the deferred queue is empty or a run cap (maxRuns) is reached.</p>
+        <p>In this version the wrapper returns the single top-scoring graph, so it behaves like BOSS for the purposes of the interface, and prints each of the top orderings, with its score and its graph, to the log. It is intended for examining how many near-equivalent models the data support: with splitDelta = 0 and a single restart exactly one model is produced, so diversity comes from a positive splitDelta and/or several restarts. Requires a score. Experimental.</p>
+        <p>The reference for BOSS is Andrews, B., Ramsey, J., Sanchez Romero, R., Camchong, J., &amp; Kummerfeld, E. (2024). Fast scalable and accurate discovery of DAGs using the best order score search and grow shrink trees. Advances in Neural Information Processing Systems, 36.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#useBes">useBes</a>, <a href="#numStarts">numStarts</a>, <a href="#timeLag">timeLag</a>, <a href="#numThreads">numThreads</a>, <a href="#useDataOrder">useDataOrder</a>, outputCpdag, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The CD-NOD-PAG Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cdnodpag">
+        <p>CD-NOD-PAG is the latent-variable (PAG) form of CD-NOD (see), for data pooled across environments, domains, or time segments whose causal mechanisms may change. Every variable placed in Tier 0 of the background knowledge is treated as a context variable indexing those changes; contexts are assumed exogenous (they have no causes among the measured variables).</p>
+        <p>The search first builds a baseline PAG over all variables, contexts included, using BFCI (see) with the supplied test and score. Every context adjacency C *-* V, for V a non-context variable, is then oriented C --&gt; V, which is fully identified under exogeneity. Finally an orienter adds arrowheads X *-&gt; Y where conditioning on X screens Y from the contexts, as judged by a change test (a conditional-Gaussian likelihood-ratio test of whether the residual distribution of Y depends on the context); each candidate orientation is applied to a copy of the graph and kept only if the propagated result is a legal PAG. Requires both a test and a score. Experimental.</p>
+        <p>See Huang, B., Zhang, K., Zhang, J., Ramsey, J., Sanchez-Romero, R., Glymour, C., &amp; Sch&ouml;lkopf, B. (2020). Causal discovery from heterogeneous/nonstationary data. Journal of Machine Learning Research, 21(89), 1-53.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The FCIT-ZM Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="fcit-zm">
+        <p>FCIT-ZM is a variant of FCIT (see) in which every proposed change is judged on the MAG side. A score-based search (BOSS or GRaSP) supplies a seed CPDAG whose unshielded colliders are taken as sound and are recalled, rather than recomputed, throughout. A recursive path-blocking search then proposes single-edge deletions, each committed only when the candidate graph projects to a legal Zhang MAG; a final saturating pass removes any test-separable adjacency the single-edge phase left standing.</p>
+        <p>Two commit routes are available: reorienting the PAG directly, leaving endpoints as circles until a rule commits them (the default), or projecting through the Zhang MAG and back to its canonical PAG (the route described as FCIT-ZM in the reachability analysis). Either way the returned graph is certified as a legal PAG, modulo background knowledge when knowledge is supplied: its implied MAG is legal and the graph equals the canonical PAG of that MAG. Requires both a test and a score. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>, <a href="#depth">depth</a>, <a href="#maxDiscriminatingPathLength">maxDiscriminatingPathLength</a>, rbRadius, recursiveDepth, excludeSelectionBias, <a href="#testTimeout">testTimeout</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The FCIT-SL Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="fcit-sl">
+        <p>FCIT-SL is FCIT-ZM (see) extended with a Step-Lemma-guided search for a representative MAG when the single-edge deletion phase stalls. It shares FCIT-ZM's seed, its MAG-side legality gate, and its PAG legality certificate on the returned graph, and adds one option (fcitSlAllowClassEscape) controlling whether the representative search may leave the current Markov equivalence class. Requires both a test and a score. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, <a href="#completeRuleSetUsed">completeRuleSetUsed</a>, <a href="#depth">depth</a>, <a href="#maxDiscriminatingPathLength">maxDiscriminatingPathLength</a>, rbRadius, recursiveDepth, <a href="#testTimeout">testTimeout</a>, lvHeuristicOnly, fcitSlAllowClassEscape, excludeSelectionBias, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The GMAS Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="gmas">
+        <p>GMAS (Greedy MAG Search) is a latent-variable search that uses no independence tests. A BOSS CPDAG is projected to a PAG and then to its Zhang MAG, and that MAG is improved by steepest-ascent greedy search under a Gaussian MAG BIC (likelihood from RICF, with one parameter per directed or bidirected edge plus one error variance per variable), moving only among legal MAGs. The move set from the current MAG is: delete an edge; reverse a directed edge; change a directed edge to bidirected or a bidirected edge to directed (either orientation); and, when gmasAllowAdditions is on (the default), add a directed or bidirected edge between a non-adjacent pair. The highest-scoring improving legal candidate is applied and the sweep repeats until no move improves the score. The final MAG is projected back to a PAG.</p>
+        <p>The motivation is that the GFCI/BFCI template can only delete from its initial CPDAG and cannot express pure confounding without a directed edge; working in MAG space with type-change and addition moves lifts both limits. The MAG BIC is invariant across a Markov equivalence class of MAGs, so the output should be read as a class, which is what the final projection to a PAG reports.</p>
+        <p>This is a local search with no consistency guarantee: the move set is not known to connect an arbitrary starting MAG to the true MAG's class, so the search can stop at local optima. It is offered as a prototype for measuring whether score-only moves find anything the test-driven template misses, not as a correct latent-variable search. Related published approaches include Claassen and Bucur (2022) and the score-based MAG searches of Triantafillou and Tsamardinos and of Ali and Richardson. Requires a score. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#useBes">useBes</a>, <a href="#useDataOrder">useDataOrder</a>, <a href="#numStarts">numStarts</a>, scoreCheckPenaltyDiscount, gmasAllowAdditions, gmasLookaheadDepth, gmasTriangleEscapeOnly, excludeSelectionBias, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+
+    <h3>The Mimbuild (Bollen) Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="mimbuild-bollen">
+        <p>Mimbuild (Bollen) is the second stage of a two-stage latent-variable analysis. Given a clustering of the measured variables into disjoint pure clusters (a block specification, as produced by BPC, FOFC, or FTFC, see), with one latent variable per cluster, it estimates the covariance matrix among the latents by maximizing a simple likelihood-style objective over the measurement model, and then learns a causal structure over the latents by running BOSS with the SEM BIC score on that latent covariance.</p>
+        <p>This is the MIMBuild procedure of Spirtes, Glymour, and Scheines, Causation, Prediction, and Search (2000), in the estimation style of Bollen, K. A. (1989), Structural Equations with Latent Variables, Wiley. Compare Mimbuild (PCA), which replaces the latent covariance estimate by principal-component scores. This algorithm is only offered when the search box is connected to a clustering result; continuous data are required.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
+
+    <h3>The Mimbuild (PCA) Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="mimbuild-pca">
+        <p>Mimbuild (PCA) is the second stage of a two-stage latent-variable analysis. Given a clustering of the measured variables into disjoint pure clusters (a block specification, as produced by BPC, FOFC, or FTFC, see), each cluster's latent is estimated as the first principal component of that cluster's standardized indicators, re-scaled to unit variance. A covariance matrix over these latent scores is formed (with a small ridge for stability) and BOSS with the SEM BIC score learns a causal structure over the latents from it.</p>
+        <p>Compare Mimbuild (Bollen), which estimates the latent covariance from the measurement model directly rather than through component scores. This algorithm is only offered when the search box is connected to a clustering result; continuous data are required. See Spirtes, Glymour, and Scheines, Causation, Prediction, and Search (2000), for MIMBuild.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
+
+    <h3>The PC-AR Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="pc-ar">
+        <p>PC-AR (PC with Adjacency Rescue) is the PC algorithm (see) augmented with detection, and optionally repair, of adjacencies lost to cancellation in unfaithful triangles, following the draft "Unfaithful Triangles and Where to Find Them" (Ramsey and Glymour). It runs the usual skeleton search, collider orientation (sepset, conservative, or max-p style), and Meek rule propagation, and adds three tiers of checking. First, every unshielded triple's deletion is re-tested against all candidate separating sets, CPC-style, and two kinds of conflict are recorded against the deleted pair: an ambiguity within the triple, and a cross-triple conflict that would create a bidirected edge. Second, for each flagged pair, posterior odds that the edge is really present are computed as a cancellation base rate (which falls with sample size) times a likelihood ratio from a discriminating re-test of the pair with the pivot's separating-set membership toggled. Third, the finished graph is audited against its own local Markov implications using the search's test, with a Benjamini-Hochberg correction at the test's alpha, and the number of surviving failures is reported.</p>
+        <p>The rescueAction parameter selects the response to a flagged pair: 0 runs no detection; 1 (MARK, the default) records the deletion as contested and leaves the skeleton exactly as found; 2 (RECOVER) reinstates the edge when the posterior odds reach recoveryOddsThreshold; 3 recovers only corroborated flags. The counts of contested deletions, orientation clashes, and Markov-audit failures are attached to the output graph as attributes and can be read from the graph's attribute display. Two limits of the recovery step are worth knowing: the discriminating re-test's size guarantee holds within the paper's model, so a pivot that is in truth a common cause of the pair produces over-recovery exactly where the clash pass over-flags; and no multiplicity correction is applied across flags, so raising the threshold is the crude compensation. Detection has proved far more reliable than repair; in practice MARK, followed by the Markov Checker on the result, is the informative setting. Requires a test.</p>
+    </div>
+    <h4>Parameters</h4>
+
+    <p><a href="#stableFAS">stableFAS</a>, <a href="#colliderOrientationStyle">colliderOrientationStyle</a>, <a href="#allowBidirected">allowBidirected</a>, <a href="#depth">depth</a>, <a href="#fdrQ">fdrQ</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
+
     <h2>Statistical Tests</h2>
 
     <p>All the below tests do testwise deletion as a default way of
@@ -5268,6 +5374,61 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         rank. </p></div>
 
 
+
+    <h3>BE-GCM (Basis-Expanded GCM) Test</h3>
+
+    <div id="be-gcm-test">
+        <p>BE-GCM is a nonlinear conditional independence test that combines a basis expansion with the Generalised Covariance Measure. To test X _||_ Y | Z, each of X and Y is expanded in Legendre polynomial basis functions (up to truncationLimit), each expanded block is residualized on the basis expansion of Z by ridge-stabilized least squares, and the largest studentized residual cross-covariance over the grid of basis pairs is referred to a Rademacher multiplier-bootstrap null (or a Sidak bound when the number of multiplier samples is 0). It is doubly robust in the GCM sense, so the complexity of the Z-regressions does not enter the null distribution, and heteroskedasticity-robust through self-normalization. Rows are assumed independent. With adaptive basis selection on, uninformative higher-order basis columns are pruned by a BIC-crossing screen, which keeps the grid small as the truncation limit grows.</p>
+        <p>See Shah, R. D., &amp; Peters, J. (2020). The hardness of conditional independence testing and the generalised covariance measure. Annals of Statistics, 48(3), 1514-1538. Continuous data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#singularityLambda">singularityLambda</a>, gcmZTruncationLimit, gcmMultiplierSamples, gcmControlFunction, missingDataPolicy</p>
+
+    <h3>BF-LRT (Basis Function Likelihood Ratio) Test</h3>
+
+    <div id="bf-lr-test">
+        <p>BF-LRT is a conditional independence test for the same basis-expanded model as the BF-BIC score (see): each continuous variable is represented by its Legendre polynomial expansion up to truncationLimit, and each discrete variable by indicator columns, so that nonlinear and mixed dependence becomes linear dependence among blocks of columns. The test of X _||_ Y | Z is a block-level test, using the Wilks' lambda / Bartlett chi-square statistic for the regression of the Y block on the X and Z blocks against the Z block alone, with degrees of freedom equal to the product of the (rank-aware) block sizes. The statistic is symmetric in X and Y, and its p-values are uniformly distributed under the null, which matters for consumers of p-values such as PC-Max sepset selection and the Markov Checker.</p>
+        <p>Changed 2026-8: an earlier implementation referred a trace-averaged residual-variance ratio to a chi-square with |Y-block| degrees of freedom; that was not a likelihood ratio for the block regression and its p-values were not uniform under the null. Near-singularity is handled by rank-aware whitening with an internal ridge, so the former singularityLambda setting no longer applies. Supports an effective sample size. Mixed data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
+    <h3>Blocks-Test-TS (Trek Separation)</h3>
+
+    <div id="blocks-test-ts">
+        <p>Blocks-Test-TS is the trek-separation block independence test (TSBI, see) in the form used by block searches: it takes a block specification (a clustering of the measured variables into pure clusters, one latent per cluster, with a rank for each block) from a connected clustering result, and tests independence between the latents behind two blocks given the latents behind a set of conditioning blocks. Each conditioning block is split into two halves; the rank of the cross-covariance between the left side (X plus one half of each conditioning block) and the right side (Y plus the other halves) is estimated by a Wilks rank test, and independence is declared when that rank equals the sum of the conditioning blocks' ranks, as trek separation implies under a linear measurement model.</p>
+        <p>See Sullivant, S., Talaska, K., &amp; Draisma, J. (2010). Trek separation for Gaussian graphical models. Annals of Statistics, 38(3), 1665-1685. This wrapper is only offered when the search box is connected to a clustering result; for the plain covariance form use TSBI.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
+    <h3>CORD Test</h3>
+
+    <div id="cord-test">
+        <p>CORD is an omnibus, nonparametric conditional independence test built on orthogonal rank scores of the full conditional distribution. Where covariance- and mean-based tests (Fisher Z, GCM) see only dependence in location, CORD keeps power against dependence in variance, tails, and co-volatility. The implementation is cross-fitted: the sample is partitioned into three folds, the three cyclic role-rotations of the partition are run, and the per-observation scores are pooled into a single studentized statistic, so the p-value is continuous and does not pile up at 1, which lets it be thresholded in a constraint-based search. Because CORD models the conditional distribution of one variable it is directional; by default both orientations are run and their p-values combined by the Cauchy (ACAT) rule of Liu and Xie (2020), which is order-invariant and valid under arbitrary dependence.</p>
+        <p>Requires the raw continuous sample rather than a covariance matrix; rows with missing values are dropped listwise. It is considerably slower than Fisher Z. Continuous data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p>alphaDefault0.05, <a href="#verbose">verbose</a>, missingDataPolicy</p>
+
+    <h3>Fisher Z Test, Causal-Learn (Python)</h3>
+
+    <div id="fisherz-cl-test">
+        <p>This runs the Fisher Z conditional independence test as implemented in the Python causal-learn library, for comparison with Tetrad's own Fisher Z test (see). A persistent Python process is started from a bundled server script, independence queries are forwarded to it, and the results are returned as ordinary test results. A Python interpreter with causal-learn installed must be available on the machine, and its path must be supplied in the pythonExe parameter; there is no default that will be valid outside the developer's machine. The server script can be overridden with pythonCiServer. Continuous data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, pythonCiServer, <a href="#verbose">verbose</a>, missingDataPolicy</p>
+
     <h2>Scoring Functions</h2>
 
     <p>Like the tests, above, all the below tests do testwise deletion
@@ -5575,6 +5736,51 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         expected and residual distributions may be heavy-tailed.
     </p>
     </div>
+
+
+    <h3>BF-BIC (Basis Function BIC) Score</h3>
+
+    <div id="bf-bic-score">
+        <p>BF-BIC generalizes the Degenerate Gaussian BIC score (see) from linear to nonlinear relationships. Each continuous variable is represented by its Legendre polynomial basis functions up to truncationLimit, and each discrete variable by one indicator column per category, as in the Degenerate Gaussian score. A conditional Gaussian likelihood is then computed over these expanded columns from their covariance matrix, and the score is BIC = 2L - c k ln N, where c is the penalty discount and k the number of parameters in the expansion, so "higher is better." With adaptive basis selection on, uninformative higher-order basis columns are dropped by a BIC-crossing screen. The doOneEquationOnly option fits a single pooled equation per expansion rather than one per expanded column; singularityLambda adds a ridge to the covariance diagonal (or, if negative, uses a pseudoinverse).</p>
+        <p>Because the penalty charges the full block of expanded parameters while the likelihood gain from a weak linear edge comes mostly from its first equation, BF-BIC is conservative relative to SEM BIC on linear data; its advantage is on data with nonlinear or mixed dependence. Its companion test is BF-LRT. Mixed data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#penaltyDiscount">penaltyDiscount</a>, <a href="#singularityLambda">singularityLambda</a>, <a href="#doOneEquationOnly">doOneEquationOnly</a>, missingDataPolicy</p>
+
+    <h3>Blocks-BIC Score</h3>
+
+    <div id="blocks-bic-score">
+        <p>Blocks-BIC is a block-structured score for searches over latent variables that are each measured by a cluster of indicators, taking its blocks from a connected clustering result. For a candidate family Y | Pa(Y), let the X block be the concatenation of the indicator columns of the parent blocks and the Y block the indicator columns of the target; the score evaluates reduced-rank models between these two blocks by regularized canonical correlation analysis. For canonical rank r, score(r) = fit(r) - c k(r) ln N - (m c) ln N (r - r*)^2, where fit(r) is -N times the sum of log(1 - rho_i^2) over the top r canonical correlations, k(r) = r(p + q - r) is the parameter count, r* is the trek-implied rank (the sum of the ranks of the parent blocks), and m weights a soft regularizer encouraging agreement with that rank. The score of the family is the maximum over r. Supports an effective sample size.</p>
+        <p>This score is only offered when the search box is connected to a clustering result. Its companion test is Blocks-Test-TS. Mixed data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
+    <h3>Instance-Specific BDeu Score</h3>
+
+    <div id="is-bdeu-score">
+        <p>The instance-specific BDeu score augments the BDeu score (see) with a term rewarding structures that predict a particular instance well, so that the learned structure is tailored to that instance rather than to the population alone. The local score is IS(i | Pa) = BDeu(i | Pa) + alpha log P(instance), where log P(instance) is the Dirichlet-multinomial posterior predictive probability of the instance's value of variable i given its parent configuration, (N_ijk + ESS/(r_i q)) / (N_ij + ESS/q), and alpha (instanceSpecificAlpha) weights the instance term. A missing value in the instance for the variable or any parent contributes zero. The instance is a row of a testing data set (instanceRow), matched to the training variables by name with category indices remapped if the label orders differ.</p>
+        <p>See Jabbari, F., Visweswaran, S., &amp; Cooper, G. F. (2018). Instance-specific Bayesian network structure learning. Proceedings of Machine Learning Research, 72 (PGM 2018). Discrete data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#instanceSpecificAlpha">instanceSpecificAlpha</a>, <a href="#instanceRow">instanceRow</a>, <a href="#priorEquivalentSampleSize">priorEquivalentSampleSize</a>, missingDataPolicy</p>
+
+    <h3>KML (Kernel Marginal Likelihood) Score</h3>
+
+    <div id="kml-score">
+        <p>KML is a Gaussian-process marginal-likelihood score for continuous children with continuous and discrete parents; it is the exact-kernel analogue of the FFML score (see), which uses a random Fourier feature approximation. For a child Y with parents Z, the score is the log marginal likelihood of Y under a Gaussian process with a product kernel: an exact RBF kernel over the continuous parents (bandwidth from the median heuristic, scaled by kmlBandwidthMultiplier) multiplied elementwise by a categorical kernel over the discrete parents that returns 1 on a level match and catRho on a mismatch. Noise variance is set by kmlLambda and a small jitter (kmlJitter) is added for stability. Because the full n-by-n Gram matrix is used there is no random basis and no seeding, but the cost grows with the cube of the number of rows; bwMaxRows caps the rows used to estimate the bandwidth.</p>
+        <p>Higher is better. Slow on large samples relative to FFML; preferred where exactness matters more than speed. Mixed data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#effectiveSampleSize">effectiveSampleSize</a>, kmlLambda, kmlBandwidthMultiplier, bwMaxRows, kmlJitter, catRho, missingDataPolicy</p>
 
     <!-- ─────────────  NEW SCORES  ───────────── -->
     <h3 id="score-cca-bic">CCA Scores (Wishart, Bollen–Ting)</h3>
