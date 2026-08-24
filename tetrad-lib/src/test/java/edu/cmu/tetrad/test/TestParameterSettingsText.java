@@ -59,7 +59,9 @@ public class TestParameterSettingsText {
 
         String text = ParameterSettingsText.render(algorithm, parameters, false);
 
-        assertTrue("Expected the algorithm section:\n" + text, text.contains("IMaGES"));
+        // Images is no longer registered with the @Algorithm annotation (pooling via poolDataSets replaced it in
+        // the interface), so the section title falls back to the class name rather than the annotation name.
+        assertTrue("Expected the algorithm section:\n" + text, text.contains("Images"));
         assertTrue("Expected the time lag line:\n" + text, text.contains("timeLag = 4"));
     }
 }
