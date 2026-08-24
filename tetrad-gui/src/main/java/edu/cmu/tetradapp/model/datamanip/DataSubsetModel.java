@@ -30,26 +30,42 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 import java.io.Serial;
 
 /**
- * Creates a subset of a given dataset using the DataSubsetEditor (a subset of the variables, plus a subset
- * of the rows). Allows for bootstrap sampling and subsetting both.
+ * Creates a subset of a given dataset (a subset of the variables, plus a subset of the rows, optionally conditioned,
+ * shuffled, subsampled, or bootstrapped) as specified in the Data Subset parameter editor.
+ * <p>
+ * The subset is recomputed from the parent data set every time this model is constructed, by applying the stored
+ * {@link DataSubsetter.Spec} to the parent's current data. Previously the editor baked the finished subset into the
+ * parameters and this constructor simply reinstalled it, so propagating a change made upstream (e.g. removing a
+ * variable) left the subset stale. The baked subset is now used only as a fallback for sessions saved before the
+ * spec was stored.
  */
 public class DataSubsetModel extends DataWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the subset of the given data.
+     *
+     * @param data   the parent data wrapper; must contain exactly one data set.
+     * @param params the parameters, holding the subset spec written by the parameter editor.
+     * @throws IllegalArgumentException if the parent does not hold exactly one data set, if no spec (or legacy
+     *                                  subset) is present, or if the spec cannot be applied to the parent data (e.g. a
+     *                                  condition names a variable that no longer exists).
+     */
     public DataSubsetModel(DataWrapper data, Parameters params) {
         if (data == null) throw new NullPointerException("The given data must not be null");
 
         DataModelList dataSets = data.getDataModelList();
         if (dataSets.size() != 1) {
-            throw new IllegalArgumentException("For causal unmixing, you need exactly one data set.");
+            throw new IllegalArgumentException("For data subsetting, you need exactly one data set.");
         }
 
-        Object dataSubsetParamsEditorSubset = params.get("dataSubsetParamsEditorSubset");
-
-        if (!(dataSubsetParamsEditorSubset instanceof DataSet subset)) {
-            throw new IllegalArgumentException("The data subset parameter must be a DataSet");
+        DataModel parentModel = dataSets.getFirst();
+        if (!(parentModel instanceof DataSet parent)) {
+            throw new IllegalArgumentException("The data to be subsetted must be a tabular data set.");
         }
+
+        DataSet subset = computeSubset(parent, params);
 
         new WatchedProcess() {
             @Override
@@ -60,5 +76,31 @@ public class DataSubsetModel extends DataWrapper {
                 setDataModel(out);
             }
         };
+    }
+
+    /**
+     * Computes the subset of {@code parent} described by the spec in {@code params}, falling back to a legacy baked
+     * subset if no spec is present. Package-private and static so it can be tested without a session.
+     *
+     * @param parent the parent data set.
+     * @param params the parameters.
+     * @return the subset.
+     */
+    static DataSet computeSubset(DataSet parent, Parameters params) {
+        DataSubsetter.Spec spec = DataSubsetter.Spec.fromParameters(params);
+
+        if (spec != null) {
+            return DataSubsetter.subset(parent, spec);
+        }
+
+        Object legacy = params.getParametersNames().contains(DataSubsetter.KEY_LEGACY_SUBSET)
+                ? params.get(DataSubsetter.KEY_LEGACY_SUBSET, null) : null;
+
+        if (legacy instanceof DataSet legacySubset) {
+            return legacySubset;
+        }
+
+        throw new IllegalArgumentException("No data subset specification found; open Edit Parameters... "
+                + "to specify the subset.");
     }
 }

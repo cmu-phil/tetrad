@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.editor.FinalizingParameterEditor;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.datamanip.DataSubsetter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -51,7 +52,7 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
     private String initialRowSpec;
 
     private String initialConditionSpec;
-    private DataSubsetEditor.SamplingMode initialSamplingMode;
+    private DataSubsetter.SamplingMode initialSamplingMode;
     private Integer initialSampleSize;
     private String initialSeedText;
 
@@ -75,21 +76,13 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
         if (dataSubsetEditor != null) {
             DataSet subset = dataSubsetEditor.createSubset();
             if (subset != null) {
-                // Keep your existing subset result.
-                parameters.set("dataSubsetParamsEditorSubset", subset);
+                // The spec is what DataSubsetModel actually uses: it re-applies it to whatever data set is
+                // upstream at construction time, so upstream changes (e.g. a removed variable) propagate.
+                dataSubsetEditor.getSpec().storeIn(parameters);
 
-                // NEW: persist UI state so it can be restored later.
-                parameters.set("dataSubsetSelectedVarNames", dataSubsetEditor.getSelectedVariableNames());
-                parameters.set("dataSubsetRowSpec", dataSubsetEditor.getRowSpec());
-                parameters.set("dataSubsetConditionSpec", dataSubsetEditor.getConditionSpec());
-
-                DataSubsetEditor.SamplingMode mode = dataSubsetEditor.getSamplingMode();
-                if (mode != null) {
-                    parameters.set("dataSubsetSamplingMode", mode.name());
-                }
-
-                parameters.set("dataSubsetSampleSize", dataSubsetEditor.getSampleSize());
-                parameters.set("dataSubsetSeed", dataSubsetEditor.getSeedText());
+                // The materialized subset is still written so that older jars, which read only this key, can
+                // open sessions saved by this one. DataSubsetModel reads it only when no spec is present.
+                parameters.set(DataSubsetter.KEY_LEGACY_SUBSET, subset);
 
                 return true;
             }
@@ -132,7 +125,7 @@ public class DataSubsetParamsEditor extends JPanel implements FinalizingParamete
         Object modeObj = params.get("dataSubsetSamplingMode");
         if (modeObj instanceof String) {
             try {
-                this.initialSamplingMode = DataSubsetEditor.SamplingMode.valueOf((String) modeObj);
+                this.initialSamplingMode = DataSubsetter.SamplingMode.valueOf((String) modeObj);
             } catch (IllegalArgumentException ignored) {
                 // unknown enum value; leave null
             }
