@@ -186,6 +186,7 @@ public class AlgorithmParameterPanel extends JPanel {
                 && (algorithm instanceof TakesScoreWrapper || algorithm instanceof TakesIndependenceWrapper)) {
                 params = new LinkedHashSet<>();
                 params.add(Params.POOL_DATA_SETS);
+                if (algorithm instanceof TakesIndependenceWrapper) params.add(Params.POOLED_TEST_METHOD);
                 this.mainPanel.add(createSubPanel("Multiple Data Sets", params, parameters));
                 this.mainPanel.add(Box.createVerticalStrut(10));
             }

@@ -1586,6 +1586,14 @@ public final class Params {
      * DataModelList to an AbstractBootstrapAlgorithm's search method requests pooling directly.
      */
     public static final String POOL_DATA_SETS = "poolDataSets";
+
+    /**
+     * Constant <code>POOLED_TEST_METHOD="pooledTestMethod"</code> How per-data-set p-values are combined when data
+     * sets are pooled for a test-based search: "fisher" (default; most powerful when the dependence is shared by
+     * all data sets) or "tippett" (min-p, Sidak-adjusted; more powerful when the dependence is present in only some
+     * of the data sets).
+     */
+    public static final String POOLED_TEST_METHOD = "pooledTestMethod";
     /**
      * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
      */

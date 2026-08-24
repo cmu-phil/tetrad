@@ -160,6 +160,11 @@ public final class ParamDescriptions {
                     "default", "fail", "listwise", "testwise", "em", "mi"));
         }
 
+        ParamDescription pooledTestMethod = this.map.get(Params.POOLED_TEST_METHOD);
+        if (pooledTestMethod != null) {
+            pooledTestMethod.setAllowedValues(java.util.List.of("fisher", "tippett"));
+        }
+
         ParamDescription missingEssMode = this.map.get(Params.MISSING_ESS_MODE);
         if (missingEssMode != null) {
             missingEssMode.setAllowedValues(java.util.List.of(

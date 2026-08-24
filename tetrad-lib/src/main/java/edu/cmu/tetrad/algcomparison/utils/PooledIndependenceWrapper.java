@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestMulti;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -34,7 +35,8 @@ import java.util.List;
 
 /**
  * The test-side counterpart of {@link PooledScoreWrapper}: builds the inner test on each pooled data set and combines
- * them with {@link IndTestMulti} using Fisher's method on the per-data-set p-values (data sets are assumed
+ * them with {@link IndTestMulti} using Fisher's method (default) or Tippett's method on the per-data-set p-values,
+ * per {@code Params.POOLED_TEST_METHOD} (data sets are assumed
  * independent of one another, e.g. different subjects or regions). This makes constraint-based algorithms
  * multi-data-set in the same way IMaGES makes score-based ones: PC + Fisher Z on a list of data sets is a pooled PC.
  * <p>
@@ -80,7 +82,19 @@ public final class PooledIndependenceWrapper implements IndependenceWrapper {
 
         List<IndependenceTest> tests = new ArrayList<>(dataSets.size());
         for (DataModel dataModel : dataSets) tests.add(inner.getTest(dataModel, parameters));
-        return new IndTestMulti(tests, ResolveSepsets.Method.fisher);
+        return new IndTestMulti(tests, method(parameters));
+    }
+
+    /**
+     * The combining method selected by {@code Params.POOLED_TEST_METHOD}: "tippett" for Tippett's min-p (Sidak
+     * adjusted), anything else for Fisher's method.
+     *
+     * @param parameters the parameters.
+     * @return the method.
+     */
+    public static ResolveSepsets.Method method(Parameters parameters) {
+        String name = parameters.getString(Params.POOLED_TEST_METHOD, "fisher");
+        return "tippett".equalsIgnoreCase(name.trim()) ? ResolveSepsets.Method.tippett : ResolveSepsets.Method.fisher;
     }
 
     /**
@@ -102,7 +116,7 @@ public final class PooledIndependenceWrapper implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Pooled (Fisher) " + inner.getDescription();
+        return "Pooled " + inner.getDescription();
     }
 
     @Override

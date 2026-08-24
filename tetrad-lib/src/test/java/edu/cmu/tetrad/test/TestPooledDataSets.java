@@ -169,6 +169,27 @@ public class TestPooledDataSets {
         }
     }
 
+    /**
+     * The pooled test honors pooledTestMethod: the two methods must both dispatch and both recover the structure,
+     * and the parameter must be registered with its allowed values.
+     */
+    @Test
+    public void testPooledTestMethodParameter() throws Exception {
+        assertEquals("fisher", new Parameters().getString(Params.POOLED_TEST_METHOD));
+        assertEquals(java.util.List.of("fisher", "tippett"),
+                edu.cmu.tetrad.util.ParamDescriptions.getInstance().get(Params.POOLED_TEST_METHOD).getAllowedValues());
+
+        DataModelList list = fiveSmallDataSets(4);
+        for (String method : new String[]{"fisher", "tippett"}) {
+            Parameters p = params();
+            p.set(Params.POOLED_TEST_METHOD, method);
+            Pc pc = new Pc(new FisherZ());
+            Graph g = pc.search(list, p);
+            assertTrue(method + ": expected good adjacency recall, got " + adjacencyRecall(TRUTH, g),
+                    adjacencyRecall(TRUTH, g) > 0.7);
+        }
+    }
+
     @Test
     public void testSingletonListIsOrdinarySearch() throws Exception {
         DataModelList list = fiveSmallDataSets(3);

@@ -5945,6 +5945,32 @@ Source:
     </ul>
 
 
+    === pooledTestMethod ===
+    <h3 class="parameter_description" id="pooledTestMethod">pooledTestMethod</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="pooledTestMethod_short_desc">
+                    How per-data-set p-values are combined when data sets are pooled: fisher or tippett
+        </span></li>
+        <li>Long Description: <span id="pooledTestMethod_long_desc">
+                    When several data sets are pooled (poolDataSets = Yes) for a test-based search, each
+                    independence fact is tested in every data set and the resulting p-values are combined into one.
+                    "fisher" (the default) uses Fisher's method, -2 times the sum of the log p-values referred to a
+                    chi-square distribution; it is the most powerful choice when the dependence, if present, is
+                    present in all data sets, and its power grows with the number of data sets. "tippett" uses the
+                    smallest p-value with a Sidak adjustment for the number of data sets; it is more powerful when a
+                    dependence is present in only some of the data sets, at a small cost in power when it is present
+                    in all of them, and is somewhat more sensitive to a single outlying data set. Both assume the data
+                    sets are independent of one another.
+        </span></li>
+        <li>Default Value: <span id="pooledTestMethod_default_value">fisher</span></li>
+        <li>Lower Bound: <span id="pooledTestMethod_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="pooledTestMethod_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="pooledTestMethod_value_type">String</span></li>
+    </ul>
+
+
     === timeLimit ===
     <h3 class="parameter_description" id="timeLimit">timeLimit</h3>
     <ul class="parameter_description_list">
