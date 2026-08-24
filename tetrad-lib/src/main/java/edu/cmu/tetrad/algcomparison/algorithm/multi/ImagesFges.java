@@ -28,6 +28,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.MultiDataSetScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -106,36 +107,76 @@ public class ImagesFges extends AbstractMultiBootstrapAlgorithm implements Multi
 
         List<DataModel> _dataSets = new ArrayList<>();
 
+        // Same discipline as Images: the base (unlagged) knowledge is the algorithm's own knowledge if the
+        // user supplied any, otherwise base-variable (no lag suffix) knowledge carried by the data sets. The
+        // field this.knowledge is never overwritten here - createLagData rejects previously lagged knowledge,
+        // so overwriting it broke the second data set (and every bootstrap replicate after the first).
+        Knowledge baseKnowledge = this.knowledge;
+
+        if (baseKnowledge == null || baseKnowledge.isEmpty()) {
+            for (DataModel dataSet : dataSets) {
+                Knowledge fromData = dataSet.getKnowledge();
+                if (fromData == null || fromData.isEmpty()) continue;
+                boolean baseOnly = true;
+                for (String name : fromData.getVariables()) {
+                    if (name.contains(":")) {
+                        baseOnly = false;
+                        break;
+                    }
+                }
+                if (baseOnly) {
+                    baseKnowledge = fromData;
+                    break;
+                }
+            }
+        }
+
+        if (baseKnowledge == null) {
+            baseKnowledge = new Knowledge();
+        }
+
+        Knowledge searchKnowledge = baseKnowledge;
+
         if (parameters.getInt(Params.TIME_LAG) > 0) {
             for (DataModel dataSet : dataSets) {
-                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
+                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG), baseKnowledge);
                 if (dataSet.getName() != null) {
                     timeSeries.setName(dataSet.getName());
                 }
                 _dataSets.add(timeSeries);
-                this.knowledge = timeSeries.getKnowledge();
+                searchKnowledge = timeSeries.getKnowledge();
             }
 
             dataSets = _dataSets;
         }
 
-        List<Score> scores = new ArrayList<>();
+        List<Score> scores;
 
-        for (DataModel dataModel : dataSets) {
-            Score s = score.getScore(dataModel, parameters);
-            scores.add(s);
+        // As in Images: a MultiDataSetScoreWrapper coordinates data-dependent representation choices across
+        // the data sets so that every data set scores the identical parameterization, which the summed
+        // IMaGES score requires.
+        if (score instanceof MultiDataSetScoreWrapper multiWrapper) {
+            scores = multiWrapper.getScores(dataSets, parameters);
+        } else {
+            scores = new ArrayList<>();
+            for (DataModel dataModel : dataSets) {
+                Score s = score.getScore(dataModel, parameters);
+                scores.add(s);
+            }
         }
 
         ImagesScore score = new ImagesScore(scores);
 
         if (meta == 1) {
             edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-            search.setKnowledge(this.knowledge);
+            search.setKnowledge(searchKnowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else if (meta == 2) {
             PermutationSearch search = new PermutationSearch(new Boss(score));
-            search.setKnowledge(this.knowledge);
+            search.setSeed(parameters.getLong(Params.SEED));
+            search.setKnowledge(searchKnowledge);
+            search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
             return search.search();
         } else {
             throw new IllegalArgumentException("Unrecognized meta option: " + meta);
@@ -199,6 +240,7 @@ public class ImagesFges extends AbstractMultiBootstrapAlgorithm implements Multi
         parameters.addAll((new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss()).getParameters());
         parameters.add(Params.RANDOM_SELECTION_SIZE);
         parameters.add(Params.TIME_LAG);
+        parameters.add(Params.TIME_LAG_REPLICATING_GRAPH);
         parameters.add(Params.IMAGES_META_ALG);
 
         parameters.add(Params.VERBOSE);
