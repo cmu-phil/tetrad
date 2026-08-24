@@ -5920,6 +5920,31 @@ Source:
     </ul>
 
 
+    === poolDataSets ===
+    <h3 class="parameter_description" id="poolDataSets">poolDataSets</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="poolDataSets_short_desc">
+                    Yes if the data sets should be pooled into one search (IMaGES-style) rather than searched separately
+        </span></li>
+        <li>Long Description: <span id="poolDataSets_long_desc">
+                    When several data sets with the same variables are given (for example, several subjects, sessions,
+                    or regions), Yes runs the algorithm ONCE with its score replaced by the sum of that score over the
+                    data sets (the IMaGES score) and/or its independence test replaced by the Fisher combination of the
+                    per-data-set p-values. So BOSS with any score pooled is IMaGES with that score, and PC with any
+                    test pooled is a pooled PC. No (the default) runs the algorithm separately on each data set and
+                    returns one graph per data set. Time lags are applied to each data set separately before pooling,
+                    and bootstrapping resamples rows within each data set. Pooling assumes the data sets share one
+                    causal structure and are independent of one another.
+        </span></li>
+        <li>Default Value: <span id="poolDataSets_default_value">false</span></li>
+        <li>Lower Bound: <span id="poolDataSets_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="poolDataSets_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="poolDataSets_value_type">Boolean</span></li>
+    </ul>
+
+
     === timeLimit ===
     <h3 class="parameter_description" id="timeLimit">timeLimit</h3>
     <ul class="parameter_description_list">

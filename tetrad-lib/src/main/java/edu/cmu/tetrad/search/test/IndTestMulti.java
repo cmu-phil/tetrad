@@ -86,7 +86,13 @@ public final class IndTestMulti implements IndependenceTest {
      * @return an {@link IndependenceTest} object
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException();
+        List<IndependenceTest> subs = new java.util.ArrayList<>(this.independenceTests.size());
+        for (IndependenceTest test : this.independenceTests) {
+            List<Node> local = new java.util.ArrayList<>(vars.size());
+            for (Node node : vars) local.add(test.getVariable(node.getName()));
+            subs.add(test.indTestSubset(local));
+        }
+        return new IndTestMulti(subs, this.method);
     }
 
     /**
@@ -98,49 +104,45 @@ public final class IndTestMulti implements IndependenceTest {
      * @return a {@link edu.cmu.tetrad.search.test.IndependenceResult} object
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) throws InterruptedException {
-        if (facts.containsKey(new IndependenceFact(x, y, z))) {
-            return facts.get(new IndependenceFact(x, y, z));
+        IndependenceFact fact = new IndependenceFact(x, y, z);
+        IndependenceResult cached = facts.get(fact);
+        if (cached != null) return cached;
+
+        // The pooled p-value is reported where the method defines one (fisher, fisher2, tippett); for the
+        // vote-style methods getPValuePooled returns 1.0/0.0, which is still a usable indicator.
+        double p = ResolveSepsets.getPValuePooled(this.method, this.independenceTests, x, y, z);
+        boolean independent = p > getAlpha();
+
+        if (this.verbose) {
+            String message = (independent ? "In aggregate independent: " : "In aggregate dependent: ")
+                             + LogUtilsSearch.independenceFact(x, y, z) + " p = " + p;
+            TetradLogger.getInstance().log(message);
         }
 
-        boolean independent = ResolveSepsets.isIndependentPooled(this.method, this.independenceTests, x, y, z);
-
-        if (independent) {
-            String message = "In aggregate independent: " + LogUtilsSearch.independenceFact(x, y, z);
-            TetradLogger.getInstance().log(message);
-        } else {
-            String message = "In aggregate dependent: " + LogUtilsSearch.independenceFact(x, y, z);
-            TetradLogger.getInstance().log(message);
-        }
-
-        IndependenceResult result = new IndependenceResult(new IndependenceFact(x, y, z), independent,
-                Double.NaN, Double.NaN);
-        facts.put(new IndependenceFact(x, y, z), result);
+        IndependenceResult result = new IndependenceResult(fact, independent, p, getAlpha() - p);
+        facts.put(fact, result);
         return result;
     }
 
     /**
-     * Gets the getModel significance level.
+     * Returns the alpha of the component tests (they are required to agree; the first is reported).
      *
-     * @return a double
+     * @return the alpha level.
      */
     public double getAlpha() {
-        throw new UnsupportedOperationException();
+        return this.independenceTests.getFirst().getAlpha();
     }
 
     /**
-     * Sets the significance level for the independence test.
+     * Sets the alpha level on every component test and clears the cache.
      *
-     * @param alpha The significance level to set.
+     * @param alpha the alpha level.
      */
     public void setAlpha(double alpha) {
-        throw new UnsupportedOperationException();
+        for (IndependenceTest test : this.independenceTests) test.setAlpha(alpha);
+        this.facts.clear();
     }
 
-    /**
-     * Retrieves the list of variables associated with this object.
-     *
-     * @return the list of variables associated with this object.
-     */
     public List<Node> getVariables() {
         return this.variables;
     }
@@ -154,23 +156,30 @@ public final class IndTestMulti implements IndependenceTest {
      * @throws UnsupportedOperationException if the method is not implemented.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
+        for (IndependenceTest test : this.independenceTests) {
+            Set<Node> localZ = new HashSet<>();
+            for (Node node : z) localZ.add(test.getVariable(node.getName()));
+            if (test.determines(localZ, test.getVariable(x.getName()))) return true;
+        }
+        return false;
     }
 
     /**
-     * Retrieves the data set.
+     * Returns the data of the first component test; the pooled test has no single data set.
      *
-     * @return the data set.
+     * @return the first component test's data.
      */
-    public DataSet getData() {
-        throw new UnsupportedOperationException();
+    public edu.cmu.tetrad.data.DataModel getData() {
+        return this.independenceTests.getFirst().getData();
     }
 
     /**
-     * Returns a string representation of this object, which includes the alpha value of the independence test.
-     *
-     * @return the string representation of this object
+     * @return the component tests, in order.
      */
+    public List<IndependenceTest> getIndependenceTests() {
+        return java.util.Collections.unmodifiableList(this.independenceTests);
+    }
+
     public String toString() {
         return "Pooled Independence Test:  alpha = " + this.independenceTests.iterator().next().getAlpha();
     }

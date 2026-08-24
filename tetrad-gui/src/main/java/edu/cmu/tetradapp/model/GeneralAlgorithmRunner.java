@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
@@ -556,6 +557,78 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+                }
+            }
+            // ----- 2B') Pooled search: several data sets, ONE search (IMaGES-style), when requested -----
+            else if (dataModelList.size() > 1 && this.parameters.getBoolean(Params.POOL_DATA_SETS, false)) {
+                if (!(algo instanceof AbstractBootstrapAlgorithm)
+                    || !(algo instanceof TakesScoreWrapper || algo instanceof TakesIndependenceWrapper)) {
+                    throw new IllegalArgumentException("Pooling data sets (the 'poolDataSets' option) requires a "
+                                                       + "score- or test-based algorithm; this algorithm cannot pool. "
+                                                       + "Turn the option off to search each data set separately.");
+                }
+
+                if (knowledge == null) {
+                    Knowledge knowledgeFromData = dataModelList.getFirst().getKnowledge();
+                    if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
+                        this.knowledge = knowledgeFromData;
+                    }
+                }
+
+                if (algo instanceof TakesScoreWrapper) {
+                    ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
+                    if (scoreWrapper instanceof BlockScoreWrapper) {
+                        ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
+                    }
+                    if (scoreWrapper instanceof AcceptsKnowledge) {
+                        ((AcceptsKnowledge) scoreWrapper).setKnowledge(knowledge);
+                    }
+                }
+
+                if (algo instanceof TakesIndependenceWrapper) {
+                    IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+                    if (wrapper instanceof BlockIndependenceWrapper) {
+                        ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
+                    }
+                    if (wrapper instanceof AcceptsKnowledge) {
+                        ((AcceptsKnowledge) wrapper).setKnowledge(knowledge);
+                    }
+                }
+
+                if (algo instanceof TakesGraph) {
+                    ((TakesGraph) algo).setGraph(this.sourceGraph);
+                }
+
+                if (this.algorithm instanceof AcceptsKnowledge && this.knowledge != null) {
+                    ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                }
+
+                DataType algDataType = algo.getDataType();
+
+                for (DataModel data : dataModelList) {
+                    if (data instanceof ICovarianceMatrix && parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
+                        throw new IllegalArgumentException("Sorry, you need tabular datasets in order to do bootstrapping.");
+                    }
+                    boolean ok =
+                            (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) ||
+                                    (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) ||
+                                    (data.isMixed() && algDataType == DataType.Mixed);
+                    if (!ok) {
+                        throw new IllegalArgumentException("The algorithm was not expecting that type of data: "
+                                                           + data.getName());
+                    }
+                }
+
+                try {
+                    // Passing the DataModelList itself is the request to pool; see
+                    // AbstractBootstrapAlgorithm.searchPooled.
+                    Graph graph = algo.search(dataModelList, this.parameters);
+                    LayoutUtil.defaultLayout(graph);
+                    graphList.add(graph);
+                    graphSubtitle.put(graph, noteForAggregate(dataModelList));
+                    resultNames.add("Pooled (" + dataModelList.size() + " data sets)");
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
             // ----- 2B) Standard algorithms: run once PER DATASET and collect graphs -----

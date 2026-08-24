@@ -179,6 +179,17 @@ public class AlgorithmParameterPanel extends JPanel {
                 this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
+            // With several data sets, a score- or test-based algorithm can pool them into one search
+            // (IMaGES-style); offer the switch here rather than on every algorithm's parameter list.
+            if (algorithmRunner.getDataModelList().size() > 1
+                && algorithm instanceof AbstractBootstrapAlgorithm
+                && (algorithm instanceof TakesScoreWrapper || algorithm instanceof TakesIndependenceWrapper)) {
+                params = new LinkedHashSet<>();
+                params.add(Params.POOL_DATA_SETS);
+                this.mainPanel.add(createSubPanel("Multiple Data Sets", params, parameters));
+                this.mainPanel.add(Box.createVerticalStrut(10));
+            }
+
             // Changed 2026-8-13: bootstrapping parameters are shown for every algorithm that can actually
             // bootstrap (i.e., extends AbstractBootstrapAlgorithm - the same test Params.getBootstrappingParameters
             // uses), and every other case shows an explanatory label instead of silently showing nothing. The old

@@ -1580,6 +1580,13 @@ public final class Params {
      */
     public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
     /**
+     * Constant <code>POOL_DATA_SETS="poolDataSets"</code> Whether, given several data sets, to pool them into ONE
+     * search (IMaGES-style: the score is summed across data sets, the test combines p-values by Fisher's method)
+     * instead of running the algorithm once per data set. Honored by the GUI runner; in the API, passing a
+     * DataModelList to an AbstractBootstrapAlgorithm's search method requests pooling directly.
+     */
+    public static final String POOL_DATA_SETS = "poolDataSets";
+    /**
      * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
      */
     public static String PYTHON_EXE = "pythonExe";

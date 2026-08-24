@@ -55,13 +55,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IMaGES",
-        command = "images",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.All
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "IMaGES",
+//        command = "images",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.All
+//)
+//@Bootstrapping
 public class Images extends AbstractMultiBootstrapAlgorithm implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial
