@@ -56,7 +56,7 @@ import java.util.List;
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @version $Id: $Id
  */
-public class AlgorithmCard extends JPanel {
+public class AlgorithmCard extends JPanel implements AlgorithmChooser {
     @Serial
     private static final long serialVersionUID = -7552068626783685630L;
 
@@ -532,8 +532,14 @@ public class AlgorithmCard extends JPanel {
      *
      * @return a {@link edu.cmu.tetradapp.ui.model.AlgorithmModel} object
      */
+    @Override
     public AlgorithmModel getSelectedAlgorithm() {
         return this.algorithmList.getSelectedValue();
+    }
+
+    @Override
+    public JComponent asComponent() {
+        return this;
     }
 
     /**

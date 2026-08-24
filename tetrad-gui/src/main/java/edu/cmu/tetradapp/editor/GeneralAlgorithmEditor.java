@@ -26,6 +26,8 @@ import edu.cmu.tetrad.util.JsonUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.editor.search.AlgorithmCard;
+import edu.cmu.tetradapp.editor.search.AlgorithmChooser;
+import edu.cmu.tetradapp.editor.search.GuidedAlgorithmCard;
 import edu.cmu.tetradapp.editor.search.GraphCard;
 import edu.cmu.tetradapp.editor.search.ParameterCard;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
@@ -82,7 +84,11 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     /**
      * The algorithm card.
      */
-    private final AlgorithmCard algorithmCard;
+    /**
+     * The algorithm-selection card. Changed 2026-8-24: this is the guided chooser by default; the classic card is
+     * used instead when the user preference {@code useClassicAlgorithmCard} is true.
+     */
+    private final AlgorithmChooser algorithmCard;
 
     /**
      * The parameter card.
@@ -123,7 +129,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
+        this.algorithmCard = createAlgorithmCard(algorithmRunner);
         this.parameterCard = new ParameterCard(algorithmRunner);
         this.graphCard = new GraphCard(algorithmRunner);
 
@@ -143,7 +149,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     public GeneralAlgorithmEditor(LatentStructureRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
         this.desktop = (TetradDesktop) DesktopController.getInstance();
-        this.algorithmCard = new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
+        this.algorithmCard = createAlgorithmCard(algorithmRunner);
         this.parameterCard = new ParameterCard(algorithmRunner);
         this.graphCard = new GraphCard(algorithmRunner);
         this.blockSpec = algorithmRunner.getBlockSpec();
@@ -161,11 +167,22 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         }
     }
 
+    /**
+     * Picks the algorithm-selection card. The guided chooser is the default; the classic card can be restored with
+     * {@code Preferences.userRoot().putBoolean("useClassicAlgorithmCard", true)}.
+     */
+    private static AlgorithmChooser createAlgorithmCard(GeneralAlgorithmRunner algorithmRunner) {
+        boolean classic = java.util.prefs.Preferences.userRoot().getBoolean("useClassicAlgorithmCard", false);
+        return classic
+                ? new AlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec())
+                : new GuidedAlgorithmCard(algorithmRunner, algorithmRunner.getBlockSpec());
+    }
+
     private void initComponents() {
-        setPreferredSize(new Dimension(827, 620));
+        setPreferredSize(new Dimension(880, 640));
 
         setLayout(new CardLayout());
-        add(new SingleButtonCard(this.algorithmCard, this.algoFwdBtn));
+        add(new SingleButtonCard(this.algorithmCard.asComponent(), this.algoFwdBtn));
         add(new DualButtonCard(this.parameterCard, this.paramBkBtn, this.paramFwdBtn));
         add(new SingleButtonCard(this.graphCard, this.graphBkBtn));
     }
@@ -385,7 +402,15 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             this.button.setPreferredSize(buttonSize);
 
             setLayout(new BorderLayout());
-            add(new JScrollPane(new PaddingPanel(this.component)), BorderLayout.CENTER);
+            // Changed 2026-8-24: a Scrollable card manages its own scrolling and fills the viewport; wrapping it in
+            // PaddingPanel would defeat the viewport tracking and nest two scroll regions.
+            if (this.component instanceof Scrollable) {
+                JScrollPane scroll = new JScrollPane(this.component);
+                scroll.setBorder(BorderFactory.createEmptyBorder());
+                add(scroll, BorderLayout.CENTER);
+            } else {
+                add(new JScrollPane(new PaddingPanel(this.component)), BorderLayout.CENTER);
+            }
             add(new SouthPanel(), BorderLayout.SOUTH);
         }
 
