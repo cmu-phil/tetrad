@@ -104,6 +104,22 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             return graph;
         }
 
+        // Time-lag data sets must be lagged ONCE from the original row order, before any resampling; see
+        // BootstrapTimeLag. The wrapper's core then runs with timeLag = 0 on lagged rows, and the wrapper's
+        // knowledge is temporarily the lagged knowledge, restored in the finally block below.
+        BootstrapTimeLag.Prepared prepared = BootstrapTimeLag.prepare(this, Collections.singletonList(dataModel), parameters);
+        final boolean lagged = prepared.dataSets().get(0) != dataModel;
+        final DataModel bootData = prepared.dataSets().get(0);
+        final Parameters bootParams = prepared.parameters();
+
+        try {
+            return bootstrapSearch(bootData, bootParams, lagged);
+        } finally {
+            prepared.restore().run();
+        }
+    }
+
+    private Graph bootstrapSearch(DataModel dataModel, Parameters parameters, boolean lagged) throws InterruptedException {
         // create a new random generator if a seed is given
         long seed = parameters.getLong(Params.SEED);
         RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));
@@ -175,7 +191,9 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             // search: unlike the composite it is a graph the algorithm actually produced, hence a legal
             // member of its output class. The composite views (Preserved / Highest / Majority / Threshold)
             // remain available from the Ensemble Display menu via the ancillary sampling graph.
-            return GraphUtils.fixDirections(medianMemberGraph);
+            Graph median = GraphUtils.fixDirections(medianMemberGraph);
+            if (lagged) LayoutUtil.layoutByKnowledgeIndices(median);
+            return median;
         }
 
         Graph displayGraph = GraphSampling.createDisplayGraph(graph, ResamplingEdgeEnsemble.Highest);
@@ -184,6 +202,7 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
         // Make double sure that all directable edges point to the right before returning this graph.
         // jdramsey 2025-6-21
         graph = GraphUtils.fixDirections(displayGraph);
+        if (lagged) LayoutUtil.layoutByKnowledgeIndices(graph);
 
         return graph;
     }
