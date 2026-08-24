@@ -48,7 +48,7 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Score(name = "BF-BIC (Basis Function BIC)", command = "bf-bic-score", dataType = DataType.Mixed)
 @Mixed
 @General
-@Experimental
+//@Experimental
 public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWrapper {
 
     @Serial

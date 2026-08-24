@@ -291,6 +291,44 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         saveStates();
     }
 
+    /**
+     * Sets the experimental switch programmatically (used by tests; the UI goes through the checkbox).
+     *
+     * @param on true to list experimental algorithms, tests, and scores.
+     */
+    public void setExperimental(boolean on) {
+        this.experimental = on;
+        syncWidgetsFromState();
+        refreshTestAndScoreSelection();
+        rebuildRows();
+        saveStates();
+    }
+
+    /**
+     * Selects the given algorithm programmatically (used by tests).
+     *
+     * @param m an algorithm from {@link #getListedAlgorithms()}.
+     */
+    void setSelectedAlgorithmForTest(AlgorithmModel m) {
+        this.selectedAlgo = m;
+        refreshTestAndScoreSelection();
+        rebuildRows();
+    }
+
+    /**
+     * @return the names of the tests currently listed for the selected algorithm (empty if it needs none).
+     */
+    List<String> listedTestNames() {
+        return listTests(this.selectedAlgo).stream().map(IndependenceTestModel::getName).toList();
+    }
+
+    /**
+     * @return the names of the scores currently listed for the selected algorithm (empty if it needs none).
+     */
+    List<String> listedScoreNames() {
+        return listScores(this.selectedAlgo).stream().map(ScoreModel::getName).toList();
+    }
+
     //=========================== Scrollable ===========================//
     // The editor wraps each card in a JScrollPane; tracking the viewport in both directions makes the card fill it
     // so the inner list scrolls instead of the whole card.
@@ -913,13 +951,14 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     private List<IndependenceTestModel> listTests(AlgorithmModel m) {
         if (m == null || !m.isRequiredTest()) return List.of();
         List<IndependenceTestModel> out = new ArrayList<>();
-        for (IndependenceTestModel t : IndependenceTestModels.getInstance().getModels(effectiveDataType())) {
+        // Changed 2026-8-24: the card's own experimental switch selects the registry, so experimental tests are
+        // listed when it is on even if the global preference is off (previously they were never in the list).
+        for (IndependenceTestModel t : IndependenceTestModels.getInstance(this.experimental).getModels(effectiveDataType())) {
             Class<?> c = t.getIndependenceTest().clazz();
             if (DeprecationUtils.isClassDeprecated(c)) continue;
             if (!familyPasses(c)) continue;
             boolean isBlocks = BlockIndependenceWrapper.class.isAssignableFrom(c);
             if ((this.blockSpec == null) == isBlocks) continue;
-            if (!this.experimental && c.isAnnotationPresent(Experimental.class)) continue;
             out.add(t);
         }
         return out;
@@ -928,13 +967,12 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     private List<ScoreModel> listScores(AlgorithmModel m) {
         if (m == null || !m.isRequiredScore()) return List.of();
         List<ScoreModel> out = new ArrayList<>();
-        for (ScoreModel s : ScoreModels.getInstance().getModels(effectiveDataType())) {
+        for (ScoreModel s : ScoreModels.getInstance(this.experimental).getModels(effectiveDataType())) {
             Class<?> c = s.getScore().clazz();
             if (DeprecationUtils.isClassDeprecated(c)) continue;
             if (!familyPasses(c)) continue;
             boolean isBlocks = BlockScoreWrapper.class.isAssignableFrom(c);
             if ((this.blockSpec == null) == isBlocks) continue;
-            if (!this.experimental && c.isAnnotationPresent(Experimental.class)) continue;
             out.add(s);
         }
         return out;
@@ -958,7 +996,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
                 if (map != null) t = map.get(effectiveDataType());
             }
             if (t == null) {
-                IndependenceTestModel d = IndependenceTestModels.getInstance().getDefaultModel(effectiveDataType());
+                IndependenceTestModel d = IndependenceTestModels.getInstance(this.experimental).getDefaultModel(effectiveDataType());
                 if (d != null && tests.contains(d)) t = d;
             }
             if (t == null) t = tests.getFirst();
@@ -973,7 +1011,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
                 if (map != null) s = map.get(effectiveDataType());
             }
             if (s == null) {
-                ScoreModel d = ScoreModels.getInstance().getDefaultModel(effectiveDataType());
+                ScoreModel d = ScoreModels.getInstance(this.experimental).getDefaultModel(effectiveDataType());
                 if (d != null && scores.contains(d)) s = d;
             }
             if (s == null) s = scores.getFirst();

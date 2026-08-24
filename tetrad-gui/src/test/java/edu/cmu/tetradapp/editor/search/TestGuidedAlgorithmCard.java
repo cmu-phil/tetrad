@@ -131,6 +131,37 @@ public class TestGuidedAlgorithmCard {
         assertEquals(String.valueOf(card.getSelectedScore()), String.valueOf(again.getSelectedScore()));
     }
 
+    /**
+     * The card's experimental switch governs tests and scores as well as algorithms, independently of the global
+     * preference. Fails on the unpatched card, which drew tests and scores from the global-flag registry.
+     */
+    @Test
+    public void experimentalSwitchAlsoExposesExperimentalTestsAndScores() {
+        boolean saved = edu.cmu.tetradapp.Tetrad.enableExperimental;
+        try {
+            edu.cmu.tetradapp.Tetrad.enableExperimental = false;
+            GeneralAlgorithmRunner runner = runner();
+            GuidedAlgorithmCard card = new GuidedAlgorithmCard(runner, null);
+            card.setLatentChoice(LatentChoice.YES);
+            // Pick an algorithm that needs both a test and a score.
+            AlgorithmModel both = card.getListedAlgorithms().stream()
+                    .filter(m -> m.isRequiredTest() && m.isRequiredScore()).findFirst().orElseThrow();
+            card.setSelectedAlgorithmForTest(both);
+            card.setExperimental(false);
+            int testsOff = card.listedTestNames().size();
+            int scoresOff = card.listedScoreNames().size();
+            card.setExperimental(true);
+            int testsOn = card.listedTestNames().size();
+            int scoresOn = card.listedScoreNames().size();
+            assertTrue("experimental tests must appear when the switch is on", testsOn > testsOff);
+            assertTrue("experimental scores must appear when the switch is on", scoresOn > scoresOff);
+            // And the algorithm list grows too.
+            assertTrue(card.getListedAlgorithms().size() > 0);
+        } finally {
+            edu.cmu.tetradapp.Tetrad.enableExperimental = saved;
+        }
+    }
+
     @Test
     public void restoresASessionSavedByTheClassicCard() {
         GeneralAlgorithmRunner runner = runner();
