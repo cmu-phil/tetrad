@@ -393,9 +393,10 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         // Experimental toggle and reset.
         this.experimentalChk.setFont(smallFont());
         this.experimentalChk.setAlignmentX(LEFT_ALIGNMENT);
-        this.experimentalChk.setToolTipText("<html><div style='width:300px'>Algorithms marked experimental in the "
-                + "registry are hidden by default. This is the same set the --experimental launch option and the "
-                + "enableExperimental preference expose.</div></html>");
+        this.experimentalChk.setToolTipText("<html><div style='width:300px'>Also list algorithms, tests, and "
+                + "scores marked experimental in the registry. This affects only this search box and is saved with "
+                + "the session. To show them everywhere, use File > Settings > Show experimental algorithms "
+                + "everywhere.</div></html>");
         left.add(this.experimentalChk);
         left.add(Box.createVerticalStrut(6));
         JButton resetBtn = new JButton("Start over");

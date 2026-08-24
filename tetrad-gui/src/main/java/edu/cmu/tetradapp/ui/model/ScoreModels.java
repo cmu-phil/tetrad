@@ -39,15 +39,17 @@ import java.util.stream.Stream;
  */
 public final class ScoreModels {
 
-    private static final ScoreModels INSTANCE = new ScoreModels();
+    // Changed 2026-8-24: see IndependenceTestModels; the same restart bug applied here.
+    private static final ScoreModels WITH_EXPERIMENTAL = new ScoreModels(true);
+    private static final ScoreModels WITHOUT_EXPERIMENTAL = new ScoreModels(false);
 
     private final List<ScoreModel> models;
     private final Map<DataType, List<ScoreModel>> modelMap = new EnumMap<>(DataType.class);
     private final Map<DataType, ScoreModel> defaultModelMap = new EnumMap<>(DataType.class);
 
-    private ScoreModels() {
+    private ScoreModels(boolean includeExperimental) {
         ScoreAnnotations scoreAnno = ScoreAnnotations.getInstance();
-        List<AnnotatedClass<Score>> list = Tetrad.enableExperimental
+        List<AnnotatedClass<Score>> list = includeExperimental
                 ? scoreAnno.getAnnotatedClasses()
                 : scoreAnno.filterOutExperimental(scoreAnno.getAnnotatedClasses());
 
@@ -67,7 +69,17 @@ public final class ScoreModels {
      * @return a {@link edu.cmu.tetradapp.ui.model.ScoreModels} object
      */
     public static ScoreModels getInstance() {
-        return ScoreModels.INSTANCE;
+        return getInstance(Tetrad.enableExperimental);
+    }
+
+    /**
+     * Returns the registry with or without experimental scores, regardless of the global preference. Added 2026-8-24.
+     *
+     * @param includeExperimental true to include scores marked {@code @Experimental}.
+     * @return the registry.
+     */
+    public static ScoreModels getInstance(boolean includeExperimental) {
+        return includeExperimental ? WITH_EXPERIMENTAL : WITHOUT_EXPERIMENTAL;
     }
 
     private void initModelMap() {

@@ -47,6 +47,7 @@ import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.ParameterComponents;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.ExperimentalToggle;
 import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
@@ -91,6 +92,18 @@ public final class IndependenceFactsDslEditor extends JPanel {
     private static final String MSEP_ENGINE_LABEL = "m-separation (current graph)";
     // -------------------- UI --------------------
     private final JComboBox<Object> engineCombo = new JComboBox<>();
+    /**
+     * Local switch for listing experimental tests in this editor. Added 2026-8-24. Re-lists the engines and
+     * re-selects the current one if it is still listed.
+     */
+    private final ExperimentalToggle experimentalToggle = new ExperimentalToggle(() -> {
+        Object current = engineCombo.getSelectedItem();
+        String engine = current instanceof IndependenceTestModel m
+                ? m.getIndependenceTest().clazz().getName()
+                : (current == null ? null : String.valueOf(current));
+        refreshEngines();
+        restoreEngineSelection(engine);
+    });
     private final JButton paramsButton = new JButton("Params");
     private final JButton previewButton = new JButton("Preview");
     private final JButton runButton = new JButton("Run");
@@ -714,6 +727,8 @@ public final class IndependenceFactsDslEditor extends JPanel {
         row.add(engineCombo);
         row.add(Box.createHorizontalStrut(6));
         row.add(paramsButton);
+        row.add(Box.createHorizontalStrut(6));
+        row.add(experimentalToggle);
 
         row.add(Box.createHorizontalStrut(12));
         row.add(new JLabel("Limit: "));
@@ -816,8 +831,8 @@ public final class IndependenceFactsDslEditor extends JPanel {
             }
 
             DataType dt = guessDataType(dataModel);
-            List<IndependenceTestModel> models =
-                    new ArrayList<>(IndependenceTestModels.getInstance().getModels(dt));
+            List<IndependenceTestModel> models = new ArrayList<>(
+                    IndependenceTestModels.getInstance(experimentalToggle.includeExperimental()).getModels(dt));
 
             models.removeIf(IndependenceFactsDslEditor::requiresBlockSpec);
 
