@@ -20,45 +20,57 @@
 
 package edu.cmu.tetradapp.util;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Static utility methods of general use in the application.
- *
- * @author josephramsey
- * @version $Id: $Id
+ * Loads images from the docs/images (light) or docs/darkmode/images (dark) resource directories.
+ * <p>
+ * Images are read synchronously with {@link ImageIO} and cached per resource path. This matters for the session
+ * editor: previously images came from {@link Toolkit#createImage(URL)}, which loads asynchronously, so a subsequent
+ * {@code new ImageIcon(image)} had to wait on a {@code MediaTracker}. If the calling thread's interrupt flag was set -
+ * which is exactly the state of a {@code WatchedProcess} worker after a stop or a failure, and session nodes are laid
+ * out on that worker during propagation - the wait aborted immediately and the icon came back with width -1, so the
+ * node displayed with no icon. A fully decoded {@link BufferedImage} has no such loading phase.
  */
 public final class ImageUtils {
 
+    private static final Map<String, Image> CACHE = new ConcurrentHashMap<>();
+
+    private ImageUtils() {
+    }
+
     /**
-     * Loads images for the toolbar using the resource method.  It is assumed that all images are in a directory named
-     * "/resources/images/" in the jar.
+     * Returns the image at the given path, in the light- or dark-mode image directory depending on the current look
+     * and feel. Never returns null; if the resource is missing, a blank placeholder is returned and a message printed.
      *
-     * @param anchor the object in which this method is being called. This is needed so that images will load correctly
-     *               in the security model of Java Web Start.
-     * @param path   the pathname of the image beyond "/resources/images/". It is assumed that all images will be in
-     *               this directory in the jar.
+     * @param anchor an object whose class loader is used to locate the resource.
+     * @param path   the file name, e.g. "searchIcon.gif".
      * @return the image.
-     * @throws java.lang.RuntimeException if the image can't be loaded. The text of the exception contains the path of
-     *                                    the image that could not be loaded.
      */
     public static Image getImage(Object anchor, String path) {
         if (anchor == null) {
             throw new NullPointerException("Anchor must not be null.");
         }
-
         if (path == null) {
             throw new NullPointerException("Path must not be null.");
         }
 
         String fullPath;
-
         if (isDarkMode()) {
             fullPath = "/docs/darkmode/images/" + path;
         } else {
             fullPath = "/docs/images/" + path;
+        }
+
+        Image cached = CACHE.get(fullPath);
+        if (cached != null) {
+            return cached;
         }
 
         URL url = anchor.getClass().getResource(fullPath);
@@ -68,16 +80,24 @@ public final class ImageUtils {
             return new BufferedImage(40, 40, BufferedImage.TYPE_INT_RGB);
         }
 
-        return Toolkit.getDefaultToolkit().createImage(url);
+        Image image = null;
+
+        try {
+            image = ImageIO.read(url);
+        } catch (IOException e) {
+            System.out.println("Couldn't decode image at " + fullPath + ": " + e.getMessage());
+        }
+
+        if (image == null) {
+            // Format not handled by ImageIO; fall back to the asynchronous toolkit loader, uncached.
+            return Toolkit.getDefaultToolkit().createImage(url);
+        }
+
+        CACHE.put(fullPath, image);
+        return image;
     }
 
     private static boolean isDarkMode() {
         return com.formdev.flatlaf.FlatLaf.isLafDark();
     }
 }
-
-
-
-
-
-

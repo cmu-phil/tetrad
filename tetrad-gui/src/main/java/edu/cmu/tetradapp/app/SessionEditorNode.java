@@ -192,6 +192,15 @@ public final class SessionEditorNode extends DisplayNode {
      * <p>adjustToModel.</p>
      */
     public void adjustToModel() {
+        // Session events (modelCreated, modelDestroyed) are fired on the WatchedProcess worker thread during
+        // propagation. Everything below mutates the Swing component tree (removeAll/add in StdDisplayComp) and
+        // must run on the EDT; doing it on the worker raced with painting and, when the worker had been interrupted,
+        // produced nodes with no icon.
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(this::adjustToModel);
+            return;
+        }
+
         String acronym = getAcronym();
 
         // Set the color.ff
