@@ -46,8 +46,8 @@ public final class NonlinearityChecks extends JPanel {
     private final JButton runButton = new JButton("Check Nonlinearity");
     private final JButton showStatsButton = new JButton("Show Stats");
 
-    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity)", false);
-//    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (Additivity)", false);
+    private final JCheckBox includeCv = new JCheckBox("Include CV (slow)", false);
+    private final JCheckBox includeAdditivity = new JCheckBox("Include Additivity (Parents)", false);
 
     private final ResultsTableModel tableModel = new ResultsTableModel();
     private final JTable table = new JTable(tableModel);
@@ -60,7 +60,8 @@ public final class NonlinearityChecks extends JPanel {
     private static final String KEY_TREATMENTS = "nonlin.treatments";
     private static final String KEY_OUTCOMES = "nonlin.outcomes";
     private static final String KEY_MODE = "nonlin.mode"; // "PAIRWISE" or "MULTIVARIATE"
-    private static final String KEY_INCLUDE_SLOW = "nonlin.includeSlow";
+    private static final String KEY_INCLUDE_CV = "nonlin.includeCv";
+    private static final String KEY_INCLUDE_ADDITIVITY = "nonlin.includeAdditivity";
 
     /**
      * Constructs a new NonlinearityChecks panel with the provided dataset.
@@ -127,7 +128,8 @@ public final class NonlinearityChecks extends JPanel {
         // Buttons
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttons.add(runButton);
-        buttons.add(includeSlowTests);
+        buttons.add(includeCv);
+        buttons.add(includeAdditivity);
         buttons.add(showStatsButton);
         showStatsButton.setEnabled(false);
 
@@ -170,14 +172,14 @@ public final class NonlinearityChecks extends JPanel {
                             "See Notes... for details.</html>";
                     case 4 -> "<html><b>CV</b> (linear vs. nonlinear)<br>" +
                             "Does a nonlinear (RBF kernel) predictor beat the linear one out of sample?<br>" +
-                            "Robust to heteroskedasticity. Run only when slow tests are included.</html>";
+                            "Robust to heteroskedasticity. Run only when \"Include CV\" is checked.</html>";
                     case 5 -> "<html><b>Moment</b> (LM test)<br>" +
                             "Chi-square LM test: do squares, cubes, and pairwise products of X explain the linear residuals?</html>";
                     case 6 -> "<html><b>Additive</b> (hinge basis)<br>" +
                             "F-test: do per-variable hinge (piecewise-linear) terms improve the linear fit? No interaction terms.</html>";
                     case 7 -> "<html><b>Additivity (Parents)</b><br>" +
                             "Tests whether nonlinear effects of the parents combine additively, or whether interactions among parents improve prediction.<br>" +
-                            "Needs 2+ regressors; run only when slow tests are included.</html>";
+                            "Needs 2+ regressors; run only when \"Include Additivity (Parents)\" is checked.</html>";
 
                     default -> null;
                 };
@@ -220,7 +222,10 @@ public final class NonlinearityChecks extends JPanel {
         installPrefsListeners();
         loadPrefs();
 
-        includeSlowTests.setToolTipText("Includes slower tests such as cross-validation and additive hinge checks.");
+        includeCv.setToolTipText("Cross-validated linear vs. nonlinear (kernel ridge) prediction. " +
+                "The slowest test: fits a 200-feature kernel model on every fold of every row.");
+        includeAdditivity.setToolTipText("Cross-validated additive vs. interaction model for rows with 2+ regressors " +
+                "(conditional mode). Moderately slow; always Skipped in pairwise mode.");
     }
 
     private void loadPrefs() {
@@ -234,7 +239,8 @@ public final class NonlinearityChecks extends JPanel {
             rbPairwise.setSelected(true);
         }
 
-        includeSlowTests.setSelected(PREFS.getBoolean(KEY_INCLUDE_SLOW, false));
+        includeCv.setSelected(PREFS.getBoolean(KEY_INCLUDE_CV, false));
+        includeAdditivity.setSelected(PREFS.getBoolean(KEY_INCLUDE_ADDITIVITY, false));
     }
 
     private void installPrefsListeners() {
@@ -255,14 +261,16 @@ public final class NonlinearityChecks extends JPanel {
         rbPairwise.addActionListener(e -> savePrefs());
         rbConditional.addActionListener(e -> savePrefs());
 
-        includeSlowTests.addActionListener(e -> savePrefs());
+        includeCv.addActionListener(e -> savePrefs());
+        includeAdditivity.addActionListener(e -> savePrefs());
     }
 
     private void savePrefs() {
         PREFS.put(KEY_TREATMENTS, treatmentsArea.getText().trim());
         PREFS.put(KEY_OUTCOMES, outcomesArea.getText().trim());
         PREFS.put(KEY_MODE, rbConditional.isSelected() ? "MULTIVARIATE" : "PAIRWISE");
-        PREFS.putBoolean(KEY_INCLUDE_SLOW, includeSlowTests.isSelected());
+        PREFS.putBoolean(KEY_INCLUDE_CV, includeCv.isSelected());
+        PREFS.putBoolean(KEY_INCLUDE_ADDITIVITY, includeAdditivity.isSelected());
     }
 
     private void wireEvents() {
@@ -291,7 +299,8 @@ public final class NonlinearityChecks extends JPanel {
                     }
 
                     // --- build jobs (deterministic order) ---
-                    final boolean runSlow = includeSlowTests.isSelected();
+                    final boolean doCv = includeCv.isSelected();
+                    final boolean doAdditivity = includeAdditivity.isSelected();
                     final double alpha = 0.05;
                     final int kfold = 10;
 
@@ -350,7 +359,7 @@ public final class NonlinearityChecks extends JPanel {
                         for (int i = 0; i < jobs.size(); i++) {
                             Job job = jobs.get(i);
                             futures[i] = pool.submit(() ->
-                                    runOne(job.index, job.xs, job.y, alpha, kfold)
+                                    runOne(job.index, job.xs, job.y, alpha, kfold, doCv, doAdditivity)
                             );
                         }
 
@@ -451,8 +460,9 @@ public final class NonlinearityChecks extends JPanel {
 
             Fast vs. slow tests
             RESET, Moment, and Additive are closed-form F or chi-square tests and always run. CV and Additivity \
-            (Parents) fit nonlinear predictors inside 10-fold cross-validation and run only when "Include slow \
-            tests" is checked.
+            (Parents) fit nonlinear predictors inside 10-fold cross-validation and are opt-in: check "Include CV \
+            (slow)" and/or "Include Additivity (Parents)". CV is by far the slower of the two; Additivity only \
+            does work on rows with 2+ regressors.
 
             Show Stats
             Selecting a row and pressing "Show Stats" reports, for each test, the raw statistic, the p-value, and \
@@ -506,7 +516,7 @@ public final class NonlinearityChecks extends JPanel {
             nonlinear predictor's extra variance can cost it the comparison; expect less power than the F/LM \
             tests on clean homoskedastic data.
             - Only kfold paired differences enter the t-test, so the p-value is coarse.
-            - It is the slow test: it is run only when "Include slow tests" is checked.""";
+            - It is the slowest test: it is run only when "Include CV (slow)" is checked.""";
 
     private static final String NOTES_MOMENT = """
             Moment (conditional-moment / nonlinear-features LM test)
@@ -564,7 +574,7 @@ public final class NonlinearityChecks extends JPanel {
             This column answers a different question from the other four. It does not ask whether E(Y|X) is \
             linear; it asks whether the (possibly nonlinear) effects of the regressors combine additively, \
             f1(x1) + f2(x2) + ..., or whether interactions among them improve prediction. It needs 2+ regressors \
-            and n >= 30, and runs only when "Include slow tests" is checked; otherwise it shows "Skipped".
+            and n >= 30, and runs only when "Include Additivity (Parents)" is checked; otherwise it shows "Skipped".
 
             What it does
             Two nested models are compared by 10-fold cross-validation. The additive model uses, per regressor, \
@@ -619,7 +629,8 @@ public final class NonlinearityChecks extends JPanel {
             roughly 5 percent of truly linear pairs to read "Nonlinear" for each fast test; look for agreement \
             across tests and for small p-values in "Show Stats" rather than trusting any single rejection.""";
 
-    private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold) {
+    private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold,
+                             boolean doCv, boolean doAdditivity) {
         double[] yy = col(y);
 
         double[][] XX = new double[yy.length][xs.size()];
@@ -635,10 +646,8 @@ public final class NonlinearityChecks extends JPanel {
 
         NonlinearityTests.TestResult reset = NonlinearityTests.resetTest(yy, XX, alpha);
 
-        final boolean doSlow = includeSlowTests.isSelected();
-
         NonlinearityTests.TestResult cv =
-                doSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
+                doCv ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
 
         NonlinearityTests.TestResult mom =
                 NonlinearityTests.conditionalMomentTest(yy, XX, alpha);
@@ -648,7 +657,7 @@ public final class NonlinearityChecks extends JPanel {
 
         // NEW: additivity check (additive hinge predictor vs full RFF predictor)
         NonlinearityTests.TestResult addit =
-                doSlow ? NonlinearityTests.cvAdditiveVsRff(yy, XX, kfold, alpha) : null;
+                doAdditivity ? NonlinearityTests.cvAdditiveVsRff(yy, XX, kfold, alpha) : null;
 
         String xLabel = (xs.size() == 1) ? xs.get(0).getName()
                 : xs.stream().map(Node::getName).collect(Collectors.joining(", "));
