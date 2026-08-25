@@ -71,6 +71,7 @@ public class ConditionalGaussianLrt implements IndependenceWrapper {
                 parameters.getBoolean(Params.DISCRETIZE));
         test.setNumCategoriesToDiscretize(parameters.getInt(Params.NUM_CATEGORIES_TO_DISCRETIZE));
         test.setMinSampleSizePerCell(parameters.getInt(Params.MIN_SAMPLE_SIZE_PER_CELL));
+        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
     }
 
@@ -100,6 +101,7 @@ public class ConditionalGaussianLrt implements IndependenceWrapper {
         parameters.add(Params.DISCRETIZE);
         parameters.add(Params.NUM_CATEGORIES_TO_DISCRETIZE);
         parameters.add(Params.MIN_SAMPLE_SIZE_PER_CELL);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
