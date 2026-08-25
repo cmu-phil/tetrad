@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSamplingRfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
+import edu.cmu.tetrad.algcomparison.utils.ParameterSettingsText;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.Score;
@@ -37,10 +38,13 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LongTextField;
+import edu.cmu.tetradapp.util.ParameterFieldSync;
+import edu.cmu.tetradapp.util.ParameterToolTips;
 import edu.cmu.tetradapp.util.StringTextField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.io.Serial;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -89,6 +93,11 @@ public class AlgorithmParameterPanel extends JPanel {
 
         Algorithm algorithm = algorithmRunner.getAlgorithm();
         Parameters parameters = algorithmRunner.getParameters();
+
+        // A button that pops up a copyable plain-text rendering of the effective settings
+        // shown on this panel, for pasting into emails, notes, or scripts.
+        this.mainPanel.add(createSettingsTextRow(algorithmRunner));
+        this.mainPanel.add(Box.createVerticalStrut(10));
 
         // Hard-coded parameter groups for Rfci-Bsc
         if (algorithm instanceof RfciBsc) {
@@ -171,6 +180,18 @@ public class AlgorithmParameterPanel extends JPanel {
                 this.mainPanel.add(Box.createVerticalStrut(10));
             }
 
+            // With several data sets, a score- or test-based algorithm can pool them into one search
+            // (IMaGES-style); offer the switch here rather than on every algorithm's parameter list.
+            if (algorithmRunner.getDataModelList().size() > 1
+                && algorithm instanceof AbstractBootstrapAlgorithm
+                && (algorithm instanceof TakesScoreWrapper || algorithm instanceof TakesIndependenceWrapper)) {
+                params = new LinkedHashSet<>();
+                params.add(Params.POOL_DATA_SETS);
+                if (algorithm instanceof TakesIndependenceWrapper) params.add(Params.POOLED_TEST_METHOD);
+                this.mainPanel.add(createSubPanel("Multiple Data Sets", params, parameters));
+                this.mainPanel.add(Box.createVerticalStrut(10));
+            }
+
             // Changed 2026-8-13: bootstrapping parameters are shown for every algorithm that can actually
             // bootstrap (i.e., extends AbstractBootstrapAlgorithm - the same test Params.getBootstrappingParameters
             // uses), and every other case shows an explanatory label instead of silently showing nothing. The old
@@ -198,6 +219,46 @@ public class AlgorithmParameterPanel extends JPanel {
             }
         }
 
+    }
+
+    /**
+     * Creates the row holding the "Settings as Text..." button.
+     */
+    private JPanel createSettingsTextRow(GeneralAlgorithmRunner algorithmRunner) {
+        JButton button = new JButton("Settings as Text...");
+        button.setToolTipText("Show the settings on this panel as plain text that can be "
+                + "selected and copied.");
+        button.addActionListener(e -> showSettingsTextDialog(algorithmRunner));
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        row.add(button);
+        return row;
+    }
+
+    /**
+     * Pops up a dialog containing the effective parameter settings as selectable text, with
+     * a copy-to-clipboard option.
+     */
+    private void showSettingsTextDialog(GeneralAlgorithmRunner algorithmRunner) {
+        String text = ParameterSettingsText.render(
+                algorithmRunner.getAlgorithm(),
+                algorithmRunner.getParameters(),
+                algorithmRunner.getSourceGraph() != null);
+
+        JTextArea area = new JTextArea(text, 25, 60);
+        area.setEditable(false);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+
+        Object[] options = {"Copy to Clipboard", "Close"};
+        int choice = JOptionPane.showOptionDialog(this, scroll, "Parameter Settings",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                options[1]);
+
+        if (choice == 0) {
+            Toolkit.getDefaultToolkit().getSystemClipboard()
+                    .setContents(new StringSelection(text), null);
+        }
     }
 
     /**
@@ -268,7 +329,12 @@ public class AlgorithmParameterPanel extends JPanel {
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
+            if (!paramDesc.getAllowedValues().isEmpty()) {
+                component = getStringSelectionBox(parameter, parameters, (String) defaultValue,
+                        paramDesc.getAllowedValues());
+            } else {
+                component = getStringField(parameter, parameters, (String) defaultValue);
+            }
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
@@ -276,10 +342,9 @@ public class AlgorithmParameterPanel extends JPanel {
         Box paramRow = Box.createHorizontalBox();
 
         JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
-        String longDescription = paramDesc.getLongDescription();
-        if (longDescription != null) {
-            paramLabel.setToolTipText(longDescription);
-        }
+        // Changed 2026-8-24: wrapped HTML tooltip with the parameter ID, default, and range, on both the label
+        // and the field (was the raw long description, unwrapped, on the label only).
+        ParameterToolTips.apply(paramDesc, paramLabel, component);
         paramRow.add(paramLabel);
         paramRow.add(Box.createHorizontalGlue());
         paramRow.add(component);
@@ -344,12 +409,16 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getDouble(parameter, defaultValue)));
 
         return field;
     }
@@ -383,12 +452,16 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getInt(parameter, defaultValue)));
 
         return field;
     }
@@ -422,12 +495,16 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getLong(parameter, defaultValue)));
 
         return field;
     }
@@ -471,6 +548,7 @@ public class AlgorithmParameterPanel extends JPanel {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, true);
+                ParameterFieldSync.valueChanged(parameters, parameter, selectionBox);
             }
         });
 
@@ -479,6 +557,16 @@ public class AlgorithmParameterPanel extends JPanel {
             JRadioButton button = (JRadioButton) e.getSource();
             if (button.isSelected()) {
                 parameters.set(parameter, false);
+                ParameterFieldSync.valueChanged(parameters, parameter, selectionBox);
+            }
+        });
+
+        ParameterFieldSync.register(parameters, parameter, selectionBox, () -> {
+            boolean b = parameters.getBoolean(parameter, defaultValue);
+            if (b && !yesButton.isSelected()) {
+                yesButton.setSelected(true);
+            } else if (!b && !noButton.isSelected()) {
+                noButton.setSelected(true);
             }
         });
 
@@ -493,6 +581,64 @@ public class AlgorithmParameterPanel extends JPanel {
      * @param defaultValue a {@link java.lang.String} object
      * @return a {@link edu.cmu.tetradapp.util.StringTextField} object
      */
+    /**
+     * A dropdown for an enumerated String parameter (one whose {@link ParamDescription} declares a fixed list of
+     * allowed values), replacing the free-text field so that illegal values are impossible rather than discovered as
+     * exceptions at search time.
+     *
+     * @param parameter     The parameter name.
+     * @param parameters    The parameters object to read from and write to.
+     * @param defaultValue  The default value.
+     * @param allowedValues The legal values, in display order.
+     * @return The combo box.
+     */
+    protected JComboBox<String> getStringSelectionBox(String parameter, Parameters parameters, String defaultValue,
+                                                      java.util.List<String> allowedValues) {
+        JComboBox<String> comboBox = new JComboBox<>(allowedValues.toArray(new String[0]));
+
+        String current = parameters.getString(parameter, defaultValue);
+        int index = -1;
+
+        for (int i = 0; i < allowedValues.size(); i++) {
+            if (allowedValues.get(i).equalsIgnoreCase(current)) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index >= 0) {
+            comboBox.setSelectedIndex(index);
+        } else {
+            comboBox.setSelectedItem(defaultValue);
+            parameters.set(parameter, defaultValue);
+        }
+
+        comboBox.addActionListener(e -> {
+            Object selected = comboBox.getSelectedItem();
+            if (selected != null) {
+                parameters.set(parameter, selected.toString());
+                ParameterFieldSync.valueChanged(parameters, parameter, comboBox);
+            }
+        });
+
+        ParameterFieldSync.register(parameters, parameter, comboBox, () -> {
+            String value = parameters.getString(parameter, defaultValue);
+            Object selected = comboBox.getSelectedItem();
+            if (selected == null || !selected.toString().equalsIgnoreCase(value)) {
+                for (int i = 0; i < comboBox.getItemCount(); i++) {
+                    if (comboBox.getItemAt(i).equalsIgnoreCase(value)) {
+                        comboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+        });
+
+        comboBox.setMaximumSize(comboBox.getPreferredSize());
+
+        return comboBox;
+    }
+
     protected StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
@@ -503,12 +649,16 @@ public class AlgorithmParameterPanel extends JPanel {
 
             try {
                 parameters.set(parameter, value);
+                ParameterFieldSync.valueChanged(parameters, parameter, field);
             } catch (Exception e) {
                 // Ignore.
             }
 
             return value;
         });
+
+        ParameterFieldSync.register(parameters, parameter, field,
+                () -> field.setValue(parameters.getString(parameter, defaultValue)));
 
         return field;
     }

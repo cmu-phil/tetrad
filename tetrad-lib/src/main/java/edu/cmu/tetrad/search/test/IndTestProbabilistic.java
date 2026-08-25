@@ -507,4 +507,16 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         return rows;
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Each test uses only the rows on which x, y, and the conditioning variables are all observed (getRows excludes rows containing the missing-value sentinel for any variable involved), i.e., test-wise deletion, unbiased only under MCAR.
+     *
+     * @return {@link edu.cmu.tetrad.data.missing.MissingValueSupport#TESTWISE}.
+     */
+    @Override
+    public edu.cmu.tetrad.data.missing.MissingValueSupport getMissingValueSupport() {
+        return edu.cmu.tetrad.data.missing.MissingValueSupport.TESTWISE;
+    }
 }

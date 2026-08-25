@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -65,6 +66,8 @@ public class GicScores implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("em"), "Generalized Information Criterion Scores");
+        dataSet = MissingDataUtils.emCovarianceIfRequested(dataSet, parameters, "Generalized Information Criterion Scores");
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
@@ -124,6 +127,16 @@ public class GicScores implements ScoreWrapper {
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+
+        parameters.add(Params.MISSING_DATA_POLICY);
+
+        parameters.add(Params.MISSING_EM_RIDGE);
+
+        parameters.add(Params.MISSING_EM_TOLERANCE);
+
+        parameters.add(Params.MISSING_EM_MAX_ITERATIONS);
+
+        parameters.add(Params.MISSING_ESS_MODE);
 
         return parameters;
     }

@@ -64,13 +64,41 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooled(Method method, List<IndependenceTest> independenceTests,
                                               Node x, Node y, Set<Node> condSet) throws InterruptedException {
-        double p = getPValuePooled(method, independenceTests, x, y, condSet);
-        double alpha = independenceTests.getFirst().getAlpha();
-        return p > alpha;
+        // The vote-style methods have no p-value; dispatch them directly. Everything else compares the combined
+        // p-value to alpha. (Earlier code routed every non-Fisher method through getPValuePooled, which routed
+        // back here: a StackOverflowError for stouffer, mudholkergeorge, average, majority, fdr, and random.)
+        switch (method) {
+            case majority:
+                return isIndependentMajorityIndep(independenceTests, x, y, condSet);
+            case fdr:
+                return isIndependentMajorityFdr(independenceTests, x, y, condSet);
+            case random:
+                return isIndependentPooledRandom(independenceTests, x, y, condSet);
+            case averagetest:
+                return isIndependentPooledAverageTest(independenceTests, x, y, condSet);
+            default:
+                double p = getPValuePooled(method, independenceTests, x, y, condSet);
+                double alpha = independenceTests.getFirst().getAlpha();
+                return p > alpha;
+        }
     }
 
     /**
-     * Tests for independence using one of the pooled methods and returns the pooled p-value.
+     * Tests for independence using one of the pooled methods and returns the combined p-value, on the scale where
+     * "independent iff p &gt; alpha" is the correct decision for every method. Each is a valid one-sided combination
+     * of the per-data-set p-values under the null that the independence holds in every data set (small p-values are
+     * evidence of dependence):
+     * <ul>
+     * <li>fisher, fisher2: Fisher's chi-square on -2 sum log p (fisher2 skips NaN p-values).</li>
+     * <li>tippett: min p, Sidak-adjusted: 1 - (1 - min p)^k.</li>
+     * <li>stouffer: Phi(sum Phi^{-1}(p_i) / sqrt k), one-sided.</li>
+     * <li>mudholkergeorge, mudholkergeorge2: the logit combination, one-sided t.</li>
+     * <li>worsleyfriston: (max p)^k - a test of dependence in EVERY data set (conjunction), not in the shared
+     * structure; included for comparison.</li>
+     * <li>average: the mean p-value, referred to its exact null (Irwin-Hall) distribution.</li>
+     * </ul>
+     * The vote-style methods (majority, fdr, random, averagetest) carry no p-value; for them 1.0/0.0 is returned
+     * according to the vote.
      *
      * @param method            a {@link edu.cmu.tetrad.search.utils.ResolveSepsets.Method} object
      * @param independenceTests a {@link java.util.List} object
@@ -82,17 +110,92 @@ public final class ResolveSepsets {
      */
     public static double getPValuePooled(Method method, List<IndependenceTest> independenceTests,
                                          Node x, Node y, Set<Node> condSet) throws InterruptedException {
-        if (method == Method.fisher) {
-            return ResolveSepsets.getPValuePooledFisher(independenceTests, x, y, condSet);
-        } else if (method == Method.fisher2) {
-            return ResolveSepsets.getPValuePooledFisher2(independenceTests, x, y, condSet);
-        } else if (method == Method.tippett) {
-            return ResolveSepsets.getPValuePooledTippett(independenceTests, x, y, condSet);
-        } else {
-            // For other methods, return NaN if they don't explicitly support p-value return yet
-            // or we can implement them as needed. For now I focus on Fisher which is used by IndTestIod.
-            return isIndependentPooled(method, independenceTests, x, y, condSet) ? 1.0 : 0.0;
+        switch (method) {
+            case fisher:
+                return getPValuePooledFisher(independenceTests, x, y, condSet);
+            case fisher2:
+                return getPValuePooledFisher2(independenceTests, x, y, condSet);
+            case tippett: {
+                List<Double> ps = getAvailablePValues(independenceTests, x, y, condSet);
+                if (ps.isEmpty()) return 0.0;
+                double min = 1.0;
+                for (double pv : ps) min = TMath.min(min, pv);
+                return 1.0 - TMath.pow(1.0 - min, ps.size());
+            }
+            case stouffer: {
+                List<Double> ps = getAvailablePValues(independenceTests, x, y, condSet);
+                if (ps.isEmpty()) return 0.0;
+                double z = 0.0;
+                for (double pv : ps) z += ProbUtils.normalQuantile(clampP(pv));
+                z /= TMath.sqrt(ps.size());
+                return RandomUtil.getInstance().normalCdf(0, 1, z);
+            }
+            case mudholkergeorge:
+            case mudholkergeorge2: {
+                List<Double> ps = getAvailablePValues(independenceTests, x, y, condSet);
+                if (ps.isEmpty()) return 0.0;
+                int k = ps.size();
+                double c = TMath.sqrt(3.0 * (5 * k + 4) / (k * TMath.pow(TMath.PI, 2) * (5 * k + 2)));
+                double t = 0.0;
+                for (double pv : ps) {
+                    double q = clampP(pv);
+                    t += -c * TMath.log(q / (1 - q));
+                }
+                // Large t (small p's) is evidence of dependence; one-sided upper tail.
+                return 1.0 - ProbUtils.tCdf(t, 5 * k + 4);
+            }
+            case worsleyfriston: {
+                List<Double> ps = getAvailablePValues(independenceTests, x, y, condSet);
+                if (ps.isEmpty()) return 0.0;
+                double max = 0.0;
+                for (double pv : ps) max = TMath.max(max, pv);
+                return TMath.pow(max, ps.size());
+            }
+            case average: {
+                List<Double> ps = getAvailablePValues(independenceTests, x, y, condSet);
+                if (ps.isEmpty()) return 0.0;
+                double sum = 0.0;
+                for (double pv : ps) sum += pv;
+                return irwinHallCdf(sum, ps.size());
+            }
+            default:
+                return isIndependentPooled(method, independenceTests, x, y, condSet) ? 1.0 : 0.0;
         }
+    }
+
+    /**
+     * Guards Fisher's sum against log(0) only. A p-value of exactly 0 (the normal or chi-square tail underflowed) is
+     * the strongest possible evidence of dependence and should dominate the sum; the previous floor of 1e-8 capped
+     * every data set's contribution at -2 log(1e-8) = 36.8, which distorted combined p-values whenever any
+     * component p-value was below about 1e-7. With the floor at 1e-300 the largest contribution is 1381, finite but
+     * decisive. NaN (a component test that could not be computed) is treated as uninformative, p = 0.5.
+     */
+    private static double floorP(double p) {
+        if (Double.isNaN(p)) return 0.5;
+        return TMath.max(1e-300, p);
+    }
+
+    private static double clampP(double p) {
+        if (Double.isNaN(p)) return 0.5;
+        return TMath.min(1 - 1e-12, TMath.max(1e-12, p));
+    }
+
+    /**
+     * P(S &lt;= s) for S the sum of k independent Uniform(0,1) variables (Irwin-Hall); small sums are evidence of
+     * dependence, so this is the one-sided p-value of the mean-p combination.
+     */
+    private static double irwinHallCdf(double s, int k) {
+        if (s <= 0) return 0.0;
+        if (s >= k) return 1.0;
+        double sum = 0.0;
+        double fact = 1.0;
+        for (int j = 1; j <= k; j++) fact *= j;
+        for (int j = 0; j <= (int) TMath.floor(s); j++) {
+            double binom = 1.0;
+            for (int i = 1; i <= j; i++) binom = binom * (k - i + 1) / i;
+            sum += (j % 2 == 0 ? 1 : -1) * binom * TMath.pow(s - j, k);
+        }
+        return TMath.max(0.0, TMath.min(1.0, sum / fact));
     }
 
     /**
@@ -135,7 +238,7 @@ public final class ResolveSepsets {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
             IndependenceResult result = independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
-            tf += -2.0 * TMath.log(result.getPValue() + 1e-8);
+            tf += -2.0 * TMath.log(floorP(result.getPValue()));
             numTests++;
         }
 
@@ -179,7 +282,7 @@ public final class ResolveSepsets {
         int numPValues = 0;
 
         for (double p : pValues) {
-            tf += -2.0 * TMath.log(p + 1e-8);
+            tf += -2.0 * TMath.log(floorP(p));
             numPValues++;
         }
 

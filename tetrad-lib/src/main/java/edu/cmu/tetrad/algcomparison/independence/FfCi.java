@@ -8,6 +8,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.FfCiContinuous;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -62,6 +63,7 @@ public class FfCi implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "FFCI (Fourier Features Conditional Independence)");
         edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi((DataSet) dataSet);
 
         test.setAlpha(parameters.getDouble(Params.ALPHA));
@@ -120,6 +122,7 @@ public class FfCi implements IndependenceWrapper {
         params.add(Params.KML_BANDWIDTH_MULTIPLIER);
         params.add(Params.RCIT_APPROX);
         params.add(Params.VERBOSE);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

@@ -94,6 +94,21 @@ import java.util.concurrent.atomic.AtomicReference;
  *   <li>Feature dimension grows with joint discrete cardinality; runtime scales accordingly.</li>
  *   <li>The parameter {@code ρ} controls similarity across categorical levels.</li>
  * </ul>
+ *
+ * <p><b>Additive-by-default discrete handling (interactionLambda)</b></p>
+ * <p>
+ * As of the {@code interactionLambda} revision, the mixed kernel is
+ * {@code k = k_add + k_cont + λ · (k_cont ⊗ k_cat)}, where {@code k_add} is the linear kernel
+ * of the concatenated centered per-parent one-hot indicators (BF/DG-style additive main
+ * effects). At the default {@code λ = 0}, discrete parents contribute additive mean shifts
+ * only — matching the discrete treatment of the basis-function and degenerate Gaussian
+ * scores — and {@code ρ} is inert; the product-kernel machinery described above (including
+ * the Kronecker feature map and the n×n fallback) is engaged only when {@code λ > 0}. The
+ * legacy behavior corresponds approximately to {@code λ = 1} without the additive blocks.
+ * Rationale: the Kronecker map multiplies effective capacity per discrete parent, which at
+ * small effective sample sizes prices out real additive effects (e.g., autoregressive
+ * persistence of a binary variable conditional on continuous covariates).
+ * </p>
  */
 public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
@@ -254,6 +269,18 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
      * rho closer to 1 => categories treated as nearly identical.
      */
     private volatile double catRho = 0.5;
+    /**
+     * Weight of the discrete-continuous interaction (product-kernel) term. The mixed kernel is
+     * k = k_add(z_d, z_d') + k_cont(z_c, z_c') + interactionLambda * (k_cont * k_cat),
+     * where k_add is the linear kernel of the concatenated centered per-parent one-hot
+     * indicators (BF/DG-style additive main effects). At the default 0.0, discrete parents
+     * contribute additive mean shifts only, matching the discrete treatment of the
+     * basis-function and degenerate Gaussian scores, and catRho is inert. A positive value
+     * restores per-level response functions (with partial pooling controlled by catRho) at the
+     * cost of multiplying the effective capacity per discrete parent, which at small effective
+     * sample sizes can price out real additive effects.
+     */
+    private volatile double interactionLambda = 0.0;
 
     /**
      * Constructs an instance of FfMlMixed for the given dataset. This constructor processes
@@ -842,10 +869,11 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         // Precompute things that do NOT depend on bw2
 //        final boolean useNxN = (discParents != null && discParents.length >= 2);
-        final boolean useNxN = useNxNKernel(discParents, n);
+        final boolean useNxN = interactionLambda > 0 && useNxNKernel(discParents, n);
 
         final BaseWB base = buildBaseWB(mFeatures, contParents.length, seed);
         final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
+        final double[] kaddLowerPacked = useNxN ? precomputeKaddLowerPacked(discParents, rows, n) : null;
 
 //        final double[] kcatLowerPacked = useNxN ? precomputeKcatLowerPacked(discParents, rows, n) : null;
 
@@ -866,7 +894,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                             return new Cand(idx, finalBw2Med, Double.NEGATIVE_INFINITY);
 
                         double ll = useNxN
-                                ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked)
+                                ? gpLogML_mixedKernelNxN_precomp(yCentered, contParents, rows, n, mFeatures, bw2, sigma2, base, kcatLowerPacked, kaddLowerPacked)
                                 : gpLogMarginalLikelihoodRFFMixed(yCentered, contParents, discParents, rows, n, mFeatures, bw2, sigma2, seed);
 //
 //                        double ll = gpLogMarginalLikelihoodRFFMixed(
@@ -1201,6 +1229,32 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
     }
 
     /**
+     * Retrieves the weight of the discrete-continuous interaction (product-kernel) term.
+     *
+     * @return the current interaction lambda (0.0 = additive-only discrete handling).
+     */
+    public double getInteractionLambda() {
+        return interactionLambda;
+    }
+
+    /**
+     * Sets the weight of the discrete-continuous interaction (product-kernel) term. 0.0 (the
+     * default) treats discrete parents as additive main effects via centered one-hot
+     * indicators, in the style of the basis-function and degenerate Gaussian scores; positive
+     * values add the Kronecker product-kernel block scaled by sqrt(lambda), restoring
+     * per-level response functions with catRho pooling.
+     *
+     * @param lambda the interaction weight; must be finite and &gt;= 0.
+     */
+    public void setInteractionLambda(double lambda) {
+        if (!(lambda >= 0.0) || !Double.isFinite(lambda)) {
+            throw new IllegalArgumentException("interactionLambda must be finite and >= 0");
+        }
+        this.interactionLambda = lambda;
+        resetCache();
+    }
+
+    /**
      * Drop-in replacement for gpLogMarginalLikelihoodRFFMixed(...).
      * <p>
      * Key change: when there are 2+ discrete parents, we *do not* build the Kronecker-expanded
@@ -1252,7 +1306,7 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         // a simple count of discrete parents. The paper describes the switch as
         // occurring at "two or more discrete parents" but the actual criterion is
         // whether m * Π L_j exceeds min(n, MAX_KRONECKER_DIMENSION).
-        if (useNxNKernel(discParents, n)) {
+        if (interactionLambda > 0 && useNxNKernel(discParents, n)) {
             return gpLogML_mixedKernelNxN(
                     yCentered, contParents, discParents, rows, n,
                     mFeatures, bw2, sigma2, seed
@@ -1363,22 +1417,25 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             for (int j = 0; j < i; j++) K.set(j, i, K.get(i, j));
         }
 
-        // 2) Build Kcat (n×n) and do Hadamard product into K.
-        // Start with implicit ones; multiply by (same?1:rho) for each discrete parent.
-        for (int dp : discParents) {
-            // extract codes for this discrete parent (length n)
-            int[] codes = extractDiscrete(dp, rows, n);
-
-            final double rho = catRho; // k_cat(c,c)=1, k_cat(c,c')=rho
+        // 2) Mixed kernel with additive main effects:
+        //    K(i,j) = Kadd(i,j) + Kcont(i,j) * (1 + lambda * Kcat(i,j))
+        // where Kadd is the linear kernel of the concatenated centered one-hot indicators
+        // and Kcat is the product categorical kernel (1 for a match, rho for a mismatch,
+        // multiplied over discrete parents). This path is only reached when
+        // interactionLambda > 0; at lambda = 0 the feature-space path handles all cases.
+        {
+            final double lam = interactionLambda;
+            final double[] kcat = precomputeKcatLowerPacked(discParents, rows, n);
+            final double[] kadd = precomputeKaddLowerPacked(discParents, rows, n);
             for (int i = 0; i < n; i++) {
-                int ci = codes[i];
                 for (int j = 0; j <= i; j++) {
-                    int cj = codes[j];
-                    double mult = (ci == cj) ? 1.0 : rho;
-                    K.set(i, j, K.get(i, j) * mult);
+                    int idx = idxLower(i, j);
+                    double kc = K.get(i, j);
+                    double kcatIJ = (kcat != null) ? kcat[idx] : 1.0;
+                    double kaddIJ = (kadd != null) ? kadd[idx] : 0.0;
+                    K.set(i, j, kaddIJ + kc * (1.0 + lam * kcatIJ));
                 }
             }
-            // mirror again (cheaper to mirror per parent than re-loop upper inside main mult)
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < i; j++) K.set(j, i, K.get(i, j));
             }
@@ -1449,22 +1506,41 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         final double contScale = TMath.sqrt(2.0 / mFeatures);
 
-        final CatFeatureMap[] catMaps = new CatFeatureMap[discParents.length];
+        // Additive categorical main-effect features (BF/DG-style): centered one-hot
+        // indicators per discrete parent, concatenated across parents.
+        final double[][][] addFeat = new double[discParents.length][][];
+        int mAddTmp = 0;
         for (int t = 0; t < discParents.length; t++) {
-            int var = discParents[t];
-            int[] vals = extractDiscrete(var, rows, n);
-            catMaps[t] = buildCatMap(vals, catRho);
-            if (catMaps[t] == null) return Double.NaN;
+            int[] vals = extractDiscrete(discParents[t], rows, n);
+            double[][] H = oneHotCentered(vals);
+            if (H == null || H[0].length == 0) return Double.NaN;
+            addFeat[t] = H;
+            mAddTmp += H[0].length;
         }
+        final int mAdd = mAddTmp;
 
+        // Interaction (product-kernel) features, included only when interactionLambda > 0.
+        final double lam = interactionLambda;
+        final double sqrtLam = TMath.sqrt(lam);
+        final CatFeatureMap[] catMaps = (lam > 0) ? new CatFeatureMap[discParents.length] : null;
         int catDim = 1;
-        for (CatFeatureMap fm : catMaps) {
-            if (fm.L > MAX_DISCRETE_LEVELS_FOR_KRONECKER) return Double.NaN;
-            long prod = (long) catDim * (long) fm.L;
-            if (prod > MAX_KRONECKER_DIMENSION) return Double.NaN;
-            catDim *= fm.L;
+        if (lam > 0) {
+            for (int t = 0; t < discParents.length; t++) {
+                int var = discParents[t];
+                int[] vals = extractDiscrete(var, rows, n);
+                catMaps[t] = buildCatMap(vals, catRho);
+                if (catMaps[t] == null) return Double.NaN;
+            }
+
+            for (CatFeatureMap fm : catMaps) {
+                if (fm.L > MAX_DISCRETE_LEVELS_FOR_KRONECKER) return Double.NaN;
+                long prod = (long) catDim * (long) fm.L;
+                if (prod > MAX_KRONECKER_DIMENSION) return Double.NaN;
+                catDim *= fm.L;
+            }
         }
-        final int mTotal = mFeatures * catDim;
+        final int mKron = (lam > 0) ? mFeatures * catDim : 0;
+        final int mTotal = mAdd + mFeatures + mKron;
 
         // G = Phi^T Phi (mTotal x mTotal), v = Phi^T y
         DMatrixRMaj G = new DMatrixRMaj(mTotal, mTotal);
@@ -1473,7 +1549,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
 
         double[] phiCont = new double[mFeatures];
         double[] phiMix = new double[mTotal];
-        double[] kronTmp = (discParents.length == 1) ? new double[mTotal] : null;
+        double[] kronBuf = (lam > 0) ? new double[mKron] : null;
+        double[] kronTmp = (lam > 0 && discParents.length == 1) ? new double[mKron] : null;
 
         for (int ii = 0; ii < n; ii++) {
             int row = (rows == null) ? ii : rows[ii];
@@ -1490,22 +1567,38 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 }
             }
 
-            // Kronecker expansion across discrete parents
-            int curLen = mFeatures;
-            System.arraycopy(phiCont, 0, phiMix, 0, mFeatures);
+            // Feature layout: [additive one-hot blocks | phi_cont | sqrt(lambda) * Kronecker]
+            int curLen = 0;
+            for (double[][] H : addFeat) {
+                double[] h = H[ii];
+                System.arraycopy(h, 0, phiMix, curLen, h.length);
+                curLen += h.length;
+            }
+            System.arraycopy(phiCont, 0, phiMix, curLen, mFeatures);
+            curLen += mFeatures;
 
-            for (CatFeatureMap fm : catMaps) {
-                double[] catFeat = fm.featureForRow(ii);
-                int Llev = fm.L;
-                int newLen = curLen * Llev;
-                double[] tmp = (kronTmp != null && kronTmp.length == newLen) ? kronTmp : new double[newLen];
-                int pos = 0;
-                for (int a = 0; a < Llev; a++) {
-                    double ca = catFeat[a];
-                    for (int j = 0; j < curLen; j++) tmp[pos++] = ca * phiMix[j];
+            if (lam > 0) {
+                // Kronecker expansion across discrete parents (interaction block)
+                int kLen = mFeatures;
+                System.arraycopy(phiCont, 0, kronBuf, 0, mFeatures);
+
+                for (CatFeatureMap fm : catMaps) {
+                    double[] catFeat = fm.featureForRow(ii);
+                    int Llev = fm.L;
+                    int newLen = kLen * Llev;
+                    double[] tmp = (kronTmp != null && kronTmp.length == newLen) ? kronTmp : new double[newLen];
+                    int pos = 0;
+                    for (int a = 0; a < Llev; a++) {
+                        double ca = catFeat[a];
+                        for (int j = 0; j < kLen; j++) tmp[pos++] = ca * kronBuf[j];
+                    }
+                    System.arraycopy(tmp, 0, kronBuf, 0, newLen);
+                    kLen = newLen;
                 }
-                System.arraycopy(tmp, 0, phiMix, 0, newLen);
-                curLen = newLen;
+
+                if (kLen != mKron) return Double.NaN;
+                for (int j = 0; j < mKron; j++) phiMix[curLen + j] = sqrtLam * kronBuf[j];
+                curLen += mKron;
             }
 
             if (curLen != mTotal) return Double.NaN;
@@ -1604,6 +1697,51 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
         return kcat;
     }
 
+    /**
+     * Precompute the additive categorical main-effect kernel Kadd for the active rows: the
+     * linear kernel of the concatenated centered one-hot indicators,
+     * Kadd(i,j) = sum_dp ( 1[c_i = c_j] - p_(c_i) - p_(c_j) + sum_a p_a^2 ),
+     * with level frequencies p computed over the active rows, matching oneHotCentered.
+     * Stores ONLY the lower triangle in packed form.
+     */
+    private double[] precomputeKaddLowerPacked(int[] discParents, int[] rows, int n) {
+        if (discParents == null || discParents.length == 0) return null;
+
+        final int numDisc = discParents.length;
+        final int[][] codes = new int[numDisc][];
+        final double[][] freqOfRow = new double[numDisc][];
+        final double[] sumSq = new double[numDisc];
+
+        for (int t = 0; t < numDisc; t++) {
+            codes[t] = extractDiscrete(discParents[t], rows, n);
+            java.util.Map<Integer, Integer> counts = new java.util.HashMap<>();
+            for (int v : codes[t]) counts.merge(v, 1, Integer::sum);
+            double ss = 0.0;
+            for (int c : counts.values()) {
+                double p = c / (double) n;
+                ss += p * p;
+            }
+            sumSq[t] = ss;
+            double[] fr = new double[n];
+            for (int i = 0; i < n; i++) fr[i] = counts.get(codes[t][i]) / (double) n;
+            freqOfRow[t] = fr;
+        }
+
+        final double[] kadd = new double[n * (n + 1) / 2];
+        int idx = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= i; j++, idx++) {
+                double sum = 0.0;
+                for (int t = 0; t < numDisc; t++) {
+                    sum += ((codes[t][i] == codes[t][j]) ? 1.0 : 0.0)
+                           - freqOfRow[t][i] - freqOfRow[t][j] + sumSq[t];
+                }
+                kadd[idx] = sum;
+            }
+        }
+        return kadd;
+    }
+
     private double gpLogML_mixedKernelNxN_precomp(
             double[] yCentered,
             int[] contParents,
@@ -1613,7 +1751,8 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
             double bw2,
             double sigma2,
             BaseWB base,
-            double[] kcatLowerPacked
+            double[] kcatLowerPacked,
+            double[] kaddLowerPacked
     ) {
         final int dc = contParents.length;
 
@@ -1660,7 +1799,13 @@ public final class FfMl implements Score, EffectiveSampleSizeSettable {
                 double dot = 0.0;
                 for (int t = 0; t < mFeatures; t++) dot += phiI[t] * phiJ[t];
 
-                if (kcatLowerPacked != null) dot *= kcatLowerPacked[idxLower(i, j)];
+                // K = Kadd + Kcont * (1 + lambda * Kcat); reached only when
+                // interactionLambda > 0 (see pickBw2ByGridSearch routing).
+                if (kcatLowerPacked != null) {
+                    int idx = idxLower(i, j);
+                    double kaddIJ = (kaddLowerPacked != null) ? kaddLowerPacked[idx] : 0.0;
+                    dot = kaddIJ + dot * (1.0 + interactionLambda * kcatLowerPacked[idx]);
+                }
 
                 K.set(i, j, dot);
             }

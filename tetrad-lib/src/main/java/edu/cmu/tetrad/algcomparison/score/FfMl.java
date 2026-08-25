@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -70,6 +71,7 @@ public class FfMl implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "FFML Score");
         edu.cmu.tetrad.search.score.FfMl score;
 
         if (dataSet instanceof DataSet) {
@@ -84,6 +86,7 @@ public class FfMl implements ScoreWrapper {
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         score.setNumFeatures(parameters.getInt(Params.FFML_FF_FEATURES));
         score.setCatRho(parameters.getDouble(Params.CAT_RHO));
+        score.setInteractionLambda(parameters.getDouble(Params.FFML_INTERACTION_LAMBDA));
 
         return score;
     }
@@ -120,7 +123,9 @@ public class FfMl implements ScoreWrapper {
         parameters.add(Params.BW_MAX_ROWS);
         parameters.add(Params.FFML_FF_FEATURES);
         parameters.add(Params.CAT_RHO);
+        parameters.add(Params.FFML_INTERACTION_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

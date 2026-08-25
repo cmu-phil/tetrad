@@ -536,9 +536,15 @@ public final class IndTestChiSquare implements IndependenceTest, EffectiveSample
         return determined;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The count-sample cell table skips rows containing the missing-value code when building each conditional table, i.e., test-wise deletion, unbiased only under MCAR. (The AD-tree cell table does not; ChiSquareTest forces the count-sample table on incomplete data.)
+     *
+     * @return {@link edu.cmu.tetrad.data.missing.MissingValueSupport#TESTWISE}.
+     */
+    @Override
+    public edu.cmu.tetrad.data.missing.MissingValueSupport getMissingValueSupport() {
+        return edu.cmu.tetrad.data.missing.MissingValueSupport.TESTWISE;
+    }
 }
-
-
-
-
-

@@ -92,6 +92,11 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private IndTestBlocksWilkes blocksTest;          // delegate
     private int sampleSize;
     private final int basisType;
+    /**
+     * If true, uninformative higher-order basis columns were pruned from the blocks at construction; remembered so
+     * that marginal tests built by computePValue use the same behavior.
+     */
+    private final boolean adaptiveBasisSelection;
     // ---- Knobs ----
     private double alpha = 0.01;
     private int nEff;
@@ -115,12 +120,35 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      * @throws IllegalArgumentException if the raw dataset is null or if the degree is negative.
      */
     public IndTestBasisFunctionBlocks(DataSet dataSet, int truncationLimit, int basisType) {
+        this(dataSet, truncationLimit, basisType, false);
+    }
+
+    /**
+     * Constructs an instance of IndTestBasisFunctionBlocks, optionally with adaptive basis selection.
+     *
+     * @param dataSet                the input dataset, which provides the raw data to be analyzed. Cannot be null.
+     * @param truncationLimit        the degree of the basis function transformation. Must be a non-negative integer.
+     * @param basisType              the type of basis functions to use for transformations.
+     * @param adaptiveBasisSelection if true, basis columns beyond the linear term that fail a BIC-crossing screen
+     *                               against every other variable's embedded block are dropped from the blocks before
+     *                               testing, so that the effective truncation is chosen by the data and the test's
+     *                               behavior converges as the truncation limit is raised past the data-supported
+     *                               order. The screen is computed once, from the full-sample embedded correlation
+     *                               matrix, and the same pruned blocks are used for every test and every row subset
+     *                               (so bootstrap subsamples share one fixed block structure). Wilks degrees of
+     *                               freedom shrink accordingly.
+     * @throws IllegalArgumentException if the raw dataset is null or if the degree is negative.
+     * @see Embedding#pruneUninformativeBasisColumns(DataSet, Map, edu.cmu.tetrad.data.ICovarianceMatrix)
+     */
+    public IndTestBasisFunctionBlocks(DataSet dataSet, int truncationLimit, int basisType,
+                                      boolean adaptiveBasisSelection) {
         if (dataSet == null) throw new IllegalArgumentException("raw == null");
         if (truncationLimit < 0) throw new IllegalArgumentException("degree must be >= 0");
 
         this.dataSet = dataSet;
         this.truncationLimit = truncationLimit;
         this.basisType = basisType;
+        this.adaptiveBasisSelection = adaptiveBasisSelection;
         // Keep the exact Node instances from the caller's dataset
         this.variables = new ArrayList<>(dataSet.getVariables());
 
@@ -133,10 +161,18 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         // Keep the full embedded DataSet so we can subset rows later
         this.embeddedDataSetFull = embeddedData.embeddedData();
 
+        // With adaptive basis selection, prune uninformative higher-order basis columns once, on the full sample.
+        // The pruned map is used to build the blocks below and persists across setRows rebuilds, so the block
+        // structure is identical across subsamples (as required by the class contract).
+        Map<Integer, List<Integer>> embeddingMap = adaptiveBasisSelection
+                ? Embedding.pruneUninformativeBasisColumns(dataSet, embeddedData.embedding(),
+                new CorrelationMatrix(this.embeddedDataSetFull))
+                : embeddedData.embedding();
+
         // blocks: one per ORIGINAL variable, in the same order
         this.blocks = new ArrayList<>(dataSet.getNumColumns());
         for (int i = 0; i < dataSet.getNumColumns(); i++) {
-            this.blocks.add(embeddedData.embedding().get(i));
+            this.blocks.add(embeddingMap.get(i));
         }
 
         // Default: all rows
@@ -249,7 +285,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         DataSet ds = twoColumnDataSet("X", x, "Y", y);
 
         // Build the BFIT test bound to this dataset
-        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, truncationLimit, basisType);
+        IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(ds, truncationLimit, basisType, adaptiveBasisSelection);
 
         // Resolve nodes and run the marginal test
         Node X = ds.getVariable("X");

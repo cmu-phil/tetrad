@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -149,7 +150,6 @@ public class PagLegalityCheck {
                 return new LegalPagRet(false, "Node " + n + " is not measured");
             }
         }
-
         Graph mag;
         try {
             mag = GraphTransforms.zhangMagFromPag(pag);
@@ -192,6 +192,100 @@ public class PagLegalityCheck {
         }
 
         return new LegalPagRet(true, "This is a legal PAG");
+    }
+
+    /**
+     * Legality certificate for a PAG that carries background-knowledge endpoint marks: legal PAG *modulo background
+     * knowledge*. When knowledge is empty this delegates to {@link #isLegalPag(Graph, Set)} and is therefore exactly
+     * the strict certificate. Otherwise the strict certificate's final round-trip equality is replaced by equality
+     * modulo knowledge:
+     * <ol>
+     *   <li>all nodes must be measured;</li>
+     *   <li>the graph's implied Zhang MAG must exist and be a legal MAG (this is where structural pathologies --
+     *       cycles, almost-cycles, non-maximality -- are caught, so none of that protection is given up);</li>
+     *   <li>the canonical PAG of that MAG is computed (MagToPag), then re-refined with background knowledge
+     *       (fciOrientbk) and re-closed under the complete FCI final rules using the supplied orientation engine
+     *       (pass the engine that oriented the candidate so data-driven R4 resolutions are reproduced and any sepset
+     *       bookkeeping stays local to that engine);</li>
+     *   <li>the candidate must equal the knowledge-refined canonical PAG exactly.</li>
+     * </ol>
+     * Every mark in an accepted graph is therefore either invariant in the Markov equivalence class of the implied
+     * MAG or forced by knowledge (directly or via rule propagation). A graph that is "between a MAG and a PAG" for
+     * any OTHER reason -- e.g., a non-invariant collider stamped from a noisy sepset -- still fails, exactly as under
+     * the strict certificate. This mirrors the certificate of StarFciKeepKnowledgeOrientations; it is needed by any
+     * search that pins knowledge marks and then gates candidate graphs on legality, since knowledge-refined marks
+     * (e.g., a tier arrowhead sharpening a class circle) always fail the strict round-trip equality.
+     *
+     * @param pag                  the candidate graph (already carrying knowledge marks)
+     * @param selection            the selection nodes for the MAG legality check
+     * @param knowledge            the background knowledge whose refinements are to be tolerated
+     * @param orient               the orientation engine used to knowledge-refine the reconstituted canonical PAG
+     * @param excludeSelectionBias the selection-bias policy passed through to the final-rule closure
+     * @return a LegalPagRet whose isLegalPag() is true iff the candidate is a legal PAG refined by knowledge
+     * @throws InterruptedException if interrupted during the final-rule closure
+     */
+    public static LegalPagRet isLegalPagModuloKnowledge(Graph pag, Set<Node> selection, Knowledge knowledge,
+                                                        FciOrient orient, boolean excludeSelectionBias)
+            throws InterruptedException {
+        if (knowledge == null || knowledge.isEmpty()) {
+            return isLegalPag(pag, selection);
+        }
+
+        for (Node n : pag.getNodes()) {
+            if (n.getNodeType() != NodeType.MEASURED) {
+                return new LegalPagRet(false, "Node " + n + " is not measured");
+            }
+        }
+
+        Graph mag;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(pag);
+        } catch (Exception e) {
+            return new LegalPagRet(false, "PAG to MAG failed");
+        }
+
+        LegalMagRet legalMag = isLegalMag(mag, selection);
+
+        if (!legalMag.isLegalMag()) {
+            return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
+        }
+
+        Graph pag2;
+        try {
+            MagToPag magToPag = new MagToPag(mag);
+            pag2 = magToPag.convert(false, false);
+        } catch (IllegalStateException e) {
+            return new LegalPagRet(false, "Legal PAG status could not be determined");
+        }
+
+        Graph pag2k = pag2.copy();
+        orient.fciOrientbk(knowledge, pag2k, pag2k.getNodes(), excludeSelectionBias);
+        orient.finalOrientation(pag2k, excludeSelectionBias);
+
+        if (!pag.equals(pag2k)) {
+            String edgeMismatch = "";
+
+            for (Edge e : pag.getEdges()) {
+                Edge e2 = pag2k.getEdge(e.getNode1(), e.getNode2());
+                if (!e.equals(e2)) {
+                    edgeMismatch = "For example, the candidate has edge " + e
+                            + " whereas the knowledge-refined reconstituted graph has edge " + e2;
+                    break;
+                }
+            }
+
+            String reason = "The MAG implied by this graph was a legal MAG, but the graph does not equal the "
+                    + "knowledge-refined canonical PAG of that MAG -- this graph may lie between a MAG and a PAG "
+                    + "for reasons other than background knowledge";
+
+            if (!edgeMismatch.isEmpty()) {
+                reason += ". " + edgeMismatch;
+            }
+
+            return new LegalPagRet(false, reason);
+        }
+
+        return new LegalPagRet(true, "This is a legal PAG refined by background knowledge");
     }
 
     /**

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.ConditionalGaussianLikelihood;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.NaturalSort;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.special.Gamma;
@@ -46,11 +47,22 @@ import java.util.*;
  * - setRows(...) now respects the provided argument (no random subsampling).
  * - Row restriction is intersected with testwise deletion for the specific (x, y | z) variables.
  * - Caches are cleared when row restrictions or discretization knobs change.
+ * <p>
+ * Effective sample size (added 2026-8-25). When an effective sample size nEff is set (see
+ * {@link #setEffectiveSampleSize(int)}), the likelihood-ratio statistic 2 * (l1 - l0) is scaled by r = nEff / N,
+ * where N is the number of rows in the dataset, before being referred to the chi-square distribution. The
+ * degrees of freedom are unchanged. Since the log-likelihoods are row sums, this is the statistic that nEff
+ * independent rows would have produced. The value is relative to the full dataset: if {@link #setRows(List)}
+ * restricts the test to m rows, or testwise deletion drops rows for a particular (x, y | z), the test behaves as if
+ * it had r * m independent rows, so a subsample or resample inherits the same per-row information content rather
+ * than the full nEff. (This differs from {@link IndTestDegenerateGaussianLrt}, which resets nEff to the actual row
+ * count on setRows, and from {@link IndTestFisherZ}, which keeps the absolute nEff regardless of setRows.) With
+ * nEff unset, r = 1 and the test is unchanged from the previous implementation.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
-public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSettable {
+public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSettable, EffectiveSampleSizeSettable {
 
     /** The data set. */
     private final DataSet data;
@@ -81,6 +93,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
 
     /** The most recent p-value. */
     private double pValue;
+
+    // Effective sample size relative to the full dataset, or -1 to use the actual row count. See class Javadoc.
+    private int nEff = -1;
 
     /**
      * Constructor.
@@ -199,7 +214,8 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
             // nothing estimable on the common support (e.g., x constant there): no evidence
             // against independence, p = 1. x1 <= 0 covers roundoff on a true nested ratio. The
             // upper tail uses regularizedGammaQ for numerical stability.
-            double x1 = 2 * lik_diff;
+            // Effective-sample-size scaling of the row-sum statistic (r = 1 when nEff is unset).
+            double x1 = 2 * lik_diff * effectiveSampleSizeRatio();
 
             if (dof_diff <= 0) {
                 pValue = 1.0;
@@ -328,6 +344,42 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
     }
 
     /**
+     * Returns the effective sample size: the value set via {@link #setEffectiveSampleSize(int)}, or, if none has
+     * been set, the number of rows currently in use (the restriction from {@link #setRows(List)} if any, otherwise
+     * the full dataset).
+     *
+     * @return the effective sample size
+     */
+    @Override
+    public int getEffectiveSampleSize() {
+        if (this.nEff >= 0) return this.nEff;
+        return this.rows != null ? this.rows.size() : this.data.getNumRows();
+    }
+
+    /**
+     * Sets the effective sample size, interpreted relative to the full dataset, or -1 (any negative value) to use
+     * the actual number of rows. A value of 0 is treated as unset. See the class Javadoc for the interaction with
+     * setRows and testwise deletion.
+     *
+     * <p>Configuration mutator: do not call concurrently with running tests.
+     *
+     * @param nEff the effective sample size, or a nonpositive value to use the actual number of rows
+     */
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff <= 0 ? -1 : nEff;
+    }
+
+    /**
+     * The ratio nEff / N applied to the likelihood-ratio statistic; 1 when unset.
+     */
+    private double effectiveSampleSizeRatio() {
+        if (this.nEff < 0) return 1.0;
+        int n = this.data.getNumRows();
+        return n == 0 ? 1.0 : this.nEff / (double) n;
+    }
+
+    /**
      * Returns a list of row indices eligible for this test:
      *   (user-specified subset OR all rows) intersected with rows that have no missingness
      *   in the specific variables involved in this test (testwise deletion).
@@ -405,5 +457,17 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest, RowsSett
         }
 
         this.rows = copy;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Each likelihood-ratio calculation uses the rows complete on the variables involved in that calculation (the candidate rows are intersected with the rows having no missingness on those variables), i.e., test-wise deletion, unbiased only under MCAR.
+     *
+     * @return {@link edu.cmu.tetrad.data.missing.MissingValueSupport#TESTWISE}.
+     */
+    @Override
+    public edu.cmu.tetrad.data.missing.MissingValueSupport getMissingValueSupport() {
+        return edu.cmu.tetrad.data.missing.MissingValueSupport.TESTWISE;
     }
 }

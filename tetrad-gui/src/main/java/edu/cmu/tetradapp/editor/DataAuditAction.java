@@ -21,7 +21,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.audit.AuditFinding;
+import edu.cmu.tetrad.data.audit.CovarianceAudit;
 import edu.cmu.tetrad.data.audit.DataAudit;
 import edu.cmu.tetrad.data.missing.MissingDataAudit;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -47,11 +49,20 @@ import java.util.List;
  * <li><b>Missingness &amp; Advice</b>: dataset-level missingness facts, Little's MCAR test where applicable, and
  * the missing-data handling advice from {@link MissingDataAudit#advice()}.</li>
  * </ul>
+ * Below the tabs, when the audit produced any ({@link DataAudit#notes()}), sits a notes footer cross-referencing
+ * other diagnostics bearing on the findings that fired - for instance, pointing a non-Gaussianity finding at
+ * Tools &gt; Nonlinearity Checks..., since a non-Gaussian marginal is equally consistent with a non-Gaussian error
+ * term and with a nonlinear or non-additive dependence on parents. The footer is absent when there are no notes.
  * All computation is done by the library classes, so this dialog reports exactly what causal-cmd and py-tetrad
  * report for the same dataset.
+ * <p>
+ * When the selected model is a covariance (or correlation) matrix rather than a tabular dataset, the dialog instead
+ * shows the covariance matrix audit ({@link CovarianceAudit}): a Findings tab and a Report tab containing the
+ * audit's full text report, which also states the scope limits of auditing second moments alone.
  *
  * @author josephramsey
  * @see DataAudit
+ * @see CovarianceAudit
  * @see MissingDataAudit
  */
 class DataAuditAction extends AbstractAction {
@@ -75,8 +86,31 @@ class DataAuditAction extends AbstractAction {
      * {@inheritDoc}
      */
     public void actionPerformed(ActionEvent e) {
+        if (this.dataEditor.getSelectedDataModel() instanceof ICovarianceMatrix cov) {
+            if (cov.getDimension() == 0) {
+                JOptionPane.showMessageDialog(findOwner(), "Cannot audit an empty covariance matrix.");
+                return;
+            }
+
+            JComponent covPanel;
+
+            try {
+                covPanel = createCovarianceAuditPanel(cov);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(findOwner(), "Could not compute the covariance matrix audit: "
+                        + ex.getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            EditorWindow covWindow = new EditorWindow(covPanel,
+                    "Covariance Matrix Audit", null, false, (JComponent) this.dataEditor);
+            DesktopController.getInstance().addEditorWindow(covWindow, JLayeredPane.PALETTE_LAYER);
+            covWindow.setVisible(true);
+            return;
+        }
+
         if (!(this.dataEditor.getSelectedDataModel() instanceof DataSet dataSet)) {
-            JOptionPane.showMessageDialog(findOwner(), "Need a tabular dataset to audit.");
+            JOptionPane.showMessageDialog(findOwner(), "Need a tabular dataset or covariance matrix to audit.");
             return;
         }
 
@@ -212,10 +246,116 @@ class DataAuditAction extends AbstractAction {
         panel.add(north, BorderLayout.NORTH);
         panel.add(tabs, BorderLayout.CENTER);
 
+        JComponent notes = createNotesFooter(pooledAudit.notes());
+
+        if (notes != null) {
+            panel.add(notes, BorderLayout.SOUTH);
+        }
+
         Box box = Box.createVerticalBox();
         box.add(panel);
 
         return box;
+    }
+
+    /**
+     * Builds the footer holding the audit's cross-reference notes ({@link DataAudit#notes()}), or null when the audit
+     * produced none, in which case no footer is shown at all. The notes are displayed outside the Findings tab
+     * deliberately: they name further diagnostics bearing on a finding that fired, and the findings themselves are
+     * contracted to carry no such content. Package visible so that it can be exercised headlessly in tests.
+     *
+     * @param notes the notes to display.
+     * @return the footer component, or null if there are no notes.
+     */
+    static JComponent createNotesFooter(List<String> notes) {
+        if (notes.isEmpty()) return null;
+
+        StringBuilder sb = new StringBuilder("Notes:");
+        for (String note : notes) sb.append("\n- ").append(note);
+
+        JTextArea area = new JTextArea(sb.toString());
+        area.setEditable(false);
+        area.setOpaque(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+
+        return area;
+    }
+
+    /**
+     * Builds the covariance matrix audit panel: a summary line, then tabs for the findings and for the audit's full
+     * text report (which states the scope limits of auditing second moments alone). Per-variable, missingness, and
+     * serial-dependence tabs do not apply here, since a covariance matrix carries no row-level information. Package
+     * visible so that it can be exercised headlessly in tests.
+     */
+    static JComponent createCovarianceAuditPanel(ICovarianceMatrix cov) {
+        CovarianceAudit audit = new CovarianceAudit(cov);
+
+        DataAuditJTable findingsTable =
+                new DataAuditJTable(new DataAuditFindingsModel(audit.getFindings()), 4);
+        sizeFindingsColumns(findingsTable);
+
+        JTextArea reportText = new JTextArea(audit.report());
+        reportText.setEditable(false);
+        reportText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, reportText.getFont().getSize()));
+        reportText.setLineWrap(true);
+        reportText.setWrapStyleWord(true);
+        reportText.setMargin(new Insets(8, 8, 8, 8));
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Findings", new JScrollPane(findingsTable));
+        tabs.addTab("Report", new JScrollPane(reportText));
+        tabs.setPreferredSize(new Dimension(850, 450));
+
+        JMenuBar bar = new JMenuBar();
+        int menuMask = menuShortcutMask();
+
+        JMenuItem selectAllCells = new JMenuItem("Select All Cells");
+        selectAllCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, menuMask));
+        selectAllCells.addActionListener(e -> findingsTable.selectAll());
+
+        JMenuItem copyCells = new JMenuItem("Copy Cells");
+        copyCells.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
+        copyCells.addActionListener(e -> {
+            ensureCellSelection(findingsTable);
+            Action copyAction = TransferHandler.getCopyAction();
+            copyAction.actionPerformed(new ActionEvent(findingsTable, ActionEvent.ACTION_PERFORMED, "copy"));
+        });
+
+        JMenu editMenu = new JMenu("Edit");
+        editMenu.add(selectAllCells);
+        editMenu.add(copyCells);
+        bar.add(editMenu);
+
+        JLabel summary = new JLabel(covarianceSummaryLine(cov, audit));
+        summary.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(bar, BorderLayout.NORTH);
+        north.add(summary, BorderLayout.CENTER);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(north, BorderLayout.NORTH);
+        panel.add(tabs, BorderLayout.CENTER);
+
+        Box box = Box.createVerticalBox();
+        box.add(panel);
+
+        return box;
+    }
+
+    /**
+     * The always-visible one-line summary above the covariance audit tabs.
+     */
+    static String covarianceSummaryLine(ICovarianceMatrix cov, CovarianceAudit audit) {
+        long warnings = audit.getFindings().stream()
+                .filter(f -> f.getSeverity() == AuditFinding.Severity.WARNING).count();
+        long infos = audit.getFindings().size() - warnings;
+
+        return cov.getDimension() + " variables, stated sample size " + cov.getSampleSize()
+                + (audit.isCorrelationInput() ? " (correlation matrix)" : "") + "; "
+                + warnings + " warning(s), " + infos + " informational.";
     }
 
     /**

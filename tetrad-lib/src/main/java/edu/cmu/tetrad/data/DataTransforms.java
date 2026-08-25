@@ -31,6 +31,8 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.random.RandomGenerator;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.rmi.MarshalledObject;
 import java.util.*;
@@ -662,11 +664,351 @@ public class DataTransforms {
     }
 
     /**
-     * <p>covarianceNonparanormalDrton.</p>
+     * Returns the Gaussian copula ("nonparanormal") correlation matrix of a continuous data set: for each pair of
+     * variables the sample Kendall's tau-b is computed and mapped to the latent Gaussian correlation by
+     * <pre>    rho = sin(pi * tau / 2),</pre>
+     * the standard inversion for a Gaussian copula (Liu, Han, Yuan, Lafferty and Wasserman 2012). Diagonal entries
+     * are set to exactly 1, so the result is a correlation matrix carrying the source data set's sample size.
+     * <p>
+     * WHAT THIS BUYS. Under the nonparanormal model each variable is an unknown strictly monotone transformation
+     * of a latent Gaussian. Pearson correlation is not invariant to those transformations and is biased toward
+     * zero by them; rank correlation is invariant, so this estimator recovers the latent correlation structure
+     * that a linear-Gaussian score or likelihood is written against. As a worked case: for a latent pair with
+     * rho = 0.7, exponentiating one variable drops the Pearson correlation to about 0.51 while this estimator
+     * returns about 0.70.
+     * <p>
+     * WHAT IT DOES NOT BUY. The invariance is to monotone MARGINAL transformation only. Genuine nonlinearity in a
+     * conditional mean -- an interaction, a non-monotone dependence, X = f(Y, Z) for non-additive f -- is outside
+     * the model and this transform does nothing about it. It is a fix for distorted margins, not a nonlinear
+     * method.
+     * <p>
+     * CAVEATS, all reported as warnings to the log rather than by throwing:
+     * <ul>
+     *   <li>The elementwise map sin(pi * tau / 2) does not guarantee positive semidefiniteness. The smallest
+     *       eigenvalue is checked and a warning logged if it is negative. Run a Covariance Audit on the result
+     *       for the full diagnosis; likelihoods and partial correlations can behave incoherently on a
+     *       non-PSD matrix.</li>
+     *   <li>Discrete columns are included in the computation but the copula inversion is not correct for them
+     *       (a polychoric estimator is the right tool there); a warning is logged if any are present.</li>
+     *   <li>Missing values are handled by pairwise-complete deletion, which is itself a route to a non-PSD
+     *       matrix and makes the single stated sample size approximate; a warning is logged if any are
+     *       present.</li>
+     * </ul>
+     * Kendall's tau-b is computed in O(n log n) per pair by merge-sort inversion counting, not the O(n^2)
+     * pair enumeration.
+     *
+     * @param dataSet a continuous {@link edu.cmu.tetrad.data.DataSet} object
+     * @return the Gaussian copula correlation matrix, as an {@link edu.cmu.tetrad.data.ICovarianceMatrix}
+     * @throws IllegalArgumentException if the data set has fewer than two rows or no variables
+     */
+    public static ICovarianceMatrix covarianceGaussianCopula(DataSet dataSet) {
+        if (dataSet == null) {
+            throw new NullPointerException("Data set is null.");
+        }
+
+        int p = dataSet.getNumColumns();
+        int n = dataSet.getNumRows();
+
+        if (p == 0) {
+            throw new IllegalArgumentException("Data set has no variables.");
+        }
+
+        if (n < 2) {
+            throw new IllegalArgumentException("Kendall's tau needs at least two rows; this data set has " + n + ".");
+        }
+
+        int numDiscrete = 0;
+
+        for (Node node : dataSet.getVariables()) {
+            if (!(node instanceof ContinuousVariable)) {
+                numDiscrete++;
+            }
+        }
+
+        if (numDiscrete > 0) {
+            TetradLogger.getInstance().log("Gaussian copula correlation: " + numDiscrete + " of " + p
+                                           + " variable(s) are not continuous. Kendall's tau-b is computed for "
+                                           + "them, but the inversion sin(pi * tau / 2) assumes a continuous "
+                                           + "latent Gaussian, so those entries are not the polychoric "
+                                           + "correlations an ordinal model would call for.");
+        }
+
+        double[][] columns = new double[p][];
+        boolean anyMissing = false;
+
+        for (int j = 0; j < p; j++) {
+            columns[j] = new double[n];
+
+            for (int i = 0; i < n; i++) {
+                double v = dataSet.getDouble(i, j);
+                columns[j][i] = v;
+
+                if (Double.isNaN(v)) {
+                    anyMissing = true;
+                }
+            }
+        }
+
+        if (anyMissing) {
+            TetradLogger.getInstance().log("Gaussian copula correlation: the data set has missing values. Each "
+                                           + "pair is computed on the rows complete for that pair, so different "
+                                           + "entries rest on different row sets, the stated sample size of " + n
+                                           + " is an upper bound, and the assembled matrix need not be positive "
+                                           + "semidefinite.");
+        }
+
+        Matrix sigma = new Matrix(p, p);
+
+        for (int i = 0; i < p; i++) {
+            sigma.set(i, i, 1.0);
+        }
+
+        for (int i = 0; i < p; i++) {
+            for (int j = i + 1; j < p; j++) {
+                double tau = kendallsTauB(columns[i], columns[j]);
+                double rho = Double.isNaN(tau) ? Double.NaN : FastMath.sin(FastMath.PI * tau / 2.0);
+
+                sigma.set(i, j, rho);
+                sigma.set(j, i, rho);
+            }
+        }
+
+        int numNaN = 0;
+
+        for (int i = 0; i < p; i++) {
+            for (int j = i + 1; j < p; j++) {
+                if (Double.isNaN(sigma.get(i, j))) {
+                    numNaN++;
+                    sigma.set(i, j, 0.0);
+                    sigma.set(j, i, 0.0);
+                }
+            }
+        }
+
+        if (numNaN > 0) {
+            TetradLogger.getInstance().log("Gaussian copula correlation: " + numNaN + " pair(s) had no defined "
+                                           + "tau-b (a constant column, or too few rows complete for the pair) "
+                                           + "and were set to zero. A zero here is an absence of information, "
+                                           + "not evidence of independence.");
+        }
+
+        warnIfNotPsd(sigma);
+
+        List<Node> variables = new ArrayList<>(dataSet.getVariables());
+
+        return new CovarianceMatrix(variables, sigma, n);
+    }
+
+    /**
+     * Logs a warning if the given symmetric matrix has a negative eigenvalue. Warn-only by design: the matrix is
+     * returned as computed rather than projected onto the nearest correlation matrix, so the numbers a user sees
+     * are the numbers the estimator produced.
+     */
+    private static void warnIfNotPsd(Matrix sigma) {
+        try {
+            org.ejml.simple.SimpleEVD<org.ejml.simple.SimpleMatrix> evd
+                    = new org.ejml.simple.SimpleMatrix(sigma.toArray()).eig();
+
+            double minEig = Double.POSITIVE_INFINITY;
+            int numNegative = 0;
+
+            for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
+                double ev = evd.getEigenvalue(i).getReal();
+
+                if (ev < minEig) {
+                    minEig = ev;
+                }
+
+                if (ev < 0) {
+                    numNegative++;
+                }
+            }
+
+            if (numNegative > 0) {
+                TetradLogger.getInstance().log("Gaussian copula correlation: the result has " + numNegative
+                                               + " negative eigenvalue(s) (minimum " + minEig + "), so it is not "
+                                               + "the correlation matrix of any data set. The elementwise map "
+                                               + "sin(pi * tau / 2) does not preserve positive semidefiniteness. "
+                                               + "Likelihoods, partial correlations and regression coefficients "
+                                               + "computed from it can fail or behave incoherently; run a "
+                                               + "Covariance Audit on the result for the full diagnosis.");
+            }
+        } catch (Exception e) {
+            TetradLogger.getInstance().log("Gaussian copula correlation: the eigenvalues could not be computed, "
+                                           + "so positive semidefiniteness was not checked.");
+        }
+    }
+
+    /**
+     * Kendall's tau-b for two columns, computed in O(n log n) by merge-sort inversion counting, with
+     * pairwise-complete deletion of rows where either value is NaN.
+     * <p>
+     * With <code>tot</code> the number of usable row pairs, <code>xTies</code> and <code>yTies</code> the pairs
+     * tied in x and in y respectively, <code>bothTies</code> the pairs tied in both, and <code>dis</code> the
+     * number of discordant pairs obtained as inversions in y after sorting by (x, y):
+     * <pre>    tau_b = (tot - xTies - yTies + bothTies - 2 * dis) / sqrt((tot - xTies) * (tot - yTies)).</pre>
+     *
+     * @param x the first column.
+     * @param y the second column, the same length as the first.
+     * @return tau-b, or NaN if it is undefined (fewer than two complete rows, or a column constant on them).
+     */
+    public static double kendallsTauB(double[] x, double[] y) {
+        if (x.length != y.length) {
+            throw new IllegalArgumentException("Arrays not the same length.");
+        }
+
+        int m = 0;
+
+        for (int i = 0; i < x.length; i++) {
+            if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
+                m++;
+            }
+        }
+
+        if (m < 2) {
+            return Double.NaN;
+        }
+
+        double[] xs = new double[m];
+        double[] ys = new double[m];
+        int k = 0;
+
+        for (int i = 0; i < x.length; i++) {
+            if (!Double.isNaN(x[i]) && !Double.isNaN(y[i])) {
+                xs[k] = x[i];
+                ys[k] = y[i];
+                k++;
+            }
+        }
+
+        Integer[] order = new Integer[m];
+
+        for (int i = 0; i < m; i++) {
+            order[i] = i;
+        }
+
+        final double[] fx = xs;
+        final double[] fy = ys;
+
+        Arrays.sort(order, (aIdx, bIdx) -> {
+            int c = Double.compare(fx[aIdx], fx[bIdx]);
+            return c != 0 ? c : Double.compare(fy[aIdx], fy[bIdx]);
+        });
+
+        double[] sx = new double[m];
+        double[] sy = new double[m];
+
+        for (int i = 0; i < m; i++) {
+            sx[i] = xs[order[i]];
+            sy[i] = ys[order[i]];
+        }
+
+        long tot = (long) m * (m - 1) / 2;
+
+        long xTies = 0;
+        long bothTies = 0;
+
+        int runStart = 0;
+
+        for (int i = 1; i <= m; i++) {
+            if (i == m || sx[i] != sx[runStart]) {
+                long t = i - runStart;
+                xTies += t * (t - 1) / 2;
+
+                int innerStart = runStart;
+
+                for (int j = runStart + 1; j <= i; j++) {
+                    if (j == i || sy[j] != sy[innerStart]) {
+                        long u = j - innerStart;
+                        bothTies += u * (u - 1) / 2;
+                        innerStart = j;
+                    }
+                }
+
+                runStart = i;
+            }
+        }
+
+        double[] sortedY = sy.clone();
+        Arrays.sort(sortedY);
+
+        long yTies = 0;
+        runStart = 0;
+
+        for (int i = 1; i <= m; i++) {
+            if (i == m || sortedY[i] != sortedY[runStart]) {
+                long t = i - runStart;
+                yTies += t * (t - 1) / 2;
+                runStart = i;
+            }
+        }
+
+        if (tot - xTies <= 0 || tot - yTies <= 0) {
+            return Double.NaN;
+        }
+
+        long dis = countInversions(sy.clone(), new double[m], 0, m - 1);
+
+        double numerator = tot - xTies - yTies + bothTies - 2.0 * dis;
+        double denominator = FastMath.sqrt((double) (tot - xTies)) * FastMath.sqrt((double) (tot - yTies));
+
+        return numerator / denominator;
+    }
+
+    /**
+     * Counts inversions in {@code a[lo..hi]} by merge sort, sorting the range in place. A pair counts as an
+     * inversion only on a strict decrease, so tied values are not counted as discordant.
+     */
+    private static long countInversions(double[] a, double[] scratch, int lo, int hi) {
+        if (lo >= hi) {
+            return 0;
+        }
+
+        int mid = (lo + hi) >>> 1;
+
+        long count = countInversions(a, scratch, lo, mid) + countInversions(a, scratch, mid + 1, hi);
+
+        int i = lo;
+        int j = mid + 1;
+        int t = lo;
+
+        while (i <= mid && j <= hi) {
+            if (a[i] <= a[j]) {
+                scratch[t++] = a[i++];
+            } else {
+                count += (mid - i + 1);
+                scratch[t++] = a[j++];
+            }
+        }
+
+        while (i <= mid) {
+            scratch[t++] = a[i++];
+        }
+
+        while (j <= hi) {
+            scratch[t++] = a[j++];
+        }
+
+        System.arraycopy(scratch, lo, a, lo, hi - lo + 1);
+
+        return count;
+    }
+
+    /**
+     * Fills a matrix with raw Kendall's tau-a values.
      *
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      * @return a {@link edu.cmu.tetrad.data.ICovarianceMatrix} object
+     * @deprecated This does NOT compute the nonparanormal (Gaussian copula) correlation estimator, despite the
+     * name. It stores raw Kendall's tau, omitting the inversion sin(pi * tau / 2) that maps a rank correlation
+     * back to the latent Gaussian correlation. Raw tau is severely attenuated relative to the correlation it is
+     * standing in for -- a latent rho of 0.9 returns about 0.71, and 0.5 returns about 0.34 -- so anything scored
+     * from this matrix systematically under-detects edges. It also uses tau-a rather than tau-b, so ties attenuate
+     * it further, and it is O(n^2) per variable pair. Use {@link #covarianceGaussianCopula(DataSet)} instead,
+     * which corrects all three. Retained only because removing a public method is a breaking change; nothing in
+     * Tetrad calls it.
      */
+    @Deprecated
     public static ICovarianceMatrix covarianceNonparanormalDrton(DataSet dataSet) {
         CovarianceMatrix covMatrix = new CovarianceMatrix(dataSet);
         Matrix data = dataSet.getDoubleData();

@@ -521,6 +521,11 @@ public final class Params {
      * Constant <code>PARALLELIZED="parallelized"</code>
      */
     public static final String PARALLELIZED = "parallelized";
+
+    /**
+     * Constant <code>USE_BOSS_ADJACENCIES="useBossAdjacencies"</code>
+     */
+    public static final String USE_BOSS_ADJACENCIES = "useBossAdjacencies";
     /**
      * Constant <code>PENALTY_DISCOUNT="penaltyDiscount"</code>
      */
@@ -533,6 +538,22 @@ public final class Params {
      * Constant <code>PENALTY_DISCOUNT_ZS="penaltyDiscountZs"</code>
      */
     public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
+    /**
+     * Constant <code>SCORE_CHECK_PENALTY_DISCOUNT="scoreCheckPenaltyDiscount"</code>
+     */
+    public static final String SCORE_CHECK_PENALTY_DISCOUNT = "scoreCheckPenaltyDiscount";
+    /**
+     * Constant <code>GMAS_ALLOW_ADDITIONS="gmasAllowAdditions"</code>
+     */
+    public static final String GMAS_ALLOW_ADDITIONS = "gmasAllowAdditions";
+    /**
+     * Constant <code>GMAS_LOOKAHEAD_DEPTH="gmasLookaheadDepth"</code>
+     */
+    public static final String GMAS_LOOKAHEAD_DEPTH = "gmasLookaheadDepth";
+    /**
+     * Constant <code>GMAS_TRIANGLE_ESCAPE_ONLY="gmasTriangleEscapeOnly"</code>
+     */
+    public static final String GMAS_TRIANGLE_ESCAPE_ONLY = "gmasTriangleEscapeOnly";
     /**
      * Constant <code>TRUNCATION_LIMIT="truncationLimit"</code>
      */
@@ -713,6 +734,10 @@ public final class Params {
      * Constant <code>VERBOSE="verbose"</code>
      */
     public static final String VERBOSE = "verbose";
+    /**
+     * Constant <code>SCORE_TEST_CALIBRATED_P_VALUES="scoreTestCalibratedPValues"</code>
+     */
+    public static final String SCORE_TEST_CALIBRATED_P_VALUES = "scoreTestCalibratedPValues";
     /**
      * Constant <code>SEM_BIC_RULE="semBicRule"</code>
      */
@@ -1140,6 +1165,22 @@ public final class Params {
      */
     public static final String DO_ONE_EQUATION_ONLY = "doOneEquationOnly";
     /**
+     * Constant <code>ADAPTIVE_BASIS_SELECTION="adaptiveBasisSelection"</code>
+     */
+    public static final String ADAPTIVE_BASIS_SELECTION = "adaptiveBasisSelection";
+    /**
+     * Constant <code>GCM_MULTIPLIER_SAMPLES="gcmMultiplierSamples"</code>
+     */
+    public static final String GCM_MULTIPLIER_SAMPLES = "gcmMultiplierSamples";
+    /**
+     * Constant <code>GCM_Z_TRUNCATION_LIMIT="gcmZTruncationLimit"</code>
+     */
+    public static final String GCM_Z_TRUNCATION_LIMIT = "gcmZTruncationLimit";
+    /**
+     * Constant <code>GCM_CONTROL_FUNCTION="gcmControlFunction"</code>
+     */
+    public static final String GCM_CONTROL_FUNCTION = "gcmControlFunction";
+    /**
      * Constant <code>MIMBUILD_TYPE="mimbuildType"</code>
      */
     public static final String MIMBUILD_TYPE = "mimbuildType";
@@ -1349,6 +1390,12 @@ public final class Params {
      */
     public static final String FFML_RIDGE = "ffmlRidge";
     /**
+     * Constant <code>FFML_INTERACTION_LAMBDA="ffmlInteractionLambda"</code> Weight of the
+     * discrete-continuous interaction (product-kernel) term in the FFML score; 0 = additive
+     * (BF/DG-style) discrete handling.
+     */
+    public static final String FFML_INTERACTION_LAMBDA = "ffmlInteractionLambda";
+    /**
      * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
      */
     public static final String MINIMAX_FF_FEATURES = "minimaxFfFeatures";
@@ -1532,6 +1579,21 @@ public final class Params {
      * Constant <code>REPEATING_GRAPH="repeatingGraph"</code> Whether to use a repeating graph for time lag search.
      */
     public static String TIME_LAG_REPLICATING_GRAPH = "timeLagReplicatingGraph";
+    /**
+     * Constant <code>POOL_DATA_SETS="poolDataSets"</code> Whether, given several data sets, to pool them into ONE
+     * search (IMaGES-style: the score is summed across data sets, the test combines p-values by Fisher's method)
+     * instead of running the algorithm once per data set. Honored by the GUI runner; in the API, passing a
+     * DataModelList to an AbstractBootstrapAlgorithm's search method requests pooling directly.
+     */
+    public static final String POOL_DATA_SETS = "poolDataSets";
+
+    /**
+     * Constant <code>POOLED_TEST_METHOD="pooledTestMethod"</code> How per-data-set p-values are combined when data
+     * sets are pooled for a test-based search: "fisher" (default; most powerful when the dependence is shared by
+     * all data sets) or "tippett" (min-p, Sidak-adjusted; more powerful when the dependence is present in only some
+     * of the data sets).
+     */
+    public static final String POOLED_TEST_METHOD = "pooledTestMethod";
     /**
      * Constant <code>MINIMAX_LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
      */

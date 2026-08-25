@@ -66,6 +66,7 @@ public class BdeuScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "BDeu Score");
         this.dataSet = dataSet;
         BDeuScore score
                 = new BDeuScore(SimpleDataLoader.getDiscreteDataSet(dataSet),

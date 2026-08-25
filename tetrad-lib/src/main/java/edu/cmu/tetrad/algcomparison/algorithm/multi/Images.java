@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.MultiDataSetScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -54,13 +55,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "IMaGES",
-        command = "images",
-        algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.All
-)
-@Bootstrapping
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "IMaGES",
+//        command = "images",
+//        algoType = AlgType.forbid_latent_common_causes,
+//        dataType = DataType.All
+//)
+//@Bootstrapping
 public class Images extends AbstractMultiBootstrapAlgorithm implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
 
     @Serial
@@ -100,31 +101,80 @@ public class Images extends AbstractMultiBootstrapAlgorithm implements MultiData
     protected Graph runSearch(List<DataModel> dataSets, Parameters parameters) {
         List<DataModel> _dataSets = new ArrayList<>();
 
-        if (parameters.getInt(Params.TIME_LAG) > 0) {
+        // The base (unlagged) knowledge for the search: the algorithm's knowledge if the user
+        // supplied any; otherwise, fall back to knowledge carried by the data sets themselves.
+        // (The GUI's multi-data-set path stamps the first data set's knowledge onto every data
+        // set, but historically handed the algorithm only its own - possibly empty - knowledge,
+        // so knowledge attached to the data never reached the search and time-lag runs fell
+        // back to pure time tiers.) Only base-variable knowledge (no lag suffixes) is eligible,
+        // since lagged knowledge cannot seed createLagData. The field this.knowledge is never
+        // overwritten here: it must remain the user's base knowledge, both because
+        // createLagData validates that its input knowledge contains no lag suffixes (passing a
+        // previously lagged knowledge for the second data set throws) and because the bootstrap
+        // base class re-enters this method with the same field.
+        Knowledge baseKnowledge = this.knowledge;
+
+        if (baseKnowledge == null || baseKnowledge.isEmpty()) {
             for (DataModel dataSet : dataSets) {
-                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG), knowledge);
+                Knowledge fromData = dataSet.getKnowledge();
+                if (fromData == null || fromData.isEmpty()) continue;
+                boolean baseOnly = true;
+                for (String name : fromData.getVariables()) {
+                    if (name.contains(":")) {
+                        baseOnly = false;
+                        break;
+                    }
+                }
+                if (baseOnly) {
+                    baseKnowledge = fromData;
+                    break;
+                }
+            }
+        }
+
+        if (baseKnowledge == null) {
+            baseKnowledge = new Knowledge();
+        }
+
+        Knowledge searchKnowledge = baseKnowledge;
+
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            final Knowledge finalBaseKnowledge = baseKnowledge;
+            for (DataModel dataSet : dataSets) {
+                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG), finalBaseKnowledge);
                 if (dataSet.getName() != null) {
                     timeSeries.setName(dataSet.getName());
                 }
                 _dataSets.add(timeSeries);
-                this.knowledge = timeSeries.getKnowledge();
+                searchKnowledge = timeSeries.getKnowledge();
             }
 
             dataSets = _dataSets;
         }
 
-        List<Score> scores = new ArrayList<>();
+        List<Score> scores;
 
-        for (DataModel dataModel : dataSets) {
-            Score s = score.getScore(dataModel, parameters);
-            scores.add(s);
+        // A wrapper implementing MultiDataSetScoreWrapper coordinates data-dependent
+        // representation choices (e.g. adaptive basis-column selection) across the data
+        // sets, so that every data set scores the identical parameterization - which IMaGES,
+        // as a common-model algorithm, requires of its summed score. Other wrappers are
+        // constructed per data set as before.
+        if (score instanceof MultiDataSetScoreWrapper multiWrapper) {
+            scores = multiWrapper.getScores(dataSets, parameters);
+        } else {
+            scores = new ArrayList<>();
+            for (DataModel dataModel : dataSets) {
+                Score s = score.getScore(dataModel, parameters);
+                scores.add(s);
+            }
         }
 
         ImagesScore score = new ImagesScore(scores);
 
         PermutationSearch search = new PermutationSearch(new Boss(score));
         search.setSeed(parameters.getLong(Params.SEED));
-        search.setKnowledge(this.knowledge);
+        search.setKnowledge(searchKnowledge);
+        search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
         try {
             return search.search();
         } catch (InterruptedException e) {

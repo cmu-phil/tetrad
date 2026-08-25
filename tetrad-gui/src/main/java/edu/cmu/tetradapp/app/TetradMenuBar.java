@@ -136,17 +136,19 @@ final class TetradMenuBar extends JMenuBar {
 
         JMenuItem loggingSettingMenuItem = new JMenuItem(new SetupLoggingAction());
 
-        JCheckBox showExperimentalBox = new JCheckBox(" Enable Experimental");
-
+        // Changed 2026-8-24: a proper check-box menu item with a label that states its scope. This is the global
+        // default; the search box, Markov Checker, vertex check, independence-facts editor, and grid search each
+        // also have a local "Include experimental" switch that overrides it for that editor only.
+        JCheckBoxMenuItem showExperimentalBox = new JCheckBoxMenuItem("Show experimental algorithms everywhere");
         boolean enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
-        showExperimentalBox.setSelected(Tetrad.enableExperimental);
         Tetrad.enableExperimental = enableExperimental;
-
         showExperimentalBox.setSelected(enableExperimental);
+        showExperimentalBox.setToolTipText("<html><div style='width:300px'>List algorithms, tests, and scores "
+                + "marked experimental in every editor by default. Editors opened after this is changed pick up the "
+                + "new default; each editor also has its own Include experimental switch.</div></html>");
         showExperimentalBox.addActionListener(e -> {
-            JCheckBox box = (JCheckBox) e.getSource();
-            Preferences.userRoot().putBoolean("enableExperimental", box.isSelected());
-            Tetrad.enableExperimental = box.isSelected();
+            Preferences.userRoot().putBoolean("enableExperimental", showExperimentalBox.isSelected());
+            Tetrad.enableExperimental = showExperimentalBox.isSelected();
         });
 
         JCheckBoxMenuItem darkModeItem = new JCheckBoxMenuItem("Dark Mode");

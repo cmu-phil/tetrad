@@ -76,13 +76,16 @@ public enum FindingCode {
     SMALL_PAIRWISE_CELLS,
 
     /**
-     * A pair of continuous variables is very highly correlated in absolute value.
+     * A pair of continuous variables is very highly correlated in absolute value. Emitted by {@link DataAudit} from
+     * pairwise-complete sample correlations and by {@link CovarianceAudit} from the correlations implied by a
+     * supplied covariance matrix (in which case nUsed is the matrix's stated sample size).
      */
     HIGH_CORRELATION,
 
     /**
      * The correlation matrix of the continuous variables is singular (rank-deficient): some continuous variable is an
-     * exact linear function of the others on the analyzed rows.
+     * exact linear function of the others on the analyzed rows. Also emitted by {@link CovarianceAudit} when the
+     * correlation matrix implied by a supplied covariance matrix is rank-deficient.
      */
     EXACT_LINEAR_DEPENDENCE,
 
@@ -116,6 +119,67 @@ public enum FindingCode {
     MISSING_DATA,
 
     /**
+     * Two columns are exact affine functions of one another on the rows where both are observed (identical columns,
+     * complementary indicators such as y = 1 - x, or rescaled copies). Unlike EXACT_LINEAR_DEPENDENCE, which reports
+     * a rank deficiency it cannot localize, this finding names the specific pair; the values carry the number of
+     * jointly observed rows the identity is based on. One of each such pair carries no information the other does
+     * not, on the observed overlap. Also emitted by {@link CovarianceAudit} when the correlation implied by a
+     * supplied covariance matrix has absolute value 1 within tolerance; the values then carry the implied
+     * correlation, and no row counts, since no rows are available.
+     */
+    DUPLICATE_COLUMNS,
+
+    /**
+     * The pairwise-complete correlation matrix of the continuous variables has at least one negative eigenvalue.
+     * Because each entry is computed on a different subset of rows, the assembled matrix is not the correlation
+     * matrix of any single sample; joint quantities derived from it (rank, variance inflation factors, partial
+     * correlations) can therefore be incoherent. Individual pairwise correlations remain interpretable, each on its
+     * own row subset.
+     */
+    PAIRWISE_CORRELATION_NOT_PSD,
+
+    /**
+     * The number of complete rows minus one is smaller than the number of continuous variables, so ANY covariance or
+     * correlation matrix computed on complete cases is singular by arithmetic, regardless of what the variables
+     * measure. When this holds, joint linear-dependence findings cannot be attributed to relationships among
+     * specific variables: the singularity is forced by the complete-case count. Localizable exact dependencies, if
+     * any, are reported separately as DUPLICATE_COLUMNS.
+     */
+    COMPLETE_CASES_FORCE_SINGULARITY,
+
+    /**
+     * A variable is constant, within tolerance, inside every multi-row cell of the joint values of a small set of
+     * other few-valued variables: on the analyzed rows, the variable is a function of that set (up to tolerance).
+     * Exact or near-exact functional determinism violates faithfulness and destabilizes conditional-independence
+     * judgments: conditioning sets containing the determining variables render the determined variable
+     * pseudo-independent of everything, sepsets become pathological, and constraint-based orientation can produce
+     * arrowheads that no data-generating mechanism supports (a computed or derived column "causing" its inputs).
+     * <p>
+     * The determined variable is listed FIRST in the finding's variable list; the determining set follows. Only
+     * minimal determining sets are reported: once a set is found for a variable, its supersets are not searched. A
+     * pair already reported as DUPLICATE_COLUMNS is not re-reported here as a one-element determinism. The linear
+     * whole-matrix analog is EXACT_LINEAR_DEPENDENCE; the regression- and eta-squared-based near-determinism
+     * findings (NEAR_DETERMINISM_CONTINUOUS, NEAR_DETERMINISM_DISCRETE_CONTINUOUS) cover linear and single-discrete
+     * mechanisms, while this finding is nonparametric and joint, so it detects nonlinear functions of variable
+     * combinations (e.g., a boundary-layer quantity computed from several experimental settings) that those checks
+     * miss.
+     * <p>
+     * The check is bounded: determining sets up to a configured size, determiner variables up to a configured
+     * distinct-value count, and a fixed work budget; single-row cells are vacuous and are excluded, with coverage
+     * and multi-row-cell minimums guarding against vacuously "deterministic" fine grids. The absence of this finding
+     * therefore does not rule out determinism beyond those bounds.
+     */
+    DETERMINISTIC_RELATION,
+
+    /**
+     * A variable is constant within every level of the configured serial grouping variable (e.g., a subject-level
+     * attribute in a repeated-measures file). Its effective sample size for correlational judgments is the number of
+     * groups, not the number of rows, and with few groups such variables are frequently exactly collinear with one
+     * another by accident.
+     */
+    GROUP_CONSTANT_VARIABLE,
+
+    /**
      * A continuous variable is serially dependent in file order (autocorrelated across consecutive rows), so rows are
      * not exchangeable as given and independence tests that assume i.i.d. rows may be anticonservative. This check is
      * one-sided with respect to row order: a flag means rows are dependent in the order given, but the absence of a
@@ -124,5 +188,53 @@ public enum FindingCode {
      * computed within blocks by naming a grouping variable, since block-level mean shifts and boundary jumps
      * otherwise contaminate the pooled estimate.
      */
-    SERIAL_DEPENDENCE
+    SERIAL_DEPENDENCE,
+
+    /**
+     * A supplied covariance matrix is not symmetric within tolerance: some entry (i, j) differs from its transpose
+     * entry (j, i) by more than a small fraction of the largest absolute entry. A genuine covariance matrix is
+     * symmetric by definition, so asymmetry indicates a transcription or assembly error. Subsequent checks in the
+     * same audit are run on the symmetrized matrix (S + S')/2, as stated in the finding's message. Emitted only by
+     * {@link CovarianceAudit}.
+     */
+    COVARIANCE_NOT_SYMMETRIC,
+
+    /**
+     * A diagonal entry of a supplied covariance matrix is zero or negative. A zero variance is the covariance-matrix
+     * analog of a constant column: the variable carries no sample information, its correlations are undefined, and
+     * including it makes the matrix singular. A negative variance is not a variance at all and marks the matrix as
+     * invalid input. Variables flagged with this code are excluded from the correlation-derived checks in the same
+     * audit. Emitted only by {@link CovarianceAudit}.
+     */
+    NONPOSITIVE_VARIANCE,
+
+    /**
+     * A supplied covariance matrix has at least one negative eigenvalue (judged on the implied correlation matrix,
+     * for scale invariance): it is not the covariance matrix of any dataset. This arises when matrices are assembled
+     * entrywise from different row subsets (pairwise deletion), transcribed or rounded, or produced by procedures
+     * that do not guarantee positive semidefiniteness. Quantities that presuppose a valid covariance matrix
+     * (likelihoods, partial correlations, regression coefficients) can fail or behave incoherently. Emitted only by
+     * {@link CovarianceAudit}; the analogous finding for a matrix Tetrad itself assembles pairwise from a dataset
+     * with missing values is PAIRWISE_CORRELATION_NOT_PSD.
+     */
+    COVARIANCE_NOT_PSD,
+
+    /**
+     * The ratio of the largest to the smallest positive variance on the diagonal of a supplied covariance matrix is
+     * extreme. This usually reflects unstandardized variables measured in very different units and degrades the
+     * numerical conditioning of decompositions and inversions even when the implied correlations are unremarkable.
+     * Emitted only by {@link CovarianceAudit}.
+     */
+    EXTREME_VARIANCE_SCALE,
+
+    /**
+     * The stated sample size n of a supplied covariance matrix satisfies n - 1 &lt; p, where p is the number of
+     * (positive-variance) variables, so any ordinary sample covariance matrix computed from n rows is singular by
+     * arithmetic. If the supplied matrix has rank at most n - 1, it is consistent with that arithmetic, and joint
+     * linear-dependence findings cannot be attributed to relationships among specific variables. If its rank exceeds
+     * n - 1, it cannot be an ordinary sample covariance matrix at the stated n: either the sample size is misstated
+     * or the matrix was regularized, shrunk, or model-implied. The finding's message states which case holds. Emitted only
+     * by {@link CovarianceAudit}; the dataset analog is COMPLETE_CASES_FORCE_SINGULARITY.
+     */
+    SAMPLE_SIZE_FORCES_SINGULARITY
 }

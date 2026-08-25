@@ -420,7 +420,7 @@ class CovCellRenderer extends DefaultTableCellRenderer {
         int numVars = variables.size();
 
         if (colVar >= 0 && colVar < numVars && rowVar >= 0 &&
-                rowVar < numVars && rowVar >= colVar) {
+                rowVar < numVars) {
             boolean rowSelected = this.covMatrix.isSelected((Node) variables.get(rowVar));
             boolean colSelected = this.covMatrix.isSelected((Node) variables.get(colVar));
 

@@ -44,18 +44,49 @@ import static junit.framework.TestCase.assertTrue;
 
 public class TestKnowledge {
 
-    private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, AcceptsKnowledge algorithm) {
+    /**
+     * For CPDAG algorithms (causal sufficiency assumed), "X1 is in the last tier" implies X1 has no children, so no
+     * edge X1 --&gt; m may appear, and getNodesOutTo(x1, ARROW) must be empty.
+     */
+    private static void testKnowledgeCpdag(DataSet dataSet, Knowledge knowledge, Parameters parameters, AcceptsKnowledge algorithm) {
+        Graph _graph = runSearch(dataSet, knowledge, parameters, algorithm);
+        Node x1 = _graph.getNode("X1");
+        List<Node> innodes = _graph.getNodesOutTo(x1, Endpoint.ARROW);
+        assertTrue("CPDAG semantics: X1 in the last tier may have no children, but found " + innodes,
+                innodes.isEmpty());
+    }
+
+    /**
+     * For PAG algorithms, "X1 is in the last tier" (X1 causes nothing) forbids only a TAIL at X1 with an arrow into
+     * m, i.e., an edge X1 --&gt; m claiming X1 is an ancestor of m. Edges X1 &lt;-&gt; m and X1 o-&gt; m are NOT
+     * violations: X1 &lt;-&gt; m records confounding of X1 and m by a latent, which is exactly the graph a correct
+     * search should return when the data show dependence that knowledge forbids from being causal. The previous
+     * version of this test asserted getNodesOutTo(x1, ARROW) empty for PAG algorithms as well; that assertion pinned
+     * a former (incorrect) veto in FciOrient.isArrowheadAllowed which deleted collider arrowheads at m whenever
+     * X1 --&gt; m was forbidden, erasing the confounding record (see TestFciKnowledgeOrientation).
+     */
+    private static void testKnowledgePag(DataSet dataSet, Knowledge knowledge, Parameters parameters, AcceptsKnowledge algorithm) {
+        Graph _graph = runSearch(dataSet, knowledge, parameters, algorithm);
+        Node x1 = _graph.getNode("X1");
+        List<Node> violations = new java.util.ArrayList<>();
+        for (Node m : _graph.getNodesOutTo(x1, Endpoint.ARROW)) {
+            if (_graph.getEndpoint(m, x1) == Endpoint.TAIL) {
+                violations.add(m);
+            }
+        }
+        assertTrue("PAG semantics: X1 in the last tier may have no edge X1 --> m (tail at X1, arrow at m), "
+                + "but found such edges to " + violations, violations.isEmpty());
+    }
+
+    private static Graph runSearch(DataSet dataSet, Knowledge knowledge, Parameters parameters, AcceptsKnowledge algorithm) {
         algorithm.setKnowledge(knowledge);
-        Graph _graph = null;
+        Graph _graph;
         try {
             _graph = ((Algorithm) algorithm).search(dataSet, parameters);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        _graph = GraphUtils.replaceNodes(_graph, dataSet.getVariables());
-        Node x1 = _graph.getNode("X1");
-        List<Node> innodes = _graph.getNodesOutTo(x1, Endpoint.ARROW);
-        assertTrue(innodes.isEmpty());
+        return GraphUtils.replaceNodes(_graph, dataSet.getVariables());
     }
 
     // Tests to make sure knowledge gets passed into the algcomparison wrappers for
@@ -84,17 +115,17 @@ public class TestKnowledge {
         ScoreWrapper score = new SemBicScore();
         Parameters parameters = new Parameters();
 
-        testKnowledge(dataSet, knowledge, parameters, new Boss(score));
-        testKnowledge(dataSet, knowledge, parameters, new Fges(score));
-        testKnowledge(dataSet, knowledge, parameters, new Grasp(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new Pc(test));
-        testKnowledge(dataSet, knowledge, parameters, new Sp(score));
+        testKnowledgeCpdag(dataSet, knowledge, parameters, new Boss(score));
+        testKnowledgeCpdag(dataSet, knowledge, parameters, new Fges(score));
+        testKnowledgeCpdag(dataSet, knowledge, parameters, new Grasp(test, score));
+        testKnowledgeCpdag(dataSet, knowledge, parameters, new Pc(test));
+        testKnowledgeCpdag(dataSet, knowledge, parameters, new Sp(score));
 
-        testKnowledge(dataSet, knowledge, parameters, new Bfci(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new Fci(test));
-        testKnowledge(dataSet, knowledge, parameters, new GraspFci(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new Rfci(test));
-        testKnowledge(dataSet, knowledge, parameters, new SpFci(test, score));
+        testKnowledgePag(dataSet, knowledge, parameters, new Bfci(test, score));
+        testKnowledgePag(dataSet, knowledge, parameters, new Fci(test));
+        testKnowledgePag(dataSet, knowledge, parameters, new GraspFci(test, score));
+        testKnowledgePag(dataSet, knowledge, parameters, new Rfci(test));
+        testKnowledgePag(dataSet, knowledge, parameters, new SpFci(test, score));
     }
 }
 

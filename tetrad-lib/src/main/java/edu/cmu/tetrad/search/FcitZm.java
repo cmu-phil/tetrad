@@ -59,11 +59,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * per-step guarantee is therefore carried by the saturating pass and the terminal identity
  * (the spurious-free skeleton forces the true PAG), not by the legality gate.
  *
- * <p><b>What the gate does guarantee.</b> Every committed state, and the returned graph,
- * is a legal PAG -- a property of the reorientation referring neither to the true PAG nor
- * to faithfulness, hence surviving the passage from oracle to finite sample. The final
- * reorientation is itself gated (see {@code search()}); if it fails, the last gated state
- * is returned instead.
+ * <p><b>What the gate does guarantee.</b> Every committed state projects to a legal Zhang
+ * MAG, and the RETURNED graph is certified as a legal PAG in the full sense of
+ * {@link PagLegalityCheck#isLegalPag} (modulo knowledge when knowledge is present): its
+ * implied MAG is legal AND the graph equals the canonical PAG of that MAG. These are
+ * properties of the reorientation referring neither to the true PAG nor to faithfulness,
+ * hence surviving the passage from oracle to finite sample. The final test-based
+ * reorientation can leave the graph strictly between its MAG and that MAG's completed
+ * PAG (e.g., when R4 declines for want of a confirmable separator); in that case the
+ * canonical PAG of the certified MAG is returned in its place (see {@code search()}).
  *
  * <p><b>Seed soundness.</b> The soundness argument consumes exactly one orientation
  * premise: that the seed's unshielded colliders are sound. Every reorientation performed
@@ -658,6 +662,55 @@ public final class FcitZm implements IGraphSearch {
             TetradLogger.getInstance().log("\nFinal reorientation is not legal ("
                     + finalLegal.getReason() + "); returning the last gated PAG instead.");
             finalPag = interimPags.getLast();
+            finalMag = GraphTransforms.zhangMagFromPag(new EdgeListGraph(finalPag));
+            finalLegal = PagLegalityCheck.isLegalMag(finalMag, new LinkedHashSet<>(selection));
+        }
+
+        // MAG legality is necessary but NOT sufficient for PAG-hood: the certificate the
+        // rest of the codebase applies (PagLegalityCheck.isLegalPag, the one behind the GUI
+        // check and the one Fcit gates on) additionally requires that the graph EQUAL the
+        // canonical PAG of its implied MAG. coldReorient is a test-based reorientation --
+        // its R4 declines when no separator can be confirmed from sample, and the
+        // discriminating-path search may be bounded -- so its output can sit strictly
+        // between the MAG and its completed PAG: MAG-legal, yet failing the certificate.
+        // (The interim fallback, MAG-gated on the PAG commit route, has the same exposure.)
+        // Certify here with the modulo-knowledge certificate (identical to the strict one
+        // when knowledge is empty), and on a round-trip failure HEAL rather than merely
+        // report: substitute the canonical PAG of the already-certified MAG -- the ZM
+        // projection this class is named for -- knowledge-refined and re-closed when
+        // knowledge is present, mirroring the certificate's own reconstitution so the
+        // substitute passes it by construction. The skeleton is untouched; only endpoint
+        // marks the test-based pass left uncommitted (or stamped non-invariantly) change.
+        if (finalLegal.isLegalMag()) {
+            PagLegalityCheck.LegalPagRet finalPagLegal =
+                    PagLegalityCheck.isLegalPagModuloKnowledge(finalPag,
+                            new LinkedHashSet<>(selection), knowledge, fciOrient, excludeSelectionBias);
+
+            if (!finalPagLegal.isLegalPag()) {
+                TetradLogger.getInstance().log("\nFinal graph is MAG-legal but not a legal PAG ("
+                        + finalPagLegal.getReason()
+                        + "); substituting the canonical PAG of the certified MAG.");
+
+                Graph completed = new MagToPag(finalMag).convert(false, false);
+
+                if (knowledge != null && !knowledge.isEmpty()) {
+                    fciOrient.fciOrientbk(knowledge, completed, completed.getNodes(), excludeSelectionBias);
+                    fciOrient.finalOrientation(completed, excludeSelectionBias);
+                }
+
+                finalPag = completed;
+
+                // Tripwire, not control flow: if the mirrored reconstitution still fails the
+                // certificate, something deeper than under-orientation is wrong; say so
+                // loudly instead of emitting an uncertified graph silently.
+                PagLegalityCheck.LegalPagRet recheck =
+                        PagLegalityCheck.isLegalPagModuloKnowledge(finalPag,
+                                new LinkedHashSet<>(selection), knowledge, fciOrient, excludeSelectionBias);
+                if (!recheck.isLegalPag()) {
+                    TetradLogger.getInstance().log("\nWARNING: healed graph still fails the PAG certificate ("
+                            + recheck.getReason() + "). Returning it anyway; please report this case.");
+                }
+            }
         }
 
         // Diagnostics are run on the graph actually RETURNED. Running them on the last
@@ -1575,7 +1628,21 @@ public final class FcitZm implements IGraphSearch {
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
+        FciOrient fciOrient = new FciOrient(strategy);
+        fciOrient.setVerbose(false);
+        fciOrient.setParallel(false);
+        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
+        fciOrient.setRecursiveDepth(recursiveDepth);
+        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
+        fciOrient.setUseR4(true);
+        fciOrient.setKnowledge(knowledge);
+
         finalPag.reorientAllWith(Endpoint.CIRCLE);
+        // Re-apply background-knowledge endpoint marks before recalling colliders, mirroring
+        // ruleR0's ordering. Previously this cold pass discarded the knowledge marks placed by
+        // dagToPag and never restored them (reorientCandidate does, via fciOrient.orient), so
+        // the returned graph ignored tier knowledge entirely.
+        fciOrient.fciOrientbk(knowledge, finalPag, finalPag.getNodes(), excludeSelectionBias);
         GraphUtils.recallInitialColliders(finalPag, initialColliders, knowledge);
 
         // Stamp R0 from the RECORDED separators. Change from the pre-2026 implementation:
@@ -1590,14 +1657,6 @@ public final class FcitZm implements IGraphSearch {
         // adjustForExtraSepsets.
         adjustForExtraSepsets(sepsets, finalPag);
 
-        FciOrient fciOrient = new FciOrient(strategy);
-        fciOrient.setVerbose(false);
-        fciOrient.setParallel(false);
-        fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
-        fciOrient.setRecursiveDepth(recursiveDepth);
-        fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setUseR4(true);
-        fciOrient.setKnowledge(knowledge);
         fciOrient.finalOrientation(finalPag);   // R1-R10; R0 stamped above from the recorded sepsets
 
         return finalPag;

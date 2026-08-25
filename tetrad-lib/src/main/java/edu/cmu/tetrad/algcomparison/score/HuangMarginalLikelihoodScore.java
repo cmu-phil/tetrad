@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.FfMlContinuous;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -69,6 +70,7 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Huang ML Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.HuangMarginalLikelihoodScore score;
@@ -123,6 +125,8 @@ public class HuangMarginalLikelihoodScore implements ScoreWrapper {
         parameters.add(Params.KML_LAMBDA);
         parameters.add(Params.KML_JITTER);
         parameters.add(Params.KML_BANDWIDTH_MULTIPLIER);
+
+        parameters.add(Params.MISSING_DATA_POLICY);
 
         return parameters;
     }

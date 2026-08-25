@@ -42,7 +42,7 @@ import java.util.function.Function;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CD-NOD-PAG",
         command = "cdnodpag",
-        algoType = AlgType.forbid_latent_common_causes
+        algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental

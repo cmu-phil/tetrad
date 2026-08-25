@@ -26,7 +26,6 @@ import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -41,6 +40,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -72,7 +72,6 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
  * @author josephramsey
  * @version $Id: $Id
  */
-@Experimental
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "PC-AR",
         command = "pc-ar",
@@ -84,6 +83,14 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
 
     @Serial
     private static final long serialVersionUID = 23L;
+
+    // R (maxRescuePasses on PcAR): fixed rather than a tunable Parameters entry, per instruction.
+    // "Small" here means enough passes for one recovered edge's newly-exposed unshielded triples
+    // to get a chance to be checked too, without unbounded cost on a run where RECOVER never
+    // actually recovers anything (the common case with only the BASE_RATE_ONLY estimator wired --
+    // see the comment at the setMaxRescuePasses call site). 3 is a guess at that balance, not a
+    // calibrated number; there's no result in the paper or Clark's note pinning down a specific R.
+    private static final int MAX_RESCUE_PASSES = 3;
 
     /**
      * The independence test to use.
@@ -134,11 +141,19 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
             default -> throw new IllegalArgumentException("Invalid collider orientation style");
         };
 
-        // 0=OFF, 1=MARK, 2=RECOVER; see Params/ParamDescriptions registration on your end.
+        // 0=OFF, 1=MARK, 2=RECOVER, 3=RECOVER_CORROBORATED; see Params/ParamDescriptions
+        // registration on your end (rescueAction upper bound needs raising to 3). Mode 3 is the
+        // recommended recovery mode when recovery is wanted at all: it reinstates only pairs BOTH
+        // tiers independently flag, and needs no odds estimator or threshold. Its precision on
+        // the first ground-truth run was 1 of 2 (vs. 1 of 14 for the raw tier-1 list): the wrong
+        // recovery was a pair whose audit failure was caused by a different missing edge, which
+        // is the localization limit corroboration inherits from the audit. Treat mode 3's
+        // precision as a quantity your replicates measure, not a promise.
         int rescueActionCode = parameters.getInt(Params.RESCUE_ACTION);
         edu.cmu.tetrad.search.PcAR.RescueAction rescueAction = switch (rescueActionCode) {
             case 0 -> edu.cmu.tetrad.search.PcAR.RescueAction.OFF;
             case 2 -> edu.cmu.tetrad.search.PcAR.RescueAction.RECOVER;
+            case 3 -> edu.cmu.tetrad.search.PcAR.RescueAction.RECOVER_CORROBORATED;
             default -> edu.cmu.tetrad.search.PcAR.RescueAction.MARK;
         };
 
@@ -160,27 +175,60 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         search.setRescueAction(rescueAction);
         search.setRecoveryOddsThreshold(parameters.getDouble(Params.RECOVERY_ODDS_THRESHOLD));
 
-        // BASE_RATE_ONLY estimator: uses the paper's closed-form q_cancel(n) ~= 6.95/sqrt(n-3)
-        // (Secs. 7-8, edu.cmu.tetrad.search.PcAR#paperCancellationBaseRateOdds) as the *base-rate*
-        // term of the Sec. 14 posterior odds. It does NOT include the likelihood-ratio term (the
-        // rescue test's own power/alpha against the discriminating statistic at this specific
-        // triangle) -- nothing here computes that -- so this implicitly treats every clash
-        // detection as carrying no evidentiary weight beyond the base rate. That's a real,
-        // paper-derived number rather than a fabricated one, but it's still derived under (A1)-
-        // (A3): Erdos-Renyi skeleton, coefficients uniform(-1,1), disturbance variances
-        // uniform(1/2,2), an isolated triangle. It is not locus-specific (see the javadoc on
-        // paperCancellationBaseRate for the three-way split) and does not know your actual
-        // data-generating process. Recalibrate before trusting RECOVER output past a smoke test.
-        int sampleSize = (dataModel instanceof DataSet ds) ? ds.getNumRows() : -1;
-        double baseRateOdds = sampleSize > 3
-                ? edu.cmu.tetrad.search.PcAR.paperCancellationBaseRateOdds(sampleSize)
-                : Double.NEGATIVE_INFINITY; // unknown/too-small n => never recovers, falls back to MARK
-        search.setRecoveryOddsEstimator((x, y, z, sepset) -> baseRateOdds);
+        // Fixed rather than exposed as a Parameters entry, per instruction: R (maxRescuePasses)
+        // only has any effect when a pass actually recovers something. A small constant is enough
+        // to let a cascading recovery play out without paying for repeated full clash passes on
+        // every search call; promote to a registered Params entry once there's a reason to tune it
+        // per-run rather than per-build.
+        search.setMaxRescuePasses(MAX_RESCUE_PASSES);
 
-        // determinismGuard and markovAuditor intentionally left unset (null) -- see class
-        // javadoc. Wire them here directly once you have concrete implementations, e.g.:
+        // Full Sec. 14 posterior odds: base rate q(n)/(1-q(n)) TIMES a per-pair likelihood ratio
+        // from the discriminating re-test (pair re-tested with the pivot's sepset membership
+        // toggled; LR via the Vovk-Sellke bound on the discriminating p-value). This replaces the
+        // earlier base-rate-only lambda, whose pair-blindness scored every flag identically. See
+        // PcAR.DiscriminatingTestOddsEstimator's javadoc for the two honest limits: (1) the
+        // size-alpha guarantee on the discriminating test holds within the paper's model, where
+        // the clash's collider demands are genuine -- a pivot that is in truth a plain common
+        // cause of the pair makes the re-test reject through the confounding, so expect
+        // over-recovery exactly where the clash pass over-flags; (2) no multiplicity correction is
+        // applied across flags, which Sec. 14 explicitly owes -- raise the threshold as the crude
+        // compensation. NOTE: the estimator runs one extra CI test per flagged pair, using the
+        // same (cached) test as the search itself.
+        search.setRecoveryOddsEstimator(
+                new edu.cmu.tetrad.search.PcAR.DiscriminatingTestOddsEstimator(test));
+
+        // determinismGuard intentionally left unset (null) -- see class javadoc. Wire here once
+        // you have a concrete implementation, e.g.:
         //   search.setDeterminismGuard((v, S) -> ...);
-        //   search.setMarkovAuditor((g, t) -> ...);
+
+        // Tier two, delegating to MarkovAuditUtils.auditFailures: a MarkovCheck audit with the
+        // family-wise Benjamini-Hochberg correction MARKOV-AUDIT line 6 specifies (Clark's note
+        // Sec. 4-6). This replaces the earlier uncorrected adapter, whose per-test-alpha failure
+        // list grew with n even on fixed-quality graphs (the family of implied facts is large and
+        // power rises with n), overstating the violation count and -- when failures seeded the
+        // repair region -- saturating the seed set at high n (a 20-node run at n=5000 excluded
+        // zero vertices). Post-BH, getMarkovAuditFailures() reports only failures that survive
+        // FDR at the level below.
+        //
+        // FDR LEVEL: the test's own alpha, for lack of a better-motivated number -- a dedicated
+        // parameter would be cleaner but adds a knob before there's evidence one is needed. Note
+        // this is NOT Params.FDR_Q, which governs the separate FDR loop over the SEARCH's own
+        // tests below; conflating the two would tie the audit's stringency to an unrelated
+        // setting whose default (0.0) would disable the audit entirely.
+        final double auditQ = test.getAlpha();
+        search.setMarkovAuditor((auditGraph, auditTest) -> {
+            List<edu.cmu.tetrad.search.PcAR.MarkovAuditFailure> failures = new ArrayList<>();
+            for (edu.cmu.tetrad.search.test.IndependenceResult r
+                    : edu.cmu.tetrad.search.MarkovAuditUtils.auditFailures(
+                    auditGraph, auditTest,
+                    edu.cmu.tetrad.search.ConditioningSetType.LOCAL_MARKOV,
+                    auditQ, false)) {
+                failures.add(new edu.cmu.tetrad.search.PcAR.MarkovAuditFailure(
+                        r.getFact().getX(), r.getFact().getY(),
+                        r.getFact().getZ(), r.getPValue()));
+            }
+            return failures;
+        });
 
         double fdrQ = parameters.getDouble(Params.FDR_Q);
 
@@ -199,12 +247,52 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
 
         stampWithBic(graph, dataModel);
 
-        // Surface the tier-1 detections somewhere visible rather than dropping them: attached as
-        // graph attributes since algcomparison's runSearch only returns a Graph. Adjust to
-        // whatever channel (e.g. a report file, or a dedicated result type) you'd rather use --
-        // this is the simplest thing that doesn't lose the information.
+        // Surface the tier-1/tier-2 detections somewhere visible rather than dropping them.
+        // Counts go on as graph attributes (cheap, always available, survive downstream).
+        // Full per-detection detail (which pair, which pivot, which sepset, which locus) only
+        // exists on the local `search` object and is gone once this method returns, so print it
+        // now under the same VERBOSE gate PcAR itself uses for its own per-flag logging -- this is
+        // additive to that (PcAR's internal logging is one line per flag as it happens; this is a
+        // full listing at the end, easier to scan or grep out of a harness run).
         graph.addAttribute("PcAR.contestedDeletions", search.getContestedDeletions().size());
+        graph.addAttribute("PcAR.orientationClashes", search.getOrientationClashes().size());
         graph.addAttribute("PcAR.markovAuditFailures", search.getMarkovAuditFailures().size());
+
+        // Seed handoff for targeted repair, stamped under MarkovAuditUtils.SEED_ATTRIBUTE (the
+        // search-agnostic key the Vertex Repair GUI reads; names travel, since graphs are copied
+        // between boxes and nodes re-resolved by name). NARROW set: endpoints of the (now
+        // BH-corrected) Markov-audit failures plus endpoints of determinism-guard-blocked
+        // deletions -- NOT clash or contested endpoints. Rationale: those diagnostics spread over
+        // symptoms (dozens of endpoint pairs on ordinary 20-node runs), and seeding at them
+        // saturated the seed set at n=5000 (zero excluded vertices, i.e. no restriction at all).
+        // The strong evidence seeds; the frontier-growth mechanism in VertexRepairSearch reaches
+        // the orientation-scrambled surroundings as edits propagate. PcAR#implicatedVertices()
+        // still exposes the full union programmatically for anyone who wants the wide set.
+        java.util.Set<edu.cmu.tetrad.graph.Node> seeds = new java.util.LinkedHashSet<>();
+        for (edu.cmu.tetrad.search.PcAR.MarkovAuditFailure maf : search.getMarkovAuditFailures()) {
+            seeds.add(maf.x());
+            seeds.add(maf.y());
+        }
+        for (edu.cmu.tetrad.search.Fas.BlockedDeletion bd : search.getBlockedDeletions()) {
+            seeds.add(bd.x());
+            seeds.add(bd.y());
+        }
+        edu.cmu.tetrad.search.MarkovAuditUtils.stampSeedAttribute(graph, seeds);
+
+        if (parameters.getBoolean(Params.VERBOSE)) {
+            for (edu.cmu.tetrad.search.PcAR.ContestedDeletion cd : search.getContestedDeletions()) {
+                TetradLogger.getInstance().log(
+                        "[PcAR contested] " + cd.x().getName() + " - " + cd.y().getName()
+                                + " (pivot " + cd.z().getName() + ", locus " + cd.locus()
+                                + ", sepset " + cd.sepset() + ", recovered=" + cd.recovered() + ")");
+            }
+            for (edu.cmu.tetrad.search.PcAR.MarkovAuditFailure maf : search.getMarkovAuditFailures()) {
+                TetradLogger.getInstance().log(
+                        "[PcAR markov-audit] " + maf.x().getName() + " _||_ " + maf.y().getName()
+                                + " | " + maf.conditioningSet() + " failed (p=" + maf.pValue() + ")");
+            }
+        }
+
 
         return graph;
     }

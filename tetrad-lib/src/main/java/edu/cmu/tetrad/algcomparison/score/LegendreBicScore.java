@@ -9,6 +9,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -84,6 +85,7 @@ public class LegendreBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Legendre BIC Score");
         if (!(dataSet instanceof DataSet ds)) {
             throw new IllegalArgumentException("Expecting a dataset.");
         }
@@ -165,6 +167,7 @@ public class LegendreBicScore implements ScoreWrapper {
         p.add(Params.LEGENDRE_RIDGE);
         p.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
         p.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        p.add(Params.MISSING_DATA_POLICY);
         return p;
     }
 

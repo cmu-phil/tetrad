@@ -8,6 +8,7 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -70,6 +71,7 @@ public class TRffBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "TRFF BIC Score");
         final edu.cmu.tetrad.search.score.TRffBicScore score;
         if (dataSet instanceof DataSet) {
             this.dataSet = DataTransforms.standardizeData((DataSet) dataSet);
@@ -140,6 +142,8 @@ public class TRffBicScore implements ScoreWrapper {
         parameters.add(Params.NUM_FF_FEATURES);
         parameters.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
         parameters.add(Params.TRFF_NU);
+
+        parameters.add(Params.MISSING_DATA_POLICY);
 
         return parameters;
     }

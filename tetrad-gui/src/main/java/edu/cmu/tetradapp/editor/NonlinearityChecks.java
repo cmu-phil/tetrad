@@ -46,8 +46,8 @@ public final class NonlinearityChecks extends JPanel {
     private final JButton runButton = new JButton("Check Nonlinearity");
     private final JButton showStatsButton = new JButton("Show Stats");
 
-    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (CV + Additivity)", false);
-//    private final JCheckBox includeSlowTests = new JCheckBox("Include slow tests (Additivity)", false);
+    private final JCheckBox includeCv = new JCheckBox("Include CV (slow)", false);
+    private final JCheckBox includeAdditivity = new JCheckBox("Include Additivity (Parents)", false);
 
     private final ResultsTableModel tableModel = new ResultsTableModel();
     private final JTable table = new JTable(tableModel);
@@ -60,7 +60,8 @@ public final class NonlinearityChecks extends JPanel {
     private static final String KEY_TREATMENTS = "nonlin.treatments";
     private static final String KEY_OUTCOMES = "nonlin.outcomes";
     private static final String KEY_MODE = "nonlin.mode"; // "PAIRWISE" or "MULTIVARIATE"
-    private static final String KEY_INCLUDE_SLOW = "nonlin.includeSlow";
+    private static final String KEY_INCLUDE_CV = "nonlin.includeCv";
+    private static final String KEY_INCLUDE_ADDITIVITY = "nonlin.includeAdditivity";
 
     /**
      * Constructs a new NonlinearityChecks panel with the provided dataset.
@@ -127,7 +128,8 @@ public final class NonlinearityChecks extends JPanel {
         // Buttons
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttons.add(runButton);
-        buttons.add(includeSlowTests);
+        buttons.add(includeCv);
+        buttons.add(includeAdditivity);
         buttons.add(showStatsButton);
         showStatsButton.setEnabled(false);
 
@@ -165,8 +167,19 @@ public final class NonlinearityChecks extends JPanel {
                 }
 
                 String tip = switch (col) {
-                    case 7 -> "<html><b>Additivity</b><br>" +
-                            "Tests whether nonlinear effects of the parents combine additively, or whether interactions among parents improve prediction.</html>";
+                    case 3 -> "<html><b>RESET</b> (Ramsey)<br>" +
+                            "F-test: do the square and cube of the fitted values improve the linear fit?<br>" +
+                            "See Notes... for details.</html>";
+                    case 4 -> "<html><b>CV</b> (linear vs. nonlinear)<br>" +
+                            "Does a nonlinear (RBF kernel) predictor beat the linear one out of sample?<br>" +
+                            "Robust to heteroskedasticity. Run only when \"Include CV\" is checked.</html>";
+                    case 5 -> "<html><b>Moment</b> (LM test)<br>" +
+                            "Chi-square LM test: do squares, cubes, and pairwise products of X explain the linear residuals?</html>";
+                    case 6 -> "<html><b>Additive</b> (hinge basis)<br>" +
+                            "F-test: do per-variable hinge (piecewise-linear) terms improve the linear fit? No interaction terms.</html>";
+                    case 7 -> "<html><b>Additivity (Parents)</b><br>" +
+                            "Tests whether nonlinear effects of the parents combine additively, or whether interactions among parents improve prediction.<br>" +
+                            "Needs 2+ regressors; run only when \"Include Additivity (Parents)\" is checked.</html>";
 
                     default -> null;
                 };
@@ -181,9 +194,10 @@ public final class NonlinearityChecks extends JPanel {
         JTextArea note = new JTextArea(
                 "Notes:\n" +
                         "- Results are about nonlinearity in the conditional mean E(Y|X); “Nonlinear” means the " +
-                        "test rejected linearity at the chosen alpha.\n" +
+                        "test rejected linearity at alpha = 0.05.\n" +
                         "- Use “Show Stats” for full statistics and p-values for the selected row; see “Notes...” " +
-                        "for how to read disagreements between tests and the effect of regression direction."
+                        "for what each test does, how to read disagreements between tests, and the effect of " +
+                        "regression direction."
         );
         note.setEditable(false);
         note.setOpaque(false);
@@ -208,7 +222,10 @@ public final class NonlinearityChecks extends JPanel {
         installPrefsListeners();
         loadPrefs();
 
-        includeSlowTests.setToolTipText("Includes slower tests such as cross-validation and additive hinge checks.");
+        includeCv.setToolTipText("Cross-validated linear vs. nonlinear (kernel ridge) prediction. " +
+                "The slowest test: fits a 200-feature kernel model on every fold of every row.");
+        includeAdditivity.setToolTipText("Cross-validated additive vs. interaction model for rows with 2+ regressors " +
+                "(conditional mode). Moderately slow; always Skipped in pairwise mode.");
     }
 
     private void loadPrefs() {
@@ -222,7 +239,8 @@ public final class NonlinearityChecks extends JPanel {
             rbPairwise.setSelected(true);
         }
 
-        includeSlowTests.setSelected(PREFS.getBoolean(KEY_INCLUDE_SLOW, false));
+        includeCv.setSelected(PREFS.getBoolean(KEY_INCLUDE_CV, false));
+        includeAdditivity.setSelected(PREFS.getBoolean(KEY_INCLUDE_ADDITIVITY, false));
     }
 
     private void installPrefsListeners() {
@@ -243,14 +261,16 @@ public final class NonlinearityChecks extends JPanel {
         rbPairwise.addActionListener(e -> savePrefs());
         rbConditional.addActionListener(e -> savePrefs());
 
-        includeSlowTests.addActionListener(e -> savePrefs());
+        includeCv.addActionListener(e -> savePrefs());
+        includeAdditivity.addActionListener(e -> savePrefs());
     }
 
     private void savePrefs() {
         PREFS.put(KEY_TREATMENTS, treatmentsArea.getText().trim());
         PREFS.put(KEY_OUTCOMES, outcomesArea.getText().trim());
         PREFS.put(KEY_MODE, rbConditional.isSelected() ? "MULTIVARIATE" : "PAIRWISE");
-        PREFS.putBoolean(KEY_INCLUDE_SLOW, includeSlowTests.isSelected());
+        PREFS.putBoolean(KEY_INCLUDE_CV, includeCv.isSelected());
+        PREFS.putBoolean(KEY_INCLUDE_ADDITIVITY, includeAdditivity.isSelected());
     }
 
     private void wireEvents() {
@@ -279,7 +299,8 @@ public final class NonlinearityChecks extends JPanel {
                     }
 
                     // --- build jobs (deterministic order) ---
-                    final boolean runSlow = includeSlowTests.isSelected();
+                    final boolean doCv = includeCv.isSelected();
+                    final boolean doAdditivity = includeAdditivity.isSelected();
                     final double alpha = 0.05;
                     final int kfold = 10;
 
@@ -338,7 +359,7 @@ public final class NonlinearityChecks extends JPanel {
                         for (int i = 0; i < jobs.size(); i++) {
                             Job job = jobs.get(i);
                             futures[i] = pool.submit(() ->
-                                    runOne(job.index, job.xs, job.y, alpha, kfold)
+                                    runOne(job.index, job.xs, job.y, alpha, kfold, doCv, doAdditivity)
                             );
                         }
 
@@ -384,51 +405,232 @@ public final class NonlinearityChecks extends JPanel {
     }
 
     /**
-     * Shows the full interpretation guidance for the results table, in a scrollable dialog. The short footer keeps
-     * the panel compact; the details live here. The guidance mirrors the caveats documented in
+     * Shows the full interpretation guidance for the results table in a tabbed, scrollable dialog. The short footer
+     * keeps the panel compact; the details live here. There is one tab per test column, plus an overview and an
+     * interpretation tab. The guidance mirrors the caveats documented in
      * {@link edu.cmu.tetrad.search.utils.NonlinearityTests} and is grounded in the calibration harness results.
      */
     private void showFullNotes() {
-        JTextArea area = new JTextArea(
-                "What is tested\n" +
-                        "Each row tests whether the conditional mean E(Y|X) of that row's regression is linear; " +
-                        "“Nonlinear” means the test rejected linearity at the chosen alpha. The tests say nothing " +
-                        "about the variance or the distribution of Y.\n\n" +
-                        "Direction matters\n" +
-                        "The verdict is direction-relative. A linear non-Gaussian pair has a linear mean from " +
-                        "cause to effect but a genuinely nonlinear mean in the reverse regression, so a rejection " +
-                        "can mean “nonlinear relationship” or “linear non-Gaussian pair tested in the anticausal " +
-                        "direction.” Testing both directions disambiguates: linear both ways suggests a linear " +
-                        "near-Gaussian pair; linear one way only suggests a linear non-Gaussian pair, with the " +
-                        "linear direction the plausible causal one; nonlinear both ways suggests a genuinely " +
-                        "nonlinear relationship.\n\n" +
-                        "Reading disagreements between tests\n" +
-                        "RESET, Moment, and Additive assume homoskedastic errors and over-reject when errors are " +
-                        "heteroskedastic but the mean is linear. CV (run when “Include slow tests” is checked) " +
-                        "keeps its false-rejection rate under heteroskedasticity, so RESET/Moment rejecting while " +
-                        "CV does not is a hint of heteroskedasticity rather than a nonlinear mean; all tests " +
-                        "rejecting together is stronger evidence that the mean really is nonlinear.\n\n" +
-                        "Additivity (Parents)\n" +
-                        "This column answers a different question: whether the (possibly nonlinear) effects of " +
-                        "several parents combine additively, or whether interactions among them improve " +
-                        "prediction.\n\n" +
-                        "Statistics\n" +
-                        "Use “Show Stats” for full statistics and p-values for the selected row."
-        );
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Overview", notesTab(NOTES_OVERVIEW));
+        tabs.addTab("RESET", notesTab(NOTES_RESET));
+        tabs.addTab("CV", notesTab(NOTES_CV));
+        tabs.addTab("Moment", notesTab(NOTES_MOMENT));
+        tabs.addTab("Additive", notesTab(NOTES_ADDITIVE));
+        tabs.addTab("Additivity (Parents)", notesTab(NOTES_ADDITIVITY));
+        tabs.addTab("Interpreting", notesTab(NOTES_INTERPRETING));
+        tabs.setPreferredSize(new Dimension(660, 480));
+
+        JOptionPane.showMessageDialog(getThisComponent(), tabs,
+                "Nonlinearity Checks - Notes", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Wraps a block of note text in a read-only, word-wrapped, scrollable text area for use as a tab.
+     */
+    private static JComponent notesTab(String text) {
+        JTextArea area = new JTextArea(text);
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setMargin(new Insets(8, 8, 8, 8));
         area.setCaretPosition(0);
-
-        JScrollPane scroll = new JScrollPane(area);
-        scroll.setPreferredSize(new Dimension(560, 420));
-
-        JOptionPane.showMessageDialog(getThisComponent(), scroll,
-                "Nonlinearity Checks - Notes", JOptionPane.INFORMATION_MESSAGE);
+        return new JScrollPane(area);
     }
 
-    private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold) {
+    // ---------------- Notes text (one block per tab) ----------------
+
+    private static final String NOTES_OVERVIEW = """
+            What is tested
+            Each row tests whether the conditional mean E(Y|X) of that row's regression is linear in X. \
+            "Nonlinear" means the test rejected linearity at alpha = 0.05 (fixed in this tool). The tests say \
+            nothing about the variance or the distribution of Y, only about the shape of its mean as a function \
+            of X.
+
+            Common setup
+            Before every test, Y and each column of X are centered, so the linear null hypothesis includes an \
+            intercept. Rows with a missing value in Y or in any X of that row are dropped (testwise deletion). \
+            All tests are deterministic: repeated runs on the same data give the same numbers.
+
+            Modes
+            - Pairwise: each (X, Y) pair is tested with a single regressor. Additivity (Parents) is not \
+            meaningful here and shows "Skipped".
+            - Conditional: each Y is regressed on the whole treatment set at once (or on each k-subset if a \
+            [k] or [k..m] suffix is given). Additivity (Parents) is meaningful whenever the set has 2+ regressors.
+
+            Fast vs. slow tests
+            RESET, Moment, and Additive are closed-form F or chi-square tests and always run. CV and Additivity \
+            (Parents) fit nonlinear predictors inside 10-fold cross-validation and are opt-in: check "Include CV \
+            (slow)" and/or "Include Additivity (Parents)". CV is by far the slower of the two; Additivity only \
+            does work on rows with 2+ regressors.
+
+            Show Stats
+            Selecting a row and pressing "Show Stats" reports, for each test, the raw statistic, the p-value, and \
+            the reject decision. The meaning of the statistic differs by test; each tab says what it is.""";
+
+    private static final String NOTES_RESET = """
+            RESET (Ramsey's Regression Equation Specification Error Test)
+
+            What it does
+            Fit the linear regression of Y on X and take the fitted values yhat. Then refit with yhat^2 and yhat^3 \
+            added as two extra regressors. If the extra terms significantly reduce the residual sum of squares, \
+            the linear specification is rejected.
+
+            Statistic
+            F with (2, n - d - 2) degrees of freedom, where d is the number of regressors. Larger F means the \
+            squared and cubed fitted values explain more of what the linear fit missed. Needs n >= 10.
+
+            What it is good at
+            Smooth curvature along the direction of the linear fit, which is the typical "the relationship bends" \
+            case. With a single regressor, yhat is just a rescaled X, so RESET is essentially a test for x^2 and \
+            x^3 terms.
+
+            Limitations
+            - It only looks along the fitted linear direction. If the linear fit is nearly flat (a symmetric \
+            U-shape, or a pure interaction with no main effects), yhat carries little information and RESET can \
+            have low power where Moment or Additive still reject.
+            - Assumes homoskedastic errors. Under a linear mean with heteroskedastic noise it over-rejects (about \
+            10-35 percent at alpha = 0.05 in the calibration harness).""";
+
+    private static final String NOTES_CV = """
+            CV (cross-validated linear vs. nonlinear prediction)
+
+            What it does
+            Split the rows into 10 folds (fewer if n is small). On each fold, fit a linear ridge regression and a \
+            nonlinear kernel ridge regression (RBF kernel approximated by 200 random Fourier features, bandwidth \
+            set to the median pairwise distance among training rows) on the training part, and compute both \
+            held-out mean squared errors on the test part. If the nonlinear predictor is reliably better across \
+            folds, linearity is rejected.
+
+            Statistic
+            A one-sided paired t-statistic across the folds for "linear MSE minus nonlinear MSE is positive", \
+            with kfold - 1 degrees of freedom. Needs n >= 20.
+
+            What it is good at
+            It is model-agnostic: any smooth nonlinearity that an RBF predictor can exploit, including \
+            interactions, can trigger it. Because both predictors face exactly the same noise in each fold, it \
+            keeps its false-rejection rate under heteroskedasticity, which the F/LM tests do not.
+
+            Limitations
+            - It is a prediction comparison, not a specification test, so with small n or weak nonlinearity the \
+            nonlinear predictor's extra variance can cost it the comparison; expect less power than the F/LM \
+            tests on clean homoskedastic data.
+            - Only kfold paired differences enter the t-test, so the p-value is coarse.
+            - It is the slowest test: it is run only when "Include CV (slow)" is checked.""";
+
+    private static final String NOTES_MOMENT = """
+            Moment (conditional-moment / nonlinear-features LM test)
+
+            What it does
+            Fit the linear regression and take its residuals e. Build a matrix G of nonlinear features of X: the \
+            square and cube of every regressor, plus the pairwise product of every two regressors. Regress e on G. \
+            Under linearity the residuals should be unpredictable from any function of X; if G explains them, \
+            linearity is rejected.
+
+            Statistic
+            Lagrange multiplier statistic LM = n * R^2 from the residual-on-G regression, compared with a \
+            chi-square distribution with df = number of columns of G (2d + d(d-1)/2 for d regressors). Needs \
+            n >= 20.
+
+            What it is good at
+            Polynomial-type curvature in each regressor, and pairwise interactions between regressors, tested \
+            directly rather than through the fitted linear index. Unlike RESET, it does not need the linear fit \
+            to be informative, so it retains power for symmetric shapes and pure interactions.
+
+            Limitations
+            - The cube terms make it sensitive to outliers and heavy-tailed X.
+            - The number of features grows quadratically in d, so with many regressors and modest n the \
+            chi-square approximation weakens and power is spread thin.
+            - Assumes homoskedastic errors; over-rejects under heteroskedastic linear data.""";
+
+    private static final String NOTES_ADDITIVE = """
+            Additive (additive-component hinge test)
+
+            What it does
+            Fit the linear regression. Then, for each regressor separately, add three hinge functions \
+            max(0, x - knot) with knots at the 25th, 50th, and 75th percentiles of that regressor, and refit. \
+            This is a small additive spline model: each regressor gets its own piecewise-linear curve, with no \
+            interaction terms. If the hinges significantly reduce the residual sum of squares, linearity is \
+            rejected.
+
+            Statistic
+            F with (3d, n - 4d) degrees of freedom, where d is the number of regressors. Needs n >= 20.
+
+            What it is good at
+            Per-variable curvature that is not well described by low-order polynomials: thresholds, saturation, \
+            kinks, and other piecewise shapes. It is also the test whose alternative most resembles a \
+            generalized additive model, so a rejection here with the Additivity (Parents) column reading \
+            "Additive OK" is a good indication that an additive nonlinear model would fit.
+
+            Limitations
+            - No interaction terms, so it has essentially no power against pure interactions such as \
+            y = x1 * x2 with no main effects; Moment and CV are the tests to look at for that.
+            - Three knots per regressor is coarse; high-frequency oscillation between knots can be missed.
+            - Assumes homoskedastic errors; over-rejects under heteroskedastic linear data.""";
+
+    private static final String NOTES_ADDITIVITY = """
+            Additivity (Parents)
+
+            This column answers a different question from the other four. It does not ask whether E(Y|X) is \
+            linear; it asks whether the (possibly nonlinear) effects of the regressors combine additively, \
+            f1(x1) + f2(x2) + ..., or whether interactions among them improve prediction. It needs 2+ regressors \
+            and n >= 30, and runs only when "Include Additivity (Parents)" is checked; otherwise it shows "Skipped".
+
+            What it does
+            Two nested models are compared by 10-fold cross-validation. The additive model uses, per regressor, \
+            a linear term, six hinge functions at quantile knots, and a one-dimensional random Fourier feature \
+            block, so it can represent smooth additive nonlinearity of each regressor separately. The full model \
+            is the same additive design plus a joint multivariate random Fourier feature block, which is the \
+            only part that can represent interactions. Because the models are nested, the joint block only has \
+            to explain the non-additive remainder. A single ridge penalty is chosen by GCV on the full model \
+            and shared by both, which makes the comparison conservative under additive truth.
+
+            Statistic
+            The mean per-observation cross-validated improvement, additive squared error minus full squared \
+            error, pooled over all held-out points; positive favors non-additivity. The p-value is from a \
+            one-sided Wilcoxon signed-rank test on those pooled per-observation differences (rank-based because \
+            squared-error differences are heavy-tailed). "Non-additive" means the interaction block improved \
+            out-of-sample prediction at alpha = 0.05.
+
+            Reading it
+            - "Additive OK" with some of RESET/Moment/Additive rejecting suggests an additive nonlinear model \
+            (a GAM-style fit) is adequate.
+            - "Non-additive" means interactions among the listed regressors matter for predicting Y.
+            - Like CV, both models face the same noise, so this comparison keeps its size under \
+            heteroskedasticity.""";
+
+    private static final String NOTES_INTERPRETING = """
+            Direction matters
+            The verdict is direction-relative. A linear non-Gaussian pair has a linear mean from cause to effect \
+            but a genuinely nonlinear mean in the reverse regression, so a rejection can mean "nonlinear \
+            relationship" or "linear non-Gaussian pair tested in the anticausal direction." Testing both \
+            directions disambiguates: linear both ways suggests a linear near-Gaussian pair; linear one way only \
+            suggests a linear non-Gaussian pair, with the linear direction the plausible causal one; nonlinear \
+            both ways suggests a genuinely nonlinear relationship.
+
+            Reading disagreements between tests
+            RESET, Moment, and Additive assume homoskedastic errors and over-reject when errors are \
+            heteroskedastic but the mean is linear. CV and Additivity (Parents) keep their false-rejection rates \
+            under heteroskedasticity, so RESET/Moment/Additive rejecting while CV does not is a hint of \
+            heteroskedasticity rather than a nonlinear mean; all tests rejecting together is stronger evidence \
+            that the mean really is nonlinear.
+
+            Which test sees what
+            - Smooth curvature along the fitted line: all four; RESET is the most direct.
+            - Symmetric shapes with a flat linear fit (e.g. a U): Moment, Additive, CV; RESET may miss.
+            - Thresholds, kinks, saturation: Additive is the most direct; CV also sees them.
+            - Pure interactions between regressors (conditional mode only): Moment (via product terms) and CV; \
+            RESET and Additive have little power. Additivity (Parents) is the dedicated test.
+            - Heteroskedastic but linear mean: RESET, Moment, and Additive tend to reject; CV and Additivity \
+            (Parents) do not.
+
+            Multiple comparisons
+            Each row is tested at alpha = 0.05 with no correction. In pairwise mode with many variables, expect \
+            roughly 5 percent of truly linear pairs to read "Nonlinear" for each fast test; look for agreement \
+            across tests and for small p-values in "Show Stats" rather than trusting any single rejection.""";
+
+    private ResultRow runOne(int index, List<Node> xs, Node y, double alpha, int kfold,
+                             boolean doCv, boolean doAdditivity) {
         double[] yy = col(y);
 
         double[][] XX = new double[yy.length][xs.size()];
@@ -444,10 +646,8 @@ public final class NonlinearityChecks extends JPanel {
 
         NonlinearityTests.TestResult reset = NonlinearityTests.resetTest(yy, XX, alpha);
 
-        final boolean doSlow = includeSlowTests.isSelected();
-
         NonlinearityTests.TestResult cv =
-                doSlow ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
+                doCv ? NonlinearityTests.cvLinearVsNonlinear(yy, XX, kfold, alpha) : null;
 
         NonlinearityTests.TestResult mom =
                 NonlinearityTests.conditionalMomentTest(yy, XX, alpha);
@@ -457,7 +657,7 @@ public final class NonlinearityChecks extends JPanel {
 
         // NEW: additivity check (additive hinge predictor vs full RFF predictor)
         NonlinearityTests.TestResult addit =
-                doSlow ? NonlinearityTests.cvAdditiveVsRff(yy, XX, kfold, alpha) : null;
+                doAdditivity ? NonlinearityTests.cvAdditiveVsRff(yy, XX, kfold, alpha) : null;
 
         String xLabel = (xs.size() == 1) ? xs.get(0).getName()
                 : xs.stream().map(Node::getName).collect(Collectors.joining(", "));

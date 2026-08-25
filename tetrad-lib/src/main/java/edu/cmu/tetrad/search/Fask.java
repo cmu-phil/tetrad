@@ -69,6 +69,14 @@ public final class Fask {
     private final DataSet dataSet;
     private double[][] data;
     private Graph externalGraph = null;
+
+    /**
+     * Whether the initial adjacency skeleton G0 should come from a BOSS CPDAG rather than FAS-stable
+     * (default: false). Ignored when an external graph has been set. This parallels the FGES-adjacency
+     * option in the original FASK: a global score-based search typically yields better finite-sample
+     * adjacencies than FAS, and FASK's pairwise skew orientation then proceeds identically.
+     */
+    private boolean useBossAdjacencies = false;
     private int depth = -1;
     private double alpha = 0.05;
     private Knowledge knowledge = new Knowledge();
@@ -566,6 +574,13 @@ public final class Fask {
             }
             g1 = GraphUtils.replaceNodes(g1, dataSet.getVariables());
             G0 = g1;
+        } else if (useBossAdjacencies) {
+            Boss boss = new Boss(this.score);
+            PermutationSearch ps = new PermutationSearch(boss);
+            ps.setKnowledge(this.knowledge);
+            Graph cpdag = ps.search();
+            Graph undirected = GraphUtils.undirectedGraph(cpdag);
+            G0 = GraphUtils.replaceNodes(undirected, dataSet.getVariables());
         } else {
             IndependenceTest test = new ScoreIndTest(score, dataSet);
             Fas fas = new Fas(test);
@@ -677,6 +692,16 @@ public final class Fask {
      */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
+    }
+
+    /**
+     * Sets whether the initial adjacency skeleton should come from a BOSS CPDAG rather than FAS-stable.
+     * Ignored when an external graph has been set. Default: false.
+     *
+     * @param useBossAdjacencies true to use BOSS for the initial skeleton.
+     */
+    public void setUseBossAdjacencies(boolean useBossAdjacencies) {
+        this.useBossAdjacencies = useBossAdjacencies;
     }
 
     /**

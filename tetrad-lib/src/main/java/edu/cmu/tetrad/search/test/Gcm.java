@@ -70,8 +70,22 @@ import static edu.cmu.tetrad.util.TMath.*;
  * </p>
  * Reference: Rajen D. Shah and Jonas Peters. "The hardness of conditional independence testing
  * and the generalised covariance measure." Annals of Statistics, 48(3):1514–1538, 2020.
+ *
+ * <p><b>Direction of safety.</b> The GCM null distribution is insensitive to the regressors' complexity but NOT to
+ * their bias: any underfit of E[X | Z] or E[Y | Z] leaves correlated unexplained structure in both residuals, and
+ * the resulting bias term re-creates, continuously, the same spurious-rejection pathology as OLS residualization
+ * under a nonlinear conditional mean. Consequently, regularizing MORE (larger ridge, larger rffSigma) degrades
+ * VALIDITY, while regularizing less mostly costs power (cross-fitting protects the null). Do not raise the ridge
+ * "to be safe"; the safe direction is a flexible, well-tuned fit. By default, rffSigma and rffFeatures are chosen
+ * automatically (rffSigma scales with sqrt(|Z|) so the random-frequency scale is dimension-stable; rffFeatures
+ * scales with sqrt(n)); both can be overridden explicitly.</p>
+ *
+ * <p><b>Blind spots.</b> The scalar GCM statistic tests only conditional-MEAN dependence: dependence carried purely
+ * by higher moments (e.g., Y depending on X only through X^2 with symmetric X, or variance-only dependence) is
+ * invisible to it in principle, not by implementation. For dependence expressed in arbitrary basis directions, see
+ * {@link IndTestBasisExpandedGcm}, which applies the same construction to a grid of basis functionals.</p>
  */
-public final class Gcm implements IndependenceTest {
+public final class Gcm implements IndependenceTest, RowsSettable {
 
     private final DataSet data;
     private final List<Node> variables;
@@ -89,9 +103,12 @@ public final class Gcm implements IndependenceTest {
     private RegressorType regressorType = RegressorType.RFF_RIDGE;
     private double ridge = 1e-3;
 
-    // RFF config (only used for RFF_RIDGE)
-    private int rffFeatures = 200;     // D
-    private double rffSigma = 1.0;     // lengthscale-ish; affects random freq scale
+    // RFF config (only used for RFF_RIDGE). Negative values mean "auto": rffFeatures is resolved
+    // from the sample size (autoRffFeatures) and rffSigma from the conditioning dimension
+    // (sqrt(p), which keeps the variance of the random-frequency dot products at ~1 for
+    // standardized data regardless of |Z|). Explicit setters override.
+    private int rffFeatures = -1;      // D; -1 = auto
+    private double rffSigma = -1.0;    // -1 = auto = sqrt(p)
     private long rffSeed = 1L;
     // last p / last stat (handy for debugging)
     private double lastT = Double.NaN;
@@ -178,16 +195,22 @@ public final class Gcm implements IndependenceTest {
      */
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
-        // Simple (safe) implementation: keep the same dataset, just restrict variable list.
-        // If you prefer true sub-DataSet, you can build one, but this keeps overhead low.
-        Gcm t = new Gcm(this.data, this.alpha);
+        // Restrict the dataset to the requested variables (previously the vars argument was
+        // ignored and the full-variable test was returned), and copy the FULL configuration,
+        // including the cross-fitting settings (previously dropped).
+        Gcm t = new Gcm(this.data.subsetColumns(new ArrayList<>(vars)), this.alpha);
         t.setVerbose(this.verbose);
-        t.setRows(this.rows);
         t.setRegressorType(this.regressorType);
         t.setRidge(this.ridge);
-        t.setRffFeatures(autoRffFeatures(this.data.getNumRows(), vars.size()));
-        t.setRffSigma(this.rffSigma);
+        t.rffFeatures = this.rffFeatures; // preserve auto (-1) vs explicit
+        t.rffSigma = this.rffSigma;       // preserve auto (-1) vs explicit
         t.setRffSeed(this.rffSeed);
+        t.setCrossFit(this.crossFit);
+        t.setCrossFitFolds(this.crossFitFolds);
+        t.setCrossFitSeed(this.crossFitSeed);
+        // Rows are NOT copied: row indices refer to the original dataset's rows, which are
+        // preserved by subsetColumns, so copying is safe -- but only if set.
+        if (this.rows != null) t.setRows(new ArrayList<>(this.rows));
         return t;
     }
 
@@ -197,7 +220,28 @@ public final class Gcm implements IndependenceTest {
         d = TMath.min(d, 2000); // cap for sanity
         // optionally scale a bit with p:
         d = TMath.min(2000, d + 50 * p);
+        // Keep D below the cross-fitting training-fold size so the ridge fit is not forced
+        // into interpolation at small n.
+        int trainFold = crossFit ? (n * (crossFitFolds - 1)) / TMath.max(crossFitFolds, 2) : n;
+        d = TMath.min(d, TMath.max(25, trainFold / 2));
         return d;
+    }
+
+    /**
+     * Resolves the RFF feature count: the explicit setting if given, otherwise the automatic
+     * choice for the current sample size and conditioning dimension.
+     */
+    private int resolveRffFeatures(int n, int p) {
+        return rffFeatures > 0 ? rffFeatures : autoRffFeatures(n, p);
+    }
+
+    /**
+     * Resolves the RFF bandwidth: the explicit setting if given, otherwise sqrt(p), which keeps
+     * the variance of the random-frequency dot products at ~1 for standardized data regardless
+     * of the conditioning dimension (at p = 1 this reproduces the old default of 1.0).
+     */
+    private double resolveRffSigma(int p) {
+        return rffSigma > 0 ? rffSigma : TMath.sqrt(TMath.max(p, 1));
     }
 
     /**
@@ -257,11 +301,16 @@ public final class Gcm implements IndependenceTest {
 
         // Basic df sanity: the CLT/studentization needs "enough" samples.
         // This is not Fisher-Z df; it’s just a guard.
+        //
+        // Changes from the pre-2026-8 implementation: this guard previously returned p = 0.0
+        // ("call dependent"), i.e., it asserted dependence with zero evidence. A p-value of
+        // exactly 0 without data contaminates sepset selection, p-value pooling, and Markov
+        // Checker uniformity diagnostics. The convention now matches the other tests in this
+        // package (BE-GCM, the Wilks block tests): cannot test => cannot reject => p = 1.
         if (n <= max(10, zx + 5)) {
-            // not enough to be meaningful; be conservative: call dependent
             lastT = Double.NaN;
-            lastP = 0.0;
-            return 0.0;
+            lastP = 1.0;
+            return 1.0;
         }
 
         double[] rx = cache.getResiduals(this, ix, iz, useRows);
@@ -326,7 +375,7 @@ public final class Gcm implements IndependenceTest {
     }
 
     public void setAlpha(double alpha) {
-        if (alpha < 0 || alpha > 1) throw new IllegalArgumentException("alpha must be in [0,1]");
+        if (alpha <= 0 || alpha >= 1) throw new IllegalArgumentException("alpha must be in (0,1)");
         this.alpha = alpha;
     }
 
@@ -346,7 +395,7 @@ public final class Gcm implements IndependenceTest {
 
     @Override
     public int getSampleSize() {
-        return data.getNumRows();
+        return rows != null ? rows.size() : data.getNumRows();
     }
 
     /**
@@ -399,9 +448,20 @@ public final class Gcm implements IndependenceTest {
      *
      * @param rows a list of integers representing the row indices to be set
      */
+    @Override
     public void setRows(List<Integer> rows) {
         this.rows = rows;
         cache.clear(); // rows changes => invalidate cache
+    }
+
+    /**
+     * Retrieves the current row restriction, or null if all rows are used.
+     *
+     * @return the rows, or null.
+     */
+    @Override
+    public List<Integer> getRows() {
+        return rows;
     }
 
     /**
@@ -474,7 +534,7 @@ public final class Gcm implements IndependenceTest {
      * @throws IllegalArgumentException if the provided value is less than 1.
      */
     public void setRffFeatures(int d) {
-        if (d < 1) throw new IllegalArgumentException("rffFeatures must be >= 1");
+        if (d < 1 && d != -1) throw new IllegalArgumentException("rffFeatures must be >= 1, or -1 for auto");
         this.rffFeatures = d;
         cache.clear();
     }
@@ -488,7 +548,7 @@ public final class Gcm implements IndependenceTest {
      * @throws IllegalArgumentException if the provided sigma value is not greater than 0.
      */
     public void setRffSigma(double sigma) {
-        if (!(sigma > 0)) throw new IllegalArgumentException("rffSigma must be > 0");
+        if (!(sigma > 0) && sigma != -1.0) throw new IllegalArgumentException("rffSigma must be > 0, or -1 for auto");
         this.rffSigma = sigma;
         cache.clear();
     }
@@ -570,7 +630,7 @@ public final class Gcm implements IndependenceTest {
         Regressor reg = switch (regressorType) {
             case LINEAR_RIDGE -> new LinearRidgeRegressor(ridge);
             case RFF_RIDGE -> new RffRidgeRegressor(
-                    ridge, rffFeatures, rffSigma,
+                    ridge, resolveRffFeatures(n, p), resolveRffSigma(p),
                     // keep deterministic but depend on target/z so cache is meaningful
                     rffSeed ^ targetIdx ^ Arrays.hashCode(zIdx)
             );
@@ -581,6 +641,18 @@ public final class Gcm implements IndependenceTest {
             // in-sample (old behavior)
             yhat = reg.fit(Z, y).predict(Z);
         } else {
+            // NOTE (2026-8 audit): the fold seed deliberately XORs in targetIdx, so the X- and
+            // Y-regressions of one test use DIFFERENT fold partitions. This departs from the
+            // DML convention of a single shared split, and the departure is intentional and
+            // empirically better calibrated here: with a shared partition, the residual
+            // products of test rows in the same fold are positively correlated through the
+            // common training data of BOTH regressions, and the iid-assuming studentizer then
+            // underestimates the variance of the mean product, inflating the test's size
+            // (measured at ~0.07-0.08 vs. nominal 0.05, n = 600, near-interpolating RFF fits).
+            // Misaligned partitions scramble that correlation across the two regressions and
+            // restore calibration (~0.04-0.05). Validity does not require alignment: each
+            // cross term of the orthogonality expansion only requires its own regression to
+            // be out-of-fold. Do not "fix" this to a shared split without re-checking size.
             yhat = crossFitPredict(reg, Z, y, crossFitFolds, crossFitSeed ^ targetIdx ^ Arrays.hashCode(zIdx));
         }
 

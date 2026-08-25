@@ -1348,7 +1348,9 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     public void setLastIndependenceTest(String name) {
-        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
+        // Changed 2026-8-24: validate against the full registry, so a test chosen through an editor's local
+        // "include experimental" switch is accepted even when the global preference is off.
+        IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance(true);
         List<IndependenceTestModel> models = independenceTestModels.getModels();
 
         for (IndependenceTestModel model : models) {
@@ -1370,7 +1372,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
     }
 
     public void setLastScore(String name) {
-        ScoreModels scoreModels = ScoreModels.getInstance();
+        ScoreModels scoreModels = ScoreModels.getInstance(true);
         List<ScoreModel> models = scoreModels.getModels();
 
         for (ScoreModel model : models) {

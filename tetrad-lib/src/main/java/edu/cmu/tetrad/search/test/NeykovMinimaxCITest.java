@@ -1169,4 +1169,16 @@ public final class NeykovMinimaxCITest implements IndependenceTest, RowsSettable
             return Arrays.copyOf(a, n);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Each test filters its candidate rows to those complete on x, y, and the conditioning variables (rowsCompleteFor), i.e., test-wise deletion, unbiased only under MCAR.
+     *
+     * @return {@link edu.cmu.tetrad.data.missing.MissingValueSupport#TESTWISE}.
+     */
+    @Override
+    public edu.cmu.tetrad.data.missing.MissingValueSupport getMissingValueSupport() {
+        return edu.cmu.tetrad.data.missing.MissingValueSupport.TESTWISE;
+    }
 }

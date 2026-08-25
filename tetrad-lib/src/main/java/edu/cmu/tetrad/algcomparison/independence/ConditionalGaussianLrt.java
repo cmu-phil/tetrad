@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -63,12 +64,14 @@ public class ConditionalGaussianLrt implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "CG-LRT (Conditional Gaussian Likelihood Ratio Test)");
         IndTestConditionalGaussianLrt test
                 = new IndTestConditionalGaussianLrt(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA),
                 parameters.getBoolean(Params.DISCRETIZE));
         test.setNumCategoriesToDiscretize(parameters.getInt(Params.NUM_CATEGORIES_TO_DISCRETIZE));
         test.setMinSampleSizePerCell(parameters.getInt(Params.MIN_SAMPLE_SIZE_PER_CELL));
+        test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;
     }
 
@@ -98,6 +101,8 @@ public class ConditionalGaussianLrt implements IndependenceWrapper {
         parameters.add(Params.DISCRETIZE);
         parameters.add(Params.NUM_CATEGORIES_TO_DISCRETIZE);
         parameters.add(Params.MIN_SAMPLE_SIZE_PER_CELL);
+        parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

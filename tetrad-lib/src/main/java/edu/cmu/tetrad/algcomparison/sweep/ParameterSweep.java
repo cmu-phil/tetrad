@@ -54,6 +54,15 @@ import java.util.Random;
  * additionally requires the wrapped algorithm to be deterministic; algorithms with internal thread pools (e.g.
  * FGES) can break score near-ties differently between runs, producing small run-to-run wobble in instabilities.
  * <p>
+ * Block resampling (added 2026-8-25). Row resampling treats every row as exchangeable, which is wrong when rows are
+ * grouped into units that are exchangeable with each other but dependent within - subjects with repeated
+ * measurements, time series segments, sites. {@link #setResampleGroups(int[])} supplies one group label per row;
+ * resamples are then drawn as whole groups (all rows of a drawn group, in their original order; a group drawn
+ * twice with replacement contributes its rows twice), with percentResampleSize and withReplacement applied to the
+ * number of groups rather than rows. Instabilities and edge probabilities are computed exactly as before, over the
+ * resulting resampled datasets. The Markov check and point graph are unaffected. Under a fixed seed the drawn
+ * group sets are reproducible.
+ * <p>
  * The harness executes and measures; it does not decide. Choosing among settings - even by the provided rules on
  * {@link SweepReport} - is a user decision. Background knowledge should be set on the algorithm wrapper before
  * sweeping, as usual for algcomparison algorithms.
@@ -119,6 +128,11 @@ public final class ParameterSweep {
      * Whether to log progress.
      */
     private boolean verbose = false;
+
+    /**
+     * One group label per row for block resampling, or null for row resampling. See the class Javadoc.
+     */
+    private int[] resampleGroups = null;
 
     /**
      * Constructs a sweep harness for the given algorithm and base parameters. The base parameters are copied per
@@ -199,6 +213,27 @@ public final class ParameterSweep {
      */
     public void setSeed(long seed) {
         this.seed = seed;
+    }
+
+    /**
+     * Sets the row groups for block resampling, or null (the default) for row resampling. The array must have one
+     * entry per row of the dataset passed to sweep; any integer labels may be used, and rows with equal labels form a
+     * group. Resamples are drawn as whole groups; see the class Javadoc. Validated against the dataset at sweep
+     * time.
+     *
+     * @param groups one label per row, or null for row resampling.
+     */
+    public void setResampleGroups(int[] groups) {
+        this.resampleGroups = groups == null ? null : groups.clone();
+    }
+
+    /**
+     * Returns the row groups for block resampling, or null for row resampling.
+     *
+     * @return a copy of the group labels, or null.
+     */
+    public int[] getResampleGroups() {
+        return this.resampleGroups == null ? null : this.resampleGroups.clone();
     }
 
     /**
@@ -286,8 +321,21 @@ public final class ParameterSweep {
         if (data == null) throw new NullPointerException("data");
         if (settings == null || settings.isEmpty()) throw new IllegalArgumentException("No settings given.");
 
-        List<DataSet> resamples = drawResamples(data, this.numResamples, this.percentResampleSize,
-                this.withReplacement, this.seed);
+        List<DataSet> resamples;
+        int numResampleGroups = -1;
+
+        if (this.resampleGroups == null) {
+            resamples = drawResamples(data, this.numResamples, this.percentResampleSize,
+                    this.withReplacement, this.seed);
+        } else {
+            if (this.resampleGroups.length != data.getNumRows()) {
+                throw new IllegalArgumentException("resampleGroups has " + this.resampleGroups.length
+                        + " entries but the data has " + data.getNumRows() + " rows.");
+            }
+            numResampleGroups = countGroups(this.resampleGroups);
+            resamples = drawBlockResamples(data, this.resampleGroups, this.numResamples, this.percentResampleSize,
+                    this.withReplacement, this.seed);
+        }
 
         List<SweepResult> results = new ArrayList<>();
 
@@ -334,7 +382,7 @@ public final class ParameterSweep {
         return new SweepReport(this.algorithm.getDescription(),
                 this.markovCheckTest == null ? null : this.markovCheckTest.getDescription(),
                 data.getNumRows(), data.getNumColumns(), this.numResamples, this.percentResampleSize,
-                this.withReplacement, this.seed, results);
+                this.withReplacement, this.seed, numResampleGroups, results);
     }
 
     //==================================== SHARED MACHINERY ====================================//
@@ -385,6 +433,88 @@ public final class ParameterSweep {
         }
 
         return resamples;
+    }
+
+    /**
+     * Draws seed-controlled block resamples: each resample is the concatenation of the rows of percent * G groups
+     * drawn from the G distinct groups, with or without replacement, where a group is the set of rows sharing a
+     * label in {@code groups}. Rows of a drawn group appear in their original order; with replacement, a group drawn
+     * k times contributes its rows k times. Groups are indexed in order of first appearance in {@code groups}, so the
+     * draws are reproducible under a fixed seed independent of label values. Resample sizes vary with the sizes of
+     * the drawn groups.
+     *
+     * @param data            the dataset; may not be null.
+     * @param groups          one integer label per row; must have data.getNumRows() entries.
+     * @param numResamples    the number of resamples; zero returns an empty list.
+     * @param percent         the fraction of the groups per resample, in (0, 1].
+     * @param withReplacement whether to draw groups with replacement.
+     * @param seed            the random seed, or -1 for time-based.
+     * @return the resampled datasets, in draw order.
+     */
+    public static List<DataSet> drawBlockResamples(DataSet data, int[] groups, int numResamples, double percent,
+                                                   boolean withReplacement, long seed) {
+        if (data == null) throw new NullPointerException("data");
+        if (groups == null) throw new NullPointerException("groups");
+        if (groups.length != data.getNumRows()) {
+            throw new IllegalArgumentException("groups has " + groups.length + " entries but the data has "
+                    + data.getNumRows() + " rows.");
+        }
+        if (percent <= 0 || percent > 1) throw new IllegalArgumentException("percent must be in (0, 1]");
+
+        // Group index -> its rows, groups in order of first appearance.
+        Map<Integer, List<Integer>> byLabel = new LinkedHashMap<>();
+        for (int i = 0; i < groups.length; i++) {
+            byLabel.computeIfAbsent(groups[i], k -> new ArrayList<>()).add(i);
+        }
+        List<List<Integer>> blocks = new ArrayList<>(byLabel.values());
+        int g = blocks.size();
+        int m = Math.max(1, (int) Math.round(percent * g));
+
+        Random rand = (seed == -1) ? new Random() : new Random(seed);
+        List<DataSet> resamples = new ArrayList<>();
+
+        for (int s = 0; s < numResamples; s++) {
+            int[] drawn = new int[m];
+
+            if (withReplacement) {
+                for (int i = 0; i < m; i++) drawn[i] = rand.nextInt(g);
+            } else {
+                if (m > g) throw new IllegalArgumentException("Cannot draw " + m + " groups from " + g
+                        + " without replacement.");
+                int[] perm = new int[g];
+                for (int i = 0; i < g; i++) perm[i] = i;
+
+                for (int i = 0; i < m; i++) {
+                    int j = i + rand.nextInt(g - i);
+                    int t = perm[i];
+                    perm[i] = perm[j];
+                    perm[j] = t;
+                }
+
+                System.arraycopy(perm, 0, drawn, 0, m);
+            }
+
+            int total = 0;
+            for (int b : drawn) total += blocks.get(b).size();
+            int[] rows = new int[total];
+            int pos = 0;
+            for (int b : drawn) {
+                for (int r : blocks.get(b)) rows[pos++] = r;
+            }
+
+            resamples.add(data.subsetRows(rows));
+        }
+
+        return resamples;
+    }
+
+    /**
+     * Returns the number of distinct labels in the given group array.
+     */
+    private static int countGroups(int[] groups) {
+        java.util.Set<Integer> labels = new java.util.HashSet<>();
+        for (int gLabel : groups) labels.add(gLabel);
+        return labels.size();
     }
 
     /**

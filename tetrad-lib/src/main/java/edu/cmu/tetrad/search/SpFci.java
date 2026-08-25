@@ -45,7 +45,7 @@ import java.io.PrintStream;
  * @see StarFci
  * @see Sp
  */
-public final class SpFci extends StarFciKeepKnowledgeOrientations {
+public final class SpFci extends StarFciGuaranteePag {
 
     /**
      * The score.

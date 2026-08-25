@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.ProvidesCalibratedPValue;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -68,6 +69,16 @@ public class ScoreIndTest implements IndependenceTest {
      * A boolean variable indicating whether verbose output should be printed.
      */
     private boolean verbose;
+    /**
+     * Whether this test should report a calibrated p-value (asymptotically Uniform(0, 1) under the null) in place
+     * of the raw local score difference. Off by default, so that the reported value and the reported alpha keep
+     * their historical meaning unless the caller asks otherwise. Available only when the wrapped score implements
+     * {@link ProvidesCalibratedPValue} and is configured so that it can honor that contract.
+     * <p>
+     * The DECISION rule is unaffected either way: independence is judged by the sign of the local score
+     * difference, exactly as before.
+     */
+    private boolean calibratePValues = false;
 
     /**
      * <p>Constructor for ScoreIndTest.</p>
@@ -121,9 +132,14 @@ public class ScoreIndTest implements IndependenceTest {
                                        LogUtilsSearch.independenceFact(x, y, z));
         }
 
-        int N = score.getSampleSize();
-
         boolean independent = v <= 0;
+
+        // The reported p-value slot carries the raw score difference unless calibration is on, in which case it
+        // carries a genuine p-value; the score slot always carries the raw difference. See setCalibratePValues.
+        double reported = calibrationActive()
+                ? ((ProvidesCalibratedPValue) this.score).calibratedPValue(this.variables.indexOf(x),
+                this.variables.indexOf(y), varIndices(z1))
+                : v;
 
         if (this.verbose) {
             if (independent) {
@@ -133,7 +149,7 @@ public class ScoreIndTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, v, v);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, reported, v);
     }
 
     /**
@@ -174,12 +190,67 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
+     * Returns false: the value this test reports in the p-value slot is a score difference (negative for
+     * independence, positive for dependence), not a probability, so SMALLER values mean stronger evidence of
+     * independence. Callers ranking sepsets by strength must reverse their comparison accordingly.
+     *
+     * @return False, always.
+     */
+    @Override
+    public boolean isPValueAProbability() {
+        return calibrationActive();
+    }
+
+    /**
+     * Returns true just in case calibrated p-value reporting has been requested AND the wrapped score can supply
+     * it in its current configuration.
+     *
+     * @return True if calibrated p-values are being reported.
+     */
+    public boolean calibrationActive() {
+        return calibratePValues
+               && this.score instanceof ProvidesCalibratedPValue p
+               && p.providesCalibratedPValue();
+    }
+
+    /**
+     * Sets whether this test reports a calibrated p-value in the p-value slot of its results, in place of the raw
+     * local score difference. Off by default.
+     * <p>
+     * The accept/reject decision is NOT affected: independence is judged by the sign of the local score
+     * difference either way, so a search run with this on returns the same graph. What changes is what the test
+     * REPORTS: with calibration on, {@link IndependenceResult#getPValue()} is a probability that is
+     * asymptotically Uniform(0, 1) under the null, {@link #getAlpha()} is the level at which the score's sign
+     * rule operates, and {@link #isPValueAProbability()} is true -- which together make the p-value-distribution
+     * diagnostics of the Markov check (Anderson-Darling, KS, Fisher, binomial) well defined for a score-based
+     * test. The raw score difference remains available from {@link IndependenceResult#getScore()}.
+     * <p>
+     * Requesting this when the wrapped score cannot supply it (it does not implement
+     * {@link ProvidesCalibratedPValue}, or does but is configured with a non-zero structure prior) is a no-op:
+     * {@link #calibrationActive()} stays false and the test behaves exactly as before.
+     *
+     * @param calibratePValues Whether to report calibrated p-values.
+     */
+    public void setCalibratePValues(boolean calibratePValues) {
+        this.calibratePValues = calibratePValues;
+    }
+
+    /**
      * Returns the significance level of the independence test.
      *
      * @return This level.
      * @throws java.lang.UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
+        // With calibration on, this test DOES test at a level: the score's sign rule rejects exactly when the
+        // calibrated p-value falls at or below P(chi-square(1) > c * ln(N)), so report that level.
+        if (calibrationActive()) {
+            return ((ProvidesCalibratedPValue) this.score).impliedAlpha();
+        }
+
+        // Sentinel: this test does not test at a level. The value is deliberately outside [0, 1] so that callers
+        // (e.g. MarkovCheck.isUsableAlpha) can detect the absence of a meaningful alpha; do not "fix" it to 0.
+        // Callers must not use it as an independence threshold -- use IndependenceResult.isIndependent().
         return -1;
     }
 

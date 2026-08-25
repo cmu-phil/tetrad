@@ -8,6 +8,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.ProcessPythonCiService;
 import edu.cmu.tetrad.search.test.PythonRcitIndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.PythonResource;
@@ -114,6 +115,7 @@ public class ClFisherZPython implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "Fisher Z, Causal Learn (Python)");
 
         if (!(dataModel instanceof DataSet dataSet)) {
             throw new IllegalArgumentException(
@@ -235,6 +237,7 @@ public class ClFisherZPython implements IndependenceWrapper {
         params.add(Params.PYTHON_EXE);
         params.add(Params.PYTHON_CI_SERVER);
         params.add(Params.VERBOSE);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

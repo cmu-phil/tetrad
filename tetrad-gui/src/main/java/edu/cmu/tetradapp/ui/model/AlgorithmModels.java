@@ -38,31 +38,18 @@ import java.util.stream.Collectors;
  */
 public final class AlgorithmModels {
 
-    private static final AlgorithmModels INSTANCE = new AlgorithmModels();
+    // Changed 2026-8-24: two immutable instances selected by flag at call time, replacing a single instance that
+    // rebuilt its lists on every getInstance() call.
+    private static final AlgorithmModels WITH_EXPERIMENTAL = new AlgorithmModels(true);
+    private static final AlgorithmModels WITHOUT_EXPERIMENTAL = new AlgorithmModels(false);
+    private final List<AlgorithmModel> models;
+    private final Map<AlgType, List<AlgorithmModel>> modelMap;
 
-    private List<AlgorithmModel> models;
-    private Map<AlgType, List<AlgorithmModel>> modelMap;
-
-    private AlgorithmModels() {
-        refreshModels();
-    }
-
-    /**
-     * <p>getInstance.</p>
-     *
-     * @return a {@link edu.cmu.tetradapp.ui.model.AlgorithmModels} object
-     */
-    public static AlgorithmModels getInstance() {
-        AlgorithmModels.INSTANCE.refreshModels();   // if we had a subscriber CPDAG for app settings would not have to waste time doing this every time!
-        return AlgorithmModels.INSTANCE;
-    }
-
-    private void refreshModels() {
+    private AlgorithmModels(boolean includeExperimental) {
         AlgorithmAnnotations algoAnno = AlgorithmAnnotations.getInstance();
-        List<AnnotatedClass<Algorithm>> list = Tetrad.enableExperimental
+        List<AnnotatedClass<Algorithm>> list = includeExperimental
                 ? algoAnno.getAnnotatedClasses()
                 : algoAnno.filterOutExperimental(algoAnno.getAnnotatedClasses());
-
         list = algoAnno.filterOutDeprecated(list);
 
         this.models = Collections.unmodifiableList(
@@ -72,18 +59,30 @@ public final class AlgorithmModels {
                         .collect(Collectors.toList()));
 
         Map<AlgType, List<AlgorithmModel>> map = new EnumMap<>(AlgType.class);
-
-        // initialize enum map
         for (AlgType algType : AlgType.values()) {
             map.put(algType, new LinkedList<>());
         }
-
-        // group by datatype
         this.models.forEach(e -> map.get(e.getAlgorithm().annotation().algoType()).add(e));
-
-        // make it unmodifiable
         map.forEach((k, v) -> map.put(k, Collections.unmodifiableList(v)));
         this.modelMap = Collections.unmodifiableMap(map);
+    }
+
+    /**
+     * @return the registry honoring the global experimental preference.
+     */
+    public static AlgorithmModels getInstance() {
+        return getInstance(Tetrad.enableExperimental);
+    }
+
+    /**
+     * Returns the registry with or without experimental algorithms, regardless of the global preference. Added
+     * 2026-8-24.
+     *
+     * @param includeExperimental true to include algorithms marked {@code @Experimental}.
+     * @return the registry.
+     */
+    public static AlgorithmModels getInstance(boolean includeExperimental) {
+        return includeExperimental ? WITH_EXPERIMENTAL : WITHOUT_EXPERIMENTAL;
     }
 
     private List<AlgorithmModel> filterInclusivelyByAllOrSpecificDataType(List<AlgorithmModel> algorithmModels, DataType dataType, boolean multiDataSetAlgorithm) {

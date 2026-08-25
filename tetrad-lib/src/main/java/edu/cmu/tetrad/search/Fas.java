@@ -112,6 +112,86 @@ public class Fas implements IFas {
     private PrintStream out = System.out;
     private boolean replicatingGraph = false;
 
+    // ---------------- Opt-in determinism guard (off by default; see note below) ----------------
+
+    /**
+     * A candidate deletion FAS declined because every accepting separating set it found at the
+     * depth in question was contaminated by determinism (see {@link DeterminismGuard}), and no
+     * clean alternate of the same size existed. The edge is left in the graph; {@code sepset}
+     * records one of the contaminated sets that was found, for diagnostics, not one that was used.
+     *
+     * @param x one endpoint of the declined deletion
+     * @param y the other endpoint
+     * @param sepset a contaminated separating set that was found and rejected
+     */
+    public record BlockedDeletion(Node x, Node y, Set<Node> sepset) {
+    }
+
+    /**
+     * Functional hook: return true if {@code S} functionally determines {@code v}
+     * (Var(v|S) = 0, i.e. 1 - R^2(v on S) below some tolerance), where {@code S} does NOT contain
+     * {@code v} itself. Used two ways, matching a determinism-guarded adjacency phase: (a) is any
+     * member of a candidate separating set determined by the rest of that set (an internally
+     * degenerate conditioning set, whose partial correlation has no valid null distribution), and
+     * (b) is either tested endpoint itself determined by the candidate separating set (same
+     * problem, at the other position). No default implementation is wired anywhere in this class;
+     * absent a guard ({@link #setDeterminismGuard} never called), FAS behaves exactly as it did
+     * before this hook existed -- every candidate that would have been accepted still is, in the
+     * same order, at the same depth.
+     */
+    @FunctionalInterface
+    public interface DeterminismGuard {
+        boolean determines(Node v, Set<Node> S) throws InterruptedException;
+    }
+
+    private DeterminismGuard determinismGuard = null;
+    private final List<BlockedDeletion> blocked = new ArrayList<>();
+
+    /**
+     * Wires a determinism guard gating which separating sets FAS is willing to accept. See
+     * {@link DeterminismGuard}. Passing {@code null} (the default) restores the exact pre-guard
+     * behavior. The guard can only ever result in an edge being <i>kept</i> that would otherwise
+     * have been deleted -- it never causes a deletion that wouldn't already have happened, so it
+     * cannot introduce the propagating damage a wrongly-accepted deletion produces; it can only
+     * decline to (possibly wrongly) delete.
+     */
+    public void setDeterminismGuard(DeterminismGuard guard) {
+        this.determinismGuard = guard;
+    }
+
+    /**
+     * Returns every deletion FAS declined to make because of the determinism guard, in the order
+     * encountered. Always empty if no guard was set.
+     */
+    public List<BlockedDeletion> getBlocked() {
+        return Collections.unmodifiableList(blocked);
+    }
+
+    /**
+     * True if {@code S} (candidate separating set for x, y, not containing x or y) is contaminated
+     * by determinism per {@link #determinismGuard}: either some member of S is determined by the
+     * rest of S, or x or y itself is determined by S. Returns false unconditionally if no guard is
+     * set. On interruption from within the guard, preserves interrupt status and reports
+     * contaminated (fails toward keeping the edge, never toward a deletion the guard didn't
+     * actually clear).
+     */
+    private boolean isContaminated(Node x, Node y, Set<Node> S) {
+        if (determinismGuard == null) return false;
+        try {
+            for (Node v : S) {
+                Set<Node> rest = new LinkedHashSet<>(S);
+                rest.remove(v);
+                if (determinismGuard.determines(v, rest)) return true;
+            }
+            if (determinismGuard.determines(x, S)) return true;
+            return determinismGuard.determines(y, S);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return true;
+        }
+    }
+
+
     /**
      * Constructs a new instance of the Fas algorithm using the specified independence test.
      *
@@ -283,6 +363,7 @@ public class Fas implements IFas {
         if (stable) {
             // 1) Decide in parallel on the frozen adjacency.
             ConcurrentLinkedQueue<EdgeRemoval> removals = new ConcurrentLinkedQueue<>();
+            ConcurrentLinkedQueue<BlockedDeletion> blockedThisDepth = new ConcurrentLinkedQueue<>();
             List<Node> nodes = checkAdj.getNodes();
 
             // I think the parallel is fine here because I'm not doing random resampling. Keep in mind this was
@@ -292,10 +373,16 @@ public class Fas implements IFas {
                 for (Node y : checkAdj.getAdjacentNodes(x)) {
                     // Process each unordered pair once (canonical order x<y).
                     if (x.getName().compareTo(y.getName()) >= 0) continue;
-                    decideOnePair(checkAdj, d, x, y, removals);
+                    decideOnePair(checkAdj, d, x, y, removals, blockedThisDepth);
                     if (Thread.currentThread().isInterrupted()) return;
                 }
             });
+
+            // Merge determinism-guard declines found this depth. Sequential, so no concurrency
+            // concerns; a pair blocked at this depth may still be removed cleanly at a later
+            // depth (a larger conditioning set can clear a determination that a smaller one
+            // couldn't), so this list is a diagnostic trail of declines, not a final verdict.
+            blocked.addAll(blockedThisDepth);
 
 //            // 2) Apply sequentially to the live graph and sepsets.
 //            for (EdgeRemoval r : removals) {
@@ -357,10 +444,16 @@ public class Fas implements IFas {
     /**
      * Decide-only for a single (x, y) pair on the frozen graph (used in stable/parallel decision phase). Adds a
      * proposed removal to 'out' if an S of size d separates x and y. Tests subsets from adj(x)\{y} and adj(y)\{x} (both
-     * sides).
+     * sides). If a determinism guard is set and the only accepting separating sets found are contaminated (see
+     * {@link #isContaminated}), no removal is proposed and a {@link BlockedDeletion} is added to
+     * {@code blockedOut} instead -- this is a pure decline, never a deletion the unguarded search wouldn't
+     * already have made.
      */
     private void decideOnePair(Graph checkAdj, int d, Node x, Node y,
-                               ConcurrentLinkedQueue<EdgeRemoval> out) {
+                               ConcurrentLinkedQueue<EdgeRemoval> out,
+                               ConcurrentLinkedQueue<BlockedDeletion> blockedOut) {
+        EdgeRemoval contaminated = null; // first accepting-but-contaminated candidate seen, if any
+
         // Side X: subsets of adj(x) \ {y}
         List<Node> adjx = new ArrayList<>(checkAdj.getAdjacentNodes(x));
         adjx.remove(y);
@@ -384,8 +477,12 @@ public class Fas implements IFas {
                 }
 
                 if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                    if (isContaminated(x, y, S)) {
+                        if (contaminated == null) contaminated = new EdgeRemoval(x, y, S, result.getPValue());
+                        continue; // keep looking for a clean alternate of the same size
+                    }
                     out.add(new EdgeRemoval(x, y, S, result.getPValue()));
-                    return; // first separating set at this depth is enough
+                    return; // first CLEAN separating set at this depth is enough
                 }
             }
         }
@@ -412,10 +509,18 @@ public class Fas implements IFas {
                 }
 
                 if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                    if (isContaminated(x, y, S)) {
+                        if (contaminated == null) contaminated = new EdgeRemoval(x, y, S, result.getPValue());
+                        continue; // keep looking for a clean alternate of the same size
+                    }
                     out.add(new EdgeRemoval(x, y, S, result.getPValue()));
-                    return; // first separating set at this depth is enough
+                    return; // first CLEAN separating set at this depth is enough
                 }
             }
+        }
+
+        if (contaminated != null) {
+            blockedOut.add(new BlockedDeletion(x, y, contaminated.S));
         }
     }
 
@@ -426,6 +531,7 @@ public class Fas implements IFas {
             if (ppx.size() >= d) {
                 ChoiceGenerator generator = new ChoiceGenerator(ppx.size(), d);
                 int[] choice;
+                Set<Node> contaminatedS = null; // first accepting-but-contaminated S seen, if any
 
                 while ((choice = generator.next()) != null) {
                     Set<Node> S = GraphUtils.asSet(choice, ppx);
@@ -440,6 +546,11 @@ public class Fas implements IFas {
                     }
 
                     if (result.isIndependent() && knowledge.noEdgeRequired(x.getName(), y.getName())) {
+                        if (isContaminated(x, y, S)) {
+                            if (contaminatedS == null) contaminatedS = new LinkedHashSet<>(S);
+                            continue; // keep looking for a clean alternate of the same size
+                        }
+
                         modify.removeEdge(x, y);
                         Set<Node> sSaved = new LinkedHashSet<>(S);
                         this.sepset.set(x, y, sSaved);
@@ -449,8 +560,13 @@ public class Fas implements IFas {
 //                                    LogUtilsSearch.independenceFactMsg(x, y, S, result.getPValue()));
 //                        }
 
+                        contaminatedS = null; // a clean removal happened; nothing to report as blocked
                         break;
                     }
+                }
+
+                if (contaminatedS != null) {
+                    this.blocked.add(new BlockedDeletion(x, y, contaminatedS));
                 }
             }
 

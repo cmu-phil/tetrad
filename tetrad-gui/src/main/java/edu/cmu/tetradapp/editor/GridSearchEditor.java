@@ -40,6 +40,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.*;
 import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.util.ExperimentalToggle;
 import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
 
@@ -140,6 +141,11 @@ public class GridSearchEditor extends JPanel {
      * Represents a drop-down menu for selecting an algorithm.
      */
     private transient JComboBox<AlgorithmModel> algorithmDropdown;
+    /**
+     * Whether this editor lists experimental algorithms, tests, and scores. Editor-local; starts from the global
+     * preference. Added 2026-8-24.
+     */
+    private boolean includeExperimental = edu.cmu.tetradapp.Tetrad.enableExperimental;
     /**
      * Private variable representing a JScrollPane used for comparing variables.
      */
@@ -1506,15 +1512,12 @@ public class GridSearchEditor extends JPanel {
     private void openAddAlgorithmDialog() {
         addAlgorithm.setEnabled(false);
 
-        AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
-        List<AlgorithmModel> models = algorithmModels.getModels(getDataTypeForGridSearch(), false);
-
         // Create ALL widgets first
         algorithmDropdown = new JComboBox<>();
         indTestComboBox = new JComboBox<>();
         scoreModelComboBox = new JComboBox<>();
 
-        for (AlgorithmModel m : models) algorithmDropdown.addItem(m);
+        populateAlgorithmDropdown();
 
         // restore last choice
         String lastAlgorithmChoice = model.getLastAlgorithmChoice();
@@ -1543,6 +1546,19 @@ public class GridSearchEditor extends JPanel {
         rowAlg.add(Box.createHorizontalGlue());
         rowAlg.add(algorithmDropdown);
         vert.add(rowAlg);
+
+        // Local experimental switch for this dialog's three lists (added 2026-8-24).
+        Box rowExp = Box.createHorizontalBox();
+        ExperimentalToggle expToggle = new ExperimentalToggle(null);
+        expToggle.setSelected(includeExperimental);
+        expToggle.addActionListener(e -> {
+            includeExperimental = expToggle.isSelected();
+            populateAlgorithmDropdown();
+            populateTestAndScoreCombos();
+        });
+        rowExp.add(Box.createHorizontalGlue());
+        rowExp.add(expToggle);
+        vert.add(rowExp);
 
         Box rowTest = Box.createHorizontalBox();
         rowTest.add(new JLabel("Choose an independence test:"));
@@ -1620,6 +1636,27 @@ public class GridSearchEditor extends JPanel {
         dialog.setVisible(true);
     }
 
+    /**
+     * Fills the algorithm dropdown from the registry honoring this editor's experimental switch, keeping the current
+     * selection when it is still listed. Added 2026-8-24.
+     */
+    private void populateAlgorithmDropdown() {
+        AlgorithmModel previous = (AlgorithmModel) algorithmDropdown.getSelectedItem();
+        String previousName = previous == null ? null : previous.getName();
+        algorithmDropdown.removeAllItems();
+        List<AlgorithmModel> models = AlgorithmModels.getInstance(includeExperimental)
+                .getModels(getDataTypeForGridSearch(), false);
+        for (AlgorithmModel m : models) algorithmDropdown.addItem(m);
+        if (previousName != null) {
+            for (int i = 0; i < algorithmDropdown.getItemCount(); i++) {
+                if (previousName.equals(algorithmDropdown.getItemAt(i).getName())) {
+                    algorithmDropdown.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
     private void populateTestAndScoreCombos() {
         AlgorithmModel selectedItem = (AlgorithmModel) algorithmDropdown.getSelectedItem();
         if (selectedItem != null) model.setLastAlgorithmChoice(selectedItem.getName());
@@ -1637,17 +1674,17 @@ public class GridSearchEditor extends JPanel {
             List<IndependenceTestModel> indTestModels = switch (datatype) {
                 case Continuous -> {
                     List<IndependenceTestModel> testModels = new ArrayList<>();
-                    testModels.addAll(IndependenceTestModels.getInstance().getModels(DataType.Continuous));
-                    testModels.addAll(IndependenceTestModels.getInstance().getModels(DataType.Mixed));
+                    testModels.addAll(IndependenceTestModels.getInstance(includeExperimental).getModels(DataType.Continuous));
+                    testModels.addAll(IndependenceTestModels.getInstance(includeExperimental).getModels(DataType.Mixed));
                     yield testModels;
                 }
                 case Discrete -> {
                     List<IndependenceTestModel> testModels = new ArrayList<>();
-                    testModels.addAll(IndependenceTestModels.getInstance().getModels(DataType.Discrete));
-                    testModels.addAll(IndependenceTestModels.getInstance().getModels(DataType.Mixed));
+                    testModels.addAll(IndependenceTestModels.getInstance(includeExperimental).getModels(DataType.Discrete));
+                    testModels.addAll(IndependenceTestModels.getInstance(includeExperimental).getModels(DataType.Mixed));
                     yield testModels;
                 }
-                case Mixed -> IndependenceTestModels.getInstance().getModels(DataType.Mixed);
+                case Mixed -> IndependenceTestModels.getInstance(includeExperimental).getModels(DataType.Mixed);
                 default -> new ArrayList<>();
             };
             for (IndependenceTestModel m : indTestModels) indTestComboBox.addItem(m);
@@ -1684,17 +1721,17 @@ public class GridSearchEditor extends JPanel {
             List<ScoreModel> scoreModelsList = switch (datatype) {
                 case Continuous -> {
                     List<ScoreModel> scoreModels = new ArrayList<>();
-                    scoreModels.addAll(ScoreModels.getInstance().getModels(DataType.Continuous));
-                    scoreModels.addAll(ScoreModels.getInstance().getModels(DataType.Mixed));
+                    scoreModels.addAll(ScoreModels.getInstance(includeExperimental).getModels(DataType.Continuous));
+                    scoreModels.addAll(ScoreModels.getInstance(includeExperimental).getModels(DataType.Mixed));
                     yield scoreModels;
                 }
                 case Discrete -> {
                     List<ScoreModel> scoreModels = new ArrayList<>();
-                    scoreModels.addAll(ScoreModels.getInstance().getModels(DataType.Discrete));
-                    scoreModels.addAll(ScoreModels.getInstance().getModels(DataType.Mixed));
+                    scoreModels.addAll(ScoreModels.getInstance(includeExperimental).getModels(DataType.Discrete));
+                    scoreModels.addAll(ScoreModels.getInstance(includeExperimental).getModels(DataType.Mixed));
                     yield scoreModels;
                 }
-                case Mixed -> ScoreModels.getInstance().getModels(DataType.Mixed);
+                case Mixed -> ScoreModels.getInstance(includeExperimental).getModels(DataType.Mixed);
                 default -> new ArrayList<>();
             };
             for (ScoreModel m : scoreModelsList) scoreModelComboBox.addItem(m);
@@ -1961,6 +1998,14 @@ public class GridSearchEditor extends JPanel {
         populateMarkovTestComboBox(markovTestComboBox);   // populate + select persisted + listener
         row2.add(markovTestComboBox);
 
+        row2.add(Box.createHorizontalStrut(10));
+        ExperimentalToggle markovExpToggle = new ExperimentalToggle(null);
+        markovExpToggle.setSelected(includeExperimental);
+        markovExpToggle.addActionListener(e -> {
+            includeExperimental = markovExpToggle.isSelected();
+            populateMarkovTestComboBox(markovTestComboBox);
+        });
+        row2.add(markovExpToggle);
         row2.add(Box.createHorizontalStrut(10));
 
         JButton configureMarkovChecker = new JButton("Params…");
@@ -3144,7 +3189,7 @@ public class GridSearchEditor extends JPanel {
 
         if (!testClasses.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nIndependence Test Descriptions:");
-            IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance();
+            IndependenceTestModels independenceTestModels = IndependenceTestModels.getInstance(true);
             for (IndependenceTestModel m : independenceTestModels.getModels()) {
                 Class<?> c = (m.getIndependenceTest() == null) ? null : m.getIndependenceTest().clazz();
                 if (c != null && testClasses.contains(c)) {
@@ -3164,7 +3209,7 @@ public class GridSearchEditor extends JPanel {
 
         if (!scoreClasses.isEmpty()) {
             algorithmChoiceTextArea.append("\n\nScore Descriptions:");
-            ScoreModels scoreModels = ScoreModels.getInstance();
+            ScoreModels scoreModels = ScoreModels.getInstance(true);
             for (ScoreModel m : scoreModels.getModels()) {
                 Class<?> c = (m.getScore() == null) ? null : m.getScore().clazz();
                 if (c != null && scoreClasses.contains(c)) {
@@ -3434,11 +3479,12 @@ public class GridSearchEditor extends JPanel {
     private void populateTestTypes(JComboBox<IndependenceTestModel> indTestJComboBox) {
         indTestJComboBox.removeAllItems();
 
-        // Pull *all* models (as before)
+        // Pull *all* models (as before), honoring this editor's experimental switch
+        IndependenceTestModels registry = IndependenceTestModels.getInstance(includeExperimental);
         List<IndependenceTestModel> models = new ArrayList<>();
-        models.addAll(IndependenceTestModels.getInstance().getModels(DataType.Continuous));
-        models.addAll(IndependenceTestModels.getInstance().getModels(DataType.Discrete));
-        models.addAll(IndependenceTestModels.getInstance().getModels(DataType.Mixed));
+        models.addAll(registry.getModels(DataType.Continuous));
+        models.addAll(registry.getModels(DataType.Discrete));
+        models.addAll(registry.getModels(DataType.Mixed));
 
         // De-dupe (defensive), keep stable order
         LinkedHashMap<String, IndependenceTestModel> uniq = new LinkedHashMap<>();

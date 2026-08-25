@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.IndTestGin;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TMath;
@@ -79,6 +80,7 @@ public class Gin implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "GIN (Residual Independence)");
         DataSet data = (DataSet) dataModel;
 
         // --- Read parameters safely with sensible defaults ---
@@ -146,6 +148,7 @@ public class Gin implements IndependenceWrapper {
         params.add(Params.GIN_RIDGE);        // double
         // You can include Params.VERBOSE if you list it elsewhere for tests
         // params.add(Params.VERBOSE);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 

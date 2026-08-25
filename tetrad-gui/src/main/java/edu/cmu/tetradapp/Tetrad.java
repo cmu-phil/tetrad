@@ -150,6 +150,11 @@ public final class Tetrad implements PropertyChangeListener {
     private void launchFrame() {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
+        // Added 2026-8-24: parameter and edge tooltips now carry a paragraph of explanation, which Swing's default
+        // 4-second dismiss delay does not allow time to read. Show them a little sooner and keep them up longer.
+        ToolTipManager.sharedInstance().setInitialDelay(400);
+        ToolTipManager.sharedInstance().setDismissDelay(60_000);
+
         // Set up the desktop.
         this.desktop = new TetradDesktop();
         getDesktop().addPropertyChangeListener(this);

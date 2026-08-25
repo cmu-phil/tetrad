@@ -92,7 +92,7 @@ import java.io.Serial;
      */
     @Override
     public String getAbbreviation() {
-        return "MC-KSP";
+        return "MC-FDR-P";
     }
 
     /**

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -66,6 +67,7 @@ public class FfMlContinuous implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "FFML-Continuous Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.FfMlContinuous score;
@@ -123,6 +125,7 @@ public class FfMlContinuous implements ScoreWrapper {
         parameters.add(Params.KML_NUM_FEATURES);
         parameters.add(Params.KML_FEATURE_TYPE);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
+        parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;
     }
 

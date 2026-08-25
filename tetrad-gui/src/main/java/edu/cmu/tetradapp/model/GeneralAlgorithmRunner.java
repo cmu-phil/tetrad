@@ -20,6 +20,7 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
@@ -537,7 +538,16 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     if (this.algorithm instanceof AcceptsKnowledge) {
-                        ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                        // Prefer knowledge supplied via a Knowledge box; otherwise pass along the
+                        // knowledge carried by the data sets (knowledge1, stamped from the first
+                        // data set above), which previously was stamped onto the data sets but
+                        // never handed to the algorithm - so knowledge attached to the data was
+                        // silently ignored by multi-data-set algorithms such as IMaGES.
+                        Knowledge effectiveKnowledge =
+                                (this.knowledge != null && !this.knowledge.isEmpty())
+                                        ? this.knowledge
+                                        : (knowledge1 != null ? knowledge1 : new Knowledge());
+                        ((AcceptsKnowledge) this.algorithm).setKnowledge(effectiveKnowledge.copy());
                     }
 
                     try {
@@ -547,6 +557,78 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+                }
+            }
+            // ----- 2B') Pooled search: several data sets, ONE search (IMaGES-style), when requested -----
+            else if (dataModelList.size() > 1 && this.parameters.getBoolean(Params.POOL_DATA_SETS, false)) {
+                if (!(algo instanceof AbstractBootstrapAlgorithm)
+                    || !(algo instanceof TakesScoreWrapper || algo instanceof TakesIndependenceWrapper)) {
+                    throw new IllegalArgumentException("Pooling data sets (the 'poolDataSets' option) requires a "
+                                                       + "score- or test-based algorithm; this algorithm cannot pool. "
+                                                       + "Turn the option off to search each data set separately.");
+                }
+
+                if (knowledge == null) {
+                    Knowledge knowledgeFromData = dataModelList.getFirst().getKnowledge();
+                    if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
+                        this.knowledge = knowledgeFromData;
+                    }
+                }
+
+                if (algo instanceof TakesScoreWrapper) {
+                    ScoreWrapper scoreWrapper = ((TakesScoreWrapper) algo).getScoreWrapper();
+                    if (scoreWrapper instanceof BlockScoreWrapper) {
+                        ((BlockScoreWrapper) scoreWrapper).setBlockSpec(blockSpec);
+                    }
+                    if (scoreWrapper instanceof AcceptsKnowledge) {
+                        ((AcceptsKnowledge) scoreWrapper).setKnowledge(knowledge);
+                    }
+                }
+
+                if (algo instanceof TakesIndependenceWrapper) {
+                    IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
+                    if (wrapper instanceof BlockIndependenceWrapper) {
+                        ((BlockIndependenceWrapper) wrapper).setBlockSpec(blockSpec);
+                    }
+                    if (wrapper instanceof AcceptsKnowledge) {
+                        ((AcceptsKnowledge) wrapper).setKnowledge(knowledge);
+                    }
+                }
+
+                if (algo instanceof TakesGraph) {
+                    ((TakesGraph) algo).setGraph(this.sourceGraph);
+                }
+
+                if (this.algorithm instanceof AcceptsKnowledge && this.knowledge != null) {
+                    ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                }
+
+                DataType algDataType = algo.getDataType();
+
+                for (DataModel data : dataModelList) {
+                    if (data instanceof ICovarianceMatrix && parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
+                        throw new IllegalArgumentException("Sorry, you need tabular datasets in order to do bootstrapping.");
+                    }
+                    boolean ok =
+                            (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) ||
+                                    (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) ||
+                                    (data.isMixed() && algDataType == DataType.Mixed);
+                    if (!ok) {
+                        throw new IllegalArgumentException("The algorithm was not expecting that type of data: "
+                                                           + data.getName());
+                    }
+                }
+
+                try {
+                    // Passing the DataModelList itself is the request to pool; see
+                    // AbstractBootstrapAlgorithm.searchPooled.
+                    Graph graph = algo.search(dataModelList, this.parameters);
+                    LayoutUtil.defaultLayout(graph);
+                    graphList.add(graph);
+                    graphSubtitle.put(graph, noteForAggregate(dataModelList));
+                    resultNames.add("Pooled (" + dataModelList.size() + " data sets)");
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
             // ----- 2B) Standard algorithms: run once PER DATASET and collect graphs -----
@@ -631,13 +713,19 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             this.elapsedTime = stop - start;
         }
 
-        // Final layout pass by knowledge tiers (if any)
-        if (knowledge != null && knowledge.getNumTiers() > 0) {
-            for (Graph graph : graphList) {
+        // Final layout pass. Lagged (time-series) graphs are ALWAYS laid out by lag index - current slice at the
+        // bottom, earlier lags in rows above - whether the lag came from the algorithm's timeLag parameter or from
+        // pre-lagged data, and whether or not knowledge tiers are present: the knowledge here is the user's base
+        // (unlagged) knowledge, so laying a lagged graph out by its tiers misplaces or drops the lagged nodes, and
+        // the default layout hides the lag structure, which is the main thing a time-series graph is for. (This pass
+        // previously overwrote the by-index layout the bootstrap base class had already applied.) Other graphs are
+        // laid out by knowledge tiers if any, else by the default layout.
+        for (Graph graph : graphList) {
+            if (LayoutUtil.isLaggedGraph(graph)) {
+                LayoutUtil.layoutByKnowledgeIndices(graph);
+            } else if (knowledge != null && knowledge.getNumTiers() > 0) {
                 LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
-            }
-        } else {
-            for (Graph graph : graphList) {
+            } else {
                 LayoutUtil.defaultLayout(graph);
             }
         }

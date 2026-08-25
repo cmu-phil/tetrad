@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.test.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -65,6 +66,7 @@ public class CciTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "CCI-Test (Conditional Correlation Independence Test)");
         return new IndTestConditionalCorrelation(
                 SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA),
@@ -101,6 +103,7 @@ public class CciTest implements IndependenceWrapper {
         params.add(Params.BASIS_TYPE);
         params.add(Params.TRUNCATION_LIMIT);
         params.add(Params.BASIS_SCALE);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

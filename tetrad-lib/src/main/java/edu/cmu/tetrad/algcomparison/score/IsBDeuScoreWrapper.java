@@ -5,6 +5,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.is.IsBDeuScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -112,6 +113,7 @@ public final class IsBDeuScoreWrapper implements ScoreWrapper, AcceptsKnowledge 
      */
     @Override
     public Score getScore(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "Instance-specific BDeu Score");
         if (!(dataModel instanceof DataSet train) || !train.isDiscrete()) {
             throw new IllegalArgumentException("Requires a discrete DataSet.");
         }
@@ -182,7 +184,8 @@ public final class IsBDeuScoreWrapper implements ScoreWrapper, AcceptsKnowledge 
         return List.of(
                 Params.INSTANCE_SPECIFIC_ALPHA,
                 Params.INSTANCE_ROW,
-                Params.PRIOR_EQUIVALENT_SAMPLE_SIZE
+                Params.PRIOR_EQUIVALENT_SAMPLE_SIZE,
+                Params.MISSING_DATA_POLICY
                 // Params.TESTING_DATA is injected by the algorithm wrapper
         );
     }

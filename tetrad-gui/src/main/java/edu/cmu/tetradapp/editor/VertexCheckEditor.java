@@ -35,6 +35,7 @@ import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.util.ExperimentalToggle;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -80,6 +81,10 @@ public class VertexCheckEditor extends JPanel {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     private final JComboBox<IndependenceTestModel> indTestCombo = new JComboBox<>();
+    /**
+     * Local switch for listing experimental tests in this editor. Added 2026-8-24.
+     */
+    private final ExperimentalToggle experimentalToggle = new ExperimentalToggle(this::refreshTestList);
     private final JComboBox<ConditioningSetType> conditioningCombo = new JComboBox<>();
     private final JCheckBox verbose = new JCheckBox("Verbose");
     private final JButton showIndepsForRow = new JButton("Independencies");
@@ -140,7 +145,16 @@ public class VertexCheckEditor extends JPanel {
         if (this.knowledge.isViolatedBy(model.getGraph()))
             throw new IllegalArgumentException("Knowledge conflicts with current graph structure.");
 
-        modelUniformityTest = new JComboBox<>(new String[]{"Use KS", "Use AD", "Use WB"});
+        // The wild bootstrap needs row data to residualize; with a covariance matrix it can
+        // only ever return NaN, so it is not offered. If a session saved WB mode and the data
+        // is now a covariance matrix, fall back to KS rather than presenting NaN columns.
+        boolean rowData = model.getDataModel() instanceof DataSet;
+        modelUniformityTest = new JComboBox<>(rowData
+                ? new String[]{"Use KS", "Use AD", "Use WB"}
+                : new String[]{"Use KS", "Use AD"});
+        if (!rowData && VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(model.getUniformityTest())) {
+            model.setUniformityTest(VertexCheckIndTestModel.KOLMOGOROV_SMIRNOFF);
+        }
         modelUniformityTest.setSelectedIndex(uniformityTestIndex(model.getUniformityTest()));
         modelUniformityTest.addActionListener(e -> {
             if (initializing) return;
@@ -398,6 +412,7 @@ public class VertexCheckEditor extends JPanel {
         controls.add(new JLabel("Independence Test:"));
         indTestCombo.setPreferredSize(new Dimension(280, 24));
         controls.add(indTestCombo);
+        controls.add(experimentalToggle);
 
         JButton paramsButton = new JButton("Params");
         controls.add(paramsButton);
@@ -889,7 +904,8 @@ public class VertexCheckEditor extends JPanel {
     private void refreshTestList() {
         DataType dt = guessDataType(model.getDataModel());
         indTestCombo.removeAllItems();
-        List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dt);
+        IndependenceTestModels registry = IndependenceTestModels.getInstance(experimentalToggle.includeExperimental());
+        List<IndependenceTestModel> models = registry.getModels(dt);
         for (IndependenceTestModel m : models) indTestCombo.addItem(m);
         indTestCombo.setEnabled(indTestCombo.getItemCount() > 0);
 
@@ -905,7 +921,7 @@ public class VertexCheckEditor extends JPanel {
             }
         }
         if (toSelect == null && !models.isEmpty())
-            toSelect = IndependenceTestModels.getInstance().getDefaultModel(dt);
+            toSelect = registry.getDefaultModel(dt);
         if (toSelect != null) indTestCombo.setSelectedItem(toSelect);
     }
 

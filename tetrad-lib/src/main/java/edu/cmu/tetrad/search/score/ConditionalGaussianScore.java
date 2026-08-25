@@ -9,6 +9,7 @@ import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.TMath;
 
 import java.text.DecimalFormat;
@@ -24,13 +25,23 @@ import java.util.List;
  * International Journal of Data Science and Analytics, 6, 3–18.
  * <p>
  * As for all scores in Tetrad, higher scores mean more dependence, and negative scores indicate independence.
+ * <p>
+ * Effective sample size (added 2026-8-25). Rows that are serially dependent, clustered, or interpolated carry less
+ * evidence than independent rows. When an effective sample size nEff is set (see
+ * {@link #setEffectiveSampleSize(int)}), the local score is computed as if the data consisted of nEff independent
+ * rows: the log-likelihood, which is a sum over rows, is scaled by r = nEff / N, where N is the number of rows in
+ * the dataset, and the BIC penalty uses r times the number of rows actually scored. Under testwise deletion the rows
+ * actually scored may be fewer than N; the ratio, not the absolute count, is what is preserved, so a family scored
+ * on m complete rows behaves as if it had r * m independent rows. With nEff unset (or negative) r = 1 and the score
+ * is unchanged from the previous implementation. Cell-size gates in the likelihood ({@code minSampleSizePerCell})
+ * are estimability checks on the raw rows and are not affected.
  *
  * @author josephramsey
  * @version $Id: $Id
  * @see ConditionalGaussianLikelihood
  * @see DegenerateGaussianScore
  */
-public class ConditionalGaussianScore implements Score {
+public class ConditionalGaussianScore implements Score, EffectiveSampleSizeSettable {
 
     // Dataset and variables.
     private final DataSet dataSet;
@@ -51,6 +62,9 @@ public class ConditionalGaussianScore implements Score {
 
     // Discretization controls (forwarded to likelihood).
     private int numCategoriesToDiscretize = 3;
+
+    // Effective sample size, or -1 to use the actual number of rows. See the class Javadoc.
+    private int nEff = -1;
 
     /**
      * Constructs the score.
@@ -135,8 +149,13 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        double score = 2.0 * (lik + getStructurePrior(parents))
-                       - getPenaltyDiscount() * k * TMath.log(rows.size());
+        // Effective-sample-size scaling: r = nEff / N (r = 1 when nEff is unset). The likelihood is a
+        // row sum, so it scales linearly; the penalty uses the effective count of the rows scored.
+        double r = effectiveSampleSizeRatio();
+        double nUsed = r * rows.size();
+
+        double score = 2.0 * (r * lik + getStructurePrior(parents))
+                       - getPenaltyDiscount() * k * TMath.log(nUsed);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) return Double.NEGATIVE_INFINITY;
         return score;
@@ -248,6 +267,40 @@ public class ConditionalGaussianScore implements Score {
      */
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
+    }
+
+    /**
+     * Returns the effective sample size: the value set via {@link #setEffectiveSampleSize(int)}, or the number of
+     * rows in the dataset if none has been set.
+     *
+     * @return the effective sample size
+     */
+    @Override
+    public int getEffectiveSampleSize() {
+        return this.nEff < 0 ? this.dataSet.getNumRows() : this.nEff;
+    }
+
+    /**
+     * Sets the effective sample size, or -1 (any negative value) to use the actual number of rows. A value of 0
+     * is treated as unset, since a zero effective sample size is meaningless. The value is interpreted relative
+     * to the full dataset; see the class Javadoc for how it interacts with testwise deletion.
+     *
+     * <p>Configuration mutator: do not call concurrently with running searches.
+     *
+     * @param nEff the effective sample size, or a nonpositive value to use the actual number of rows
+     */
+    @Override
+    public void setEffectiveSampleSize(int nEff) {
+        this.nEff = nEff <= 0 ? -1 : nEff;
+    }
+
+    /**
+     * The ratio nEff / N applied to the likelihood and to the row count in the penalty; 1 when unset.
+     */
+    private double effectiveSampleSizeRatio() {
+        if (this.nEff < 0) return 1.0;
+        int n = this.dataSet.getNumRows();
+        return n == 0 ? 1.0 : this.nEff / (double) n;
     }
 
     /**

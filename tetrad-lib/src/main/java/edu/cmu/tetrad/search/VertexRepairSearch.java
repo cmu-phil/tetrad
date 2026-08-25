@@ -307,6 +307,25 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     private boolean affectedOnlyInvalidation = true;
 
+    /**
+     * Vertex names to which initial candidate enumeration is restricted under
+     * {@link RepairStrategy#GLOBAL_QUEUE}; null (the default) means no restriction
+     * (every existing behavior unchanged). See {@link #setSeedVertices(Set)} for the
+     * exact contract, including how the repair frontier grows beyond the seeds.
+     */
+    private Set<String> seedVertexNames = null;
+
+    /**
+     * When seeding is active: every vertex name enumeration has actually reached, i.e. the seeds
+     * plus every vertex later pulled in by {@code invalidateAndRecompute} after an applied edit.
+     * The drain-time verification rebuild enumerates over THIS set, not the bare seeds, so the
+     * fixed point is certified over the full seed-plus-propagation region the contract promises;
+     * rebuilding over the bare seeds would silently drop frontier vertices whose queue entries had
+     * gone stale, missing improving moves there. Null whenever seeding is inactive; reset at each
+     * search() so a reused instance doesn't carry a previous run's frontier.
+     */
+    private Set<String> reachedVertexNames = null;
+
     // =========================================================================
     // Construction
     // =========================================================================
@@ -326,7 +345,15 @@ public final class VertexRepairSearch implements IGraphSearch {
         this.workingGraph = safeCopy(graph);
         this.type = type;
 
-        if (test instanceof RowsSettable) {
+        // Row assignment only applies to row data. Tests backed by a covariance matrix
+        // (e.g. IndTestFisherZ(ICovarianceMatrix, alpha)) have no rows to set; the test
+        // computes directly from the matrix, so repair proceeds without this step. Prior
+        // to 2026-8-16 the unguarded cast in getSubsampleRows threw ClassCastException
+        // for covariance input, which was the only obstacle to covariance support here.
+        // (Note: at fraction 1.0 this sets ALL rows, in shuffled order, which is
+        // statistically an identity for order-invariant tests; it is retained for row
+        // data to preserve existing behavior exactly.)
+        if (test instanceof RowsSettable && test.getData() instanceof DataSet) {
             ((RowsSettable) test).setRows(getSubsampleRows(1.0));
         }
     }
@@ -624,6 +651,18 @@ public final class VertexRepairSearch implements IGraphSearch {
         long previousSeed = RandomUtil.getInstance().nextLong();
         RandomUtil.getInstance().setSeed(seed);
 
+        if (seedVertexNames != null && repairStrategy != RepairStrategy.GLOBAL_QUEUE) {
+            throw new UnsupportedOperationException(
+                    "Seed vertices are set but repairStrategy is " + repairStrategy
+                            + "; seeding is only supported under GLOBAL_QUEUE. Either switch "
+                            + "strategies or clear the seeds with setSeedVertices(null). "
+                            + "(Deliberately loud: silently ignoring the restriction would "
+                            + "report full-sweep results as if they were seeded ones.)");
+        }
+
+        // Fresh frontier per run; see reachedVertexNames.
+        this.reachedVertexNames = (seedVertexNames == null) ? null : new LinkedHashSet<>(seedVertexNames);
+
         try {
             fireStatus("Starting repair (strategy=" + repairStrategy + ", seed=" + seed + ")...");
 
@@ -793,6 +832,49 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setAffectedOnlyInvalidation(boolean affectedOnlyInvalidation) {
         this.affectedOnlyInvalidation = affectedOnlyInvalidation;
+    }
+
+    /**
+     * Restricts INITIAL candidate enumeration under {@link RepairStrategy#GLOBAL_QUEUE} to the
+     * given vertices, so repair effort starts where an external diagnostic (e.g. the implicated
+     * vertices from a PcAR run's contested deletions, orientation clashes, blocked deletions, and
+     * Markov-audit failures -- see {@code PcAR#implicatedVertices()}) says the model is wrong,
+     * rather than sweeping every vertex. Matching is by node name, consistent with this class's
+     * existing name-based re-resolution of nodes across graph copies.
+     * <p>
+     * <b>Contract (seeded-only convergence).</b> The seeds bound where repair STARTS, not where it
+     * may reach: under affected-only invalidation, an applied edit whose adjacency changes touch
+     * non-seed vertices pulls those vertices into recomputation through the existing
+     * {@code invalidationSet} path, so the repair frontier grows outward from the seeds exactly
+     * where edits propagate. What seeding removes is the full-sweep guarantee: convergence is
+     * certified only over the seed-plus-propagation region, and vertices never reached are
+     * unrepaired BY DESIGN. In particular, the drain-time verification rebuild under affected-only
+     * invalidation goes through the same seeded enumeration, so it re-certifies the fixed point
+     * over the seeded set, not over all vertices -- "verification sweep" status messages during a
+     * seeded run must be read accordingly. A status event reports how many vertices were excluded at queue
+     * initialization, so runs accumulate the evidence for whether errors ever live wholly outside
+     * the seeded region (if they do, don't seed -- the full sweep was earning its cost).
+     * <p>
+     * Only {@link RepairStrategy#GLOBAL_QUEUE} supports seeding; {@link #search()} throws
+     * {@link UnsupportedOperationException} if seeds are set under
+     * {@link RepairStrategy#LOCAL_SWEEP}, deliberately loudly -- a silently ignored restriction
+     * would report full-sweep results as if they were seeded ones. (Seeded LOCAL_SWEEP has its own
+     * convergence semantics that nobody has needed yet; hitting that exception in real use is the
+     * signal it's worth designing.)
+     *
+     * @param seeds the vertices to seed repair at, or null (the default) to restore unrestricted
+     *              enumeration exactly
+     */
+    public void setSeedVertices(Set<Node> seeds) {
+        if (seeds == null) {
+            this.seedVertexNames = null;
+            return;
+        }
+        Set<String> names = new LinkedHashSet<>();
+        for (Node n : seeds) {
+            if (n != null && n.getName() != null) names.add(n.getName());
+        }
+        this.seedVertexNames = names;
     }
 
     /**
@@ -1062,6 +1144,20 @@ public final class VertexRepairSearch implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(workingGraph.getNodes());
         nodes.sort(Comparator.comparing(Node::getName, NaturalSort.NATURAL_NAME_COMPARATOR));
 
+        // Seed restriction (see setSeedVertices): filters enumeration to the reached set -- the
+        // seeds plus every vertex invalidateAndRecompute has since pulled in -- so both the
+        // initial build and the drain-time verification rebuild certify the fixed point over the
+        // same seed-plus-propagation region. Filtering by the bare seeds here would drop frontier
+        // vertices at the rebuild and miss stale improving moves there.
+        if (reachedVertexNames != null) {
+            int total = nodes.size();
+            nodes.removeIf(n -> !reachedVertexNames.contains(n.getName()));
+            fireStatus("Seeded repair: enumeration restricted to " + nodes.size()
+                    + " of " + total + " vertices (" + (total - nodes.size())
+                    + " excluded); convergence is certified over the seed-plus-propagation "
+                    + "region only.");
+        }
+
         for (Node node : nodes) {
             if (stopRequested()) return false;
 
@@ -1086,6 +1182,15 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (bb == null) {
             fireStatus("Canonicalization failed during queue update.");
             return false;
+        }
+
+        // Frontier growth under seeding: an applied edit's affected vertices join the reached
+        // set, so subsequent verification rebuilds keep certifying over them. See
+        // reachedVertexNames and setSeedVertices.
+        if (reachedVertexNames != null) {
+            for (String name : affectedNames) {
+                if (name != null) reachedVertexNames.add(name);
+            }
         }
 
         for (String name : affectedNames) {

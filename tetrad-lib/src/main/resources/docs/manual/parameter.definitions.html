@@ -5,17 +5,24 @@ Source:
     === rescueAction ===
     <h3 class="parameter_description" id="rescueAction">rescueAction</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="rescueAction_short_desc">What to do with a detected adjacency-faithfulness clash: 0=off, 1=mark, 2=recover</span></li>
+        <li>Short Description: <span id="rescueAction_short_desc">What to do with a detected adjacency-faithfulness clash: 0=off, 1=mark, 2=recover, 3=recover corroborated only</span></li>
         <li>Long Description: <span id="rescueAction_long_desc">
-            Controls the action taken on a tier-1 orientation-clash detection (PcAR, Sec. 14 of
-            the unfaithful-triangles analysis). 0 (OFF) runs no detection. 1 (MARK) records the
-            deletion as contested but leaves the skeleton exactly as FAS produced it. 2 (RECOVER)
-            reinstates the edge and re-runs orientation, but only when the configured recovery-odds
-            threshold is met by a supplied odds estimator; with no estimator wired, RECOVER behaves
-            identically to MARK.</span></li>
+        Controls the action taken on a tier-1 orientation-clash detection (PcAR, Sec. 14 of
+        the unfaithful-triangles analysis). 0 (OFF) runs no detection. 1 (MARK, the default)
+        records the deletion as contested but leaves the skeleton exactly as FAS produced it.
+        2 (RECOVER) reinstates a flagged edge when the posterior odds -- base rate times a
+        likelihood ratio from a discriminating re-test of the pair, computed by the wired
+        odds estimator -- meet the recovery-odds threshold; note that the discriminating
+        re-test is only reliable when the clash's collider claim about the pivot is genuine,
+        so RECOVER can reinstate false edges where the pivot is in truth a mediator or common
+        cause of the pair. 3 (RECOVER_CORROBORATED) reinstates only pairs independently
+        flagged by both the tier-1 clash pass and the tier-2 Markov audit, ignoring the odds
+        threshold; with no Markov auditor wired it behaves identically to MARK. Recovery
+        modes (2 and 3) modify the skeleton and can introduce false edges; MARK is free of
+        skeleton risk.</span></li>
         <li>Default Value: <span id="rescueAction_default_value">1</span></li>
         <li>Lower Bound: <span id="rescueAction_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="rescueAction_upper_bound">2</span></li>
+        <li>Upper Bound: <span id="rescueAction_upper_bound">3</span></li>
         <li>Value Type: <span id="rescueAction_value_type">Integer</span></li>
     </ul>
 
@@ -487,6 +494,22 @@ Source:
     </ul>
 
 
+    === useBossAdjacencies ===
+    <h3 class="parameter_description" id="useBossAdjacencies">useBossAdjacencies</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useBossAdjacencies_short_desc"> Yes if BOSS (rather than FAS-Stable)
+        should supply the initial adjacency skeleton</span></li>
+        <li>Long Description: <span id="useBossAdjacencies_long_desc"> If set to "Yes", the initial adjacency
+        skeleton for the search is taken from the skeleton of a BOSS CPDAG estimated with the supplied score,
+        instead of running FAS-Stable. A global score-based search typically yields better finite-sample
+        adjacencies than FAS; subsequent orientation steps proceed identically. Ignored if an external graph
+        is supplied.</span></li>
+        <li>Default Value: <span id="useBossAdjacencies_default_value">false</span></li>
+        <li>Lower Bound: <span id="useBossAdjacencies_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useBossAdjacencies_upper_bound"></span></li>
+        <li>Value Type: <span id="useBossAdjacencies_value_type">Boolean</span></li>
+    </ul>
+
     === applyR1 ===
     <h3 class="parameter_description" id="applyR1">applyR1</h3>
     <ul class="parameter_description_list">
@@ -495,7 +518,7 @@ Source:
         <li>Long Description: <span id="applyR1_long_desc"> Set this parameter to “No” if a chain of
         directed edges pointing in the same direction when only the first few
         such orientations are justified based on the data.</span></li>
-        <li>Default Value: <span id="applyR1_default_value">true</span></li>
+        <li>Default Value: <span id="applyR1_default_value">false</span></li>
         <li>Lower Bound: <span id="applyR1_lower_bound"></span></li>
         <li>Upper Bound: <span id="applyR1_upper_bound"></span></li>
         <li>Value Type: <span id="applyR1_value_type">Boolean</span></li>
@@ -1380,6 +1403,115 @@ Source:
     </ul>
 
 
+    === adaptiveBasisSelection ===
+    <h3 class="parameter_description" id="adaptiveBasisSelection">adaptiveBasisSelection</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="adaptiveBasisSelection_short_desc">
+                    Yes if uninformative higher-order basis functions should be dropped by a BIC screen
+                    </span>
+        </li>
+        <li>Long Description: <span id="adaptiveBasisSelection_long_desc">
+                    If Yes, each continuous variable's higher-order basis columns are screened once, on the full
+                    sample, and a column is kept only if its correlation with some other variable's embedded block
+                    crosses the single-regressor BIC threshold (with a multiplicity adjustment for the number of
+                    columns scanned). The linear term is always kept. With this screen, the effective truncation is
+                    chosen by the data, so raising the truncation limit past the data-supported order does not
+                    degrade the basis function score or test; results converge instead. The screen is marginal
+                    (pairwise), so basis directions relevant only conditionally may be dropped.
+                    </span>
+        </li>
+        <li>Default Value: <span id="adaptiveBasisSelection_default_value">true</span></li>
+        <li>Lower
+            Bound: <span id="adaptiveBasisSelection_lower_bound"></span></li>
+        <li>Upper Bound: <span id="adaptiveBasisSelection_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="adaptiveBasisSelection_value_type">Boolean</span></li>
+    </ul>
+
+
+    === gcmMultiplierSamples ===
+    <h3 class="parameter_description" id="gcmMultiplierSamples">gcmMultiplierSamples</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="gcmMultiplierSamples_short_desc">
+                    Number of multiplier bootstrap samples for the BE-GCM max statistic (0 = Sidak bound)
+                    </span>
+        </li>
+        <li>Long Description: <span id="gcmMultiplierSamples_long_desc">
+                    The p-value of the basis-expanded GCM test is computed by a Rademacher multiplier bootstrap of
+                    the maximum studentized residual cross-covariance over the basis-pair grid, which accounts for
+                    the dependence among the grid cells. This parameter sets the number of bootstrap samples; the
+                    p-value granularity is 1 / (samples + 1). Setting it to 0 uses a Sidak bound over the grid with
+                    the normal tail instead, which is faster but conservative. The bootstrap is seeded
+                    deterministically from the tested independence fact, so results are reproducible.
+                    </span>
+        </li>
+        <li>Default Value: <span id="gcmMultiplierSamples_default_value">500</span></li>
+        <li>Lower
+            Bound: <span id="gcmMultiplierSamples_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="gcmMultiplierSamples_upper_bound">1000000</span></li>
+        <li>Value Type:
+            <span id="gcmMultiplierSamples_value_type">Integer</span></li>
+    </ul>
+
+
+    === gcmZTruncationLimit ===
+    <h3 class="parameter_description" id="gcmZTruncationLimit">gcmZTruncationLimit</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="gcmZTruncationLimit_short_desc">
+                    Truncation limit for the BE-GCM regression (Z-side) basis; 0 = twice the grid truncation
+                    </span>
+        </li>
+        <li>Long Description: <span id="gcmZTruncationLimit_long_desc">
+                    The BE-GCM test residualizes the tested basis grid of X and Y on a basis expansion of Z. The
+                    GCM guarantee requires this regression sieve to approximate the conditional means of the tested
+                    grid functions, which under nonlinear relations are compositions of higher degree than the grid
+                    itself; if the regression basis is too small, the test over-rejects true conditional
+                    independence. This parameter sets the truncation of the Z-side regression basis separately from
+                    the tested grid. The default 0 selects twice the grid truncation limit, which covers quadratic
+                    relations exactly; raise it for more strongly nonlinear systems. Values below the grid
+                    truncation are raised to it. The Z-side basis is never pruned by adaptive basis selection.
+                    </span>
+        </li>
+        <li>Default Value: <span id="gcmZTruncationLimit_default_value">0</span></li>
+        <li>Lower
+            Bound: <span id="gcmZTruncationLimit_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="gcmZTruncationLimit_upper_bound">1000</span></li>
+        <li>Value Type:
+            <span id="gcmZTruncationLimit_value_type">Integer</span></li>
+    </ul>
+
+
+    === gcmControlFunction ===
+    <h3 class="parameter_description" id="gcmControlFunction">gcmControlFunction</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="gcmControlFunction_short_desc">
+                    Yes if the BE-GCM regressions should be augmented with a control function in the fitted mean
+                    </span>
+        </li>
+        <li>Long Description: <span id="gcmControlFunction_long_desc">
+                    The BE-GCM regression basis is additive over the conditioning variables' basis columns and
+                    cannot represent interactions among them; yet even under purely additive data-generating
+                    functions, the conditional means of the higher-order tested grid cells contain interaction
+                    terms (powers of sums), so the test over-rejects true conditional independencies when
+                    conditioning on two or more variables -- typically visible as an excess of implied conditional
+                    independencies judged dependent in the Markov Checker, at any Z-truncation. If Yes, each side's
+                    regression design is augmented with a univariate basis in that side's first-stage fitted mean (a
+                    control function): under additive-noise mechanisms the conditional means of all grid cells are
+                    functions of the fitted mean alone, so this captures the missing interaction and composition
+                    terms. Power is essentially unaffected. The fitted mean is a generated regressor, so exact
+                    finite-sample arguments no longer apply; calibration with this option has been checked
+                    empirically on additive nonlinear systems.
+                    </span>
+        </li>
+        <li>Default Value: <span id="gcmControlFunction_default_value">false</span></li>
+        <li>Lower
+            Bound: <span id="gcmControlFunction_lower_bound"></span></li>
+        <li>Upper Bound: <span id="gcmControlFunction_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="gcmControlFunction_value_type">Boolean</span></li>
+    </ul>
+
+
     === doOneEquationOnly ===
     <h3 class="parameter_description" id="doOneEquationOnly">doOneEquationOnly</h3>
     <ul class="parameter_description_list">
@@ -1512,7 +1644,7 @@ Source:
         If true ("Yes"), the algorithm assumes no selection bias and disables selection-related
         orientation rules (including certain final rules in Zhang 2008). If false ("No") the
         algorithm allows for selection bias and uses the full rule set.</span></li>
-        <li>Default Value: <span id="excludeSelectionBias_default_value">false</span></li>
+        <li>Default Value: <span id="excludeSelectionBias_default_value">true</span></li>
         <li>Lower Bound: <span id="excludeSelectionBias_lower_bound"></span></li>
         <li>Upper Bound: <span id="excludeSelectionBias_upper_bound"></span></li>
         <li>Value Type: <span id="excludeSelectionBias_value_type">Boolean</span></li>
@@ -1649,7 +1781,7 @@ Source:
         are given for relation to the literature, and the v1 FASK rule is
         included for backward compatibility.</span></li>
         <li>Default Value:
-            <span id="faskLeftRightRule_default_value">3</span></li>
+            <span id="faskLeftRightRule_default_value">2</span></li>
         <li>Lower
             Bound: <span id="faskLeftRightRule_lower_bound">1</span></li>
         <li>Upper Bound: <span id="faskLeftRightRule_upper_bound">5</span></li>
@@ -1959,6 +2091,100 @@ Source:
         <li>Lower Bound: <span id="ginRidge_lower_bound">0</span></li>
         <li>Upper Bound: <span id="ginRidge_upper_bound">100000</span></li>
         <li>Value Type: <span id="ginRidge_value_type">Double</span></li>
+    </ul>
+
+
+    === gmasAllowAdditions ===
+    <h3 class="parameter_description" id="gmasAllowAdditions">gmasAllowAdditions</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gmasAllowAdditions_short_desc">
+        Allow GMAS to add edges, not only delete and re-type them
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="gmasAllowAdditions_long_desc">
+        GMAS improves a BOSS-seeded MAG by greedy search under the MAG BIC.
+        With this set to Yes, the move set includes ADDING a directed or
+        bidirected edge between a non-adjacent pair, which is what lets the
+        search restore an adjacency the BOSS seed missed. With it set to No the
+        search may only delete edges, reverse them, or change their type, which
+        is the comparison that isolates what additions contribute. Additions
+        cost one model fit per non-adjacent ordered pair per sweep, so turning
+        them off is also much faster.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gmasAllowAdditions_default_value">true</span>
+        </li>
+        <li>Lower Bound: <span id="gmasAllowAdditions_lower_bound"></span></li>
+        <li>Upper Bound: <span id="gmasAllowAdditions_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="gmasAllowAdditions_value_type">Boolean</span>
+        </li>
+    </ul>
+
+
+    === gmasLookaheadDepth ===
+    <h3 class="parameter_description" id="gmasLookaheadDepth">gmasLookaheadDepth</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gmasLookaheadDepth_short_desc">
+        How many moves deep GMAS looks when its sweep stalls (1 or 2)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="gmasLookaheadDepth_long_desc">
+        With 1, GMAS is plain steepest ascent and stops at the first graph no
+        single move improves. With 2, a stall triggers a search over PAIRS of
+        moves that share a node, which reaches corrections whose two halves are
+        individually non-improving -- deleting a spurious edge and re-typing a
+        neighbouring directed edge to bidirected, for instance, where neither
+        step improves the score alone. Depth 2 recovers such cases and is
+        markedly slower; the pair search is capped internally.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gmasLookaheadDepth_default_value">2</span>
+        </li>
+        <li>Lower Bound: <span id="gmasLookaheadDepth_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="gmasLookaheadDepth_upper_bound">2</span></li>
+        <li>Value Type:
+            <span id="gmasLookaheadDepth_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === gmasTriangleEscapeOnly ===
+    <h3 class="parameter_description" id="gmasTriangleEscapeOnly">gmasTriangleEscapeOnly</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="gmasTriangleEscapeOnly_short_desc">
+        Restrict GMAS's two-move escape to triangle pairs (faster, slightly less thorough)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="gmasTriangleEscapeOnly_long_desc">
+        With this set to Yes, the two-move escape considers only pairs of moves
+        whose touched edges share a node and whose far endpoints are adjacent in
+        the pre-move MAG -- the GFCI situation, where a score-induced extra edge
+        shields a collider and the deletion and its accompanying re-orientation
+        lie in a common triangle. This captures nearly all of the repairs the
+        full escape finds and is typically two to four times faster, mostly
+        because declaring a local optimum requires exhausting the escape
+        neighbourhood and the triangle neighbourhood is far smaller. With it set
+        to No (the default), the escape searches all pairs sharing a node, which
+        is exact but slower.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="gmasTriangleEscapeOnly_default_value">false</span>
+        </li>
+        <li>Lower Bound: <span id="gmasTriangleEscapeOnly_lower_bound"></span></li>
+        <li>Upper Bound: <span id="gmasTriangleEscapeOnly_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="gmasTriangleEscapeOnly_value_type">Boolean</span>
+        </li>
     </ul>
 
 
@@ -2866,6 +3092,23 @@ Source:
         <li>Lower Bound: <span id="catRho_lower_bound">0</span></li>
         <li>Upper Bound: <span id="catRho_upper_bound">1</span></li>
         <li>Value Type: <span id="catRho_value_type">Double</span></li>
+    </ul>
+
+    === ffmlInteractionLambda ===
+    <h3 class="parameter_description" id="ffmlInteractionLambda">ffmlInteractionLambda</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="ffmlInteractionLambda_short_desc">
+                    FFML discrete-continuous interaction weight (0 = additive)
+                    </span></li>
+        <li>Long Description: <span id="ffmlInteractionLambda_long_desc">
+                    Weight of the product-kernel interaction term for discrete parents. At 0 (the default),
+                    discrete parents enter as additive one-hot main effects (BF/DG-style) and catRho is inert;
+                    positive values add per-level response functions with catRho pooling.
+        </span></li>
+        <li>Default Value: <span id="ffmlInteractionLambda_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="ffmlInteractionLambda_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="ffmlInteractionLambda_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="ffmlInteractionLambda_value_type">Double</span></li>
     </ul>
 
     === lambda1 ===
@@ -4550,9 +4793,9 @@ Source:
             Description: <span id="randomSelectionSize_long_desc"> The number of
         dataset that should be taken in each random sample of
         datasets.</span></li>
-        <li>Default Value: <span id="randomSelectionSize_default_value">1</span></li>
+        <li>Default Value: <span id="randomSelectionSize_default_value">0</span></li>
         <li>Lower Bound:
-            <span id="randomSelectionSize_lower_bound">-2147483648</span></li>
+            <span id="randomSelectionSize_lower_bound">0</span></li>
         <li>Upper Bound: <span id="randomSelectionSize_upper_bound">2147483647</span></li>
         <li>Value
             Type: <span id="randomSelectionSize_value_type">Integer</span></li>
@@ -5003,6 +5246,41 @@ Source:
     </ul>
 
 
+    === scoreCheckPenaltyDiscount ===
+    <h3 class="parameter_description" id="scoreCheckPenaltyDiscount">scoreCheckPenaltyDiscount</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="scoreCheckPenaltyDiscount_short_desc">
+        Penalty discount for the RICF-BIC score check (default = 1.0; min > 0.0)
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="scoreCheckPenaltyDiscount_long_desc">
+        The parameter c in the MAG BIC used by the per-removal score check,
+        2L – c k ln N, where L is the RICF log-likelihood of the Zhang MAG
+        implied by the candidate PAG, k is the number of MAG parameters
+        (error variances plus edges), and N is the sample size. With c = 1
+        the acceptance rule is the classical BIC test. Larger values make
+        the gate more willing to remove edges; smaller values make it more
+        conservative. Independent of the penalty discount used by the
+        initializer score.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="scoreCheckPenaltyDiscount_default_value">1.0</span>
+        </li>
+        <li>Lower Bound:
+            <span id="scoreCheckPenaltyDiscount_lower_bound">4.9E-324</span>
+        </li>
+        <li>Upper Bound:
+            <span id="scoreCheckPenaltyDiscount_upper_bound">1.7976931348623157E308</span>
+        </li>
+        <li>Value Type:
+            <span id="scoreCheckPenaltyDiscount_value_type">Double</span>
+        </li>
+    </ul>
+
+
     === seed ===
     <h3 class="parameter_description" id="seed">seed</h3>
     <ul class="parameter_description_list">
@@ -5050,6 +5328,39 @@ Source:
             <span id="selfLoopCoef_upper_bound">Infinity</span></li>
         <li>Value
             Type: <span id="selfLoopCoef_value_type">Double</span></li>
+    </ul>
+
+
+    === scoreTestCalibratedPValues ===
+    <h3 class="parameter_description" id="scoreTestCalibratedPValues">scoreTestCalibratedPValues</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="scoreTestCalibratedPValues_short_desc">
+        Report calibrated p-values instead of raw score differences
+        </span>
+        </li>
+        <li>Long Description:
+            <span id="scoreTestCalibratedPValues_long_desc">
+        A score used as an independence test normally reports its local score
+        difference, which is negative for independence and is not a probability.
+        With this set to Yes, the test instead reports the p-value of the
+        corresponding likelihood-ratio test, which is asymptotically Uniform(0, 1)
+        under the null, and reports the significance level at which its own sign
+        rule operates. This does NOT change the accept/reject decision or the
+        graph a search returns; it makes the p-value diagnostics of the Markov
+        check (Anderson-Darling, KS, Fisher, binomial) well defined for a
+        score-based test. Ignored when the score cannot supply a calibrated
+        p-value, as when the structure prior is non-zero.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="scoreTestCalibratedPValues_default_value">false</span>
+        </li>
+        <li>Lower Bound: <span id="scoreTestCalibratedPValues_lower_bound"></span></li>
+        <li>Upper Bound: <span id="scoreTestCalibratedPValues_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="scoreTestCalibratedPValues_value_type">Boolean</span>
+        </li>
     </ul>
 
 
@@ -5609,6 +5920,57 @@ Source:
     </ul>
 
 
+    === poolDataSets ===
+    <h3 class="parameter_description" id="poolDataSets">poolDataSets</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="poolDataSets_short_desc">
+                    Yes if the data sets should be pooled into one search (IMaGES-style) rather than searched separately
+        </span></li>
+        <li>Long Description: <span id="poolDataSets_long_desc">
+                    When several data sets with the same variables are given (for example, several subjects, sessions,
+                    or regions), Yes runs the algorithm ONCE with its score replaced by the sum of that score over the
+                    data sets (the IMaGES score) and/or its independence test replaced by the Fisher combination of the
+                    per-data-set p-values. So BOSS with any score pooled is IMaGES with that score, and PC with any
+                    test pooled is a pooled PC. No (the default) runs the algorithm separately on each data set and
+                    returns one graph per data set. Time lags are applied to each data set separately before pooling,
+                    and bootstrapping resamples rows within each data set. Pooling assumes the data sets share one
+                    causal structure and are independent of one another.
+        </span></li>
+        <li>Default Value: <span id="poolDataSets_default_value">false</span></li>
+        <li>Lower Bound: <span id="poolDataSets_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="poolDataSets_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="poolDataSets_value_type">Boolean</span></li>
+    </ul>
+
+
+    === pooledTestMethod ===
+    <h3 class="parameter_description" id="pooledTestMethod">pooledTestMethod</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="pooledTestMethod_short_desc">
+                    How per-data-set p-values are combined when data sets are pooled: fisher or tippett
+        </span></li>
+        <li>Long Description: <span id="pooledTestMethod_long_desc">
+                    When several data sets are pooled (poolDataSets = Yes) for a test-based search, each
+                    independence fact is tested in every data set and the resulting p-values are combined into one.
+                    "fisher" (the default) uses Fisher's method, -2 times the sum of the log p-values referred to a
+                    chi-square distribution; it is the most powerful choice when the dependence, if present, is
+                    present in all data sets, and its power grows with the number of data sets. "tippett" uses the
+                    smallest p-value with a Sidak adjustment for the number of data sets; it is more powerful when a
+                    dependence is present in only some of the data sets, at a small cost in power when it is present
+                    in all of them, and is somewhat more sensitive to a single outlying data set. Both assume the data
+                    sets are independent of one another.
+        </span></li>
+        <li>Default Value: <span id="pooledTestMethod_default_value">fisher</span></li>
+        <li>Lower Bound: <span id="pooledTestMethod_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="pooledTestMethod_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="pooledTestMethod_value_type">String</span></li>
+    </ul>
+
+
     === timeLimit ===
     <h3 class="parameter_description" id="timeLimit">timeLimit</h3>
     <ul class="parameter_description_list">
@@ -5954,7 +6316,7 @@ Source:
         <li>Long Description: <span id="twoCycleAlpha_long_desc"> The alpha level of a T-test used to
         determine where 2-cycles exist in the graph. A value of zero turns
         off 2-cycle detection. </span></li>
-        <li>Default Value: <span id="twoCycleAlpha_default_value">0.0</span></li>
+        <li>Default Value: <span id="twoCycleAlpha_default_value">0.05</span></li>
         <li>Lower Bound:
             <span id="twoCycleAlpha_lower_bound">0.0</span></li>
         <li>Upper Bound:

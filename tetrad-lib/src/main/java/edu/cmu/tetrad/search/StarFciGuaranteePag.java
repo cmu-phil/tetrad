@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.MagToPag;
 import edu.cmu.tetrad.search.utils.PagLegalityCheck;
 import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -40,21 +41,58 @@ import java.util.stream.Stream;
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 
 /**
+ * The *-FCI template with per-removal legality gating (StarFciCheckPag in the paper), a saturating group-removal
+ * step, an ungated path repaired post hoc by GraphUtils.guaranteePag, and background-knowledge support: knowledge
+ * orientations that go beyond the invariant marks of the equivalence class are KEPT, certified modulo knowledge,
+ * rather than rejected or erased by the legality machinery. (This class consolidates the former
+ * StarFciKeepKnowledgeOrientations into StarFciGuaranteePag; with empty knowledge it behaves exactly as the
+ * knowledge-free class did.)
+ * <p>
  * *-FCI implements a template modification of GFCI that starts with a given Markov CPDAG and then fixes that result to
  * be correct for latent variables models. First, colliders from the Markov DAG are copied into the final circle-circle
  * graph, and some independence reasoning is used to remove edges from this and add the remaining colliders into the
- * graph. Then, the FCI final orientation rules are applied.
+ * graph. Then, the FCI final orientation rules are applied. The Markov CPDAG needs to be supplied by classes
+ * inheriting from this abstract class using the getMarkovDag() method.
  * <p>
- * The Markov CPDAG needs to be supplied by classes inheriting from this abstract class using the getMarkovCpdag()
- * methods.
+ * THE PROBLEM THE KNOWLEDGE HANDLING SOLVES. Background knowledge (required edges; forbidden edges when selection bias is
+ * excluded; temporal tiers) can force arrow and tail marks that are NOT invariant across the Markov equivalence class
+ * of the implied MAG. The legality certificate used by StarFciGuaranteePag (PagLegalityCheck.isLegalPag) ends with an
+ * exact round trip: PAG -&gt; Zhang MAG -&gt; canonical PAG, followed by a strict equality test against the input. A
+ * graph carrying knowledge marks beyond the invariant marks always fails that equality (the reconstituted canonical
+ * PAG has circles where knowledge placed arrows or tails). Consequently, on the gated path every candidate removal is
+ * rejected and the knowledge marks never make it into the output; on the ungated path GraphUtils.guaranteePag repairs
+ * the graph to a canonical PAG, erasing them.
+ * <p>
+ * THE FIX. Rather than simply dropping the round-trip equality (which would also disable the certificate's protection
+ * against genuinely faulty "between a MAG and a PAG" states arising from noisy sepsets), this class replaces strict
+ * equality with equality MODULO KNOWLEDGE: the graph must equal the canonical PAG of its implied Zhang MAG after that
+ * canonical PAG is re-refined with background knowledge (fciOrientbk) and re-closed under the complete FCI final
+ * rules. Every mark in an accepted graph is thereby accounted for: it is either invariant in the equivalence class or
+ * forced by knowledge (directly or by rule propagation). When knowledge is empty the refinement is the identity and
+ * the check degenerates to exactly PagLegalityCheck.isLegalPag.
+ * <p>
+ * OUTPUT CONTRACT. The returned graph is a legal PAG *refined by background knowledge*: stripping the knowledge marks
+ * (equivalently, taking the canonical PAG of its implied MAG) yields a legal PAG, and the extra marks are exactly the
+ * knowledge-forced ones plus their closure under the final rules. It is generally NOT the canonical PAG of an
+ * equivalence class; it denotes the subset of that class consistent with the knowledge. Circles remain only where
+ * neither the class nor the knowledge determines the mark.
+ * <p>
+ * DESIGN DECISION (contestable, so called out): when background knowledge CONFLICTS with data-derived invariant
+ * structure (e.g., a required edge whose tail would sit at an invariant arrowhead), the knowledge-refined candidate
+ * fails the modulo-knowledge certificate and the algorithm falls back conservatively -- knowledge loses and the
+ * canonical marks stand. An alternative policy would force knowledge through and repair around it; that is a
+ * modeling choice deliberately not made here.
+ * <p>
+ * Knowledge handling (2026-8): (1) all legality gating (per-removal commits, the saturating step) uses
+ * legalPagModuloKnowledge, which reduces to PagLegalityCheck.isLegalPag when knowledge is empty; (2) on the ungated
+ * path, guaranteePag runs only if the (knowledge-refined) graph fails the certificate; (3) a final
+ * knowledge-refinement step is applied uniformly at the end of search(), so knowledge marks are present in the
+ * output even when no edge removal ever committed.
  * <p>
  * The reference for the GFCI algorithm this is being modeled from is here:
  * <p>
  * Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal search algorithm for latent variable
  * models. In Conference on probabilistic graphical models (pp. 368-379). PMLR.
- * <p>
- * We modify this by insistent that getMarkovCpdag() is overridden by a method that will return a CPDAG Markov to the
- * data or underlying generative model and removing the possible d-sep step of the original algorithm.
  * <p>
  * This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
  * tiers.
@@ -101,18 +139,20 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
     private boolean excludeSelectionBias = false;
     /**
      * When true, the extra-edge-removal step mimics FCIT: each candidate removal is committed only if the resulting
-     * graph (after re-running the full *-FCI orientation) is a legal PAG; otherwise it is reverted. When false, the
-     * original *-FCI behavior is used (greedy removal with a single final orientation), and the result is then
-     * mapped to a nearby legal PAG by GraphUtils.guaranteePag. Either way, the output is guaranteed to be a legal
-     * PAG; this flag only selects the mechanism. It remains the one knob that isolates Bryan's hypothesis: flip it
-     * to A/B the "legal PAG at each step" effect with everything else held fixed.
+     * graph (after re-running the full *-FCI orientation) passes the modulo-knowledge legality certificate
+     * (legalPagModuloKnowledge); otherwise it is reverted. When false, the original *-FCI behavior is used (greedy
+     * removal with a single final orientation), and the result is mapped to a nearby legal PAG by
+     * GraphUtils.guaranteePag only if it fails the certificate. Either way, the output is guaranteed to be a legal
+     * PAG possibly refined by background knowledge; this flag only selects the mechanism.
      */
     private boolean doLegalityGating = true;
     /**
-     * Whether to do the possible d-sep step; empirically we find this unnecessary, though the defiition of GFCI
-     * includes it. In the context of the check pag branch it is not expensive.
+     * Whether to do the possible d-sep step. This step is REQUIRED for exactness: an exhaustive oracle test over
+     * all PAGs on six observed variables exhibits a pair whose unique separating set contains a vertex adjacent to
+     * neither endpoint, which the adjacency-subset pass structurally cannot find (see the StarFCI paper, Appendix).
+     * In the gated configuration it is not expensive.
      */
-    private boolean usePossibleDsep = false;
+    private boolean usePossibleDsep = true;
     /**
      * A flag indicating whether the LV-Heuristic results should be returned. If false, edges will be removed via
      * further independence testing.
@@ -143,6 +183,36 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Strength of the evidence for x _||_ y | set, on a scale where LARGER always means stronger independence,
+     * for both genuine hypothesis tests and scores wrapped as tests. A score-based test reports a score
+     * difference that is negative for independence, so its value is negated here; see
+     * {@link IndependenceTest#isPValueAProbability()}. Ranking candidate sepsets by the raw reported value
+     * instead selects the WEAKEST separating set whenever the test is score-based.
+     */
+    private static double independenceStrength(Node x, Node y, Set<Node> set, IndependenceTest test) {
+        try {
+            IndependenceResult result = test.checkIndependence(x, y, set);
+            return test.isPValueAProbability() ? result.getPValue() : -result.getScore();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Whether x _||_ y | set holds according to the test. Correct for every test, unlike comparing the reported
+     * p-value against test.getAlpha(), which is meaningless for a test that does not test at a level (a score
+     * wrapped as a test reports alpha = -1).
+     */
+    private static boolean independenceHolds(Node x, Node y, Set<Node> set, IndependenceTest test) {
+        try {
+            return test.checkIndependence(x, y, set).isIndependent();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     /**
      * Generates a list of all possible choices for sublists from the adjacency list with sizes up to the given depth
@@ -217,14 +287,11 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             return sepset2;
         }
 
-        try {
-            double p1 = test.checkIndependence(x, y, sepset1).getPValue();
-            double p2 = test.checkIndependence(x, y, sepset2).getPValue();
+        // Direction-aware: larger strength = stronger independence for every kind of test.
+        double s1 = independenceStrength(x, y, sepset1, test);
+        double s2 = independenceStrength(x, y, sepset2, test);
 
-            return p1 > p2 ? sepset1 : sepset2;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        return s1 > s2 ? sepset1 : sepset2;
     }
 
     /**
@@ -250,9 +317,9 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             // Max p for stability...
             Stream<Set<Node>> setStream = parallelized ? choices.parallelStream() : choices.stream();
             return setStream
-                    .max(Comparator.comparingDouble(set -> computeScore(x, y, set, test))) // Find max
-                    .filter(set -> computeScore(x, y, set, test) > test.getAlpha()) // Filter by threshold
-                    .orElse(null); // Return best set or null if none pass the threshold
+                    .filter(set -> independenceHolds(x, y, set, test))   // keep only separating sets
+                    .max(Comparator.comparingDouble(set -> independenceStrength(x, y, set, test)))
+                    .orElse(null); // Return the STRONGEST separating set, or null if there is none
         } else { // Greedy
             // Greedy: lazy enumeration (smallest subsets first), batched parallel testing,
             // short-circuit on the first separating set. Nothing is materialized up front.
@@ -400,8 +467,11 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         } while (pag.getNumEdges() < edgesBefore);
 
         // Pass 2 (optional): possible-D-SEP removal. The original GFCI step that *-FCI dropped,
-        // restored here for parity. Always runs on an oriented PAG and is always legality-gated,
-        // since Possible-D-SEP presupposes FCI-oriented colliders.
+        // restored here for parity. Always runs on an oriented PAG, since Possible-D-SEP
+        // presupposes FCI-oriented colliders; that precondition is met by the standalone
+        // orientation below (ungated path) or by the gate's per-step reorientation (gated path).
+        // Removals honor doLegalityGating exactly as in Pass 1: gated runs gate them, ungated
+        // runs remove unconditionally (original greedy *-FCI).
         if (usePossibleDsep) {
             // Ensure colliders are oriented as in FCI before computing Possible-D-SEP. In the GATED
             // path pag already carries the last-accepted, gate-legal full orientation (commitRemoval
@@ -457,7 +527,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
                     continue;
                 }
 
-                pag = commitRemoval(pag, a, c, sepset, "possible-D-SEP", true,
+                pag = commitRemoval(pag, a, c, sepset, "possible-D-SEP", doLegalityGating,
                         cpdag, nodes, sepsetMap, unshieldedColliders, selection);
             }
         }
@@ -469,16 +539,39 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets);
         }
 
-        // Ungated greedy path: run the single final orientation, then map the result to a nearby
-        // legal PAG via GraphUtils.guaranteePag. In the gated path pag is already the last-accepted,
-        // fully oriented, proven-legal PAG (commitRemoval ran the complete gfciOrientPag on each
-        // accepted candidate), so neither step is needed. EITHER WAY the returned graph is a legal
-        // PAG: by per-step legality gating when doLegalityGating is true, by post-hoc repair when
-        // it is false.
+        // Ungated greedy path: run the single final orientation. If the result already passes the
+        // modulo-knowledge certificate, keep it AS IS -- running GraphUtils.guaranteePag here (as the
+        // base class does unconditionally) would judge the knowledge-refined graph illegal under the
+        // strict certificate and repair it to the canonical PAG, erasing exactly the knowledge marks
+        // this class exists to keep. Only if the certificate fails is the graph mapped to a nearby
+        // legal PAG by guaranteePag (dropping knowledge extras); the final refinement step below then
+        // tries to reapply them.
         if (!doLegalityGating) {
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
-                    excludeSelectionBias, Integer.MAX_VALUE);
+
+            if (!legalPagModuloKnowledge(pag, new LinkedHashSet<>(selection), fciOrient).isLegalPag()) {
+                pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
+                        excludeSelectionBias, Integer.MAX_VALUE);
+            }
+        }
+
+        // Uniform final knowledge refinement, both paths. Covers in particular the gated path on which
+        // NO removal ever committed: there pag is still the untouched dagToPag start graph, which has
+        // never been through gfciOrientPag and so carries no knowledge marks at all. Refine a copy with
+        // knowledge and keep it only if the refined graph passes the modulo-knowledge certificate; on
+        // graphs that are already knowledge-refined fixed points this is a no-op (the refinement is
+        // idempotent), and on certificate failure the unrefined (legal) graph is kept -- knowledge
+        // never degrades legality.
+        if (!knowledge.isEmpty()) {
+            FciOrient refineOrient = buildFciOrient(new SepsetMap(sepsetMap));
+            Graph refined = refineWithKnowledge(pag, refineOrient);
+
+            if (legalPagModuloKnowledge(refined, new LinkedHashSet<>(selection), refineOrient).isLegalPag()) {
+                pag = refined;
+            } else if (verbose) {
+                TetradLogger.getInstance().log("Final knowledge refinement failed the modulo-knowledge "
+                        + "certificate (likely a knowledge/data conflict); returning the unrefined graph.");
+            }
         }
 
         pag = GraphUtils.replaceNodes(pag, nodes);
@@ -599,7 +692,10 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         FciOrient trialOrient = buildFciOrient(trialMap);
         gfciOrientPag(_pag, cpdag, nodes, trialMap, unshieldedColliders, trialOrient);
 
-        PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(_pag, new LinkedHashSet<>(selection));
+        // Modulo-knowledge certificate: strict round-trip equality when knowledge is empty; otherwise the
+        // reconstituted canonical PAG is knowledge-refined (with this trial's own orientation engine, so R4's
+        // sepset appends stay trial-local) before the equality test. See legalPagModuloKnowledge.
+        PagLegalityCheck.LegalPagRet legal = legalPagModuloKnowledge(_pag, new LinkedHashSet<>(selection), trialOrient);
 
         if (!legal.isLegalPag()) {
             if (verbose) {
@@ -692,7 +788,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             FciOrient trialOrient = buildFciOrient(trialMap);
             gfciOrientPag(trial, cpdag, nodes, trialMap, unshieldedColliders, trialOrient);
 
-            PagLegalityCheck.LegalPagRet legal = PagLegalityCheck.isLegalPag(trial, new LinkedHashSet<>(selection));
+            PagLegalityCheck.LegalPagRet legal = legalPagModuloKnowledge(trial, new LinkedHashSet<>(selection), trialOrient);
 
             if (legal.isLegalPag()) {
                 // Accepted: commit exactly this batch's sepsets and carry the reoriented PAG forward.
@@ -732,6 +828,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         strategy.setDepth(this.depth);
         strategy.setMaxLength(this.maxDiscriminatingPathLength);
         strategy.setSepsetMap(sepsetMap);
+        strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
         strategy.setVerbose(false);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
@@ -740,6 +837,117 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         fciOrient.setUseR4(true);
         fciOrient.setVerbose(false);
         return fciOrient;
+    }
+
+    /**
+     * The legality certificate of this class: legal PAG *modulo background knowledge*.
+     * <p>
+     * When knowledge is empty this delegates to {@link PagLegalityCheck#isLegalPag(Graph, Set)} and is therefore
+     * exactly the strict certificate of StarFciGuaranteePag. Otherwise the strict certificate's final round-trip
+     * equality is replaced by equality modulo knowledge:
+     * <ol>
+     *   <li>all nodes must be measured;</li>
+     *   <li>the graph's implied Zhang MAG must exist and be a legal MAG (this is where structural pathologies --
+     *       cycles, almost-cycles, non-maximality -- are caught, so none of that protection is given up);</li>
+     *   <li>the canonical PAG of that MAG is computed (MagToPag), then re-refined with background knowledge and
+     *       re-closed under the complete FCI final rules using the SAME orientation engine that produced the
+     *       candidate (so R4's data-driven discriminating-path resolutions are reproduced, and its sepset appends
+     *       land in that engine's own map);</li>
+     *   <li>the candidate must equal the knowledge-refined canonical PAG exactly.</li>
+     * </ol>
+     * Step 4 is what makes the verdict a certificate: every mark in an accepted graph is either invariant in the
+     * Markov equivalence class of the implied MAG or forced by knowledge (directly or via rule propagation). A graph
+     * that is "between a MAG and a PAG" for any OTHER reason -- e.g., a non-invariant collider stamped from a noisy
+     * sepset -- still fails, exactly as under the strict certificate.
+     *
+     * @param pag       the candidate graph (already oriented by gfciOrientPag, hence already carrying knowledge
+     *                  marks)
+     * @param selection the selection nodes for the MAG legality check
+     * @param orient    the orientation engine used to knowledge-refine the reconstituted canonical PAG; pass the
+     *                  engine that oriented the candidate so trial-local sepset bookkeeping stays trial-local
+     * @return a LegalPagRet whose isLegalPag() is true iff the candidate is a legal PAG refined by knowledge
+     */
+    private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Set<Node> selection, FciOrient orient)
+            throws InterruptedException {
+        if (knowledge.isEmpty()) {
+            return PagLegalityCheck.isLegalPag(pag, selection);
+        }
+
+        for (Node n : pag.getNodes()) {
+            if (n.getNodeType() != NodeType.MEASURED) {
+                return new PagLegalityCheck.LegalPagRet(false, "Node " + n + " is not measured");
+            }
+        }
+
+        Graph mag;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(pag);
+        } catch (Exception e) {
+            return new PagLegalityCheck.LegalPagRet(false, "PAG to MAG failed");
+        }
+
+        PagLegalityCheck.LegalMagRet legalMag = PagLegalityCheck.isLegalMag(mag, selection);
+
+        if (!legalMag.isLegalMag()) {
+            return new PagLegalityCheck.LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
+        }
+
+        Graph pag2;
+        try {
+            MagToPag magToPag = new MagToPag(mag);
+            pag2 = magToPag.convert(false, false);
+        } catch (IllegalStateException e) {
+            return new PagLegalityCheck.LegalPagRet(false, "Legal PAG status could not be determined");
+        }
+
+        Graph pag2k = refineWithKnowledge(pag2, orient);
+
+        if (!pag.equals(pag2k)) {
+            String edgeMismatch = "";
+
+            for (Edge e : pag.getEdges()) {
+                Edge e2 = pag2k.getEdge(e.getNode1(), e.getNode2());
+                if (!e.equals(e2)) {
+                    edgeMismatch = "For example, the candidate has edge " + e
+                            + " whereas the knowledge-refined reconstituted graph has edge " + e2;
+                    break;
+                }
+            }
+
+            String reason = "The MAG implied by this graph was a legal MAG, but the graph is not recoverable as the "
+                    + "knowledge-refined canonical PAG of that MAG -- it carries marks forced neither by the "
+                    + "equivalence class nor by background knowledge";
+
+            if (!edgeMismatch.isEmpty()) {
+                reason += ". " + edgeMismatch;
+            }
+
+            return new PagLegalityCheck.LegalPagRet(false, reason);
+        }
+
+        return new PagLegalityCheck.LegalPagRet(true, "This is a legal PAG refined by background knowledge");
+    }
+
+    /**
+     * Refines a graph with background knowledge and closes under the complete FCI final rules: apply
+     * {@link FciOrient#fciOrientbk} for the required/forbidden-edge marks, then {@link FciOrient#finalOrientation}
+     * to propagate them (R1, R2, ...). Works on a copy; the input is not modified. Identity when knowledge is
+     * empty. Note that this can only ADD arrow/tail marks to a graph closed under the final rules; on a graph that
+     * is already a knowledge-refined fixed point it is a no-op.
+     *
+     * @param graph  the graph to refine (not modified)
+     * @param orient the orientation engine to use (supplies knowledge marks and the final-rule closure)
+     * @return a knowledge-refined copy of the graph
+     */
+    private Graph refineWithKnowledge(Graph graph, FciOrient orient) throws InterruptedException {
+        if (knowledge.isEmpty()) {
+            return graph;
+        }
+
+        Graph g = graph.copy();
+        orient.fciOrientbk(knowledge, g, g.getNodes(), excludeSelectionBias);
+        orient.finalOrientation(g, excludeSelectionBias);
+        return g;
     }
 
     /**
@@ -847,10 +1055,11 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
 
     /**
      * When true, the extra-edge-removal step mimics FCIT: each candidate removal is committed only if the resulting
-     * graph (after re-running the full *-FCI orientation) is a legal PAG; otherwise it is reverted. When false, the
-     * original *-FCI behavior is used (greedy removal with a single final orientation), and the result is then
-     * mapped to a nearby legal PAG by GraphUtils.guaranteePag. Either way, the output is guaranteed to be a legal
-     * PAG; this flag only selects the mechanism.
+     * graph (after re-running the full *-FCI orientation) passes the modulo-knowledge legality certificate;
+     * otherwise it is reverted. When false, the original *-FCI behavior is used (greedy removal with a single final
+     * orientation), mapped to a nearby legal PAG by GraphUtils.guaranteePag only if the certificate fails. Either
+     * way, the output is guaranteed to be a legal PAG possibly refined by background knowledge; this flag only
+     * selects the mechanism.
      *
      * @param doLegalityGating Whether to gate each removal on per-step PAG legality (true) or repair post hoc (false).
      */

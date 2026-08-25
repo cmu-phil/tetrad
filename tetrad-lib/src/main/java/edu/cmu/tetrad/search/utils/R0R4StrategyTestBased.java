@@ -88,6 +88,14 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      */
     private PreserveMarkov preserveMarkovHelper = null;
     /**
+     * Whether R4's recursive discriminating-path search returns the candidate separating set with the strongest
+     * evidence of independence rather than the first one it finds. Off by default, which preserves the historical
+     * (order-dependent) behavior exactly. See
+     * {@link edu.cmu.tetrad.search.RecursiveDiscriminatingPathRule#findDdpSepsetRecursive(IndependenceTest, Graph,
+     * Node, Node, int, int, int, PreserveMarkov, IndependenceCheckCounter, long, boolean)}.
+     */
+    private boolean ddpMaxP = false;
+    /**
      * A private instance of the SepsetMap used to manage and store separating sets within the
      * FciOrientDataExaminationStrategy. The separating sets are used to capture conditional independencies in a graph.
      * This map preserves that proper independence relationships are maintained during the execution of the strategy.
@@ -229,30 +237,22 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
             return Pair.of(discriminatingPath, false);
         }
 
-//        Set<Node> blocking = sepsets.get(x, y);
-//
-//        if (blocking == null) {
-//            blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, graph, x, y,
-//                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
-//
-//            if (blocking != null) {
-//                sepsets.set(x, y, blocking);
-//            } else {
-//                throw new IllegalStateException("Discriminating path could not be determined.");
-//            }
-//        }
-
         Set<Node> blocking = sepsets.get(x, y);
 
+        // GREEDY fast path: look for a separator of X and Y among subsets of adj(X) or adj(Y)
+        // that contain the collider path. This is sound but incomplete -- in the presence of
+        // latent confounding a separator of a non-adjacent pair need not be a subset of the
+        // adjacents of either endpoint -- so when it fails we fall through to the (complete but
+        // more expensive) recursive search below.
         if (blocking == null && blockingType == BlockingType.GREEDY) {
-            Set<Node> _blocking = findAdjSetSepset(graph, x, y, path, v);
-            if (_blocking != null) {
-                sepsets.set(x, y, _blocking);
-                return Pair.of(discriminatingPath, true);
+            blocking = findAdjSetSepset(graph, x, y, path, v);
+
+            if (blocking != null) {
+                sepsets.set(x, y, blocking);
             }
         }
 
-        // BlockingType.RECURSIVE
+        // BlockingType.RECURSIVE, and the GREEDY fallback.
         if (blocking == null) {
             // P1 ("recorded, not live"): compute an unrecorded endpoint separator
             // against the frozen initial Markov PAG (G_0) rather than the live,
@@ -264,23 +264,43 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
                     ? sepsetGraph : graph;
 
             blocking = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, refGraph, x, y,
-                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, timeout);
+                    recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, null, timeout,
+                    ddpMaxP);
 
             if (blocking != null) {
                 sepsets.set(x, y, blocking);
             } else {
-                throw new IllegalStateException("Discriminating path could not be determined.");
+                // No separator could be found for X and Y. R4 has no basis on which to decide
+                // whether V is a collider, so decline to orient rather than aborting the whole
+                // orientation pass. (Under an oracle this cannot happen for a non-adjacent pair;
+                // with a fallible test it can, and it is not an error.)
+                if (verbose) {
+                    TetradLogger.getInstance().log("R4: No separator found for " + x + " and " + y
+                                                   + "; declining to orient " + discriminatingPath);
+                }
+
+                return Pair.of(discriminatingPath, false);
             }
         }
 
-        if (!(blocking.containsAll(path)) && blocking.contains(w)) {
-            throw new IllegalArgumentException("Blocking set is not correct; it should contain the path (including W) and V.");
+        // Every vertex strictly between X and V on a discriminating path is a parent of Y, so
+        // X *-* A -> Y is an open path unless A is conditioned on. Any separator of X and Y must
+        // therefore contain the whole collider path (which includes W, by DiscriminatingPath's
+        // storage convention). With a fallible test this can fail; when it does, the separator is
+        // not a valid basis for R4, so decline rather than orienting from it.
+        if (!blocking.containsAll(path)) {
+            if (verbose) {
+                TetradLogger.getInstance().log("R4: Separator " + blocking + " for " + x + " and " + y
+                                               + " does not contain the collider path " + path
+                                               + "; declining to orient " + discriminatingPath);
+            }
+
+            return Pair.of(discriminatingPath, false);
         }
 
-        // Now at this point, for the recursive case, we simply need to know whether X _||_ Y | blocking. If so, we
-        // can orient W<-*V*->Y as a non-collider, otherwise as a collider. For the greedy case, we need to know whether
-        // blocking contains v. These are two ways to express the same idea, since for the recursive case blocking
-        // must contain V by construction.
+        // R4 proper: V is a non-collider on the discriminating path exactly when V belongs to a
+        // separator of X and Y, and a collider otherwise. This is the criterion for both blocking
+        // types -- the types differ only in how the separator is found, not in how it is read.
         boolean noncollider = blocking.contains(v);
 
         if (noncollider) {
@@ -325,28 +345,44 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
     }
 
+    /**
+     * Greedily searches for a separator of x and y among subsets of adj(x) or adj(y) that contain the given collider
+     * path, and then normalizes it so that its membership of v is decisive for R4. Returns null if no such separator
+     * exists, in which case the caller falls back to the recursive search.
+     *
+     * @param graph the graph to search in
+     * @param x     the first endpoint of the discriminating path
+     * @param y     the second endpoint of the discriminating path
+     * @param path  the collider path, which the separator must contain
+     * @param v     the node whose collider status is at issue
+     * @return a separator of x and y, or null if none was found
+     * @throws InterruptedException if the operation is interrupted
+     */
     private @Nullable Set<Node> findAdjSetSepset(Graph graph, Node x, Node y, List<Node> path, Node v) throws InterruptedException {
-        Set<Node> blocking;
-        blocking = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
+        Set<Node> sepset = SepsetFinder.findSepsetSubsetOfAdjxOrAdjy(graph, x, y, new HashSet<>(path), test, depth);
 
-        Set<Node> b1 = new HashSet<>(blocking);
+        // No adjacency-restricted separator exists; let the caller fall back.
+        if (sepset == null) {
+            return null;
+        }
+
+        // Probe without v first, then with v. Exactly one of these separates under an oracle, and
+        // testing in this order makes v's membership of the returned set decisive.
+        Set<Node> b1 = new HashSet<>(sepset);
         b1.remove(v);
 
-        boolean b1Indep = test.checkIndependence(x, y, b1).isIndependent();
+        if (test.checkIndependence(x, y, b1).isIndependent()) {
+            return b1;
+        }
 
         Set<Node> b2 = new HashSet<>(b1);
         b2.add(v);
 
-        boolean b2Indep = test.checkIndependence(x, y, b2).isIndependent();
-
-        if (b1Indep) {
-            blocking = b1;
-        } else if (b2Indep) {
-            blocking = b2;
-        } else {
-            blocking = null;
+        if (test.checkIndependence(x, y, b2).isIndependent()) {
+            return b2;
         }
-        return blocking;
+
+        return null;
     }
 
     /**
@@ -411,6 +447,18 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
     /**
      * Sets the PreserveMarkov object used by the R0R4StrategyTestBased.
+     *
+     * Sets whether R4's recursive discriminating-path search picks the strongest candidate separating set
+     * (max-p) rather than the first one found. Off by default.
+     *
+     * @param ddpMaxP whether to use the max-p rule
+     */
+    public void setDdpMaxP(boolean ddpMaxP) {
+        this.ddpMaxP = ddpMaxP;
+    }
+
+    /**
+     * Sets the PreserveMarkov helper.
      *
      * @param preserveMarkovHelper the PreserveMarkov object to be set
      */

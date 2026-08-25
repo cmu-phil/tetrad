@@ -20,7 +20,9 @@
 
 package edu.cmu.tetrad.data.missing;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -221,5 +223,201 @@ public final class MissingDataUtils {
             case MIN_PAIRWISE -> new MissingDataAudit(dataSet).getMinPairwiseCount();
             case MEAN_PAIRWISE -> (int) Math.round(new MissingDataAudit(dataSet).getMeanPairwiseCount());
         };
+    }
+
+    /**
+     * The wrapper-level missing-data gate, called at the top of every algcomparison test and score wrapper's
+     * {@code getTest}/{@code getScore} method. This is the point at which the explicit-choice contract for missing
+     * data is enforced for all user-facing interfaces (the GUI search box, algcomparison, and py-tetrad, all of
+     * which construct tests and scores through these wrappers).
+     * <p>
+     * Semantics: if the data model is null, is not a tabular {@link DataSet} (e.g., a covariance matrix, which
+     * cannot contain missing values), or is a complete dataset, it is returned unchanged and the policy is
+     * irrelevant. Otherwise the dataset contains missing values, and:
+     * <ul>
+     * <li>Policy "default" (or unset): an {@link IllegalArgumentException} is thrown asking the user to choose a
+     * policy. This replaces the previous behavior in which components silently (later: with a logged warning)
+     * switched to test-wise deletion. To restore the previous behavior explicitly, set the policy to
+     * "testwise".</li>
+     * <li>"fail": an exception is thrown, per that policy's contract.</li>
+     * <li>"listwise": the complete-case dataset is returned. This is supported for every test and score, since it
+     * is a pure data transformation performed here, upstream of the component.</li>
+     * <li>"testwise" or "em": the dataset is passed through unchanged if {@code specAware} is true (the wrapper
+     * passes a {@link MissingDataSpec} to a component that implements these policies natively); otherwise an
+     * exception is thrown naming "listwise" as the supported alternative.</li>
+     * <li>"mi": an exception is thrown. Multiple imputation runs the whole search over m imputed datasets via
+     * {@link ImputationSearch} and is not the responsibility of a single test or score; it is not yet wired into
+     * the wrapper interfaces. (ImputationSearch hands complete datasets to the algorithm it runs, so this gate
+     * passes through in that context.)</li>
+     * </ul>
+     * Statistical caveats as elsewhere: test-wise and listwise deletion are unbiased in general only under MCAR;
+     * EM is valid under MAR for approximately multivariate normal data.
+     *
+     * @param dataModel  The data model handed to the wrapper; may be null or a non-tabular model.
+     * @param parameters The parameters, from which {@link Params#MISSING_DATA_POLICY} is read.
+     * @param specAware  True if the wrapper passes a MissingDataSpec through to a component with native TESTWISE /
+     *                   EM_COVARIANCE support.
+     * @param caller     The user-facing name of the test or score, for error messages.
+     * @return The data model, possibly replaced by its complete-case version under the "listwise" policy.
+     * @throws IllegalArgumentException As described above.
+     */
+    public static DataModel gate(DataModel dataModel, Parameters parameters, boolean specAware, String caller) {
+        return gate(dataModel, parameters, specAware
+                ? java.util.Set.of("testwise", "em")
+                : java.util.Set.of(), caller);
+    }
+
+    /**
+     * The finer-grained form of {@link #gate(DataModel, Parameters, boolean, String)}, for components that support
+     * some native policies but not others (e.g., the Chi-Square test performs test-wise deletion natively but has
+     * no EM-covariance route, while Fisher Z supports both). The boolean form delegates here with
+     * {@code {"testwise", "em"}} or the empty set.
+     *
+     * @param dataModel      The data model handed to the wrapper; may be null or a non-tabular model.
+     * @param parameters     The parameters, from which {@link Params#MISSING_DATA_POLICY} is read.
+     * @param nativePolicies The policies the underlying component implements natively, from among "testwise" and
+     *                       "em". ("fail" and "listwise" are implemented here for every component, and "mi" is a
+     *                       search-level policy.)
+     * @param caller         The user-facing name of the test or score, for error messages.
+     * @return The data model, possibly replaced by its complete-case version under the "listwise" policy.
+     * @throws IllegalArgumentException As for the boolean form.
+     */
+    public static DataModel gate(DataModel dataModel, Parameters parameters, java.util.Set<String> nativePolicies,
+                                 String caller) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            return dataModel;
+        }
+
+        if (!dataSet.existsMissingValue()) {
+            return dataModel;
+        }
+
+        String policy = parameters.getString(Params.MISSING_DATA_POLICY, "default").trim().toLowerCase();
+
+        switch (policy) {
+            case "", "default" -> throw new IllegalArgumentException(caller
+                    + ": The dataset contains missing values, and no missing-data policy has been chosen.\n"
+                    + "Please set the '" + Params.MISSING_DATA_POLICY + "' parameter for this test or score to one of:\n"
+                    + "  'testwise'  - test-wise deletion (each local calculation uses its complete rows; the previous default),\n"
+                    + "  'listwise'  - analyze complete cases only (supported by every test and score),\n"
+                    + "  'em'        - EM-estimated covariance (continuous data; supported where noted),\n"
+                    + "  'fail'      - refuse to analyze data with missing values.\n"
+                    + "Test-wise and listwise deletion are unbiased only if values are missing completely at random "
+                    + "(MCAR); EM is valid under the weaker MAR assumption for approximately multivariate normal "
+                    + "data. " + briefSummary(dataSet));
+            case "fail" -> throw new IllegalArgumentException(caller
+                    + ": The dataset contains missing values, and the missing-data policy is 'fail'. "
+                    + briefSummary(dataSet));
+            case "listwise" -> {
+                DataSet complete = listwiseDelete(dataSet);
+                TetradLogger.getInstance().log(caller + ": Missing-data policy 'listwise': using "
+                        + complete.getNumRows() + " complete rows of " + dataSet.getNumRows() + ". "
+                        + briefSummary(dataSet));
+                return complete;
+            }
+            case "testwise", "em", "emcovariance", "em_covariance" -> {
+                String canonical = policy.startsWith("em") ? "em" : "testwise";
+
+                if (nativePolicies.contains(canonical)) {
+                    return dataModel;
+                } else {
+                    StringBuilder supported = new StringBuilder("'listwise' (analyze complete cases only) and 'fail'");
+                    for (String p : new String[]{"testwise", "em"}) {
+                        if (nativePolicies.contains(p)) supported.append(", and natively '").append(p).append("'");
+                    }
+
+                    throw new IllegalArgumentException(caller
+                            + ": This test/score does not support the missing-data policy '" + canonical + "'. "
+                            + "It supports " + supported + ". Either set "
+                            + Params.MISSING_DATA_POLICY + " = 'listwise', or choose a test/score with native "
+                            + "support for '" + canonical + "' (e.g., Fisher Z, SEM BIC, BDeu, Discrete BIC, "
+                            + "Conditional Gaussian BIC, Degenerate Gaussian BIC).");
+                }
+            }
+            case "mi", "multipleimputation", "multiple_imputation" -> throw new IllegalArgumentException(caller
+                    + ": Multiple imputation ('mi') runs the entire search over m imputed datasets (see "
+                    + "ImputationSearch) and is not performed by a single test or score; it is not yet available "
+                    + "through this interface. Please use 'em', 'testwise', or 'listwise' instead.");
+            default -> throw new IllegalArgumentException(caller + ": Unrecognized missing-data policy: '" + policy
+                    + "'. Expected one of: default, fail, listwise, testwise, em, mi.");
+        }
+    }
+
+    /**
+     * The block-spec variant of {@link #gate(DataModel, Parameters, boolean, String)}, for wrappers that construct
+     * block tests and scores from a {@link BlockSpec} rather than from the data model handed to
+     * {@code getTest}/{@code getScore}. The embedded dataset is checked; under the "listwise" policy a new
+     * BlockSpec is returned wrapping the complete-case dataset with the same blocks, block variables, and ranks
+     * (blocks index columns, which row deletion does not disturb). No block component currently has native
+     * test-wise or EM support, so those policies throw here.
+     *
+     * @param blockSpec  The block spec.
+     * @param parameters The parameters.
+     * @param caller     The user-facing name of the test or score, for error messages.
+     * @return The block spec, possibly rebuilt on the complete-case dataset under the "listwise" policy.
+     * @throws IllegalArgumentException As for the data-model gate.
+     */
+    public static BlockSpec gate(BlockSpec blockSpec, Parameters parameters, String caller) {
+        if (blockSpec == null) {
+            return null;
+        }
+
+        DataModel gated = gate(blockSpec.dataSet(), parameters, false, caller);
+
+        if (gated == blockSpec.dataSet()) {
+            return blockSpec;
+        }
+
+        return new BlockSpec((DataSet) gated, blockSpec.blocks(), blockSpec.blockVariables(), blockSpec.ranks());
+    }
+
+    /**
+     * Implements the "em" missing-data policy at the wrapper level for covariance-consuming scores that have an
+     * {@link edu.cmu.tetrad.data.ICovarianceMatrix} constructor but no native {@link MissingDataSpec} handling
+     * (EBIC, GIC, Poisson prior, Zhang-Shen bound, and the like). Called after
+     * {@link #gate(DataModel, Parameters, java.util.Set, String)} with "em" in the native set: if the data model is
+     * a dataset with missing values and the chosen policy is "em", the EM-estimated covariance matrix (valid under
+     * MAR for approximately multivariate normal data) is returned in its place, with its sample size adjusted per
+     * the spec's effective-sample-size mode if a pairwise mode is chosen; the wrapper's covariance branch then
+     * constructs the score from it. In every other case the data model is returned unchanged.
+     *
+     * @param dataModel  The data model, already passed through the gate.
+     * @param parameters The parameters.
+     * @param caller     The user-facing name of the score, for the log message.
+     * @return The data model, or the EM-estimated covariance matrix in its place under the "em" policy.
+     */
+    public static DataModel emCovarianceIfRequested(DataModel dataModel, Parameters parameters, String caller) {
+        if (!(dataModel instanceof DataSet dataSet)) {
+            return dataModel;
+        }
+
+        if (!dataSet.existsMissingValue()) {
+            return dataModel;
+        }
+
+        String policy = parameters.getString(Params.MISSING_DATA_POLICY, "default").trim().toLowerCase();
+
+        if (!(policy.equals("em") || policy.equals("emcovariance") || policy.equals("em_covariance"))) {
+            return dataModel;
+        }
+
+        MissingDataSpec spec = fromParameters(parameters);
+
+        edu.cmu.tetrad.data.EmCovarianceEstimator estimator = new edu.cmu.tetrad.data.EmCovarianceEstimator(dataSet);
+        estimator.setRidge(spec.getEmRidge());
+        estimator.setTolerance(spec.getEmTolerance());
+        estimator.setMaxIterations(spec.getEmMaxIterations());
+        edu.cmu.tetrad.data.ICovarianceMatrix cov = estimator.estimate();
+
+        int ess = effectiveSampleSize(dataSet, spec);
+        if (ess >= 0) {
+            cov.setSampleSize(ess);
+        }
+
+        TetradLogger.getInstance().log(caller + ": Missing-data policy 'em': using the EM-estimated covariance "
+                + "matrix (MAR, approximately multivariate normal), sample size " + cov.getSampleSize() + ". "
+                + briefSummary(dataSet));
+
+        return cov;
     }
 }

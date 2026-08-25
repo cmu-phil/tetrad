@@ -37,6 +37,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.*;
+import edu.cmu.tetradapp.util.ExperimentalToggle;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -89,6 +90,10 @@ public class MarkovCheckEditor extends JPanel {
      * The combo box for the independence test.
      */
     private final JComboBox<IndependenceTestModel> indTestJComboBox = new JComboBox<>();
+    /**
+     * Local switch for listing experimental tests in this editor. Added 2026-8-24.
+     */
+    private final ExperimentalToggle experimentalToggle = new ExperimentalToggle(this::refreshTestList);
     /**
      * The combo box for the conditioning set type.
      */
@@ -705,6 +710,8 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(experimentalToggle)
+                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(params)
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(resample)
@@ -721,6 +728,7 @@ public class MarkovCheckEditor extends JPanel {
                                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(testLabel)
                                         .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(experimentalToggle)
                                         .addComponent(params)
                                         .addComponent(resample)
                                         .addComponent(fractionSampleLabel)
@@ -1609,7 +1617,8 @@ public class MarkovCheckEditor extends JPanel {
 
         this.indTestJComboBox.removeAllItems();
 
-        List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dataType);
+        IndependenceTestModels registry = IndependenceTestModels.getInstance(experimentalToggle.includeExperimental());
+        List<IndependenceTestModel> models = registry.getModels(dataType);
 
         for (IndependenceTestModel m : models) {
             if (m.getName().equals("Probabilistic Test")) continue;
@@ -1636,7 +1645,7 @@ public class MarkovCheckEditor extends JPanel {
 
         // Fallback to the default model for this data type
         if (toSelect == null) {
-            toSelect = IndependenceTestModels.getInstance().getDefaultModel(dataType);
+            toSelect = registry.getDefaultModel(dataType);
         }
 
         indTestJComboBox.setSelectedItem(toSelect);

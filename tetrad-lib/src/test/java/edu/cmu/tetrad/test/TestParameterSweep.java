@@ -211,6 +211,139 @@ public class TestParameterSweep {
     }
 
     /**
+     * Assigns the 500 simulated rows to 25 groups of 20 consecutive rows, in the pattern of a repeated-measures
+     * design (rows 0-19 are group 0, etc.).
+     */
+    private static int[] consecutiveGroups(int n, int groupSize) {
+        int[] g = new int[n];
+        for (int i = 0; i < n; i++) g[i] = 7 + 3 * (i / groupSize);   // arbitrary non-contiguous labels
+        return g;
+    }
+
+    /**
+     * Block resamples must consist of whole groups: every row of a drawn group is present, rows of a group are
+     * contiguous and in original order, and no row of an undrawn group appears. Checked by tagging each row with
+     * its index in an extra column.
+     */
+    @Test
+    public void testBlockResamplesAreWholeGroups() {
+        DataSet data = simulate();
+        int n = data.getNumRows();
+        int groupSize = 20;
+        int[] groups = consecutiveGroups(n, groupSize);
+
+        // Tag rows: overwrite column 0 with the row index so resampled rows can be traced.
+        DataSet tagged = data.copy();
+        for (int i = 0; i < n; i++) tagged.setDouble(i, 0, i);
+
+        List<DataSet> r = ParameterSweep.drawBlockResamples(tagged, groups, 10, 1.0, true, 11);
+        assertEquals(10, r.size());
+
+        for (DataSet d : r) {
+            assertEquals(0, d.getNumRows() % groupSize);
+            int numBlocks = d.getNumRows() / groupSize;
+            assertEquals(n / groupSize, numBlocks);   // 100% of 25 groups, with replacement
+
+            for (int b = 0; b < numBlocks; b++) {
+                int first = (int) d.getDouble(b * groupSize, 0);
+                assertEquals("block must start at a group boundary", 0, first % groupSize);
+                for (int k = 1; k < groupSize; k++) {
+                    assertEquals("rows within a block must be the group's rows in order",
+                            first + k, (int) d.getDouble(b * groupSize + k, 0));
+                }
+            }
+        }
+    }
+
+    /**
+     * Without replacement, percent applies to groups: 40% of 25 groups is 10 distinct groups, so 200 rows, all
+     * distinct.
+     */
+    @Test
+    public void testBlockResamplesWithoutReplacement() {
+        DataSet data = simulate();
+        int n = data.getNumRows();
+        int[] groups = consecutiveGroups(n, 20);
+        DataSet tagged = data.copy();
+        for (int i = 0; i < n; i++) tagged.setDouble(i, 0, i);
+
+        List<DataSet> r = ParameterSweep.drawBlockResamples(tagged, groups, 4, 0.4, false, 5);
+
+        for (DataSet d : r) {
+            assertEquals(200, d.getNumRows());
+            java.util.Set<Integer> seen = new java.util.HashSet<>();
+            for (int i = 0; i < d.getNumRows(); i++) assertTrue(seen.add((int) d.getDouble(i, 0)));
+        }
+    }
+
+    /**
+     * Block draws are reproducible under a fixed seed, and a with-replacement draw at 100% differs from the data
+     * in row count only when groups are unequal in size - with equal groups the count is fixed but the multiset of
+     * groups is not.
+     */
+    @Test
+    public void testBlockResampleDeterminism() {
+        DataSet data = simulate();
+        int[] groups = consecutiveGroups(data.getNumRows(), 20);
+        List<DataSet> r1 = ParameterSweep.drawBlockResamples(data, groups, 5, 1.0, true, 42);
+        List<DataSet> r2 = ParameterSweep.drawBlockResamples(data, groups, 5, 1.0, true, 42);
+
+        for (int s = 0; s < 5; s++) {
+            assertEquals(r1.get(s).getNumRows(), r2.get(s).getNumRows());
+            for (int i = 0; i < r1.get(s).getNumRows(); i++) {
+                for (int j = 0; j < r1.get(s).getNumColumns(); j++) {
+                    assertEquals(r1.get(s).getDouble(i, j), r2.get(s).getDouble(i, j), 0.0);
+                }
+            }
+        }
+    }
+
+    /**
+     * A group array of the wrong length is rejected at sweep time.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testResampleGroupsLengthMismatch() throws InterruptedException {
+        DataSet data = simulate();
+        ParameterSweep sweep = new ParameterSweep(new Fges(new SemBicScore()), new Parameters());
+        sweep.setNumResamples(2);
+        sweep.setResampleGroups(new int[data.getNumRows() - 1]);
+        sweep.sweep(data, Params.PENALTY_DISCOUNT, List.of(2.0));
+    }
+
+    /**
+     * A sweep with resample groups runs end to end, reports the group count in the header and JSON, and reverts to
+     * row resampling (group count -1) when the groups are cleared.
+     */
+    @Test
+    public void testSweepWithResampleGroups() throws InterruptedException {
+        DataSet data = simulate();
+        int[] groups = consecutiveGroups(data.getNumRows(), 20);
+
+        ParameterSweep sweep = new ParameterSweep(new Fges(new SemBicScore()), new Parameters());
+        sweep.setMarkovCheckTest(new FisherZ());
+        sweep.setNumResamples(10);
+        sweep.setSeed(42);
+        sweep.setResampleGroups(groups);
+        assertEquals(data.getNumRows(), sweep.getResampleGroups().length);
+
+        SweepReport report = sweep.sweep(data, Params.PENALTY_DISCOUNT, List.of(1.0, 2.0));
+        assertEquals(25, report.getNumResampleGroups());
+        assertTrue(report.toMarkdown().contains("25 groups (block resampling)"));
+        assertTrue(report.toJson().contains("\"numResampleGroups\":25"));
+
+        for (SweepResult r : report.getResults()) {
+            assertNotNull(r.getEdgeProbabilityGraph());
+            assertEquals(10, r.getNumResamples());
+            assertTrue(r.getAdjacencyInstability() >= 0 && r.getAdjacencyInstability() <= 0.5);
+        }
+
+        sweep.setResampleGroups(null);
+        SweepReport rowReport = sweep.sweep(data, Params.PENALTY_DISCOUNT, List.of(2.0));
+        assertEquals(-1, rowReport.getNumResampleGroups());
+        assertTrue(rowReport.toMarkdown().contains("% of sample size"));
+    }
+
+    /**
      * The refactored StARS should run end to end and return a graph over the data's variables, including via the
      * most-stable fallback when no instability falls below the cutoff.
      */

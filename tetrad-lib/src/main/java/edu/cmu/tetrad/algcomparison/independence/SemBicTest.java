@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -66,6 +67,7 @@ public class SemBicTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, true, "SEM BIC Test");
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         SemBicScore score;
@@ -73,13 +75,20 @@ public class SemBicTest implements IndependenceWrapper {
         if (dataSet instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dataSet);
         } else {
-            score = new SemBicScore((DataSet) dataSet, precomputeCovariances);
+            score = new SemBicScore((DataSet) dataSet, precomputeCovariances,
+                    MissingDataUtils.fromParameters(parameters));
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         score.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
 
-        return new ScoreIndTest(score, dataSet);
+        ScoreIndTest test = new ScoreIndTest(score, dataSet);
+
+        // Optional: report likelihood-ratio p-values instead of raw score differences. Does not change the
+        // test's accept/reject decisions; see ScoreIndTest.setCalibratePValues.
+        test.setCalibratePValues(parameters.getBoolean(Params.SCORE_TEST_CALIBRATED_P_VALUES));
+
+        return test;
     }
 
     /**
@@ -112,8 +121,14 @@ public class SemBicTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
+        params.add(Params.SCORE_TEST_CALIBRATED_P_VALUES);
         params.add(Params.PRECOMPUTE_COVARIANCES);
         params.add(Params.SINGULARITY_LAMBDA);
+        params.add(Params.MISSING_DATA_POLICY);
+        params.add(Params.MISSING_EM_RIDGE);
+        params.add(Params.MISSING_EM_TOLERANCE);
+        params.add(Params.MISSING_EM_MAX_ITERATIONS);
+        params.add(Params.MISSING_ESS_MODE);
         return params;
     }
 }

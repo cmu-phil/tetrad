@@ -39,15 +39,19 @@ import java.util.stream.Stream;
  */
 public final class IndependenceTestModels {
 
-    private static final IndependenceTestModels INSTANCE = new IndependenceTestModels();
+    // Changed 2026-8-24: two immutable instances, one with and one without experimental tests, selected at call
+    // time. Previously a single instance read Tetrad.enableExperimental once at class load, so the settings checkbox
+    // had no effect on tests until Tetrad was restarted.
+    private static final IndependenceTestModels WITH_EXPERIMENTAL = new IndependenceTestModels(true);
+    private static final IndependenceTestModels WITHOUT_EXPERIMENTAL = new IndependenceTestModels(false);
 
     private final List<IndependenceTestModel> models;
     private final Map<DataType, List<IndependenceTestModel>> modelMap = new EnumMap<>(DataType.class);
     private final Map<DataType, IndependenceTestModel> defaultModelMap = new EnumMap<>(DataType.class);
 
-    private IndependenceTestModels() {
+    private IndependenceTestModels(boolean includeExperimental) {
         TestOfIndependenceAnnotations indTestAnno = TestOfIndependenceAnnotations.getInstance();
-        List<AnnotatedClass<TestOfIndependence>> list = Tetrad.enableExperimental
+        List<AnnotatedClass<TestOfIndependence>> list = includeExperimental
                 ? indTestAnno.getAnnotatedClasses()
                 : indTestAnno.filterOutExperimental(indTestAnno.getAnnotatedClasses());
         this.models = Collections.unmodifiableList(
@@ -66,7 +70,18 @@ public final class IndependenceTestModels {
      * @return a {@link edu.cmu.tetradapp.ui.model.IndependenceTestModels} object
      */
     public static IndependenceTestModels getInstance() {
-        return IndependenceTestModels.INSTANCE;
+        return getInstance(Tetrad.enableExperimental);
+    }
+
+    /**
+     * Returns the registry with or without experimental tests, regardless of the global preference. Added 2026-8-24 so
+     * an editor can offer a local "include experimental" toggle.
+     *
+     * @param includeExperimental true to include tests marked {@code @Experimental}.
+     * @return the registry.
+     */
+    public static IndependenceTestModels getInstance(boolean includeExperimental) {
+        return includeExperimental ? WITH_EXPERIMENTAL : WITHOUT_EXPERIMENTAL;
     }
 
     private void initModelMap() {

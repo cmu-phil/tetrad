@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.IndTestCordEric;
 import edu.cmu.tetrad.search.test.IndTestCord;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -88,6 +89,7 @@ public class Cord implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataModel, Parameters parameters) {
+        dataModel = MissingDataUtils.gate(dataModel, parameters, false, "CORD");
         if (!(dataModel instanceof DataSet dataSet)) {
             throw new IllegalArgumentException(
                     "CORD requires a tabular (continuous) dataset, not a covariance matrix.");
@@ -147,6 +149,7 @@ public class Cord implements IndependenceWrapper {
         params.add(CORD_SEED);
         params.add(CORD_ENGINE);
         params.add(Params.VERBOSE);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

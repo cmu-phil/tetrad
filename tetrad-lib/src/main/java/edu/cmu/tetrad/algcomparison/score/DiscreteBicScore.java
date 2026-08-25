@@ -65,6 +65,7 @@ public class DiscreteBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "Discrete BIC Score");
         this.dataSet = dataSet;
         edu.cmu.tetrad.search.score.DiscreteBicScore score
                 = new edu.cmu.tetrad.search.score.DiscreteBicScore(SimpleDataLoader.getDiscreteDataSet(dataSet),

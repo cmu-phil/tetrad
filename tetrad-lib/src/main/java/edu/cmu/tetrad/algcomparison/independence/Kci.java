@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -64,6 +65,7 @@ public class Kci implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "KCI (Kernel Conditional Independence Test)");
         edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci((DataSet) dataSet);
         kci.setAlpha(parameters.getDouble(Params.ALPHA));
 
@@ -130,6 +132,7 @@ public class Kci implements IndependenceWrapper {
         params.add(Params.KERNEL_TYPE);
         params.add(Params.POLYNOMIAL_DEGREE);
         params.add(Params.POLYNOMIAL_CONSTANT);
+        params.add(Params.MISSING_DATA_POLICY);
         return params;
     }
 }

@@ -148,6 +148,19 @@ public abstract class AbstractMultiBootstrapAlgorithm extends AbstractBootstrapA
             }
         }
 
+        // Time-lag data sets must be lagged ONCE (each data set separately, from its own row order) before any
+        // resampling; see BootstrapTimeLag. The core then runs with timeLag = 0 on lagged rows, and the wrapper's
+        // knowledge is temporarily the lagged knowledge, restored in the finally block below.
+        BootstrapTimeLag.Prepared prepared = BootstrapTimeLag.prepare(this, dataSets, parameters);
+
+        try {
+            return bootstrapSearch(prepared.dataSets(), prepared.parameters());
+        } finally {
+            prepared.restore().run();
+        }
+    }
+
+    private Graph bootstrapSearch(List<DataModel> dataSets, Parameters parameters) throws InterruptedException {
         // create a new random generator if a seed is given
         long seed = parameters.getLong(Params.SEED);
         RandomGenerator randomGenerator = (seed < 0) ? null : new SynchronizedRandomGenerator(new Well44497b(seed));

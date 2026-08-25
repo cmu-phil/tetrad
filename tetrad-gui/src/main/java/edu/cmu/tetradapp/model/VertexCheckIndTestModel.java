@@ -227,7 +227,13 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public void setIndependenceTest(IndependenceTest test) {
         this.independenceTest = test;
 
-        if (test instanceof RowsSettable) {
+        // Row assignment only applies to row data. When the model was constructed with a
+        // covariance matrix there are no rows to set; covariance-capable tests (e.g. Fisher Z)
+        // compute directly from the matrix. Prior to 2026-8-16 the unguarded cast in
+        // getSubsampleRows threw ClassCastException for covariance input. (At fraction 1.0
+        // this sets ALL rows, shuffled — an identity for order-invariant tests — and is
+        // retained for row data to preserve existing behavior exactly.)
+        if (test instanceof RowsSettable && dataModel instanceof DataSet) {
             ((RowsSettable) test).setRows(getSubsampleRows(1.0));
         }
 

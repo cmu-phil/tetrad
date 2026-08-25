@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -430,7 +431,28 @@ public class ChiSquareTest {
      * @param cellTableType The type of cell table to use.
      */
     public void setCellTableType(CellTableType cellTableType) {
+        // The AD-tree cell table does not skip the missing-value code (-99) when subdividing rows, so on data with
+        // missing values it produces silently incorrect tables; the count-sample table performs correct test-wise
+        // row skipping (each conditional table drops the rows missing on the variables it involves). Force the
+        // correct table on incomplete data rather than misbehave silently.
+        if (cellTableType == CellTableType.AD_TREE && this.dataSet.existsMissingValue()) {
+            TetradLogger.getInstance().log("ChiSquareTest: The dataset contains missing values; the AD-tree cell "
+                    + "table does not handle these correctly, so the count-sample cell table (test-wise row "
+                    + "skipping) will be used instead.");
+            cellTableType = CellTableType.COUNT_SAMPLE;
+        }
+
         this.cellTableType = cellTableType;
+    }
+
+    /**
+     * The cell table type in use. Note that {@link #setCellTableType(CellTableType)} forces the count-sample table
+     * on data with missing values, so this may differ from the type last requested.
+     *
+     * @return The cell table type.
+     */
+    public CellTableType getCellTableType() {
+        return this.cellTableType;
     }
 
     /**

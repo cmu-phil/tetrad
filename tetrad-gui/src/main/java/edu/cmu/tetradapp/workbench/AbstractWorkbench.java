@@ -28,6 +28,7 @@ import edu.cmu.tetradapp.editor.GraphPropertiesAction;
 import edu.cmu.tetradapp.editor.PathsAction;
 import edu.cmu.tetradapp.editor.UnderliningsAction;
 import edu.cmu.tetradapp.model.SessionWrapper;
+import edu.cmu.tetradapp.util.EdgeGloss;
 import edu.cmu.tetradapp.util.LayoutEditable;
 
 import javax.swing.*;
@@ -2192,7 +2193,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             + " " + endpoint1 + "-" + endpoint2 + " "
                             + edge.getNode2().getName()
                             + _properties
-                            + "<html>";
+                            + glossHtml(edge)
+                            + "</html>";
 
                     setEdgeToolTip(edge, text);
                 } else {
@@ -2244,6 +2246,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                         }
                     }
 
+                    text.append(glossHtml(edge));
                     text.append("</html>");
 
                     setEdgeToolTip(edge, text.toString());
@@ -2265,6 +2268,17 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 }
             }
         }
+    }
+
+    /**
+     * Returns the plain-language reading of the edge's endpoint marks as an HTML fragment for the tooltip, wrapped to a
+     * readable width, or the empty string if there is no standard reading. Added 2026-8-24.
+     */
+    private static String glossHtml(Edge edge) {
+        String gloss = EdgeGloss.describe(edge);
+        if (gloss.isEmpty()) return "";
+        gloss = gloss.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return "<br><div style='width:320px;margin-top:4px;color:gray'>" + gloss + "</div>";
     }
 
     // SInce we use tooltip to show edge type and probablitites,
