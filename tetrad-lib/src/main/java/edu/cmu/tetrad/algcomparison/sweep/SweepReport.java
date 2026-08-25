@@ -79,6 +79,12 @@ public final class SweepReport {
     private final long seed;
 
     /**
+     * The number of distinct groups when resampling was by block (see
+     * {@link ParameterSweep#setResampleGroups(int[])}), or -1 when resampling was by row.
+     */
+    private final int numResampleGroups;
+
+    /**
      * The per-setting results, in evaluation order; unmodifiable.
      */
     private final List<SweepResult> results;
@@ -99,6 +105,29 @@ public final class SweepReport {
     public SweepReport(String algorithmDescription, String markovCheckDescription, int numRows, int numVariables,
                        int numResamples, double percentResampleSize, boolean withReplacement, long seed,
                        List<SweepResult> results) {
+        this(algorithmDescription, markovCheckDescription, numRows, numVariables, numResamples,
+                percentResampleSize, withReplacement, seed, -1, results);
+    }
+
+    /**
+     * Constructs a report, recording whether resampling was by row or by block. Intended to be called by
+     * {@link ParameterSweep}.
+     *
+     * @param algorithmDescription   a description of the algorithm swept.
+     * @param markovCheckDescription a description of the Markov-check test, or null.
+     * @param numRows                the number of rows in the data.
+     * @param numVariables           the number of variables in the data.
+     * @param numResamples           the number of resamples per setting.
+     * @param percentResampleSize    the fraction of the sample size (rows, or groups for block resampling) drawn
+     *                               per resample.
+     * @param withReplacement        whether resampling was with replacement.
+     * @param seed                   the random seed used, or -1 if time-seeded.
+     * @param numResampleGroups      the number of distinct groups for block resampling, or -1 for row resampling.
+     * @param results                the per-setting results, in evaluation order.
+     */
+    public SweepReport(String algorithmDescription, String markovCheckDescription, int numRows, int numVariables,
+                       int numResamples, double percentResampleSize, boolean withReplacement, long seed,
+                       int numResampleGroups, List<SweepResult> results) {
         if (results == null) throw new NullPointerException("results");
         this.algorithmDescription = algorithmDescription;
         this.markovCheckDescription = markovCheckDescription;
@@ -108,6 +137,7 @@ public final class SweepReport {
         this.percentResampleSize = percentResampleSize;
         this.withReplacement = withReplacement;
         this.seed = seed;
+        this.numResampleGroups = numResampleGroups;
         this.results = List.copyOf(results);
     }
 
@@ -145,6 +175,15 @@ public final class SweepReport {
      */
     public long getSeed() {
         return this.seed;
+    }
+
+    /**
+     * Returns the number of distinct groups if resampling was by block, or -1 if it was by row.
+     *
+     * @return This count, or -1.
+     */
+    public int getNumResampleGroups() {
+        return this.numResampleGroups;
     }
 
     /**
@@ -224,7 +263,9 @@ public final class SweepReport {
         sb.append("## Parameter sweep: ").append(this.algorithmDescription).append("\n\n");
         sb.append("Data: ").append(this.numRows).append(" rows, ").append(this.numVariables).append(" variables. ");
         sb.append("Resampling: ").append(this.numResamples).append(" resamples, ")
-                .append((int) (100 * this.percentResampleSize)).append("% of sample size, ")
+                .append((int) (100 * this.percentResampleSize))
+                .append(this.numResampleGroups < 0 ? "% of sample size, "
+                        : "% of " + this.numResampleGroups + " groups (block resampling), ")
                 .append(this.withReplacement ? "with" : "without").append(" replacement, seed ")
                 .append(this.seed == -1 ? "time-based" : String.valueOf(this.seed)).append(". ");
 
@@ -273,6 +314,7 @@ public final class SweepReport {
         sb.append("\"percentResampleSize\":").append(this.percentResampleSize).append(",");
         sb.append("\"withReplacement\":").append(this.withReplacement).append(",");
         sb.append("\"seed\":").append(this.seed).append(",");
+        sb.append("\"numResampleGroups\":").append(this.numResampleGroups).append(",");
         sb.append("\"results\":[");
 
         for (int i = 0; i < this.results.size(); i++) {
