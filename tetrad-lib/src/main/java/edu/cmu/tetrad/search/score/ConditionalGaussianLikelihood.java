@@ -31,6 +31,8 @@ import org.jetbrains.annotations.Contract;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -441,8 +443,8 @@ public class ConditionalGaussianLikelihood {
         double lik1 = likOnRows(x1t, a1t, commonRows) - likOnRows(x1, a1, commonRows);
         double lik0 = likOnRows(x0t, a0t, commonRows) - likOnRows(x0, a0, commonRows);
 
-        int dof1 = dofObserved(a1t, x1t, commonRows) - dofObserved(a1, x1, commonRows);
-        int dof0 = dofObserved(a0t, x0t, commonRows) - dofObserved(a0, x0, commonRows);
+        int dof1 = dofConditional(target, x1, a1, x1t, a1t, commonRows);
+        int dof0 = dofConditional(target, x0, a0, x0t, a0t, commonRows);
 
         return new Ret(lik1 - lik0, dof1 - dof0);
     }
@@ -514,6 +516,44 @@ public class ConditionalGaussianLikelihood {
     private int dofObserved(List<DiscreteVariable> A, List<ContinuousVariable> X, List<Integer> rows) {
         int m = A.isEmpty() ? 1 : partition(A, rows).size();
         return m * h(X) + (m - 1);
+    }
+
+    /**
+     * dof of the CONDITIONAL model target | (x, a), for the likelihood-ratio path, counted so that sampling zeros
+     * are not mistaken for structural zeros. Gaussian blocks are charged per cell actually fit (observed cells of
+     * the partition the Gaussians are fit on), exactly as before. The multinomial part, for a discrete target, is
+     * charged (r - 1) per OBSERVED CONDITIONING cell, where r is the number of levels of the target present on the
+     * rows - i.e. every fitted conditional multinomial is a full (r - 1)-parameter distribution whether or not every
+     * level happens to be observed in every cell.
+     *
+     * <p>Changes from the 2026-8-12 computation, which differenced dofObserved(a_t) - dofObserved(a) and so counted
+     * only the target levels actually observed in each conditioning cell: on sparse tables that rule deflates the
+     * dof exactly when cells are sparse, so the chi-square reference gets too small precisely where the statistic
+     * is least well approximated. On the contraceptive-method data (n = 1473, 4-level nominal variables), exact
+     * within-cell permutation nulls of discrete _||_ discrete | discrete facts were rejected at 16-33% (nominal 5%)
+     * under the old rule and at 4-8% under this one. For a continuous target the two rules coincide.</p>
+     */
+    private int dofConditional(Node target, List<ContinuousVariable> x, List<DiscreteVariable> a,
+                               List<ContinuousVariable> xt, List<DiscreteVariable> at, List<Integer> rows) {
+        int mA = a.isEmpty() ? 1 : partition(a, rows).size();
+
+        if (target instanceof ContinuousVariable) {
+            return mA * (h(xt) - h(x));
+        }
+
+        int mAt = at.isEmpty() ? 1 : partition(at, rows).size();
+        int r = numLevelsObserved((DiscreteVariable) target, rows);
+        return mAt * h(xt) - mA * h(x) + mA * (r - 1);
+    }
+
+    /** Number of distinct levels of the discrete variable v present among the given rows. */
+    private int numLevelsObserved(DiscreteVariable v, List<Integer> rows) {
+        int col = mixedDataSet.getColumnIndex(v);
+        if (col < 0) col = mixedDataSet.getColumnIndex(v.getName());
+        if (col < 0) throw new IllegalArgumentException("Cannot find discrete variable in dataset: " + v);
+        Set<Integer> levels = new HashSet<>();
+        for (int i : rows) levels.add(mixedDataSet.getInt(i, col));
+        return levels.size();
     }
 
     /** MLE covariance (divide by n), for use inside likelihood ratios. */

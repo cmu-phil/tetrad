@@ -61,6 +61,7 @@ public final class CgCalibrationHarness {
             scenarioBalancedDiscreteZ(R, n);
             scenarioRareCellDiscreteZ(R, n, 4);
             scenarioRareCellDiscreteZ(R, n, 1);   // pruning mechanism isolation
+            scenarioSparseDiscreteTable(R, n);
             scenarioDiscreteXContinuousY(R, n);
             scenarioDiscreteTarget(R, n, true);
             scenarioDiscreteTarget(R, n, false);
@@ -142,6 +143,23 @@ public final class CgCalibrationHarness {
             ps.add(p(d, "X", "Y", List.of("Z"), true, minCell));
         }
         report("S3 Z disc(6) rare cells, minCell=" + minCell, n, ps);
+    }
+
+    /**
+     * S10 (added 2026-8-25): all-discrete sparse table. X, Y, Z 4-level with skewed marginals (.55/.30/.10/.05),
+     * X and Y each depend on Z, X _||_ Y | Z; at these n the 64 (x, y, z) cells carry many sampling zeros. Targets
+     * the multinomial dof rule of getLikelihoodRatio: counting target levels only where observed per conditioning
+     * cell deflates dof on sparse tables (rejection .21-.42); charging (r - 1) per observed conditioning cell gives
+     * ~.07. Pinned by TestCgLrtSparseTableDof.
+     */
+    private static void scenarioSparseDiscreteTable(int R, int n) {
+        List<Double> ps = new ArrayList<>();
+        Random rng = new Random(SEED + 9000 + n);
+        for (int r = 0; r < R; r++) {
+            DataSet d = TestCgLrtSparseTableDof.sparseNull(n, rng);
+            ps.add(p(d, "X", "Y", List.of("Z"), true, 4));
+        }
+        report("S10 sparse disc(4)x(4)|disc(4) table", n, ps);
     }
 
     /**
