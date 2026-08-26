@@ -107,6 +107,14 @@ public class TestGRegression {
         assertFalse(GRegression.isIdentified(g, Set.of(x2, x3), x5)); // joint: 3 - 4 -> 5 is proper and undirected.
         assertFalse(GRegression.isIdentified(g, Set.of(x5), x6));  // 5 - 6.
         assertTrue(GRegression.isIdentified(g, Set.of(x6), x1));   // Not a possible descendant; effect 0.
+
+        // Witness paths: the first edge is the orientation the MPDAG is missing.
+        assertNull(GRegression.nonIdentificationWitness(g, Set.of(x4), x5));
+        assertEquals(List.of(x2, x3, x4, x5), GRegression.nonIdentificationWitness(g, Set.of(x2), x5));
+        assertEquals(List.of(x3, x4, x5), GRegression.nonIdentificationWitness(g, Set.of(x2, x3), x5));
+        assertEquals(List.of(x5, x6), GRegression.nonIdentificationWitness(g, Set.of(x5), x6));
+        assertEquals("X2 --- X3 --- X4 --> X5",
+                GRegression.pathString(g, GRegression.nonIdentificationWitness(g, Set.of(x2), x5)));
     }
 
     /**
@@ -304,7 +312,7 @@ public class TestGRegression {
                 if (avoid.contains(w) || seen.contains(w)) continue;
                 edu.cmu.tetrad.graph.Edge e = g.getEdge(x, w);
                 boolean forward = edu.cmu.tetrad.graph.Edges.isUndirectedEdge(e)
-                                  || edu.cmu.tetrad.graph.Edges.getDirectedEdgeHead(e) == w;
+                        || edu.cmu.tetrad.graph.Edges.getDirectedEdgeHead(e) == w;
                 if (forward) { seen.add(w); queue.add(w); }
             }
         }

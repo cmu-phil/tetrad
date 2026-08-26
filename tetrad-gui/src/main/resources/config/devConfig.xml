@@ -1299,6 +1299,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentTotalEffectsEditor</editor-class>
             </model>
+            <model name="G-Regression Effects" acronym="G-Regression Effects"
+                   help="indep_facts" category="Independence Facts Comparison">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="comparison" description="Comparison" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.GRegressionModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GRegressionEditor</editor-class>
+            </model>
             <model name="Doubly Robust ATE" acronym="Doubly Robust ATE"
                    help="indep_facts" category="Independence Facts Comparison">
                 <logger>

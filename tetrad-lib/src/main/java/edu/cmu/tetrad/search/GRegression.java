@@ -346,6 +346,26 @@ public final class GRegression {
      * @return True if tau_AY is identified from the MPDAG.
      */
     public static boolean isIdentified(Graph mpdag, Set<Node> treatments, Node outcome) {
+        return nonIdentificationWitness(mpdag, treatments, outcome) == null;
+    }
+
+    /**
+     * Returns a witness to non-identification, if any: a proper possibly causal path from a treatment to the
+     * outcome that starts with an undirected edge (Theorem 2). Returns null if the effect is identified.
+     * <p>
+     * The path is returned as a list of nodes beginning with the treatment and ending with the outcome. Its first
+     * edge is undirected, and its orientation is the piece of information the MPDAG is missing: if that edge were
+     * oriented away from the treatment the path would be causal, and if toward the treatment it would not be, so
+     * the DAGs in the class disagree about the effect. Supplying that orientation as background knowledge (and
+     * Meek-closing) is therefore the natural way to make progress. The returned path is unshielded and is the
+     * shortest such path found by breadth-first search from the first treatment/neighbor pair that yields one.
+     *
+     * @param mpdag      An MPDAG. (Not re-validated here; use the constructor or {@link #isMpdag(Graph)}.)
+     * @param treatments The treatment set A (nonempty).
+     * @param outcome    The outcome Y, not in A.
+     * @return A witness path, or null if tau_AY is identified from the MPDAG.
+     */
+    public static List<Node> nonIdentificationWitness(Graph mpdag, Set<Node> treatments, Node outcome) {
         if (treatments == null || treatments.isEmpty()) {
             throw new IllegalArgumentException("Treatment set is empty.");
         }
@@ -364,13 +384,45 @@ public final class GRegression {
 
                 // Now a - u is the first edge; ask whether it can be continued to a possibly causal path to
                 // the outcome avoiding A and Pa(a).
-                if (existsUnshieldedPossiblyCausalPath(mpdag, u, outcome, forbidden)) {
-                    return false;
+                List<Node> rest = unshieldedPossiblyCausalPath(mpdag, u, outcome, forbidden);
+
+                if (rest != null) {
+                    List<Node> path = new ArrayList<>(rest.size() + 1);
+                    path.add(a);
+                    path.addAll(rest);
+                    return path;
                 }
             }
         }
 
-        return true;
+        return null;
+    }
+
+    /**
+     * Renders a path as a string using the graph's edge marks, e.g. "X2 --- X3 --- X4 --> X5".
+     *
+     * @param graph The graph.
+     * @param path  A path in the graph.
+     * @return The rendered path.
+     */
+    public static String pathString(Graph graph, List<Node> path) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < path.size(); i++) {
+            if (i > 0) {
+                // Look nodes up by name so that a path from an equivalent copy of the graph still renders.
+                Node prev = graph.getNode(path.get(i - 1).getName());
+                Node cur = graph.getNode(path.get(i).getName());
+                Edge e = (prev == null || cur == null) ? null : graph.getEdge(prev, cur);
+                if (e == null) sb.append(" ... ");
+                else if (Edges.isUndirectedEdge(e)) sb.append(" --- ");
+                else if (Edges.getDirectedEdgeHead(e) == cur) sb.append(" --> ");
+                else sb.append(" <-- ");
+            }
+            sb.append(path.get(i).getName());
+        }
+
+        return sb.toString();
     }
 
     /**
@@ -381,19 +433,23 @@ public final class GRegression {
      * consecutive triples. (In an MPDAG such a walk cannot revisit a vertex, since the undirected part of every
      * bucket is chordal and directed edges only lead forward in the bucket ordering; so the walk found is a path.)
      */
-    private static boolean existsUnshieldedPossiblyCausalPath(Graph g, Node from, Node to, Set<Node> forbidden) {
-        if (forbidden.contains(from) || forbidden.contains(to)) return false;
-        if (from == to) return true;
+    private static List<Node> unshieldedPossiblyCausalPath(Graph g, Node from, Node to, Set<Node> forbidden) {
+        if (forbidden.contains(from) || forbidden.contains(to)) return null;
+        if (from == to) return List.of(from);
 
-        Set<List<Node>> visited = new HashSet<>();
+        // Each state is (previous, current); 'parent' records the state we came from so the path can be rebuilt.
+        Map<List<Node>, List<Node>> parent = new HashMap<>();
         Deque<List<Node>> queue = new ArrayDeque<>();
 
         for (Node w : g.getAdjacentNodes(from)) {
             if (forbidden.contains(w)) continue;
             if (!leadsForward(g, from, w)) continue;
-            if (w == to) return true;
             List<Node> state = List.of(from, w);
-            if (visited.add(state)) queue.add(state);
+            if (w == to) return List.of(from, w);
+            if (!parent.containsKey(state)) {
+                parent.put(state, null);
+                queue.add(state);
+            }
         }
 
         while (!queue.isEmpty()) {
@@ -405,13 +461,23 @@ public final class GRegression {
                 if (w == prev || forbidden.contains(w)) continue;
                 if (g.isAdjacentTo(prev, w)) continue;          // keep the path unshielded
                 if (!leadsForward(g, cur, w)) continue;         // cur -> w or cur - w only
-                if (w == to) return true;
                 List<Node> next = List.of(cur, w);
-                if (visited.add(next)) queue.add(next);
+                if (parent.containsKey(next)) continue;
+                parent.put(next, state);
+
+                if (w == to) {
+                    // Rebuild: walk back through the states, collecting 'current' nodes, then add 'from'.
+                    Deque<Node> path = new ArrayDeque<>();
+                    for (List<Node> st = next; st != null; st = parent.get(st)) path.addFirst(st.get(1));
+                    path.addFirst(from);
+                    return new ArrayList<>(path);
+                }
+
+                queue.add(next);
             }
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -535,6 +601,18 @@ public final class GRegression {
      */
     public boolean isIdentified(Collection<Node> treatments, Node outcome) {
         return isIdentified(graph, new LinkedHashSet<>(resolve(new ArrayList<>(treatments))), resolve(outcome));
+    }
+
+    /**
+     * Instance form of {@link #nonIdentificationWitness(Graph, Set, Node)}, resolving nodes by name.
+     *
+     * @param treatments The treatment set.
+     * @param outcome    The outcome.
+     * @return A witness path, or null if the effect is identified.
+     */
+    public List<Node> nonIdentificationWitness(Collection<Node> treatments, Node outcome) {
+        List<Node> a = resolve(new ArrayList<>(treatments));
+        return nonIdentificationWitness(graph, new LinkedHashSet<>(a), resolve(outcome));
     }
 
     /**
