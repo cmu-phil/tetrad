@@ -101,23 +101,19 @@ public final class MarkovAuditUtils {
     }
 
     /**
-     * As {@link #auditFailures(Graph, IndependenceTest, ConditioningSetType, double, boolean)},
-     * with a determinism screen: an implied fact x _||_ y | S is EXCLUDED from the audited family
-     * (before FDR) when {@code guard} reports S functionally determines x or y, or some member of
-     * S is determined by the rest of S. This is the soundness condition Sec. 14 places on both
-     * detection tiers: a variable functionally fixed by the conditioning set makes the fact's
-     * test statistic degenerate (0/0 partial correlation), and the resulting p-value fires the
-     * audit falsely -- observed concretely on the Figure 4 harness, where C = A + B produced four
-     * artifact failures of the form C _||_ . | [A, B] at p = 0, all of which are TRUE (vacuously:
-     * given A and B, C is a constant) and all of which then drove a downstream seeded repair to
-     * add two spurious edges. Screened facts are simply not part of the family; they neither fire
-     * nor count toward the BH correction's m.
-     * <p>
-     * A guard that throws {@link InterruptedException} marks the fact screened (fail-safe: an
-     * unevaluated fact is not reported) and re-asserts the thread's interrupt status, matching
-     * {@code Fas}'s handling. Pass {@code null} for no screening (the other overload's behavior).
+     * Audits a given graph for independence test failures and applies
+     * false discovery rate (FDR) correction at a specified level to return
+     * only significant failures. This method filters the results based
+     * on a determinism guard (if provided) and optionally uses conservative
+     * FDR correction for negatively correlated tests.
      *
-     * @param guard the determinism check, or null for none
+     * @param graph                the graph whose implied independencies are audited
+     * @param test                 the independence test used for auditing
+     * @param setType              the type of conditioning set used, e.g., LOCAL_MARKOV
+     * @param q                    the false discovery rate (FDR) level for determining significant failures
+     * @param negativelyCorrelated true for conservative correction (Benjamini-Yekutieli), false for standard (Benjamini-Hochberg)
+     * @param guard                an optional determinism guard for filtering degenerate cases in the conditioning set
+     * @return a list of rejected independence results after FDR correction
      */
     public static List<IndependenceResult> auditFailures(Graph graph, IndependenceTest test,
                                                          ConditioningSetType setType, double q,
@@ -195,10 +191,21 @@ public final class MarkovAuditUtils {
     }
 
     /**
-     * Convenience composition: audit, correct, take endpoints.
+     * Identifies and returns the set of vertices implicated by audit failures of a graph
+     * based on the provided independence test, conditioning set type, false discovery rate
+     * (FDR) level, and correlation constraints.
      *
-     * @see #auditFailures
-     * @see #implicatedVertices(Collection)
+     * @param graph                the graph whose vertices are analyzed for implication;
+     *                             this graph is audited against independence tests
+     * @param test                 the independence test used as an auditing mechanism
+     * @param setType              the type of conditioning set, which influences how
+     *                             conditional independence is determined
+     * @param q                    the false discovery rate level for determining the
+     *                             significance of failures
+     * @param negativelyCorrelated specifies whether to use a more conservative correction
+     *                             (true for Benjamini-Yekutieli correction, false for
+     *                             standard Benjamini-Hochberg correction)
+     * @return a set of nodes that are implicated based on the audit failures
      */
     public static Set<Node> implicatedVertices(Graph graph, IndependenceTest test,
                                                ConditioningSetType setType, double q,

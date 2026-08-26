@@ -42,6 +42,19 @@ public final class Figure4Harness {
     static final int N = 10_000;
     static final double ALPHA = 0.01;
 
+    /**
+     * Default constructor for the Figure4Harness class.
+     */
+    public Figure4Harness() {
+    }
+
+    /**
+     * Entry point for the program, which generates synthetic data, runs analysis pipelines,
+     * and prints relevant results.
+     *
+     * @param args command-line arguments (not used in this method).
+     * @throws Exception if an error occurs during the execution of data processing or analysis methods.
+     */
     public static void main(String[] args) throws Exception {
         double a = 0.7, b = 0.7, c = -a * b, d = 0.6, e = 0.7;
 

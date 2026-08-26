@@ -1969,6 +1969,12 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, cellDeterminismTolerance);
         }
 
+        /**
+         * Sets the serial correlation alpha value.
+         *
+         * @param serialAlpha the serial correlation alpha value.
+         * @return a new Config object with the updated serial correlation alpha value.
+         */
         public Config withSerialAlpha(double serialAlpha) {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,

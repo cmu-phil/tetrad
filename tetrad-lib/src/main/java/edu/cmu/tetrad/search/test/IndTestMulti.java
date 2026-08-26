@@ -174,7 +174,10 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
-     * @return the component tests, in order.
+     * Retrieves the list of independence tests managed by this instance.
+     * The returned list is unmodifiable to ensure the integrity of the underlying data.
+     *
+     * @return an unmodifiable list of {@link IndependenceTest} objects.
      */
     public List<IndependenceTest> getIndependenceTests() {
         return java.util.Collections.unmodifiableList(this.independenceTests);
