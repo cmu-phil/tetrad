@@ -92,6 +92,10 @@ public final class GRegressionEditor extends JPanel {
         bootstrapsField.setText(String.valueOf(model.getNumBootstraps()));
         seedField.setText(String.valueOf(model.getBootstrapSeed()));
         meekCloseBox.setSelected(model.isMeekClose());
+        if (model.isKnowledgeAttached()) {
+            meekCloseBox.setText("Close graph under Meek's rules (automatic: knowledge attached)");
+            meekCloseBox.setEnabled(false);
+        }
 
         treatmentsField.addFocusListener(new FocusAdapter() {
             @Override
@@ -136,11 +140,29 @@ public final class GRegressionEditor extends JPanel {
         modePanel.setAlignmentX(LEFT_ALIGNMENT);
         top.add(modePanel);
 
-        JPanel xyPanel = new JPanel(new GridLayout(2, 2, 5, 5));
-        xyPanel.add(new JLabel("Treatments (X):"));
-        xyPanel.add(treatmentsField);
-        xyPanel.add(new JLabel("Outcomes (Y):"));
-        xyPanel.add(outcomesField);
+        // Labels take their natural width; the fields take the rest of the row.
+        JPanel xyPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(2, 5, 2, 5);
+        c.anchor = GridBagConstraints.WEST;
+        c.gridy = 0;
+        c.gridx = 0;
+        c.weightx = 0;
+        c.fill = GridBagConstraints.NONE;
+        xyPanel.add(new JLabel("Treatments (X):"), c);
+        c.gridx = 1;
+        c.weightx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        xyPanel.add(treatmentsField, c);
+        c.gridy = 1;
+        c.gridx = 0;
+        c.weightx = 0;
+        c.fill = GridBagConstraints.NONE;
+        xyPanel.add(new JLabel("Outcomes (Y):"), c);
+        c.gridx = 1;
+        c.weightx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        xyPanel.add(outcomesField, c);
         xyPanel.setAlignmentX(LEFT_ALIGNMENT);
         top.add(xyPanel);
 
@@ -149,9 +171,14 @@ public final class GRegressionEditor extends JPanel {
         optionsPanel.add(bootstrapsField);
         optionsPanel.add(new JLabel("Seed (-1 = none):"));
         optionsPanel.add(seedField);
-        optionsPanel.add(meekCloseBox);
         optionsPanel.setAlignmentX(LEFT_ALIGNMENT);
         top.add(optionsPanel);
+
+        // On its own row: a FlowLayout row that wraps in a narrow window gets its second line clipped.
+        JPanel meekPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        meekPanel.add(meekCloseBox);
+        meekPanel.setAlignmentX(LEFT_ALIGNMENT);
+        top.add(meekPanel);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.add(runButton);
@@ -163,10 +190,18 @@ public final class GRegressionEditor extends JPanel {
         add(top, BorderLayout.NORTH);
         add(new JScrollPane(resultTable), BorderLayout.CENTER);
 
-        JLabel note = new JLabel("<html>Assumes a linear SEM with independent errors and no latent confounding, "
-                                 + "and that the graph is an MPDAG (DAG, CPDAG, or CPDAG plus knowledge). "
-                                 + "For effects that are not identified, the first edge of the listed path is the "
-                                 + "orientation the graph is missing; see Linear IDA Check for bounds.</html>");
+        // A wrapping, read-only text area, so the note takes the width it is given rather than dictating it.
+        JTextArea note = new JTextArea("Assumes a linear SEM with independent errors and no latent confounding, "
+                                       + "and that the graph is an MPDAG (DAG, CPDAG, or CPDAG plus knowledge). "
+                                       + "For effects that are not identified, the first edge of the listed path "
+                                       + "is the orientation the graph is missing; see Linear IDA Check for bounds.");
+        note.setLineWrap(true);
+        note.setWrapStyleWord(true);
+        note.setEditable(false);
+        note.setFocusable(false);
+        note.setOpaque(false);
+        note.setFont(new JLabel().getFont());
+        note.setColumns(60);
         note.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
         add(note, BorderLayout.SOUTH);
     }

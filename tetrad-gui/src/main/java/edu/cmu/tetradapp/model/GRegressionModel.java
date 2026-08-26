@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Edges;
@@ -60,6 +61,12 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
     private final Parameters parameters;
     private final SemIm trueSemIm;
 
+    /**
+     * Background knowledge to impose on the graph before estimating, or null. When present, the graph is always
+     * Meek-closed after the knowledge is applied.
+     */
+    private final Knowledge knowledge;
+
     private final LinkedHashSet<Node> X = new LinkedHashSet<>();
     private final LinkedHashSet<Node> Y = new LinkedHashSet<>();
     private final List<ResultRow> results = new ArrayList<>();
@@ -91,6 +98,29 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
      * @param parameters  the parameters
      */
     public GRegressionModel(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        this(dataWrapper, graphSource, (Knowledge) null, parameters);
+    }
+
+    /**
+     * Constructs the model with background knowledge. The knowledge is used only to orient undirected edges of the
+     * given graph (required edges, and forbidden edges or tiers that leave one direction), after which the graph is
+     * closed under Meek's rules; adjacencies are never changed. This is the MPDAG construction of Meek (1995): the
+     * result represents the DAGs of the graph's class that agree with the knowledge. Knowledge that conflicts with
+     * a directed edge of the graph is reported as an error rather than ignored.
+     *
+     * @param dataWrapper  the data
+     * @param graphSource  the graph
+     * @param knowledgeBox the knowledge
+     * @param parameters   the parameters
+     */
+    public GRegressionModel(DataWrapper dataWrapper, GraphSource graphSource, KnowledgeBoxModel knowledgeBox,
+                            Parameters parameters) {
+        this(dataWrapper, graphSource, knowledgeBox == null ? null : knowledgeBox.getKnowledge(), parameters);
+    }
+
+    private GRegressionModel(DataWrapper dataWrapper, GraphSource graphSource, Knowledge knowledge,
+                             Parameters parameters) {
+        this.knowledge = (knowledge == null || knowledge.isEmpty()) ? null : new Knowledge(knowledge);
         this.dataSet = (DataSet) Objects.requireNonNull(dataWrapper).getDataModelList().getFirst();
         this.graph = GraphUtils.replaceNodes(Objects.requireNonNull(graphSource).getGraph(), dataSet.getVariables());
         this.parameters = Objects.requireNonNull(parameters);
@@ -177,7 +207,35 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
             }
         }
 
-        if (meekClose) {
+        if (knowledge != null) {
+            // Knowledge orients undirected edges; conflicts with edges already directed are detected below.
+            MeekRules meek = new MeekRules();
+            meek.setKnowledge(knowledge);
+            meek.setRevertToUnshieldedColliders(false);
+            meek.setVerbose(false);
+            meek.orientImplied(g);
+
+            for (Edge e : g.getEdges()) {
+                String a = e.getNode1().getName(), b = e.getNode2().getName();
+
+                if (Edges.isDirectedEdge(e)) {
+                    String tail = Edges.getDirectedEdgeTail(e).getName();
+                    String head = Edges.getDirectedEdgeHead(e).getName();
+                    if (knowledge.isForbidden(tail, head) || knowledge.isRequired(head, tail)) {
+                        graphProblem = "The knowledge conflicts with the graph: it rules out " + tail + " --> "
+                                       + head + ", but the graph has that edge (either directly, or as a "
+                                       + "consequence of other knowledge under Meek's rules). Knowledge given to "
+                                       + "this tool can only orient undirected edges; to change the structure, "
+                                       + "give the knowledge to the search instead.";
+                        throw new IllegalArgumentException(graphProblem);
+                    }
+                } else if (Edges.isUndirectedEdge(e) && (knowledge.isRequired(a, b) || knowledge.isRequired(b, a))) {
+                    graphProblem = "The knowledge requires an orientation of " + a + " --- " + b + " that could "
+                                   + "not be applied without creating a cycle or a new unshielded collider.";
+                    throw new IllegalArgumentException(graphProblem);
+                }
+            }
+        } else if (meekClose) {
             MeekRules meek = new MeekRules();
             meek.setRevertToUnshieldedColliders(false);
             meek.setVerbose(false);
@@ -187,9 +245,10 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
         String problem = GRegression.mpdagProblem(g);
 
         if (problem != null) {
-            graphProblem = problem + (meekClose ? "" : " (If the graph is a PDAG whose orientations are correct "
-                                                        + "but incomplete, e.g. a CPDAG with edges oriented by hand, "
-                                                        + "check \"Close graph under Meek's rules\" and rerun.)");
+            graphProblem = problem + ((meekClose || knowledge != null) ? "" : " (If the graph is a PDAG whose "
+                                                        + "orientations are correct but incomplete, e.g. a CPDAG "
+                                                        + "with edges oriented by hand, check \"Close graph under "
+                                                        + "Meek's rules\" and rerun.)");
             throw new IllegalArgumentException(graphProblem);
         }
 
@@ -379,7 +438,8 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
         String problem = GRegression.mpdagProblem(g);
         if (problem != null) return "Not an MPDAG: " + problem;
         int buckets = GRegression.bucketDecomposition(g).size();
-        return g.getNumNodes() + " variables, " + undirected + " undirected edges, " + buckets + " buckets";
+        String known = (knowledge != null && effectiveGraph != null) ? " (knowledge applied)" : "";
+        return g.getNumNodes() + " variables, " + undirected + " undirected edges, " + buckets + " buckets" + known;
     }
 
     public Set<Node> getX() {
@@ -408,8 +468,15 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
         this.effectMode = Objects.requireNonNull(mode);
     }
 
+    /**
+     * True if background knowledge is attached; the graph is then always Meek-closed after applying it.
+     */
+    public boolean isKnowledgeAttached() {
+        return knowledge != null;
+    }
+
     public boolean isMeekClose() {
-        return meekClose;
+        return meekClose || knowledge != null;
     }
 
     public void setMeekClose(boolean meekClose) {
