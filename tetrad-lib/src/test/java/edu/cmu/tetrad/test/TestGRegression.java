@@ -59,9 +59,10 @@ import static org.junit.Assert.assertTrue;
 public class TestGRegression {
 
     /**
-     * The MPDAG of Fig. 1(a) in Guo and Perković (2022): 1 -> 2, 2 - 3, 3 - 4, 2 - 4, 4 -> 5, 4 -> 6, 5 - 6,
-     * with buckets {1}, {2, 3, 4}, {5, 6}. (Edge 4 -> 6 is forced by Meek R1 given 4 -> 5 - 6, so must be present
-     * for the graph to be an MPDAG; edges 1 -> 3, 1 -> 4 likewise.)
+     * The MPDAG of Fig. 1(a) in Guo and Perković (2022): 1 -> 2, 1 -> 3, 1 -> 4, 2 - 3, 3 - 4, 4 -> 5, 4 -> 6,
+     * 5 - 6, with buckets {1}, {2, 3, 4}, {5, 6}; the between-bucket edges match the coefficients listed in the
+     * paper's Section 6.2.1 (lambda_12, lambda_13, lambda_14, lambda_45, lambda_46). The within-bucket edges are
+     * the path 2 - 3 - 4 (no 2 - 4 edge) and 5 - 6.
      */
     private static Graph fig1a() {
         List<Node> nodes = new ArrayList<>();
@@ -74,7 +75,6 @@ public class TestGRegression {
         g.addDirectedEdge(x1, x4);
         g.addUndirectedEdge(x2, x3);
         g.addUndirectedEdge(x3, x4);
-        g.addUndirectedEdge(x2, x4);
         g.addDirectedEdge(x4, x5);
         g.addDirectedEdge(x4, x6);
         g.addUndirectedEdge(x5, x6);
@@ -98,12 +98,13 @@ public class TestGRegression {
         for (Set<Node> b : buckets) assertTrue(GRegression.hasRestrictiveProperty(g, b));
 
         // Identification (Theorem 2).
-        Node x1 = g.getNode("X1"), x2 = g.getNode("X2"), x4 = g.getNode("X4"),
+        Node x1 = g.getNode("X1"), x2 = g.getNode("X2"), x3 = g.getNode("X3"), x4 = g.getNode("X4"),
                 x5 = g.getNode("X5"), x6 = g.getNode("X6");
         assertTrue(GRegression.isIdentified(g, Set.of(x1), x5));   // 1's only edges are directed.
         assertTrue(GRegression.isIdentified(g, Set.of(x4), x5));   // 4 -> 5 directed; 4 - 3 - 2 don't reach 5.
-        assertFalse(GRegression.isIdentified(g, Set.of(x2), x5));  // 2 - 4 -> 5 starts undirected.
-        assertTrue(GRegression.isIdentified(g, Set.of(x2, x4), x5)); // joint: 4 blocks the 2 - 4 path.
+        assertFalse(GRegression.isIdentified(g, Set.of(x2), x5));  // 2 - 3 - 4 -> 5 starts undirected.
+        assertTrue(GRegression.isIdentified(g, Set.of(x2, x4), x5)); // joint: 2 - 3 - 4 -> 5 is not proper.
+        assertFalse(GRegression.isIdentified(g, Set.of(x2, x3), x5)); // joint: 3 - 4 -> 5 is proper and undirected.
         assertFalse(GRegression.isIdentified(g, Set.of(x5), x6));  // 5 - 6.
         assertTrue(GRegression.isIdentified(g, Set.of(x6), x1));   // Not a possible descendant; effect 0.
     }
