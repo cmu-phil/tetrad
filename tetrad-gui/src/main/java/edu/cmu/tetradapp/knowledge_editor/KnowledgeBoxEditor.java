@@ -527,6 +527,25 @@ public class KnowledgeBoxEditor extends JPanel {
         return panel;
     }
 
+    /**
+     * Explanatory header shown in the Text tab of a knowledge box that has no parent and no knowledge yet.
+     * Every line is a comment, so applying the tab with the header still present is harmless.
+     */
+    private static final String PARENTLESS_HINT = String.join("\n",
+            "// This knowledge box has no parent, so no variable names were supplied to it.",
+            "// Type the knowledge here and press Apply; variable names are taken from what you type",
+            "// and must match the names in the data or graph the box will be connected to.",
+            "//",
+            "// Syntax (whitespace separated; lines starting with // are ignored):",
+            "//   addtemporal        one line per tier: <tier> <var> <var> ...",
+            "//                      e.g.  1 X1 X2      2 X3      (append * to a tier, e.g. 2*, to forbid",
+            "//                      edges within that tier)",
+            "//   forbiddirect       one <from> <to> pair per line, forbidding from -> to",
+            "//   requiredirect      one <from> <to> pair per line, requiring from -> to",
+            "//",
+            "// The Tiers and Edges tabs are rebuilt from the text after Apply.",
+            "") + "\n";
+
     private void markTextDirty() {
         this.textDirty = true;
         if (this.textApplyButton != null) this.textApplyButton.setEnabled(true);
@@ -592,6 +611,12 @@ public class KnowledgeBoxEditor extends JPanel {
             text = writer.toString();
         } catch (IOException e) {
             text = "Could not render the knowledge as text: " + e.getMessage();
+        }
+
+        // A box with no parent supplies no variables, so the tiers and edges tabs start blank and typing
+        // here is the only way in. Say so, and show the syntax, as comments the parser ignores.
+        if (this.vars.isEmpty() && this.knowledge.getVariables().isEmpty()) {
+            text = PARENTLESS_HINT + text;
         }
 
         this.knowledgeTextArea.setText(text);
