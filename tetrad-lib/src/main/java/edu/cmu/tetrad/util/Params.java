@@ -1485,6 +1485,10 @@ public final class Params {
      * Constant <code>BGE_ALPHA_W_OFFSET="bgeAlphaWOffset"</code>
      */
     public static final String BGE_ALPHA_W_OFFSET = "bgeAlphaWOffset";
+    /**
+     * Constant <code>DISCRETE_INTERACTION_ORDER="discreteInteractionOrder"</code>
+     */
+    public static final String DISCRETE_INTERACTION_ORDER = "discreteInteractionOrder";
 
 
     // All parameters that are found in HTML manual documentation
@@ -1522,7 +1526,8 @@ public final class Params {
             Params.THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH, Params.THRESHOLD_NO_RANDOM_DATA_SEARCH, Params.TWO_CYCLE_ALPHA,
             Params.UPPER_BOUND, Params.USE_CORR_DIFF_ADJACENCIES, Params.USE_FAS_ADJACENCIES, Params.USE_GAP,
             Params.USE_MAX_P_ORIENTATION_HEURISTIC, Params.USE_SKEW_ADJACENCIES, Params.TETRAD_TEST_BPC, Params.VAR_HIGH,
-            Params.VAR_LOW, Params.VERBOSE, Params.BGE_ALPHA_MU, Params.BGE_ALPHA_W_OFFSET
+            Params.VAR_LOW, Params.VERBOSE, Params.BGE_ALPHA_MU, Params.BGE_ALPHA_W_OFFSET,
+            Params.DISCRETE_INTERACTION_ORDER
     ));
     private static final Set<String> BOOTSTRAPPING_PARAMS = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET,

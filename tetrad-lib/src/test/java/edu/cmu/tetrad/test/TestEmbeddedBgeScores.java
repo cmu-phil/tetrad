@@ -198,7 +198,84 @@ public class TestEmbeddedBgeScores {
         assertTrue("adjacency recall " + pr[1], pr[1] >= 0.85);
     }
 
+    /**
+     * Interaction order 1 (the default) is untouched by the interaction machinery, and order 2 reduces to order 1
+     * exactly when a family has fewer than two discrete parents.
+     */
+    @Test
+    public void testInteractionOrderReducesToAdditiveWithOneDiscreteParent() {
+        DataSet data = mixed(300, 6, 2, 8L); // variables 0,1 discrete
+        DegenerateGaussianBgeScore s1 = new DegenerateGaussianBgeScore(data);
+        DegenerateGaussianBgeScore s2 = new DegenerateGaussianBgeScore(data);
+        s2.setDiscreteInteractionOrder(2);
+
+        assertEquals(s1.localScore(3, 0, 2), s2.localScore(3, 0, 2), 1e-10);       // one discrete parent
+        assertEquals(s1.localScore(0, 1), s2.localScore(0, 1), 1e-10);             // discrete child, one discrete parent
+        assertEquals(s1.localScore(4, 2, 3, 5), s2.localScore(4, 2, 3, 5), 1e-10); // no discrete parents
+    }
+
+    /**
+     * XOR-type dependence: a binary child equal (with noise) to the XOR of two independent binary parents. The
+     * additive design sees no main effects and rejects the second parent; the saturated design accepts it. BDeu is
+     * the reference for what a saturated discrete score does.
+     */
+    @Test
+    public void testSaturatedDesignDetectsXorDependence() {
+        int n = 500;
+        java.util.Random rnd = new java.util.Random(77L);
+        int[] x = new int[n], z = new int[n], y = new int[n];
+        for (int i = 0; i < n; i++) {
+            x[i] = rnd.nextInt(2);
+            z[i] = rnd.nextInt(2);
+            int xor = x[i] ^ z[i];
+            y[i] = rnd.nextDouble() < 0.9 ? xor : 1 - xor;
+        }
+        DataSet data = discreteData(new int[][]{x, z, y});
+
+        DegenerateGaussianBgeScore additive = new DegenerateGaussianBgeScore(data);
+        DegenerateGaussianBgeScore saturated = new DegenerateGaussianBgeScore(data);
+        saturated.setDiscreteInteractionOrder(2);
+
+        double bumpAdditive = additive.localScoreDiff(1, 2, new int[]{0});   // add Z as parent of Y given X
+        double bumpSaturated = saturated.localScoreDiff(1, 2, new int[]{0});
+        double bumpBdeu = new edu.cmu.tetrad.search.score.BDeuScore(data).localScoreDiff(1, 2, new int[]{0});
+
+        assertTrue("additive bump should be negative: " + bumpAdditive, bumpAdditive < 0);
+        assertTrue("saturated bump should be strongly positive: " + bumpSaturated, bumpSaturated > 50);
+        assertTrue("BDeu should agree in sign: " + bumpBdeu, bumpBdeu > 0);
+    }
+
+    /**
+     * The interaction block is cached per discrete-parent subset; a cached family scores identically to a fresh
+     * instance, and the child's identity does not leak into the cache.
+     */
+    @Test
+    public void testInteractionCacheConsistency() {
+        DataSet data = mixed(300, 6, 3, 9L); // variables 0,1,2 discrete
+        DegenerateGaussianBgeScore s = new DegenerateGaussianBgeScore(data);
+        s.setDiscreteInteractionOrder(3);
+
+        double first = s.localScore(4, 0, 1, 2);
+        double other = s.localScore(5, 2, 0, 1);   // same parent subset, different child and order
+        double again = s.localScore(4, 2, 1, 0);
+
+        DegenerateGaussianBgeScore fresh = new DegenerateGaussianBgeScore(data);
+        fresh.setDiscreteInteractionOrder(3);
+
+        assertEquals(first, again, 1e-10);
+        assertEquals(fresh.localScore(5, 0, 1, 2), other, 1e-10);
+        assertEquals(fresh.localScore(4, 0, 1, 2), first, 1e-10);
+    }
+
     // ---- helpers ----
+
+    private static DataSet discreteData(int[][] columns) {
+        List<Node> vars = new ArrayList<>();
+        for (int j = 0; j < columns.length; j++) {
+            vars.add(new edu.cmu.tetrad.data.DiscreteVariable("V" + j, java.util.Arrays.asList("0", "1")));
+        }
+        return new edu.cmu.tetrad.data.BoxDataSet(new edu.cmu.tetrad.data.VerticalIntDataBox(columns), vars);
+    }
 
     private static double total(Score s, int[][] dag) {
         double t = 0.0;

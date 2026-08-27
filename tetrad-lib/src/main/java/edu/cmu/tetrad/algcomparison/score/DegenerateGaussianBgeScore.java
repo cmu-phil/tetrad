@@ -80,6 +80,7 @@ public class DegenerateGaussianBgeScore implements ScoreWrapper {
 
         score.setAlphaMu(parameters.getDouble(Params.BGE_ALPHA_MU));
         score.setAlphaWOffset(parameters.getDouble(Params.BGE_ALPHA_W_OFFSET));
+        score.setDiscreteInteractionOrder(parameters.getInt(Params.DISCRETE_INTERACTION_ORDER));
 
         int effectiveSampleSize = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
         if (effectiveSampleSize >= 0) score.setEffectiveSampleSize(effectiveSampleSize);
@@ -111,6 +112,7 @@ public class DegenerateGaussianBgeScore implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.BGE_ALPHA_MU);
         parameters.add(Params.BGE_ALPHA_W_OFFSET);
+        parameters.add(Params.DISCRETE_INTERACTION_ORDER);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
         return parameters;

@@ -1385,6 +1385,27 @@ Source:
     </ul>
 
 
+    === discreteInteractionOrder ===
+    <h3 class="parameter_description" id="discreteInteractionOrder">discreteInteractionOrder</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="discreteInteractionOrder_short_desc">Interaction order among discrete parents in the BGe embedding scores (1 = additive)</span></li>
+        <li>Long Description: <span id="discreteInteractionOrder_long_desc">
+                    For the BF-BGe and DG-BGe scores: the maximum number of distinct discrete parents whose
+                    indicator columns are multiplied to form interaction columns in a family's parent block.
+                    1 (the default) is the additive design of DG-BIC and BF-BIC, in which a discrete child
+                    depends on its discrete parents only through main effects. 2 adds pairwise interactions;
+                    an order at least the number of discrete parents gives the saturated design, the same span
+                    as BDeu's conditional table. Empty-cell product columns are dropped. Orders above 1 are
+                    not score-equivalent (Markov-equivalent DAGs may score differently), so they are intended
+                    for permutation searches such as BOSS and GRaSP.
+        </span></li>
+        <li>Default Value: <span id="discreteInteractionOrder_default_value">1</span></li>
+        <li>Lower Bound: <span id="discreteInteractionOrder_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="discreteInteractionOrder_upper_bound">20</span></li>
+        <li>Value Type: <span id="discreteInteractionOrder_value_type">Integer</span></li>
+    </ul>
+
+
     === discretize ===
     <h3 class="parameter_description" id="discretize">discretize</h3>
     <ul class="parameter_description_list">

@@ -60,6 +60,7 @@ public class DegenerateGaussianBgeScore extends BasisFunctionBgeScore {
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
-        return "DG-BGe Score alphaMu = " + nf.format(getAlphaMu()) + " alphaW = p + " + nf.format(getAlphaWOffset());
+        return "DG-BGe Score alphaMu = " + nf.format(getAlphaMu()) + " alphaW = p + " + nf.format(getAlphaWOffset())
+                + (getDiscreteInteractionOrder() > 1 ? " interactionOrder = " + getDiscreteInteractionOrder() : "");
     }
 }

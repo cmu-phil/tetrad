@@ -95,6 +95,22 @@ public class DiscreteScorePowerHarness {
             s.setAlphaMu(10);
             return s;
         });
+        scores.put("DG-BGe mu=1 int2", d -> {
+            DegenerateGaussianBgeScore s = new DegenerateGaussianBgeScore(d);
+            s.setDiscreteInteractionOrder(2);
+            return s;
+        });
+        scores.put("DG-BGe mu=1 sat", d -> {
+            DegenerateGaussianBgeScore s = new DegenerateGaussianBgeScore(d);
+            s.setDiscreteInteractionOrder(20);
+            return s;
+        });
+        scores.put("DG-BGe mu=10 sat", d -> {
+            DegenerateGaussianBgeScore s = new DegenerateGaussianBgeScore(d);
+            s.setAlphaMu(10);
+            s.setDiscreteInteractionOrder(20);
+            return s;
+        });
         scores.put("BF-BIC pd=2", d -> {
             BasisFunctionBicScore s = new BasisFunctionBicScore(d, 3, 0.0);
             s.setPenaltyDiscount(2);
@@ -103,7 +119,7 @@ public class DiscreteScorePowerHarness {
 
         System.out.printf("%d vars, avg degree %d, %d reps; recall split: R1 = edges into single-parent children, "
                 + "R2+ = edges into children with >= 2 parents%n%n", numVars, avgDegree, reps);
-        System.out.printf("%-6s %-16s %8s %8s %8s %8s %8s%n", "N", "score", "prec", "recall", "R1", "R2+", "#edges");
+        System.out.printf("%-6s %-18s %8s %8s %8s %8s %8s%n", "N", "score", "prec", "recall", "R1", "R2+", "#edges");
 
         for (String nStr : ns) {
             int n = Integer.parseInt(nStr);
@@ -164,7 +180,7 @@ public class DiscreteScorePowerHarness {
                 double rec = a[0] / Math.max(1, a[0] + a[2]);
                 double r1 = a[3] / Math.max(1, tot1.get(k));
                 double r2 = a[5] / Math.max(1, tot2.get(k));
-                System.out.printf("%-6d %-16s %8.3f %8.3f %8.3f %8.3f %8.1f%n", n, k, prec, rec, r1, r2,
+                System.out.printf("%-6d %-18s %8.3f %8.3f %8.3f %8.3f %8.1f%n", n, k, prec, rec, r1, r2,
                         (a[0] + a[1]) / reps);
             }
             System.out.println();

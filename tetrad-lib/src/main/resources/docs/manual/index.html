@@ -5488,12 +5488,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h3>DG-BGe (Degenerate Gaussian BGe) Score</h3>
 
     <div id="dg-bge-score">
-        <p>DG-BGe is the BGe score (see) applied to the degenerate Gaussian embedding of the DG-BIC score: continuous variables are kept as they are and each discrete variable is replaced by one 0/1 indicator column per category but the last, and the resulting columns are scored with the Normal-Wishart marginal likelihood, taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets of the child and its parents. On purely continuous data this is exactly the BGe score; on purely discrete data it is the marginal-likelihood counterpart of DG-BIC in the way that BDeu is the counterpart of the discrete BIC score, though, like DG-BIC, it models only additive (main-effect) dependence of a child's indicators on the parents' indicators, not interactions among parents. It is BF-BGe with truncation limit 1 and no rescaling; see that entry for the hyperparameters. Decomposable and score-equivalent; "higher is better." Mixed data. Experimental.</p>
+        <p>DG-BGe is the BGe score (see) applied to the degenerate Gaussian embedding of the DG-BIC score: continuous variables are kept as they are and each discrete variable is replaced by one 0/1 indicator column per category but the last, and the resulting columns are scored with the Normal-Wishart marginal likelihood, taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets of the child and its parents. On purely continuous data this is exactly the BGe score; on purely discrete data it is the marginal-likelihood counterpart of DG-BIC in the way that BDeu is the counterpart of the discrete BIC score, though, like DG-BIC, it models only additive (main-effect) dependence of a child's indicators on the parents' indicators, not interactions among parents. It is BF-BGe with truncation limit 1 and no rescaling; see that entry for the hyperparameters and for discreteInteractionOrder, which adds interaction columns among discrete parents (saturating the parent design at high enough order) at the cost of score equivalence. Decomposable, and score-equivalent at interaction order 1; "higher is better." Mixed data. Experimental.</p>
     </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+    <p><a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#discreteInteractionOrder">discreteInteractionOrder</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
 
     <h3>M-separation Score</h3>
 
@@ -5775,11 +5775,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <div id="bf-bge-score">
         <p>BF-BGe is the BGe score applied to the same embedding BF-BIC uses: each continuous variable is expanded into its Legendre basis columns up to truncationLimit and each discrete variable into one indicator column per category but the last. Where BF-BIC scores the expanded family with a BIC-penalized Gaussian likelihood, BF-BGe scores it with the exact Normal-Wishart marginal likelihood of the BGe score (see), taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets A of the child and B of its parents. This replaces the BIC penalty on the whole expanded block (the source of BF-BIC's conservatism on weak linear edges) with the Bayesian Occam factor, in the same way that BDeu replaces the discrete BIC penalty. The score is decomposable and score-equivalent, and because the prior scale is added to the scatter matrix, no singularity lambda is needed. "Higher is better."</p>
         <p>The prior conventions and hyperparameters are those of the BGe score; alpha_mu acts only through the prior scale, so smaller values make edges more expensive (bgeAlphaMu = 0.1 tracks SEM BIC at penalty discount 2 in null false-positive rate; the default 1 sits between penalty discounts 1 and 2). Embedded columns with zero variance (unobserved categories) are dropped. Mixed data. Experimental.</p>
+        <p>With discreteInteractionOrder above 1, a family's parent block is augmented with products of indicator columns from up to that many distinct discrete parents, so that a discrete child can depend on its discrete parents through interactions and not only main effects; an order at least the number of discrete parents gives the saturated design, the same span as BDeu's conditional table, with empty-cell columns dropped. This is not score-equivalent (Markov-equivalent DAGs may score differently), so use it with BOSS or GRaSP; the default order 1 is the score-equivalent additive design.</p>
     </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+    <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#discreteInteractionOrder">discreteInteractionOrder</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
 
     <h3>Blocks-BIC Score</h3>
 
@@ -12291,6 +12292,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             <li>Lower Bound: <span id="bgeAlphaWOffset_lower_bound">1.01</span></li>
             <li>Upper Bound: <span id="bgeAlphaWOffset_upper_bound">1.7976931348623157E308</span></li>
             <li>Value Type: <span id="bgeAlphaWOffset_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="discreteInteractionOrder">discreteInteractionOrder</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="discreteInteractionOrder_short_desc">Interaction order among discrete parents in the BGe embedding scores (1 = additive)</span></li>
+            <li>Long Description: <span id="discreteInteractionOrder_long_desc">For the BF-BGe and DG-BGe scores: the maximum number of distinct discrete parents whose indicator columns are multiplied to form interaction columns in a family's parent block. 1 (the default) is the additive design of DG-BIC and BF-BIC. 2 adds pairwise interactions; an order at least the number of discrete parents gives the saturated design, the same span as BDeu's conditional table. Empty-cell product columns are dropped. Orders above 1 are not score-equivalent, so they are intended for permutation searches such as BOSS and GRaSP.</span></li>
+            <li>Default Value: <span id="discreteInteractionOrder_default_value">1</span></li>
+            <li>Lower Bound: <span id="discreteInteractionOrder_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="discreteInteractionOrder_upper_bound">20</span></li>
+            <li>Value Type: <span id="discreteInteractionOrder_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
