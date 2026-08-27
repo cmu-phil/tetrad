@@ -5485,6 +5485,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#structurePrior">structurePrior</a></p>
 
+    <h3>DG-BGe (Degenerate Gaussian BGe) Score</h3>
+
+    <div id="dg-bge-score">
+        <p>DG-BGe is the BGe score (see) applied to the degenerate Gaussian embedding of the DG-BIC score: continuous variables are kept as they are and each discrete variable is replaced by one 0/1 indicator column per category but the last, and the resulting columns are scored with the Normal-Wishart marginal likelihood, taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets of the child and its parents. On purely continuous data this is exactly the BGe score; on purely discrete data it is the marginal-likelihood counterpart of DG-BIC in the way that BDeu is the counterpart of the discrete BIC score, though, like DG-BIC, it models only additive (main-effect) dependence of a child's indicators on the parents' indicators, not interactions among parents. It is BF-BGe with truncation limit 1 and no rescaling; see that entry for the hyperparameters. Decomposable and score-equivalent; "higher is better." Mixed data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
     <h3>M-separation Score</h3>
 
     <div id="m-sep-score"><p> This uses m-separation to make something
@@ -5759,6 +5769,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Parameters</h4>
 
     <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#penaltyDiscount">penaltyDiscount</a>, <a href="#singularityLambda">singularityLambda</a>, <a href="#doOneEquationOnly">doOneEquationOnly</a>, missingDataPolicy</p>
+
+    <h3>BF-BGe (Basis Function BGe) Score</h3>
+
+    <div id="bf-bge-score">
+        <p>BF-BGe is the BGe score applied to the same embedding BF-BIC uses: each continuous variable is expanded into its Legendre basis columns up to truncationLimit and each discrete variable into one indicator column per category but the last. Where BF-BIC scores the expanded family with a BIC-penalized Gaussian likelihood, BF-BGe scores it with the exact Normal-Wishart marginal likelihood of the BGe score (see), taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets A of the child and B of its parents. This replaces the BIC penalty on the whole expanded block (the source of BF-BIC's conservatism on weak linear edges) with the Bayesian Occam factor, in the same way that BDeu replaces the discrete BIC penalty. The score is decomposable and score-equivalent, and because the prior scale is added to the scatter matrix, no singularity lambda is needed. "Higher is better."</p>
+        <p>The prior conventions and hyperparameters are those of the BGe score; alpha_mu acts only through the prior scale, so smaller values make edges more expensive (bgeAlphaMu = 0.1 tracks SEM BIC at penalty discount 2 in null false-positive rate; the default 1 sits between penalty discounts 1 and 2). Embedded columns with zero variance (unobserved categories) are dropped. Mixed data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
 
     <h3>Blocks-BIC Score</h3>
 
