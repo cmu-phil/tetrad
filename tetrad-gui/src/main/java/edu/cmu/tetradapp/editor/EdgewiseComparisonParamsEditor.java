@@ -118,8 +118,11 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
         System.out.println("Decision: reference = " + this.model1.getName() + ", target = " + this.model2.getName());
 
 //        Preferences.userRoot().put("__referenceSessionModel", model1.getName());
+        // Both names must be *set*: Parameters.getString(name, default) stores the default on first access and
+        // returns the stored value thereafter, so using it here left targetGraphName frozen at whichever name it
+        // was first given, and choosing the other graph as reference then made reference and target identical.
         this.params.set("referenceGraphName", this.model1.getName());
-        this.params.getString("targetGraphName", this.model2.getName());
+        this.params.set("targetGraphName", this.model2.getName());
 
         setLayout(new BorderLayout());
 
@@ -162,7 +165,7 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
             System.out.println("Graph1 button reference = " + this.model1.getName() + ", target = " + this.model2.getName());
             Preferences.userRoot().put("__referenceSessionModel", this.model1.getName());
             this.params.set("referenceGraphName", this.model1.getName());
-            this.params.getString("targetGraphName", this.model1.getName());
+            this.params.set("targetGraphName", this.model2.getName());
         });
 
         graph2.addActionListener(e -> {
@@ -170,7 +173,7 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
 
             Preferences.userRoot().put("__referenceSessionModel", this.model2.getName());
             this.params.set("referenceGraphName", this.model2.getName());
-            this.params.getString("targetGraphName", this.model1.getName());
+            this.params.set("targetGraphName", this.model1.getName());
         });
 
         ButtonGroup group = new ButtonGroup();
