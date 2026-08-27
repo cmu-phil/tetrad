@@ -5525,6 +5525,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
+    <h3>BGe Score</h3>
+
+    <div id="bge-score">
+        <p>BGe (Bayesian Gaussian equivalent) is the Gaussian analog of the BDeu score: the local score of a family Y | Pa is the exact log marginal likelihood of the data for that family under a Normal-Wishart prior on the mean and precision of the linear Gaussian model, so no asymptotic penalty term is involved. It is score-equivalent and decomposable, and "higher is better." See Geiger, D., and Heckerman, D. (2002), Parameter priors for directed acyclic graphical models and the characterization of several probability distributions, Annals of Statistics 30(5), 1412-1440, and the corrected formula in Kuipers, J., Moffa, G., and Heckerman, D. (2014), Addendum on the scoring of Gaussian directed acyclic graphical models, Annals of Statistics 42(4), 1689-1691.</p>
+        <p>The prior has two hyperparameters: bgeAlphaMu, the prior precision on the mean (alpha_mu), and bgeAlphaWOffset, the Wishart degrees of freedom above the number of variables p (alpha_w = p + bgeAlphaWOffset). The prior mean is the sample mean and the prior scale matrix is T = t diag(s_j^2), with t = alpha_mu (alpha_w - p - 1) / (alpha_mu + 1) and s_j^2 the sample variance of variable j; for unit-variance data this is the bnlearn/Kuipers default T = t I, and scaling to the sample variances makes the DAG ranking invariant to the units of measurement. The defaults alpha_mu = 1, alpha_w = p + 2 follow Kuipers et al. and bnlearn. As with BDeu's prior equivalent sample size, larger alpha_mu tends to favor denser graphs. Supports an effective sample size. Continuous data or a covariance matrix.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
     <h3>EBIC Score</h3>
 
     <div id="ebic-score"><p> This is the Extended BIC (EBIC) score of
@@ -12239,6 +12250,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="effectiveSampleSize_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="effectiveSampleSize_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="bgeAlphaMu">bgeAlphaMu</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="bgeAlphaMu_short_desc">BGe prior precision on the mean (alpha_mu)</span></li>
+            <li>Long Description: <span id="bgeAlphaMu_long_desc">The prior precision on the mean in the Normal-Wishart prior of the BGe score (bnlearn's iss.mu). Acts like a prior equivalent sample size for the mean; larger values tend to favor denser graphs. Default 1.</span></li>
+            <li>Default Value: <span id="bgeAlphaMu_default_value">1.0</span></li>
+            <li>Lower Bound: <span id="bgeAlphaMu_lower_bound">1.0E-4</span></li>
+            <li>Upper Bound: <span id="bgeAlphaMu_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="bgeAlphaMu_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="bgeAlphaWOffset">bgeAlphaWOffset</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="bgeAlphaWOffset_short_desc">BGe Wishart degrees of freedom above the number of variables (alpha_w = p + offset)</span></li>
+            <li>Long Description: <span id="bgeAlphaWOffset_long_desc">The degrees of freedom of the Wishart prior in the BGe score, given as an offset above the number of variables p, so alpha_w = p + bgeAlphaWOffset. Must exceed 1 so that the prior scale t = alpha_mu (alpha_w - p - 1) / (alpha_mu + 1) is positive. The default 2 gives alpha_w = p + alpha_mu + 1 for the default alpha_mu = 1, as recommended by Kuipers et al. (2014) and used by bnlearn.</span></li>
+            <li>Default Value: <span id="bgeAlphaWOffset_default_value">2.0</span></li>
+            <li>Lower Bound: <span id="bgeAlphaWOffset_lower_bound">1.01</span></li>
+            <li>Upper Bound: <span id="bgeAlphaWOffset_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="bgeAlphaWOffset_value_type">Double</span></li>
         </ul>
 
         <h3 class="parameter_description"

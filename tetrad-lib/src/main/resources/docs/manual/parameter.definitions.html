@@ -585,6 +585,40 @@ Source:
     </ul>
 
 
+    === bgeAlphaMu ===
+    <h3 class="parameter_description" id="bgeAlphaMu">bgeAlphaMu</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bgeAlphaMu_short_desc">BGe prior precision on the mean (alpha_mu)</span></li>
+        <li>Long Description: <span id="bgeAlphaMu_long_desc">
+                    The prior precision on the mean in the Normal-Wishart prior of the BGe score
+                    (bnlearn's iss.mu). Acts like a prior equivalent sample size for the mean;
+                    larger values tend to favor denser graphs. Default 1.
+        </span></li>
+        <li>Default Value: <span id="bgeAlphaMu_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="bgeAlphaMu_lower_bound">1.0E-4</span></li>
+        <li>Upper Bound: <span id="bgeAlphaMu_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bgeAlphaMu_value_type">Double</span></li>
+    </ul>
+
+
+    === bgeAlphaWOffset ===
+    <h3 class="parameter_description" id="bgeAlphaWOffset">bgeAlphaWOffset</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bgeAlphaWOffset_short_desc">BGe Wishart degrees of freedom above the number of variables (alpha_w = p + offset)</span></li>
+        <li>Long Description: <span id="bgeAlphaWOffset_long_desc">
+                    The degrees of freedom of the Wishart prior in the BGe score, given as an offset
+                    above the number of variables p, so alpha_w = p + bgeAlphaWOffset. Must exceed 1 so
+                    that the prior scale t = alpha_mu (alpha_w - p - 1) / (alpha_mu + 1) is positive.
+                    The default 2 gives alpha_w = p + alpha_mu + 1 for the default alpha_mu = 1, as
+                    recommended by Kuipers et al. (2014) and used by bnlearn.
+        </span></li>
+        <li>Default Value: <span id="bgeAlphaWOffset_default_value">2.0</span></li>
+        <li>Lower Bound: <span id="bgeAlphaWOffset_lower_bound">1.01</span></li>
+        <li>Upper Bound: <span id="bgeAlphaWOffset_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bgeAlphaWOffset_value_type">Double</span></li>
+    </ul>
+
+
     === bootstrappingNumThreads ===
     <h3 class="parameter_description" id="bootstrappingNumThreads">bootstrappingNumThreads</h3>
     <ul class="parameter_description_list">
