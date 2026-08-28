@@ -1489,11 +1489,90 @@ public final class Params {
      * Constant <code>DISCRETE_INTERACTION_ORDER="discreteInteractionOrder"</code>
      */
     public static final String DISCRETE_INTERACTION_ORDER = "discreteInteractionOrder";
+    /**
+     * Constant <code>BB_PROP_STRONG="bbPropStrong"</code>
+     */
+    public static final String BB_PROP_STRONG = "bbPropStrong";
+    /**
+     * Constant <code>BB_STRONG_COEF_LOW="bbStrongCoefLow"</code>
+     */
+    public static final String BB_STRONG_COEF_LOW = "bbStrongCoefLow";
+    /**
+     * Constant <code>BB_STRONG_COEF_HIGH="bbStrongCoefHigh"</code>
+     */
+    public static final String BB_STRONG_COEF_HIGH = "bbStrongCoefHigh";
+    /**
+     * Constant <code>BB_WEAK_COEF_LOW="bbWeakCoefLow"</code>
+     */
+    public static final String BB_WEAK_COEF_LOW = "bbWeakCoefLow";
+    /**
+     * Constant <code>BB_WEAK_COEF_HIGH="bbWeakCoefHigh"</code>
+     */
+    public static final String BB_WEAK_COEF_HIGH = "bbWeakCoefHigh";
+    /**
+     * Constant <code>BB_DISTORTION="bbDistortion"</code>
+     */
+    public static final String BB_DISTORTION = "bbDistortion";
+    /**
+     * Constant <code>BB_NON_GAUSSIAN="bbNonGaussian"</code>
+     */
+    public static final String BB_NON_GAUSSIAN = "bbNonGaussian";
+    /**
+     * Constant <code>BB_EDGE_NONLINEARITY="bbEdgeNonlinearity"</code>
+     */
+    public static final String BB_EDGE_NONLINEARITY = "bbEdgeNonlinearity";
+    /**
+     * Constant <code>DE_NUM_FACTORS="deNumFactors"</code>
+     */
+    public static final String DE_NUM_FACTORS = "deNumFactors";
+    /**
+     * Constant <code>DE_NUM_DERIVED="deNumDerived"</code>
+     */
+    public static final String DE_NUM_DERIVED = "deNumDerived";
+    /**
+     * Constant <code>DE_NUM_RESPONSES="deNumResponses"</code>
+     */
+    public static final String DE_NUM_RESPONSES = "deNumResponses";
+    /**
+     * Constant <code>DE_MIN_LEVELS="deMinLevels"</code>
+     */
+    public static final String DE_MIN_LEVELS = "deMinLevels";
+    /**
+     * Constant <code>DE_MAX_LEVELS="deMaxLevels"</code>
+     */
+    public static final String DE_MAX_LEVELS = "deMaxLevels";
+    /**
+     * Constant <code>DE_COUPLING="deCoupling"</code>
+     */
+    public static final String DE_COUPLING = "deCoupling";
+    /**
+     * Constant <code>DE_DERIVED_NOISE="deDerivedNoise"</code>
+     */
+    public static final String DE_DERIVED_NOISE = "deDerivedNoise";
+    /**
+     * Constant <code>DE_INTERACTION="deInteraction"</code>
+     */
+    public static final String DE_INTERACTION = "deInteraction";
+    /**
+     * Constant <code>DE_RESPONSE_NOISE="deResponseNoise"</code>
+     */
+    public static final String DE_RESPONSE_NOISE = "deResponseNoise";
+    /**
+     * Constant <code>DE_SELECTION="deSelection"</code>
+     */
+    public static final String DE_SELECTION = "deSelection";
 
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
+            Params.BB_PROP_STRONG, Params.BB_STRONG_COEF_LOW, Params.BB_STRONG_COEF_HIGH,
+            Params.BB_WEAK_COEF_LOW, Params.BB_WEAK_COEF_HIGH, Params.BB_DISTORTION,
+            Params.BB_EDGE_NONLINEARITY, Params.BB_NON_GAUSSIAN,
+            Params.DE_NUM_FACTORS, Params.DE_NUM_DERIVED, Params.DE_NUM_RESPONSES,
+            Params.DE_MIN_LEVELS, Params.DE_MAX_LEVELS, Params.DE_COUPLING,
+            Params.DE_DERIVED_NOISE, Params.DE_INTERACTION, Params.DE_RESPONSE_NOISE,
+            Params.DE_SELECTION,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
             Params.CONFLICT_RULE, Params.CONNECTED, Params.COV_HIGH, Params.COV_LOW, Params.COV_SYMMETRIC,

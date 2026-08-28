@@ -7732,4 +7732,227 @@ Source:
         <li>Upper Bound: <span id="missingEssMode_upper_bound"></span></li>
         <li>Value Type: <span id="missingEssMode_value_type">String</span></li>
     </ul>
+
+    === bbPropStrong ===
+    <h3 class="parameter_description" id="bbPropStrong">bbPropStrong</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bbPropStrong_short_desc">Probability that an edge is designated "strong" (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="bbPropStrong_long_desc">
+        In the Backbone SEM simulation, each edge is independently designated "strong" with this probability and "weak" otherwise. Strong edges draw their coefficient magnitudes from [bbStrongCoefLow, bbStrongCoefHigh] and weak edges from [bbWeakCoefLow, bbWeakCoefHigh], on a standardized (correlation-unit) scale.</span></li>
+        <li>Default Value: <span id="bbPropStrong_default_value">0.3</span></li>
+        <li>Lower Bound: <span id="bbPropStrong_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="bbPropStrong_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="bbPropStrong_value_type">Double</span></li>
+    </ul>
+
+    === bbStrongCoefLow ===
+    <h3 class="parameter_description" id="bbStrongCoefLow">bbStrongCoefLow</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bbStrongCoefLow_short_desc">Low end of the strong-edge standardized coefficient range (min = 0.0)</span></li>
+        <li>Long Description: <span id="bbStrongCoefLow_long_desc">
+        Low end of the magnitude range for coefficients of "strong" edges in the Backbone SEM simulation. Coefficients are on a standardized scale, so this is approximately the low end of the induced correlation for a strong edge whose child has few other parents.</span></li>
+        <li>Default Value: <span id="bbStrongCoefLow_default_value">0.4</span></li>
+        <li>Lower Bound: <span id="bbStrongCoefLow_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="bbStrongCoefLow_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bbStrongCoefLow_value_type">Double</span></li>
+    </ul>
+
+    === bbStrongCoefHigh ===
+    <h3 class="parameter_description" id="bbStrongCoefHigh">bbStrongCoefHigh</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bbStrongCoefHigh_short_desc">High end of the strong-edge standardized coefficient range (min = 0.0)</span></li>
+        <li>Long Description: <span id="bbStrongCoefHigh_long_desc">
+        High end of the magnitude range for coefficients of "strong" edges in the Backbone SEM simulation, on a standardized scale.</span></li>
+        <li>Default Value: <span id="bbStrongCoefHigh_default_value">0.7</span></li>
+        <li>Lower Bound: <span id="bbStrongCoefHigh_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="bbStrongCoefHigh_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bbStrongCoefHigh_value_type">Double</span></li>
+    </ul>
+
+    === bbWeakCoefLow ===
+    <h3 class="parameter_description" id="bbWeakCoefLow">bbWeakCoefLow</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bbWeakCoefLow_short_desc">Low end of the weak-edge standardized coefficient range (min = 0.0)</span></li>
+        <li>Long Description: <span id="bbWeakCoefLow_long_desc">
+        Low end of the magnitude range for coefficients of "weak" edges in the Backbone SEM simulation, on a standardized scale.</span></li>
+        <li>Default Value: <span id="bbWeakCoefLow_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="bbWeakCoefLow_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="bbWeakCoefLow_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bbWeakCoefLow_value_type">Double</span></li>
+    </ul>
+
+    === bbWeakCoefHigh ===
+    <h3 class="parameter_description" id="bbWeakCoefHigh">bbWeakCoefHigh</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bbWeakCoefHigh_short_desc">High end of the weak-edge standardized coefficient range (min = 0.0)</span></li>
+        <li>Long Description: <span id="bbWeakCoefHigh_long_desc">
+        High end of the magnitude range for coefficients of "weak" edges in the Backbone SEM simulation, on a standardized scale.</span></li>
+        <li>Default Value: <span id="bbWeakCoefHigh_default_value">0.25</span></li>
+        <li>Lower Bound: <span id="bbWeakCoefHigh_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="bbWeakCoefHigh_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bbWeakCoefHigh_value_type">Double</span></li>
+    </ul>
+
+    === bbDistortion ===
+    <h3 class="parameter_description" id="bbDistortion">bbDistortion</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bbDistortion_short_desc">Mixing weight of the monotone marginal distortion (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="bbDistortion_long_desc">
+        After the standardized linear SEM is generated, each observed column is passed through a random smooth strictly monotone map: a mixture of the identity with a sinh, asinh, or signed-power distortion, with this mixing weight. 0 leaves the margins undistorted; 1 uses the pure nonlinear map. Because each map is invertible and applied per variable, the conditional independence structure of the observed data is exactly that of the underlying SEM.</span></li>
+        <li>Default Value: <span id="bbDistortion_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="bbDistortion_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="bbDistortion_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="bbDistortion_value_type">Double</span></li>
+    </ul>
+
+    === bbNonGaussian ===
+    <h3 class="parameter_description" id="bbNonGaussian">bbNonGaussian</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bbNonGaussian_short_desc">Yes if each node's noise should be drawn from a random non-Gaussian family</span></li>
+        <li>Long Description: <span id="bbNonGaussian_long_desc">
+        If yes, each node's exogenous noise family is chosen at random from Gaussian, scaled t(7), centered exponential, and standardized Gumbel, all with unit variance. If no, all noise is Gaussian.</span></li>
+        <li>Default Value: <span id="bbNonGaussian_default_value">true</span></li>
+        <li>Lower Bound: <span id="bbNonGaussian_lower_bound"></span></li>
+        <li>Upper Bound: <span id="bbNonGaussian_upper_bound"></span></li>
+        <li>Value Type: <span id="bbNonGaussian_value_type">Boolean</span></li>
+    </ul>
+
+    === bbEdgeNonlinearity ===
+    <h3 class="parameter_description" id="bbEdgeNonlinearity">bbEdgeNonlinearity</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bbEdgeNonlinearity_short_desc">Mixing weight of the per-edge monotone transmission nonlinearity (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="bbEdgeNonlinearity_long_desc">
+        In the Backbone SEM simulation, each parent's (standardized) value is passed through its
+        own transmission function before being summed into the child. With weight 0 the
+        transmission is the identity and the latent model is linear. With weight greater than 0
+        the transmission is a mixture of the identity with a random smooth strictly monotone map
+        (sinh, asinh, or signed power), with this mixing weight. This produces structural
+        additive nonlinearity in the sense that the curvature of the conditional means cannot be
+        removed by any per-variable transformation of the observed data, in contrast to
+        bbDistortion, which distorts only the margins.</span></li>
+        <li>Default Value: <span id="bbEdgeNonlinearity_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="bbEdgeNonlinearity_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="bbEdgeNonlinearity_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="bbEdgeNonlinearity_value_type">Double</span></li>
+    </ul>
+
+    === deNumFactors ===
+    <h3 class="parameter_description" id="deNumFactors">deNumFactors</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deNumFactors_short_desc">Number of grid-valued design factors (min = 2)</span></li>
+        <li>Long Description: <span id="deNumFactors_long_desc">
+        In the Designed Experiment simulation, the number of exogenous design factors (F1, F2, ...). These take a small number of evenly spaced levels, sampled uniformly, mimicking factors SET by an experimenter rather than sampled from a distribution.</span></li>
+        <li>Default Value: <span id="deNumFactors_default_value">4</span></li>
+        <li>Lower Bound: <span id="deNumFactors_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="deNumFactors_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deNumFactors_value_type">Integer</span></li>
+    </ul>
+
+    === deNumDerived ===
+    <h3 class="parameter_description" id="deNumDerived">deNumDerived</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deNumDerived_short_desc">Number of near-deterministic derived intermediates (min = 0)</span></li>
+        <li>Long Description: <span id="deNumDerived_long_desc">
+        The number of derived variables (D1, ...), each a near-deterministic smooth function of a random subset of the design factors (like a computed boundary-layer parameter), with noise standard deviation deDerivedNoise.</span></li>
+        <li>Default Value: <span id="deNumDerived_default_value">1</span></li>
+        <li>Lower Bound: <span id="deNumDerived_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="deNumDerived_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deNumDerived_value_type">Integer</span></li>
+    </ul>
+
+    === deNumResponses ===
+    <h3 class="parameter_description" id="deNumResponses">deNumResponses</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deNumResponses_short_desc">Number of measured responses (min = 1)</span></li>
+        <li>Long Description: <span id="deNumResponses_long_desc">
+        The number of response variables (R1, ...). Each is a function of all factors and derived variables, mixing additive and pairwise-interaction parts by weight deInteraction, plus noise with standard deviation deResponseNoise. Responses are the only genuinely 'measured' random variables in the design.</span></li>
+        <li>Default Value: <span id="deNumResponses_default_value">1</span></li>
+        <li>Lower Bound: <span id="deNumResponses_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="deNumResponses_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deNumResponses_value_type">Integer</span></li>
+    </ul>
+
+    === deMinLevels ===
+    <h3 class="parameter_description" id="deMinLevels">deMinLevels</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deMinLevels_short_desc">Minimum number of levels per design factor (min = 2)</span></li>
+        <li>Long Description: <span id="deMinLevels_long_desc">
+        Each design factor's number of grid levels is drawn uniformly between deMinLevels and deMaxLevels.</span></li>
+        <li>Default Value: <span id="deMinLevels_default_value">4</span></li>
+        <li>Lower Bound: <span id="deMinLevels_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="deMinLevels_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deMinLevels_value_type">Integer</span></li>
+    </ul>
+
+    === deMaxLevels ===
+    <h3 class="parameter_description" id="deMaxLevels">deMaxLevels</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deMaxLevels_short_desc">Maximum number of levels per design factor (min = 2)</span></li>
+        <li>Long Description: <span id="deMaxLevels_long_desc">
+        Each design factor's number of grid levels is drawn uniformly between deMinLevels and deMaxLevels.</span></li>
+        <li>Default Value: <span id="deMaxLevels_default_value">12</span></li>
+        <li>Lower Bound: <span id="deMaxLevels_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="deMaxLevels_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deMaxLevels_value_type">Integer</span></li>
+    </ul>
+
+    === deCoupling ===
+    <h3 class="parameter_description" id="deCoupling">deCoupling</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deCoupling_short_desc">Probability that a factor is protocol-coupled to an earlier factor (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="deCoupling_long_desc">
+        With this probability, a design factor's value range is scaled by a randomly chosen earlier uncoupled factor (a non-factorial design, as when larger chord lengths are tested only at smaller attack angles). Coupling produces strong protocol-induced dependence among the inputs and appears as a directed edge in the true graph.</span></li>
+        <li>Default Value: <span id="deCoupling_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="deCoupling_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deCoupling_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="deCoupling_value_type">Double</span></li>
+    </ul>
+
+    === deDerivedNoise ===
+    <h3 class="parameter_description" id="deDerivedNoise">deDerivedNoise</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deDerivedNoise_short_desc">Noise standard deviation for derived variables (min = 0.0)</span></li>
+        <li>Long Description: <span id="deDerivedNoise_long_desc">
+        The standard deviation of the noise added to each derived variable's unit-variance systematic part. Small values make derived variables near-deterministic functions of their parents, the classic hard case for score-based orientation.</span></li>
+        <li>Default Value: <span id="deDerivedNoise_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="deDerivedNoise_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deDerivedNoise_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="deDerivedNoise_value_type">Double</span></li>
+    </ul>
+
+    === deInteraction ===
+    <h3 class="parameter_description" id="deInteraction">deInteraction</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deInteraction_short_desc">Pairwise-interaction mixing weight for derived and response functions (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="deInteraction_long_desc">
+        The weight of the pairwise-interaction part (products of the mapped parents) relative to the additive part in derived and response functions. High values mimic interaction-heavy physics such as Strouhal scaling, which violates the additivity assumed by per-parent basis expansions.</span></li>
+        <li>Default Value: <span id="deInteraction_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="deInteraction_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deInteraction_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="deInteraction_value_type">Double</span></li>
+    </ul>
+
+    === deResponseNoise ===
+    <h3 class="parameter_description" id="deResponseNoise">deResponseNoise</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deResponseNoise_short_desc">Noise standard deviation for response variables (min = 0.0)</span></li>
+        <li>Long Description: <span id="deResponseNoise_long_desc">
+        The standard deviation of the noise added to each response's unit-variance systematic part. The default 0.4 gives R-squared of about 0.85 given the inputs.</span></li>
+        <li>Default Value: <span id="deResponseNoise_default_value">0.4</span></li>
+        <li>Lower Bound: <span id="deResponseNoise_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deResponseNoise_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="deResponseNoise_value_type">Double</span></li>
+    </ul>
+
+    === deSelection ===
+    <h3 class="parameter_description" id="deSelection">deSelection</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deSelection_short_desc">Fraction of rows dropped by selection on measurability (min = 0.0, max < 1.0)</span></li>
+        <li>Long Description: <span id="deSelection_long_desc">
+        If greater than 0, the lowest deSelection fraction of rows by (first response plus noise) is dropped before the dataset is returned, as when rows exist only where the response was above a noise floor. Selection induces dependence among the inputs in the observed sample that is NOT in the true (pre-selection) graph; extra input-input edges found by searches on selected data are expected and are part of what this simulation studies.</span></li>
+        <li>Default Value: <span id="deSelection_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="deSelection_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deSelection_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="deSelection_value_type">Double</span></li>
+    </ul>
 </div>

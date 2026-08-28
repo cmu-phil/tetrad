@@ -100,6 +100,14 @@ public final class SimulationTypes {
      * Constant <code>DAO_SIMULATION="DAO Simulation"</code>
      */
     public static final String DAO_SIMULATION = "DAO Simulation";
+    /**
+     * Constant <code>BACKBONE_SEM="Backbone SEM"</code>
+     */
+    public static final String BACKBONE_SEM = "Backbone SEM";
+    /**
+     * Constant <code>DESIGNED_EXPERIMENT="Designed Experiment"</code>
+     */
+    public static final String DESIGNED_EXPERIMENT = "Designed Experiment";
 
     private SimulationTypes() {
     }

@@ -75,6 +75,8 @@ public final class SimulationUtils {
             case SimulationTypes.GENERAL_ADDITIVE_MODEL -> new GeneralAdditiveModel(randomGraph);
             case SimulationTypes.GENERAL_NOISE_SEM -> new GeneralNoiseSimulation(randomGraph);
             case SimulationTypes.ADDITIVE_NOISE_SEM -> new AdditiveNoiseSimulation(randomGraph);
+            case SimulationTypes.BACKBONE_SEM -> new BackboneSimulation(randomGraph);
+            case SimulationTypes.DESIGNED_EXPERIMENT -> new DesignedExperimentSimulation(randomGraph);
             case SimulationTypes.GENERAL_STRUCTURAL_EQUATION_MODEL -> new GeneralSemSimulationSpecial1(randomGraph);
             case SimulationTypes.LEE_AND_HASTIE -> new LeeHastieSimulation(randomGraph);
             case SimulationTypes.CONDITIONAL_GAUSSIAN -> new ConditionalGaussianSimulation(randomGraph);
