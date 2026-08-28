@@ -7861,6 +7861,30 @@ Source:
         <li>Value Type: <span id="deSelection_value_type">Double</span></li>
     </ul>
 
+    === deSortByConfiguration ===
+    <h3 class="parameter_description" id="deSortByConfiguration">deSortByConfiguration</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deSortByConfiguration_short_desc">Emit rows grouped into configuration blocks, sweeping the first factor within each block</span></li>
+        <li>Long Description: <span id="deSortByConfiguration_long_desc">
+        If set, rows are emitted grouped into configuration blocks: the first factor is swept through its full level grid in ascending order within each block (like the frequency sweep in the Airfoil data), and the remaining factors are drawn once per block and held constant across the block. The data-generating structure is unchanged; only the row order and the repeated-measures grouping differ. The emitted file then shows strong serial dependence in file order that is BLOCK structure (repeated measures), not time-series structure: block-constant factors read as near-1 lag-1 autocorrelation, and the dependence collapses when autocorrelations are computed within groups (for example, via the data audit's serial grouping variable). These two readings of a serial dependence finding call for different remedies: clustering or configuration-level aggregation and blocks-by-configuration resampling here, versus lag modeling for genuine time series. Combined with deSelection, block lengths vary naturally, as the measurable frequency bands per configuration vary in Airfoil.</span></li>
+        <li>Default Value: <span id="deSortByConfiguration_default_value">false</span></li>
+        <li>Lower Bound: <span id="deSortByConfiguration_lower_bound"></span></li>
+        <li>Upper Bound: <span id="deSortByConfiguration_upper_bound"></span></li>
+        <li>Value Type: <span id="deSortByConfiguration_value_type">Boolean</span></li>
+    </ul>
+
+    === deEmitConfigColumn ===
+    <h3 class="parameter_description" id="deEmitConfigColumn">deEmitConfigColumn</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deEmitConfigColumn_short_desc">Append a discrete CONFIG column naming each row's configuration block (requires deSortByConfiguration)</span></li>
+        <li>Long Description: <span id="deEmitConfigColumn_long_desc">
+        If set together with deSortByConfiguration, a discrete bookkeeping column named CONFIG is appended to the dataset, giving each row's configuration block - the analogue of the TOWN column in the corrected Boston Housing data. Its purpose is to let the block structure be named in grouped analyses; in particular, selecting it as the data audit's serial grouping variable recomputes the serial dependence check with per-block centering, which separates block structure from genuine time-series structure. The column is bookkeeping, not a variable of the system: it should be excluded from causal searches, and since it has one category per block it will trip the many-discrete-levels audit finding if treated as an ordinary variable. Has no effect when deSortByConfiguration is off.</span></li>
+        <li>Default Value: <span id="deEmitConfigColumn_default_value">false</span></li>
+        <li>Lower Bound: <span id="deEmitConfigColumn_lower_bound"></span></li>
+        <li>Upper Bound: <span id="deEmitConfigColumn_upper_bound"></span></li>
+        <li>Value Type: <span id="deEmitConfigColumn_value_type">Boolean</span></li>
+    </ul>
+
     === osNumContext ===
     <h3 class="parameter_description" id="osNumContext">osNumContext</h3>
     <ul class="parameter_description_list">

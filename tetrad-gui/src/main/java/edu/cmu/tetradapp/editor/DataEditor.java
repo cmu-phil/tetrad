@@ -740,7 +740,172 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         tools.add(new QQPlotAction(this));
         tools.add(new CheckIndependenceFacts(this));
 
+        JMenuItem addBlockId = new JMenuItem("Add Block ID Column...");
+        tools.add(addBlockId);
+        addBlockId.addActionListener(e -> addBlockIdColumn());
+
+        JMenuItem centerWithin = new JMenuItem("Center Within Blocks...");
+        tools.add(centerWithin);
+        centerWithin.addActionListener(e -> centerWithinBlocks());
+
         return menuBar;
+    }
+
+    /**
+     * Appends a discrete block-ID column to the selected tabular data set by run-length encoding over
+     * user-chosen key columns: a new block starts at each row where any key column's value changes from the
+     * previous row. Recovers repeated-measures block structure from files sorted by configuration (Airfoil's
+     * geometry columns; the analogue of TOWN in the corrected Boston Housing data), for use as the data audit's
+     * serial grouping variable. See {@link DataTransforms#appendBlockIdColumn(DataSet, List, String)}.
+     */
+    private void addBlockIdColumn() {
+        JTable jTable = getSelectedJTable();
+
+        if (!(jTable instanceof TabularDataJTable tableTabular)) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "The selected tab does not contain tabular data.");
+            return;
+        }
+
+        DataSet dataSet = tableTabular.getDataSet();
+
+        JList<String> list = new JList<>(dataSet.getVariableNames().toArray(new String[0]));
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        list.setVisibleRowCount(12);
+
+        JTextField nameField = new JTextField("CONFIG", 12);
+
+        Box panel = Box.createVerticalBox();
+        JLabel label = new JLabel("<html>Select the key columns whose joint value defines a block.<br>"
+                + "A new block starts at each row where any key column changes<br>"
+                + "from the previous row (run-length encoding in file order).<br><br>"
+                + "The appended column is bookkeeping: exclude it from searches.<br>"
+                + "It can be selected as the Data Audit's serial grouping variable<br>"
+                + "to recompute the serial dependence check with per-block centering.</html>");
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(label);
+        panel.add(Box.createVerticalStrut(8));
+        JScrollPane scroll = new JScrollPane(list);
+        scroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(scroll);
+        panel.add(Box.createVerticalStrut(8));
+        Box nameRow = Box.createHorizontalBox();
+        nameRow.add(new JLabel("New column name: "));
+        nameRow.add(nameField);
+        nameRow.add(Box.createHorizontalGlue());
+        nameRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(nameRow);
+
+        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(), panel,
+                "Add Block ID Column", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (ret != JOptionPane.OK_OPTION) return;
+
+        try {
+            int numBlocks = DataTransforms.appendBlockIdColumn(dataSet,
+                    list.getSelectedValuesList(), nameField.getText().trim());
+
+            TabularDataTable model = (TabularDataTable) jTable.getModel();
+            model.fireTableStructureChanged();
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
+
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Added '" + nameField.getText().trim() + "' with " + numBlocks + " blocks.");
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage(),
+                    "Cannot add column", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Appends within-block centered ("fixed effects") copies of the selected tabular data set's continuous
+     * columns, for a user-chosen discrete block column and suffix. Centering on the block removes all block-level
+     * variation, including unobserved block-level confounding, so searches on the centered columns estimate
+     * within-block structure only. Block-constant columns are skipped. See
+     * {@link DataTransforms#appendWithinBlockCenteredColumns(DataSet, String, String)}.
+     */
+    private void centerWithinBlocks() {
+        JTable jTable = getSelectedJTable();
+
+        if (!(jTable instanceof TabularDataJTable tableTabular)) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "The selected tab does not contain tabular data.");
+            return;
+        }
+
+        DataSet dataSet = tableTabular.getDataSet();
+
+        java.util.List<String> discreteNames = dataSet.getVariables().stream()
+                .filter(v -> v instanceof DiscreteVariable)
+                .map(Node::getName).toList();
+
+        if (discreteNames.isEmpty()) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "The data set has no discrete column to use as the block column.");
+            return;
+        }
+
+        JComboBox<String> blockCombo = new JComboBox<>(discreteNames.toArray(new String[0]));
+        JTextField suffixField = new JTextField("_w", 8);
+
+        Box panel = Box.createVerticalBox();
+        JLabel label = new JLabel("<html>Appends centered copies of the continuous columns: each value minus its<br>"
+                + "within-block mean (the \"fixed effects\" / within transformation). This removes<br>"
+                + "ALL block-level variation, including unobserved block-level confounding, so<br>"
+                + "searches on the centered columns estimate within-block structure only.<br><br>"
+                + "Block-constant columns are skipped (centered, they would be zero). Use this<br>"
+                + "for multilevel data where blocks are nuisance (subjects, towns, batches),<br>"
+                + "not for designed sweeps whose meaningful variables are block-constant.</html>");
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(label);
+        panel.add(Box.createVerticalStrut(8));
+        Box row1 = Box.createHorizontalBox();
+        row1.add(new JLabel("Block column: "));
+        row1.add(blockCombo);
+        row1.add(Box.createHorizontalGlue());
+        row1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(row1);
+        panel.add(Box.createVerticalStrut(6));
+        Box row2 = Box.createHorizontalBox();
+        row2.add(new JLabel("Suffix for new columns: "));
+        row2.add(suffixField);
+        row2.add(Box.createHorizontalGlue());
+        row2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(row2);
+
+        int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(), panel,
+                "Center Within Blocks", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (ret != JOptionPane.OK_OPTION) return;
+
+        try {
+            java.util.List<String> before = new java.util.ArrayList<>(dataSet.getVariableNames());
+            java.util.List<String> appended = DataTransforms.appendWithinBlockCenteredColumns(dataSet,
+                    (String) blockCombo.getSelectedItem(), suffixField.getText().trim());
+
+            java.util.List<String> skipped = new java.util.ArrayList<>();
+            String suffix = suffixField.getText().trim();
+            for (String name : before) {
+                if (dataSet.getVariable(name) instanceof ContinuousVariable
+                        && !appended.contains(name + suffix)) {
+                    skipped.add(name);
+                }
+            }
+
+            TabularDataTable model = (TabularDataTable) jTable.getModel();
+            model.fireTableStructureChanged();
+
+            syncDisplayedModelsToWrapper();
+            firePropertyChange("modelChanged", null, null);
+
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Appended " + appended.size() + " centered column(s): " + String.join(", ", appended)
+                            + (skipped.isEmpty() ? ""
+                            : ".\nSkipped (block-constant): " + String.join(", ", skipped) + "."));
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), ex.getMessage(),
+                    "Cannot center within blocks", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void closeTab() {

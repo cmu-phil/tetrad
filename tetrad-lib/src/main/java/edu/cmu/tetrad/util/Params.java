@@ -1530,6 +1530,15 @@ public final class Params {
      */
     public static final String DE_SELECTION = "deSelection";
     /**
+     * Constant <code>DE_SORT_BY_CONFIGURATION="deSortByConfiguration"</code>
+     */
+    public static final String DE_SORT_BY_CONFIGURATION = "deSortByConfiguration";
+
+    /**
+     * Constant <code>DE_EMIT_CONFIG_COLUMN="deEmitConfigColumn"</code>
+     */
+    public static final String DE_EMIT_CONFIG_COLUMN = "deEmitConfigColumn";
+    /**
      * Constant <code>OS_NUM_CONTEXT="osNumContext"</code>
      */
     public static final String OS_NUM_CONTEXT = "osNumContext";
@@ -1633,7 +1642,7 @@ public final class Params {
             Params.DE_NUM_FACTORS, Params.DE_NUM_DERIVED, Params.DE_NUM_RESPONSES,
             Params.DE_MIN_LEVELS, Params.DE_MAX_LEVELS, Params.DE_COUPLING,
             Params.DE_DERIVED_NOISE, Params.DE_INTERACTION, Params.DE_RESPONSE_NOISE,
-            Params.DE_SELECTION,
+            Params.DE_SELECTION, Params.DE_SORT_BY_CONFIGURATION, Params.DE_EMIT_CONFIG_COLUMN,
             Params.OS_NUM_CONTEXT, Params.OS_NUM_HIDDEN_CONTEXT, Params.OS_NUM_SYSTEM,
             Params.OS_NUM_INDICES, Params.OS_NUM_OUTCOMES, Params.OS_AVG_SYSTEM_DEGREE,
             Params.OS_PROP_CONTEXT_DISCRETE, Params.OS_NUM_CATEGORIES, Params.OS_DISCRETE_OUTCOME,

@@ -32,6 +32,8 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -56,6 +58,17 @@ import java.util.List;
  * part by weight deInteraction (interaction-heavy physics like Strouhal scaling), plus
  * heterogeneous non-Gaussian noise with standard deviation deResponseNoise.</li>
  * </ol>
+ * Optionally, rows can be emitted <b>sorted by configuration</b> (deSortByConfiguration):
+ * grouped into configuration blocks, with the first factor swept through its full level grid
+ * in ascending order within each block and the remaining factors held constant per block, as
+ * in the Airfoil data file. The resulting file-order serial dependence is BLOCK structure
+ * (repeated measures), not time-series structure: block-constant factors read as near-1 lag-1
+ * autocorrelation in file order, and the dependence collapses within groups. Block start rows
+ * are available from getConfigurationStarts(index), and deEmitConfigColumn appends a discrete
+ * CONFIG bookkeeping column naming each row's block (the analogue of TOWN in the corrected
+ * Boston Housing data; exclude it from search). Combined with selection, block lengths vary
+ * naturally.
+ * <p>
  * Optionally, <b>selection on measurability</b> is applied (deSelection): the lowest
  * deSelection fraction of rows by (first response + noise) is dropped, as when rows exist only
  * where the response was above a noise floor. This induces additional dependence among the
@@ -81,6 +94,12 @@ public class DesignedExperimentSimulation implements Simulation {
      * The data sets.
      */
     private List<DataSet> dataSets = new ArrayList<>();
+
+    /**
+     * Per simulation index, the starting row of each configuration block in the emitted data
+     * (a single all-rows block when deSortByConfiguration is off).
+     */
+    private final List<int[]> configurationStarts = new ArrayList<>();
 
     /**
      * The graphs.
@@ -146,6 +165,7 @@ public class DesignedExperimentSimulation implements Simulation {
         }
 
         this.dataSets = new ArrayList<>();
+        this.configurationStarts.clear();
         this.graphs = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
@@ -169,6 +189,8 @@ public class DesignedExperimentSimulation implements Simulation {
         double interaction = parameters.getDouble(Params.DE_INTERACTION);
         double responseNoise = parameters.getDouble(Params.DE_RESPONSE_NOISE);
         double selection = parameters.getDouble(Params.DE_SELECTION);
+        boolean sortByConfig = parameters.getBoolean(Params.DE_SORT_BY_CONFIGURATION);
+        boolean emitConfig = parameters.getBoolean(Params.DE_EMIT_CONFIG_COLUMN);
         int n = parameters.getInt(Params.SAMPLE_SIZE);
 
         if (selection < 0 || selection >= 1) {
@@ -201,7 +223,9 @@ public class DesignedExperimentSimulation implements Simulation {
             couplingDriver[j] = -1;
             if (rand.nextDouble() < coupling) {
                 List<Integer> uncoupled = new ArrayList<>();
-                for (int i = 0; i < j; i++) if (couplingDriver[i] == -1) uncoupled.add(i);
+                for (int i = 0; i < j; i++) {
+                    if (couplingDriver[i] == -1 && !(sortByConfig && i == 0)) uncoupled.add(i);
+                }
                 if (!uncoupled.isEmpty()) {
                     couplingDriver[j] = uncoupled.get(rand.nextInt(uncoupled.size()));
                     couplingSign[j] = rand.nextDouble() < 0.5 ? -1.0 : 1.0;
@@ -267,17 +291,50 @@ public class DesignedExperimentSimulation implements Simulation {
             levels[f] = minLevels + rand.nextInt(maxLevels - minLevels + 1);
         }
 
-        for (int r = 0; r < m; r++) {
-            for (int f = 0; f < numFactors; f++) {
-                int lvl = rand.nextInt(levels[f]);
-                double base = lvl / (double) (levels[f] - 1);
-                int drv = couplingDriver[f];
-                if (drv >= 0) {
-                    double dn = data[r][drv]; // driver is uncoupled, so already in [0, 1]
-                    double scale = couplingSign[f] < 0 ? (1.0 - 0.7 * dn) : (0.3 + 0.7 * dn);
-                    base *= scale;
+        int[] blockOf = new int[m];
+
+        if (sortByConfig) {
+            // Repeated-measures emission, as in the Airfoil data file: rows are grouped into
+            // configuration blocks. Factor 1 is the sweep factor and runs through its full
+            // level grid in ascending order within each block (like the frequency sweep); the
+            // remaining factors are drawn once per block and held constant across the block.
+            int sweepLevels = levels[0];
+            int r = 0;
+            int block = 0;
+
+            while (r < m) {
+                int[] blockLvl = new int[numFactors];
+                for (int f = 1; f < numFactors; f++) blockLvl[f] = rand.nextInt(levels[f]);
+
+                for (int s = 0; s < sweepLevels && r < m; s++, r++) {
+                    blockOf[r] = block;
+                    for (int f = 0; f < numFactors; f++) {
+                        int lvl = f == 0 ? s : blockLvl[f];
+                        double base = lvl / (double) (levels[f] - 1);
+                        int drv = couplingDriver[f];
+                        if (drv >= 0) {
+                            double dn = data[r][drv]; // driver is uncoupled, so already in [0, 1]
+                            double scale = couplingSign[f] < 0 ? (1.0 - 0.7 * dn) : (0.3 + 0.7 * dn);
+                            base *= scale;
+                        }
+                        data[r][f] = base;
+                    }
                 }
-                data[r][f] = base;
+                block++;
+            }
+        } else {
+            for (int r = 0; r < m; r++) {
+                for (int f = 0; f < numFactors; f++) {
+                    int lvl = rand.nextInt(levels[f]);
+                    double base = lvl / (double) (levels[f] - 1);
+                    int drv = couplingDriver[f];
+                    if (drv >= 0) {
+                        double dn = data[r][drv]; // driver is uncoupled, so already in [0, 1]
+                        double scale = couplingSign[f] < 0 ? (1.0 - 0.7 * dn) : (0.3 + 0.7 * dn);
+                        base *= scale;
+                    }
+                    data[r][f] = base;
+                }
             }
         }
 
@@ -305,6 +362,8 @@ public class DesignedExperimentSimulation implements Simulation {
 
         // ---------- Selection ----------
 
+        int[] blockOfFinal;
+
         if (selection > 0) {
             int firstResponse = numFactors + numDerived;
             double[] score = new double[m];
@@ -316,24 +375,62 @@ public class DesignedExperimentSimulation implements Simulation {
             java.util.Arrays.sort(sorted);
             double threshold = sorted[(int) Math.floor(selection * m)];
 
+            // Selection keeps rows in emission order, so under sortByConfig the surviving
+            // rows remain grouped by configuration, with block lengths that vary naturally
+            // (as the measurable frequency bands per configuration vary in Airfoil).
             double[][] kept = new double[m][];
+            int[] keptBlock = new int[m];
             int k = 0;
             for (int r = 0; r < m; r++) {
-                if (score[r] >= threshold) kept[k++] = data[r];
+                if (score[r] >= threshold) {
+                    keptBlock[k] = blockOf[r];
+                    kept[k++] = data[r];
+                }
             }
 
             int keep = Math.min(n, k);
             double[][] out = new double[keep][];
             System.arraycopy(kept, 0, out, 0, keep);
             data = out;
+            blockOfFinal = java.util.Arrays.copyOf(keptBlock, keep);
         } else if (m > n) {
             double[][] out = new double[n][];
             System.arraycopy(data, 0, out, 0, n);
             data = out;
+            blockOfFinal = java.util.Arrays.copyOf(blockOf, n);
+        } else {
+            blockOfFinal = java.util.Arrays.copyOf(blockOf, m);
         }
+
+        List<Integer> starts = new ArrayList<>();
+        for (int r = 0; r < data.length; r++) {
+            if (r == 0 || blockOfFinal[r] != blockOfFinal[r - 1]) starts.add(r);
+        }
+        this.configurationStarts.add(starts.stream().mapToInt(Integer::intValue).toArray());
 
         DataSet dataSet = new BoxDataSet(new DoubleDataBox(data), nodes);
         dataSet = postProcess(parameters, dataSet);
+
+        if (sortByConfig && emitConfig) {
+            // Bookkeeping column identifying the configuration block of each row, the analogue
+            // of TOWN in the corrected Boston Housing data: it exists so the block structure
+            // can be named in grouped analyses (e.g., as the data audit's serial grouping
+            // variable, which centers per block), and should be excluded from search. Block
+            // ids are remapped to consecutive category indices, since selection can drop
+            // whole blocks. postProcess never reorders rows, so blockOfFinal aligns.
+            Map<Integer, Integer> remap = new LinkedHashMap<>();
+            for (int r = 0; r < data.length; r++) {
+                remap.putIfAbsent(blockOfFinal[r], remap.size());
+            }
+            List<String> cats = new ArrayList<>();
+            for (int i = 0; i < remap.size(); i++) cats.add("c" + i);
+            DiscreteVariable configVar = new DiscreteVariable("CONFIG", cats);
+            dataSet.addVariable(configVar);
+            int cfgCol = dataSet.getNumColumns() - 1;
+            for (int r = 0; r < data.length; r++) {
+                dataSet.setInt(r, cfgCol, remap.get(blockOfFinal[r]));
+            }
+        }
 
         this.graphs.add(graph);
         this.dataSets.add(dataSet);
@@ -544,6 +641,19 @@ public class DesignedExperimentSimulation implements Simulation {
     }
 
     /**
+     * Returns the starting row of each configuration block in the emitted data for the given
+     * simulation index: ascending, beginning with 0; a single block covering all rows when
+     * deSortByConfiguration is off. Useful for grouped analyses and blocks-by-configuration
+     * resampling.
+     *
+     * @param index the simulation index.
+     * @return the block start rows.
+     */
+    public int[] getConfigurationStarts(int index) {
+        return this.configurationStarts.get(index).clone();
+    }
+
+    /**
      * Returns the number of data models.
      *
      * @return The number of data sets to simulate.
@@ -613,6 +723,8 @@ public class DesignedExperimentSimulation implements Simulation {
         parameters.add(Params.DE_INTERACTION);
         parameters.add(Params.DE_RESPONSE_NOISE);
         parameters.add(Params.DE_SELECTION);
+        parameters.add(Params.DE_SORT_BY_CONFIGURATION);
+        parameters.add(Params.DE_EMIT_CONFIG_COLUMN);
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.PROB_REMOVE_COLUMN);

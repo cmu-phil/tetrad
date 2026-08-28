@@ -97,6 +97,31 @@ public final class DataAudit {
                     + "are direction-relative, so both regression directions are informative.";
 
     /**
+     * The note attached by {@link #notes()} when at least one {@link FindingCode#SERIAL_DEPENDENCE} finding fired
+     * and the check was computed pooled, without a serial grouping variable.
+     * <p>
+     * File-order dependence has two distinct causes with the same signature. The rows may carry genuine serial
+     * structure - a time series or spatial sequence - in which case the dependence is a property of the process.
+     * Or the file may be sorted by block: rows grouped by subject, configuration, or condition, with within-block
+     * homogeneity masquerading as autocorrelation. Variables constant within blocks read as near-1 lag-1
+     * autocorrelation in file order, and smooth within-block sweeps read as strong positive dependence, without any
+     * temporal process at all. The pooled check does not separate these; recomputing the check within groups (via
+     * the serial grouping variable) does - under the block reading the within-group autocorrelations collapse and
+     * block-constant variables are skipped, while under the serial reading the dependence survives grouping. The
+     * two readings point at different downstream treatments, so the distinction matters before acting on the
+     * finding.
+     */
+    public static final String SERIAL_DEPENDENCE_NOTE =
+            "Serial dependence in file order was flagged with no serial grouping variable configured. This "
+                    + "signature has two distinct causes: genuine serial structure (a time series or spatial "
+                    + "sequence), or a file sorted by block (rows grouped by subject, configuration, or condition), "
+                    + "where within-block homogeneity masquerades as autocorrelation. If a discrete variable "
+                    + "identifies the blocks, recomputing the audit with it as the serial grouping variable "
+                    + "separates the two: under the block reading the within-group autocorrelations collapse and "
+                    + "block-constant variables are skipped, while under the serial reading the dependence "
+                    + "survives grouping.";
+
+    /**
      * The dataset being audited.
      */
     private final DataSet dataSet;
@@ -381,6 +406,9 @@ public final class DataAudit {
     public List<String> notes() {
         List<String> notes = new ArrayList<>();
         if (hasFinding(FindingCode.NON_GAUSSIAN)) notes.add(NON_GAUSSIAN_NOTE);
+        if (hasFinding(FindingCode.SERIAL_DEPENDENCE) && this.config.serialGroupVariable == null) {
+            notes.add(SERIAL_DEPENDENCE_NOTE);
+        }
         return notes;
     }
 

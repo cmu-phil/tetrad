@@ -405,7 +405,19 @@ class DataAuditAction extends AbstractAction {
             sizeFindingsColumns(findingsTable);
             variablesTable.setAuditModel(new DataAuditVariablesModel(dataSet, pooledAudit,
                     grouped ? current : null, missingAudit));
-            summary.setText(summaryLine(dataSet, current, missingAudit));
+
+            // For block-sorted data the total finding count is invariant under grouping (each
+            // block-constant variable's SERIAL_DEPENDENCE finding converts to a
+            // GROUP_CONSTANT_VARIABLE finding), and the "Lag-1 r (grouped)" column is the last
+            // of eleven, typically outside the visible viewport. Without the cues below, the
+            // canonical use case looks like a no-op.
+            summary.setText(summaryLine(dataSet, current, missingAudit)
+                    + (grouped ? "  Serial dependence computed within groups of " + selected + "." : ""));
+
+            if (grouped) {
+                int lastCol = variablesTable.getColumnCount() - 1;
+                variablesTable.scrollRectToVisible(variablesTable.getCellRect(0, lastCol, true));
+            }
         });
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));

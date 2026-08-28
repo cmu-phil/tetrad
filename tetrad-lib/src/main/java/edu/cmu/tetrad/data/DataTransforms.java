@@ -354,6 +354,207 @@ public class DataTransforms {
     }
 
     /**
+     * Appends a discrete block-ID column to the data set, in place, by run-length encoding over the given key
+     * columns: a new block starts at each row where any key column's value changes from the previous row. This
+     * recovers repeated-measures block structure from files sorted by configuration (as in the Airfoil self-noise
+     * data, where the geometry columns are constant within each swept configuration), giving the analogue of the
+     * TOWN column in the corrected Boston Housing data. The appended column is bookkeeping, not a variable of the
+     * system: it should be excluded from causal searches, and its intended use is to name the block structure in
+     * grouped analyses - in particular as the data audit's serial grouping variable, which recomputes the serial
+     * dependence check with per-block centering, separating block structure from genuine time-series structure.
+     * <p>
+     * Encoding is by run in file order, not by unique key tuple: if the same configuration recurs later in the
+     * file, it starts a new block, which is the correct semantics for file-order diagnostics. Category labels are
+     * "c0", "c1", ... in order of appearance; string labels also keep the column discrete under the tabular reader
+     * regardless of the maximum-categories setting, if the data set is saved and reloaded. Missing continuous
+     * values (NaN) compare equal to each other for the purpose of detecting changes.
+     *
+     * @param dataSet    the data set to modify in place.
+     * @param keyColumns the names of the columns whose joint value defines a configuration.
+     * @param columnName the name for the appended column (must not already exist).
+     * @return the number of blocks.
+     * @throws IllegalArgumentException if no key columns are given, a key column is missing, the column name is
+     *                                  blank or already exists, or the data set has no rows.
+     */
+    /**
+     * Appends within-block centered ("fixed effects" / within-transformed) copies of the data set's continuous
+     * columns, in place: for each continuous column that varies within blocks, a new column named
+     * name + suffix is appended holding the values minus their within-block observed means. Centering on the block
+     * removes ALL block-level variation, including unobserved block-level confounding - it conditions on the block
+     * without introducing a many-level discrete variable - so searches run on the centered columns estimate
+     * within-block structure only; between-block relationships are removed by construction. This is the standard
+     * treatment for multilevel data where the blocks are nuisance (subjects, towns, batches). It is NOT a remedy
+     * for designed sweep data such as Airfoil, where the scientifically meaningful variables are block-constant:
+     * centering maps those columns to zero, which is why block-constant columns (within-block variance negligible
+     * relative to total variance) are skipped rather than appended.
+     * <p>
+     * Discrete columns and the block column itself are skipped. Missing values (NaN) are left missing and are
+     * excluded from the block means. Rows in blocks with fewer than 2 observed values for a column get NaN in the
+     * centered column, since a within-block deviation from a single observation is identically zero by
+     * construction and carries no information.
+     *
+     * @param dataSet     the data set to modify in place.
+     * @param blockColumn the name of the discrete column identifying blocks.
+     * @param suffix      the suffix for appended column names (must be nonempty).
+     * @return the names of the appended columns, in order.
+     * @throws IllegalArgumentException if the block column is missing or not discrete, the suffix is blank, an
+     *                                  appended name would collide with an existing column, or no continuous column
+     *                                  varies within blocks.
+     */
+    public static List<String> appendWithinBlockCenteredColumns(DataSet dataSet, String blockColumn,
+                                                                String suffix) {
+        if (suffix == null || suffix.isBlank()) {
+            throw new IllegalArgumentException("A nonempty suffix is required.");
+        }
+
+        int blockCol = dataSet.getVariableNames().indexOf(blockColumn);
+        if (blockCol < 0) {
+            throw new IllegalArgumentException("No column named '" + blockColumn + "'.");
+        }
+        if (!(dataSet.getVariable(blockCol) instanceof DiscreteVariable blockVar)) {
+            throw new IllegalArgumentException("Block column '" + blockColumn + "' must be discrete.");
+        }
+
+        int n = dataSet.getNumRows();
+        int numGroups = blockVar.getNumCategories();
+
+        List<Integer> sourceCols = new ArrayList<>();
+        List<String> newNames = new ArrayList<>();
+
+        int numColumns = dataSet.getNumColumns();
+        for (int j = 0; j < numColumns; j++) {
+            if (j == blockCol || !(dataSet.getVariable(j) instanceof ContinuousVariable)) continue;
+
+            // Within-block vs. total variance, over observed values.
+            double[] sum = new double[numGroups];
+            double[] sumSq = new double[numGroups];
+            int[] count = new int[numGroups];
+            double totalSum = 0, totalSumSq = 0;
+            int totalCount = 0;
+
+            for (int r = 0; r < n; r++) {
+                double v = dataSet.getDouble(r, j);
+                if (Double.isNaN(v)) continue;
+                int g = dataSet.getInt(r, blockCol);
+                sum[g] += v;
+                sumSq[g] += v * v;
+                count[g]++;
+                totalSum += v;
+                totalSumSq += v * v;
+                totalCount++;
+            }
+
+            if (totalCount < 2) continue;
+
+            double withinSS = 0;
+            for (int g = 0; g < numGroups; g++) {
+                if (count[g] > 0) withinSS += sumSq[g] - sum[g] * sum[g] / count[g];
+            }
+            double totalSS = totalSumSq - totalSum * totalSum / totalCount;
+
+            if (totalSS <= 0 || withinSS <= 1e-12 * totalSS) continue; // block-constant: skip
+
+            String newName = dataSet.getVariable(j).getName() + suffix;
+            if (dataSet.getVariableNames().contains(newName) || newNames.contains(newName)) {
+                throw new IllegalArgumentException("A column named '" + newName + "' already exists.");
+            }
+
+            sourceCols.add(j);
+            newNames.add(newName);
+        }
+
+        if (sourceCols.isEmpty()) {
+            throw new IllegalArgumentException("No continuous column varies within blocks of '"
+                    + blockColumn + "'.");
+        }
+
+        for (int k = 0; k < sourceCols.size(); k++) {
+            int j = sourceCols.get(k);
+
+            double[] sum = new double[numGroups];
+            int[] count = new int[numGroups];
+            for (int r = 0; r < n; r++) {
+                double v = dataSet.getDouble(r, j);
+                if (Double.isNaN(v)) continue;
+                int g = dataSet.getInt(r, blockCol);
+                sum[g] += v;
+                count[g]++;
+            }
+
+            dataSet.addVariable(new ContinuousVariable(newNames.get(k)));
+            int col = dataSet.getNumColumns() - 1;
+
+            for (int r = 0; r < n; r++) {
+                double v = dataSet.getDouble(r, j);
+                int g = dataSet.getInt(r, blockCol);
+                double out = (Double.isNaN(v) || count[g] < 2) ? Double.NaN : v - sum[g] / count[g];
+                dataSet.setDouble(r, col, out);
+            }
+        }
+
+        return newNames;
+    }
+
+    public static int appendBlockIdColumn(DataSet dataSet, List<String> keyColumns, String columnName) {
+        if (keyColumns == null || keyColumns.isEmpty()) {
+            throw new IllegalArgumentException("At least one key column is required.");
+        }
+        if (columnName == null || columnName.isBlank()) {
+            throw new IllegalArgumentException("A nonempty column name is required.");
+        }
+        if (dataSet.getVariableNames().contains(columnName)) {
+            throw new IllegalArgumentException("A column named '" + columnName + "' already exists.");
+        }
+        int n = dataSet.getNumRows();
+        if (n == 0) {
+            throw new IllegalArgumentException("The data set has no rows.");
+        }
+
+        int[] cols = new int[keyColumns.size()];
+        boolean[] disc = new boolean[keyColumns.size()];
+        for (int k = 0; k < cols.length; k++) {
+            int idx = dataSet.getVariableNames().indexOf(keyColumns.get(k));
+            if (idx < 0) {
+                throw new IllegalArgumentException("No column named '" + keyColumns.get(k) + "'.");
+            }
+            cols[k] = idx;
+            disc[k] = dataSet.getVariable(idx) instanceof DiscreteVariable;
+        }
+
+        int[] block = new int[n];
+        int b = 0;
+        for (int r = 1; r < n; r++) {
+            boolean change = false;
+            for (int k = 0; k < cols.length; k++) {
+                if (disc[k]) {
+                    if (dataSet.getInt(r, cols[k]) != dataSet.getInt(r - 1, cols[k])) {
+                        change = true;
+                        break;
+                    }
+                } else {
+                    double a = dataSet.getDouble(r, cols[k]);
+                    double c = dataSet.getDouble(r - 1, cols[k]);
+                    if (!((Double.isNaN(a) && Double.isNaN(c)) || a == c)) {
+                        change = true;
+                        break;
+                    }
+                }
+            }
+            if (change) b++;
+            block[r] = b;
+        }
+
+        int numBlocks = b + 1;
+        List<String> categories = new ArrayList<>();
+        for (int i = 0; i < numBlocks; i++) categories.add("c" + i);
+        DiscreteVariable var = new DiscreteVariable(columnName, categories);
+        dataSet.addVariable(var);
+        int col = dataSet.getNumColumns() - 1;
+        for (int r = 0; r < n; r++) dataSet.setInt(r, col, block[r]);
+        return numBlocks;
+    }
+
+    /**
      * <p>restrictToMeasured.</p>
      *
      * @param fullDataSet a {@link edu.cmu.tetrad.data.DataSet} object
