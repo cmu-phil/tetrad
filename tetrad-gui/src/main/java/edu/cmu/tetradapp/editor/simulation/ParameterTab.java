@@ -22,6 +22,8 @@ package edu.cmu.tetradapp.editor.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.simulation.*;
+import edu.cmu.tetrad.algcomparison.utils.ParameterSettingsText;
+import edu.cmu.tetradapp.editor.AlgorithmParameterPanel;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetradapp.model.BooleanGlassSimulation;
 import edu.cmu.tetradapp.model.Simulation;
@@ -32,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.io.Serial;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -380,11 +383,139 @@ public class ParameterTab extends JPanel {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.addActionListener(e -> simulate());
 
+        JButton settingsButton = new JButton("Settings as Text...");
+        settingsButton.setToolTipText("Show the settings on this panel as plain text that can "
+                + "be selected and copied.");
+        settingsButton.setMinimumSize(buttonSize);
+        settingsButton.setMaximumSize(buttonSize);
+        settingsButton.setPreferredSize(buttonSize);
+        settingsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        settingsButton.addActionListener(e -> showSettingsTextDialog());
+
+        JButton pasteButton = new JButton("Paste Settings...");
+        pasteButton.setToolTipText("Paste settings text (as produced by \"Settings as Text...\") "
+                + "to restore the simulation and graph selections and parameter values.");
+        pasteButton.setMinimumSize(buttonSize);
+        pasteButton.setMaximumSize(buttonSize);
+        pasteButton.setPreferredSize(buttonSize);
+        pasteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        pasteButton.addActionListener(e -> showPasteSettingsDialog());
+
         Box box = Box.createVerticalBox();
         box.add(Box.createVerticalStrut(20));
         box.add(button);
+        box.add(Box.createVerticalStrut(5));
+        box.add(settingsButton);
+        box.add(Box.createVerticalStrut(5));
+        box.add(pasteButton);
 
         return box;
+    }
+
+    /**
+     * Pops up a dialog into which settings text (as produced by "Settings as Text...") can be
+     * pasted. If the first title line matches a simulation type (and, in parentheses, a graph
+     * type) in the dropdowns, those selections are restored first; the parameter values are
+     * then applied and the panel refreshed. Unknown or unparseable lines are reported.
+     */
+    private void showPasteSettingsDialog() {
+        JTextArea area = new JTextArea(20, 60);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        JScrollPane scroll = new JScrollPane(area);
+
+        Object[] options = {"Apply", "Cancel"};
+        int choice = JOptionPane.showOptionDialog(getPanel(), scroll, "Paste Settings",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                options[0]);
+
+        if (choice != 0) {
+            return;
+        }
+
+        String text = area.getText();
+
+        // First pass: read the titles only, to restore the dropdown selections before applying
+        // values (selection changes rebuild the simulation but retain the Parameters object).
+        ParameterSettingsText.ApplyResult peek =
+                ParameterSettingsText.applySettingsText(text, new edu.cmu.tetrad.util.Parameters());
+
+        if (!peek.titles.isEmpty()) {
+            String title = peek.titles.get(0);
+            String simName = title;
+            String graphName = null;
+
+            int at = title.lastIndexOf(" (graph: ");
+            if (at >= 0 && title.endsWith(")")) {
+                simName = title.substring(0, at);
+                graphName = title.substring(at + " (graph: ".length(), title.length() - 1);
+            }
+
+            if (this.simulationsDropdown.isEnabled()) {
+                selectIfPresent(this.simulationsDropdown, simName);
+            }
+            if (graphName != null && this.graphsDropdown.isEnabled()) {
+                selectIfPresent(this.graphsDropdown, graphName);
+            }
+        }
+
+        ParameterSettingsText.ApplyResult result =
+                ParameterSettingsText.applySettingsText(text, this.simulation.getParams());
+
+        showParameters();
+        firePropertyChange("refreshParameters", null, null);
+
+        AlgorithmParameterPanel.showApplyResultMessage(getPanel(), result);
+    }
+
+    /**
+     * Selects the given item in the dropdown if it is present (exact string match).
+     *
+     * @param dropdown the dropdown.
+     * @param item     the item to select.
+     */
+    private void selectIfPresent(JComboBox<String> dropdown, String item) {
+        for (int i = 0; i < dropdown.getItemCount(); i++) {
+            if (dropdown.getItemAt(i).equals(item)) {
+                if (!item.equals(dropdown.getSelectedItem())) {
+                    dropdown.setSelectedItem(item);
+                }
+                return;
+            }
+        }
+    }
+
+    /**
+     * Pops up a dialog containing the effective simulation settings as selectable text, with a
+     * copy-to-clipboard option, mirroring the search editor's "Settings as Text..." button.
+     */
+    private void showSettingsTextDialog() {
+        if (this.simulation.getSimulation() == null) {
+            return;
+        }
+
+        String simulationItem = String.valueOf(this.simulationsDropdown.getSelectedItem());
+        String title = this.graphsDropdown.isEnabled()
+                ? simulationItem + " (graph: " + this.graphsDropdown.getSelectedItem() + ")"
+                : simulationItem;
+
+        Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
+        String text = ParameterSettingsText.render(title, params, this.simulation.getParams());
+
+        JTextArea area = new JTextArea(text, 25, 60);
+        area.setEditable(false);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+
+        Object[] options = {"Copy to Clipboard", "Close"};
+        int choice = JOptionPane.showOptionDialog(getPanel(), scroll, "Parameter Settings",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                options[1]);
+
+        if (choice == 0) {
+            Toolkit.getDefaultToolkit().getSystemClipboard()
+                    .setContents(new StringSelection(text), null);
+        }
     }
 
     private JPanel createParameterPanel() {

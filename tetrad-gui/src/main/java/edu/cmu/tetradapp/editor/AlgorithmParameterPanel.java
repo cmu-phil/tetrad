@@ -229,9 +229,77 @@ public class AlgorithmParameterPanel extends JPanel {
         button.setToolTipText("Show the settings on this panel as plain text that can be "
                 + "selected and copied.");
         button.addActionListener(e -> showSettingsTextDialog(algorithmRunner));
+
+        JButton pasteButton = new JButton("Paste Settings...");
+        pasteButton.setToolTipText("Paste settings text (as produced by \"Settings as Text...\") "
+                + "to apply those parameter values to this panel.");
+        pasteButton.addActionListener(e -> showPasteSettingsDialog(algorithmRunner));
+
         JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         row.add(button);
+        row.add(Box.createHorizontalStrut(5));
+        row.add(pasteButton);
         return row;
+    }
+
+    /**
+     * Pops up a dialog into which settings text (as produced by "Settings as Text...") can be
+     * pasted; applies the parameter values to the runner's parameters and rebuilds the panel.
+     * Values apply to the currently selected algorithm, test, and score; section titles in the
+     * pasted text are ignored here, and unknown or unparseable lines are reported.
+     */
+    private void showPasteSettingsDialog(GeneralAlgorithmRunner algorithmRunner) {
+        JTextArea area = new JTextArea(20, 60);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        JScrollPane scroll = new JScrollPane(area);
+
+        Object[] options = {"Apply", "Cancel"};
+        int choice = JOptionPane.showOptionDialog(this, scroll, "Paste Settings",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                options[0]);
+
+        if (choice != 0) {
+            return;
+        }
+
+        ParameterSettingsText.ApplyResult result =
+                ParameterSettingsText.applySettingsText(area.getText(),
+                        algorithmRunner.getParameters());
+
+        addToPanel(algorithmRunner);
+        revalidate();
+        repaint();
+
+        showApplyResultMessage(this, result);
+    }
+
+    /**
+     * Shows a summary of an apply-settings result: how many values were applied, and which
+     * lines were skipped.
+     *
+     * @param parent the parent component for the message dialog.
+     * @param result the apply result.
+     */
+    public static void showApplyResultMessage(java.awt.Component parent,
+                                       ParameterSettingsText.ApplyResult result) {
+        StringBuilder msg = new StringBuilder();
+        msg.append("Applied ").append(result.applied.size()).append(" parameter value(s).");
+
+        if (!result.skipped.isEmpty()) {
+            msg.append("\n\nSkipped:");
+            int shown = 0;
+            for (String s : result.skipped) {
+                if (shown++ == 15) {
+                    msg.append("\n  ... and ").append(result.skipped.size() - 15).append(" more");
+                    break;
+                }
+                msg.append("\n  ").append(s);
+            }
+        }
+
+        JOptionPane.showMessageDialog(parent, msg.toString(), "Paste Settings",
+                result.skipped.isEmpty() ? JOptionPane.INFORMATION_MESSAGE
+                        : JOptionPane.WARNING_MESSAGE);
     }
 
     /**

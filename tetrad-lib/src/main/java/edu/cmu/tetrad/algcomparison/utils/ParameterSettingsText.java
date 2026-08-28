@@ -86,6 +86,127 @@ public final class ParameterSettingsText {
         return sb.toString();
     }
 
+    /**
+     * Renders a single titled section of parameter settings as plain text, in the same format
+     * as the algorithm rendering: the title on its own line, then one "  name = value" line per
+     * parameter, in the iteration order of the given collection. Used by the simulation editor's
+     * "Settings as Text..." button.
+     *
+     * @param title      the section title (e.g., the simulation and graph type).
+     * @param params     the parameter names, in display order.
+     * @param parameters the parameter values.
+     * @return the rendered text.
+     */
+    public static String render(String title, java.util.Collection<String> params,
+                                Parameters parameters) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(title).append('\n');
+        ParamDescriptions descriptions = ParamDescriptions.getInstance();
+        for (String param : params) {
+            ParamDescription description = descriptions.get(param);
+            Object defaultValue = (description == null) ? null : description.getDefaultValue();
+            Object value = parameters.get(param, defaultValue);
+            sb.append("  ").append(param).append(" = ").append(value).append('\n');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * The result of applying pasted settings text: the section titles encountered, the names of
+     * parameters whose values were applied, and the lines that were skipped (with reasons).
+     */
+    public static final class ApplyResult {
+        /**
+         * The section titles encountered, in order (lines without an equals sign).
+         */
+        public final java.util.List<String> titles = new java.util.ArrayList<>();
+
+        /**
+         * The names of parameters whose values were applied, in order.
+         */
+        public final java.util.List<String> applied = new java.util.ArrayList<>();
+
+        /**
+         * Skipped lines with reasons, e.g., "foo (unknown parameter)".
+         */
+        public final java.util.List<String> skipped = new java.util.ArrayList<>();
+
+        /**
+         * Constructs an empty result.
+         */
+        public ApplyResult() {
+        }
+    }
+
+    /**
+     * Parses settings text in the format produced by the render methods ("  name = value" lines
+     * under title lines) and applies the parameter values to the given Parameters object. Lines
+     * without an equals sign, or whose name part contains spaces, are treated as section titles
+     * and collected. Parameter values are parsed according to the type of the parameter's
+     * default value in the manual (Boolean, Integer, Long, Double, or String); parameters not
+     * documented in the manual, and values that fail to parse, are skipped and reported. This
+     * is deliberately conservative: nothing is applied for a line unless the parameter is known
+     * and the value parses cleanly.
+     *
+     * @param text       the pasted settings text.
+     * @param parameters the Parameters object to apply values to.
+     * @return the result, listing titles, applied parameters, and skipped lines.
+     */
+    public static ApplyResult applySettingsText(String text, Parameters parameters) {
+        ApplyResult result = new ApplyResult();
+        if (text == null) return result;
+
+        ParamDescriptions descriptions = ParamDescriptions.getInstance();
+        // Known = documented in the manual. (ParamDescriptions.get() silently fabricates a
+        // placeholder for unknown names, so containment must be checked against getNames().)
+        Set<String> known = descriptions.getNames();
+
+        for (String rawLine : text.split("\\R")) {
+            String line = rawLine.trim();
+            if (line.isEmpty()) continue;
+
+            int eq = line.indexOf('=');
+            String name = eq > 0 ? line.substring(0, eq).trim() : "";
+
+            if (eq <= 0 || name.isEmpty() || name.contains(" ")) {
+                result.titles.add(line);
+                continue;
+            }
+
+            String valueText = line.substring(eq + 1).trim();
+
+            if (!known.contains(name)) {
+                result.skipped.add(name + " (unknown parameter)");
+                continue;
+            }
+
+            ParamDescription description = descriptions.get(name);
+            Object defaultValue = (description == null) ? null : description.getDefaultValue();
+
+            try {
+                if (defaultValue instanceof Boolean) {
+                    if (!valueText.equalsIgnoreCase("true") && !valueText.equalsIgnoreCase("false")) {
+                        throw new NumberFormatException(valueText);
+                    }
+                    parameters.set(name, Boolean.parseBoolean(valueText));
+                } else if (defaultValue instanceof Integer) {
+                    parameters.set(name, Integer.parseInt(valueText));
+                } else if (defaultValue instanceof Long) {
+                    parameters.set(name, Long.parseLong(valueText));
+                } else if (defaultValue instanceof Double) {
+                    parameters.set(name, Double.parseDouble(valueText));
+                } else {
+                    parameters.set(name, valueText);
+                }
+                result.applied.add(name);
+            } catch (NumberFormatException e) {
+                result.skipped.add(name + " (could not parse value \"" + valueText + "\")");
+            }
+        }
+
+        return result;
+    }
+
     private static void appendSection(StringBuilder sb, String title, Set<String> params,
                                       Parameters parameters) {
         if (params.isEmpty()) return;
