@@ -108,6 +108,7 @@ public final class Bfci extends StarFciGuaranteePag {
         subAlg.setNumThreads(numThreads);
         subAlg.setVerbose(verbose);
         PermutationSearch alg = new PermutationSearch(subAlg);
+        alg.setReplicatingGraph(isReplicatingGraph());
         alg.setKnowledge(getKnowledge());
         Graph cpdag = alg.search(false);
 

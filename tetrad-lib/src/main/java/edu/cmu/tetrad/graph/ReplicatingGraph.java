@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.graph;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -129,13 +130,20 @@ public class ReplicatingGraph extends EdgeListGraph {
         // Add requested edge first
         boolean changed = super.addEdge(e);
 
-        // Then mirror across policy
+        // Then mirror across policy. Mirroring is at the level of PRESENCE: a mirror is added
+        // only if its node pair is not already adjacent. (Endpoint marks are not mirrored, so
+        // homologs may legitimately carry different marks; adding a mark-templated copy on top
+        // of an existing differently-marked edge would create a double edge.)
         try {
             IN_REPLICATION.set(Boolean.TRUE);
             for (Edge m : policy.mirrorsFor(this, e)) {
-                if (!m.equals(e)) {
-                    super.addEdge(m);
+                if (m.equals(e)) {
+                    continue;
                 }
+                if (!super.getEdges(m.getNode1(), m.getNode2()).isEmpty()) {
+                    continue;
+                }
+                super.addEdge(m);
             }
         } finally {
             IN_REPLICATION.set(Boolean.FALSE);
@@ -158,12 +166,19 @@ public class ReplicatingGraph extends EdgeListGraph {
         // Remove requested edge first
         boolean changed = super.removeEdge(e);
 
-        // Then remove mirrored counterparts
+        // Then remove mirrored counterparts. Removal is at the level of the node PAIR, not
+        // edge equality: endpoint marks are not mirrored, so a homolog's marks may have
+        // drifted from the template's, and an equality-based removal would silently miss it --
+        // leaving stranded edges at slices the search never removes directly (in particular
+        // the deepest lag tier, whose separators lie outside the window).
         try {
             IN_REPLICATION.set(Boolean.TRUE);
             for (Edge m : policy.mirrorsFor(this, e)) {
-                if (!m.equals(e)) {
-                    super.removeEdge(m);
+                if (m.equals(e)) {
+                    continue;
+                }
+                for (Edge actual : new ArrayList<>(super.getEdges(m.getNode1(), m.getNode2()))) {
+                    super.removeEdge(actual);
                 }
             }
         } finally {

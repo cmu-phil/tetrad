@@ -77,6 +77,10 @@ public abstract class StarFci implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
+     * Whether the working PAG replicates across time lags (SVAR).
+     */
+    private boolean replicatingGraph = false;
+    /**
      * The maximum path length for the discriminating path rule.
      */
     private int maxDiscriminatingPathLength = -1;
@@ -285,7 +289,9 @@ public abstract class StarFci implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         Graph cpdag = getMarkovCpdag(verbose);
-        Graph pag = new EdgeListGraph(cpdag);
+        Graph pag = this.replicatingGraph
+                ? new ReplicatingGraph(cpdag, new LagReplicationPolicy())
+                : new EdgeListGraph(cpdag);
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
 
@@ -387,8 +393,8 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         if (guaranteePag) {
-            pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(),
-                    excludeSelectionBias, Integer.MAX_VALUE);
+            pag = rewrap(GraphUtils.guaranteePag(pag, fciOrient, knowledge, unshieldedColliders, verbose, new HashSet<>(),
+                    excludeSelectionBias, Integer.MAX_VALUE));
 
 //            pag = new DagToPag(pag).convert();
         }
@@ -502,16 +508,40 @@ public abstract class StarFci implements IGraphSearch {
     public abstract Graph getMarkovCpdag(boolean verbose) throws InterruptedException;
 
     /**
-     * Sets the flag indicating whether the graph is being replicated. (Unused.)
+     * Sets whether the working PAG should be a replicating (time-lag repeating) graph: if set,
+     * the PAG is constructed as a ReplicatingGraph with a LagReplicationPolicy, so that every
+     * edge addition, removal, and endpoint orientation is mirrored across homologous lagged
+     * variable pairs during the search, as in the other SVAR-capable algorithms. Subclasses
+     * should consult isReplicatingGraph() to propagate the setting to the search that produces
+     * the initial Markov CPDAG.
      *
-     * @param replicatingGraph A boolean value where {@code true} indicates that
-     *                         the graph is being replicated, and {@code false}
-     *                         otherwise.
-     * @throws UnsupportedOperationException Graph replication is not supported by this algorithm.
+     * @param replicatingGraph A boolean value where {@code true} indicates that the graph
+     *                         should replicate across time lags, and {@code false} otherwise.
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
-//        this.replicatingGraph = replicatingGraph;
-        // Unused.
+        this.replicatingGraph = replicatingGraph;
+    }
+
+    /**
+     * Returns whether the working PAG replicates across time lags.
+     *
+     * @return true if replicating.
+     */
+    public boolean isReplicatingGraph() {
+        return this.replicatingGraph;
+    }
+
+    /**
+     * Re-wraps a graph in the replication policy if it is in force (operations that build fresh
+     * graphs would otherwise silently drop the wrapper).
+     *
+     * @param g the graph.
+     * @return the graph, wrapped if replication is in force.
+     */
+    private Graph rewrap(Graph g) {
+        return this.replicatingGraph && !(g instanceof ReplicatingGraph)
+                ? new ReplicatingGraph(g, new LagReplicationPolicy())
+                : g;
     }
 
     /**

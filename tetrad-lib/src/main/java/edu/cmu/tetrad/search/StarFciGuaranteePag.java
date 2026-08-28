@@ -116,6 +116,10 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
+     * Whether the working PAG replicates across time lags (SVAR).
+     */
+    private boolean replicatingGraph = false;
+    /**
      * The maximum path length for the discriminating path rule.
      */
     private int maxDiscriminatingPathLength = -1;
@@ -393,7 +397,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         Graph cpdag = getMarkovDag(verbose);
-        Graph pag = GraphTransforms.dagToPag(cpdag, false);
+        Graph pag = rewrap(GraphTransforms.dagToPag(cpdag, false));
 
         if (lvHeuristicOnly) {
             return pag;
@@ -536,7 +540,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         // fixpoint by trying the surviving test-confirmed removals JOINTLY. See the
         // saturatingRemoval javadoc for the witness case and the escalation ladder.
         if (doLegalityGating) {
-            pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets);
+            pag = rewrap(saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets));
         }
 
         // Ungated greedy path: run the single final orientation. If the result already passes the
@@ -550,8 +554,8 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
 
             if (!legalPagModuloKnowledge(pag, new LinkedHashSet<>(selection), fciOrient).isLegalPag()) {
-                pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
-                        excludeSelectionBias, Integer.MAX_VALUE);
+                pag = rewrap(GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
+                        excludeSelectionBias, Integer.MAX_VALUE));
             }
         }
 
@@ -567,14 +571,14 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             Graph refined = refineWithKnowledge(pag, refineOrient);
 
             if (legalPagModuloKnowledge(refined, new LinkedHashSet<>(selection), refineOrient).isLegalPag()) {
-                pag = refined;
+                pag = rewrap(refined);
             } else if (verbose) {
                 TetradLogger.getInstance().log("Final knowledge refinement failed the modulo-knowledge "
                         + "certificate (likely a knowledge/data conflict); returning the unrefined graph.");
             }
         }
 
-        pag = GraphUtils.replaceNodes(pag, nodes);
+        pag = rewrap(GraphUtils.replaceNodes(pag, nodes));
 
         if (verbose) {
             TetradLogger.getInstance().log("*-FCI finished.");
@@ -1042,6 +1046,42 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      * @return a Graph object representing the Markov Directed Acyclic Graph (DAG).
      * @throws InterruptedException if the process is interrupted during execution.
      */
+    /**
+     * Sets whether the working PAG should be a replicating (time-lag repeating) graph: if set,
+     * the PAG is maintained as a ReplicatingGraph with a LagReplicationPolicy, so that edge
+     * additions, removals, and endpoint orientations are mirrored across homologous lagged
+     * variable pairs during the search, as in the other SVAR-capable algorithms. Subclasses
+     * should consult isReplicatingGraph() to propagate the setting to the search that produces
+     * the initial Markov DAG.
+     *
+     * @param replicatingGraph true if the graph should replicate across time lags.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
+    }
+
+    /**
+     * Returns whether the working PAG replicates across time lags.
+     *
+     * @return true if replicating.
+     */
+    public boolean isReplicatingGraph() {
+        return this.replicatingGraph;
+    }
+
+    /**
+     * Re-wraps a graph in the replication policy if it is in force (operations that build fresh
+     * graphs would otherwise silently drop the wrapper).
+     *
+     * @param g the graph.
+     * @return the graph, wrapped if replication is in force.
+     */
+    private Graph rewrap(Graph g) {
+        return this.replicatingGraph && !(g instanceof ReplicatingGraph)
+                ? new ReplicatingGraph(g, new LagReplicationPolicy())
+                : g;
+    }
+
     public abstract Graph getMarkovDag(boolean verbose) throws InterruptedException;
 
     /**
