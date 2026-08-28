@@ -170,9 +170,38 @@ public class ParameterTab extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        add(createSimulationOptionBox(), BorderLayout.NORTH);
+
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(createSettingsTextRow(), BorderLayout.NORTH);
+        north.add(createSimulationOptionBox(), BorderLayout.CENTER);
+
+        add(north, BorderLayout.NORTH);
         add(createParameterPanel(), BorderLayout.CENTER);
         add(createSimulationButtonBox(), BorderLayout.SOUTH);
+    }
+
+    /**
+     * Creates the top-left row with the "Settings as Text..." and "Paste Settings..." buttons,
+     * mirroring the search editor's parameter panel.
+     *
+     * @return the row.
+     */
+    private JPanel createSettingsTextRow() {
+        JButton settingsButton = new JButton("Settings as Text...");
+        settingsButton.setToolTipText("Show the settings on this panel as plain text that can "
+                + "be selected and copied.");
+        settingsButton.addActionListener(e -> showSettingsTextDialog());
+
+        JButton pasteButton = new JButton("Paste Settings...");
+        pasteButton.setToolTipText("Paste settings text (as produced by \"Settings as Text...\") "
+                + "to restore the simulation and graph selections and parameter values.");
+        pasteButton.addActionListener(e -> showPasteSettingsDialog());
+
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        row.add(settingsButton);
+        row.add(Box.createHorizontalStrut(5));
+        row.add(pasteButton);
+        return row;
     }
 
     private void refreshParameters() {
@@ -376,31 +405,9 @@ public class ParameterTab extends JPanel {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.addActionListener(e -> simulate());
 
-        JButton settingsButton = new JButton("Settings as Text...");
-        settingsButton.setToolTipText("Show the settings on this panel as plain text that can "
-                + "be selected and copied.");
-        settingsButton.setMinimumSize(buttonSize);
-        settingsButton.setMaximumSize(buttonSize);
-        settingsButton.setPreferredSize(buttonSize);
-        settingsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        settingsButton.addActionListener(e -> showSettingsTextDialog());
-
-        JButton pasteButton = new JButton("Paste Settings...");
-        pasteButton.setToolTipText("Paste settings text (as produced by \"Settings as Text...\") "
-                + "to restore the simulation and graph selections and parameter values.");
-        pasteButton.setMinimumSize(buttonSize);
-        pasteButton.setMaximumSize(buttonSize);
-        pasteButton.setPreferredSize(buttonSize);
-        pasteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        pasteButton.addActionListener(e -> showPasteSettingsDialog());
-
         Box box = Box.createVerticalBox();
         box.add(Box.createVerticalStrut(20));
         box.add(button);
-        box.add(Box.createVerticalStrut(5));
-        box.add(settingsButton);
-        box.add(Box.createVerticalStrut(5));
-        box.add(pasteButton);
 
         return box;
     }
