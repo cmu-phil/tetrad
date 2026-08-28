@@ -1490,38 +1490,6 @@ public final class Params {
      */
     public static final String DISCRETE_INTERACTION_ORDER = "discreteInteractionOrder";
     /**
-     * Constant <code>BB_PROP_STRONG="bbPropStrong"</code>
-     */
-    public static final String BB_PROP_STRONG = "bbPropStrong";
-    /**
-     * Constant <code>BB_STRONG_COEF_LOW="bbStrongCoefLow"</code>
-     */
-    public static final String BB_STRONG_COEF_LOW = "bbStrongCoefLow";
-    /**
-     * Constant <code>BB_STRONG_COEF_HIGH="bbStrongCoefHigh"</code>
-     */
-    public static final String BB_STRONG_COEF_HIGH = "bbStrongCoefHigh";
-    /**
-     * Constant <code>BB_WEAK_COEF_LOW="bbWeakCoefLow"</code>
-     */
-    public static final String BB_WEAK_COEF_LOW = "bbWeakCoefLow";
-    /**
-     * Constant <code>BB_WEAK_COEF_HIGH="bbWeakCoefHigh"</code>
-     */
-    public static final String BB_WEAK_COEF_HIGH = "bbWeakCoefHigh";
-    /**
-     * Constant <code>BB_DISTORTION="bbDistortion"</code>
-     */
-    public static final String BB_DISTORTION = "bbDistortion";
-    /**
-     * Constant <code>BB_NON_GAUSSIAN="bbNonGaussian"</code>
-     */
-    public static final String BB_NON_GAUSSIAN = "bbNonGaussian";
-    /**
-     * Constant <code>BB_EDGE_NONLINEARITY="bbEdgeNonlinearity"</code>
-     */
-    public static final String BB_EDGE_NONLINEARITY = "bbEdgeNonlinearity";
-    /**
      * Constant <code>DE_NUM_FACTORS="deNumFactors"</code>
      */
     public static final String DE_NUM_FACTORS = "deNumFactors";
@@ -1646,9 +1614,6 @@ public final class Params {
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
-            Params.BB_PROP_STRONG, Params.BB_STRONG_COEF_LOW, Params.BB_STRONG_COEF_HIGH,
-            Params.BB_WEAK_COEF_LOW, Params.BB_WEAK_COEF_HIGH, Params.BB_DISTORTION,
-            Params.BB_EDGE_NONLINEARITY, Params.BB_NON_GAUSSIAN,
             Params.DE_NUM_FACTORS, Params.DE_NUM_DERIVED, Params.DE_NUM_RESPONSES,
             Params.DE_MIN_LEVELS, Params.DE_MAX_LEVELS, Params.DE_COUPLING,
             Params.DE_DERIVED_NOISE, Params.DE_INTERACTION, Params.DE_RESPONSE_NOISE,
