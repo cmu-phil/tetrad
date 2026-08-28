@@ -1570,9 +1570,9 @@ public final class Params {
      */
     public static final String OS_PROP_ORDINALIZED = "osPropOrdinalized";
     /**
-     * Constant <code>OS_SERIAL="osSerial"</code>
+     * Constant <code>OS_MAX_LAG="osMaxLag"</code>
      */
-    public static final String OS_SERIAL = "osSerial";
+    public static final String OS_MAX_LAG = "osMaxLag";
     /**
      * Constant <code>OS_AR_COEF="osArCoef"</code>
      */
@@ -1609,6 +1609,22 @@ public final class Params {
      * Constant <code>OS_EDGE_DENSITY="osEdgeDensity"</code>
      */
     public static final String OS_EDGE_DENSITY = "osEdgeDensity";
+    /**
+     * Constant <code>OS_MISSING_MECHANISM="osMissingMechanism"</code>
+     */
+    public static final String OS_MISSING_MECHANISM = "osMissingMechanism";
+    /**
+     * Constant <code>OS_PROP_MISSING="osPropMissing"</code>
+     */
+    public static final String OS_PROP_MISSING = "osPropMissing";
+    /**
+     * Constant <code>OS_PROP_CENSORED="osPropCensored"</code>
+     */
+    public static final String OS_PROP_CENSORED = "osPropCensored";
+    /**
+     * Constant <code>OS_CENSOR_QUANTILE="osCensorQuantile"</code>
+     */
+    public static final String OS_CENSOR_QUANTILE = "osCensorQuantile";
 
 
     // All parameters that are found in HTML manual documentation
@@ -1621,10 +1637,11 @@ public final class Params {
             Params.OS_NUM_CONTEXT, Params.OS_NUM_HIDDEN_CONTEXT, Params.OS_NUM_SYSTEM,
             Params.OS_NUM_INDICES, Params.OS_NUM_OUTCOMES, Params.OS_AVG_SYSTEM_DEGREE,
             Params.OS_PROP_CONTEXT_DISCRETE, Params.OS_NUM_CATEGORIES, Params.OS_DISCRETE_OUTCOME,
-            Params.OS_PROP_ORDINALIZED, Params.OS_SERIAL, Params.OS_AR_COEF,
+            Params.OS_PROP_ORDINALIZED, Params.OS_MAX_LAG, Params.OS_AR_COEF,
             Params.OS_INDEX_MEMORY_LOW, Params.OS_INDEX_MEMORY_HIGH, Params.OS_PROP_CROSS_LAG,
             Params.OS_NUM_SUBJECTS, Params.OS_INDEX_NOISE, Params.OS_NONLINEARITY,
-            Params.OS_INTERACTION, Params.OS_EDGE_DENSITY,
+            Params.OS_INTERACTION, Params.OS_EDGE_DENSITY, Params.OS_MISSING_MECHANISM,
+            Params.OS_PROP_MISSING, Params.OS_PROP_CENSORED, Params.OS_CENSOR_QUANTILE,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
             Params.CONFLICT_RULE, Params.CONNECTED, Params.COV_HIGH, Params.COV_LOW, Params.COV_SYMMETRIC,

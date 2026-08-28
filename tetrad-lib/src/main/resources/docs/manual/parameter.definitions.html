@@ -7981,16 +7981,20 @@ Source:
         <li>Value Type: <span id="osPropOrdinalized_value_type">Double</span></li>
     </ul>
 
-    === osSerial ===
-    <h3 class="parameter_description" id="osSerial">osSerial</h3>
+    === osMaxLag ===
+    <h3 class="parameter_description" id="osMaxLag">osMaxLag</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osSerial_short_desc">Yes if the data are a time series (per subject)</span></li>
-        <li>Long Description: <span id="osSerial_long_desc">
-        If yes, one time series per subject is generated, with AR(1) context, self- and cross-lags on system variables, and accumulator indices; the true graph is a TimeLagGraph with maximum lag 1, and the contemporaneous summary graph is available from getContemporaneousGraph. If no, rows are i.i.d. and the true graph is an ordinary DAG.</span></li>
-        <li>Default Value: <span id="osSerial_default_value">false</span></li>
-        <li>Lower Bound: <span id="osSerial_lower_bound"></span></li>
-        <li>Upper Bound: <span id="osSerial_upper_bound"></span></li>
-        <li>Value Type: <span id="osSerial_value_type">Boolean</span></li>
+        <li>Short Description: <span id="osMaxLag_short_desc">Maximum lag of the time series; 0 turns serial dependence off (min = 0)</span></li>
+        <li>Long Description: <span id="osMaxLag_long_desc">
+        If greater than 0, one time series per subject is generated, and the true graph is a
+        time lag graph with this maximum lag, following the time-series conventions. Self-lags,
+        AR(1) context, and index accumulators act at lag 1; each cross-lag edge acts at a lag
+        drawn uniformly from 1 to osMaxLag. If 0, rows are i.i.d. and the true graph is an
+        ordinary DAG.</span></li>
+        <li>Default Value: <span id="osMaxLag_default_value">0</span></li>
+        <li>Lower Bound: <span id="osMaxLag_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osMaxLag_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osMaxLag_value_type">Integer</span></li>
     </ul>
 
     === osArCoef ===
@@ -8105,5 +8109,53 @@ Source:
         <li>Lower Bound: <span id="osEdgeDensity_lower_bound">0.0</span></li>
         <li>Upper Bound: <span id="osEdgeDensity_upper_bound">1.0</span></li>
         <li>Value Type: <span id="osEdgeDensity_value_type">Double</span></li>
+    </ul>
+
+    === osMissingMechanism ===
+    <h3 class="parameter_description" id="osMissingMechanism">osMissingMechanism</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osMissingMechanism_short_desc">Missingness mechanism: none, mcar, mar, or mnar</span></li>
+        <li>Long Description: <span id="osMissingMechanism_long_desc">
+        If not none, cells of system, index, and outcome variables are marked missing at an exact per-column rate of osPropMissing (context variables are always fully observed). mcar is independent of everything. mar is driven by the first observed context variable, which is fully observed, so missingness is at random given context. mnar is driven by the underlying value of the cell itself. In each case the missing cells are those with the highest driver-plus-noise scores, so the mechanism is probabilistic but the rate is exact.</span></li>
+        <li>Default Value: <span id="osMissingMechanism_default_value">none</span></li>
+        <li>Lower Bound: <span id="osMissingMechanism_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osMissingMechanism_upper_bound"></span></li>
+        <li>Value Type: <span id="osMissingMechanism_value_type">String</span></li>
+    </ul>
+
+    === osPropMissing ===
+    <h3 class="parameter_description" id="osPropMissing">osPropMissing</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osPropMissing_short_desc">Fraction of cells marked missing per eligible column (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osPropMissing_long_desc">
+        The exact per-column missingness rate applied to system, index, and outcome variables when osMissingMechanism is not none.</span></li>
+        <li>Default Value: <span id="osPropMissing_default_value">0.1</span></li>
+        <li>Lower Bound: <span id="osPropMissing_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osPropMissing_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osPropMissing_value_type">Double</span></li>
+    </ul>
+
+    === osPropCensored ===
+    <h3 class="parameter_description" id="osPropCensored">osPropCensored</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osPropCensored_short_desc">Fraction of continuous system and outcome variables censored at a detection limit (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osPropCensored_long_desc">
+        That fraction of the continuous, non-ordinalized system and outcome variables is censored at a detection limit: values beyond the limit are recorded AT the limit, with the side (right or left) chosen at random and the limit placed at the osCensorQuantile quantile. Rows are kept; this is measurement, not selection, and the true graph is unchanged. (The row-removal analogue, truncation, is selection; see the Designed Experiment simulation's deSelection.)</span></li>
+        <li>Default Value: <span id="osPropCensored_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="osPropCensored_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osPropCensored_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osPropCensored_value_type">Double</span></li>
+    </ul>
+
+    === osCensorQuantile ===
+    <h3 class="parameter_description" id="osCensorQuantile">osCensorQuantile</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osCensorQuantile_short_desc">Quantile at which the censoring limit is placed (min = 0.5, max = 1.0)</span></li>
+        <li>Long Description: <span id="osCensorQuantile_long_desc">
+        For right-censoring the limit is at this quantile of the column; for left-censoring, at one minus this quantile. E.g., 0.9 censors the top (or bottom) 10 percent of values to the limit.</span></li>
+        <li>Default Value: <span id="osCensorQuantile_default_value">0.9</span></li>
+        <li>Lower Bound: <span id="osCensorQuantile_lower_bound">0.5</span></li>
+        <li>Upper Bound: <span id="osCensorQuantile_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osCensorQuantile_value_type">Double</span></li>
     </ul>
 </div>

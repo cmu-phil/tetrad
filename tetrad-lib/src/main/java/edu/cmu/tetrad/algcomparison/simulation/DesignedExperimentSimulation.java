@@ -48,8 +48,9 @@ import java.util.List;
  * inputs. Coupling appears as a directed edge in the true graph, since that is the true
  * data-generating dependence.</li>
  * <li><b>Derived intermediates</b> (D1, ...): near-deterministic smooth functions of a subset
- * of the factors (like a computed boundary-layer parameter), with noise standard deviation
- * deDerivedNoise (default 0.05, i.e., R-squared near 1 given parents).</li>
+ * of the factors and of EARLIER derived variables (chains, like ISI/BUI feeding FWI), with
+ * noise standard deviation deDerivedNoise (default 0.05, i.e., R-squared near 1 given
+ * parents).</li>
  * <li><b>Responses</b> (R1, ...): the genuinely measured outputs. Each response is a function
  * of all factors and derived variables, mixing an additive part with a pairwise-interaction
  * part by weight deInteraction (interaction-heavy physics like Strouhal scaling), plus
@@ -210,8 +211,10 @@ public class DesignedExperimentSimulation implements Simulation {
         }
 
         // Derived variables: parents are a random subset of factors (each with probability 0.7,
-        // at least 2).
+        // at least 2), plus EARLIER derived variables with probability 0.4 (chains, like
+        // ISI/BUI feeding FWI).
         boolean[][] derivedParents = new boolean[numDerived][numFactors];
+        boolean[][] derivedDerivedParents = new boolean[numDerived][numDerived];
 
         for (int d = 0; d < numDerived; d++) {
             int count = 0;
@@ -231,6 +234,12 @@ public class DesignedExperimentSimulation implements Simulation {
             for (int f = 0; f < numFactors; f++) {
                 if (derivedParents[d][f]) {
                     graph.addDirectedEdge(nodes.get(f), nodes.get(numFactors + d));
+                }
+            }
+            for (int d2 = 0; d2 < d; d2++) {
+                if (rand.nextDouble() < 0.4) {
+                    derivedDerivedParents[d][d2] = true;
+                    graph.addDirectedEdge(nodes.get(numFactors + d2), nodes.get(numFactors + d));
                 }
             }
         }
@@ -279,6 +288,9 @@ public class DesignedExperimentSimulation implements Simulation {
         for (int d = 0; d < numDerived; d++) {
             List<Integer> ps = new ArrayList<>();
             for (int f = 0; f < numFactors; f++) if (derivedParents[d][f]) ps.add(f);
+            for (int d2 = 0; d2 < d; d2++) {
+                if (derivedDerivedParents[d][d2]) ps.add(numFactors + d2);
+            }
             fillFunctionColumn(data, numFactors + d, ps, interaction, derivedNoise, rand);
         }
 

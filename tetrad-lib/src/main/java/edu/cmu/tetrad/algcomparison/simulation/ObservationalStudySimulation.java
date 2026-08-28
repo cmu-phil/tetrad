@@ -64,11 +64,22 @@ import java.util.List;
  * coarsening, reproducing the ordinal nominal-coding pathology. The true graph is the graph of
  * the underlying continuous system; the coarsening is measurement, exactly as with real
  * ordinal data.</li>
- * <li><b>Serial dependence</b> (osSerial): if set, one time series per subject is generated as
- * above and the TRUE GRAPH IS A TimeLagGraph with maximum lag 1, following the
- * TimeSeriesSemSimulation convention, so lag-data and cross-lag tier machinery apply. The
- * contemporaneous summary graph is available from getContemporaneousGraph(index). If not set,
- * rows are i.i.d. and the true graph is an ordinary DAG.</li>
+ * <li><b>Serial dependence</b> (osMaxLag): if greater than 0, one time series per subject is
+ * generated and the TRUE GRAPH IS A TimeLagGraph with that maximum lag, following the
+ * TimeSeriesSemSimulation convention, so lag-data and cross-lag tier machinery apply.
+ * Self-lags, AR(1) context, and index accumulators act at lag 1; each cross-lag edge acts at a
+ * lag drawn uniformly from 1..osMaxLag. The contemporaneous summary graph is available from
+ * getContemporaneousGraph(index). If 0, rows are i.i.d. and the true graph is an ordinary
+ * DAG.</li>
+ * <li><b>Censoring</b> (osPropCensored, osCensorQuantile): that fraction of the continuous,
+ * non-ordinalized system and outcome variables is censored at a detection limit -- values
+ * beyond the limit are recorded AT the limit (side chosen at random). Rows are kept; this is
+ * measurement, not selection, and the true graph is unchanged.</li>
+ * <li><b>Missingness</b> (osMissingMechanism, osPropMissing): cells of system, index, and
+ * outcome variables are marked missing (NaN, or the discrete missing value) at an exact
+ * per-column rate. "mcar" is independent of everything; "mar" is driven by the first observed
+ * context variable, which is always fully observed; "mnar" is driven by the cell's own
+ * underlying value.</li>
  * <li><b>Panel structure</b> (osNumSubjects): the sample is divided into that many independent
  * subjects (replicates of the same system, sampleSize / osNumSubjects rows each,
  * concatenated). Each subject has a random intercept on the system variables, which acts as a
@@ -164,7 +175,8 @@ public class ObservationalStudySimulation implements Simulation {
         int numCategories = Math.max(2, parameters.getInt(Params.OS_NUM_CATEGORIES));
         boolean discreteOutcome = parameters.getBoolean(Params.OS_DISCRETE_OUTCOME);
         double propOrdinalized = parameters.getDouble(Params.OS_PROP_ORDINALIZED);
-        boolean serial = parameters.getBoolean(Params.OS_SERIAL);
+        int maxLag = Math.max(0, parameters.getInt(Params.OS_MAX_LAG));
+        boolean serial = maxLag > 0;
         double arCoef = parameters.getDouble(Params.OS_AR_COEF);
         double memLow = parameters.getDouble(Params.OS_INDEX_MEMORY_LOW);
         double memHigh = parameters.getDouble(Params.OS_INDEX_MEMORY_HIGH);
@@ -174,7 +186,18 @@ public class ObservationalStudySimulation implements Simulation {
         double nonlinearity = parameters.getDouble(Params.OS_NONLINEARITY);
         double interaction = parameters.getDouble(Params.OS_INTERACTION);
         double density = parameters.getDouble(Params.OS_EDGE_DENSITY);
+        String missingMechanism = parameters.getString(Params.OS_MISSING_MECHANISM)
+                .trim().toLowerCase();
+        double propMissing = parameters.getDouble(Params.OS_PROP_MISSING);
+        double propCensored = parameters.getDouble(Params.OS_PROP_CENSORED);
+        double censorQuantile = parameters.getDouble(Params.OS_CENSOR_QUANTILE);
         int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
+
+        if (!missingMechanism.equals("none") && !missingMechanism.equals("mcar")
+            && !missingMechanism.equals("mar") && !missingMechanism.equals("mnar")) {
+            throw new IllegalArgumentException(
+                    "osMissingMechanism must be one of: none, mcar, mar, mnar.");
+        }
 
         RandomUtil rand = RandomUtil.getInstance();
 
@@ -284,9 +307,10 @@ public class ObservationalStudySimulation implements Simulation {
 
         // ---------- Lag structure (serial mode) ----------
 
-        double[] selfLag = new double[total];   // 0 = none
-        boolean[][] crossLag = new boolean[total][total]; // crossLag[i][j]: i{t-1} -> j{t}
+        double[] selfLag = new double[total];   // 0 = none; self-lags act at lag 1
+        boolean[][] crossLag = new boolean[total][total]; // crossLag[i][j]: i{t-k} -> j{t}
         double[][] crossLagCoef = new double[total][total];
+        int[][] crossLagLag = new int[total][total];      // the lag k of each cross-lag edge
 
         if (serial) {
             for (int c = 0; c < nC; c++) selfLag[c] = arCoef; // AR(1) context; sticky chains for discrete
@@ -299,6 +323,7 @@ public class ObservationalStudySimulation implements Simulation {
                         crossLag[i][j] = true;
                         crossLagCoef[i][j] = rand.nextUniform(0.2, 0.5)
                                              * (rand.nextDouble() < 0.5 ? -1 : 1);
+                        crossLagLag[i][j] = 1 + rand.nextInt(maxLag);
                     }
                 }
             }
@@ -366,7 +391,7 @@ public class ObservationalStudySimulation implements Simulation {
         // ---------- Generation ----------
 
         int perSubject = Math.max(2, sampleSize / numSubjects);
-        int burn = serial ? 100 : 0;
+        int burn = serial ? 100 + 10 * maxLag : 0;
 
         double[][] data = new double[perSubject * numSubjects][total];
         int[] starts = new int[numSubjects];
@@ -380,8 +405,9 @@ public class ObservationalStudySimulation implements Simulation {
                 for (int s = sys0; s < idx0; s++) subjShift[s] = rand.nextGaussian(0, 0.5);
             }
 
-            double[] prev = new double[total];
-            boolean havePrev = false;
+            // History ring: hist[0] is the previous row (lag 1), hist[k-1] is lag k.
+            double[][] hist = new double[Math.max(1, maxLag)][total];
+            int histCount = 0;
 
             for (int t = -burn; t < perSubject; t++) {
                 double[] row = new double[total];
@@ -390,15 +416,15 @@ public class ObservationalStudySimulation implements Simulation {
                     if (j < nC) {
                         // Context.
                         if (isDiscrete[j]) {
-                            if (serial && havePrev) {
-                                row[j] = rand.nextDouble() < 0.85 ? prev[j]
+                            if (serial && histCount > 0) {
+                                row[j] = rand.nextDouble() < 0.85 ? hist[0][j]
                                         : rand.nextInt(numCategories);
                             } else {
                                 row[j] = rand.nextInt(numCategories);
                             }
                         } else {
-                            if (serial && havePrev) {
-                                row[j] = selfLag[j] * prev[j]
+                            if (serial && histCount > 0) {
+                                row[j] = selfLag[j] * hist[0][j]
                                          + Math.sqrt(1 - selfLag[j] * selfLag[j])
                                            * rand.nextGaussian(0, 1);
                             } else {
@@ -428,10 +454,12 @@ public class ObservationalStudySimulation implements Simulation {
                         add = (1 - interaction) * add + interaction * inter;
                     }
 
-                    if (serial && havePrev) {
-                        if (selfLag[j] > 0) add += selfLag[j] * prev[j];
+                    if (serial && histCount > 0) {
+                        if (selfLag[j] > 0) add += selfLag[j] * hist[0][j];
                         for (int i = 0; i < total; i++) {
-                            if (crossLag[i][j]) add += crossLagCoef[i][j] * prev[i];
+                            if (crossLag[i][j] && histCount >= crossLagLag[i][j]) {
+                                add += crossLagCoef[i][j] * hist[crossLagLag[i][j] - 1][i];
+                            }
                         }
                     }
 
@@ -453,14 +481,86 @@ public class ObservationalStudySimulation implements Simulation {
                 }
 
                 if (t >= 0) System.arraycopy(row, 0, data[starts[subj] + t], 0, total);
-                prev = row;
-                havePrev = true;
+
+                for (int k = hist.length - 1; k > 0; k--) {
+                    System.arraycopy(hist[k - 1], 0, hist[k], 0, total);
+                }
+                System.arraycopy(row, 0, hist[0], 0, total);
+                if (histCount < hist.length) histCount++;
             }
         }
 
         // Standardize continuous columns over the pooled sample.
         for (int j = 0; j < total; j++) {
             if (!isDiscrete[j]) standardizeColumn(data, j);
+        }
+
+        // Censor a fraction of the continuous, non-ordinalized system and outcome columns at a
+        // detection limit: values beyond the limit are RECORDED AT the limit (right- or
+        // left-censoring, side chosen at random). Rows are kept; this is measurement, not
+        // selection, and the true graph is unchanged.
+        if (propCensored > 0) {
+            List<Integer> eligible = new ArrayList<>();
+            for (int j = sys0; j < idx0; j++) {
+                if (!isDiscrete[j] && !ordinalized[j]) eligible.add(j);
+            }
+            for (int j = out0; j < total; j++) {
+                if (!isDiscrete[j] && !ordinalized[j]) eligible.add(j);
+            }
+            int numCensor = (int) Math.round(propCensored * eligible.size());
+            for (int k = 0; k < numCensor && !eligible.isEmpty(); k++) {
+                int j = eligible.remove(rand.nextInt(eligible.size()));
+                boolean right = rand.nextDouble() < 0.5;
+                double q = right ? censorQuantile : 1.0 - censorQuantile;
+
+                double[] col = new double[data.length];
+                for (int r = 0; r < data.length; r++) col[r] = data[r][j];
+                double[] sorted = col.clone();
+                java.util.Arrays.sort(sorted);
+                double limit = sorted[(int) Math.min(data.length - 1,
+                        Math.max(0, Math.round(q * (data.length - 1))))];
+
+                for (int r = 0; r < data.length; r++) {
+                    if (right && data[r][j] > limit) data[r][j] = limit;
+                    if (!right && data[r][j] < limit) data[r][j] = limit;
+                }
+            }
+        }
+
+        // Missingness mask over system, index, and outcome columns (context is always fully
+        // observed). Rates are exact per column: the propMissing fraction of cells with the
+        // highest (driver + noise) score is marked missing. mcar: the driver is pure noise.
+        // mar: the driver is the first observed context variable, which is fully observed, so
+        // missingness is at random given context. mnar: the driver is the cell's own
+        // (underlying) value.
+        boolean[][] missing = new boolean[data.length][total];
+
+        if (!missingMechanism.equals("none") && propMissing > 0) {
+            int contextDriver = numContext > 0 ? 0 : -1;
+
+            for (int j = sys0; j < total; j++) {
+                double[] score = new double[data.length];
+                for (int r = 0; r < data.length; r++) {
+                    double driver;
+                    if (missingMechanism.equals("mnar")) {
+                        driver = data[r][j];
+                    } else if (missingMechanism.equals("mar") && contextDriver >= 0) {
+                        driver = data[r][contextDriver];
+                    } else {
+                        driver = 0.0; // mcar (or mar with no context available)
+                    }
+                    score[r] = driver + 0.5 * rand.nextGaussian(0, 1);
+                }
+
+                double[] sorted = score.clone();
+                java.util.Arrays.sort(sorted);
+                double threshold = sorted[(int) Math.min(data.length - 1, Math.max(0,
+                        Math.round((1.0 - propMissing) * (data.length - 1))))];
+
+                for (int r = 0; r < data.length; r++) {
+                    if (score[r] > threshold) missing[r][j] = true;
+                }
+            }
         }
 
         // Ordinalize the chosen system columns at random cutpoints.
@@ -513,7 +613,7 @@ public class ObservationalStudySimulation implements Simulation {
 
         if (serial) {
             TimeLagGraph lagGraph = new TimeLagGraph();
-            lagGraph.setMaxLag(1);
+            lagGraph.setMaxLag(maxLag);
             for (Node node : nodes) lagGraph.addNode(node);
             for (int i = 0; i < total; i++) {
                 for (int j = 0; j < total; j++) {
@@ -522,7 +622,7 @@ public class ObservationalStudySimulation implements Simulation {
                                 lagGraph.getNode(names[j], 0));
                     }
                     if (crossLag[i][j]) {
-                        lagGraph.addDirectedEdge(lagGraph.getNode(names[i], 1),
+                        lagGraph.addDirectedEdge(lagGraph.getNode(names[i], crossLagLag[i][j]),
                                 lagGraph.getNode(names[j], 0));
                     }
                 }
@@ -552,7 +652,13 @@ public class ObservationalStudySimulation implements Simulation {
         for (int r = 0; r < data.length; r++) {
             for (int oj = 0; oj < obsCols.size(); oj++) {
                 int j = obsCols.get(oj);
-                if (ordinalized[j]) {
+                if (missing[r][j]) {
+                    if (ordinalized[j] || isDiscrete[j]) {
+                        dataSet.setInt(r, oj, DiscreteVariable.MISSING_VALUE);
+                    } else {
+                        dataSet.setDouble(r, oj, Double.NaN);
+                    }
+                } else if (ordinalized[j]) {
                     dataSet.setInt(r, oj, ordinalValues[j][r]);
                 } else if (isDiscrete[j]) {
                     dataSet.setInt(r, oj, (int) data[r][j]);
@@ -810,7 +916,7 @@ public class ObservationalStudySimulation implements Simulation {
         parameters.add(Params.OS_NUM_CATEGORIES);
         parameters.add(Params.OS_DISCRETE_OUTCOME);
         parameters.add(Params.OS_PROP_ORDINALIZED);
-        parameters.add(Params.OS_SERIAL);
+        parameters.add(Params.OS_MAX_LAG);
         parameters.add(Params.OS_AR_COEF);
         parameters.add(Params.OS_INDEX_MEMORY_LOW);
         parameters.add(Params.OS_INDEX_MEMORY_HIGH);
@@ -820,6 +926,10 @@ public class ObservationalStudySimulation implements Simulation {
         parameters.add(Params.OS_NONLINEARITY);
         parameters.add(Params.OS_INTERACTION);
         parameters.add(Params.OS_EDGE_DENSITY);
+        parameters.add(Params.OS_MISSING_MECHANISM);
+        parameters.add(Params.OS_PROP_MISSING);
+        parameters.add(Params.OS_PROP_CENSORED);
+        parameters.add(Params.OS_CENSOR_QUANTILE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
