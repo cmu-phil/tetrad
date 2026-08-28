@@ -108,6 +108,10 @@ public final class SimulationTypes {
      * Constant <code>DESIGNED_EXPERIMENT="Designed Experiment"</code>
      */
     public static final String DESIGNED_EXPERIMENT = "Designed Experiment";
+    /**
+     * Constant <code>OBSERVATIONAL_STUDY="Observational Study"</code>
+     */
+    public static final String OBSERVATIONAL_STUDY = "Observational Study";
 
     private SimulationTypes() {
     }

@@ -1561,6 +1561,86 @@ public final class Params {
      * Constant <code>DE_SELECTION="deSelection"</code>
      */
     public static final String DE_SELECTION = "deSelection";
+    /**
+     * Constant <code>OS_NUM_CONTEXT="osNumContext"</code>
+     */
+    public static final String OS_NUM_CONTEXT = "osNumContext";
+    /**
+     * Constant <code>OS_NUM_HIDDEN_CONTEXT="osNumHiddenContext"</code>
+     */
+    public static final String OS_NUM_HIDDEN_CONTEXT = "osNumHiddenContext";
+    /**
+     * Constant <code>OS_NUM_SYSTEM="osNumSystem"</code>
+     */
+    public static final String OS_NUM_SYSTEM = "osNumSystem";
+    /**
+     * Constant <code>OS_NUM_INDICES="osNumIndices"</code>
+     */
+    public static final String OS_NUM_INDICES = "osNumIndices";
+    /**
+     * Constant <code>OS_NUM_OUTCOMES="osNumOutcomes"</code>
+     */
+    public static final String OS_NUM_OUTCOMES = "osNumOutcomes";
+    /**
+     * Constant <code>OS_AVG_SYSTEM_DEGREE="osAvgSystemDegree"</code>
+     */
+    public static final String OS_AVG_SYSTEM_DEGREE = "osAvgSystemDegree";
+    /**
+     * Constant <code>OS_PROP_CONTEXT_DISCRETE="osPropContextDiscrete"</code>
+     */
+    public static final String OS_PROP_CONTEXT_DISCRETE = "osPropContextDiscrete";
+    /**
+     * Constant <code>OS_NUM_CATEGORIES="osNumCategories"</code>
+     */
+    public static final String OS_NUM_CATEGORIES = "osNumCategories";
+    /**
+     * Constant <code>OS_DISCRETE_OUTCOME="osDiscreteOutcome"</code>
+     */
+    public static final String OS_DISCRETE_OUTCOME = "osDiscreteOutcome";
+    /**
+     * Constant <code>OS_PROP_ORDINALIZED="osPropOrdinalized"</code>
+     */
+    public static final String OS_PROP_ORDINALIZED = "osPropOrdinalized";
+    /**
+     * Constant <code>OS_SERIAL="osSerial"</code>
+     */
+    public static final String OS_SERIAL = "osSerial";
+    /**
+     * Constant <code>OS_AR_COEF="osArCoef"</code>
+     */
+    public static final String OS_AR_COEF = "osArCoef";
+    /**
+     * Constant <code>OS_INDEX_MEMORY_LOW="osIndexMemoryLow"</code>
+     */
+    public static final String OS_INDEX_MEMORY_LOW = "osIndexMemoryLow";
+    /**
+     * Constant <code>OS_INDEX_MEMORY_HIGH="osIndexMemoryHigh"</code>
+     */
+    public static final String OS_INDEX_MEMORY_HIGH = "osIndexMemoryHigh";
+    /**
+     * Constant <code>OS_PROP_CROSS_LAG="osPropCrossLag"</code>
+     */
+    public static final String OS_PROP_CROSS_LAG = "osPropCrossLag";
+    /**
+     * Constant <code>OS_NUM_SUBJECTS="osNumSubjects"</code>
+     */
+    public static final String OS_NUM_SUBJECTS = "osNumSubjects";
+    /**
+     * Constant <code>OS_INDEX_NOISE="osIndexNoise"</code>
+     */
+    public static final String OS_INDEX_NOISE = "osIndexNoise";
+    /**
+     * Constant <code>OS_NONLINEARITY="osNonlinearity"</code>
+     */
+    public static final String OS_NONLINEARITY = "osNonlinearity";
+    /**
+     * Constant <code>OS_INTERACTION="osInteraction"</code>
+     */
+    public static final String OS_INTERACTION = "osInteraction";
+    /**
+     * Constant <code>OS_EDGE_DENSITY="osEdgeDensity"</code>
+     */
+    public static final String OS_EDGE_DENSITY = "osEdgeDensity";
 
 
     // All parameters that are found in HTML manual documentation
@@ -1573,6 +1653,13 @@ public final class Params {
             Params.DE_MIN_LEVELS, Params.DE_MAX_LEVELS, Params.DE_COUPLING,
             Params.DE_DERIVED_NOISE, Params.DE_INTERACTION, Params.DE_RESPONSE_NOISE,
             Params.DE_SELECTION,
+            Params.OS_NUM_CONTEXT, Params.OS_NUM_HIDDEN_CONTEXT, Params.OS_NUM_SYSTEM,
+            Params.OS_NUM_INDICES, Params.OS_NUM_OUTCOMES, Params.OS_AVG_SYSTEM_DEGREE,
+            Params.OS_PROP_CONTEXT_DISCRETE, Params.OS_NUM_CATEGORIES, Params.OS_DISCRETE_OUTCOME,
+            Params.OS_PROP_ORDINALIZED, Params.OS_SERIAL, Params.OS_AR_COEF,
+            Params.OS_INDEX_MEMORY_LOW, Params.OS_INDEX_MEMORY_HIGH, Params.OS_PROP_CROSS_LAG,
+            Params.OS_NUM_SUBJECTS, Params.OS_INDEX_NOISE, Params.OS_NONLINEARITY,
+            Params.OS_INTERACTION, Params.OS_EDGE_DENSITY,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
             Params.CONFLICT_RULE, Params.CONNECTED, Params.COV_HIGH, Params.COV_LOW, Params.COV_SYMMETRIC,

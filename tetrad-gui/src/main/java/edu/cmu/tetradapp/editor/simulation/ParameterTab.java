@@ -74,6 +74,7 @@ public class ParameterTab extends JPanel {
             SimulationTypes.ADDITIVE_NOISE_SEM,
             SimulationTypes.BACKBONE_SEM,
             SimulationTypes.DESIGNED_EXPERIMENT,
+            SimulationTypes.OBSERVATIONAL_STUDY,
 //            SimulationTypes.POST_NONLINEAR_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
@@ -239,6 +240,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.DESIGNED_EXPERIMENT:
                         this.simulation.setSimulation(new DesignedExperimentSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.OBSERVATIONAL_STUDY:
+                        this.simulation.setSimulation(new ObservationalStudySimulation(randomGraph), this.simulation.getParams());
+                        break;
                     case SimulationTypes.GENERAL_ADDITIVE_MODEL:
                         this.simulation.setSimulation(new GeneralAdditiveModel(randomGraph), this.simulation.getParams());
                         break;
@@ -306,6 +310,9 @@ public class ParameterTab extends JPanel {
                         break;
                     case SimulationTypes.DESIGNED_EXPERIMENT:
                         this.simulation.setSimulation(new DesignedExperimentSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.OBSERVATIONAL_STUDY:
+                        this.simulation.setSimulation(new ObservationalStudySimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LG_MNAR_SIMULATION:
                         this.simulation.setSimulation(new LgMnarSimulation(randomGraph), this.simulation.getParams());
