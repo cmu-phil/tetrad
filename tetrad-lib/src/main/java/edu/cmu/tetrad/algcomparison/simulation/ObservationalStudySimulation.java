@@ -615,20 +615,32 @@ public class ObservationalStudySimulation implements Simulation {
             TimeLagGraph lagGraph = new TimeLagGraph();
             lagGraph.setMaxLag(maxLag);
             for (Node node : nodes) lagGraph.addNode(node);
+
+            // The repeating structure must be replicated explicitly across all lag slices
+            // (TimeLagGraph.addDirectedEdge does not replicate): a contemporaneous edge i -> j
+            // appears as i:s -> j:s for every slice s; an edge at lag k appears as
+            // i:(s+k) -> j:s for every s with s + k <= maxLag.
             for (int i = 0; i < total; i++) {
                 for (int j = 0; j < total; j++) {
                     if (parent[i][j]) {
-                        lagGraph.addDirectedEdge(lagGraph.getNode(names[i], 0),
-                                lagGraph.getNode(names[j], 0));
+                        for (int s = 0; s <= maxLag; s++) {
+                            lagGraph.addDirectedEdge(lagGraph.getNode(names[i], s),
+                                    lagGraph.getNode(names[j], s));
+                        }
                     }
                     if (crossLag[i][j]) {
-                        lagGraph.addDirectedEdge(lagGraph.getNode(names[i], crossLagLag[i][j]),
-                                lagGraph.getNode(names[j], 0));
+                        int k = crossLagLag[i][j];
+                        for (int s = 0; s + k <= maxLag; s++) {
+                            lagGraph.addDirectedEdge(lagGraph.getNode(names[i], s + k),
+                                    lagGraph.getNode(names[j], s));
+                        }
                     }
                 }
                 if (selfLag[i] > 0) {
-                    lagGraph.addDirectedEdge(lagGraph.getNode(names[i], 1),
-                            lagGraph.getNode(names[i], 0));
+                    for (int s = 0; s + 1 <= maxLag; s++) {
+                        lagGraph.addDirectedEdge(lagGraph.getNode(names[i], s + 1),
+                                lagGraph.getNode(names[i], s));
+                    }
                 }
             }
             trueGraph = lagGraph;
