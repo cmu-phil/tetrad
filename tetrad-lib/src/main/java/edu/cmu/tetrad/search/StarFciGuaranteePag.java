@@ -1082,6 +1082,16 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
                 : g;
     }
 
+    /**
+     * Constructs and returns the Markov Directed Acyclic Graph (DAG) representation
+     * of a probabilistic model. This method may provide additional details
+     * during execution if the verbose option is enabled.
+     *
+     * @param verbose a boolean flag indicating whether to enable verbose logging
+     *                during the construction of the Markov DAG.
+     * @return a Graph object representing the Markov DAG.
+     * @throws InterruptedException if the operation is interrupted during execution.
+     */
     public abstract Graph getMarkovDag(boolean verbose) throws InterruptedException;
 
     /**

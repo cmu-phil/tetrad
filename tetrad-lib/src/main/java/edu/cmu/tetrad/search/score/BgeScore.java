@@ -77,7 +77,6 @@ import static org.apache.commons.math3.util.FastMath.log;
  *
  * @author josephramsey
  * @see SemBicScore
- * @see BdeuScore
  */
 public class BgeScore implements Score {
 

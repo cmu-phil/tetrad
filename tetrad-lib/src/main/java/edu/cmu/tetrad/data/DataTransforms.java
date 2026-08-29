@@ -495,6 +495,18 @@ public class DataTransforms {
         return newNames;
     }
 
+    /**
+     * Appends a new block ID column to the given dataset. The block ID column partitions the dataset's rows
+     * into blocks based on changes in the values of the specified key columns. Each block is represented by
+     * a unique categorical value.
+     *
+     * @param dataSet     The dataset to which the block ID column will be appended.
+     * @param keyColumns  A list of column names that determine the block boundaries in the dataset.
+     * @param columnName  The name for the new block ID column to be added. Must not already exist in the dataset.
+     * @return The number of unique blocks created in the dataset.
+     * @throws IllegalArgumentException If no key columns are provided, the column name is empty, the dataset
+     *                                  has no rows, or any of the specified key columns do not exist in the dataset.
+     */
     public static int appendBlockIdColumn(DataSet dataSet, List<String> keyColumns, String columnName) {
         if (keyColumns == null || keyColumns.isEmpty()) {
             throw new IllegalArgumentException("At least one key column is required.");

@@ -7,7 +7,7 @@ suppressPackageStartupMessages(library(eff2))
 
 data  <- read.csv("data.csv", check.names = FALSE)
 cases <- read.csv("cases.csv", stringsAsFactors = FALSE)
-
+  
 amats <- list(
   dag   = as.matrix(read.csv("amat_dag.csv",   header = FALSE)),
   cpdag = as.matrix(read.csv("amat_cpdag.csv", header = FALSE)),
