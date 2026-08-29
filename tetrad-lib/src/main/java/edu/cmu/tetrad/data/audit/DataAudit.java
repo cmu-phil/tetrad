@@ -857,12 +857,34 @@ public final class DataAudit {
                 this.r2OnOthers.put(this.continuousNames.get(a), r2);
 
                 if (!singular && r2 >= this.config.r2Determinism) {
-                    this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
-                            AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
-                            Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
-                            "Continuous variable " + this.continuousNames.get(a)
-                                    + " is nearly a linear function of the other continuous variables (R^2 = "
-                                    + fmt(r2) + ")."));
+                    double[] subsetR2 = new double[1];
+                    List<Integer> subset = explainingSubset(c, a, r2, subsetR2);
+
+                    StringBuilder msg = new StringBuilder("Continuous variable " + this.continuousNames.get(a)
+                            + " is nearly a linear function of the other continuous variables (R^2 = "
+                            + fmt(r2) + ").");
+
+                    if (!subset.isEmpty()) {
+                        List<String> subsetNames = new ArrayList<>();
+                        for (int b : subset) subsetNames.add(this.continuousNames.get(b));
+                        boolean reached = subsetR2[0] >= EXPLAINING_SUBSET_FRACTION * r2;
+                        msg.append(reached
+                                ? " One small subset accounts for most of this: R^2 = "
+                                : " The dependence is diffuse; the best small subset found greedily gives R^2 = ")
+                                .append(fmt(subsetR2[0])).append(" on {")
+                                .append(String.join(", ", subsetNames))
+                                .append("}. With near-collinear predictors this subset choice is not unique.");
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                                AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
+                                Map.of("rSquared", r2, "threshold", this.config.r2Determinism,
+                                        "subsetRSquared", subsetR2[0], "subsetSize", (double) subset.size()),
+                                msg.toString()));
+                    } else {
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                                AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
+                                Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
+                                msg.toString()));
+                    }
                 }
             }
         } catch (Exception e) {
@@ -1627,6 +1649,96 @@ public final class DataAudit {
         }
 
         return m;
+    }
+
+    /**
+     * Fraction of the full R^2 that a greedily chosen predictor subset must reach for the subset to be reported as
+     * accounting for the dependence in NEAR_DETERMINISM_CONTINUOUS messages.
+     */
+    public static final double EXPLAINING_SUBSET_FRACTION = 0.99;
+
+    /**
+     * Maximum number of predictors the greedy explaining-subset search will select.
+     */
+    public static final int EXPLAINING_SUBSET_MAX_SIZE = 5;
+
+    /**
+     * Greedy forward selection on a correlation matrix, used to localize a NEAR_DETERMINISM_CONTINUOUS finding: for
+     * column a, predictors are added one at a time, each step choosing the column that most increases the R^2 of a
+     * on the selected set, stopping when the subset R^2 reaches {@link #EXPLAINING_SUBSET_FRACTION} of fullR2 or the
+     * set reaches {@link #EXPLAINING_SUBSET_MAX_SIZE} predictors. The achieved subset R^2 is written to
+     * achievedR2[0], clamped to [0, 1].
+     * <p>
+     * With near-collinear predictors the selected set is not unique: if a is nearly duplicated by each of two
+     * predictors, which one is selected first is an arbitrary consequence of tie-breaking. The result is one small
+     * explaining set, not an attribution of cause. On a pairwise-complete matrix that is not positive semidefinite,
+     * subset R^2 values describe the assembled matrix, not any single sample. Candidates whose submatrix cannot be
+     * inverted are skipped.
+     *
+     * @param corr       the correlation matrix.
+     * @param a          the column whose linear dependence on the others is being localized.
+     * @param fullR2     the R^2 of column a on all other columns (from the VIF diagonal).
+     * @param achievedR2 a length-1 array receiving the R^2 of a on the returned subset.
+     * @return the selected column indices in order of selection; empty if no candidate increases R^2.
+     */
+    public static List<Integer> explainingSubset(Matrix corr, int a, double fullR2, double[] achievedR2) {
+        int p = corr.getNumRows();
+        List<Integer> selected = new ArrayList<>();
+        double bestR2 = 0.0;
+        achievedR2[0] = 0.0;
+
+        while (selected.size() < EXPLAINING_SUBSET_MAX_SIZE && bestR2 < EXPLAINING_SUBSET_FRACTION * fullR2) {
+            int bestCandidate = -1;
+            double bestCandidateR2 = bestR2;
+
+            for (int b = 0; b < p; b++) {
+                if (b == a || selected.contains(b)) continue;
+
+                int s = selected.size() + 1;
+                Matrix rss = new Matrix(s, s);
+                double[] ras = new double[s];
+
+                for (int i = 0; i < s; i++) {
+                    int vi = i < s - 1 ? selected.get(i) : b;
+                    ras[i] = corr.get(a, vi);
+
+                    for (int j = 0; j < s; j++) {
+                        int vj = j < s - 1 ? selected.get(j) : b;
+                        rss.set(i, j, corr.get(vi, vj));
+                    }
+                }
+
+                double r2;
+
+                try {
+                    Matrix inv = rss.inverse();
+                    r2 = 0.0;
+
+                    for (int i = 0; i < s; i++) {
+                        for (int j = 0; j < s; j++) {
+                            r2 += ras[i] * inv.get(i, j) * ras[j];
+                        }
+                    }
+                } catch (Exception e) {
+                    continue; // Singular or near-singular submatrix; skip this candidate.
+                }
+
+                r2 = Math.min(1.0, Math.max(0.0, r2));
+
+                if (r2 > bestCandidateR2 + 1e-12) {
+                    bestCandidateR2 = r2;
+                    bestCandidate = b;
+                }
+            }
+
+            if (bestCandidate < 0) break; // No candidate improves R^2.
+
+            selected.add(bestCandidate);
+            bestR2 = bestCandidateR2;
+        }
+
+        achievedR2[0] = bestR2;
+        return selected;
     }
 
     /**

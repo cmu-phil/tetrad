@@ -627,11 +627,34 @@ public final class CovarianceAudit {
                 this.r2OnOthers.put(this.variableNames.get(a), r2);
 
                 if (!singular && r2 >= this.config.r2Determinism) {
-                    this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
-                            AuditFinding.Severity.WARNING, List.of(this.variableNames.get(a)),
-                            Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
-                            "Variable " + this.variableNames.get(a) + " is nearly a linear function of the other "
-                                    + "variables (implied R^2 = " + fmt(r2) + ")."));
+                    double[] subsetR2 = new double[1];
+                    List<Integer> subset = DataAudit.explainingSubset(this.correlation, a, r2, subsetR2);
+
+                    StringBuilder msg = new StringBuilder("Variable " + this.variableNames.get(a)
+                            + " is nearly a linear function of the other variables (implied R^2 = "
+                            + fmt(r2) + ").");
+
+                    if (!subset.isEmpty()) {
+                        List<String> subsetNames = new ArrayList<>();
+                        for (int b : subset) subsetNames.add(this.variableNames.get(b));
+                        boolean reached = subsetR2[0] >= DataAudit.EXPLAINING_SUBSET_FRACTION * r2;
+                        msg.append(reached
+                                ? " One small subset accounts for most of this: implied R^2 = "
+                                : " The dependence is diffuse; the best small subset found greedily gives implied R^2 = ")
+                                .append(fmt(subsetR2[0])).append(" on {")
+                                .append(String.join(", ", subsetNames))
+                                .append("}. With near-collinear predictors this subset choice is not unique.");
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                                AuditFinding.Severity.WARNING, List.of(this.variableNames.get(a)),
+                                Map.of("rSquared", r2, "threshold", this.config.r2Determinism,
+                                        "subsetRSquared", subsetR2[0], "subsetSize", (double) subset.size()),
+                                msg.toString()));
+                    } else {
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                                AuditFinding.Severity.WARNING, List.of(this.variableNames.get(a)),
+                                Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
+                                msg.toString()));
+                    }
                 }
             }
         } catch (Exception e) {
