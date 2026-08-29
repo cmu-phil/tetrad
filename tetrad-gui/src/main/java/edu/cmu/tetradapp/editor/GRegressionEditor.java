@@ -41,12 +41,16 @@ public final class GRegressionEditor extends JPanel {
 
     private final JRadioButton pairwiseRadio = new JRadioButton("Point interventions: do(x) on y for all X–Y pairs");
     private final JRadioButton jointRadio = new JRadioButton("Joint intervention: do(X) on each y in Y");
+    private final JRadioButton parentsRadio = new JRadioButton("Joint intervention: do(parents(y)) on each y in Y "
+                                                               + "(X is ignored; in a DAG this gives y's structural "
+                                                               + "equation)");
     private final JTextField treatmentsField = new JTextField();
     private final JTextField outcomesField = new JTextField();
     private final JTextField bootstrapsField = new JTextField(6);
     private final JTextField seedField = new JTextField(6);
     private final JCheckBox meekCloseBox = new JCheckBox("Close graph under Meek's rules before estimating");
     private final JButton runButton = new JButton("Estimate total effects");
+    private final JButton parentsButton = new JButton("X \u2190 parents of Y");
     private final JButton detailsButton = new JButton("Details...");
     private final JLabel graphLabel = new JLabel();
 
@@ -113,6 +117,7 @@ public final class GRegressionEditor extends JPanel {
 
         initUI();
         runButton.addActionListener(this::onRun);
+        parentsButton.addActionListener(this::onParentsOfY);
         detailsButton.addActionListener(this::onDetails);
         updateGraphLabel();
     }
@@ -130,15 +135,27 @@ public final class GRegressionEditor extends JPanel {
         ButtonGroup modeGroup = new ButtonGroup();
         modeGroup.add(pairwiseRadio);
         modeGroup.add(jointRadio);
-        if (model.getEffectMode() == EffectMode.JOINT) jointRadio.setSelected(true);
-        else pairwiseRadio.setSelected(true);
+        modeGroup.add(parentsRadio);
+        switch (model.getEffectMode()) {
+            case JOINT -> jointRadio.setSelected(true);
+            case JOINT_PARENTS -> parentsRadio.setSelected(true);
+            default -> pairwiseRadio.setSelected(true);
+        }
 
         JPanel modePanel = new JPanel(new GridLayout(0, 1));
         modePanel.add(new JLabel("Mode:"));
         modePanel.add(pairwiseRadio);
         modePanel.add(jointRadio);
+        modePanel.add(parentsRadio);
         modePanel.setAlignmentX(LEFT_ALIGNMENT);
         top.add(modePanel);
+
+        // X plays no role in the do(parents(y)) mode; gray it out there so that is visible at a glance.
+        java.awt.event.ItemListener modeListener = e -> treatmentsField.setEnabled(!parentsRadio.isSelected());
+        pairwiseRadio.addItemListener(modeListener);
+        jointRadio.addItemListener(modeListener);
+        parentsRadio.addItemListener(modeListener);
+        treatmentsField.setEnabled(!parentsRadio.isSelected());
 
         // Labels take their natural width; the fields take the rest of the row.
         JPanel xyPanel = new JPanel(new GridBagLayout());
@@ -182,7 +199,11 @@ public final class GRegressionEditor extends JPanel {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.add(runButton);
+        buttonPanel.add(parentsButton);
         buttonPanel.add(detailsButton);
+        parentsButton.setToolTipText("Set the treatments to the directed parents of the single outcome in Y and "
+                                     + "switch to a joint intervention; in a DAG this estimates Y's structural "
+                                     + "equation (its direct effects).");
         buttonPanel.add(graphLabel);
         buttonPanel.setAlignmentX(LEFT_ALIGNMENT);
         top.add(buttonPanel);
@@ -233,6 +254,65 @@ public final class GRegressionEditor extends JPanel {
         updateGraphLabel();
     }
 
+    /**
+     * Fills the treatments field with the directed parents of the single outcome named in the Y field and
+     * switches to JOINT mode, so that running estimates the joint effect of do(Pa(Y)) on Y -- in a DAG, exactly
+     * the structural equation of Y. Undirected neighbors of Y are deliberately not added, since the MPDAG does
+     * not say whether they are parents; they are reported so the user can add them by hand if wanted, and the
+     * identification check on Run adjudicates whatever is chosen.
+     */
+    private void onParentsOfY(ActionEvent e) {
+        Set<Node> ys;
+        try {
+            ys = parseNodeList(outcomesField.getText().trim());
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Cannot fill parents", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (ys.size() != 1) {
+            JOptionPane.showMessageDialog(this, "Please put a single outcome variable in the Y field first.",
+                    "Cannot fill parents", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        Graph g = model.getEffectiveGraph() != null ? model.getEffectiveGraph() : graph;
+        Node y = g.getNode(ys.iterator().next().getName());
+
+        List<Node> parents = new ArrayList<>(g.getParents(y));
+        parents.sort(java.util.Comparator.comparing(Node::getName));
+
+        List<String> undirected = g.getAdjacentNodes(y).stream()
+                .filter(n -> {
+                    var edge = g.getEdge(y, n);
+                    return edge != null && edu.cmu.tetrad.graph.Edges.isUndirectedEdge(edge);
+                })
+                .map(Node::getName).sorted().toList();
+
+        if (parents.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    y.getName() + " has no directed parents in the graph"
+                    + (undirected.isEmpty() ? "." : "; its neighbors " + String.join(", ", undirected)
+                                                    + " are connected only by undirected edges."),
+                    "No parents", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        treatmentsField.setText(parents.stream().map(Node::getName).collect(Collectors.joining(", ")));
+        model.setTreatmentsText(treatmentsField.getText());
+        jointRadio.setSelected(true);
+
+        if (!undirected.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Set X to the directed parents of " + y.getName() + ": " + treatmentsField.getText() + ".\n\n"
+                    + y.getName() + " also has undirected neighbors: " + String.join(", ", undirected) + ".\n"
+                    + "The graph does not say whether these are parents, so they were not added; add them by\n"
+                    + "hand if background knowledge says they are. Whether the joint effect on the listed\n"
+                    + "parents is identified will be checked when you run.",
+                    "Parents of " + y.getName(), JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
     private void onDetails(ActionEvent e) {
         int viewIndex = resultTable.getSelectedRow();
 
@@ -266,8 +346,28 @@ public final class GRegressionEditor extends JPanel {
             if (ySet != null) {
                 sb.append("\nBucket of the outcome: ").append(names(ySet));
                 sb.append("\nIts external parents:  ").append(names(GRegression.externalParents(g, ySet)));
-                sb.append("\n(The outcome's bucket is regressed on these parents; the effect is read off the "
-                          + "cross-bucket recursion.)");
+
+                try {
+                    var eq = model.structuralEquation(row.outcome);
+                    if (!eq.isEmpty()) {
+                        StringBuilder terms = new StringBuilder();
+                        var nf = NumberFormatUtil.getInstance().getNumberFormat();
+                        for (var entry : eq.entrySet()) {
+                            if (terms.length() > 0) terms.append(" + ");
+                            terms.append(nf.format(entry.getValue())).append("*").append(entry.getKey().getName());
+                        }
+                        sb.append("\n\nStructural equation (bucket-recursive form):\n    ")
+                                .append(row.outcome.getName()).append(" = ").append(terms).append(" + error\n");
+                        sb.append(ySet.size() == 1
+                                ? "(Singleton bucket: these are the direct effects, the coefficients of "
+                                  + row.outcome.getName() + "'s structural equation.)"
+                                : "(Bucket of size " + ySet.size() + ": these are the coefficients of the "
+                                  + "bucket-recursive reparameterization, equal across all DAGs in the class; "
+                                  + "they fold within-bucket paths and are not direct effects.)");
+                    }
+                } catch (IllegalArgumentException ignored) {
+                    // Graph or data unusable for the equation; the dialog just omits it.
+                }
             }
         } else {
             sb.append("Not identified. Witness path:\n\n    ")
@@ -304,16 +404,23 @@ public final class GRegressionEditor extends JPanel {
     }
 
     private void updateModelFromUI() {
-        Set<Node> X = parseNodeList(treatmentsField.getText().trim());
-        Set<Node> Y = parseNodeList(outcomesField.getText().trim());
+        EffectMode mode = pairwiseRadio.isSelected() ? EffectMode.PAIRWISE
+                : jointRadio.isSelected() ? EffectMode.JOINT : EffectMode.JOINT_PARENTS;
 
-        if (X.isEmpty() || Y.isEmpty()) {
-            throw new IllegalArgumentException("Treatments and outcomes sets must not be empty.");
+        Set<Node> Y = parseNodeList(outcomesField.getText().trim());
+        if (Y.isEmpty()) {
+            throw new IllegalArgumentException("The outcomes set must not be empty.");
+        }
+
+        Set<Node> X = mode == EffectMode.JOINT_PARENTS ? java.util.Set.of()
+                : parseNodeList(treatmentsField.getText().trim());
+        if (X.isEmpty() && mode != EffectMode.JOINT_PARENTS) {
+            throw new IllegalArgumentException("The treatments set must not be empty in this mode.");
         }
 
         model.setX(X);
         model.setY(Y);
-        model.setEffectMode(pairwiseRadio.isSelected() ? EffectMode.PAIRWISE : EffectMode.JOINT);
+        model.setEffectMode(mode);
         model.setMeekClose(meekCloseBox.isSelected());
 
         try {
@@ -425,7 +532,7 @@ public final class GRegressionEditor extends JPanel {
 
         private String[] columns() {
             List<String> cols = new ArrayList<>(List.of(COL_NUM));
-            if (model.getEffectMode() == EffectMode.JOINT) cols.add(COL_A);
+            if (model.getEffectMode() != EffectMode.PAIRWISE) cols.add(COL_A);
             cols.addAll(List.of(COL_X, COL_Y, COL_IDENT, COL_EST));
             if (model.getNumBootstraps() > 1) cols.addAll(List.of(COL_SE, COL_CI));
             if (model.isTrueSemImAvailable()) cols.add(COL_TRUE);

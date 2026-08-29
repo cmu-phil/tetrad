@@ -627,6 +627,17 @@ public final class GRegression {
     }
 
     /**
+     * The variable order that indexes the rows and columns of {@link #getLambda()}: the covariance matrix's
+     * variable order, mapped to graph nodes. This is generally NOT the same as {@code getGraph().getNodes()},
+     * so use this list, not the graph's node order, to read entries of Lambda.
+     *
+     * @return an unmodifiable list of the graph's nodes in Lambda's index order.
+     */
+    public List<Node> getVariableOrder() {
+        return Collections.unmodifiableList(nodes);
+    }
+
+    /**
      * Returns the bucket decomposition used by this estimator.
      *
      * @return The buckets.

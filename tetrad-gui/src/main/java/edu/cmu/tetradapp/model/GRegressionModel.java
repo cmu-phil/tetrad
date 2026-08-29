@@ -186,12 +186,33 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
      */
     private Graph validate() {
         results.clear();
+
+        if (Y.isEmpty()) {
+            throw new IllegalArgumentException("The outcomes set must not be empty.");
+        }
+
+        if (X.isEmpty() && effectMode != EffectMode.JOINT_PARENTS) {
+            throw new IllegalArgumentException("The treatments set must not be empty (it is ignored only in "
+                                               + "the do(parents(y)) mode).");
+        }
+
+        Graph g = prepareGraph();
+
+        // Resolve the selections by name against the graph in use, so they need not be the same Node objects.
+        if (effectMode != EffectMode.JOINT_PARENTS) resolve(g, X);
+        resolve(g, Y);
+
+        return g;
+    }
+
+    /**
+     * Checks the data and graph and returns the graph to estimate with (the input graph, with knowledge applied
+     * and/or Meek-closed as configured), independent of any X/Y selection. Sets {@link #getEffectiveGraph()} on
+     * success and {@link #getGraphProblem()} on failure.
+     */
+    private Graph prepareGraph() {
         effectiveGraph = null;
         graphProblem = null;
-
-        if (X.isEmpty() || Y.isEmpty()) {
-            throw new IllegalArgumentException("Treatments and outcomes sets must not be empty.");
-        }
 
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("G-regression requires continuous data (it is a linear-SEM estimator).");
@@ -252,10 +273,6 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
             throw new IllegalArgumentException(graphProblem);
         }
 
-        // Resolve the selections by name against the graph in use, so they need not be the same Node objects.
-        resolve(g, X);
-        resolve(g, Y);
-
         effectiveGraph = g;
         return g;
     }
@@ -278,13 +295,29 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
                     outcomes.add(y);
                 }
             }
-        } else {
+        } else if (effectMode == EffectMode.JOINT) {
             for (Node y : ys) {
                 List<Node> a = new ArrayList<>(xs);
                 a.remove(y);
                 if (a.isEmpty()) continue;
                 treatmentLists.add(a);
                 outcomes.add(y);
+            }
+        } else {
+            // JOINT_PARENTS: for each outcome, intervene jointly on its directed parents in the graph in use.
+            // In a DAG the resulting coefficients are exactly y's structural equation; with undirected edges
+            // present, y's undirected neighbors are not included (the graph does not say they are parents), and
+            // the identification check decides whether the effect on the directed parents is estimable.
+            for (Node y : ys) {
+                List<Node> a = new ArrayList<>(g.getParents(y));
+                if (a.isEmpty()) continue;
+                a.sort(java.util.Comparator.comparing(Node::getName));
+                treatmentLists.add(a);
+                outcomes.add(y);
+            }
+
+            if (outcomes.isEmpty()) {
+                throw new IllegalArgumentException("None of the outcomes has directed parents in the graph.");
             }
         }
 
@@ -356,6 +389,55 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
             double[] truth = trueSemIm == null ? null : trueTotalEffect(a, y);
             results.add(new ResultRow(a, y, witnesses.get(i), estimates.get(i), ses.get(i), truth));
         }
+    }
+
+    /**
+     * The structural equation of the outcome in the bucket-recursive reparameterization: the coefficients of the
+     * regression of {@code y} on the external parents of its bucket, i.e. y's column of Lambda. These are the same
+     * for every DAG in the MPDAG's class. When y's bucket is a singleton they are exactly the direct effects
+     * (structural coefficients) of y's equation; for a larger bucket they are the bucket-recursive coefficients,
+     * which fold within-bucket paths and should not be read as direct effects.
+     *
+     * @param y the outcome, resolved by name against the graph in use.
+     * @return an insertion-ordered map from each external parent of y's bucket to its coefficient; empty if the
+     * bucket has no external parents.
+     * @throws IllegalArgumentException if the graph (after any requested closure/knowledge) is not a valid MPDAG,
+     *                                  the data are not continuous, or y is not in the graph.
+     */
+    public java.util.LinkedHashMap<Node, Double> structuralEquation(Node y) {
+        Graph g = effectiveGraph;
+
+        if (g == null) {
+            // No successful run yet; check the graph on the fly so the equation can still be shown.
+            g = prepareGraph();
+        }
+
+        Node yy = g.getNode(y.getName());
+        if (yy == null) throw new IllegalArgumentException("Variable " + y.getName() + " is not in the graph.");
+
+        GRegression est = new GRegression(g, new CovarianceMatrix(dataSet));
+
+        Set<Node> bucket = null;
+        for (Set<Node> b : GRegression.bucketDecomposition(g)) {
+            if (b.contains(yy)) bucket = b;
+        }
+
+        java.util.LinkedHashMap<Node, Double> eq = new java.util.LinkedHashMap<>();
+        if (bucket == null) return eq;
+
+        // Lambda is indexed by the covariance variable order, not the graph's node order.
+        List<Node> order = est.getVariableOrder();
+        Matrix lambda = est.getLambda();
+        int yIdx = order.indexOf(yy);
+
+        List<Node> parents = new ArrayList<>(GRegression.externalParents(g, bucket));
+        parents.sort(java.util.Comparator.comparing(Node::getName));
+
+        for (Node p : parents) {
+            eq.put(p, lambda.get(order.indexOf(p), yIdx));
+        }
+
+        return eq;
     }
 
     /**
@@ -549,8 +631,9 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
     }
 
     public enum EffectMode {
-        PAIRWISE,  // do(x) on y for all (x, y) in X x Y
-        JOINT      // do(X \ {y}) on y for all y in Y
+        PAIRWISE,       // do(x) on y for all (x, y) in X x Y
+        JOINT,          // do(X \ {y}) on y for all y in Y
+        JOINT_PARENTS   // do(Pa(y)) on y for all y in Y; X is ignored
     }
 
     // ---------------------------------------------------------------------------------------------------------
