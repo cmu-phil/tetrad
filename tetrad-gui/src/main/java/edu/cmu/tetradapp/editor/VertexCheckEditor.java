@@ -412,7 +412,6 @@ public class VertexCheckEditor extends JPanel {
         controls.add(new JLabel("Independence Test:"));
         indTestCombo.setPreferredSize(new Dimension(280, 24));
         controls.add(indTestCombo);
-        controls.add(experimentalToggle);
 
         JButton paramsButton = new JButton("Params");
         controls.add(paramsButton);
@@ -427,12 +426,25 @@ public class VertexCheckEditor extends JPanel {
         controls.add(modelUniformityTest);
         controls.add(Box.createHorizontalGlue());
 
+        // The experimental toggle gets its own row so the first row of controls does not
+        // run out of bounds.
+        Box controls2 = Box.createHorizontalBox();
+        controls2.add(experimentalToggle);
+        controls2.add(Box.createHorizontalGlue());
+
         Box layout = Box.createVerticalBox();
         Box controlBox = Box.createHorizontalBox();
         controlBox.add(Box.createHorizontalGlue());
         controlBox.add(controls);
         controlBox.add(Box.createHorizontalGlue());
         layout.add(controlBox);
+
+        Box controlBox2 = Box.createHorizontalBox();
+        controlBox2.add(Box.createHorizontalStrut(130));
+        controlBox2.add(controls2);
+        controlBox2.add(Box.createHorizontalGlue());
+        layout.add(controlBox2);
+
         add(layout, BorderLayout.NORTH);
 
         indTestCombo.addActionListener(e -> {
