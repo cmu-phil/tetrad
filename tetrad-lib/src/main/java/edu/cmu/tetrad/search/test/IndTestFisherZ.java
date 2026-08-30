@@ -112,6 +112,12 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
     private volatile boolean usePseudoinverse = false;
     private volatile double pinvTolerance = 1e-7;
     private volatile int nEff;
+    /**
+     * True if an effective sample size has been explicitly set (a nonnegative value passed to
+     * {@link #setEffectiveSampleSize(int)}). When true, the explicit value is honored even when
+     * rows have been set, instead of being silently replaced by the row count.
+     */
+    private volatile boolean essExplicit = false;
 
     /**
      * Constructs an independence test using the Fisher Z test statistic.
@@ -434,7 +440,10 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         } else {
             List<Integer> rows = listRows();
             pc = partialCorrelation(x, y, z, null, rows);
-            n = rows.size();
+            // An explicitly set effective sample size is honored here too; previously it was
+            // silently replaced by the row count whenever rows were set (as the Markov Checker
+            // always does), making the parameter a no-op for this test.
+            n = this.essExplicit ? TMath.min(this.nEff, rows.size()) : rows.size();
         }
 
         final double r = pc.r();
@@ -478,6 +487,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
      */
     @Override
     public void setEffectiveSampleSize(int effectiveSampleSize) {
+        this.essExplicit = effectiveSampleSize >= 0;
         this.nEff = effectiveSampleSize < 0 ? this.sampleSize : effectiveSampleSize;
     }
 

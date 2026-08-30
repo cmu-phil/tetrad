@@ -242,6 +242,76 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * True if each implied fact is tested at its own block-based effective sample size (see
+     * edu.cmu.tetrad.search.utils.PerFactEss). Added 2026-8-30.
+     */
+    private boolean perFactEss = false;
+    /**
+     * The block-defining columns for per-fact ESS.
+     */
+    private java.util.List<String> essBlockColumns = null;
+    /**
+     * Cached row-to-block assignment derived from the block columns.
+     */
+    private transient int[] essBlockIds = null;
+
+    /**
+     * Enables or disables per-fact effective sample sizes. Cached query results are cleared,
+     * since cached p-values computed under a different regime are stale.
+     *
+     * @param perFactEss True to enable.
+     */
+    public void setPerFactEss(boolean perFactEss) {
+        this.perFactEss = perFactEss;
+        this.cachedQueries.clearCaches();
+        clearResults();
+    }
+
+    /**
+     * @return True if per-fact effective sample sizes are enabled.
+     */
+    public boolean isPerFactEss() {
+        return perFactEss;
+    }
+
+    /**
+     * Sets the columns whose distinct joint values define the blocks for per-fact ESS.
+     *
+     * @param essBlockColumns The block-defining column names.
+     */
+    public void setEssBlockColumns(java.util.List<String> essBlockColumns) {
+        this.essBlockColumns = essBlockColumns == null ? null
+                : new java.util.ArrayList<>(essBlockColumns);
+        this.essBlockIds = null;
+        this.cachedQueries.clearCaches();
+        clearResults();
+    }
+
+    /**
+     * If per-fact ESS is enabled and applicable, sets the effective sample size for the given
+     * fact's variables on the underlying independence test. Same fact always maps to the same
+     * value, so cached query results remain consistent while the regime is unchanged. No-op if
+     * disabled, if no block columns are set, if the test cannot set an effective sample size, or
+     * if the data is not tabular.
+     *
+     * @param x The first variable.
+     * @param y The second variable.
+     * @param z The conditioning variables.
+     */
+    public void applyPerFactEss(Node x, Node y, java.util.Set<Node> z) {
+        if (!perFactEss || essBlockColumns == null || essBlockColumns.isEmpty()) return;
+        if (!(independenceTest instanceof edu.cmu.tetrad.util.EffectiveSampleSizeSettable settable)) return;
+        if (!(dataModel instanceof DataSet dataSet)) return;
+
+        if (essBlockIds == null) {
+            essBlockIds = edu.cmu.tetrad.search.utils.PerFactEss.blockIds(dataSet, essBlockColumns);
+        }
+
+        settable.setEffectiveSampleSize(
+                edu.cmu.tetrad.search.utils.PerFactEss.effectiveSampleSize(dataSet, essBlockIds, x, y, z));
+    }
+
+    /**
      * Returns a list of row indices for a subsample of the data set.
      *
      * @param v The fraction of the data set to use.
@@ -408,6 +478,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
             tried++;
 
             // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
+            applyPerFactEss(fact.getX(), fact.getY(), fact.getZ());
             CachedIndependenceQueries.Eval e = cachedQueries.eval(fact);
 
             double p = e.pValue();
@@ -694,6 +765,7 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
                 if (cancelled.getAsBoolean()) throw new InterruptedException("Cancelled.");
 
                 // Cached eval keyed by (X,Y|Z) via name->id maps; rebinding handled internally.
+                applyPerFactEss(fact.getX(), fact.getY(), fact.getZ());
                 CachedIndependenceQueries.Eval e = cachedQueries.eval(fact);
 
                 double p = e.pValue();

@@ -85,6 +85,15 @@ public class VertexCheckEditor extends JPanel {
      * Local switch for listing experimental tests in this editor. Added 2026-8-24.
      */
     private final ExperimentalToggle experimentalToggle = new ExperimentalToggle(this::refreshTestList);
+    /**
+     * Checkbox enabling per-fact effective sample sizes computed from block structure (see
+     * edu.cmu.tetrad.search.utils.PerFactEss). Added 2026-8-30.
+     */
+    private final JCheckBox perFactEssCheckBox = new JCheckBox("Per-Fact ESS");
+    /**
+     * Opens the chooser for the block-defining columns used by per-fact ESS.
+     */
+    private final JButton essBlocksButton = new JButton("Blocks...");
     private final JComboBox<ConditioningSetType> conditioningCombo = new JComboBox<>();
     private final JCheckBox verbose = new JCheckBox("Verbose");
     private final JButton showIndepsForRow = new JButton("Independencies");
@@ -407,6 +416,32 @@ public class VertexCheckEditor extends JPanel {
         return model.getGraph().getNodes().getFirst();
     }
 
+    /**
+     * Opens a multi-select chooser over the data columns for the per-fact ESS block-defining
+     * variables and pushes the selection into the model.
+     */
+    private void chooseEssBlockColumns() {
+        if (!(model.getDataModel() instanceof DataSet dataSet)) {
+            JOptionPane.showMessageDialog(this, "Per-fact ESS requires tabular data.",
+                    "Per-Fact ESS", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        java.util.List<String> names = dataSet.getVariableNames();
+        JList<String> list = new JList<>(names.toArray(new String[0]));
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
+        int option = JOptionPane.showConfirmDialog(this, new JScrollPane(list),
+                "Blocks are the distinct joint values of the selected columns",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (option == JOptionPane.OK_OPTION) {
+            model.setEssBlockColumns(list.getSelectedValuesList());
+            MarkovCheckEditor.showEssBlockSummary(this, dataSet, list.getSelectedValuesList());
+            resetResultsUI();
+        }
+    }
+
     private void buildControls() {
         Box controls = Box.createHorizontalBox();
         controls.add(new JLabel("Independence Test:"));
@@ -428,8 +463,20 @@ public class VertexCheckEditor extends JPanel {
 
         // The experimental toggle gets its own row so the first row of controls does not
         // run out of bounds.
+        perFactEssCheckBox.setToolTipText(
+                "Test each implied fact at a block-based effective sample size (choose block "
+                + "columns with Blocks...). Corrects anti-conservative dependence judgments "
+                + "under block-structured serial dependence.");
+        perFactEssCheckBox.addActionListener(e -> {
+            model.setPerFactEss(perFactEssCheckBox.isSelected());
+            resetResultsUI();
+        });
+        essBlocksButton.addActionListener(e -> chooseEssBlockColumns());
+
         Box controls2 = Box.createHorizontalBox();
         controls2.add(experimentalToggle);
+        controls2.add(perFactEssCheckBox);
+        controls2.add(essBlocksButton);
         controls2.add(Box.createHorizontalGlue());
 
         Box layout = Box.createVerticalBox();
@@ -440,7 +487,7 @@ public class VertexCheckEditor extends JPanel {
         layout.add(controlBox);
 
         Box controlBox2 = Box.createHorizontalBox();
-        controlBox2.add(Box.createHorizontalStrut(130));
+        controlBox2.add(Box.createHorizontalGlue());
         controlBox2.add(controls2);
         controlBox2.add(Box.createHorizontalGlue());
         layout.add(controlBox2);
@@ -1233,6 +1280,7 @@ public class VertexCheckEditor extends JPanel {
             enumerateSubsets(poolList, k, subset -> {
                 if (found.size() >= 200) return false;
                 try {
+                    model.applyPerFactEss(x, y, new LinkedHashSet<>(subset));
                     IndependenceResult r = (Q != null)
                             ? Q.checkIndependence(x, y, new LinkedHashSet<>(subset))
                             : test.checkIndependence(x, y, new LinkedHashSet<>(subset));
