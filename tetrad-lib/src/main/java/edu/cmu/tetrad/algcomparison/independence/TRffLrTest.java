@@ -89,6 +89,7 @@ public final class TRffLrTest implements IndependenceWrapper {
 
         // Standard knobs
         test.setAlpha(parameters.getDouble(Params.ALPHA));
+        test.setSymmetrized(parameters.getBoolean(Params.TRFF_SYMMETRIZED));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return test;
@@ -129,6 +130,7 @@ public final class TRffLrTest implements IndependenceWrapper {
         p.add(Params.MINIMAX_RIDGE);
         p.add(Params.MINIMAX_FF_FEATURES);
         p.add(Params.PENALTY_DISCOUNT);
+        p.add(Params.TRFF_SYMMETRIZED);
         p.add(Params.VERBOSE);
 
         p.add(Params.MISSING_DATA_POLICY);

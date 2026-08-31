@@ -6857,6 +6857,39 @@ Source:
     </ul>
 
 
+    === trffSymmetrized ===
+    <h3 class="parameter_description" id="trffSymmetrized">trffSymmetrized</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="trffSymmetrized_short_desc">Symmetrize the TRFF LR test over (X, Y)</span>
+        </li>
+        <li>Long Description:
+            <span id="trffSymmetrized_long_desc">
+            If enabled (the default), the TRFF LR test is computed in both
+            directions - regressing Y on Z plus X, and regressing X on Z plus Y -
+            and the larger (more conservative) p-value is reported, so the result
+            does not depend on the order of the pair, as constraint-based
+            algorithms expect. Each direction controls its level, so the maximum
+            does as well. If disabled, only the direction with Y as the
+            regression target is computed, which halves the cost per query but
+            makes the test asymmetric in its arguments.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="trffSymmetrized_default_value">true</span>
+        </li>
+        <li>Lower Bound:
+            <span id="trffSymmetrized_lower_bound"></span>
+        </li>
+        <li>Upper Bound:
+            <span id="trffSymmetrized_upper_bound"></span>
+        </li>
+        <li>Value Type:
+            <span id="trffSymmetrized_value_type">Boolean</span>
+        </li>
+    </ul>
+
+
     === useMaxAcrossStrata ===
     <h3 class="parameter_description" id="useMaxAcrossStrata">useMaxAcrossStrata</h3>
     <ul class="parameter_description_list">

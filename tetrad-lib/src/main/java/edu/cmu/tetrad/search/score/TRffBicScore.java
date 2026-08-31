@@ -131,6 +131,14 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
      * the object's serialization process.
      */
     private transient ConcurrentHashMap<Integer, double[]> phaseCache = new ConcurrentHashMap<>();
+
+    /**
+     * Cache of nested reduced/full fits keyed by (model, child, z, [x], row-subset
+     * signature, knobs). Reduced fits are shared across all X tested against the same
+     * (child, Z) on the same rows, which is the dominant reuse pattern in constraint-based
+     * search; full fits give fact-level reuse when a search re-asks the same query.
+     */
+    private transient ConcurrentHashMap<String, LocalFit> nestedFitCache = new ConcurrentHashMap<>();
     /**
      * Student-t degrees of freedom (continuous child).
      */
@@ -218,6 +226,7 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
         localScoreCacheRef = new AtomicReference<>(new ConcurrentHashMap<>());
         omegaCache = new ConcurrentHashMap<>();
         phaseCache = new ConcurrentHashMap<>();
+        nestedFitCache = new ConcurrentHashMap<>();
     }
 
     private static double multinomialInterceptOnlyLogLik(int[] y, int K) {
@@ -1521,6 +1530,17 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             if (n < 10) return new NestedFits(bad, bad);
             for (int zi : zs) if (zi == x) throw new IllegalArgumentException("x occurs in z");
 
+            final long knobs = knobsSignature();
+            final long rowsSig = rowsSignature(rows);
+            final String redKey = "R|" + child + "|" + Arrays.toString(zs) + "|" + rowsSig + "|" + knobs;
+            final String fullKey = "F|" + child + "|" + Arrays.toString(zs) + "|" + x + "|" + rowsSig + "|" + knobs;
+
+            final LocalFit redCached = nestedFitCache.get(redKey);
+            final LocalFit fullCached = nestedFitCache.get(fullKey);
+            if (redCached != null && fullCached != null) {
+                return new NestedFits(redCached, fullCached);
+            }
+
             final int[] contZ = filterContinuous(zs);
             final int[] discZ = filterDiscrete(zs);
             final OneHotSpec ohZ = buildOneHotSpec(discZ);
@@ -1616,16 +1636,18 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             }
 
             // ---- fit both models with the same machinery ----
+            final LocalFit redFit;
+            final LocalFit fullFit;
+
             if (isDiscrete(child)) {
                 final int[] y = extractDiscreteChild(child, rows, n);
                 final int K = numCategories(child);
                 if (K < 2) return new NestedFits(bad, bad);
 
-                FitResult red = fitMultinomialOnPhi(y, K, phiRed);
-                FitResult full = fitMultinomialOnPhi(y, K, phiFull);
-
-                return new NestedFits(new LocalFit(red.logLik(), red.edf(), n),
-                        new LocalFit(full.logLik(), full.edf(), n));
+                redFit = (redCached != null) ? redCached
+                        : toLocalFit(fitMultinomialOnPhi(y, K, phiRed), n);
+                fullFit = (fullCached != null) ? fullCached
+                        : toLocalFit(fitMultinomialOnPhi(y, K, phiFull), n);
             } else {
                 if (!(nu > 2) || !Double.isFinite(nu)) return new NestedFits(bad, bad);
                 if (!(scale > 0) || !Double.isFinite(scale)) return new NestedFits(bad, bad);
@@ -1633,16 +1655,40 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
                 final double[] y = extractContinuousChild(child, rows, n);
                 centerInPlace(y);
 
-                FitResult red = fitStudentTOnPhi(y, phiRed);
-                FitResult full = fitStudentTOnPhi(y, phiFull);
-
-                return new NestedFits(new LocalFit(red.logLik(), red.edf(), n),
-                        new LocalFit(full.logLik(), full.edf(), n));
+                redFit = (redCached != null) ? redCached
+                        : toLocalFit(fitStudentTOnPhi(y, phiRed), n);
+                fullFit = (fullCached != null) ? fullCached
+                        : toLocalFit(fitStudentTOnPhi(y, phiFull), n);
             }
+
+            nestedFitCache.putIfAbsent(redKey, redFit);
+            nestedFitCache.putIfAbsent(fullKey, fullFit);
+
+            return new NestedFits(redFit, fullFit);
         } catch (RuntimeException e) {
             TetradLogger.getInstance().log(e.getMessage());
             return new NestedFits(bad, bad);
         }
+    }
+
+    private static LocalFit toLocalFit(FitResult fit, int n) {
+        return new LocalFit(fit.logLik(), fit.edf(), n);
+    }
+
+    /**
+     * Content signature of a row subset for cache keying. Uses two independent rolling
+     * hashes plus the length, so distinct subsets colliding on all three is vanishingly
+     * unlikely; null (all effective rows) maps to a fixed value.
+     */
+    private static long rowsSignature(int[] rows) {
+        if (rows == null) return -1L;
+        long h1 = 1469598103934665603L;
+        long h2 = 0x9E3779B97F4A7C15L;
+        for (int r : rows) {
+            h1 = (h1 ^ r) * 1099511628211L;
+            h2 = h2 * 6364136223846793005L + r;
+        }
+        return h1 ^ Long.rotateLeft(h2, 17) ^ ((long) rows.length << 48);
     }
 
     private static int indexOf(int[] a, int v) {

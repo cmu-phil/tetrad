@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Likelihood-ratio CI test based on nested {@link TRffBicScore} local fits.
@@ -45,6 +46,12 @@ import java.util.Set;
  * (An earlier version of this test compared fits over different random-feature bases, which
  * were not nested; D could then be negative and the chi-square reference was unfounded.)</p>
  *
+ * <p><b>Caching.</b> P-values are cached per fact (with direction-aware keys), and the
+ * underlying nested fits are cached in the score keyed by (child, Z, X, rows, knobs), with
+ * the reduced fit shared across every X tested against the same (child, Z). Constraint-based
+ * searches, which re-ask facts across phases and sweep many X against a fixed conditioning
+ * set, hit both caches heavily.</p>
+ *
  * <p><b>Symmetrization.</b> By default the test is computed in both directions - (child Y,
  * added X) and (child X, added Y) - and the larger (more conservative) p-value is reported,
  * so that {@code checkIndependence(x, y, z)} and {@code checkIndependence(y, x, z)} agree,
@@ -65,6 +72,15 @@ public final class TRffLrTest implements IndependenceTest {
     private boolean verbose = false;
     private double alpha = 0.01;
     private boolean symmetrized = true;
+
+    /**
+     * P-values cached by fact. Keys encode the direction mode: in symmetrized mode the
+     * (x, y) pair is unordered, in directional mode it is ordered, so flipping the
+     * symmetrized flag or the argument order can never serve the wrong cached value. Only
+     * the p-value is cached; the independence verdict is recomputed from the current alpha
+     * on every call, so changing alpha mid-run behaves correctly.
+     */
+    private final ConcurrentHashMap<String, Double> pCache = new ConcurrentHashMap<>();
 
     /**
      * Constructs a TRffLrTest instance using the given score.
@@ -110,17 +126,29 @@ public final class TRffLrTest implements IndependenceTest {
         }
         Arrays.sort(zi);
 
-        double p1 = directionalPValue(yi, xi, zi);
+        final String key = symmetrized
+                ? "S|" + TMath.min(xi, yi) + "|" + TMath.max(xi, yi) + "|" + Arrays.toString(zi)
+                : "D|" + xi + "|" + yi + "|" + Arrays.toString(zi);
+
         double p;
+        Double cached = pCache.get(key);
 
-        if (symmetrized) {
-            double p2 = directionalPValue(xi, yi, zi);
-
-            if (Double.isNaN(p1)) p = p2;
-            else if (Double.isNaN(p2)) p = p1;
-            else p = TMath.max(p1, p2); // conservative: reject only if both directions reject
+        if (cached != null) {
+            p = cached;
         } else {
-            p = p1;
+            double p1 = directionalPValue(yi, xi, zi);
+
+            if (symmetrized) {
+                double p2 = directionalPValue(xi, yi, zi);
+
+                if (Double.isNaN(p1)) p = p2;
+                else if (Double.isNaN(p2)) p = p1;
+                else p = TMath.max(p1, p2); // conservative: reject only if both directions reject
+            } else {
+                p = p1;
+            }
+
+            pCache.putIfAbsent(key, p);
         }
 
         if (Double.isNaN(p)) {

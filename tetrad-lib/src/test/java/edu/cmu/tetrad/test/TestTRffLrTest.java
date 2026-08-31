@@ -112,6 +112,53 @@ public class TestTRffLrTest {
     }
 
     /**
+     * Cache-correctness pins: repeated queries return bit-identical p-values; the
+     * symmetrized test is exactly order-invariant; the directional test's p-value is one of
+     * the two components of the symmetrized max, so it never exceeds the symmetrized
+     * p-value when both run against the same score instance (shared feature draws and fit
+     * cache); and the independence verdict tracks the current alpha rather than the alpha
+     * in effect when the p-value was first cached.
+     */
+    @Test
+    public void testCachingIsCorrect() {
+        Random rng = new Random(31337L);
+        DataSet d = confoundedZ3(400, false, rng);
+
+        TRffBicScore score = new TRffBicScore(d);
+        score.setRffFeatures(48);
+
+        Set<Node> z = Set.of(d.getVariable("Z0"), d.getVariable("Z1"), d.getVariable("Z2"));
+        Node x = d.getVariable("X");
+        Node y = d.getVariable("Y");
+
+        TRffLrTest sym = new TRffLrTest(score);
+        sym.setAlpha(0.05);
+
+        double pXY = sym.checkIndependence(x, y, z).getPValue();
+        double pXYAgain = sym.checkIndependence(x, y, z).getPValue();
+        double pYX = sym.checkIndependence(y, x, z).getPValue();
+
+        assertTrue("Repeated query must return an identical p-value.", pXY == pXYAgain);
+        assertTrue("Symmetrized test must be exactly order-invariant.", pXY == pYX);
+
+        TRffLrTest dir = new TRffLrTest(score); // same score: shared draws and fit cache
+        dir.setSymmetrized(false);
+        dir.setAlpha(0.05);
+
+        double pDir = dir.checkIndependence(x, y, z).getPValue();
+        assertTrue("Directional p is a component of the symmetrized max, so it cannot "
+                   + "exceed it; got dir=" + pDir + " sym=" + pXY, pDir <= pXY + 1e-12);
+
+        // Verdict must follow the current alpha, not the alpha at caching time.
+        if (pXY > 1e-6 && pXY < 1.0 - 1e-6) {
+            sym.setAlpha(pXY / 2.0);          // alpha below p: independent
+            assertTrue(sym.checkIndependence(x, y, z).isIndependent());
+            sym.setAlpha((1.0 + pXY) / 2.0);  // alpha above p: dependent
+            assertTrue(!sym.checkIndependence(x, y, z).isIndependent());
+        }
+    }
+
+    /**
      * X = s + e1, Y = s + (dep ? 0.35 X : 0) + e2, with s = 0.6 (Z0 + Z1 + Z2) and
      * standard Gaussian noise. Under dep == false, X is independent of Y given Z.
      */

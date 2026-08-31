@@ -1403,6 +1403,11 @@ public final class Params {
      * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
      */
     public static final String MINIMAX_FF_FEATURES = "minimaxFfFeatures";
+
+    /**
+     * Constant <code>TRFF_SYMMETRIZED="trffSymmetrized"</code>
+     */
+    public static final String TRFF_SYMMETRIZED = "trffSymmetrized";
     /**
      * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
      */
