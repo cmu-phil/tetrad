@@ -123,12 +123,6 @@ public final class  CiTestHarness {
         tests.add(new ClKciPython());
 //        tests.add(new Rcit());
         tests.add(new Gcm());
-
-        // Taking these test out of the interface. jdramsey 2026-2-16
-//        tests.add(new BasisFunctionBlocksIndTest());
-//        tests.add(new BasisFunctionLrt());
-//        tests.add(new MinimaxCITest());
-//        tests.add(new MinimaxTRffIndTest());
         tests.add(new FfCi());
 
         Parameters params = new Parameters();
