@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.independence.MinimaxCITest;
-import edu.cmu.tetrad.algcomparison.independence.NeykovMinimaxCITest;
 import edu.cmu.tetrad.algcomparison.independence.PoissonBicTest;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
@@ -145,7 +144,6 @@ public class TestMissingDataPolicyPhase3 {
         DataSet cont = continuousWithMissing();
 
         exercise(new MinimaxCITest().getTest(cont, policy("testwise")));
-        exercise(new NeykovMinimaxCITest().getTest(cont, policy("testwise")));
 
         assertThrows(IllegalArgumentException.class, () -> new MinimaxCITest().getTest(cont, policy("em")));
     }

@@ -17,24 +17,39 @@ import static edu.cmu.tetrad.util.TMath.*;
 import static java.lang.Double.NaN;
 
 /**
- * Minimax CI test: a robust, nonparametric conditional independence test for mixed data
- * (continuous + discrete), intended as a reliable “gold fallback” when model-based or
- * kernel-based tests are unavailable or brittle.
+ * Minimax CI test: a stratified, permutation-calibrated, nonparametric conditional
+ * independence test for mixed data (continuous + discrete).
  *
- * <p><b>Key design goal.</b> For the continuous–continuous case, this implementation
- * follows the original “no-frills” minimax procedure (as in {@code MinimaxCITestOrig})
- * for speed and behavior parity:
- *
+ * <p><b>Procedure.</b></p>
  * <ul>
  *   <li>Stratify on Z by quantile-binning continuous Z and exact-matching discrete Z.</li>
- *   <li>Within each stratum, measure dependence via {@code (m-1) r^2} (Pearson correlation).</li>
- *   <li>Aggregate across strata by quantile across strata (soft minimax); q=1 recovers max.</li>
+ *   <li>Within each stratum, measure dependence via {@code (m-1) r^2} (Pearson correlation)
+ *       for continuous X, Y; when discrete variables are involved (in X, Y, or Z), a
+ *       stratified contingency-table likelihood ratio (G-test) is used instead.</li>
+ *   <li>Aggregate across strata by a high quantile (soft minimax); q=1 recovers max.</li>
  *   <li>Calibrate by within-stratum permutation (shuffle Y within each stratum).</li>
  * </ul>
  *
- * <p>When discrete variables are involved (in X, Y, or Z), the test uses a stratified
- * contingency-table likelihood ratio (G-test) with within-stratum permutation, while
- * preserving the same stratification mechanism on Z.</p>
+ * <p><b>Calibration caveat and intended scope.</b> Permutation within Z-strata calibrates
+ * the null hypothesis "X independent of Y given the <i>stratum</i>," not "X independent of
+ * Y given Z." When Z has continuous components, residual variation of Z within a bin leaves
+ * within-stratum X&ndash;Y dependence under the true conditional-independence null (a mixture of
+ * product distributions is not a product distribution). This bias is a property of the bin
+ * width and does not shrink with sample size, while the permutation reference does; with a
+ * fixed bin count the test therefore becomes <i>more</i> anticonservative as n grows. To
+ * control the level, the number of bins per continuous Z must grow with n. By default this
+ * test uses the adaptive rate of Neykov, Balakrishnan &amp; Wasserman (2021),
+ * d ~ n^(2/5), per continuous Z dimension, capped so that expected stratum counts remain
+ * workable when several continuous Z variables multiply the cell count
+ * (see {@link #setUseAdaptiveZBins(boolean)}).</p>
+ *
+ * <p>Because the required stratification grows quickly with the number of continuous
+ * conditioning variables, this test is intended for <b>small conditioning sets
+ * (|Z| &le; 2 continuous) at moderate-to-large n (roughly n &ge; 1000)</b> &mdash; e.g., spot
+ * checks of individual conditional-independence facts. It is not recommended as a general
+ * test inside constraint-based search, where conditioning sets of size 3+ arise routinely
+ * and either the level or the power of a stratified test must fail. Discrete Z components
+ * are matched exactly and do not incur binning bias.</p>
  *
  * <p><b>Practical notes.</b></p>
  * <ul>
@@ -66,7 +81,8 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     private long permSeed = 1L;
 
     // stratification on Z
-    private int binsPerContZ = 6;
+    private int binsPerContZ = 6;          // used only when useAdaptiveZBins == false
+    private boolean useAdaptiveZBins = true; // d ~ n^(2/5) per continuous Z dim (Neykov et al. 2021)
     private int minStratumSize = 6;
 
     // local discretization of X,Y within a stratum (mixed case)
@@ -476,7 +492,9 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 
         if (n < 20) return NaN; // conservative guard
 
-        int[][] strata = getStrata(iz, useRows);
+        int zBins = useAdaptiveZBins ? adaptiveZBins(n, countContinuous(iz)) : binsPerContZ;
+
+        int[][] strata = getStrata(iz, useRows, zBins);
         if (strata.length == 0) return NaN;
 
         long seed = permSeed ^ ix ^ (iy * 1315423911L) ^ Arrays.hashCode(iz);
@@ -551,7 +569,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         if (plans.length == 0) return NaN;
 
         // Observed statistic: quantile across strata (soft minimax)
-        double tObs = aggregateQuantile(plans, qMinimax);
+        double tObs = aggregateQuantile(plans, qMinimax, false);
         if (!Double.isFinite(tObs)) return 1.0;
 
         int BB = TMath.max(50, B);
@@ -560,7 +578,7 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         int valid = 0;
 
         for (int b = 0; b < BB; b++) {
-            double tPerm = aggregateQuantile(plans, qMinimax);
+            double tPerm = aggregateQuantile(plans, qMinimax, true);
             if (!Double.isFinite(tPerm)) continue;
             valid++;
             if (tPerm >= tObs) ge++;
@@ -580,12 +598,12 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
 //        return (ge + 1.0) / (valid + 1.0);
     }
 
-    private double aggregateQuantile(GroupPlan[] plans, double q) {
+    private double aggregateQuantile(GroupPlan[] plans, double q, boolean permute) {
         double[] stats = new double[plans.length];
         int m = 0;
 
         for (GroupPlan gp : plans) {
-            double ts = gp.statistic(); // observed if rng==null; permuted if rng!=null
+            double ts = gp.statistic(permute); // observed if permute==false; permuted otherwise
             if (!Double.isFinite(ts)) continue;
             stats[m++] = ts;
         }
@@ -696,13 +714,51 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
         }
     }
 
-    private int[][] getStrata(int[] zIdx, List<Integer> useRows) {
+    private int[][] getStrata(int[] zIdx, List<Integer> useRows, int zBins) {
         if (zIdx.length == 0) return new int[][]{range(useRows.size())};
 
         long rowsSig = signature(useRows);
-        StrataKey key = new StrataKey(zIdx, rowsSig, binsPerContZ, minStratumSize);
+        StrataKey key = new StrataKey(zIdx, rowsSig, zBins, minStratumSize);
 
-        return strataCache.computeIfAbsent(key, kk -> buildStrata(zIdx, useRows, binsPerContZ, minStratumSize));
+        return strataCache.computeIfAbsent(key, kk -> buildStrata(zIdx, useRows, zBins, minStratumSize));
+    }
+
+    /**
+     * Adaptive number of quantile bins per continuous Z dimension.
+     *
+     * <p>Base rate from Neykov, Balakrishnan &amp; Wasserman (2021): d = floor(n^(2/5) * 12^(1/5)),
+     * clamped to [2, 50]. The rate balances two error sources that move in opposite directions:
+     * within-bin residual dependence under the CI null (shrinks as bins get finer) versus
+     * per-stratum sampling noise (grows as bins get finer). A fixed bin count is anticonservative
+     * for large n and powerless for small n; only a rate growing with n controls both.</p>
+     *
+     * <p>When several continuous Z variables multiply the cell count, the per-dimension bin
+     * count is additionally capped so that the expected count per stratum stays at or above
+     * {@code max(minStratumSize, 10)}: bins &le; (n / cellFloor)^(1/dCont). For |Z| of 3 or more
+     * continuous variables this cap typically forces very coarse bins, and the level of the
+     * test should not be trusted; see the class documentation.</p>
+     *
+     * @param n     number of usable rows for this test
+     * @param dCont number of continuous variables in the conditioning set
+     * @return bins per continuous Z dimension
+     */
+    private int adaptiveZBins(int n, int dCont) {
+        int d = (int) TMath.floor(TMath.pow(n, 0.4) * TMath.pow(12.0, 0.2));
+        d = TMath.max(2, TMath.min(d, 50));
+
+        if (dCont >= 1) {
+            int cellFloor = TMath.max(minStratumSize, 10);
+            int cap = (int) TMath.floor(TMath.pow(n / (double) cellFloor, 1.0 / dCont));
+            d = TMath.min(d, TMath.max(2, cap));
+        }
+
+        return d;
+    }
+
+    private int countContinuous(int[] cols) {
+        int c = 0;
+        for (int v : cols) if (!isDiscrete(v)) c++;
+        return c;
     }
 
     private int[][] buildStrata(int[] zIdx, List<Integer> useRows, int binsPerCont, int minSize) {
@@ -923,14 +979,31 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     // =========================================================
 
     /**
-     * Sets the number of bins per contour layer (Z dimension).
-     * Ensures that the number of bins is at least 2.
-     * Also clears the cached strata data to reflect the updated configuration.
+     * Sets the number of quantile bins per continuous Z variable, used only when adaptive
+     * Z binning is disabled (see {@link #setUseAdaptiveZBins(boolean)}). Ensures that the
+     * number of bins is at least 2 and clears the cached strata.
      *
-     * @param b the number of bins to be set for each contour layer (Z dimension)
+     * <p>Note: with a fixed bin count, the test's level degrades as n grows (see the class
+     * documentation); a fixed setting is mainly useful for controlled experiments.</p>
+     *
+     * @param b the number of bins per continuous Z variable
      */
     public void setBinsPerContZ(int b) {
         this.binsPerContZ = TMath.max(2, b);
+        strataCache.clear();
+    }
+
+    /**
+     * Enables or disables adaptive selection of the number of quantile bins per continuous
+     * Z variable. When enabled (the default), the bin count follows the Neykov et al. (2021)
+     * rate d ~ n^(2/5), capped for multiple continuous Z dimensions so that expected stratum
+     * counts remain workable. When disabled, the fixed value set by
+     * {@link #setBinsPerContZ(int)} is used.
+     *
+     * @param useAdaptiveZBins true to use the adaptive rate (recommended); false for fixed bins
+     */
+    public void setUseAdaptiveZBins(boolean useAdaptiveZBins) {
+        this.useAdaptiveZBins = useAdaptiveZBins;
         strataCache.clear();
     }
 
@@ -992,11 +1065,13 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
     }
 
     /**
-     * Sets the maximum number of cells allowed per stratum.
-     * The value is constrained to a minimum of 64.
+     * No-op retained for backward compatibility: aggregation across strata is always by
+     * the {@code qMinimax} quantile (see {@link #setQMinimax(double)}); q = 1 recovers max.
      *
-     * @param useMaxAcrossStrata The desired setting for using the maximum across strata.
+     * @param useMaxAcrossStrata ignored.
+     * @deprecated use {@link #setQMinimax(double)} with q = 1.0 for max aggregation.
      */
+    @Deprecated
     public void setUseMaxAcrossStrata(boolean useMaxAcrossStrata) {
         this.useMaxAcrossStrata = useMaxAcrossStrata;
     }
@@ -1131,18 +1206,20 @@ public final class MinimaxCITest implements IndependenceTest, RowsSettable {
             this.colS = new int[Ky];
         }
 
-        double statistic() {
+        double statistic(boolean permute) {
             if (constant) return 0.0;
 
             final int n = xObs.length;
 
-            // yPerm := observed or permuted
+            // yPerm := observed; then shuffled only when calibrating
             System.arraycopy(yObs, 0, yPerm, 0, n);
-            for (int i = n - 1; i > 0; i--) {
-                int j = RandomUtil.getInstance().nextInt(i + 1);
-                int tmp = yPerm[i];
-                yPerm[i] = yPerm[j];
-                yPerm[j] = tmp;
+            if (permute) {
+                for (int i = n - 1; i > 0; i--) {
+                    int j = RandomUtil.getInstance().nextInt(i + 1);
+                    int tmp = yPerm[i];
+                    yPerm[i] = yPerm[j];
+                    yPerm[j] = tmp;
+                }
             }
 
             // clear

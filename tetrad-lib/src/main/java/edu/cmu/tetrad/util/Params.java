@@ -1362,6 +1362,10 @@ public final class Params {
      */
     public static final String USE_MAX_ACROSS_STRATA = "useMaxAcrossStrata";
     /**
+     * Constant <code>USE_ADAPTIVE_Z_BINS="useAdaptiveZBins"</code>
+     */
+    public static final String USE_ADAPTIVE_Z_BINS = "useAdaptiveZBins";
+    /**
      * Constant <code>MINIMAX_PERMUTATIONS="miniMaxPermutations"</code>
      */
     public static final String MINIMAX_PERMUTATIONS = "minimaxPermutations";

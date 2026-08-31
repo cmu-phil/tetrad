@@ -6709,23 +6709,29 @@ Source:
     <h3 class="parameter_description" id="binsPerContZ">binsPerContZ</h3>
     <ul class="parameter_description_list">
         <li>Short Description:
-            <span id="binsPerContZ_short_desc">Bins per continuous Z variable</span>
+            <span id="binsPerContZ_short_desc">Bins per continuous Z variable (fixed mode)</span>
         </li>
         <li>Long Description:
             <span id="binsPerContZ_long_desc">
             Number of quantile bins used to discretize continuous conditioning (Z)
-            variables when forming strata. Increasing this value yields finer
-            conditioning but increases the number of strata and data requirements.
+            variables when forming strata. Used only when adaptive Z binning
+            (useAdaptiveZBins) is disabled. Note that with a fixed bin count the
+            level of a stratified permutation test degrades as the sample size
+            grows: within-bin residual dependence under the conditional-independence
+            null is a fixed bias determined by the bin width, while the permutation
+            reference tightens with n. The bin count must therefore grow with n
+            (roughly n^(2/5)); prefer adaptive binning except in controlled
+            experiments.
         </span>
         </li>
         <li>Default Value:
-            <span id="binsPerContZ_default_value">4</span>
+            <span id="binsPerContZ_default_value">16</span>
         </li>
         <li>Lower Bound:
             <span id="binsPerContZ_lower_bound">2</span>
         </li>
         <li>Upper Bound:
-            <span id="binsPerContZ_upper_bound">10</span>
+            <span id="binsPerContZ_upper_bound">200</span>
         </li>
         <li>Value Type:
             <span id="binsPerContZ_value_type">Integer</span>
@@ -6812,6 +6818,41 @@ Source:
         </li>
         <li>Value Type:
             <span id="minStratumSize_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === useAdaptiveZBins ===
+    <h3 class="parameter_description" id="useAdaptiveZBins">useAdaptiveZBins</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="useAdaptiveZBins_short_desc">Adaptive bins for continuous Z</span>
+        </li>
+        <li>Long Description:
+            <span id="useAdaptiveZBins_long_desc">
+            If enabled (recommended), the number of quantile bins per continuous
+            conditioning (Z) variable grows with the sample size at the rate
+            d ~ n^(2/5) of Neykov, Balakrishnan and Wasserman (2021), capped so
+            that the expected number of samples per stratum remains workable when
+            several continuous Z variables multiply the cell count. This growth is
+            required for the permutation calibration to control the test's level:
+            with a fixed bin count, within-bin residual dependence under the
+            conditional-independence null does not shrink with n, and the test
+            becomes increasingly anticonservative as the sample size grows. If
+            disabled, the fixed binsPerContZ value is used instead.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="useAdaptiveZBins_default_value">true</span>
+        </li>
+        <li>Lower Bound:
+            <span id="useAdaptiveZBins_lower_bound"></span>
+        </li>
+        <li>Upper Bound:
+            <span id="useAdaptiveZBins_upper_bound"></span>
+        </li>
+        <li>Value Type:
+            <span id="useAdaptiveZBins_value_type">Boolean</span>
         </li>
     </ul>
 

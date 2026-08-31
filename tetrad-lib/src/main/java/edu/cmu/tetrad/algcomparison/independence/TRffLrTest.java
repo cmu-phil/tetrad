@@ -26,10 +26,9 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.search.score.TRffBicScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.test.MinimaxTRffTest;
-import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -38,25 +37,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for the Minimax-t RFF LR CI test built on {@link MinimaxTRffBicScore}.
+ * Wrapper for the TRFF likelihood-ratio CI test built on {@link TRffBicScore}.
  *
- * <p>Tests X ⟂ Y | Z by comparing local fits on a common row subset:
- * reduced: child ~ Z
- * full:    child ~ Z ∪ {other}
- * using an LR statistic with a ΔEDF-based df approximation. The test is
- * symmetrized by computing both directions (Y|Z,X) and (X|Z,Y) and taking
- * the more conservative p-value.</p>
+ * <p>Tests X &perp; Y | Z by comparing nested local fits on a common row subset:
+ * reduced child ~ Z versus full child ~ Z + extra(X), using an LR statistic with a
+ * &Delta;EDF-based df approximation. The reduced model's design columns are a prefix of the
+ * full model's, so the models are nested by construction and the LR statistic is
+ * nonnegative. The test is symmetrized: both directions (child Y, added X) and (child X,
+ * added Y) are computed and the more conservative p-value is reported.</p>
  *
  * @author josephramsey
  */
 @TestOfIndependence(
-        name = "Minimax-t-RFF-LR-Test",
-        command = "minimax-t-rff-lr-test",
+        name = "TRFF-LR-Test",
+        command = "trff-lr-test",
         dataType = DataType.Mixed
 )
 @Mixed
 @General
-public final class MinimaxTRffIndTest implements IndependenceWrapper {
+public final class TRffLrTest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -64,12 +63,17 @@ public final class MinimaxTRffIndTest implements IndependenceWrapper {
     /**
      * Required no-arg ctor for algcomparison discovery/serialization.
      */
-    public MinimaxTRffIndTest() {
+    public TRffLrTest() {
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns a TRFF LR test.
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Minimax-t-RFF-LR-Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "TRFF-LR-Test");
         // Build the score from the mixed dataset
         TRffBicScore score = new TRffBicScore(SimpleDataLoader.getMixedDataSet(dataSet));
 
@@ -80,26 +84,43 @@ public final class MinimaxTRffIndTest implements IndependenceWrapper {
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
         // CI test
-        MinimaxTRffTest test = new MinimaxTRffTest(score);
+        edu.cmu.tetrad.search.test.TRffLrTest test =
+                new edu.cmu.tetrad.search.test.TRffLrTest(score);
 
         // Standard knobs
         test.setAlpha(parameters.getDouble(Params.ALPHA));
-        // If you added verbose support to the test, wire it here:
-        // test.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        test.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return test;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the name of the test.
+     */
     @Override
     public String getDescription() {
-        return "Minimax-t RFF LR (MinimaxTRffBicScore)";
+        return "TRFF LR Test (TRffBicScore)";
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the data type of the test, which is mixed.
+     *
+     * @see DataType
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the parameters of the test.
+     */
     @Override
     public List<String> getParameters() {
         List<String> p = new ArrayList<>();

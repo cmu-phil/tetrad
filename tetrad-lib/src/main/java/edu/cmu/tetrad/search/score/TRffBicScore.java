@@ -1452,6 +1452,461 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
         }
     }
 
+    // ============================================================================================
+    // Nested local fits for the TRFF LR test (see edu.cmu.tetrad.search.test.TRffLrTest)
+    // ============================================================================================
+
+    /**
+     * A pair of local fits computed on a shared design matrix in which the reduced model's
+     * columns are a prefix of the full model's columns, so the models are nested by
+     * construction.
+     *
+     * @param reduced fit of child ~ Z on the leading columns of the shared design.
+     * @param full    fit of child ~ Z + extra(X) on all columns of the shared design.
+     */
+    public record NestedFits(LocalFit reduced, LocalFit full) {}
+
+    /**
+     * Computes reduced (child ~ Z) and full (child ~ Z + X) local fits on a single shared
+     * design matrix, guaranteeing that the reduced model's column space is contained in the
+     * full model's column space.
+     *
+     * <p><b>Design.</b> The shared design is
+     * {@code [intercept | cont(Z) linear | RFF(cont(Z)) | oneHot(disc(Z)) | EXTRA(X)]},
+     * where the first {@code 1 + L_Z + D + Q_Z} columns are exactly the reduced design. If X
+     * is continuous, EXTRA is {@code [X linear | D fresh random Fourier features over
+     * [cont(Z), X]]} (drawn with augmented keys so the block is independent of the reduced
+     * RFF block), which allows the full model to represent nonlinear X effects and X&ndash;Z
+     * interactions. If X is discrete, EXTRA is the one-hot encoding of X (baseline level
+     * dropped).</p>
+     *
+     * <p><b>Why explicit linear terms.</b> Random Fourier features approximate smooth
+     * functions with O(1/sqrt(D)) error, and for multivariate Z the approximation bias in
+     * the reduced fit of E[child | Z] is systematic: it does not shrink with n. Because the
+     * full model's extra features depend on Z (directly, and through X when X shares signal
+     * with Z), they can relieve that bias, contributing a likelihood-ratio term of order
+     * n times squared-bias that the chi-square(&Delta;edf) reference cannot absorb - the test
+     * then rejects true conditional-independence nulls at rates growing with n and dim(Z).
+     * Including the raw (z-scored) linear columns makes linear conditional means exactly
+     * representable in the reduced model, so the RFF blocks carry only the nonlinear
+     * remainder and the dominant bias channel is closed.</p>
+     *
+     * <p>Because the reduced columns are a prefix of the full columns and the ridge penalty
+     * applies identically to shared coordinates, the full penalized optimum is at least the
+     * reduced penalized optimum (attained at the reduced solution padded with zeros), so the
+     * likelihood-ratio statistic {@code 2 (llFull - llRed)} is nonnegative up to profiling
+     * and convergence tolerance. This is the nesting property that the earlier coupled-RFF
+     * construction lacked: there, the full model's cosine features contained X inside the
+     * cosine argument, so the reduced features were not a subset of the full features and
+     * the LR statistic could be negative.</p>
+     *
+     * @param child index of the child variable (the regression target).
+     * @param z     indices of the conditioning variables; may be empty, must not contain x.
+     * @param x     index of the variable whose added contribution is being tested.
+     * @param rows  row subset to use for both fits (testwise deletion should be applied by
+     *              the caller over {@code {child} ∪ z ∪ {x}}); null means all effective rows.
+     * @return a {@link NestedFits} holding the reduced and full {@link LocalFit}s; fits are
+     * NaN-filled if the computation is invalid (too few rows, bad knobs, or singular normal
+     * equations).
+     */
+    public NestedFits nestedLocalFits(int child, int[] z, int x, int[] rows) {
+        int[] zs = (z == null) ? new int[0] : Arrays.copyOf(z, z.length);
+        Arrays.sort(zs);
+
+        final int n = (rows == null) ? nEff : rows.length;
+        final LocalFit bad = new LocalFit(Double.NaN, Double.NaN, n);
+
+        try {
+            if (!(ridge > 0) || !Double.isFinite(ridge)) return new NestedFits(bad, bad);
+            if (n < 10) return new NestedFits(bad, bad);
+            for (int zi : zs) if (zi == x) throw new IllegalArgumentException("x occurs in z");
+
+            final int[] contZ = filterContinuous(zs);
+            final int[] discZ = filterDiscrete(zs);
+            final OneHotSpec ohZ = buildOneHotSpec(discZ);
+
+            final int D = rffFeatures;
+            final int QZ = ohZ.totalCols;
+            final int LZ = contZ.length;              // raw linear columns for cont(Z)
+            final int mRed = 1 + LZ + D + QZ;
+
+            final boolean xDiscrete = isDiscrete(x);
+            final int[] contU = xDiscrete ? contZ : appendSorted(contZ, x);
+            final int qX = xDiscrete ? (numCategories(x) - 1) : 0;
+            final int extraCols = xDiscrete ? qX : (1 + D); // [x linear | RFF([Z,x])]
+            final int mFull = mRed + extraCols;
+
+            // ---- reduced-block RFF machinery (identical to localFitOnRows / localScore) ----
+            final double[][] ZcRed = new double[n][contZ.length];
+            for (int i = 0; i < n; i++) {
+                final int row = (rows == null) ? i : rows[i];
+                for (int j = 0; j < contZ.length; j++) ZcRed[i][j] = zCols[contZ[j]][row];
+            }
+            final double[][] omegaRed = new double[contZ.length][];
+            for (int j = 0; j < contZ.length; j++) omegaRed[j] = getOmega(child, contZ[j], D);
+            final double[] phaseRed = getPhase(child, D);
+            final double phiScale = TMath.sqrt(2.0 / D);
+
+            // ---- extra-block machinery ----
+            double[][] ZcU = null;
+            double[][] omegaAug = null;
+            double[] phaseAug = null;
+            OneHotSpec ohX = null;
+
+            if (xDiscrete) {
+                ohX = buildOneHotSpec(new int[]{x});
+            } else {
+                ZcU = new double[n][contU.length];
+                for (int i = 0; i < n; i++) {
+                    final int row = (rows == null) ? i : rows[i];
+                    for (int j = 0; j < contU.length; j++) ZcU[i][j] = zCols[contU[j]][row];
+                }
+                omegaAug = new double[contU.length][];
+                for (int j = 0; j < contU.length; j++) omegaAug[j] = getOmegaAug(child, contU[j], D);
+                phaseAug = getPhaseAug(child, D);
+            }
+
+            // ---- build shared design; reduced design is a row-prefix slice ----
+            final double[][] phiFull = new double[n][mFull];
+            final double[][] phiRed = new double[n][mRed];
+
+            final int xColU = xDiscrete ? -1 : indexOf(contU, x);
+
+            for (int i = 0; i < n; i++) {
+                final double[] out = phiFull[i];
+                out[0] = 1.0;
+
+                // linear cont(Z) block
+                for (int j = 0; j < LZ; j++) out[1 + j] = ZcRed[i][j];
+
+                // RFF(contZ) block
+                final int rffOff = 1 + LZ;
+                if (contZ.length == 0) {
+                    Arrays.fill(out, rffOff, rffOff + D, 0.0);
+                } else {
+                    for (int k = 0; k < D; k++) {
+                        double dot = 0.0;
+                        for (int j = 0; j < contZ.length; j++) dot += omegaRed[j][k] * ZcRed[i][j];
+                        out[rffOff + k] = phiScale * TMath.cos(dot + phaseRed[k]);
+                    }
+                }
+
+                // oneHot(discZ) block
+                fillOneHot(out, rffOff + D, ohZ, discZ, i, rows);
+
+                // EXTRA block
+                final int off = mRed;
+                if (xDiscrete) {
+                    Arrays.fill(out, off, mFull, 0.0);
+                    final int row = (rows == null) ? i : rows[i];
+                    final int lev = dataSet.getInt(row, x);
+                    if (lev != DiscreteVariable.MISSING_VALUE && lev > 0 && lev - 1 < qX) {
+                        out[off + (lev - 1)] = 1.0;
+                    }
+                } else {
+                    out[off] = ZcU[i][xColU]; // linear x
+                    for (int k = 0; k < D; k++) {
+                        double dot = 0.0;
+                        for (int j = 0; j < contU.length; j++) dot += omegaAug[j][k] * ZcU[i][j];
+                        out[off + 1 + k] = phiScale * TMath.cos(dot + phaseAug[k]);
+                    }
+                }
+
+                System.arraycopy(out, 0, phiRed[i], 0, mRed);
+            }
+
+            // ---- fit both models with the same machinery ----
+            if (isDiscrete(child)) {
+                final int[] y = extractDiscreteChild(child, rows, n);
+                final int K = numCategories(child);
+                if (K < 2) return new NestedFits(bad, bad);
+
+                FitResult red = fitMultinomialOnPhi(y, K, phiRed);
+                FitResult full = fitMultinomialOnPhi(y, K, phiFull);
+
+                return new NestedFits(new LocalFit(red.logLik(), red.edf(), n),
+                        new LocalFit(full.logLik(), full.edf(), n));
+            } else {
+                if (!(nu > 2) || !Double.isFinite(nu)) return new NestedFits(bad, bad);
+                if (!(scale > 0) || !Double.isFinite(scale)) return new NestedFits(bad, bad);
+
+                final double[] y = extractContinuousChild(child, rows, n);
+                centerInPlace(y);
+
+                FitResult red = fitStudentTOnPhi(y, phiRed);
+                FitResult full = fitStudentTOnPhi(y, phiFull);
+
+                return new NestedFits(new LocalFit(red.logLik(), red.edf(), n),
+                        new LocalFit(full.logLik(), full.edf(), n));
+            }
+        } catch (RuntimeException e) {
+            TetradLogger.getInstance().log(e.getMessage());
+            return new NestedFits(bad, bad);
+        }
+    }
+
+    private static int indexOf(int[] a, int v) {
+        for (int i = 0; i < a.length; i++) if (a[i] == v) return i;
+        return -1;
+    }
+
+    private static int[] appendSorted(int[] a, int v) {
+        int[] out = Arrays.copyOf(a, a.length + 1);
+        out[a.length] = v;
+        Arrays.sort(out);
+        return out;
+    }
+
+    private void fillOneHot(double[] out, int off, OneHotSpec oh, int[] discParents, int i, int[] rows) {
+        Arrays.fill(out, off, off + oh.totalCols, 0.0);
+        if (discParents.length == 0) return;
+
+        final int row = (rows == null) ? i : rows[i];
+        for (int t = 0; t < discParents.length; t++) {
+            final int var = discParents[t];
+            final int lev = dataSet.getInt(row, var);
+            if (lev == DiscreteVariable.MISSING_VALUE) continue;
+            if (lev <= 0) continue; // baseline dropped
+
+            final int col = oh.offsets[t] + (lev - 1);
+            if (col >= oh.offsets[t] && col < oh.offsets[t] + oh.sizes[t] - 1) {
+                out[off + col] = 1.0;
+            }
+        }
+    }
+
+    private static final long AUG_OMEGA_SALT = 0x5851F42D4C957F2DL;
+
+    /**
+     * Augmented omega draw for the nested full model's extra RFF block: same distribution as
+     * {@link #getOmega(int, int, int)} but cached under a salted key so the extra block is
+     * independent of the reduced block.
+     */
+    private double[] getOmegaAug(int child, int parent, int D) {
+        long key = omegaKey(child, parent) ^ AUG_OMEGA_SALT;
+        return omegaCache.computeIfAbsent(key, kk -> {
+            double[] w = new double[D];
+            double invSigma = 1.0 / rffSigma;
+            for (int k = 0; k < D; k++) w[k] = RandomUtil.getInstance().nextGaussian() * invSigma;
+            return w;
+        });
+    }
+
+    /**
+     * Augmented phase draw for the nested full model's extra RFF block, cached under a key
+     * disjoint from valid child indices.
+     */
+    private double[] getPhaseAug(int child, int D) {
+        return phaseCache.computeIfAbsent(~child, cc -> {
+            double[] phase = new double[D];
+            for (int k = 0; k < D; k++) phase[k] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            return phase;
+        });
+    }
+
+    /**
+     * Student-t IRLS ridge fit on a precomputed design matrix (intercept in column 0,
+     * ridge on all remaining columns). Mirrors {@code fitStudentTRffRidgeMixed} exactly,
+     * with the design supplied by the caller; used for the nested reduced/full pair so both
+     * models receive byte-identical treatment apart from column count.
+     */
+    private FitResult fitStudentTOnPhi(double[] yCentered, double[][] Phi) {
+        final int n = yCentered.length;
+        final int M = Phi[0].length;
+
+        final double[] w = new double[n];
+        Arrays.fill(w, 1.0);
+
+        double[] beta = new double[M];
+        double prevObj = Double.POSITIVE_INFINITY;
+        double scaleHat = this.scale;
+
+        for (int iter = 0; iter < irlsIters; iter++) {
+            final DMatrixRMaj G = new DMatrixRMaj(M, M);
+            final double[] v = new double[M];
+
+            for (int i = 0; i < n; i++) {
+                final double[] phi = Phi[i];
+                final double wi = w[i];
+                final double yi = yCentered[i];
+
+                for (int a = 0; a < M; a++) v[a] += wi * phi[a] * yi;
+
+                for (int a = 0; a < M; a++) {
+                    final double pa = wi * phi[a];
+                    for (int b = 0; b <= a; b++) G.add(a, b, pa * phi[b]);
+                }
+            }
+
+            for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
+            for (int a = 1; a < M; a++) G.add(a, a, ridge);
+
+            final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+            if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
+            final DMatrixRMaj L = chol.getT(null);
+
+            beta = solveFromCholeskyLower(L, v);
+
+            double obj = 0.0;
+            double wsum = 0.0;
+            double wrss = 0.0;
+
+            for (int i = 0; i < n; i++) {
+                final double[] phi = Phi[i];
+                double yhat = 0.0;
+                for (int a = 0; a < M; a++) yhat += phi[a] * beta[a];
+
+                final double r = yCentered[i] - yhat;
+                final double u2 = (r / scaleHat) * (r / scaleHat);
+                final double wi = (nu + 1.0) / (nu + u2);
+                w[i] = wi;
+
+                obj += 0.5 * (nu + 1.0) * TMath.log1p(u2 / nu);
+                wsum += wi;
+                wrss += wi * r * r;
+            }
+
+            if (wsum > 0.0) {
+                final double s2 = wrss / wsum;
+                scaleHat = TMath.sqrt(TMath.max(1e-12, s2));
+            }
+
+            if (TMath.abs(prevObj - obj) <= irlsTol * (1.0 + TMath.abs(prevObj))) break;
+            prevObj = obj;
+        }
+
+        final double[] yhat = new double[n];
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+            double yh = 0.0;
+            for (int a = 0; a < M; a++) yh += phi[a] * beta[a];
+            yhat[i] = yh;
+        }
+
+        final double ll = studentTLogLik(yCentered, yhat, nu, scaleHat);
+
+        final DMatrixRMaj Gfinal = new DMatrixRMaj(M, M);
+        for (int i = 0; i < n; i++) {
+            final double[] phi = Phi[i];
+            final double wi = w[i];
+            for (int a = 0; a < M; a++) {
+                final double pa = wi * phi[a];
+                for (int b = 0; b <= a; b++) Gfinal.add(a, b, pa * phi[b]);
+            }
+        }
+        for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) Gfinal.set(b, a, Gfinal.get(a, b));
+        for (int a = 1; a < M; a++) Gfinal.add(a, a, ridge);
+
+        final double trInvPen = traceInvPenalizedBlockFromG(Gfinal);
+        if (!Double.isFinite(trInvPen)) return new FitResult(Double.NaN, Double.NaN);
+
+        final int Mp = M - 1;
+        double edf = 1.0 + (Mp - ridge * trInvPen);
+        if (!(edf >= 0) || !Double.isFinite(edf)) edf = 1.0 + Mp;
+
+        return new FitResult(ll, edf);
+    }
+
+    /**
+     * Multinomial logistic IRLS ridge fit on a precomputed design matrix (intercept in
+     * column 0, ridge on all remaining columns). Mirrors {@code fitMultinomialLogitMixed}
+     * exactly, with the design supplied by the caller; used for the nested reduced/full pair.
+     */
+    private FitResult fitMultinomialOnPhi(int[] y, int K, double[][] Phi) {
+        final int n = y.length;
+        final int M = Phi[0].length;
+        final int C = K - 1;
+
+        final double[][] beta = new double[M][C];
+        double prevObj = Double.POSITIVE_INFINITY;
+
+        final double[] logits = new double[K];
+        final double[][] probs = new double[n][K];
+
+        for (int iter = 0; iter < irlsIters; iter++) {
+            fillSoftmaxProbsFromPhi(K, n, beta, Phi, logits, probs);
+
+            for (int c = 0; c < C; c++) {
+                final DMatrixRMaj G = new DMatrixRMaj(M, M);
+                final double[] v = new double[M];
+
+                for (int i = 0; i < n; i++) {
+                    final double[] phi = Phi[i];
+
+                    final double pc = probs[i][c + 1];
+                    double wc = pc * (1.0 - pc);
+                    wc = TMath.max(wc, 1e-10);
+
+                    double eta = 0.0;
+                    for (int a = 0; a < M; a++) eta += phi[a] * beta[a][c];
+
+                    final double yc = (y[i] == (c + 1)) ? 1.0 : 0.0;
+                    final double zAdj = eta + (yc - pc) / wc;
+
+                    final double wz = wc * zAdj;
+                    for (int a = 0; a < M; a++) v[a] += wz * phi[a];
+
+                    for (int a = 0; a < M; a++) {
+                        final double pa = wc * phi[a];
+                        for (int b = 0; b <= a; b++) G.add(a, b, pa * phi[b]);
+                    }
+                }
+
+                for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
+                for (int a = 1; a < M; a++) G.add(a, a, ridge);
+
+                final CholeskyDecomposition_F64<DMatrixRMaj> chol = DecompositionFactory_DDRM.chol(true);
+                if (!chol.decompose(G)) return new FitResult(Double.NaN, Double.NaN);
+                final DMatrixRMaj L = chol.getT(null);
+
+                final double[] bc = solveFromCholeskyLower(L, v);
+                for (int a = 0; a < M; a++) beta[a][c] = bc[a];
+            }
+
+            final double llIter = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
+            final double obj = -llIter;
+
+            if (TMath.abs(prevObj - obj) <= irlsTol * (1.0 + TMath.abs(prevObj))) break;
+            prevObj = obj;
+        }
+
+        final double ll = multinomialLogLikFromPhi(y, K, n, beta, Phi, logits);
+
+        fillSoftmaxProbsFromPhi(K, n, beta, Phi, logits, probs);
+
+        double edf = 0.0;
+        final int Mp = M - 1;
+        for (int c = 0; c < C; c++) {
+            final DMatrixRMaj G = new DMatrixRMaj(M, M);
+
+            for (int i = 0; i < n; i++) {
+                final double[] phi = Phi[i];
+
+                final double pc = probs[i][c + 1];
+                double wc = pc * (1.0 - pc);
+                wc = TMath.max(wc, 1e-10);
+
+                for (int a = 0; a < M; a++) {
+                    final double pa = wc * phi[a];
+                    for (int b = 0; b <= a; b++) G.add(a, b, pa * phi[b]);
+                }
+            }
+
+            for (int a = 0; a < M; a++) for (int b = 0; b < a; b++) G.set(b, a, G.get(a, b));
+            for (int a = 1; a < M; a++) G.add(a, a, ridge);
+
+            double trInvPen = traceInvPenalizedBlockFromG(G);
+            if (!Double.isFinite(trInvPen)) return new FitResult(Double.NaN, Double.NaN);
+
+            double edfC = 1.0 + (Mp - ridge * trInvPen);
+            if (!(edfC >= 0) || !Double.isFinite(edfC)) edfC = 1.0 + Mp;
+
+            edf += edfC;
+        }
+
+        return new FitResult(ll, edf);
+    }
+
     /**
      * Sets the penalty discount factor for the score function.
      * The penalty discount factor is used to adjust the penalty term in the score calculation.

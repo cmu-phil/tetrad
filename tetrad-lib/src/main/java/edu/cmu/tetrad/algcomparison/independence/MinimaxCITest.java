@@ -77,11 +77,17 @@ public class MinimaxCITest implements IndependenceWrapper {
                 parameters.getDouble(Params.ALPHA));
 
         test.setBinsPerContXY(parameters.getInt(Params.BINS_PER_CONT_XY));
-        test.setBinsPerContZ(parameters.getInt(Params.BINS_PER_CONT_Z));
+
+        // Adaptive Z binning (default): bins per continuous Z ~ n^(2/5), capped for multiple
+        // continuous Z dims. Fixed BINS_PER_CONT_Z is honored only when adaptive is disabled.
+        test.setUseAdaptiveZBins(parameters.getBoolean(Params.USE_ADAPTIVE_Z_BINS));
+        if (!parameters.getBoolean(Params.USE_ADAPTIVE_Z_BINS)) {
+            test.setBinsPerContZ(parameters.getInt(Params.BINS_PER_CONT_Z));
+        }
+
         test.setMaxCellsPerStratum(parameters.getInt(Params.MAX_CELLS_PER_STRATUM));
         test.setMaxObservedLevelsPerVar(parameters.getInt(Params.MAX_OBSERVED_LEVELS_PER_VAR));
         test.setMinStratumSize(parameters.getInt(Params.MIN_STRATUM_SIZE));
-        test.setUseMaxAcrossStrata(parameters.getBoolean(Params.USE_MAX_ACROSS_STRATA));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
         test.setPermutations(parameters.getInt(Params.MINIMAX_PERMUTATIONS));
         test.setPermSeed(12345);
@@ -139,11 +145,11 @@ public class MinimaxCITest implements IndependenceWrapper {
         params.add(Params.ALPHA);
         params.add(Params.VERBOSE);
         params.add(Params.BINS_PER_CONT_XY);
+        params.add(Params.USE_ADAPTIVE_Z_BINS);
         params.add(Params.BINS_PER_CONT_Z);
         params.add(Params.MAX_CELLS_PER_STRATUM);
         params.add(Params.MAX_OBSERVED_LEVELS_PER_VAR);
         params.add(Params.MIN_STRATUM_SIZE);
-        params.add(Params.USE_MAX_ACROSS_STRATA);
         params.add(Params.MINIMAX_PERMUTATIONS);
         params.add(Params.MISSING_DATA_POLICY);
         return params;
