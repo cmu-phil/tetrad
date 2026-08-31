@@ -5429,6 +5429,65 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#alpha">alpha</a>, pythonCiServer, <a href="#verbose">verbose</a>, missingDataPolicy</p>
 
+    <h3>Minimax Conditional Independence Test</h3>
+
+    <div id="minimax-ci-test">
+        <p>A stratified permutation test of X _||_ Y | Z. The conditioning set is discretized: each continuous Z
+            variable is binned, and each combination of Z bins (and discrete Z values) forms a stratum. Within each
+            stratum, X is permuted relative to Y to build a permutation null for a within-stratum association statistic
+            (a correlation-based statistic for continuous pairs; a G-type statistic when X or Y is discrete), and the
+            per-stratum permutation p-values are combined across strata by a conservative quantile ("soft minimax")
+            aggregation. Because the permutation is carried out within strata, the test makes no distributional or
+            functional-form assumptions about the dependence of X and Y on Z.</p>
+        <p>The permutation null is exact for X _||_ Y | bin(Z), not X _||_ Y | Z: residual variation of Z within a bin
+            is a bin-geometry bias that does not shrink as n grows, so with a fixed number of bins the test's size
+            degrades as n increases. By default the number of bins per continuous Z dimension therefore grows
+            adaptively at the n^(2/5) rate of Neykov, Balakrishnan, and Wasserman (2021), capped so that expected
+            stratum sizes stay workable (useAdaptiveZBins; set it false to control binsPerContZ manually). Intended
+            scope: conditioning sets with at most about two continuous variables and n of roughly 1000 or more;
+            residual size inflation of a few percentage points above nominal remains at smaller n, and power falls as
+            strata multiply. Best used for spot checks of individual facts rather than as the test inside a search.
+            Mixed data. See Neykov, M., Balakrishnan, S., & Wasserman, L. (2021). Minimax optimal conditional
+            independence testing. The Annals of Statistics, 49(4), 2151-2177.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, useAdaptiveZBins, binsPerContZ, binsPerContXY, minStratumSize,
+        minimaxPermutations, maxCellsPerStratum, maxObservedLevelsPerVar, <a href="#verbose">verbose</a>,
+        missingDataPolicy</p>
+
+    <h3>TRFF LR Test</h3>
+
+    <div id="trff-lr-test">
+        <p>A likelihood-ratio conditional independence test built on the TRFF BIC score's local model: each variable
+            is regressed on its conditioning set using ridge regression over random Fourier features of the continuous
+            conditioners plus indicator columns for discrete conditioners, with a Student-t error model for continuous
+            targets and a multinomial logistic model for discrete targets. To test X _||_ Y | Z, a reduced model
+            (Y given Z) and a full model (Y given Z plus X) are fit on a single shared design matrix in which the
+            reduced model's columns are a prefix of the full model's columns - the full design appends a linear X
+            column and a fresh block of random Fourier features over (Z, X), or the indicator columns of X when X is
+            discrete - so the two models are nested by construction and the likelihood-ratio statistic is nonnegative.
+            Explicit linear columns for the continuous conditioners are included in both designs so that linear
+            conditional means are represented exactly and the random features carry only the nonlinear remainder.</p>
+        <p>The degrees of freedom are approximated by the difference in ridge effective degrees of freedom. For a
+            discrete target the deviance is referred to a chi-square with those degrees of freedom. For a continuous
+            target the error scale is profiled per model, and the chi-square reference fails when the added block is
+            not small relative to n; the statistic is therefore converted to the classical F form and referred to an F
+            distribution, which agrees with the chi-square when the added block is small and remains calibrated when
+            it is not. The test is symmetrized: both directions (target Y, adding X; and target X, adding Y) are
+            computed and the more conservative p-value is reported, so results do not depend on argument order. The
+            reference distributions are approximations rather than exact permutation or Wilks results, and the test
+            should be considered experimental; with the default number of random features it is also computationally
+            heavy inside a search. Mixed data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, minimaxRidge,
+        minimaxFfFeatures, <a href="#penaltyDiscount">penaltyDiscount</a>, <a href="#verbose">verbose</a>,
+        missingDataPolicy</p>
+
     <h2>Scoring Functions</h2>
 
     <p>Like the tests, above, all the below tests do testwise deletion
