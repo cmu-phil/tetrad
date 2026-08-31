@@ -4,7 +4,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.LegendreBicScore;
 import edu.cmu.tetrad.search.score.TRffBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import org.jetbrains.annotations.NotNull;
@@ -58,18 +57,6 @@ public final class DagMetrics {
         };
     }
 
-    /**
-     * Computes the Legendre BIC score for a given dataset and DAG.
-     * @return A {@link DagMetric} instance that calculates the Legendre BIC metric.
-     */
-    public static @NotNull DagMetric legendreBic() {
-        return (data, dag) -> {
-            var algScore = new edu.cmu.tetrad.algcomparison.score.LegendreBicScore();
-            var score = (LegendreBicScore) algScore.getScore(data, new Parameters());
-            double s = sumLocalScores(data, dag, score);
-            return new DagMetricResult("Legendre BIC", s, "General Mixed BIC Score", DagMetricResult.Better.HIGHER);
-        };
-    }
 
     /**
      * Computes the FFML score for a given dataset and DAG.

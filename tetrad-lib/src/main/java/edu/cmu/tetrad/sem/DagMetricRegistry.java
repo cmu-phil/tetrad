@@ -31,12 +31,10 @@ public final class DagMetricRegistry {
             metrics.add(DagMetrics.lgModelP());
             metrics.add(DagMetrics.rmsea());
             metrics.add(DagMetrics.ffml());
-            metrics.add(DagMetrics.legendreBic());
             metrics.add(DagMetrics.minimaxTrffBic());
             metrics.add(DagMetrics.mmd2());
         } else if (data.isMixed()) {
             metrics.add(DagMetrics.ffml());
-            metrics.add(DagMetrics.legendreBic());
             metrics.add(DagMetrics.minimaxTrffBic());
             metrics.add(DagMetrics.mmd2());
         } else {

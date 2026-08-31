@@ -209,8 +209,15 @@ public final class NonlinearityChecks extends JPanel {
         notesButton.setFocusable(false);
         notesButton.addActionListener(e -> showFullNotes());
 
+        JButton copyTableButton = new JButton("Copy Table");
+        copyTableButton.setFocusable(false);
+        copyTableButton.setToolTipText("Copy the results table to the clipboard as tab-separated "
+                + "text, for pasting into a spreadsheet or document.");
+        copyTableButton.addActionListener(e -> copyTableToClipboard(copyTableButton));
+
         JPanel notesButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 6));
         notesButtonPanel.setOpaque(false);
+        notesButtonPanel.add(copyTableButton);
         notesButtonPanel.add(notesButton);
 
         JPanel footer = new JPanel(new BorderLayout());
@@ -883,6 +890,39 @@ public final class NonlinearityChecks extends JPanel {
     }
 
     // ---------------- table model ----------------
+
+    /**
+     * Copies the results table (header plus all rows, in current model order) to the system
+     * clipboard as tab-separated text, and briefly flashes "Copied" on the given button as
+     * feedback. Cell values are the same formatted strings shown in the table.
+     */
+    private void copyTableToClipboard(JButton feedback) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int c = 0; c < tableModel.getColumnCount(); c++) {
+            if (c > 0) sb.append('\t');
+            sb.append(tableModel.getColumnName(c));
+        }
+        sb.append('\n');
+
+        for (int r = 0; r < tableModel.getRowCount(); r++) {
+            for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                if (c > 0) sb.append('\t');
+                Object v = tableModel.getValueAt(r, c);
+                sb.append(v == null ? "" : v.toString());
+            }
+            sb.append('\n');
+        }
+
+        java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                .setContents(new java.awt.datatransfer.StringSelection(sb.toString()), null);
+
+        String label = feedback.getText();
+        feedback.setText("Copied");
+        javax.swing.Timer t = new javax.swing.Timer(1200, ev -> feedback.setText(label));
+        t.setRepeats(false);
+        t.start();
+    }
 
     private final class ResultsTableModel extends AbstractTableModel {
         private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity (Parents)"};//, "Additive Noise"}; // NEW

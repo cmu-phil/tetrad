@@ -130,7 +130,6 @@ public final class  CiTestHarness {
 //        tests.add(new MinimaxCITest());
 //        tests.add(new MinimaxTRffIndTest());
         tests.add(new FfCi());
-        tests.add(new LegendreLrIndTest());
 
         Parameters params = new Parameters();
         params.set(Params.MINIMAX_PERMUTATIONS, 500);

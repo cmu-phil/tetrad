@@ -1435,37 +1435,6 @@ public final class Params {
      */
     public static final String GCM_RFF_SIGMA = "gcmRffSigma";
     /**
-     * Constant <code>LEGENDRE_DEGREE="minimaxLegendreDegree"</code> Degree of the Legendre polynomial used in
-     * the MLegendre BIC scoring methodology.
-     */
-    public static final String LEGENDRE_DEGREE = "minimaxLegendreDegree";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_CLIP="minimaxLegendreClip"</code> Clip value for the Legendre BIC scoring
-     * methodology.
-     */
-    public static final String LEGENDRE_CLIP = "minimaxLegendreClip";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_RIDGE="minimaxLegendreRidge"</code> Ridge parameter for the Minimax Legendre
-     * scoring methodology.
-     */
-    public static final String LEGENDRE_RIDGE = "minimaxLegendreRidge";
-    /**
-     * Constant <code>LEGENDRE_RFF_FEATURES="minimaxLegendreRffFeatures"</code> Number
-     */
-    public static final String LEGENDRE_NU = "minimaxLegendreNu";
-    /**
-     * Constant <code>LEGENDRE_RFF_SIGMA="minimaxLegendreRffSigma"</code>
-     */
-    public static final String LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
-    /**
-     * Constant <code>LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
-     */
-    public static final String LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
-    /**
-     * Constant <code>LEGENDRE_INIT_SCALE="minimaxLegendreMaxIterations"</code>
-     */
-    public static final String LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
-    /**
      * Constant <code>DAO_SF_OUT="daoSfOut"</code>
      */
     public static final String DAO_SF_OUT = "daoSfOut";
