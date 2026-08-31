@@ -20,6 +20,9 @@
 
 package edu.cmu.tetrad.algcomparison.independence;
 
+import edu.cmu.tetrad.annotation.General;
+import edu.cmu.tetrad.annotation.Mixed;
+import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -39,13 +42,13 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-//@TestOfIndependence(
-//        name = "Neykov Minimax Conditional Independence Test",
-//        command = "neykov-minimax-ci-test",
-//        dataType = DataType.Mixed
-//)
-//@General
-//@Mixed
+@TestOfIndependence(
+        name = "Neykov Minimax Conditional Independence Test",
+        command = "neykov-minimax-ci-test",
+        dataType = DataType.Mixed
+)
+@General
+@Mixed
 @Deprecated(since = "7.9", forRemoval = false)
 public class NeykovMinimaxCITest implements IndependenceWrapper {
 
