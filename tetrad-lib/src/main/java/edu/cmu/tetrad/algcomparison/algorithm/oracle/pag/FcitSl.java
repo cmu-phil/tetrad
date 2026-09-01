@@ -34,7 +34,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
@@ -200,17 +199,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
         search.setKnowledge(this.knowledge);
 
-        search.setFocusPair(new GraphNode("V2"), new GraphNode("V6"));
-
-        Graph search1 = search.search();
-
-        List<String> trace = search.getFocusSepsetLog();
-        if (!trace.isEmpty()) {
-            System.out.println("=== sepset search trace (V2,V6) ===");
-            trace.forEach(System.out::println);
-        }
-
-        return search1;
+        return search.search();
     }
 
     /**
