@@ -24,11 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.MagToPag;
-import edu.cmu.tetrad.search.utils.PagLegalityCheck;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
-import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -843,7 +839,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      * per gated trial so that each trial's R4 sepset appends land in its own trial-local map and are
      * discarded with the trial.
      */
-    private FciOrient       buildFciOrient(SepsetMap sepsetMap) {
+    private FciOrient buildFciOrient(SepsetMap sepsetMap) {
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
         // Respect the user's depth/length knobs instead of hardcoding unlimited. With
         // usePossibleDsep == false the R4 discriminating-path resolution must not be the
@@ -853,13 +849,13 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         strategy.setMaxLength(this.maxDiscriminatingPathLength);
         strategy.setSepsetMap(sepsetMap);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
-        strategy.setVerbose(false);
+        strategy.setVerbose(verbose);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setUseR4(true);
-        fciOrient.setVerbose(true);
+        fciOrient.setVerbose(verbose);
         return fciOrient;
     }
 
@@ -1066,6 +1062,16 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      * @return a Graph object representing the Markov Directed Acyclic Graph (DAG).
      * @throws InterruptedException if the process is interrupted during execution.
      */
+
+    /**
+     * Returns whether the working PAG replicates across time lags.
+     *
+     * @return true if replicating.
+     */
+    public boolean isReplicatingGraph() {
+        return this.replicatingGraph;
+    }
+
     /**
      * Sets whether the working PAG should be a replicating (time-lag repeating) graph: if set,
      * the PAG is maintained as a ReplicatingGraph with a LagReplicationPolicy, so that edge
@@ -1078,15 +1084,6 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      */
     public void setReplicatingGraph(boolean replicatingGraph) {
         this.replicatingGraph = replicatingGraph;
-    }
-
-    /**
-     * Returns whether the working PAG replicates across time lags.
-     *
-     * @return true if replicating.
-     */
-    public boolean isReplicatingGraph() {
-        return this.replicatingGraph;
     }
 
     /**
