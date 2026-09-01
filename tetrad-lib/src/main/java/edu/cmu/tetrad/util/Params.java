@@ -763,6 +763,10 @@ public final class Params {
      */
     public static final String NUM_STARTS = "numStarts";
     /**
+     * Constant <code>FLOP_NUM_RESTARTS="flopNumRestarts"</code>
+     */
+    public static final String FLOP_NUM_RESTARTS = "flopNumRestarts";
+    /**
      * Constant <code>CACHE_SCORES="cacheScores"</code>
      */
     public static final String CACHE_SCORES = "cacheScores";

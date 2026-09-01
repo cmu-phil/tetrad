@@ -4213,6 +4213,23 @@ Source:
     </ul>
 
 
+    === flopNumRestarts ===
+    <h3 class="parameter_description" id="flopNumRestarts">flopNumRestarts</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="flopNumRestarts_short_desc">The number of iterated local search (ILS)
+        restarts for FLOP (default 20)</span></li>
+        <li>Long Description: <span id="flopNumRestarts_long_desc"> The number of iterated local search restarts.
+        Zero gives a single local search from the principled initial order. Each restart perturbs the best-found
+        order with about ln(p) random transpositions and reruns the local search, keeping the best-scoring result;
+        more restarts can never yield a worse-scoring graph, at the expense of run-time.</span></li>
+        <li>Default Value: <span id="flopNumRestarts_default_value">20</span></li>
+        <li>Lower Bound: <span id="flopNumRestarts_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="flopNumRestarts_upper_bound">2147483647</span></li>
+        <li>Value Type:
+            <span id="flopNumRestarts_value_type">Integer</span></li>
+    </ul>
+
+
     === numStarts ===
     <h3 class="parameter_description" id="numStarts">numStarts</h3>
     <ul class="parameter_description_list">
