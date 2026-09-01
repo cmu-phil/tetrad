@@ -1033,6 +1033,10 @@ public final class Params {
      */
     public static final String DO_LEGALITY_GATING = "doLegalityGating";
     /**
+     * Constant <code>LOG_FINAL_ORIENTATIONS="logFinalOrientations"</code>
+     */
+    public static final String LOG_FINAL_ORIENTATIONS = "logFinalOrientations";
+    /**
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
     public static final String REMOVE_ALMOST_CYCLES = "removeAlmostCycles";

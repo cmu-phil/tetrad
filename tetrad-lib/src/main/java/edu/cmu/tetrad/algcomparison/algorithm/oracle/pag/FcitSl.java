@@ -197,6 +197,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
         search.setKnowledge(this.knowledge);
 
         search.setFocusPair(new GraphNode("V2"), new GraphNode("V6"));
@@ -275,6 +276,7 @@ public class FcitSl extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
 
         params.add(Params.VERBOSE);
+        params.add(Params.LOG_FINAL_ORIENTATIONS);
 
         return params;
     }

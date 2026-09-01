@@ -149,6 +149,12 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
+     * Whether the FCI orientation engine logs its rule-by-rule output (R1-R4 firings,
+     * discriminating-path stamps). The engines' rule logging is otherwise off; the R0R4
+     * strategies log under (verbose || this flag), so verbose alone behaves as before.
+     */
+    private boolean logFinalOrientations = false;
+    /**
      * A flag indicating whether the graph replication process is active.
      * When set to {@code true}, the graph is being replicated.
      * When set to {@code false}, the graph replication process is inactive.
@@ -905,7 +911,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
         R0R4StrategyTestBased testStrategy = new R0R4StrategyTestBased(test);
         testStrategy.setDepth(depth);
         testStrategy.setKnowledge(knowledge);
-        testStrategy.setVerbose(verbose);
+        testStrategy.setVerbose(verbose || logFinalOrientations);
 
         EvidenceBackedR0R4Strategy strategy = new EvidenceBackedR0R4Strategy(
                 testStrategy, interimPags.getFirst(), initialColliders);
@@ -913,7 +919,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-        fciOrient.setVerbose(false);
+        fciOrient.setVerbose(logFinalOrientations);
         fciOrient.ruleR0(finalPag, new HashSet<>(), excludeSelectionBias);
         fciOrient.finalOrientation(finalPag);
 
@@ -952,7 +958,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
                 R0R4StrategyTestBased canonicalTestStrategy = new R0R4StrategyTestBased(test);
                 canonicalTestStrategy.setDepth(depth);
                 canonicalTestStrategy.setKnowledge(new Knowledge());
-                canonicalTestStrategy.setVerbose(verbose);
+                canonicalTestStrategy.setVerbose(verbose || logFinalOrientations);
 
                 EvidenceBackedR0R4Strategy canonicalStrategy = new EvidenceBackedR0R4Strategy(
                         canonicalTestStrategy, interimPags.getFirst(), initialColliders);
@@ -960,7 +966,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
                 FciOrient canonicalOrient = new FciOrient(canonicalStrategy);
                 canonicalOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
                 canonicalOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
-                canonicalOrient.setVerbose(false);
+                canonicalOrient.setVerbose(logFinalOrientations);
                 canonicalOrient.ruleR0(canonicalPag, new HashSet<>(), excludeSelectionBias);
                 canonicalOrient.finalOrientation(canonicalPag);
 
@@ -3722,6 +3728,16 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Sets whether the FCI orientation engine logs its rule-by-rule output (R1-R4 firings,
+     * discriminating-path stamps). Independent of verbose, which alone behaves as before.
+     *
+     * @param logFinalOrientations True, if so.
+     */
+    public void setLogFinalOrientations(boolean logFinalOrientations) {
+        this.logFinalOrientations = logFinalOrientations;
     }
 
     /**

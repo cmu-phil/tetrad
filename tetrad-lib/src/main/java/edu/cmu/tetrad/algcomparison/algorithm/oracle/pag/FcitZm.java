@@ -184,6 +184,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
         search.setKnowledge(this.knowledge);
 
         return search.search();
@@ -250,6 +251,7 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
 
         params.add(Params.VERBOSE);
+        params.add(Params.LOG_FINAL_ORIENTATIONS);
 
         return params;
     }
