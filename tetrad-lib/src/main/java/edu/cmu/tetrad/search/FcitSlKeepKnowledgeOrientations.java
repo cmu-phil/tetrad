@@ -885,6 +885,10 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
             }
         } while (changed);
 
+        if (verbose)
+            TetradLogger.getInstance().log("Rounds finished.");
+
+
         if (verbose) {
             TetradLogger.getInstance().log("Final orientation: cold R0 / R1-R10, evidence-backed "
                     + "(committed sepsets first, CPDAG colliders second, test only as fallback).");
