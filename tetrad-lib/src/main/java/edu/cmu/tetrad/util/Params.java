@@ -759,6 +759,10 @@ public final class Params {
      */
     public static final String USE_BES = "useBes";
     /**
+     * Constant <code>USE_ILS_RESTARTS="useIlsRestarts"</code>
+     */
+    public static final String USE_ILS_RESTARTS = "useIlsRestarts";
+    /**
      * Constant <code>NUM_STARTS="numStarts"</code>
      */
     public static final String NUM_STARTS = "numStarts";

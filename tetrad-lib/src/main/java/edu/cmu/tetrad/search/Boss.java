@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.BesPermutation;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -121,6 +122,13 @@ public class Boss implements SuborderSearch {
      */
     private int numStarts = 1;
     /**
+     * True if restarts after the first should use iterated local search (ILS) in the style of the FLOP algorithm
+     * (Wienobst, Henckel, &amp; Weichwald, 2026): each restart perturbs the best suborder found so far with about
+     * ln(m) random transpositions, rather than starting from a fresh random permutation. False (the default) gives
+     * the original BOSS behavior of independent random restarts.
+     */
+    private boolean useIlsRestarts = false;
+    /**
      * True if the order of the variables in the data should be used for an initial best-order search, false if a random
      * permutation should be used. (Subsequence automatic best order runs will use random permutations.) This is
      * included so that the algorithm will be capable of outputting the same results with the same data without any
@@ -199,7 +207,17 @@ public class Boss implements SuborderSearch {
 
                 double time = System.currentTimeMillis();
 
-                if ((i == 0 && !this.useDataOrder) || i > 0) {
+                if (i == 0) {
+                    if (!this.useDataOrder) {
+                        shuffle(suborder);
+                    }
+                } else if (this.useIlsRestarts && bestSuborder != null) {
+                    // Iterated local search: perturb the best suborder found so far with about ln(m) random
+                    // transpositions, rather than starting from a fresh random permutation.
+                    suborder.clear();
+                    suborder.addAll(bestSuborder);
+                    perturb(suborder);
+                } else {
                     shuffle(suborder);
                 }
 
@@ -307,6 +325,43 @@ public class Boss implements SuborderSearch {
      */
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
+    }
+
+    /**
+     * Sets whether restarts after the first should use iterated local search (ILS) in the style of the FLOP
+     * algorithm (Wienobst, Henckel, &amp; Weichwald, 2026): each restart perturbs the best suborder found so far
+     * with about ln(m) random transpositions, where m is the size of the suborder, rather than starting from a
+     * fresh random permutation. ILS restarts typically reconverge much faster than random restarts and are more
+     * effective at escaping local optima per unit of compute. The default is false, giving the original BOSS
+     * behavior of independent random restarts.
+     *
+     * @param useIlsRestarts True to use ILS-style restarts.
+     */
+    public void setUseIlsRestarts(boolean useIlsRestarts) {
+        this.useIlsRestarts = useIlsRestarts;
+    }
+
+    /**
+     * Perturbs the given suborder in place with about ln(m) random transpositions, where m is the size of the
+     * suborder. This is the ILS perturbation of the FLOP algorithm; the number of swaps is large enough to escape
+     * the basin of the current local optimum but small enough to stay in a promising region of the order space.
+     * Randomness comes from RandomUtil, so results are reproducible under a set seed.
+     *
+     * @param suborder The suborder to perturb.
+     */
+    private void perturb(List<Node> suborder) {
+        int m = suborder.size();
+        if (m < 2) return;
+
+        int numSwaps = Math.max(1, (int) Math.round(Math.log(m)));
+
+        for (int s = 0; s < numSwaps; s++) {
+            int a = RandomUtil.getInstance().nextInt(m);
+            int b = RandomUtil.getInstance().nextInt(m);
+            Node tmp = suborder.get(a);
+            suborder.set(a, suborder.get(b));
+            suborder.set(b, tmp);
+        }
     }
 
     /**

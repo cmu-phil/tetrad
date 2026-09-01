@@ -4233,17 +4233,36 @@ Source:
     === numStarts ===
     <h3 class="parameter_description" id="numStarts">numStarts</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="numStarts_short_desc">The number of restarts, random after the
-        first (default 1)</span></li>
-        <li>Long Description: <span id="numStarts_long_desc"> The number of times the algorithm should
-        be started from different initializations. By default, the algorithm
-        will be run through at least once using the initialized parameters
-        (zero random restarts).</span></li>
+        <li>Short Description: <span id="numStarts_short_desc">The number of restarts of the search
+        (default 1)</span></li>
+        <li>Long Description: <span id="numStarts_long_desc"> The number of times the algorithm should be started
+        and run to completion, with the best-scoring result kept. By default, restarts after the first begin from
+        fresh random orders. Some algorithms offer an alternative restart style; for example, BOSS with the
+        useIlsRestarts option perturbs the best order found so far (iterated local search) instead of starting from
+        a fresh random order.</span></li>
         <li>Default Value: <span id="numStarts_default_value">1</span></li>
         <li>Lower Bound: <span id="numStarts_lower_bound">1</span></li>
         <li>Upper Bound: <span id="numStarts_upper_bound">2147483647</span></li>
         <li>Value Type:
             <span id="numStarts_value_type">Integer</span></li>
+    </ul>
+
+
+    === useIlsRestarts ===
+    <h3 class="parameter_description" id="useIlsRestarts">useIlsRestarts</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useIlsRestarts_short_desc">Yes if restarts should use iterated local
+        search (ILS) rather than fresh random orders (default No)</span></li>
+        <li>Long Description: <span id="useIlsRestarts_long_desc"> If Yes, restarts after the first perturb the
+        best order found so far with about ln(m) random transpositions and rerun the search from there, in the
+        style of the FLOP algorithm (Wienobst, Henckel, and Weichwald, 2026), rather than starting from a fresh
+        random order. ILS restarts typically reconverge much faster than random restarts and escape local optima
+        more effectively per unit of compute. The number of restarts is controlled by numStarts.</span></li>
+        <li>Default Value: <span id="useIlsRestarts_default_value">false</span></li>
+        <li>Lower Bound: <span id="useIlsRestarts_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useIlsRestarts_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="useIlsRestarts_value_type">Boolean</span></li>
     </ul>
 
 

@@ -117,6 +117,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         boss.setUseBes(parameters.getBoolean(Params.USE_BES));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        boss.setUseIlsRestarts(parameters.getBoolean(Params.USE_ILS_RESTARTS));
         boss.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         boss.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -176,6 +177,7 @@ public class Boss extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // Parameters
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
+        params.add(Params.USE_ILS_RESTARTS);
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.NUM_THREADS);
