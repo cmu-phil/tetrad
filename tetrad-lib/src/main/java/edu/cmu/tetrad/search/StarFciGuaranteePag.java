@@ -703,8 +703,10 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
 
         if (!legal.isLegalPag()) {
             if (verbose) {
+                IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
                 TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
-                        + "), but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
+                        + "); sepset = " + sepset + ", p-value = " + result.getPValue()
+                        + ", but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
             }
 
             return pag;                                // committed sepset map untouched
@@ -720,6 +722,21 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         }
 
         return _pag;
+    }
+
+    /**
+     * Formats a batch of candidate removals as "a -- c (sepset = [...])" pairs for verbose logging,
+     * so stall traces show which edges were tried and under which separating sets.
+     */
+    private String formatBatch(List<Set<Node>> batch, Map<Set<Node>, Set<Node>> foundSepsets) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < batch.size(); i++) {
+            if (i > 0) sb.append(", ");
+            List<Node> pn = new ArrayList<>(batch.get(i));
+            sb.append(pn.get(0)).append(" -- ").append(pn.get(1))
+                    .append(" (sepset = ").append(foundSepsets.get(batch.get(i))).append(")");
+        }
+        return sb.toString();
     }
 
     /**
@@ -761,7 +778,8 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
 
         if (verbose) {
             TetradLogger.getInstance().log("Saturating step: " + stalled.size()
-                    + " separable edge(s) survived the single-edge fixpoint; trying joint removal.");
+                    + " separable edge(s) survived the single-edge fixpoint; trying joint removal: "
+                    + formatBatch(stalled, foundSepsets) + ".");
         }
 
         // Trial 1: full saturation; then one leave-one-out rung. (A singleton R retries the
@@ -802,12 +820,14 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
                 }
                 if (verbose) {
                     TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
-                            + stalled.size() + " edge(s) jointly (legal PAG).");
+                            + stalled.size() + " edge(s) jointly (legal PAG): "
+                            + formatBatch(batch, foundSepsets) + ".");
                 }
                 return trial;
             } else if (verbose) {
                 TetradLogger.getInstance().log("\tSaturating step: joint removal of " + batch.size()
-                        + " edge(s) not legal (reverted). Reason: " + legal.getReason());
+                        + " edge(s) not legal (reverted): " + formatBatch(batch, foundSepsets)
+                        + ". Reason: " + legal.getReason());
             }
         }
 
