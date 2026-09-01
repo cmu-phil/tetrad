@@ -907,9 +907,10 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
         // construction); for a pair nonadjacent from the start, the score-based CPDAG's verdict
         // is copied (the GFCI justification -- this is what initialColliders was harvested for);
         // the raw test is consulted only for triples with no recorded evidence, which should be
-        // rare (see the r0TestFallback telemetry). Note ruleR0 wipes to circles and applies
-        // background knowledge internally, so no separate reorientWithCircles / fciOrientbk calls
-        // are needed here.
+        // rare (see the r0TestFallback telemetry). ruleR0 wipes to circles and applies
+        // background knowledge internally; the explicit reorientAllWith(CIRCLE) below is a
+        // deliberate belt-and-braces duplicate, so this class's coldness is enforced locally and
+        // survives any future refactor of ruleR0's internals. fciOrientbk still comes from ruleR0.
         Graph finalPag = interimPags.getLast().copy();
 
         R0R4StrategyTestBased testStrategy = new R0R4StrategyTestBased(test);
@@ -924,6 +925,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setVerbose(logFinalOrientations);
+        finalPag.reorientAllWith(Endpoint.CIRCLE); // cold by this class's own hand (see comment above)
         fciOrient.ruleR0(finalPag, new HashSet<>(), excludeSelectionBias);
         fciOrient.finalOrientation(finalPag);
 
@@ -971,6 +973,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
                 canonicalOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
                 canonicalOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
                 canonicalOrient.setVerbose(logFinalOrientations);
+                canonicalPag.reorientAllWith(Endpoint.CIRCLE); // cold by this class's own hand
                 canonicalOrient.ruleR0(canonicalPag, new HashSet<>(), excludeSelectionBias);
                 canonicalOrient.finalOrientation(canonicalPag);
 
