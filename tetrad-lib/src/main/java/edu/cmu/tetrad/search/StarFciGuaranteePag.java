@@ -843,7 +843,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      * per gated trial so that each trial's R4 sepset appends land in its own trial-local map and are
      * discarded with the trial.
      */
-    private FciOrient buildFciOrient(SepsetMap sepsetMap) {
+    private FciOrient       buildFciOrient(SepsetMap sepsetMap) {
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
         // Respect the user's depth/length knobs instead of hardcoding unlimited. With
         // usePossibleDsep == false the R4 discriminating-path resolution must not be the
@@ -859,7 +859,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setUseR4(true);
-        fciOrient.setVerbose(false);
+        fciOrient.setVerbose(true);
         return fciOrient;
     }
 
