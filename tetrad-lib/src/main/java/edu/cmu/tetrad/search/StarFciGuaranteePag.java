@@ -128,6 +128,14 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      */
     private boolean verbose = false;
     /**
+     * Whether the final FCI orientation engine logs its rule-by-rule output (R0 collider copies,
+     * R1-R4 firings, BK orientation banners, discriminating-path stamps). Separate from
+     * {@link #verbose}, which controls the search-level narrative (removals tried and committed,
+     * sepsets, saturating step): the gated path re-runs the full orientation inside every trial,
+     * so orientation logging is voluminous and is off by default even when {@code verbose} is on.
+     */
+    private boolean logFinalOrientations = false;
+    /**
      * A boolean flag indicating whether to use the maximum p-value heuristic during certain operations in the Star-FCI
      * algorithm. The default value is {@code false}, disabling the heuristic by default.
      */
@@ -840,7 +848,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      * discarded with the trial.
      */
     private FciOrient buildFciOrient(SepsetMap sepsetMap) {
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, logFinalOrientations);
         // Respect the user's depth/length knobs instead of hardcoding unlimited. With
         // usePossibleDsep == false the R4 discriminating-path resolution must not be the
         // back door through which unbounded (possible-D-SEP-scale) conditioning searches
@@ -849,13 +857,13 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         strategy.setMaxLength(this.maxDiscriminatingPathLength);
         strategy.setSepsetMap(sepsetMap);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
-        strategy.setVerbose(verbose);
+        strategy.setVerbose(logFinalOrientations);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setUseR4(true);
-        fciOrient.setVerbose(verbose);
+        fciOrient.setVerbose(logFinalOrientations);
         return fciOrient;
     }
 
@@ -1031,6 +1039,27 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Indicates whether the final FCI orientation engine logs its rule-by-rule output.
+     *
+     * @return true if final-orientation logging is enabled, false otherwise.
+     */
+    public boolean isLogFinalOrientations() {
+        return logFinalOrientations;
+    }
+
+    /**
+     * Sets whether the final FCI orientation engine logs its rule-by-rule output (R1-R4 firings,
+     * BK orientation banners, discriminating-path stamps). Independent of {@link #setVerbose}:
+     * setting {@code verbose} alone yields the search-level narrative without the orientation
+     * flood; setting this flag alone yields only the orientation output.
+     *
+     * @param logFinalOrientations True, if so.
+     */
+    public void setLogFinalOrientations(boolean logFinalOrientations) {
+        this.logFinalOrientations = logFinalOrientations;
     }
 
     /**
