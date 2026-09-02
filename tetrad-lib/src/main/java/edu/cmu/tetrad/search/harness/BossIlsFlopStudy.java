@@ -47,7 +47,7 @@ public class BossIlsFlopStudy {
 
     public static void main(String[] args) throws Exception {
         int p = 100;
-        int avgDeg = 8;
+        int avgDeg = 6;
         int n = 1000;
         int reps = 20;
         double penalty = 2.0;
