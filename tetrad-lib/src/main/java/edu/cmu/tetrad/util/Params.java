@@ -751,6 +751,18 @@ public final class Params {
      */
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
     /**
+     * Constant <code>SEM_BIC_AUTO_PENALTY="semBicAutoPenalty"</code>
+     */
+    public static final String SEM_BIC_AUTO_PENALTY = "semBicAutoPenalty";
+    /**
+     * Constant <code>SEM_BIC_TARGET_FDR="semBicTargetFdr"</code>
+     */
+    public static final String SEM_BIC_TARGET_FDR = "semBicTargetFdr";
+    /**
+     * Constant <code>SEM_BIC_EXPECTED_DEGREE="semBicExpectedDegree"</code>
+     */
+    public static final String SEM_BIC_EXPECTED_DEGREE = "semBicExpectedDegree";
+    /**
      * Constant <code>POISSON_LAMBDA="poissonLambda"</code>
      */
     public static final String POISSON_LAMBDA = "poissonLambda";

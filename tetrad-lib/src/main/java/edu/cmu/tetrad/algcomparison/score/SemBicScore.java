@@ -31,6 +31,7 @@ import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -93,6 +94,24 @@ public class SemBicScore implements ScoreWrapper {
         int effectiveSampleSize = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
         if (effectiveSampleSize >= 0) semBicScore.setEffectiveSampleSize(effectiveSampleSize);
 
+        // Optionally replace the user-entered penalty discount with one calibrated to p, N, an expected degree
+        // and a target false-discovery ratio. Done after the effective sample size is settled so that N is the
+        // N the penalty actually uses. See SemBicScore.penaltyDiscountForFalseDiscoveryRate for the derivation.
+        if (parameters.getBoolean(Params.SEM_BIC_AUTO_PENALTY)) {
+            int p = dataSet.getVariables().size();
+            int n = semBicScore.getSampleSize();
+            double degree = parameters.getDouble(Params.SEM_BIC_EXPECTED_DEGREE);
+            double fdr = parameters.getDouble(Params.SEM_BIC_TARGET_FDR);
+            double c = edu.cmu.tetrad.search.score.SemBicScore.penaltyDiscountForFalseDiscoveryRate(p, n, degree, fdr);
+            semBicScore.setPenaltyDiscount(c);
+            TetradLogger.getInstance().log(String.format(
+                    "Sem BIC Score: auto penalty discount c = %.3f (p = %d, N = %d, expected degree = %.2f, "
+                    + "target FDR = %.4f; smallest detectable partial correlation = %.3f). "
+                    + "The penaltyDiscount parameter was ignored.",
+                    c, p, n, degree, fdr,
+                    edu.cmu.tetrad.search.score.SemBicScore.minDetectablePartialCorrelation(c, n)));
+        }
+
         switch (parameters.getInt(Params.SEM_BIC_RULE)) {
             case 1:
                 semBicScore.setRuleType(edu.cmu.tetrad.search.score.SemBicScore.RuleType.CHICKERING);
@@ -136,6 +155,9 @@ public class SemBicScore implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.SEM_BIC_AUTO_PENALTY);
+        parameters.add(Params.SEM_BIC_TARGET_FDR);
+        parameters.add(Params.SEM_BIC_EXPECTED_DEGREE);
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);

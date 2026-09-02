@@ -5492,6 +5492,55 @@ Source:
 
 
     === semBicStructurePrior ===
+    <h3 class="parameter_description" id="semBicAutoPenalty">semBicAutoPenalty</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="semBicAutoPenalty_short_desc">Set the penalty discount automatically
+        from p, N, expected degree and target FDR</span></li>
+        <li>Long Description: <span id="semBicAutoPenalty_long_desc">If true, the penalty discount entered
+        above is ignored and c is chosen so that the expected number of spurious edges over the whole search is
+        semBicTargetFdr times the expected number of true edges (p times semBicExpectedDegree / 2). The BIC sign
+        rule adds a parent when a chi-square(1) statistic exceeds c ln N, so each of the roughly p^2/2
+        non-adjacent pairs is a false-edge opportunity taken with probability P(chi-square(1) &gt; c ln N);
+        inverting that gives c. At p = 100, N = 1000 this reproduces the conventional c = 2; at p = 5000,
+        N = 1000 it gives about 2.8. The value used is written to the log along with the smallest partial
+        correlation the rule can then detect.</span></li>
+        <li>Default Value: <span id="semBicAutoPenalty_default_value">false</span></li>
+        <li>Lower Bound: <span id="semBicAutoPenalty_lower_bound"></span></li>
+        <li>Upper Bound: <span id="semBicAutoPenalty_upper_bound"></span></li>
+        <li>Value Type: <span id="semBicAutoPenalty_value_type">Boolean</span></li>
+    </ul>
+
+
+    <h3 class="parameter_description" id="semBicTargetFdr">semBicTargetFdr</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="semBicTargetFdr_short_desc">Target ratio of spurious to true edges
+        for the automatic penalty discount (default 0.01)</span></li>
+        <li>Long Description: <span id="semBicTargetFdr_long_desc">Used only when semBicAutoPenalty is true.
+        The tolerated expected number of spurious edges, as a fraction of the expected number of true edges.
+        Smaller values give a larger penalty discount and sparser graphs. 0.01 corresponds roughly to EBIC
+        with gamma = 1 at large p.</span></li>
+        <li>Default Value: <span id="semBicTargetFdr_default_value">0.01</span></li>
+        <li>Lower Bound: <span id="semBicTargetFdr_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="semBicTargetFdr_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="semBicTargetFdr_value_type">Double</span></li>
+    </ul>
+
+
+    <h3 class="parameter_description" id="semBicExpectedDegree">semBicExpectedDegree</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="semBicExpectedDegree_short_desc">Expected average degree of the true
+        graph, for the automatic penalty discount (default 5)</span></li>
+        <li>Long Description: <span id="semBicExpectedDegree_long_desc">Used only when semBicAutoPenalty is
+        true. A prior guess at the average degree of the true graph; it fixes the expected number of true
+        edges that semBicTargetFdr is a fraction of. The dependence is logarithmic, so a guess within a factor
+        of two changes the penalty discount by roughly 0.2 at N = 1000.</span></li>
+        <li>Default Value: <span id="semBicExpectedDegree_default_value">5.0</span></li>
+        <li>Lower Bound: <span id="semBicExpectedDegree_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="semBicExpectedDegree_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="semBicExpectedDegree_value_type">Double</span></li>
+    </ul>
+
+
     <h3 class="parameter_description" id="semBicStructurePrior">semBicStructurePrior</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="semBicStructurePrior_short_desc">Structure Prior for SEM BIC
