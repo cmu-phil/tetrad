@@ -45,6 +45,27 @@ public class BossIlsFlopStudy {
     private static final int NUM_ARMS = 6;
     private static final int MAX_TIME_MATCHED_RESTARTS = 500;
 
+    /**
+     * Constructs a new instance of the BossIlsFlopStudy class.
+     *
+     * This constructor initializes the object and allows access to the methods
+     * and functionality of the BossIlsFlopStudy class, which is designed to analyze
+     * and compare the performance of BOSS and FLOP variants on specific tasks such
+     * as random DAG simulations and evaluations based on runtime, structural
+     * Hamming distance (SHD), and Bayesian Information Criterion (BIC) differences.
+     */
+    public BossIlsFlopStudy() {
+    }
+
+    /**
+     * The main entry point for the application, responsible for the execution and comparison of different
+     * algorithms (BOSS and FLOP variants) across a specified number of repetitions. The method performs
+     * simulations using random DAGs, evaluates algorithms based on metrics such as runtime, structural
+     * Hamming distance (SHD), and difference in Bayesian Information Criterion (BIC), and summarizes the results.
+     *
+     * @param args Command-line arguments passed to the program (not used directly in the implementation).
+     * @throws Exception If any error occurs during execution, such as issues in data simulation or algorithm processing.
+     */
     public static void main(String[] args) throws Exception {
         int p = 100;
         int avgDeg = 6;
