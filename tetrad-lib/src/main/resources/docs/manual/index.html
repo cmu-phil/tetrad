@@ -4019,8 +4019,20 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             This step is needed for correctness but for large models, since usually
             nearly all edges are oriented in the CPDAG, it is heuristically not needed.</p>
         <p> numStarts - The number of times the algorithm should be re-run from different
-            random starting permutations. The model with the most optimal BIC score will
+            starting permutations. The model with the most optimal BIC score will
             be selected.</p>
+        <p> useIlsRestarts - If true, restarts after the first perturb the best order
+            found so far with about ln(m) random transpositions and rerun the search from
+            there (iterated local search), in the style of the FLOP algorithm, rather than
+            starting from a fresh random permutation. A perturbed order is only a few
+            swaps away from a local optimum, so it typically reconverges much faster than
+            a descent from a random order; in benchmarks this has given the same accuracy
+            as random restarts in roughly half the time. The number of restarts is still
+            controlled by numStarts.</p>
+        <p> numThreads - The number of threads used to score candidate positions within
+            a reinsertion step. Note that the search itself is sequential and each
+            parallel region is short, so the speedup from additional threads is well
+            below linear.</p>
         <p> allowInternalRandomness - If true, the algorithm allow the algorithm to
             use certain heuristic random steps. This can improve performance, but
             may make the algorithm non-deterministic.</p>
@@ -4057,11 +4069,99 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p><a href="#graspDepth">graspDepth</a>, <a
-            href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
-            href="#graspSingularDepth">graspSingularDepth</a> <a
-            href="#graspOrderedAlg">graspOrderedAlg</a> <a
-            href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
+    <p><a href="#useBes">useBes</a>, <a
+            href="#numStarts">numStarts</a> <a
+            href="#useIlsRestarts">useIlsRestarts</a> <a
+            href="#useDataOrder">useDataOrder</a> <a
+            href="#numThreads">numThreads</a> <a
+            href="#outputCpdag">outputCpdag</a> <a
+            href="#timeLag">timeLag</a> <a
+            href="#timeLagReplicatingGraph">timeLagReplicatingGraph</a> <a
+            href="#seed">seed</a> <a href="#verbose">verbose</a>
+
+    </p>
+
+    <h3>The FLOP Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="flop">
+
+        <p> FLOP (Fast Learning of Order and Parents) is a permutation search of the
+            same family as BOSS and GRaSP, due to Wienobst, Henckel, and Weichwald
+            (2026). Like BOSS it searches over topological orders, repeatedly removing
+            each variable from the order and reinserting it at its best-scoring
+            position until no reinsertion improves the total score. It differs from
+            BOSS in three respects.</p>
+
+        <p> First, parent sets are chosen by a non-greedy grow-shrink procedure rather
+            than a greedy one: the grow phase adds any variable that improves the local
+            score, not necessarily the best such variable, and the shrink phase removes
+            any parent whose removal improves it. Candidates are visited in random order,
+            so repeated searches from the same order can settle on different DAGs of
+            equal score. Second, when a variable enters or leaves a candidate prefix the
+            parent set is updated by a warm start from the previous parent set, with
+            early exits in the cases where the changed variable cannot affect the
+            result. Third, the search is restarted by iterated local search rather than
+            by independent random restarts: each restart perturbs the best order found
+            so far by about ln(p) random transpositions, rather than drawing a fresh
+            random order.</p>
+
+        <p> This implementation is specialized to the linear Gaussian BIC score and
+            takes continuous data or a covariance matrix. It does not accept an
+            arbitrary Score object, and knowledge is not currently supported. For
+            searches needing either of those, use BOSS, which supports the same
+            iterated local search through its useIlsRestarts parameter.</p>
+
+        <p> The parameters are as follows:</p>
+
+        <p> penaltyDiscount - The multiplier on the ln(N) * |parents| BIC penalty term,
+            written lambda in the paper. The default is 2, following Foygel and Drton
+            (2010).</p>
+
+        <p> flopNumRestarts - The number of iterated local search restarts. Note that
+            this differs in meaning from BOSS's numStarts: zero restarts gives one
+            search, from the initial order described below, rather than no search. More
+            restarts can never return a worse-scoring graph, so this parameter trades
+            runtime against score.</p>
+
+        <p> seed - The random seed for the perturbations and for the grow-shrink
+            candidate orderings, or -1 for a nondeterministic seed. Because the local
+            search is randomized, results are reproducible only when this is set.</p>
+
+        <p> The initial order is constructed by a pivoted Cholesky decomposition of the
+            correlation matrix, which places strongly correlated variables adjacently.
+            The motivation is that grow-shrink parent selection can fail on far-apart
+            ancestor-descendant pairs whose marginal dependence is too weak to detect at
+            finite sample sizes, path graphs being the canonical hard case; an order
+            that puts such pairs close together avoids asking grow-shrink to detect
+            those dependencies. This order is available separately, for use with BOSS or
+            GRaSP, as edu.cmu.tetrad.search.utils.FlopInitialOrder.</p>
+
+        <p> Wienobst, M., Henckel, L., &amp; Weichwald, S. (2026). Embracing discrete
+            search: a reasonable approach to causal structure learning.</p>
+
+        <p> Foygel, R., &amp; Drton, M. (2010). Extended Bayesian information criteria
+            for Gaussian graphical models. Advances in Neural Information Processing
+            Systems, 23.</p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Causal sufficiency; continuous variables with a linear Gaussian
+        model.</p>
+
+    <h4>Output Format</h4>
+
+    <p>The CPDAG equivalence class of DAGs representing estimated
+        possible causal structures over the set of variables.</p>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a>, <a
+            href="#flopNumRestarts">flopNumRestarts</a> <a
+            href="#seed">seed</a> <a href="#verbose">verbose</a>
 
     </p>
 
