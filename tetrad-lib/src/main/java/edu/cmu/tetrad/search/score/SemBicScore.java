@@ -36,6 +36,7 @@ import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
@@ -966,6 +967,87 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
     @Override
     public double impliedAlpha() {
         return StatUtils.getChiSquareP(1, getPenaltyDiscount() * this.logN);
+    }
+
+    /**
+     * Inverse of {@link #impliedAlpha()}: the penalty discount at which this score's sign rule operates at
+     * significance level {@code alpha}, i.e. the c such that P(chi-square(1) &gt; c * ln(N)) = alpha.
+     *
+     * <p>The local score difference for adding a single parent x to y given Z is -N ln(1 - r^2) - c ln(N), where r
+     * is the partial correlation (see {@link #localScoreDiff(int, int, int[])}). Under the null x _||_ y | Z the
+     * first term is asymptotically chi-square(1), so the edge is added exactly when a chi-square(1) variate exceeds
+     * c ln(N). Solving for c gives this method.</p>
+     *
+     * @param alpha      The per-test significance level, in (0, 1).
+     * @param sampleSize The sample size N used in the penalty (the effective sample size, if one is set).
+     * @return The penalty discount c = Q_chi2(1)(1 - alpha) / ln(N).
+     */
+    public static double penaltyDiscountForAlpha(double alpha, int sampleSize) {
+        if (!(alpha > 0 && alpha < 1)) {
+            throw new IllegalArgumentException("alpha must be in (0, 1): " + alpha);
+        }
+        if (sampleSize < 2) {
+            throw new IllegalArgumentException("sampleSize must be at least 2: " + sampleSize);
+        }
+        double quantile = new ChiSquaredDistribution(1).inverseCumulativeProbability(1.0 - alpha);
+        return quantile / log(sampleSize);
+    }
+
+    /**
+     * The penalty discount that holds the expected number of spurious edges over the whole search at approximately
+     * {@code expectedFalseEdges}, for {@code numVariables} variables and sample size {@code sampleSize}.
+     *
+     * <p>Rationale. Each non-adjacent pair is an opportunity for a spurious edge, and by
+     * {@link #penaltyDiscountForAlpha(double, int)} each such opportunity is taken with probability
+     * alpha(c) = P(chi-square(1) &gt; c ln N). In a sparse true graph nearly all of the p(p-1)/2 pairs are
+     * non-adjacent, so by linearity of expectation (no independence assumption is needed for the first moment)
+     * the expected number of spurious edges is approximately M alpha(c) with M = p(p-1)/2. Setting this equal to
+     * the budget and inverting gives</p>
+     *
+     * <pre>    c* = Q_chi2(1)(1 - E_FP / M) / ln(N).</pre>
+     *
+     * <p>For small alpha the chi-square(1) quantile is roughly 2 ln(1/alpha), so c* grows like 4 ln(p) / ln(N):
+     * the same ln(p)/ln(N) dependence as EBIC (Chen &amp; Chen 2008), with the multiplier fixed by a false-edge budget
+     * rather than a model-space prior. At p = 100, N = 1000, E_FP = 1 this returns c* = 2.00, which is the
+     * conventional discount at the conventional benchmark size; at p = 5000, N = 1000 it returns 4.17.</p>
+     *
+     * <p>Caveats. (1) The chi-square(1) null is asymptotic in N. (2) During search the conditioning set is the
+     * current parent set, not the true one, so the null is approximate; the greedy forward step also takes the
+     * best of many candidates, which makes M alpha an estimate of the first moment rather than a bound. Observed
+     * counts have landed within a factor of ~1.5 of the prediction. (3) This controls false positives only; the
+     * recall side is the smallest partial correlation the same rule can detect,
+     * {@link #minDetectablePartialCorrelation(double, int)}, which rises with c.</p>
+     *
+     * @param numVariables       The number of variables p.
+     * @param sampleSize         The sample size N.
+     * @param expectedFalseEdges The tolerated expected number of spurious edges over the whole graph, e.g. 1.0.
+     * @return The recommended penalty discount.
+     */
+    public static double penaltyDiscountForExpectedFalseEdges(int numVariables, int sampleSize,
+                                                              double expectedFalseEdges) {
+        if (numVariables < 2) {
+            throw new IllegalArgumentException("numVariables must be at least 2: " + numVariables);
+        }
+        if (!(expectedFalseEdges > 0)) {
+            throw new IllegalArgumentException("expectedFalseEdges must be positive: " + expectedFalseEdges);
+        }
+        double pairs = numVariables * (numVariables - 1.0) / 2.0;
+        double alpha = Math.min(expectedFalseEdges / pairs, 1.0 - 1e-12);
+        return penaltyDiscountForAlpha(alpha, sampleSize);
+    }
+
+    /**
+     * The smallest |partial correlation| that the sign rule accepts at penalty discount c and sample size N,
+     * i.e. the r solving -N ln(1 - r^2) = c ln(N). Edges whose true partial correlation given the rest of the
+     * parent set is below this are expected to be missed; it is the recall-side companion to
+     * {@link #penaltyDiscountForExpectedFalseEdges(int, int, double)}.
+     *
+     * @param penaltyDiscount The penalty discount c.
+     * @param sampleSize      The sample size N.
+     * @return r_min = sqrt(1 - N^(-c/N)), approximately sqrt(c ln(N) / N) for large N.
+     */
+    public static double minDetectablePartialCorrelation(double penaltyDiscount, int sampleSize) {
+        return Math.sqrt(1.0 - Math.exp(-penaltyDiscount * log(sampleSize) / sampleSize));
     }
 
     private double getStructurePrior(int parents) {
