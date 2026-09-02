@@ -1050,6 +1050,35 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         return Math.sqrt(1.0 - Math.exp(-penaltyDiscount * log(sampleSize) / sampleSize));
     }
 
+    /**
+     * The penalty discount that holds the expected number of spurious edges at a fraction {@code fdr} of the
+     * expected number of true edges, p * expectedDegree / 2. This is the false-discovery-proportion analogue of
+     * {@link #penaltyDiscountForExpectedFalseEdges(int, int, double)}, which controls an absolute count.
+     *
+     * <p>The two differ in how the per-test level scales with p: an absolute budget gives alpha ~ 1/p^2 and hence
+     * c* ~ 4 ln(p)/ln(N), which is EBIC at gamma = 2; a fractional budget gives alpha = fdr * degree / (p - 1) ~ 1/p
+     * and hence c* ~ 2 ln(p)/ln(N), which is EBIC at gamma = 1. For a large sparse graph the fractional budget is
+     * usually the one a practitioner means. The expected degree enters only as ln(1/(fdr * degree)), so an
+     * estimate within a factor of two changes c* by about 2 ln(2)/ln(N), roughly 0.2 at N = 1000.</p>
+     *
+     * @param numVariables   The number of variables p.
+     * @param sampleSize     The sample size N.
+     * @param expectedDegree The expected average degree of the true graph (a prior guess is fine).
+     * @param fdr            The tolerated ratio of spurious to true edges, e.g. 0.01.
+     * @return The recommended penalty discount.
+     */
+    public static double penaltyDiscountForFalseDiscoveryRate(int numVariables, int sampleSize,
+                                                              double expectedDegree, double fdr) {
+        if (!(expectedDegree > 0)) {
+            throw new IllegalArgumentException("expectedDegree must be positive: " + expectedDegree);
+        }
+        if (!(fdr > 0 && fdr < 1)) {
+            throw new IllegalArgumentException("fdr must be in (0, 1): " + fdr);
+        }
+        double expectedTrueEdges = numVariables * expectedDegree / 2.0;
+        return penaltyDiscountForExpectedFalseEdges(numVariables, sampleSize, fdr * expectedTrueEdges);
+    }
+
     private double getStructurePrior(int parents) {
         if (abs(getStructurePrior()) <= 0) {
             return 0;
