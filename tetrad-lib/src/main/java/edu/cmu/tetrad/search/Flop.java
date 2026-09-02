@@ -101,6 +101,22 @@ public class Flop {
     private boolean verbose = false;
 
     /**
+     * Whether the grow and shrink phases visit candidates in random order.
+     */
+    private boolean randomizeGrowShrink = true;
+
+    /**
+     * Whether the grow and shrink phases accept ties.
+     */
+    private boolean acceptTies = true;
+
+    /**
+     * The index of the last ILS restart that improved on the incumbent in the most recent search, or -1 before any
+     * search has been run.
+     */
+    private int lastImprovementRestart = -1;
+
+    /**
      * Constructs a FLOP search over the given continuous dataset. The dataset is reduced to its correlation matrix.
      *
      * @param dataSet A continuous dataset.
@@ -139,9 +155,13 @@ public class Flop {
         }
 
         FlopCore core = new FlopCore(r, n, this.penaltyDiscount);
+        core.setRandomizeGrowShrink(this.randomizeGrowShrink);
+        core.setAcceptTies(this.acceptTies);
 
         FlopCore.Result result = core.search(this.numRestarts, this.seed,
                 this.verbose ? s -> TetradLogger.getInstance().log(s) : null);
+
+        this.lastImprovementRestart = result.lastImprovementRestart();
 
         Map<Node, Set<Node>> parents = new HashMap<>();
 
@@ -197,5 +217,40 @@ public class Flop {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Sets whether the grow and shrink phases of the local search visit candidates in a random order, as in the
+     * authors' reference implementation, rather than in the index order of the current permutation. Index order is
+     * a biased scan, and it makes the local search a deterministic function of the permutation it is given, which
+     * means an ILS restart whose perturbed order drains back into the incumbent's basin returns the incumbent graph
+     * unchanged. The default is true.
+     *
+     * @param randomizeGrowShrink True to shuffle.
+     */
+    public void setRandomizeGrowShrink(boolean randomizeGrowShrink) {
+        this.randomizeGrowShrink = randomizeGrowShrink;
+    }
+
+    /**
+     * Sets whether the grow and shrink phases accept a candidate whose local score ties the incumbent, rather than
+     * requiring strict improvement. This matches the authors' comparison operators, though exact ties between
+     * distinct parent sets are rare in continuous data. The default is true.
+     *
+     * @param acceptTies True to accept ties.
+     */
+    public void setAcceptTies(boolean acceptTies) {
+        this.acceptTies = acceptTies;
+    }
+
+    /**
+     * Returns the index of the last ILS restart that improved on the incumbent in the most recent search. Zero means
+     * no restart improved on the initial local search; a value well below the restart count means the restart loop
+     * saturated and the remaining restarts were wasted.
+     *
+     * @return The last improving restart index, or -1 if no search has been run.
+     */
+    public int getLastImprovementRestart() {
+        return this.lastImprovementRestart;
     }
 }

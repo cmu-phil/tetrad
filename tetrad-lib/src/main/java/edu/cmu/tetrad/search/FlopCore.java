@@ -102,6 +102,69 @@ final class FlopCore {
     private final double[] scores;
 
     /**
+     * An odd 64-bit multiplier (the golden-ratio constant) used to mix the per-step stream seeds.
+     */
+    private static final long GOLDEN = 0x9E3779B97F4A7C15L;
+
+    /**
+     * The random source consumed by the grow and shrink phases. It is reseeded deterministically at the start of
+     * every move step (see seedStep) so that the replay at the end of reinsert() reproduces the swept state exactly
+     * even though the phases are randomized.
+     */
+    private final Random moveRng = new Random();
+
+    /**
+     * A scratch buffer for the candidate lists of grow() and shrink(). Those two methods never run concurrently and
+     * never call one another, so a single buffer is safe; anything added here that could nest must not reuse it.
+     */
+    private final int[] cand;
+
+    /**
+     * The base seed for the per-step stream seeds. This changes with the ILS restart index, so that two visits to
+     * the same basin on different restarts fit different DAGs on its score plateau.
+     */
+    private long streamSeed;
+
+    /**
+     * The index of the current reinsertion sweep within localSearch(), folded into the per-step seeds so that
+     * repeated reinsertions of the same variable do not repeat the same shuffles. It is constant across the sweeps
+     * and the replay of any single reinsert() call, which is what the replay contract requires.
+     */
+    private int pass;
+
+    /**
+     * Whether grow and shrink should visit candidates in a random order, as in the authors' reference
+     * implementation, rather than in the index order of the current permutation. The default is true.
+     */
+    private boolean randomizeGrowShrink = true;
+
+    /**
+     * Whether grow and shrink should accept a candidate whose local score merely ties the incumbent, rather than
+     * requiring strict improvement. This matches the authors' comparison operators, but note that exact ties
+     * between distinct parent sets are vanishingly rare in continuous data, so in practice this flag is close to
+     * inert and the randomization above is what breaks the determinism of the local search. The default is true.
+     */
+    private boolean acceptTies = true;
+
+    /**
+     * Sets whether the grow and shrink phases visit candidates in a random order.
+     *
+     * @param randomizeGrowShrink True to shuffle; false for the original deterministic index-order scan.
+     */
+    void setRandomizeGrowShrink(boolean randomizeGrowShrink) {
+        this.randomizeGrowShrink = randomizeGrowShrink;
+    }
+
+    /**
+     * Sets whether the grow and shrink phases accept ties.
+     *
+     * @param acceptTies True to accept ties; false to require strict improvement.
+     */
+    void setAcceptTies(boolean acceptTies) {
+        this.acceptTies = acceptTies;
+    }
+
+    /**
      * Constructs the core for the given correlation matrix.
      *
      * @param r               The correlation matrix, p x p. Not modified.
@@ -117,6 +180,7 @@ final class FlopCore {
         this.parents = new ArrayList<>(p);
         for (int v = 0; v < p; v++) this.parents.add(new ArrayList<>());
         this.scores = new double[p];
+        this.cand = new int[p];
     }
 
     /**
@@ -125,8 +189,11 @@ final class FlopCore {
      * @param order   The best order found.
      * @param parents The parent sets of the corresponding DAG; parents.get(v) lists the parents of variable v.
      * @param score   The total BIC score (smaller is better).
+     * @param lastImprovementRestart The index of the last ILS restart that improved on the incumbent, or 0 if no
+     *                restart improved on the initial local search. A value well below numRestarts means the restart
+     *                loop has saturated and the remaining restarts did no useful work.
      */
-    record Result(int[] order, List<List<Integer>> parents, double score) {
+    record Result(int[] order, List<List<Integer>> parents, double score, int lastImprovementRestart) {
     }
 
     /**
@@ -140,19 +207,23 @@ final class FlopCore {
      * @throws InterruptedException If the thread is interrupted.
      */
     Result search(int numRestarts, long seed, Consumer<String> log) throws InterruptedException {
+        long baseSeed = (seed == -1L) ? new Random().nextLong() : seed;
+        Random rng = new Random(baseSeed);
+
         this.order = initialOrder(this.r);
         this.pos = new int[p];
         for (int t = 0; t < p; t++) this.pos[this.order[t]] = t;
 
+        this.streamSeed = baseSeed;
         double score = localSearch();
 
         int[] bestOrder = this.order.clone();
         List<List<Integer>> bestParents = deepCopy(this.parents);
         double bestScore = score;
+        int lastImprovementRestart = 0;
 
         if (log != null) log.accept("FLOP: initial local search complete, score = " + bestScore);
 
-        Random rng = (seed == -1L) ? new Random() : new Random(seed);
         int numSwaps = Math.max(1, (int) Math.round(Math.log(p)));
 
         for (int restart = 1; restart <= numRestarts; restart++) {
@@ -171,21 +242,26 @@ final class FlopCore {
 
             for (int t = 0; t < p; t++) this.pos[this.order[t]] = t;
 
+            // A fresh grow-shrink stream for this restart. Even when the perturbed order drains straight back into
+            // the incumbent's basin, the parent sets fitted on the way back differ from the incumbent's, so the
+            // restart is not wasted the way it would be under a deterministic local search.
+            this.streamSeed = baseSeed + GOLDEN * restart;
             score = localSearch();
 
             if (score < bestScore - EPS) {
                 bestScore = score;
                 bestOrder = this.order.clone();
                 bestParents = deepCopy(this.parents);
+                lastImprovementRestart = restart;
             }
 
             if (log != null) {
                 log.accept("FLOP: restart " + restart + " of " + numRestarts + ", score = " + score
-                           + ", best = " + bestScore);
+                           + ", best = " + bestScore + ", last improvement at restart " + lastImprovementRestart);
             }
         }
 
-        return new Result(bestOrder, bestParents, bestScore);
+        return new Result(bestOrder, bestParents, bestScore, lastImprovementRestart);
     }
 
     /**
@@ -275,12 +351,18 @@ final class FlopCore {
      * @throws InterruptedException If the thread is interrupted.
      */
     private double localSearch() throws InterruptedException {
-        for (int t = 0; t < p; t++) growShrinkScratch(this.order[t]);
+        this.pass = 0;
+
+        for (int t = 0; t < p; t++) {
+            seedStep(this.order[t], 0, 0);
+            growShrinkScratch(this.order[t]);
+        }
 
         boolean improved = true;
 
         while (improved) {
             improved = false;
+            this.pass++;
             int[] sweep = this.order.clone();
 
             for (int v : sweep) {
@@ -295,7 +377,10 @@ final class FlopCore {
     /**
      * Finds the best reinsertion position for variable v (Algorithm 2 of the paper) and moves it there. The search
      * sweeps v rightward to the end, restores, sweeps leftward to the front, restores, and then replays the moves to
-     * the best position found (grow-shrink is deterministic, so the replay reproduces the swept state exactly).
+     * the best position found. The grow and shrink phases are randomized, so the replay contract is maintained by
+     * reseeding the grow-shrink stream from (streamSeed, pass, v, direction, step) at the start of every move: step
+     * k of the replay begins from the same state and consumes the same random draws as step k of the sweep, and so
+     * lands on exactly the state whose score was recorded as bestSum.
      *
      * @param v The variable to reinsert.
      * @return True if v was moved to a strictly better position.
@@ -310,8 +395,9 @@ final class FlopCore {
         int steps = 0;
 
         while (this.pos[v] < p - 1) {
-            moveRight(v);
             steps++;
+            seedStep(v, 1, steps);
+            moveRight(v);
             double s = sum(this.scores);
 
             if (s < bestSum - EPS) {
@@ -327,8 +413,9 @@ final class FlopCore {
         steps = 0;
 
         while (this.pos[v] > 0) {
-            moveLeft(v);
             steps++;
+            seedStep(v, -1, steps);
+            moveLeft(v);
             double s = sum(this.scores);
 
             if (s < bestSum - EPS) {
@@ -342,7 +429,8 @@ final class FlopCore {
 
         if (bestDir == 0) return false;
 
-        for (int k = 0; k < bestSteps; k++) {
+        for (int k = 1; k <= bestSteps; k++) {
+            seedStep(v, bestDir, k);
             if (bestDir > 0) moveRight(v);
             else moveLeft(v);
         }
@@ -442,7 +530,12 @@ final class FlopCore {
 
     /**
      * The non-greedy grow phase: repeatedly pass over the candidate prefix of v, adding any variable whose addition
-     * improves the local score (not necessarily the best such variable), until a full pass makes no change.
+     * improves the local score (not necessarily the best such variable), until a full pass makes no change. When
+     * randomizeGrowShrink is set, each pass visits the candidates in a fresh random order rather than in index
+     * order; when acceptTies is set, a candidate that ties the incumbent local score is also added.
+     * <p>
+     * The pass loop terminates in either case, because a pass repeats only when a parent has been added and
+     * candidates already in the parent set are never offered again.
      *
      * @param v The variable whose parents are grown.
      */
@@ -453,13 +546,20 @@ final class FlopCore {
         while (changed) {
             changed = false;
 
+            int m = 0;
+
             for (int t = 0; t < this.pos[v]; t++) {
                 int u = this.order[t];
-                if (pa.contains(u)) continue;
-                pa.add(u);
+                if (!pa.contains(u)) this.cand[m++] = u;
+            }
+
+            if (this.randomizeGrowShrink) shuffle(m);
+
+            for (int i = 0; i < m; i++) {
+                pa.add(this.cand[i]);
                 double l = localScore(v, pa);
 
-                if (l < this.scores[v] - EPS) {
+                if (accept(l, this.scores[v])) {
                     this.scores[v] = l;
                     changed = true;
                 } else {
@@ -471,7 +571,10 @@ final class FlopCore {
 
     /**
      * The non-greedy shrink phase: repeatedly pass over the parents of v, removing any parent whose removal improves
-     * the local score, until a full pass makes no change.
+     * the local score, until a full pass makes no change. When randomizeGrowShrink is set, each pass visits the
+     * parents in a fresh random order rather than by descending index; when acceptTies is set, a removal that ties
+     * the incumbent local score is also taken. The pass loop terminates because a pass repeats only when a parent
+     * has been removed.
      *
      * @param v The variable whose parents are shrunk.
      */
@@ -482,17 +585,80 @@ final class FlopCore {
         while (changed) {
             changed = false;
 
-            for (int i = pa.size() - 1; i >= 0; i--) {
-                int u = pa.remove(i);
+            int m = pa.size();
+            for (int i = 0; i < m; i++) this.cand[i] = pa.get(m - 1 - i);
+
+            if (this.randomizeGrowShrink) shuffle(m);
+
+            for (int i = 0; i < m; i++) {
+                int idx = pa.indexOf(this.cand[i]);
+                if (idx < 0) continue;
+                int u = pa.remove(idx);
                 double l = localScore(v, pa);
 
-                if (l < this.scores[v] - EPS) {
+                if (accept(l, this.scores[v])) {
                     this.scores[v] = l;
                     changed = true;
                 } else {
-                    pa.add(i, u);
+                    pa.add(idx, u);
                 }
             }
+        }
+    }
+
+    /**
+     * The acceptance test shared by grow and shrink: strict improvement by EPS, or, when acceptTies is set, anything
+     * not worse than the incumbent by more than EPS. Accepting ties cannot make localSearch() cycle: a tie raises a
+     * local score by at most EPS, while reinsert() commits a move only when the total score it measures falls by
+     * more than EPS, so every committed move is genuine progress against a bounded-below objective.
+     *
+     * @param l         The candidate local score.
+     * @param incumbent The incumbent local score.
+     * @return True if the candidate should be accepted.
+     */
+    private boolean accept(double l, double incumbent) {
+        return this.acceptTies ? l < incumbent + EPS : l < incumbent - EPS;
+    }
+
+    /**
+     * Reseeds the grow-shrink random stream for one move step. The seed is a function of the restart's stream seed,
+     * the current reinsertion sweep, the variable being moved, the direction of the move, and the index of the step
+     * within the sweep; a SplitMix64 finalizer is applied so that nearby step indices give uncorrelated streams,
+     * which a bare java.util.Random seed would not. This per-step reseeding is what lets reinsert() replay a
+     * randomized sweep exactly; see the Javadoc there.
+     *
+     * @param v   The variable being moved, or the variable being fitted from scratch.
+     * @param dir 1 for a rightward move, -1 for a leftward move, 0 for a from-scratch fit.
+     * @param k   The index of the step within the sweep, 1-based; 0 for a from-scratch fit.
+     */
+    private void seedStep(int v, int dir, int k) {
+        long h = this.streamSeed;
+        h = h * GOLDEN + this.pass;
+        h = h * GOLDEN + v;
+        h = h * GOLDEN + dir;
+        h = h * GOLDEN + k;
+
+        // SplitMix64 finalizer.
+        h ^= (h >>> 30);
+        h *= 0xBF58476D1CE4E5B9L;
+        h ^= (h >>> 27);
+        h *= 0x94D049BB133111EBL;
+        h ^= (h >>> 31);
+
+        this.moveRng.setSeed(h);
+    }
+
+    /**
+     * Fisher-Yates shuffle of the first m entries of the candidate buffer, using the current grow-shrink stream.
+     *
+     * @param m The number of leading entries of cand to shuffle.
+     */
+    private void shuffle(int m) {
+        for (int i = m - 1; i > 0; i--) {
+            int j = this.moveRng.nextInt(i + 1);
+            int t = this.cand[i];
+            this.cand[i] = this.cand[j];
+            this.cand[j] = t;
         }
     }
 
