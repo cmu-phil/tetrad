@@ -192,7 +192,10 @@ public final class MissingDataAudit {
      * @return True if the cell is missing.
      */
     public static boolean isMissing(DataSet dataSet, int row, int column) {
-        Node variable = dataSet.getVariables().get(column);
+        // getVariable(int) rather than getVariables().get(int): the latter copies the whole variable list into a
+        // LinkedList and then walks it, making this per-cell test O(p) with an allocation. On a 148-column dataset
+        // that turned the audits' O(p^2 n) pairwise scans into O(p^3 n) and took minutes.
+        Node variable = dataSet.getVariable(column);
 
         if (variable instanceof DiscreteVariable) {
             return dataSet.getInt(row, column) == DiscreteVariable.MISSING_VALUE;

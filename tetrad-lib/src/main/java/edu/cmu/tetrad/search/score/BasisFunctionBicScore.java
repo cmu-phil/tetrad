@@ -181,7 +181,7 @@ public class BasisFunctionBicScore implements Score {
      * @param truncationLimit the truncation limit of the basis. Must be a positive integer.
      * @param lambda          Singularity lambda. Must be non-negative.
      * @param embedding       the embedding (variable index to embedded columns) to score against. Must not be null.
-     * @param rankTransform   whether to apply a rank transformation to the unit interval.
+     * @param rankTransform   whether to apply a rank t     ransformation to the unit interval.
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda,
                                  Map<Integer, List<Integer>> embedding, boolean rankTransform) {

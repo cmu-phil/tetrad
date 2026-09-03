@@ -207,6 +207,18 @@ public final class DataAudit {
     private final MissingDataAudit missingDataAudit;
 
     /**
+     * Throws if the current thread has been interrupted, so that a caller running the audit on a worker thread (the
+     * GUI's stop dialog, for instance) can cancel it. Called between variables in each per-variable and pairwise
+     * pass. The exception is unchecked, since the audit runs in a constructor, but carries an InterruptedException
+     * as its cause so that callers can recognize it as a cancellation rather than a failure.
+     */
+    private static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new RuntimeException(new InterruptedException("Data audit interrupted."));
+        }
+    }
+
+    /**
      * Audits the given dataset with default thresholds.
      *
      * @param dataSet the dataset to audit; may not be null.
@@ -695,6 +707,7 @@ public final class DataAudit {
 
         // Pairwise expected cells.
         for (int a = 0; a < this.names.length; a++) {
+            checkInterrupted();
             if (!this.discrete[a] || this.constant[a]) continue;
 
             for (int b = a + 1; b < this.names.length; b++) {
@@ -748,6 +761,7 @@ public final class DataAudit {
         double[][] corr = new double[pc][pc];
 
         for (int a = 0; a < pc; a++) {
+            checkInterrupted();
             corr[a][a] = 1.0;
 
             for (int b = a + 1; b < pc; b++) {
@@ -904,6 +918,7 @@ public final class DataAudit {
         int n = this.dataSet.getNumRows();
 
         for (int a = 0; a < this.names.length; a++) {
+            checkInterrupted();
             if (!this.discrete[a] || this.constant[a]) continue;
 
             for (int jc : this.continuousIndices) {
@@ -936,11 +951,11 @@ public final class DataAudit {
 
                 betweenSS -= sum * sum / m;
                 double eta2 = Math.min(1.0, Math.max(0.0, betweenSS / totalSS));
-                String key = this.names[a] + "|" + this.dataSet.getVariables().get(jc).getName();
+                String key = this.names[a] + "|" + this.names[jc];
                 this.etaSquared.put(key, eta2);
 
                 if (eta2 >= this.config.etaSquaredDeterminism) {
-                    String contName = this.dataSet.getVariables().get(jc).getName();
+                    String contName = this.names[jc];
                     this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_DISCRETE_CONTINUOUS,
                             AuditFinding.Severity.WARNING, List.of(this.names[a], contName),
                             Map.of("etaSquared", eta2, "threshold", this.config.etaSquaredDeterminism),
@@ -1010,6 +1025,7 @@ public final class DataAudit {
             if (ops > budget) break;
 
             for (int t = 0; t < p; t++) {
+                checkInterrupted();
                 if (this.constant[t]) continue;
 
                 List<Integer> pool = new ArrayList<>(determiners);
@@ -1195,6 +1211,7 @@ public final class DataAudit {
         int n = this.dataSet.getNumRows();
 
         for (int j : this.continuousIndices) {
+            checkInterrupted();
             List<Double> values = new ArrayList<>();
 
             for (int i = 0; i < n; i++) {
@@ -1206,7 +1223,7 @@ public final class DataAudit {
             double[] x = values.stream().mapToDouble(Double::doubleValue).toArray();
             AndersonDarlingTest test = new AndersonDarlingTest(x);
             double p = test.getP();
-            String name = this.dataSet.getVariables().get(j).getName();
+            String name = this.names[j];
             this.adPValues.put(name, p);
 
             if (p < this.config.adAlpha) {
@@ -1285,6 +1302,7 @@ public final class DataAudit {
         }
 
         for (int j : this.continuousIndices) {
+            checkInterrupted();
             // Partition rows into group subsequences in file order (one group if no grouping variable). Rows where
             // the grouping variable is missing are excluded, since their group is unknown.
             Map<Integer, List<Integer>> groupRows = new LinkedHashMap<>();
@@ -1369,7 +1387,7 @@ public final class DataAudit {
             q *= m * (m + 2.0);
             double p = Math.min(1.0, Math.max(0.0, 1.0 - edu.cmu.tetrad.util.ProbUtils.chisqCdf(q, maxLag)));
 
-            String name = this.dataSet.getVariables().get(j).getName();
+            String name = this.names[j];
             this.lag1Autocorrelations.put(name, r1);
             this.ljungBoxPValues.put(name, p);
 
@@ -1489,6 +1507,7 @@ public final class DataAudit {
         int n = this.dataSet.getNumRows();
 
         for (int a = 0; a < p; a++) {
+            checkInterrupted();
             if (this.constant[a]) continue;
 
             for (int b = a + 1; b < p; b++) {
