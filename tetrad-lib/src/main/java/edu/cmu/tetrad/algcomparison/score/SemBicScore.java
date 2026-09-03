@@ -102,13 +102,18 @@ public class SemBicScore implements ScoreWrapper {
             int n = semBicScore.getSampleSize();
             double degree = parameters.getDouble(Params.SEM_BIC_EXPECTED_DEGREE);
             double fdr = parameters.getDouble(Params.SEM_BIC_TARGET_FDR);
-            double c = edu.cmu.tetrad.search.score.SemBicScore.penaltyDiscountForFalseDiscoveryRate(p, n, degree, fdr);
+            double cFdr = edu.cmu.tetrad.search.score.SemBicScore.penaltyDiscountForFalseDiscoveryRate(p, n, degree, fdr);
+            double minEffect = parameters.getDouble(Params.SEM_BIC_MIN_EFFECT);
+            double cEffect = minEffect > 0
+                    ? edu.cmu.tetrad.search.score.SemBicScore.penaltyDiscountForMinPartialCorrelation(minEffect, n) : 0.0;
+            double c = Math.max(cFdr, cEffect);
             semBicScore.setPenaltyDiscount(c);
             TetradLogger.getInstance().log(String.format(
                     "Sem BIC Score: auto penalty discount c = %.3f (p = %d, N = %d, expected degree = %.2f, "
-                    + "target FDR = %.4f; smallest detectable partial correlation = %.3f). "
+                    + "target FDR = %.4f -> c = %.3f; min effect r = %.3f -> c = %.3f; using the larger; "
+                    + "smallest detectable partial correlation at the chosen c = %.4f). "
                     + "The penaltyDiscount parameter was ignored.",
-                    c, p, n, degree, fdr,
+                    c, p, n, degree, fdr, cFdr, minEffect, cEffect,
                     edu.cmu.tetrad.search.score.SemBicScore.minDetectablePartialCorrelation(c, n)));
         }
 
@@ -158,6 +163,7 @@ public class SemBicScore implements ScoreWrapper {
         parameters.add(Params.SEM_BIC_AUTO_PENALTY);
         parameters.add(Params.SEM_BIC_TARGET_FDR);
         parameters.add(Params.SEM_BIC_EXPECTED_DEGREE);
+        parameters.add(Params.SEM_BIC_MIN_EFFECT);
         parameters.add(Params.SEM_BIC_STRUCTURE_PRIOR);
         parameters.add(Params.SEM_BIC_RULE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);

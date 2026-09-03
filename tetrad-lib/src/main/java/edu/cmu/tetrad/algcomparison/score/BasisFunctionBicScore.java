@@ -33,6 +33,8 @@ import edu.cmu.tetrad.algcomparison.utils.MultiDataSetScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.search.score.PenaltyDiscountCalibration;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -84,10 +86,74 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT),
                 parameters.getDouble(Params.SINGULARITY_LAMBDA),
-                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION));
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION),
+                parameters.getBoolean(Params.BASIS_RANK_TRANSFORM));
+        applyPenaltyDiscount(score, SimpleDataLoader.getMixedDataSet(dataSet), parameters);
         score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return score;
+    }
+
+    /**
+     * Applies either the entered penalty discount or, if semBicAutoPenalty is set, one calibrated from this score's
+     * embedding block sizes so that the expected number of spurious edges is semBicTargetFdr times the expected
+     * number of true edges. Adding a parent x to y costs size[y] * size[x] degrees of freedom here, which is what
+     * makes the calibrated value much smaller than SEM BIC's on the same data (see PenaltyDiscountCalibration).
+     */
+    private static void applyPenaltyDiscount(edu.cmu.tetrad.search.score.BasisFunctionBicScore score,
+                                             DataSet rawData, Parameters parameters) {
+        if (!parameters.getBoolean(Params.SEM_BIC_AUTO_PENALTY)) {
+            score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+            return;
+        }
+        int[] sizes = score.embeddingBlockSizes();
+        int p = sizes.length;
+        int n = score.getSampleSize();
+        double degree = parameters.getDouble(Params.SEM_BIC_EXPECTED_DEGREE);
+        double fdr = parameters.getDouble(Params.SEM_BIC_TARGET_FDR);
+        double cExact = PenaltyDiscountCalibration.penaltyDiscountForFalseDiscoveryRate(
+                PenaltyDiscountCalibration.pairDofHistogram(sizes), n, p, degree, fdr);
+        double c;
+        String nullDesc;
+        if (score.isRankTransform()) {
+            // Rank-transformed Legendre embedding: the LRT null is chi-square on its nominal df, so the exact
+            // calibration is correct and no permutation fit is needed.
+            c = cExact;
+            nullDesc = " exact chi-square null (rank-transformed embedding);";
+        } else {
+            // Min-max embedding: the LRT null has a power-law tail that no chi-square-family fit captures well
+            // (see Embedding.RANK_TRANSFORM). A permutation-fitted scaled chi-square is the best available
+            // correction, but it still under-covers the far tail; prefer basisRankTransform = true.
+            int samples = parameters.getInt(Params.SEM_BIC_NULL_SAMPLES);
+            long seed = parameters.getLong(Params.SEED);
+            java.util.Map<Integer, PenaltyDiscountCalibration.NullFit> fits =
+                    score.fitNullsByPermutation(rawData, samples, seed);
+            c = PenaltyDiscountCalibration.penaltyDiscountForFalseDiscoveryRateFitted(fits, n, p, degree, fdr);
+            StringBuilder fitDesc = new StringBuilder();
+            for (java.util.Map.Entry<Integer, PenaltyDiscountCalibration.NullFit> e : fits.entrySet()) {
+                fitDesc.append(String.format(" df=%d: %.2f*chi2(%.1f);", e.getKey(), e.getValue().kappa(), e.getValue().nu()));
+            }
+            nullDesc = String.format(" permutation-fitted nulls from %d draws per class:%s an exact chi-square "
+                    + "null would have given %.3f; NOTE the min-max embedding's null has a power-law tail, so "
+                    + "expect more false edges than budgeted -- set basisRankTransform = true for an exact null;",
+                    samples, fitDesc, cExact);
+        }
+        double minEffect = parameters.getDouble(Params.SEM_BIC_MIN_EFFECT);
+        double cEffect = minEffect > 0
+                ? PenaltyDiscountCalibration.penaltyDiscountForMinPartialCorrelation(minEffect, n) : 0.0;
+        double cChosen = Math.max(c, cEffect);
+        nullDesc += String.format(" FDR criterion -> c = %.3f; min effect r = %.3f -> c = %.3f; using the larger;",
+                c, minEffect, cEffect);
+        c = cChosen;
+        score.setPenaltyDiscount(c);
+        int minSize = Integer.MAX_VALUE, maxSize = 1;
+        for (int sz : sizes) {
+            minSize = Math.min(minSize, sz);
+            maxSize = Math.max(maxSize, sz);
+        }
+        TetradLogger.getInstance().log(String.format(
+                "BF-BIC: auto penalty discount c = %.3f (p = %d, N = %d, embedding block sizes %d..%d, "
+                + "expected degree = %.2f, target FDR = %.4f;%s). The penaltyDiscount parameter was ignored.",
+                c, p, n, minSize, maxSize, degree, fdr, nullDesc));
     }
 
     /**
@@ -164,8 +230,8 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
                             dataSet,
                             truncationLimit,
                             parameters.getDouble(Params.SINGULARITY_LAMBDA),
-                            common);
-            score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
+                            common, parameters.getBoolean(Params.BASIS_RANK_TRANSFORM));
+            applyPenaltyDiscount(score, dataSet, parameters);
             score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
             scores.add(score);
         }
@@ -196,7 +262,13 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.ADAPTIVE_BASIS_SELECTION);
+        parameters.add(Params.BASIS_RANK_TRANSFORM);
         parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.SEM_BIC_AUTO_PENALTY);
+        parameters.add(Params.SEM_BIC_TARGET_FDR);
+        parameters.add(Params.SEM_BIC_EXPECTED_DEGREE);
+        parameters.add(Params.SEM_BIC_NULL_SAMPLES);
+        parameters.add(Params.SEM_BIC_MIN_EFFECT);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.DO_ONE_EQUATION_ONLY);
         parameters.add(Params.MISSING_DATA_POLICY);

@@ -63,6 +63,18 @@ public class BasisFunctionBicScore implements Score {
      */
     private final SemBicScore bic;
     /**
+     * The truncation limit the embedding was built with, kept so the null of the per-pair LRT can be re-estimated
+     * from the raw data by permutation without holding the embedded data in memory.
+     */
+    private final int truncationLimit;
+    /**
+     * Whether continuous variables were rank-transformed to [-1, 1] before the Legendre embedding. When true the
+     * null of the per-pair LRT is chi-square on its nominal degrees of freedom and the exact penalty-discount
+     * calibration applies; when false it has a power-law tail and must be estimated by permutation. See
+     * {@link Embedding#RANK_TRANSFORM}.
+     */
+    private final boolean rankTransform;
+    /**
      * Represents the penalty discount factor used in the Basis Function BIC (Bayesian Information Criterion) score
      * calculations. This value modifies the penalty applied for model complexity in BIC scoring, allowing for
      * adjustments in the likelihood penalty term.
@@ -103,10 +115,30 @@ public class BasisFunctionBicScore implements Score {
      * @see StatUtils#basisFunctionValue(int, int, double)
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection) {
+        this(dataSet, truncationLimit, lambda, adaptiveBasisSelection, false);
+    }
+
+    /**
+     * As {@link #BasisFunctionBicScore(DataSet, int, double, boolean)}, with the option to rank-transform continuous
+     * variables to [-1, 1] before the Legendre embedding. See {@link Embedding#RANK_TRANSFORM} for why this is
+     * recommended: it gives the score's LRT an exact chi-square null and removes leverage-driven spurious edges,
+     * at the cost of modeling the copula rather than the joint distribution with its marginals.
+     *
+     * @param dataSet                the data
+     * @param truncationLimit        the truncation limit of the basis
+     * @param lambda                 the singularity lambda
+     * @param adaptiveBasisSelection see the four-argument constructor
+     * @param rankTransform          if true, rank-transform continuous variables before embedding
+     */
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection,
+                                 boolean rankTransform) {
         this.variables = dataSet.getVariables();
+        this.truncationLimit = truncationLimit;
+        this.rankTransform = rankTransform;
 
         // Using the Legendre basis.
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1);
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1,
+                rankTransform ? Embedding.RANK_TRANSFORM : 1);
         DataSet embeddedData = result.embeddedData();
 
         // We will zero out the correlations that are very close to zero.
@@ -152,10 +184,13 @@ public class BasisFunctionBicScore implements Score {
      * @param embedding       the embedding (variable index to embedded columns) to score against.
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda,
-                                 Map<Integer, List<Integer>> embedding) {
+                                 Map<Integer, List<Integer>> embedding, boolean rankTransform) {
         this.variables = dataSet.getVariables();
+        this.truncationLimit = truncationLimit;
+        this.rankTransform = rankTransform;
 
-        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1, 1);
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(dataSet, truncationLimit, 1,
+                rankTransform ? Embedding.RANK_TRANSFORM : 1);
         DataSet embeddedData = result.embeddedData();
 
         CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
@@ -325,6 +360,58 @@ public class BasisFunctionBicScore implements Score {
     }
 
     /**
+     * The number of embedded components per variable, in variable order: the basis-function count for a continuous
+     * variable, the number of categories minus one for a discrete one (after any adaptive pruning). Adding a parent
+     * x to y costs size[y] * size[x] degrees of freedom, so this is the input
+     * {@link PenaltyDiscountCalibration#pairDofHistogram(int[])} needs to calibrate the penalty discount for this
+     * score.
+     *
+     * @return One entry per variable.
+     */
+    public int[] embeddingBlockSizes() {
+        int[] sizes = new int[this.variables.size()];
+        for (int i = 0; i < sizes.length; i++) {
+            sizes[i] = Math.max(1, this.embedding.get(i).size());
+        }
+        return sizes;
+    }
+
+    /**
+     * Estimates, by permutation on the raw data, the null distribution of this score's gain for adding one parent,
+     * per degrees-of-freedom class. Re-embeds the data with this score's truncation limit and restricts to the
+     * columns this score actually uses (after any adaptive pruning), so the statistic is the one the search sees.
+     *
+     * <p>Use the result with {@link PenaltyDiscountCalibration#penaltyDiscountForFalseDiscoveryRateFitted} rather
+     * than the exact chi-square version: the embedded components of a variable are not jointly Gaussian, so the
+     * LRT's null has the chi-square mean but roughly double the variance, and a chi-square calibration sets the
+     * penalty discount far too low for this score.</p>
+     *
+     * @param rawData         The data this score was built from.
+     * @param samplesPerClass Null draws per df class; a few hundred is plenty.
+     * @param seed            Seed for reproducible calibration.
+     * @return Map from df to fitted null.
+     */
+    public Map<Integer, PenaltyDiscountCalibration.NullFit> fitNullsByPermutation(DataSet rawData, int samplesPerClass,
+                                                                                 long seed) {
+        Embedding.EmbeddedData result = Embedding.getEmbeddedData(rawData, this.truncationLimit, 1,
+                this.rankTransform ? Embedding.RANK_TRANSFORM : 1);
+        DataSet embedded = result.embeddedData();
+        int n = embedded.getNumRows(), total = embedded.getNumColumns();
+        double[][] columns = new double[total][n];
+        for (int j = 0; j < total; j++) {
+            for (int i = 0; i < n; i++) columns[j][i] = embedded.getDouble(i, j);
+        }
+        List<int[]> blocks = new ArrayList<>();
+        for (int v = 0; v < this.variables.size(); v++) {
+            List<Integer> cols = this.embedding.get(v);
+            int[] b = new int[cols.size()];
+            for (int j = 0; j < b.length; j++) b[j] = cols.get(j);
+            blocks.add(b);
+        }
+        return PenaltyDiscountCalibration.fitNullsByPermutation(columns, blocks, samplesPerClass, seed);
+    }
+
+    /**
      * Retrieves the maximum degree from the underlying BIC score component.
      *
      * @return the maximum degree as an integer.
@@ -343,6 +430,24 @@ public class BasisFunctionBicScore implements Score {
     @Override
     public String toString() {
         return "Basis Function BIC Score (BF-BIC)";
+    }
+
+    /**
+     * The penalty discount in use, which may have been set automatically by the algcomparison wrapper.
+     *
+     * @return c.
+     */
+    public double getPenaltyDiscount() {
+        return this.penaltyDiscount;
+    }
+
+    /**
+     * Whether continuous variables were rank-transformed before embedding.
+     *
+     * @return true if so.
+     */
+    public boolean isRankTransform() {
+        return this.rankTransform;
     }
 
     /**

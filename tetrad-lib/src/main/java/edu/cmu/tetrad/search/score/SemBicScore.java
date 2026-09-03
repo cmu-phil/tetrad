@@ -36,7 +36,6 @@ import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import edu.cmu.tetrad.util.TMath;
 import org.jetbrains.annotations.NotNull;
@@ -966,7 +965,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     @Override
     public double impliedAlpha() {
-        return StatUtils.getChiSquareP(1, getPenaltyDiscount() * this.logN);
+        return PenaltyDiscountCalibration.alpha(getPenaltyDiscount(), 1, getSampleSize());
     }
 
     /**
@@ -983,14 +982,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      * @return The penalty discount c = Q_chi2(1)(1 - alpha) / ln(N).
      */
     public static double penaltyDiscountForAlpha(double alpha, int sampleSize) {
-        if (!(alpha > 0 && alpha < 1)) {
-            throw new IllegalArgumentException("alpha must be in (0, 1): " + alpha);
-        }
-        if (sampleSize < 2) {
-            throw new IllegalArgumentException("sampleSize must be at least 2: " + sampleSize);
-        }
-        double quantile = new ChiSquaredDistribution(1).inverseCumulativeProbability(1.0 - alpha);
-        return quantile / log(sampleSize);
+        return PenaltyDiscountCalibration.penaltyDiscountForAlpha(alpha, 1, sampleSize);
     }
 
     /**
@@ -1025,15 +1017,8 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     public static double penaltyDiscountForExpectedFalseEdges(int numVariables, int sampleSize,
                                                               double expectedFalseEdges) {
-        if (numVariables < 2) {
-            throw new IllegalArgumentException("numVariables must be at least 2: " + numVariables);
-        }
-        if (!(expectedFalseEdges > 0)) {
-            throw new IllegalArgumentException("expectedFalseEdges must be positive: " + expectedFalseEdges);
-        }
-        double pairs = numVariables * (numVariables - 1.0) / 2.0;
-        double alpha = Math.min(expectedFalseEdges / pairs, 1.0 - 1e-12);
-        return penaltyDiscountForAlpha(alpha, sampleSize);
+        return PenaltyDiscountCalibration.penaltyDiscountForExpectedFalseEdges(
+                PenaltyDiscountCalibration.uniformPairDofHistogram(numVariables, 1), sampleSize, expectedFalseEdges);
     }
 
     /**
@@ -1048,6 +1033,19 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     public static double minDetectablePartialCorrelation(double penaltyDiscount, int sampleSize) {
         return Math.sqrt(1.0 - Math.exp(-penaltyDiscount * log(sampleSize) / sampleSize));
+    }
+
+    /**
+     * Inverse of {@link #minDetectablePartialCorrelation(double, int)}: the penalty discount at which partial
+     * correlations below {@code minPartialCorrelation} are ignored. See
+     * {@link PenaltyDiscountCalibration#penaltyDiscountForMinPartialCorrelation(double, int)}.
+     *
+     * @param minPartialCorrelation r_min.
+     * @param sampleSize            N.
+     * @return c.
+     */
+    public static double penaltyDiscountForMinPartialCorrelation(double minPartialCorrelation, int sampleSize) {
+        return PenaltyDiscountCalibration.penaltyDiscountForMinPartialCorrelation(minPartialCorrelation, sampleSize);
     }
 
     /**
@@ -1069,14 +1067,9 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     public static double penaltyDiscountForFalseDiscoveryRate(int numVariables, int sampleSize,
                                                               double expectedDegree, double fdr) {
-        if (!(expectedDegree > 0)) {
-            throw new IllegalArgumentException("expectedDegree must be positive: " + expectedDegree);
-        }
-        if (!(fdr > 0 && fdr < 1)) {
-            throw new IllegalArgumentException("fdr must be in (0, 1): " + fdr);
-        }
-        double expectedTrueEdges = numVariables * expectedDegree / 2.0;
-        return penaltyDiscountForExpectedFalseEdges(numVariables, sampleSize, fdr * expectedTrueEdges);
+        return PenaltyDiscountCalibration.penaltyDiscountForFalseDiscoveryRate(
+                PenaltyDiscountCalibration.uniformPairDofHistogram(numVariables, 1), sampleSize,
+                numVariables, expectedDegree, fdr);
     }
 
     private double getStructurePrior(int parents) {

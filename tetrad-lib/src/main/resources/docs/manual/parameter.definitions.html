@@ -5492,6 +5492,27 @@ Source:
 
 
     === semBicStructurePrior ===
+    <h3 class="parameter_description" id="basisRankTransform">basisRankTransform</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="basisRankTransform_short_desc">Rank-transform continuous variables to
+        [-1, 1] before the basis-function embedding</span></li>
+        <li>Long Description: <span id="basisRankTransform_long_desc">If true, each continuous variable is
+        replaced by its mid-ranks mapped to a uniform grid on [-1, 1] before the Legendre expansion, so the basis
+        is exactly orthogonal under the empirical measure and every row has the same leverage. The default
+        min-max scaling concentrates the higher-order basis columns on the few most extreme rows; the resulting
+        likelihood-ratio statistic has a power-law null tail, so a handful of high-leverage rows can produce a
+        spurious nonlinear edge at any penalty discount. With the rank transform the null is chi-square on its
+        nominal degrees of freedom, the automatic penalty discount is exact, and the score is invariant to
+        monotone transformations of the marginals. The cost is that the score models the copula rather than the
+        joint distribution with its marginals (about 6 percent of the likelihood-ratio statistic on Gaussian
+        data, with a gain on skewed data).</span></li>
+        <li>Default Value: <span id="basisRankTransform_default_value">false</span></li>
+        <li>Lower Bound: <span id="basisRankTransform_lower_bound"></span></li>
+        <li>Upper Bound: <span id="basisRankTransform_upper_bound"></span></li>
+        <li>Value Type: <span id="basisRankTransform_value_type">Boolean</span></li>
+    </ul>
+
+
     <h3 class="parameter_description" id="semBicAutoPenalty">semBicAutoPenalty</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="semBicAutoPenalty_short_desc">Set the penalty discount automatically
@@ -5499,11 +5520,14 @@ Source:
         <li>Long Description: <span id="semBicAutoPenalty_long_desc">If true, the penalty discount entered
         above is ignored and c is chosen so that the expected number of spurious edges over the whole search is
         semBicTargetFdr times the expected number of true edges (p times semBicExpectedDegree / 2). The BIC sign
-        rule adds a parent when a chi-square(1) statistic exceeds c ln N, so each of the roughly p^2/2
-        non-adjacent pairs is a false-edge opportunity taken with probability P(chi-square(1) &gt; c ln N);
-        inverting that gives c. At p = 100, N = 1000 this reproduces the conventional c = 2; at p = 5000,
-        N = 1000 it gives about 2.8. The value used is written to the log along with the smallest partial
-        correlation the rule can then detect.</span></li>
+        rule adds a parent when a chi-square statistic on df degrees of freedom exceeds c df ln N, so each of the
+        roughly p^2/2 non-adjacent pairs is a false-edge opportunity taken with probability
+        P(chi-square(df) &gt; c df ln N); summing over pairs and inverting gives c. For SEM BIC df = 1 and this
+        reproduces the conventional c = 2 at p = 100, N = 1000 and gives about 2.8 at p = 5000. For BF-BIC df is
+        the product of the two variables' embedding block sizes, the chi-square tail is far thinner, and the
+        calibrated c is much smaller (about 0.5 for all-continuous data at truncation 3); since that chi-square
+        null is asymptotic and Gaussian, treat the BF-BIC value as a floor on non-Gaussian data. The value used is
+        written to the log.</span></li>
         <li>Default Value: <span id="semBicAutoPenalty_default_value">false</span></li>
         <li>Lower Bound: <span id="semBicAutoPenalty_lower_bound"></span></li>
         <li>Upper Bound: <span id="semBicAutoPenalty_upper_bound"></span></li>
@@ -5538,6 +5562,44 @@ Source:
         <li>Lower Bound: <span id="semBicExpectedDegree_lower_bound">0.0</span></li>
         <li>Upper Bound: <span id="semBicExpectedDegree_upper_bound">Infinity</span></li>
         <li>Value Type: <span id="semBicExpectedDegree_value_type">Double</span></li>
+    </ul>
+
+
+    <h3 class="parameter_description" id="semBicMinEffect">semBicMinEffect</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="semBicMinEffect_short_desc">Smallest partial correlation worth an edge,
+        for the automatic penalty discount (0 = no floor)</span></li>
+        <li>Long Description: <span id="semBicMinEffect_long_desc">Used only when semBicAutoPenalty is true.
+        The false-discovery calibration controls how many null pairs become edges, and it shrinks like 1 / ln N,
+        so at large N it admits any real dependence however small: at N = 20000 and c = 1 the score accepts
+        partial correlations of about 0.02, and on real data that is nearly everything, giving near-complete
+        graphs. This sets an effect-size floor instead: c is raised, if necessary, to -N ln(1 - r^2) / ln N so
+        that parameters with partial correlation below r are ignored. The larger of the two discounts is used, so
+        false positives are controlled at small N and effect size at large N. For scores whose parents cost
+        several parameters (discrete, DG, BF-BIC) the floor is per parameter; adaptive basis selection is the
+        natural companion so that unused higher-order columns are not charged against a real linear effect.
+        Values of 0.03 to 0.1 are reasonable starting points; the value used is written to the log.</span></li>
+        <li>Default Value: <span id="semBicMinEffect_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="semBicMinEffect_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="semBicMinEffect_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="semBicMinEffect_value_type">Double</span></li>
+    </ul>
+
+
+    <h3 class="parameter_description" id="semBicNullSamples">semBicNullSamples</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="semBicNullSamples_short_desc">Permutation draws per df class used to
+        estimate the null for the automatic penalty discount (default 500)</span></li>
+        <li>Long Description: <span id="semBicNullSamples_long_desc">Used only when semBicAutoPenalty is true
+        and the score's null is estimated rather than assumed (BF-BIC). For each degrees-of-freedom class of
+        variable pairs this many random pairs are drawn, one variable's columns are permuted to sever dependence,
+        and the score's own gain statistic is computed; a scaled chi-square is fitted to the sample's mean and
+        variance and used in place of the exact chi-square. A few hundred draws is plenty; the estimate is seeded
+        from the seed parameter so it is reproducible.</span></li>
+        <li>Default Value: <span id="semBicNullSamples_default_value">500</span></li>
+        <li>Lower Bound: <span id="semBicNullSamples_lower_bound">10</span></li>
+        <li>Upper Bound: <span id="semBicNullSamples_upper_bound">100000</span></li>
+        <li>Value Type: <span id="semBicNullSamples_value_type">Integer</span></li>
     </ul>
 
 
