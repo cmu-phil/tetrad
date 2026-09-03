@@ -120,6 +120,24 @@ public class Embedding {
         return out;
     }
 
+    /**
+     * Generates an embedding of the given dataset based on the specified parameters.
+     * This method transforms the dataset using basis functions according to the
+     * truncation limit, basis type, and basis scaling parameters. It supports the handling
+     * of both discrete and continuous variables with tailored transformations.
+     *
+     * @param dataSet the input dataset to be transformed. Must not be null.
+     * @param truncationLimit the maximum number of basis function orders to include
+     *                        in the transformation. Must be a positive integer.
+     * @param basisType the type of basis function to use in the transformation.
+     * @param basisScale the scaling mode for the dataset. Must be a positive number,
+     *                   0 to standardize the dataset, -1 to skip scaling, or RANK_TRANSFORM
+     *                   to apply a rank transformation to the unit interval.
+     *
+     * @return the transformed dataset represented as an instance of EmbeddedData.
+     * @throws IllegalArgumentException if the dataset is null, if truncationLimit is not
+     *                                  positive, or if basisScale is invalid.
+     */
     public static @NotNull EmbeddedData getEmbeddedData(DataSet dataSet, int truncationLimit, int basisType, double basisScale) {
         if (dataSet == null) {
             throw new IllegalArgumentException("Data set must not be null.");

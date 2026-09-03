@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 // For information as to what this class does, see the Javadoc, below.       //
 //                                                                           //
 // Copyright (C) 2025 by Joseph Ramsey, Peter Spirtes, Clark Glymour,        //
@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
-import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
@@ -178,10 +177,11 @@ public class BasisFunctionBicScore implements Score {
      * the map is derived (e.g. by union) from per-data-set decisions over data sets with the same variables,
      * types, and categories, as {@code Embedding.getEmbeddedData} lays such data sets out identically.
      *
-     * @param dataSet         the data set on which the score is to be calculated.
-     * @param truncationLimit the truncation limit of the basis.
-     * @param lambda          Singularity lambda.
-     * @param embedding       the embedding (variable index to embedded columns) to score against.
+     * @param dataSet         the data set on which the score is to be calculated. Must not be null.
+     * @param truncationLimit the truncation limit of the basis. Must be a positive integer.
+     * @param lambda          Singularity lambda. Must be non-negative.
+     * @param embedding       the embedding (variable index to embedded columns) to score against. Must not be null.
+     * @param rankTransform   whether to apply a rank transformation to the unit interval.
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda,
                                  Map<Integer, List<Integer>> embedding, boolean rankTransform) {
@@ -204,7 +204,7 @@ public class BasisFunctionBicScore implements Score {
         for (Map.Entry<Integer, List<Integer>> e : embedding.entrySet()) {
             if (!own.get(e.getKey()).containsAll(e.getValue())) {
                 throw new IllegalArgumentException("Supplied embedding references columns not present in this "
-                    + "data set's embedding for variable index " + e.getKey() + ".");
+                        + "data set's embedding for variable index " + e.getKey() + ".");
             }
         }
 
@@ -258,7 +258,7 @@ public class BasisFunctionBicScore implements Score {
         }
         return copy;
     }
-    
+
     /**
      * Calculates the local score for a given node and its parent nodes.
      *
@@ -392,7 +392,7 @@ public class BasisFunctionBicScore implements Score {
      * @return Map from df to fitted null.
      */
     public Map<Integer, PenaltyDiscountCalibration.NullFit> fitNullsByPermutation(DataSet rawData, int samplesPerClass,
-                                                                                 long seed) {
+                                                                                  long seed) {
         Embedding.EmbeddedData result = Embedding.getEmbeddedData(rawData, this.truncationLimit, 1,
                 this.rankTransform ? Embedding.RANK_TRANSFORM : 1);
         DataSet embedded = result.embeddedData();
@@ -442,15 +442,6 @@ public class BasisFunctionBicScore implements Score {
     }
 
     /**
-     * Whether continuous variables were rank-transformed before embedding.
-     *
-     * @return true if so.
-     */
-    public boolean isRankTransform() {
-        return this.rankTransform;
-    }
-
-    /**
      * Sets the penalty discount value, which is used to adjust the penalty term in the BIC score calculation.
      *
      * @param penaltyDiscount The multiplier on the penalty term for this score.
@@ -458,6 +449,15 @@ public class BasisFunctionBicScore implements Score {
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
         this.bic.setPenaltyDiscount(penaltyDiscount);
+    }
+
+    /**
+     * Whether continuous variables were rank-transformed before embedding.
+     *
+     * @return true if so.
+     */
+    public boolean isRankTransform() {
+        return this.rankTransform;
     }
 
     /**
