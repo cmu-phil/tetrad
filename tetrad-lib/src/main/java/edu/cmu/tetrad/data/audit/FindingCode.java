@@ -119,6 +119,31 @@ public enum FindingCode {
     MISSING_DATA,
 
     /**
+     * A continuous variable has a repeated point mass at one extreme of its observed range, separated from the rest
+     * of the distribution by a gap far larger than the typical spacing between adjacent observed values elsewhere in
+     * the column. This is the signature of a sentinel code - a fixed value such as 0, -1, -99 or 999 written into
+     * the file to mark a measurement that was not taken - which arithmetic cannot distinguish from a real
+     * measurement, so every downstream computation silently treats the code as data.
+     * <p>
+     * The consequences are not confined to the flagged variable's marginal distribution. A shared code creates
+     * spurious association between any two variables that carry it on the same rows and attenuates the association
+     * between a coded variable and an uncoded one, so correlations move in both directions and can change sign. A
+     * large point mass also drives the variable toward degeneracy, which costs conditional-independence tests their
+     * power: partial correlations shrink toward zero and a graph can pass a Markov check because nothing rejects
+     * rather than because the graph is right. Non-Gaussianity findings on such a column typically describe the
+     * point mass rather than the measured quantity.
+     * <p>
+     * The finding is per variable, with the candidate code in the values under "value" and the count of cells
+     * holding it under "count"; a variable coded at both ends (for instance -999 and 999) produces two findings.
+     * The check is a heuristic on the shape of the observed distribution and cannot read the codebook: a genuine
+     * boundary value that repeats and sits far from its neighbors will be flagged, and a sentinel code that falls
+     * inside the observed range or coincides with plausible measurements will not be. Whether the flagged value is a
+     * code or a measurement is a question about the data's provenance, and the audit takes no position on it. Only
+     * continuous variables are checked; a sentinel category of a discrete variable is visible in its level list.
+     */
+    SENTINEL_VALUE,
+
+    /**
      * Two columns are exact affine functions of one another on the rows where both are observed (identical columns,
      * complementary indicators such as y = 1 - x, or rescaled copies). Unlike EXACT_LINEAR_DEPENDENCE, which reports
      * a rank deficiency it cannot localize, this finding names the specific pair; the values carry the number of

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.audit.AuditFinding;
 import edu.cmu.tetrad.data.audit.CovarianceAudit;
 import edu.cmu.tetrad.data.audit.DataAudit;
+import edu.cmu.tetrad.data.audit.FindingCode;
 import edu.cmu.tetrad.data.missing.MissingDataAudit;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ErrorDialogs;
@@ -36,7 +37,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Displays a data audit for the selected dataset, combining the general data-quality audit
@@ -223,6 +227,11 @@ class DataAuditAction extends AbstractAction {
      * thread.
      */
     static JComponent createDataAuditPanel(DataSet dataSet, DataAudit pooledAudit, MissingDataAudit missingAudit) {
+        // The recode control edits the dataset, so the missingness audit and the grouped-audit cache below both go
+        // stale when it fires. Both are held indirectly so that the recode handler can replace them.
+        MissingDataAudit[] missingRef = {missingAudit};
+        java.util.Map<String, DataAudit> groupCache = new java.util.HashMap<>();
+
         DataAuditJTable findingsTable =
                 new DataAuditJTable(new DataAuditFindingsModel(pooledAudit.getFindings()), 4);
         sizeFindingsColumns(findingsTable);
@@ -272,11 +281,15 @@ class DataAuditAction extends AbstractAction {
         north.add(summary, BorderLayout.CENTER);
 
         JComponent groupControl = createGroupControl(dataSet, pooledAudit, missingAudit,
-                findingsTable, variablesTable, summary);
+                findingsTable, variablesTable, summary, groupCache);
 
-        if (groupControl != null) {
-            north.add(groupControl, BorderLayout.SOUTH);
-        }
+        JComponent recodeControl = createRecodeControl(dataSet, findingsTable, variablesTable, summary,
+                missingText, missingRef, groupCache);
+
+        Box southOfSummary = Box.createVerticalBox();
+        if (groupControl != null) southOfSummary.add(groupControl);
+        southOfSummary.add(recodeControl);
+        north.add(southOfSummary, BorderLayout.SOUTH);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(north, BorderLayout.NORTH);
@@ -405,7 +418,8 @@ class DataAuditAction extends AbstractAction {
      */
     private static JComponent createGroupControl(DataSet dataSet, DataAudit pooledAudit,
                                                  MissingDataAudit missingAudit, DataAuditJTable findingsTable,
-                                                 DataAuditJTable variablesTable, JLabel summary) {
+                                                 DataAuditJTable variablesTable, JLabel summary,
+                                                 java.util.Map<String, DataAudit> cache) {
         java.util.List<String> discreteNames = dataSet.getVariables().stream()
                 .filter(v -> v instanceof edu.cmu.tetrad.data.DiscreteVariable)
                 .map(edu.cmu.tetrad.graph.Node::getName).toList();
@@ -419,7 +433,7 @@ class DataAuditAction extends AbstractAction {
         combo.setToolTipText("Compute row autocorrelations within groups of the selected discrete variable "
                 + "(for block-structured data such as stacked regions or subjects).");
 
-        java.util.Map<String, DataAudit> cache = new java.util.HashMap<>();
+        cache.clear();
         cache.put(none, pooledAudit);
 
         combo.addActionListener(e -> {
@@ -465,6 +479,152 @@ class DataAuditAction extends AbstractAction {
         controls.add(new JLabel("Serial dependence within groups of:"));
         controls.add(combo);
         return controls;
+    }
+
+    /**
+     * Builds the sentinel recode control: a button that sets to missing the cells holding the codes named by the
+     * SENTINEL_VALUE findings currently selected in the Findings table. The button is disabled unless at least one
+     * such finding is selected, so it can only ever act on a value the audit reported and the user picked.
+     * <p>
+     * The recode is offered rather than performed because the audit cannot tell a code from a measurement: the check
+     * judges the shape of the observed distribution, and only the file's codebook settles what the flagged value
+     * means. The confirmation dialog therefore states the edit exactly - variable, value, and number of cells - and
+     * says that the dataset is modified in place and the edit cannot be undone, since the dataset is the one every
+     * downstream box in the session reads.
+     * <p>
+     * After the recode the audit is recomputed, off the event thread under the stop dialog as elsewhere in this
+     * dialog, and the findings, per-variable facts, summary line and missingness text are all replaced: the point of
+     * the recode is that the missingness numbers change, and the continuous checks that had been computed with the
+     * code treated as data are recomputed without it. The grouped-audit cache is cleared for the same reason.
+     */
+    private static JComponent createRecodeControl(DataSet dataSet, DataAuditJTable findingsTable,
+                                                  DataAuditJTable variablesTable, JLabel summary,
+                                                  JTextArea missingText, MissingDataAudit[] missingRef,
+                                                  Map<String, DataAudit> groupCache) {
+        JButton recode = new JButton("Recode Selected Sentinel Values to Missing...");
+        recode.setEnabled(false);
+        recode.setToolTipText("Set to missing the cells holding the codes named by the SENTINEL_VALUE findings "
+                + "selected above. Modifies the dataset in place; not undoable.");
+
+        findingsTable.getSelectionModel().addListSelectionListener(
+                e -> recode.setEnabled(!selectedSentinelFindings(findingsTable).isEmpty()));
+
+        recode.addActionListener(e -> {
+            List<AuditFinding> selected = selectedSentinelFindings(findingsTable);
+            if (selected.isEmpty()) return;
+
+            // One edit per (variable, value) pair, in selection order, with duplicates collapsed: the same finding
+            // can be reached twice through a multi-column selection in the table.
+            Map<String, Double> edits = new LinkedHashMap<>();
+
+            for (AuditFinding finding : selected) {
+                Double value = finding.getValues().get("value");
+                if (value != null) edits.put(finding.getVariables().get(0), value);
+            }
+
+            StringBuilder sb = new StringBuilder("Set the following cells to missing?\n\n");
+
+            for (Map.Entry<String, Double> edit : edits.entrySet()) {
+                int cells = 0;
+                int j = dataSet.getColumnIndex(dataSet.getVariable(edit.getKey()));
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    if (dataSet.getDouble(i, j) == edit.getValue()) cells++;
+                }
+
+                sb.append("    ").append(edit.getKey()).append(" = ").append(edit.getValue())
+                        .append("    (").append(cells).append(" of ").append(dataSet.getNumRows())
+                        .append(" cells)\n");
+            }
+
+            sb.append("\nThe audit cannot tell a missing-data code from a real measurement; the codebook for the "
+                    + "file settles that. This edit modifies the dataset in place, for every box downstream of it "
+                    + "in the session, and cannot be undone.");
+
+            int choice = JOptionPane.showConfirmDialog(recode, sb.toString(), "Recode to Missing",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (choice != JOptionPane.OK_OPTION) return;
+
+            int changed = 0;
+
+            try {
+                for (Map.Entry<String, Double> edit : edits.entrySet()) {
+                    changed += DataAudit.recodeToMissing(dataSet, edit.getKey(), edit.getValue());
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(recode, "Could not recode: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            final int totalChanged = changed;
+
+            new WatchedProcess() {
+                @Override
+                public void watch() throws InterruptedException {
+                    DataAudit current;
+                    MissingDataAudit missing;
+
+                    try {
+                        current = new DataAudit(dataSet);
+                        missing = missingAuditFor(dataSet, current);
+                    } catch (RuntimeException ex) {
+                        if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
+
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(recode,
+                                "The cells were recoded, but the audit could not be recomputed: " + ex.getMessage()
+                                        + " Reopen the Data Audit to see the updated findings.", "Error",
+                                JOptionPane.WARNING_MESSAGE));
+                        return;
+                    }
+
+                    SwingUtilities.invokeLater(() -> {
+                        missingRef[0] = missing;
+                        groupCache.clear();
+
+                        findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
+                        sizeFindingsColumns(findingsTable);
+                        variablesTable.setAuditModel(
+                                new DataAuditVariablesModel(dataSet, current, null, missing));
+                        missingText.setText(missingnessText(dataSet, missing));
+                        missingText.setCaretPosition(0);
+                        summary.setText(summaryLine(dataSet, current, missing)
+                                + "  " + totalChanged + " cell(s) recoded to missing.");
+                        recode.setEnabled(false);
+                    });
+                }
+            };
+        });
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        controls.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        controls.add(recode);
+        return controls;
+    }
+
+    /**
+     * The SENTINEL_VALUE findings in the Findings table's current selection, in row order, without duplicates. The
+     * table sorts and the selection is by cell, so selected view rows are mapped to model rows and repeated rows
+     * (one per selected column) are collapsed.
+     *
+     * @param findingsTable the findings table.
+     * @return the selected sentinel findings, possibly empty.
+     */
+    private static List<AuditFinding> selectedSentinelFindings(DataAuditJTable findingsTable) {
+        List<AuditFinding> selected = new ArrayList<>();
+
+        if (!(findingsTable.getModel() instanceof DataAuditFindingsModel model)) return selected;
+
+        for (int viewRow : findingsTable.getSelectedRows()) {
+            AuditFinding finding = model.getFinding(findingsTable.convertRowIndexToModel(viewRow));
+
+            if (finding.getCode() == FindingCode.SENTINEL_VALUE && !selected.contains(finding)) {
+                selected.add(finding);
+            }
+        }
+
+        return selected;
     }
 
     /**
