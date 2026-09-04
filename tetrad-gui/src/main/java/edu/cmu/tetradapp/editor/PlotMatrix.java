@@ -34,10 +34,14 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implements a matrix of scatterplots and histograms for variables that users can select from a list.
@@ -104,9 +108,37 @@ public class PlotMatrix extends JPanel {
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
      */
     public PlotMatrix(DataSet dataSet) {
+        this(dataSet, null, null);
+    }
+
+    /**
+     * Constructs a plot matrix over all variables of the data set, with the given variables initially selected in
+     * the row and column selectors. Variables not in the data set are ignored; if a selection is null or resolves to
+     * nothing, the first variable (in natural order) is selected, as for {@link #PlotMatrix(DataSet)}.
+     *
+     * @param dataSet     the data set to plot
+     * @param initialRows variables to preselect as rows, or null
+     * @param initialCols variables to preselect as columns, or null
+     */
+    public PlotMatrix(DataSet dataSet, Collection<Node> initialRows, Collection<Node> initialCols) {
+        this(dataSet, null, initialRows, initialCols);
+    }
+
+    /**
+     * Constructs a plot matrix whose row and column selectors list only the given variables (all variables of the
+     * data set if {@code variables} is null), with the given initial selections. The data set itself is not
+     * subsetted, so conditioning (Settings &gt; Edit Conditioning Variables...) may still use any variable in it.
+     *
+     * @param dataSet     the data set to plot
+     * @param variables   variables to list in the row/column selectors, or null for all
+     * @param initialRows variables to preselect as rows, or null
+     * @param initialCols variables to preselect as columns, or null
+     */
+    public PlotMatrix(DataSet dataSet, Collection<Node> variables,
+                      Collection<Node> initialRows, Collection<Node> initialCols) {
         setLayout(new BorderLayout());
 
-        List<Node> nodes = dataSet.getVariables();
+        List<Node> nodes = restrictTo(dataSet.getVariables(), variables);
         nodes.sort(NaturalSort.naturalComparator());
 
         Node[] _vars = new Node[nodes.size()];
@@ -115,8 +147,8 @@ public class PlotMatrix extends JPanel {
         this.rowSelector = new JList<>(_vars);
         this.colSelector = new JList<>(_vars);
 
-        this.rowSelector.setSelectedIndex(0);
-        this.colSelector.setSelectedIndex(0);
+        this.rowSelector.setSelectedIndices(indicesOf(nodes, initialRows));
+        this.colSelector.setSelectedIndices(indicesOf(nodes, initialCols));
 
         charts = new JPanel();
 
@@ -241,6 +273,35 @@ public class PlotMatrix extends JPanel {
 
         add(b1, BorderLayout.CENTER);
         setPreferredSize(new Dimension(750, 450));
+    }
+
+    /**
+     * Returns the members of {@code all} whose names appear in {@code keep}, or a copy of {@code all} if
+     * {@code keep} is null or matches nothing (so the selectors are never empty).
+     */
+    private static List<Node> restrictTo(List<Node> all, Collection<Node> keep) {
+        if (keep == null) return new ArrayList<>(all);
+        Set<String> names = new HashSet<>();
+        for (Node n : keep) if (n != null) names.add(n.getName());
+        List<Node> out = new ArrayList<>();
+        for (Node n : all) if (names.contains(n.getName())) out.add(n);
+        return out.isEmpty() ? new ArrayList<>(all) : out;
+    }
+
+    /**
+     * Maps the given variables (matched by name) to their indices in {@code nodes}. Returns {0} if the result would
+     * be empty, so that a selection is always present.
+     */
+    private static int[] indicesOf(List<Node> nodes, Collection<Node> selected) {
+        if (selected == null) return new int[]{0};
+        Set<String> names = new HashSet<>();
+        for (Node n : selected) if (n != null) names.add(n.getName());
+        List<Integer> idx = new ArrayList<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            if (names.contains(nodes.get(i).getName())) idx.add(i);
+        }
+        if (idx.isEmpty()) return new int[]{0};
+        return idx.stream().mapToInt(Integer::intValue).toArray();
     }
 
     private void setRemoveMinPointsPerPlot(boolean removeZeroPointsPerPlot) {
