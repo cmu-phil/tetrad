@@ -29,9 +29,10 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 /**
- * Opens the Alpha/Penalty Discount Calculator for the selected data: one window with two tabs, the Alpha tab
- * ({@link AlphaCalculatorPanel}) for constraint-based searches and the Penalty Discount tab
- * ({@link PenaltyDiscountCalculatorPanel}) for score-based ones.
+ * Opens the Alpha/Penalty Discount Calculator for the selected data: one window with three tabs, the Alpha tab
+ * ({@link AlphaCalculatorPanel}) for constraint-based searches, the Penalty Discount tab
+ * ({@link PenaltyDiscountCalculatorPanel}) for score-based ones, and an Explanation tab
+ * ({@link CalibrationExplanationPanel}) giving a plain-language account of both.
  *
  * <p>The two tabs answer the same question from the two sides of the same ledger. Both start from a budget on the
  * expected number of spurious edges over the whole search, stated as a fraction of the expected number of true
@@ -50,6 +51,7 @@ import java.awt.event.ActionEvent;
  * @author josephramsey
  * @see AlphaCalculatorPanel
  * @see PenaltyDiscountCalculatorPanel
+ * @see CalibrationExplanationPanel
  */
 class CalibrationCalculatorAction extends AbstractAction {
 
@@ -104,6 +106,7 @@ class CalibrationCalculatorAction extends AbstractAction {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Alpha", AlphaCalculatorPanel.create(this.dataEditor, model));
         tabs.addTab("Penalty Discount", PenaltyDiscountCalculatorPanel.create(this.dataEditor, model));
+        tabs.addTab("Explanation", CalibrationExplanationPanel.create());
 
         EditorWindow window = new EditorWindow(tabs, "Alpha/Penalty Discount Calculator", null, false,
                 (JComponent) this.dataEditor);
