@@ -751,29 +751,9 @@ public final class Params {
      */
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
     /**
-     * Constant <code>SEM_BIC_AUTO_PENALTY="semBicAutoPenalty"</code>
-     */
-    public static final String SEM_BIC_AUTO_PENALTY = "semBicAutoPenalty";
-    /**
-     * Constant <code>SEM_BIC_TARGET_FDR="semBicTargetFdr"</code>
-     */
-    public static final String SEM_BIC_TARGET_FDR = "semBicTargetFdr";
-    /**
-     * Constant <code>SEM_BIC_EXPECTED_DEGREE="semBicExpectedDegree"</code>
-     */
-    public static final String SEM_BIC_EXPECTED_DEGREE = "semBicExpectedDegree";
-    /**
-     * Constant <code>SEM_BIC_NULL_SAMPLES="semBicNullSamples"</code>
-     */
-    public static final String SEM_BIC_NULL_SAMPLES = "semBicNullSamples";
-    /**
      * Constant <code>BASIS_RANK_TRANSFORM="basisRankTransform"</code>
      */
     public static final String BASIS_RANK_TRANSFORM = "basisRankTransform";
-    /**
-     * Constant <code>SEM_BIC_MIN_EFFECT="semBicMinEffect"</code>
-     */
-    public static final String SEM_BIC_MIN_EFFECT = "semBicMinEffect";
     /**
      * Constant <code>POISSON_LAMBDA="poissonLambda"</code>
      */

@@ -12,9 +12,8 @@ import static org.junit.Assert.*;
 
 /**
  * Pins the behavior of {@link PenaltyDiscountReport}, the presentation layer the penalty discount calculator
- * dialog is built on. The point of these tests is that the dialog and the automatic penalty applied inside the
- * score wrappers under {@code semBicAutoPenalty} cannot drift apart: the report must return exactly what
- * {@link PenaltyDiscountCalibration} returns for the same inputs.
+ * dialog is built on. The point of these tests is that the dialog cannot drift from the calibration it presents:
+ * the report must return exactly what {@link PenaltyDiscountCalibration} returns for the same inputs.
  */
 public class TestPenaltyDiscountReport {
 

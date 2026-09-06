@@ -41,9 +41,10 @@ import java.util.Map;
 /**
  * A calculator for the BIC penalty discount, over
  * {@link edu.cmu.tetrad.search.score.PenaltyDiscountCalibration} and
- * {@link edu.cmu.tetrad.search.score.PenaltyDiscountReport}. It answers, for the selected data, the question the
- * {@code semBicAutoPenalty} parameter answers inside a search, but before a search is run and with the working
- * shown.
+ * {@link edu.cmu.tetrad.search.score.PenaltyDiscountReport}. It answers, for the selected data, what penalty
+ * discount a false-edge budget implies, before a search is run and with the working shown. The user copies the
+ * value into the score's penaltyDiscount parameter by hand; there is deliberately no parameter that applies it
+ * automatically, so that the choice is looked at rather than defaulted.
  *
  * <p>Two directions are offered. Forward: given an expected degree, a target ratio of spurious to true edges, and
  * optionally a smallest partial correlation worth an edge, what penalty discount should be used? Inverse: given a

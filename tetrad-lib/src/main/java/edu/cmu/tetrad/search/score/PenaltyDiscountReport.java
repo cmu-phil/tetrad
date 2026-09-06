@@ -32,9 +32,10 @@ import java.util.Map;
  *
  * <p>This is a presentation layer over {@link PenaltyDiscountCalibration}. It performs no statistics of its own;
  * every number here comes from that class or from
- * {@link SemBicScore#minDetectablePartialCorrelation(double, int)}, so a report and the automatic penalty applied
- * by the score wrappers under {@code semBicAutoPenalty} agree by construction. It exists so that the calculation
- * can be driven from a dialog, from py-tetrad, or from a test without duplicating the assembly logic in each.</p>
+ * {@link SemBicScore#minDetectablePartialCorrelation(double, int)}. It exists so that the calculation can be driven
+ * from a dialog, from py-tetrad, or from a test without duplicating the assembly logic in each. The value it
+ * recommends is not applied anywhere automatically; the user copies it into the score's penaltyDiscount parameter,
+ * which is deliberate.</p>
  *
  * <p><b>The two criteria.</b> The false-discovery criterion asks how many <i>null</i> pairs become edges: it holds
  * the expected number of spurious edges at {@code fdr} times the expected number of true edges,
