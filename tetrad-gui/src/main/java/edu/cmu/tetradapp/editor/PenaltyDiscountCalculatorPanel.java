@@ -22,14 +22,11 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.missing.MissingDataAudit;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.BasisFunctionBicScore;
 import edu.cmu.tetrad.search.score.PenaltyDiscountCalibration;
 import edu.cmu.tetrad.search.score.PenaltyDiscountReport;
-import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ErrorDialogs;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
@@ -37,7 +34,6 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,11 +67,16 @@ import java.util.Map;
  * permutation fit draws hundreds of null statistics per degrees-of-freedom class, so both can take a while on a
  * large data set and both are interruptible from the usual "Processing (click to stop)" dialog.</p>
  *
+ * <p>This is the Penalty Discount tab of {@link CalibrationCalculatorAction}; the Alpha tab is
+ * {@link AlphaCalculatorPanel}. Both are built from the same block-size vector, via {@link CalibrationBlockSizes},
+ * so that a score and a test on the same data are costed identically.</p>
+ *
  * @author josephramsey
  * @see PenaltyDiscountReport
  * @see PenaltyDiscountCalibration
+ * @see CalibrationCalculatorAction
  */
-class PenaltyDiscountCalculatorAction extends AbstractAction {
+final class PenaltyDiscountCalculatorPanel {
 
     /**
      * Parameter block sizes are all one; the score charges one parameter per parent.
@@ -92,28 +93,18 @@ class PenaltyDiscountCalculatorAction extends AbstractAction {
      */
     private static final String FAMILY_BF_BIC = "BF-BIC (block size = basis expansion)";
 
-    /**
-     * The editor this action is attached to.
-     */
-    private final ISelectedModel dataEditor;
-
-    /**
-     * Constructs the action.
-     *
-     * @param editor The editor holding the selected data model.
-     */
-    public PenaltyDiscountCalculatorAction(ISelectedModel editor) {
-        super("Penalty Discount Calculator...");
-        this.dataEditor = editor;
+    private PenaltyDiscountCalculatorPanel() {
     }
 
     /**
-     * {@inheritDoc}
+     * Builds the Penalty Discount tab for a data model the caller has already checked is a tabular data set or a
+     * covariance matrix with at least two variables and two rows.
+     *
+     * @param editor The editor the panel's message dialogs are centered on.
+     * @param model  The selected data model.
+     * @return The panel.
      */
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        DataModel model = this.dataEditor.getSelectedDataModel();
-
+    static JComponent create(ISelectedModel editor, DataModel model) {
         int p;
         int rows;
         int completeCases;
@@ -127,29 +118,10 @@ class PenaltyDiscountCalculatorAction extends AbstractAction {
             rows = cov.getSampleSize();
             completeCases = rows;
         } else {
-            JOptionPane.showMessageDialog(findOwner(),
-                    "Need a tabular data set or a covariance matrix to calibrate a penalty discount.");
-            return;
+            throw new IllegalArgumentException("Need a tabular data set or a covariance matrix.");
         }
 
-        if (p < 2) {
-            JOptionPane.showMessageDialog(findOwner(),
-                    "Need at least two variables to calibrate a penalty discount.");
-            return;
-        }
-
-        if (rows < 2) {
-            JOptionPane.showMessageDialog(findOwner(),
-                    "Need a sample size of at least two to calibrate a penalty discount.");
-            return;
-        }
-
-        JComponent panel = createPanel(model, p, rows, completeCases);
-
-        EditorWindow window = new EditorWindow(panel, "Penalty Discount Calculator", null, false,
-                (JComponent) this.dataEditor);
-        DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
-        window.setVisible(true);
+        return createPanel(editor, model, p, rows, completeCases);
     }
 
     //============================== Private methods ============================//
@@ -177,25 +149,10 @@ class PenaltyDiscountCalculatorAction extends AbstractAction {
     }
 
     /**
-     * Parameter block sizes for the Degenerate Gaussian and discrete BIC family: one per continuous variable,
-     * categories minus one per discrete variable.
-     */
-    private static int[] degenerateGaussianBlockSizes(DataSet dataSet) {
-        List<Node> variables = dataSet.getVariables();
-        int[] sizes = new int[variables.size()];
-
-        for (int i = 0; i < sizes.length; i++) {
-            sizes[i] = variables.get(i) instanceof DiscreteVariable d
-                    ? Math.max(1, d.getNumCategories() - 1) : 1;
-        }
-
-        return sizes;
-    }
-
-    /**
      * Builds the calculator panel: inputs on top, a Compute button, and Result and Sweep tabs below.
      */
-    private JComponent createPanel(DataModel model, int p, int rows, int completeCases) {
+    private static JComponent createPanel(ISelectedModel editor, DataModel model, int p, int rows,
+                                          int completeCases) {
         boolean tabular = model instanceof DataSet;
 
         JComboBox<String> family = new JComboBox<>(tabular
@@ -264,7 +221,7 @@ class PenaltyDiscountCalculatorAction extends AbstractAction {
                 atC = Double.parseDouble(evaluateAt.getText().trim());
                 draws = Integer.parseInt(nullDraws.getText().trim());
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(findOwner(), "Could not read a number: " + ex.getMessage(),
+                JOptionPane.showMessageDialog(findOwner(editor), "Could not read a number: " + ex.getMessage(),
                         "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -303,17 +260,16 @@ class PenaltyDiscountCalculatorAction extends AbstractAction {
                                        + "\nnull is chi-square.\n";
                             }
                         } else if (dg) {
-                            sizes = degenerateGaussianBlockSizes((DataSet) model);
+                            sizes = CalibrationBlockSizes.categoriesMinusOne((DataSet) model);
                         } else {
-                            sizes = new int[p];
-                            java.util.Arrays.fill(sizes, 1);
+                            sizes = CalibrationBlockSizes.allOnes(p);
                         }
                     } catch (RuntimeException ex) {
                         if (ErrorDialogs.isInterruption(ex)) {
                             throw new InterruptedException("Penalty discount calculation stopped.");
                         }
 
-                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(findOwner(),
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(findOwner(editor),
                                 "Could not build the parameter block sizes: " + ex.getMessage(), "Error",
                                 JOptionPane.WARNING_MESSAGE));
                         return;
@@ -324,7 +280,7 @@ class PenaltyDiscountCalculatorAction extends AbstractAction {
                     try {
                         report = new PenaltyDiscountReport(sizes, n, degree, fdr, effect, fits);
                     } catch (RuntimeException ex) {
-                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(findOwner(),
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(findOwner(editor),
                                 ex.getMessage(), "Error", JOptionPane.WARNING_MESSAGE));
                         return;
                     }
@@ -470,8 +426,8 @@ class PenaltyDiscountCalculatorAction extends AbstractAction {
     /**
      * The component to center message dialogs on.
      */
-    private JFrame findOwner() {
-        return (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, (JComponent) this.dataEditor);
+    private static JFrame findOwner(ISelectedModel editor) {
+        return (JFrame) SwingUtilities.getAncestorOfClass(JFrame.class, (JComponent) editor);
     }
 
     /**

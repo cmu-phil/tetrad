@@ -739,7 +739,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         tools.add(new PlotMatrixAction(this));
         tools.add(new QQPlotAction(this));
         tools.add(new CheckIndependenceFacts(this));
-        tools.add(new PenaltyDiscountCalculatorAction(this));
+        tools.add(new CalibrationCalculatorAction(this));
 
         JMenuItem addBlockId = new JMenuItem("Add Block ID Column...");
         tools.add(addBlockId);
