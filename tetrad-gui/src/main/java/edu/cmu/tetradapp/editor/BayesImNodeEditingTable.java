@@ -566,6 +566,13 @@ class BayesImNodeEditingTable extends JTable {
             if (getBayesIm().getCptMapType() == MlBayesIm.CptMapType.PROB_MAP && ("".equals(aValue) || aValue == null)) {
                 getBayesIm().setProbability(getNodeIndex(), row, colIndex,
                         Double.NaN);
+
+                // If the deleted cell was the only empty cell in the row, immediately fill it in with one minus
+                // the sum of the other cells, so that deleting a cell recomputes it as the complement rather than
+                // leaving a hole. Rows with two or more empty cells are left alone. To clear a whole row, use
+                // "Clear this row" in the right-click menu.
+                fillInSingleRemainingColumn(row);
+
                 fireTableRowsUpdated(row, row);
                 getPcs().firePropertyChange("modelChanged", null, null);
                 return;
@@ -643,6 +650,12 @@ class BayesImNodeEditingTable extends JTable {
 
             if (leftOverColumn != -1) {
                 double difference = 1.0 - sumInRow(rowIndex, leftOverColumn);
+
+                // The other cells are rounded for display, so the complement can come out a hair below zero.
+                if (difference < 0.0) {
+                    difference = 0.0;
+                }
+
                 getBayesIm().setProbability(getNodeIndex(), rowIndex,
                         leftOverColumn, difference);
             }
