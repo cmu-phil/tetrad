@@ -34,6 +34,7 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
+import java.awt.event.ActionListener;
 import java.io.Serial;
 import java.util.*;
 import java.util.List;
@@ -54,6 +55,22 @@ class OtherGroupsEditor extends JPanel {
      * The variables in the graph.
      */
     private final List<String> variables;
+
+    /**
+     * The wildcard expression last typed into this tab's pattern field, and the status message it
+     * last produced. Held here because the tab is rebuilt from scratch after every add, which would
+     * otherwise clear both.
+     */
+    private String globText = "";
+
+    private String globStatus = " ";
+
+    /**
+     * The index of the destination slot last chosen in the pattern bar's dropdown, so that the
+     * choice survives a rebuild. Slot {@code 2i} is group {@code i}'s from-list and slot
+     * {@code 2i + 1} is its to-list.
+     */
+    private int globSlot = 0;
 
     /**
      * <p>Constructor for OtherGroupsEditor.</p>
@@ -261,6 +278,8 @@ class OtherGroupsEditor extends JPanel {
         vBox.add(Box.createVerticalStrut(5));
         vBox.add(buttons);
         vBox.add(Box.createVerticalStrut(5));
+        vBox.add(globBar());
+        vBox.add(Box.createVerticalStrut(5));
 
         Box groupBoxes = Box.createVerticalBox();
         themePanel(groupBoxes);
@@ -378,6 +397,154 @@ class OtherGroupsEditor extends JPanel {
         vBox.add(box);
 
         return vBox;
+    }
+
+    /**
+     * Builds the pattern bar: a text field taking a wildcard expression in which {@code *} matches
+     * any string and {@code ?} any single character, a dropdown naming a destination slot — the
+     * from-list or the to-list of one of the knowledge groups — and an Add button that puts every
+     * matching variable into that slot.
+     *
+     * <p>This is the bulk equivalent of dragging names into a group one at a time, and it applies
+     * the same restrictions the drag handler does: a variable already in the slot is not duplicated,
+     * and a variable in the slot's opposite list is skipped, since a group's from and to sets may
+     * not intersect. Skipped variables are reported rather than silently dropped.
+     *
+     * <p>When there are no groups yet, the bar is disabled with a note saying so, since there is
+     * nowhere to put anything.
+     *
+     * @return the bar, ready to be added to the tab
+     */
+    private Box globBar() {
+        Box bar = Box.createHorizontalBox();
+        bar.setOpaque(false);
+
+        JLabel patternLabel = new JLabel("Pattern:");
+        themeLabel(patternLabel);
+        bar.add(patternLabel);
+        bar.add(Box.createHorizontalStrut(5));
+
+        JTextField patternField = new JTextField(this.globText, 12);
+        patternField.setToolTipText("<html>A wildcard over variable names: <b>*</b> matches any "
+                + "string, <b>?</b> any single character.<br>"
+                + "Separate alternatives with commas. Matching is case sensitive.<br>"
+                + "Examples: <tt>X*</tt> &nbsp; <tt>*age*</tt> &nbsp; <tt>V??</tt> &nbsp; "
+                + "<tt>X*, Y*</tt></html>");
+        patternField.setMaximumSize(new Dimension(220, patternField.getPreferredSize().height));
+        bar.add(patternField);
+        bar.add(Box.createHorizontalStrut(5));
+
+        JLabel toLabel = new JLabel("add to");
+        themeLabel(toLabel);
+        bar.add(toLabel);
+        bar.add(Box.createHorizontalStrut(5));
+
+        List<KnowledgeGroup> groups = this.knowledge.getKnowledgeGroups();
+
+        JComboBox<String> destination = new JComboBox<>();
+
+        for (int i = 0; i < groups.size(); i++) {
+            String kind = groups.get(i).getType() == KnowledgeGroup.FORBIDDEN
+                    ? "Forbidden" : "Required";
+            destination.addItem(kind + " Group " + (i + 1) + " From");
+            destination.addItem(kind + " Group " + (i + 1) + " To");
+        }
+
+        destination.setMaximumSize(new Dimension(230, destination.getPreferredSize().height));
+
+        if (this.globSlot >= 0 && this.globSlot < destination.getItemCount()) {
+            destination.setSelectedIndex(this.globSlot);
+        }
+
+        bar.add(destination);
+        bar.add(Box.createHorizontalStrut(5));
+
+        JButton add = new JButton("Add");
+        themeButton(add);
+        bar.add(add);
+        bar.add(Box.createHorizontalStrut(10));
+
+        JLabel status = new JLabel(groups.isEmpty()
+                ? "Add a group first, then variables can be added to it by pattern."
+                : this.globStatus);
+        themeLabel(status);
+        bar.add(status);
+        bar.add(Box.createHorizontalGlue());
+
+        if (groups.isEmpty()) {
+            patternField.setEnabled(false);
+            destination.setEnabled(false);
+            add.setEnabled(false);
+            return bar;
+        }
+
+        ActionListener doAdd = (e) -> {
+            String spec = patternField.getText().trim();
+            this.globText = spec;
+            this.globSlot = destination.getSelectedIndex();
+
+            if (spec.isEmpty()) {
+                status.setText("Type a pattern, such as X*, first.");
+                return;
+            }
+
+            List<String> matched = VariableGlob.match(spec, this.variables);
+
+            if (matched.isEmpty()) {
+                status.setText("No variable names matched " + spec + ".");
+                return;
+            }
+
+            int slot = destination.getSelectedIndex();
+            int groupIndex = slot / 2;
+            boolean from = slot % 2 == 0;
+
+            KnowledgeGroup group = this.knowledge.getKnowledgeGroups().get(groupIndex);
+            Set<String> target = new HashSet<>(from ? group.getFromVariables() : group.getToVariables());
+            Set<String> opposite = from ? group.getToVariables() : group.getFromVariables();
+
+            int added = 0;
+            int conflicted = 0;
+
+            for (String name : matched) {
+                if (opposite.contains(name)) {
+                    conflicted++;
+                } else if (target.add(name)) {
+                    added++;
+                }
+            }
+
+            if (added == 0) {
+                status.setText(conflicted > 0
+                        ? "Nothing added; " + VariableGlob.countPhrase(conflicted)
+                        + " already in the opposite list."
+                        : "Nothing added; all matches were already there.");
+                return;
+            }
+
+            KnowledgeGroup updated = from
+                    ? new KnowledgeGroup(group.getType(), target, group.getToVariables())
+                    : new KnowledgeGroup(group.getType(), group.getFromVariables(), target);
+
+            try {
+                this.knowledge.setKnowledgeGroup(groupIndex, updated);
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());
+                rebuild();
+                return;
+            }
+
+            this.globStatus = "Added " + VariableGlob.countPhrase(added) + " to "
+                    + destination.getItemAt(slot) + "."
+                    + (conflicted > 0 ? " Skipped " + conflicted + " in the opposite list." : "");
+
+            rebuild();
+        };
+
+        add.addActionListener(doAdd);
+        patternField.addActionListener(doAdd);
+
+        return bar;
     }
 
     /**

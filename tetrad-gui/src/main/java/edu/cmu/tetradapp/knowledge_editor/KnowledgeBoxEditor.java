@@ -40,6 +40,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
@@ -132,6 +133,24 @@ public class KnowledgeBoxEditor extends JPanel {
      * The number of tiers to display.
      */
     private JPanel tiersPanel;
+
+    /**
+     * The wildcard expression last typed into the Tiers tab's pattern field. Held here because the
+     * tier panel is rebuilt from scratch after every move, which would otherwise clear the field.
+     */
+    private String tierGlobText = "";
+
+    /**
+     * The status message last produced by the Tiers tab's pattern field, preserved across rebuilds
+     * for the same reason as {@link #tierGlobText}.
+     */
+    private String tierGlobStatus = " ";
+
+    /**
+     * The dropdown entry, following the tiers, that removes matching variables from every tier
+     * rather than moving them into one.
+     */
+    private static final String NOT_IN_TIER = "Not in tier";
 
     /**
      * True if edges explicitly forbidden should be shown.
@@ -778,8 +797,6 @@ public class KnowledgeBoxEditor extends JPanel {
 
             textRow.add(Box.createHorizontalGlue());
 
-            JButton regexAdd = new JButton("Find");
-
             JCheckBox forbiddenCheckbox =
                     new JCheckBox("Forbid Within Tier", getKnowledge().isTierForbiddenWithin(_tier));
             styleCheckBox(forbiddenCheckbox);
@@ -803,25 +820,6 @@ public class KnowledgeBoxEditor extends JPanel {
             });
 
             forbiddenCheckboxes.add(forbiddenCheckbox);
-
-            textRow.add(regexAdd);
-
-            regexAdd.addActionListener((e) -> {
-                String regex = JOptionPane.showInputDialog("Search Cpdag");
-                try {
-                    getKnowledge().removeFromTiers(regex);
-                    getKnowledge().addToTier(_tier, regex);
-                } catch (IllegalArgumentException iae) {
-                    JOptionPane.showMessageDialog(upReference, iae.getMessage());
-                }
-
-                notifyKnowledge();
-
-                this.tiersPanel.removeAll();
-                this.tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
-                this.tiersPanel.revalidate();
-                this.tiersPanel.repaint();
-            });
 
             textRow.add(forbiddenCheckbox);
 
@@ -866,11 +864,122 @@ public class KnowledgeBoxEditor extends JPanel {
             getKnowledge().setTierForbiddenWithin(0, true);
         }
 
+        container.add(tierGlobBar(numTiers));
+        container.add(Box.createVerticalStrut(5));
         container.add(varsNotInTiersBox);
         container.add(Box.createVerticalStrut(5));
         container.add(tiersScrollPane);
 
         return container;
+    }
+
+    /**
+     * Builds the Tiers tab's wildcard bar: a text field taking an expression in which {@code *}
+     * matches any string and {@code ?} any single character, a dropdown naming the destination, and
+     * a Move button that sends every matching variable there.
+     *
+     * <p>The wildcard is resolved against the box's variable names by {@link VariableGlob}, and only
+     * names that actually exist are handed to the knowledge object, so a typo cannot introduce a
+     * variable that is not in the data. When nothing matches, the bar says so rather than failing
+     * silently.
+     *
+     * @param numTiers the number of tiers currently displayed, which fixes the dropdown's contents
+     * @return the bar, ready to be added to the tier panel
+     */
+    private Box tierGlobBar(int numTiers) {
+        Box bar = Box.createHorizontalBox();
+        applySubpanelTheme(bar);
+        bar.setBorder(new EmptyBorder(2, 2, 2, 2));
+
+        JLabel patternLabel = new JLabel("Pattern:");
+        styleLabel(patternLabel);
+        bar.add(patternLabel);
+        bar.add(Box.createHorizontalStrut(5));
+
+        JTextField patternField = new JTextField(this.tierGlobText, 12);
+        patternField.setToolTipText("<html>A wildcard over variable names: <b>*</b> matches any "
+                + "string, <b>?</b> any single character.<br>"
+                + "Separate alternatives with commas. Matching is case sensitive.<br>"
+                + "Examples: <tt>X*</tt> &nbsp; <tt>*age*</tt> &nbsp; <tt>V??</tt> &nbsp; "
+                + "<tt>X*, Y*</tt></html>");
+        patternField.setMaximumSize(new Dimension(220, patternField.getPreferredSize().height));
+        bar.add(patternField);
+        bar.add(Box.createHorizontalStrut(5));
+
+        JLabel toLabel = new JLabel("move to");
+        styleLabel(toLabel);
+        bar.add(toLabel);
+        bar.add(Box.createHorizontalStrut(5));
+
+        JComboBox<String> destination = new JComboBox<>();
+
+        for (int tier = 0; tier < numTiers; tier++) {
+            destination.addItem("Tier " + tier);
+        }
+
+        destination.addItem(NOT_IN_TIER);
+        destination.setMaximumSize(new Dimension(130, destination.getPreferredSize().height));
+        bar.add(destination);
+        bar.add(Box.createHorizontalStrut(5));
+
+        JButton move = new JButton("Move");
+        bar.add(move);
+        bar.add(Box.createHorizontalStrut(10));
+
+        JLabel status = new JLabel(this.tierGlobStatus);
+        status.setForeground(getMutedTextColor());
+        bar.add(status);
+        bar.add(Box.createHorizontalGlue());
+
+        ActionListener doMove = (e) -> {
+            String spec = patternField.getText().trim();
+            this.tierGlobText = spec;
+
+            if (spec.isEmpty()) {
+                status.setText("Type a pattern, such as X*, first.");
+                return;
+            }
+
+            List<String> matched = VariableGlob.match(spec, getVarNames());
+
+            if (matched.isEmpty()) {
+                status.setText("No variable names matched " + spec + ".");
+                return;
+            }
+
+            int selected = destination.getSelectedIndex();
+            boolean removing = selected >= numTiers || selected < 0;
+
+            try {
+                for (String name : matched) {
+                    if (removing) {
+                        getKnowledge().removeFromTiers(name);
+                    } else {
+                        getKnowledge().addToTier(selected, name);
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage());
+                return;
+            }
+
+            this.tierGlobStatus = removing
+                    ? "Removed " + VariableGlob.countPhrase(matched.size()) + " from tiers."
+                    : "Moved " + VariableGlob.countPhrase(matched.size())
+                    + " to Tier " + selected + ".";
+
+            notifyKnowledge();
+
+            this.tiersPanel.removeAll();
+            this.tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
+            this.tiersPanel.revalidate();
+            this.tiersPanel.repaint();
+        };
+
+        move.addActionListener(doMove);
+        patternField.addActionListener(doMove);
+
+        return bar;
     }
 
     private JPanel edgeDisplay() {
