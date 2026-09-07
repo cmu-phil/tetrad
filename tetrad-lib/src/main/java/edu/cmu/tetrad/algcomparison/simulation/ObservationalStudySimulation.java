@@ -91,8 +91,13 @@ import java.util.List;
  * underlying value.</li>
  * <li><b>Panel structure</b> (osPanelNumSubjects): the sample is divided into that many independent
  * subjects (replicates of the same system, sampleSize / osPanelNumSubjects rows each). Each subject
- * has a random intercept on the system variables, which acts as a subject-level latent
- * confounder in the pooled data. By default the subjects are CONCATENATED into one dataset per
+ * has a random intercept on the system variables, with standard deviation osPanelSubjectShiftSd,
+ * which acts as a subject-level latent confounder in the pooled data. The intercept is a pure
+ * offset on the variable that owns it, so within-subject centering removes it there; it acts
+ * as a confounder that centering cannot remove only where it reaches a child through a
+ * nonlinear transmission map (osFormNonlinearity). Larger shifts move subjects further along
+ * that map; larger nonlinearity bends the map more; either makes the panel structure harder to
+ * correct for. By default the subjects are CONCATENATED into one dataset per
  * run with the structure undeclared, as panel data usually arrive; subject boundaries are then
  * available from getSubjectStarts(index), and in serial mode lagging must not cross them. Two
  * options change the emission. If osPanelEmitSubjectColumn, a discrete bookkeeping column named
@@ -206,6 +211,7 @@ public class ObservationalStudySimulation implements Simulation, ProvidesKnowled
         int numSubjects = Math.max(1, parameters.getInt(Params.OS_PANEL_NUM_SUBJECTS));
         boolean emitSubjectColumn = parameters.getBoolean(Params.OS_PANEL_EMIT_SUBJECT_COLUMN);
         boolean emitSubjectsAsDataSets = parameters.getBoolean(Params.OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS);
+        double subjectShiftSd = Math.max(0.0, parameters.getDouble(Params.OS_PANEL_SUBJECT_SHIFT_SD));
         double indexNoise = parameters.getDouble(Params.OS_FORM_INDEX_NOISE);
         double nonlinearity = parameters.getDouble(Params.OS_FORM_NONLINEARITY);
         double interaction = parameters.getDouble(Params.OS_FORM_INTERACTION);
@@ -440,7 +446,11 @@ public class ObservationalStudySimulation implements Simulation, ProvidesKnowled
         for (int subj = 0; subj < numSubjects; subj++) {
             starts[subj] = subj * perSubject;
 
-            // Subject random intercepts on system variables (latent in pooled data).
+            // Subject random intercepts on system variables (latent in pooled data), sd
+            // osPanelSubjectShiftSd. Drawn independently per variable and per subject. The
+            // shift is a pure offset on the variable that owns it and is removed exactly by
+            // within-subject centering; it is only when it reaches a child through a nonlinear
+            // transmission map that it becomes something centering cannot remove.
             double[] subjShift = new double[total];
             double[][] subjLogitShift = new double[total][]; // per-category, discrete system
             if (numSubjects > 1) {
@@ -448,10 +458,10 @@ public class ObservationalStudySimulation implements Simulation, ProvidesKnowled
                     if (isDiscrete[s]) {
                         subjLogitShift[s] = new double[numCategories];
                         for (int k = 0; k < numCategories; k++) {
-                            subjLogitShift[s][k] = rand.nextGaussian(0, 0.5);
+                            subjLogitShift[s][k] = rand.nextGaussian(0, subjectShiftSd);
                         }
                     } else {
-                        subjShift[s] = rand.nextGaussian(0, 0.5);
+                        subjShift[s] = rand.nextGaussian(0, subjectShiftSd);
                     }
                 }
             }
@@ -1054,6 +1064,7 @@ public class ObservationalStudySimulation implements Simulation, ProvidesKnowled
         parameters.add(Params.OS_PANEL_NUM_SUBJECTS);
         parameters.add(Params.OS_PANEL_EMIT_SUBJECT_COLUMN);
         parameters.add(Params.OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS);
+        parameters.add(Params.OS_PANEL_SUBJECT_SHIFT_SD);
         parameters.add(Params.OS_FORM_INDEX_NOISE);
         parameters.add(Params.OS_FORM_NONLINEARITY);
         parameters.add(Params.OS_FORM_INTERACTION);

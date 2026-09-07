@@ -1609,6 +1609,10 @@ public final class Params {
      */
     public static final String OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS = "osPanelEmitSubjectsAsDataSets";
     /**
+     * Constant <code>OS_PANEL_SUBJECT_SHIFT_SD="osPanelSubjectShiftSd"</code>
+     */
+    public static final String OS_PANEL_SUBJECT_SHIFT_SD = "osPanelSubjectShiftSd";
+    /**
      * Constant <code>OS_FORM_INDEX_NOISE="osFormIndexNoise"</code>
      */
     public static final String OS_FORM_INDEX_NOISE = "osFormIndexNoise";
@@ -1655,7 +1659,8 @@ public final class Params {
             Params.OS_DEGRADE_ORDINALIZE_PROP, Params.OS_SERIAL_MAX_LAG, Params.OS_SERIAL_AR_COEF,
             Params.OS_SERIAL_INDEX_MEMORY_LOW, Params.OS_SERIAL_INDEX_MEMORY_HIGH, Params.OS_SERIAL_PROP_CROSS_LAG,
             Params.OS_PANEL_NUM_SUBJECTS, Params.OS_PANEL_EMIT_SUBJECT_COLUMN,
-            Params.OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS, Params.OS_FORM_INDEX_NOISE, Params.OS_FORM_NONLINEARITY,
+            Params.OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS, Params.OS_PANEL_SUBJECT_SHIFT_SD,
+            Params.OS_FORM_INDEX_NOISE, Params.OS_FORM_NONLINEARITY,
             Params.OS_FORM_INTERACTION, Params.OS_GRAPH_EDGE_DENSITY, Params.OS_DEGRADE_MISSING_MECHANISM,
             Params.OS_DEGRADE_MISSING_PROP, Params.OS_DEGRADE_CENSOR_PROP, Params.OS_DEGRADE_CENSOR_QUANTILE,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,

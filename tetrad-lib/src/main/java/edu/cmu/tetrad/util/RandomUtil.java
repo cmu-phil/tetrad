@@ -307,7 +307,17 @@ public class RandomUtil {
      * @throws IllegalArgumentException if {@code sd} is negative.
      */
     public double nextGaussian(double mean, double sd) {
-        return getInstance().nextGaussian();
+        if (sd < 0) {
+            throw new IllegalArgumentException("Standard deviation must be non-negative: " + sd);
+        }
+
+        if (sd == 0) {
+            return mean;
+        }
+
+        // Scale and shift a standard normal from the fast sampler. The earlier form of this
+        // method returned nextGaussian() unscaled, silently ignoring both arguments.
+        return mean + sd * nextGaussian();
     }
 
     /**
