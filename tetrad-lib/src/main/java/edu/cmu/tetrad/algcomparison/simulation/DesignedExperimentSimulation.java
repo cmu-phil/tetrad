@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.utils.ProvidesKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -81,7 +82,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class DesignedExperimentSimulation implements Simulation {
+public class DesignedExperimentSimulation implements Simulation, ProvidesKnowledge {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -627,6 +628,21 @@ public class DesignedExperimentSimulation implements Simulation {
      */
     private double asinh(double x) {
         return Math.log(x + Math.sqrt(x * x + 1.0));
+    }
+
+    /**
+     * Returns the design-implied knowledge for the given data model: tiers by role, factors (F)
+     * before derived quantities (D) before responses (R), with the CONFIG bookkeeping column,
+     * when emitted, in a tier of its own before all of these (its fixed-effects reading). The
+     * random structure within a role - which factors couple, which feed which derived
+     * quantity - is NOT encoded.
+     *
+     * @param index the data model index.
+     * @return the knowledge.
+     */
+    @Override
+    public Knowledge getKnowledge(int index) {
+        return RoleTierKnowledge.build(getDataModel(index), "CONFIG", "F", "D", "R");
     }
 
     /**

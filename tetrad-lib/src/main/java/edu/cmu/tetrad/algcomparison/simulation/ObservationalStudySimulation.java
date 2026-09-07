@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.algcomparison.simulation;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
+import edu.cmu.tetrad.algcomparison.utils.ProvidesKnowledge;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -117,7 +118,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class ObservationalStudySimulation implements Simulation {
+public class ObservationalStudySimulation implements Simulation, ProvidesKnowledge {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -932,6 +933,21 @@ public class ObservationalStudySimulation implements Simulation {
      */
     public Graph getContemporaneousGraph(int index) {
         return this.contemporaneousGraphs.get(index);
+    }
+
+    /**
+     * Returns the design-implied knowledge for the given data model: tiers by role, context
+     * (C) before system (S) before indices (I) before outcomes (Y), with the SUBJECT bookkeeping
+     * column, when emitted, in a tier of its own before all of these (its fixed-effects
+     * reading). The random structure within a role - the system DAG, which indices feed which -
+     * is NOT encoded; that is what a search is for.
+     *
+     * @param index the data model index.
+     * @return the knowledge.
+     */
+    @Override
+    public Knowledge getKnowledge(int index) {
+        return RoleTierKnowledge.build(getDataModel(index), "SUBJECT", "C", "S", "I", "Y");
     }
 
     /**
