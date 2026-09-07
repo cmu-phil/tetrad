@@ -82,7 +82,7 @@ public class BayesImEditor extends JPanel {
     }
 
     private void setup2(BayesImWrapper wrapper) {
-        if (wrapper.getNumModels() > 0) {
+        if (wrapper.getNumModels() > 1) {
             JComboBox<Integer> comp = new JComboBox<>();
             ArrowKeyNavigation.install(this, comp);
 
@@ -112,8 +112,6 @@ public class BayesImEditor extends JPanel {
     }
 
     private void setEditorPanel() {
-        removeAll();
-
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
@@ -137,7 +135,6 @@ public class BayesImEditor extends JPanel {
         load.add(new LoadBayesImXsdlXmlAction(this.wrapper, this));
 //        file.add(new SaveScreenshot(this, true, "Save Screenshot..."));
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
-        setLayout(new BorderLayout());
         panel.add(menuBar, BorderLayout.NORTH);
 
         this.wizard = new BayesImEditorWizard(wrapper.getBayesIm(), workbench);
@@ -208,14 +205,12 @@ public class BayesImEditor extends JPanel {
      * <p>getBayesIm.</p>
      */
     public void retrieveBayesIm() {
-        setEditorPanel();
 
-        add(this.targetPanel, BorderLayout.CENTER);
-        validate();
-
-        setup2(wrapper);
-
+        // Reset the model index before rebuilding so the rebuilt panel reflects the loaded model. The target panel
+        // and the model bar are already installed by the constructor; rebuilding must not re-add them (previously
+        // this stacked another "Using model" bar on every load).
         wrapper.setModelIndex(0);
+        setEditorPanel();
 
         firePropertyChange("modelChanged", null, null);
     }

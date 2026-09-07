@@ -1612,6 +1612,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             public void actionPerformed(ActionEvent e) {
                 AbstractWorkbench workbench = (AbstractWorkbench) e.getSource();
 
+                // Now that nodes can be selected on read-only displays (see MouseHandler.mouseClicked), the delete
+                // keys must not delete from them.
+                if (!workbench.isEnableEditing()) {
+                    return;
+                }
+
                 List<Component> components = workbench.getSelectedComponents();
                 int numNodes = 0, numEdges = 0;
 
@@ -1925,7 +1931,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         } else {
 
             // This shouldn't be here, but I can't get it to work higher up.
-            if (e.isAltDown() && e.isControlDown() && e.isMetaDown()) {
+            if (isEnableEditing() && e.isAltDown() && e.isControlDown() && e.isMetaDown()) {
                 if (Preferences.userRoot().getBoolean("experimental", false)) {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                             "Setting to published interface on next restart.");
@@ -1945,11 +1951,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         IDisplayEdge graphEdge = (IDisplayEdge) (source);
 
         if (e.getClickCount() == 2) {
-            deselectAll();
-            graphEdge.launchAssociatedEditor();
-            firePropertyChange("edgeLaunch", graphEdge, graphEdge);
+            if (isEnableEditing()) {
+                deselectAll();
+                graphEdge.launchAssociatedEditor();
+                firePropertyChange("edgeLaunch", graphEdge, graphEdge);
+            }
         } else {
-            if (isAllowEdgeReorientation()) {
+            if (isAllowEdgeReorientation() && isEnableEditing()) {
                 reorientEdge(source, e);
             }
 
@@ -1968,7 +1976,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         DisplayNode node = (DisplayNode) source;
 
         if (e.getClickCount() == 2) {
-            if (isAllowDoubleClickActions()) {
+            if (isAllowDoubleClickActions() && isEnableEditing()) {
                 doDoubleClickAction(node);
             }
         } else {
@@ -2935,7 +2943,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (AbstractWorkbench.this.isEnableEditing()) {
+            // Selection clicks are allowed even when editing is disabled, so that read-only displays (e.g., the
+            // Bayes and SEM editors) can let the user click a node in the graph to choose it for viewing. All
+            // structural actions inside handleMouseClicked (double-click editors, edge reorientation) are
+            // separately gated on isEnableEditing().
+            if (AbstractWorkbench.this.isEnableEditing() || AbstractWorkbench.this.isAllowNodeEdgeSelection()) {
                 this.workbench.handleMouseClicked(e);
             }
         }
@@ -2947,7 +2959,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            if (AbstractWorkbench.this.isEnableEditing()) {
+            // Released events finalize rubberband selection and snap dragged nodes, both of which are allowed on
+            // read-only displays; structural finishEdge only runs in ADD_EDGE mode, which read-only displays
+            // never enter.
+            if (AbstractWorkbench.this.isEnableEditing() || AbstractWorkbench.this.isAllowNodeEdgeSelection()) {
                 this.workbench.handleMouseReleased(e);
             }
         }
