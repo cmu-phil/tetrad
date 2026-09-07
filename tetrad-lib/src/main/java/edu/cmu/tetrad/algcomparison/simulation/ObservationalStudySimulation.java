@@ -37,58 +37,69 @@ import java.util.List;
  * mixed-data cross-sectional study). Variables come in roles:
  * <ul>
  * <li><b>Context variables</b> (C1, ...): exogenous drivers -- weather, season, region,
- * demographics. A fraction osPropContextDiscrete are discrete (region-like, osNumCategories
+ * demographics. A fraction osTypePropContextDiscrete are discrete (region-like, osTypeNumCategories
  * levels); the rest are continuous. In serial mode, continuous context follows a stationary
- * AR(1) process with coefficient osArCoef, and discrete context follows a sticky Markov chain.
- * Optionally, osNumHiddenContext additional context variables influence the system but are
+ * AR(1) process with coefficient osSerialArCoef, and discrete context follows a sticky Markov chain.
+ * Optionally, osGraphNumHiddenContext additional context variables influence the system but are
  * OMITTED from the dataset (latent confounders); they appear in the true graph as latent
  * nodes, so FCI-style evaluation is possible.</li>
  * <li><b>System variables</b> (S1, ...): a causal DAG among themselves (average degree
- * osAvgSystemDegree), with context parents, monotone transmission nonlinearity
- * (osNonlinearity), and heterogeneous non-Gaussian noise. In serial mode each system variable
- * has a self-lag, and cross-lag edges (probability osPropCrossLag per ordered pair) allow
+ * osGraphAvgSystemDegree), with context parents, monotone transmission nonlinearity
+ * (osFormNonlinearity), and heterogeneous non-Gaussian noise. In serial mode each system variable
+ * has a self-lag, and cross-lag edges (probability osSerialPropCrossLag per ordered pair) allow
  * honest representation of feedback as X{t-1} -> Y{t}, Y{t-1} -> X{t}.</li>
- * <li><b>Index variables</b> (I1, ...): near-deterministic functions (noise osIndexNoise) of
+ * <li><b>Index variables</b> (I1, ...): near-deterministic functions (noise osFormIndexNoise) of
  * system variables and EARLIER INDEX VARIABLES (chains like ISI/BUI -> FWI). In serial mode
  * each index is a recursive accumulator I{t} = delta I{t-1} + g(parents{t}) + noise, with
- * memory delta drawn per index from [osIndexMemoryLow, osIndexMemoryHigh] -- heterogeneous
+ * memory delta drawn per index from [osSerialIndexMemoryLow, osSerialIndexMemoryHigh] -- heterogeneous
  * drought-code-style memory, making indices MORE serially dependent than their drivers.</li>
  * <li><b>Outcome variables</b> (Y1, ...): depend on system, index, and context variables, with
- * pairwise interactions (weight osInteraction). If osDiscreteOutcome, outcomes are discrete
+ * pairwise interactions (weight osFormInteraction). If osTypeDiscreteOutcome, outcomes are discrete
  * via softmax logits (fire/no-fire style).</li>
  * </ul>
  * Further options:
  * <ul>
- * <li><b>Ordinalization</b> (osPropOrdinalized): that fraction of system variables is
+ * <li><b>Ordinalization</b> (osDegradeOrdinalizeProp): that fraction of system variables is
  * generated continuous but RECORDED as ordered categories at random cutpoints -- measurement
  * coarsening, reproducing the ordinal nominal-coding pathology. The true graph is the graph of
  * the underlying continuous system; the coarsening is measurement, exactly as with real
  * ordinal data.</li>
- * <li><b>Serial dependence</b> (osMaxLag): if greater than 0, one time series per subject is
+ * <li><b>Serial dependence</b> (osSerialMaxLag): if greater than 0, one time series per subject is
  * generated and the TRUE GRAPH IS A TimeLagGraph with that maximum lag, following the
  * TimeSeriesSemSimulation convention, so lag-data and cross-lag tier machinery apply.
  * Self-lags, AR(1) context, and index accumulators act at lag 1; each cross-lag edge acts at a
- * lag drawn uniformly from 1..osMaxLag. The contemporaneous summary graph is available from
+ * lag drawn uniformly from 1..osSerialMaxLag. The contemporaneous summary graph is available from
  * getContemporaneousGraph(index). If 0, rows are i.i.d. and the true graph is an ordinary
  * DAG.</li>
- * <li><b>Censoring</b> (osPropCensored, osCensorQuantile): that fraction of the continuous,
+ * <li><b>Censoring</b> (osDegradeCensorProp, osDegradeCensorQuantile): that fraction of the continuous,
  * non-ordinalized system and outcome variables is censored at a detection limit -- values
  * beyond the limit are recorded AT the limit (side chosen at random). Rows are kept; this is
  * measurement, not selection, and the true graph is unchanged.</li>
- * <li><b>Missingness</b> (osMissingMechanism, osPropMissing): cells of system, index, and
+ * <li><b>Missingness</b> (osDegradeMissingMechanism, osDegradeMissingProp): cells of system, index, and
  * outcome variables are marked missing (NaN, or the discrete missing value) at an exact
  * per-column rate. "mcar" is independent of everything; "mar" is driven by the first observed
  * context variable, which is always fully observed; "mnar" is driven by the cell's own
  * underlying value.</li>
- * <li><b>Panel structure</b> (osNumSubjects): the sample is divided into that many independent
- * subjects (replicates of the same system, sampleSize / osNumSubjects rows each,
- * concatenated). Each subject has a random intercept on the system variables, which acts as a
- * subject-level latent confounder in the pooled data. Subject boundaries are available from
- * getSubjectStarts(index); in serial mode, lagging must not cross these boundaries.</li>
+ * <li><b>Panel structure</b> (osPanelNumSubjects): the sample is divided into that many independent
+ * subjects (replicates of the same system, sampleSize / osPanelNumSubjects rows each). Each subject
+ * has a random intercept on the system variables, which acts as a subject-level latent
+ * confounder in the pooled data. By default the subjects are CONCATENATED into one dataset per
+ * run with the structure undeclared, as panel data usually arrive; subject boundaries are then
+ * available from getSubjectStarts(index), and in serial mode lagging must not cross them. Two
+ * options change the emission. If osPanelEmitSubjectColumn, a discrete bookkeeping column named
+ * SUBJECT is appended to the stacked dataset (the analogue of deEmitConfigColumn); it is not a
+ * variable of the system and is not in the true graph, so it should be excluded from search or
+ * used as a grouping/tier variable. If osPanelEmitSubjectsAsDataSets, each subject is instead
+ * emitted as its own data model sharing the run's true graph, so getNumDataModels() is
+ * numRuns * osPanelNumSubjects; this is the convention MultiDataSetAlgorithm implementations such
+ * as IMaGES consume, and Comparison will pool them. Note that Comparison draws its pooled
+ * selection from ALL data models, so with numRuns greater than 1 and differentGraphs on, subjects
+ * of different runs (with different graphs) would be pooled; use numRuns = 1 or differentGraphs
+ * off in that mode. SUBJECT is not appended in per-subject mode, where it would be constant.</li>
  * </ul>
- * The osEdgeDensity parameter scales all cross-role edge probabilities (context to system,
+ * The osGraphEdgeDensity parameter scales all cross-role edge probabilities (context to system,
  * system to index, index to index, context to index, and all parent probabilities of
- * outcomes); osAvgSystemDegree separately controls the density of the DAG among the system
+ * outcomes); osGraphAvgSystemDegree separately controls the density of the DAG among the system
  * variables. Minimum-parent floors (indices get at least two system parents, outcomes at
  * least two parents) are kept regardless, so indices and outcomes remain functions of
  * something.
@@ -165,38 +176,40 @@ public class ObservationalStudySimulation implements Simulation {
      * @param parameters the simulation parameters.
      */
     private void simulateOne(Parameters parameters) {
-        int numContext = Math.max(0, parameters.getInt(Params.OS_NUM_CONTEXT));
-        int numHidden = Math.max(0, parameters.getInt(Params.OS_NUM_HIDDEN_CONTEXT));
-        int numSystem = Math.max(1, parameters.getInt(Params.OS_NUM_SYSTEM));
-        int numIndices = Math.max(0, parameters.getInt(Params.OS_NUM_INDICES));
-        int numOutcomes = Math.max(0, parameters.getInt(Params.OS_NUM_OUTCOMES));
-        double avgDegree = parameters.getDouble(Params.OS_AVG_SYSTEM_DEGREE);
-        double propContextDiscrete = parameters.getDouble(Params.OS_PROP_CONTEXT_DISCRETE);
-        int numCategories = Math.max(2, parameters.getInt(Params.OS_NUM_CATEGORIES));
-        boolean discreteOutcome = parameters.getBoolean(Params.OS_DISCRETE_OUTCOME);
-        double propOrdinalized = parameters.getDouble(Params.OS_PROP_ORDINALIZED);
-        int maxLag = Math.max(0, parameters.getInt(Params.OS_MAX_LAG));
+        int numContext = Math.max(0, parameters.getInt(Params.OS_GRAPH_NUM_CONTEXT));
+        int numHidden = Math.max(0, parameters.getInt(Params.OS_GRAPH_NUM_HIDDEN_CONTEXT));
+        int numSystem = Math.max(1, parameters.getInt(Params.OS_GRAPH_NUM_SYSTEM));
+        int numIndices = Math.max(0, parameters.getInt(Params.OS_GRAPH_NUM_INDICES));
+        int numOutcomes = Math.max(0, parameters.getInt(Params.OS_GRAPH_NUM_OUTCOMES));
+        double avgDegree = parameters.getDouble(Params.OS_GRAPH_AVG_SYSTEM_DEGREE);
+        double propContextDiscrete = parameters.getDouble(Params.OS_TYPE_PROP_CONTEXT_DISCRETE);
+        int numCategories = Math.max(2, parameters.getInt(Params.OS_TYPE_NUM_CATEGORIES));
+        boolean discreteOutcome = parameters.getBoolean(Params.OS_TYPE_DISCRETE_OUTCOME);
+        double propOrdinalized = parameters.getDouble(Params.OS_DEGRADE_ORDINALIZE_PROP);
+        int maxLag = Math.max(0, parameters.getInt(Params.OS_SERIAL_MAX_LAG));
         boolean serial = maxLag > 0;
-        double arCoef = parameters.getDouble(Params.OS_AR_COEF);
-        double memLow = parameters.getDouble(Params.OS_INDEX_MEMORY_LOW);
-        double memHigh = parameters.getDouble(Params.OS_INDEX_MEMORY_HIGH);
-        double propCrossLag = parameters.getDouble(Params.OS_PROP_CROSS_LAG);
-        int numSubjects = Math.max(1, parameters.getInt(Params.OS_NUM_SUBJECTS));
-        double indexNoise = parameters.getDouble(Params.OS_INDEX_NOISE);
-        double nonlinearity = parameters.getDouble(Params.OS_NONLINEARITY);
-        double interaction = parameters.getDouble(Params.OS_INTERACTION);
-        double density = parameters.getDouble(Params.OS_EDGE_DENSITY);
-        String missingMechanism = parameters.getString(Params.OS_MISSING_MECHANISM)
+        double arCoef = parameters.getDouble(Params.OS_SERIAL_AR_COEF);
+        double memLow = parameters.getDouble(Params.OS_SERIAL_INDEX_MEMORY_LOW);
+        double memHigh = parameters.getDouble(Params.OS_SERIAL_INDEX_MEMORY_HIGH);
+        double propCrossLag = parameters.getDouble(Params.OS_SERIAL_PROP_CROSS_LAG);
+        int numSubjects = Math.max(1, parameters.getInt(Params.OS_PANEL_NUM_SUBJECTS));
+        boolean emitSubjectColumn = parameters.getBoolean(Params.OS_PANEL_EMIT_SUBJECT_COLUMN);
+        boolean emitSubjectsAsDataSets = parameters.getBoolean(Params.OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS);
+        double indexNoise = parameters.getDouble(Params.OS_FORM_INDEX_NOISE);
+        double nonlinearity = parameters.getDouble(Params.OS_FORM_NONLINEARITY);
+        double interaction = parameters.getDouble(Params.OS_FORM_INTERACTION);
+        double density = parameters.getDouble(Params.OS_GRAPH_EDGE_DENSITY);
+        String missingMechanism = parameters.getString(Params.OS_DEGRADE_MISSING_MECHANISM)
                 .trim().toLowerCase();
-        double propMissing = parameters.getDouble(Params.OS_PROP_MISSING);
-        double propCensored = parameters.getDouble(Params.OS_PROP_CENSORED);
-        double censorQuantile = parameters.getDouble(Params.OS_CENSOR_QUANTILE);
+        double propMissing = parameters.getDouble(Params.OS_DEGRADE_MISSING_PROP);
+        double propCensored = parameters.getDouble(Params.OS_DEGRADE_CENSOR_PROP);
+        double censorQuantile = parameters.getDouble(Params.OS_DEGRADE_CENSOR_QUANTILE);
         int sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
         if (!missingMechanism.equals("none") && !missingMechanism.equals("mcar")
             && !missingMechanism.equals("mar") && !missingMechanism.equals("mnar")) {
             throw new IllegalArgumentException(
-                    "osMissingMechanism must be one of: none, mcar, mar, mnar.");
+                    "osDegradeMissingMechanism must be one of: none, mcar, mar, mnar.");
         }
 
         RandomUtil rand = RandomUtil.getInstance();
@@ -332,7 +345,7 @@ public class ObservationalStudySimulation implements Simulation {
         // ---------- Mechanisms ----------
 
         // Per-(edge) transmission for continuous parents: pointwise monotone map mixed with the
-        // identity by osNonlinearity, with an approximate unit-variance normalizer; coefficient.
+        // identity by osFormNonlinearity, with an approximate unit-variance normalizer; coefficient.
         MonotoneMap[][] map = new MonotoneMap[total][total];
         double[][] coef = new double[total][total];
         // Per-(discrete parent, child, level) shifts.
@@ -680,6 +693,46 @@ public class ObservationalStudySimulation implements Simulation {
             }
         }
 
+        if (emitSubjectsAsDataSets && numSubjects > 1) {
+            // One data model per subject, all sharing this run's true graph: the convention
+            // consumed by MultiDataSetAlgorithm implementations (e.g. IMaGES), for which
+            // Comparison pools the simulation's data models. Each subject dataset is a single
+            // block, so its subject-starts entry is {0}.
+            for (int subj = 0; subj < numSubjects; subj++) {
+                int from = starts[subj];
+                int to = subj + 1 < numSubjects ? starts[subj + 1] : data.length;
+                int[] rows = new int[to - from];
+                for (int r = from; r < to; r++) rows[r - from] = r;
+                DataSet subjectData = dataSet.subsetRows(rows);
+                subjectData.setName("subject" + (subj + 1));
+
+                this.graphs.add(trueGraph);
+                this.contemporaneousGraphs.add(contemporaneous);
+                this.dataSets.add(subjectData);
+                this.subjectStarts.add(new int[]{0});
+            }
+            return;
+        }
+
+        if (emitSubjectColumn && numSubjects > 1) {
+            // Bookkeeping column identifying each row's subject, the analogue of CONFIG in
+            // DesignedExperimentSimulation and of TOWN in the corrected Boston Housing data. It
+            // is not a variable of the system and is not in the true graph: it exists so the
+            // panel structure can be named -- as a grouping variable for per-block centering,
+            // or as a tier-0 fixed-effects variable -- and should otherwise be excluded from
+            // search. With one category per subject it will trip the many-discrete-levels
+            // audit finding if treated as an ordinary variable.
+            List<String> cats = new ArrayList<>();
+            for (int subj = 0; subj < numSubjects; subj++) cats.add("s" + (subj + 1));
+            DiscreteVariable subjectVar = new DiscreteVariable("SUBJECT", cats);
+            dataSet.addVariable(subjectVar);
+            int col = dataSet.getNumColumns() - 1;
+            for (int subj = 0; subj < numSubjects; subj++) {
+                int to = subj + 1 < numSubjects ? starts[subj + 1] : data.length;
+                for (int r = starts[subj]; r < to; r++) dataSet.setInt(r, col, subj);
+            }
+        }
+
         this.graphs.add(trueGraph);
         this.contemporaneousGraphs.add(contemporaneous);
         this.dataSets.add(dataSet);
@@ -835,10 +888,11 @@ public class ObservationalStudySimulation implements Simulation {
     }
 
     /**
-     * Returns the subject start row indices for the given run. In serial mode, lagging must not
-     * cross these boundaries.
+     * Returns the subject start row indices for the given data model. In serial mode, lagging must
+     * not cross these boundaries. When osPanelEmitSubjectsAsDataSets is on, each data model is a
+     * single subject and this returns {0}.
      *
-     * @param index the run index.
+     * @param index the data model index.
      * @return the subject start rows.
      */
     public int[] getSubjectStarts(int index) {
@@ -918,30 +972,32 @@ public class ObservationalStudySimulation implements Simulation {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
-        parameters.add(Params.OS_NUM_CONTEXT);
-        parameters.add(Params.OS_NUM_HIDDEN_CONTEXT);
-        parameters.add(Params.OS_NUM_SYSTEM);
-        parameters.add(Params.OS_NUM_INDICES);
-        parameters.add(Params.OS_NUM_OUTCOMES);
-        parameters.add(Params.OS_AVG_SYSTEM_DEGREE);
-        parameters.add(Params.OS_PROP_CONTEXT_DISCRETE);
-        parameters.add(Params.OS_NUM_CATEGORIES);
-        parameters.add(Params.OS_DISCRETE_OUTCOME);
-        parameters.add(Params.OS_PROP_ORDINALIZED);
-        parameters.add(Params.OS_MAX_LAG);
-        parameters.add(Params.OS_AR_COEF);
-        parameters.add(Params.OS_INDEX_MEMORY_LOW);
-        parameters.add(Params.OS_INDEX_MEMORY_HIGH);
-        parameters.add(Params.OS_PROP_CROSS_LAG);
-        parameters.add(Params.OS_NUM_SUBJECTS);
-        parameters.add(Params.OS_INDEX_NOISE);
-        parameters.add(Params.OS_NONLINEARITY);
-        parameters.add(Params.OS_INTERACTION);
-        parameters.add(Params.OS_EDGE_DENSITY);
-        parameters.add(Params.OS_MISSING_MECHANISM);
-        parameters.add(Params.OS_PROP_MISSING);
-        parameters.add(Params.OS_PROP_CENSORED);
-        parameters.add(Params.OS_CENSOR_QUANTILE);
+        parameters.add(Params.OS_GRAPH_NUM_CONTEXT);
+        parameters.add(Params.OS_GRAPH_NUM_HIDDEN_CONTEXT);
+        parameters.add(Params.OS_GRAPH_NUM_SYSTEM);
+        parameters.add(Params.OS_GRAPH_NUM_INDICES);
+        parameters.add(Params.OS_GRAPH_NUM_OUTCOMES);
+        parameters.add(Params.OS_GRAPH_AVG_SYSTEM_DEGREE);
+        parameters.add(Params.OS_TYPE_PROP_CONTEXT_DISCRETE);
+        parameters.add(Params.OS_TYPE_NUM_CATEGORIES);
+        parameters.add(Params.OS_TYPE_DISCRETE_OUTCOME);
+        parameters.add(Params.OS_DEGRADE_ORDINALIZE_PROP);
+        parameters.add(Params.OS_SERIAL_MAX_LAG);
+        parameters.add(Params.OS_SERIAL_AR_COEF);
+        parameters.add(Params.OS_SERIAL_INDEX_MEMORY_LOW);
+        parameters.add(Params.OS_SERIAL_INDEX_MEMORY_HIGH);
+        parameters.add(Params.OS_SERIAL_PROP_CROSS_LAG);
+        parameters.add(Params.OS_PANEL_NUM_SUBJECTS);
+        parameters.add(Params.OS_PANEL_EMIT_SUBJECT_COLUMN);
+        parameters.add(Params.OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS);
+        parameters.add(Params.OS_FORM_INDEX_NOISE);
+        parameters.add(Params.OS_FORM_NONLINEARITY);
+        parameters.add(Params.OS_FORM_INTERACTION);
+        parameters.add(Params.OS_GRAPH_EDGE_DENSITY);
+        parameters.add(Params.OS_DEGRADE_MISSING_MECHANISM);
+        parameters.add(Params.OS_DEGRADE_MISSING_PROP);
+        parameters.add(Params.OS_DEGRADE_CENSOR_PROP);
+        parameters.add(Params.OS_DEGRADE_CENSOR_QUANTILE);
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);

@@ -1533,101 +1533,109 @@ public final class Params {
      */
     public static final String DE_EMIT_CONFIG_COLUMN = "deEmitConfigColumn";
     /**
-     * Constant <code>OS_NUM_CONTEXT="osNumContext"</code>
+     * Constant <code>OS_GRAPH_NUM_CONTEXT="osGraphNumContext"</code>
      */
-    public static final String OS_NUM_CONTEXT = "osNumContext";
+    public static final String OS_GRAPH_NUM_CONTEXT = "osGraphNumContext";
     /**
-     * Constant <code>OS_NUM_HIDDEN_CONTEXT="osNumHiddenContext"</code>
+     * Constant <code>OS_GRAPH_NUM_HIDDEN_CONTEXT="osGraphNumHiddenContext"</code>
      */
-    public static final String OS_NUM_HIDDEN_CONTEXT = "osNumHiddenContext";
+    public static final String OS_GRAPH_NUM_HIDDEN_CONTEXT = "osGraphNumHiddenContext";
     /**
-     * Constant <code>OS_NUM_SYSTEM="osNumSystem"</code>
+     * Constant <code>OS_GRAPH_NUM_SYSTEM="osGraphNumSystem"</code>
      */
-    public static final String OS_NUM_SYSTEM = "osNumSystem";
+    public static final String OS_GRAPH_NUM_SYSTEM = "osGraphNumSystem";
     /**
-     * Constant <code>OS_NUM_INDICES="osNumIndices"</code>
+     * Constant <code>OS_GRAPH_NUM_INDICES="osGraphNumIndices"</code>
      */
-    public static final String OS_NUM_INDICES = "osNumIndices";
+    public static final String OS_GRAPH_NUM_INDICES = "osGraphNumIndices";
     /**
-     * Constant <code>OS_NUM_OUTCOMES="osNumOutcomes"</code>
+     * Constant <code>OS_GRAPH_NUM_OUTCOMES="osGraphNumOutcomes"</code>
      */
-    public static final String OS_NUM_OUTCOMES = "osNumOutcomes";
+    public static final String OS_GRAPH_NUM_OUTCOMES = "osGraphNumOutcomes";
     /**
-     * Constant <code>OS_AVG_SYSTEM_DEGREE="osAvgSystemDegree"</code>
+     * Constant <code>OS_GRAPH_AVG_SYSTEM_DEGREE="osGraphAvgSystemDegree"</code>
      */
-    public static final String OS_AVG_SYSTEM_DEGREE = "osAvgSystemDegree";
+    public static final String OS_GRAPH_AVG_SYSTEM_DEGREE = "osGraphAvgSystemDegree";
     /**
-     * Constant <code>OS_PROP_CONTEXT_DISCRETE="osPropContextDiscrete"</code>
+     * Constant <code>OS_TYPE_PROP_CONTEXT_DISCRETE="osTypePropContextDiscrete"</code>
      */
-    public static final String OS_PROP_CONTEXT_DISCRETE = "osPropContextDiscrete";
+    public static final String OS_TYPE_PROP_CONTEXT_DISCRETE = "osTypePropContextDiscrete";
     /**
-     * Constant <code>OS_NUM_CATEGORIES="osNumCategories"</code>
+     * Constant <code>OS_TYPE_NUM_CATEGORIES="osTypeNumCategories"</code>
      */
-    public static final String OS_NUM_CATEGORIES = "osNumCategories";
+    public static final String OS_TYPE_NUM_CATEGORIES = "osTypeNumCategories";
     /**
-     * Constant <code>OS_DISCRETE_OUTCOME="osDiscreteOutcome"</code>
+     * Constant <code>OS_TYPE_DISCRETE_OUTCOME="osTypeDiscreteOutcome"</code>
      */
-    public static final String OS_DISCRETE_OUTCOME = "osDiscreteOutcome";
+    public static final String OS_TYPE_DISCRETE_OUTCOME = "osTypeDiscreteOutcome";
     /**
-     * Constant <code>OS_PROP_ORDINALIZED="osPropOrdinalized"</code>
+     * Constant <code>OS_DEGRADE_ORDINALIZE_PROP="osDegradeOrdinalizeProp"</code>
      */
-    public static final String OS_PROP_ORDINALIZED = "osPropOrdinalized";
+    public static final String OS_DEGRADE_ORDINALIZE_PROP = "osDegradeOrdinalizeProp";
     /**
-     * Constant <code>OS_MAX_LAG="osMaxLag"</code>
+     * Constant <code>OS_SERIAL_MAX_LAG="osSerialMaxLag"</code>
      */
-    public static final String OS_MAX_LAG = "osMaxLag";
+    public static final String OS_SERIAL_MAX_LAG = "osSerialMaxLag";
     /**
-     * Constant <code>OS_AR_COEF="osArCoef"</code>
+     * Constant <code>OS_SERIAL_AR_COEF="osSerialArCoef"</code>
      */
-    public static final String OS_AR_COEF = "osArCoef";
+    public static final String OS_SERIAL_AR_COEF = "osSerialArCoef";
     /**
-     * Constant <code>OS_INDEX_MEMORY_LOW="osIndexMemoryLow"</code>
+     * Constant <code>OS_SERIAL_INDEX_MEMORY_LOW="osSerialIndexMemoryLow"</code>
      */
-    public static final String OS_INDEX_MEMORY_LOW = "osIndexMemoryLow";
+    public static final String OS_SERIAL_INDEX_MEMORY_LOW = "osSerialIndexMemoryLow";
     /**
-     * Constant <code>OS_INDEX_MEMORY_HIGH="osIndexMemoryHigh"</code>
+     * Constant <code>OS_SERIAL_INDEX_MEMORY_HIGH="osSerialIndexMemoryHigh"</code>
      */
-    public static final String OS_INDEX_MEMORY_HIGH = "osIndexMemoryHigh";
+    public static final String OS_SERIAL_INDEX_MEMORY_HIGH = "osSerialIndexMemoryHigh";
     /**
-     * Constant <code>OS_PROP_CROSS_LAG="osPropCrossLag"</code>
+     * Constant <code>OS_SERIAL_PROP_CROSS_LAG="osSerialPropCrossLag"</code>
      */
-    public static final String OS_PROP_CROSS_LAG = "osPropCrossLag";
+    public static final String OS_SERIAL_PROP_CROSS_LAG = "osSerialPropCrossLag";
     /**
-     * Constant <code>OS_NUM_SUBJECTS="osNumSubjects"</code>
+     * Constant <code>OS_PANEL_NUM_SUBJECTS="osPanelNumSubjects"</code>
      */
-    public static final String OS_NUM_SUBJECTS = "osNumSubjects";
+    public static final String OS_PANEL_NUM_SUBJECTS = "osPanelNumSubjects";
     /**
-     * Constant <code>OS_INDEX_NOISE="osIndexNoise"</code>
+     * Constant <code>OS_PANEL_EMIT_SUBJECT_COLUMN="osPanelEmitSubjectColumn"</code>
      */
-    public static final String OS_INDEX_NOISE = "osIndexNoise";
+    public static final String OS_PANEL_EMIT_SUBJECT_COLUMN = "osPanelEmitSubjectColumn";
     /**
-     * Constant <code>OS_NONLINEARITY="osNonlinearity"</code>
+     * Constant <code>OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS="osPanelEmitSubjectsAsDataSets"</code>
      */
-    public static final String OS_NONLINEARITY = "osNonlinearity";
+    public static final String OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS = "osPanelEmitSubjectsAsDataSets";
     /**
-     * Constant <code>OS_INTERACTION="osInteraction"</code>
+     * Constant <code>OS_FORM_INDEX_NOISE="osFormIndexNoise"</code>
      */
-    public static final String OS_INTERACTION = "osInteraction";
+    public static final String OS_FORM_INDEX_NOISE = "osFormIndexNoise";
     /**
-     * Constant <code>OS_EDGE_DENSITY="osEdgeDensity"</code>
+     * Constant <code>OS_FORM_NONLINEARITY="osFormNonlinearity"</code>
      */
-    public static final String OS_EDGE_DENSITY = "osEdgeDensity";
+    public static final String OS_FORM_NONLINEARITY = "osFormNonlinearity";
     /**
-     * Constant <code>OS_MISSING_MECHANISM="osMissingMechanism"</code>
+     * Constant <code>OS_FORM_INTERACTION="osFormInteraction"</code>
      */
-    public static final String OS_MISSING_MECHANISM = "osMissingMechanism";
+    public static final String OS_FORM_INTERACTION = "osFormInteraction";
     /**
-     * Constant <code>OS_PROP_MISSING="osPropMissing"</code>
+     * Constant <code>OS_GRAPH_EDGE_DENSITY="osGraphEdgeDensity"</code>
      */
-    public static final String OS_PROP_MISSING = "osPropMissing";
+    public static final String OS_GRAPH_EDGE_DENSITY = "osGraphEdgeDensity";
     /**
-     * Constant <code>OS_PROP_CENSORED="osPropCensored"</code>
+     * Constant <code>OS_DEGRADE_MISSING_MECHANISM="osDegradeMissingMechanism"</code>
      */
-    public static final String OS_PROP_CENSORED = "osPropCensored";
+    public static final String OS_DEGRADE_MISSING_MECHANISM = "osDegradeMissingMechanism";
     /**
-     * Constant <code>OS_CENSOR_QUANTILE="osCensorQuantile"</code>
+     * Constant <code>OS_DEGRADE_MISSING_PROP="osDegradeMissingProp"</code>
      */
-    public static final String OS_CENSOR_QUANTILE = "osCensorQuantile";
+    public static final String OS_DEGRADE_MISSING_PROP = "osDegradeMissingProp";
+    /**
+     * Constant <code>OS_DEGRADE_CENSOR_PROP="osDegradeCensorProp"</code>
+     */
+    public static final String OS_DEGRADE_CENSOR_PROP = "osDegradeCensorProp";
+    /**
+     * Constant <code>OS_DEGRADE_CENSOR_QUANTILE="osDegradeCensorQuantile"</code>
+     */
+    public static final String OS_DEGRADE_CENSOR_QUANTILE = "osDegradeCensorQuantile";
 
 
     // All parameters that are found in HTML manual documentation
@@ -1637,14 +1645,15 @@ public final class Params {
             Params.DE_MIN_LEVELS, Params.DE_MAX_LEVELS, Params.DE_COUPLING,
             Params.DE_DERIVED_NOISE, Params.DE_INTERACTION, Params.DE_RESPONSE_NOISE,
             Params.DE_SELECTION, Params.DE_SORT_BY_CONFIGURATION, Params.DE_EMIT_CONFIG_COLUMN,
-            Params.OS_NUM_CONTEXT, Params.OS_NUM_HIDDEN_CONTEXT, Params.OS_NUM_SYSTEM,
-            Params.OS_NUM_INDICES, Params.OS_NUM_OUTCOMES, Params.OS_AVG_SYSTEM_DEGREE,
-            Params.OS_PROP_CONTEXT_DISCRETE, Params.OS_NUM_CATEGORIES, Params.OS_DISCRETE_OUTCOME,
-            Params.OS_PROP_ORDINALIZED, Params.OS_MAX_LAG, Params.OS_AR_COEF,
-            Params.OS_INDEX_MEMORY_LOW, Params.OS_INDEX_MEMORY_HIGH, Params.OS_PROP_CROSS_LAG,
-            Params.OS_NUM_SUBJECTS, Params.OS_INDEX_NOISE, Params.OS_NONLINEARITY,
-            Params.OS_INTERACTION, Params.OS_EDGE_DENSITY, Params.OS_MISSING_MECHANISM,
-            Params.OS_PROP_MISSING, Params.OS_PROP_CENSORED, Params.OS_CENSOR_QUANTILE,
+            Params.OS_GRAPH_NUM_CONTEXT, Params.OS_GRAPH_NUM_HIDDEN_CONTEXT, Params.OS_GRAPH_NUM_SYSTEM,
+            Params.OS_GRAPH_NUM_INDICES, Params.OS_GRAPH_NUM_OUTCOMES, Params.OS_GRAPH_AVG_SYSTEM_DEGREE,
+            Params.OS_TYPE_PROP_CONTEXT_DISCRETE, Params.OS_TYPE_NUM_CATEGORIES, Params.OS_TYPE_DISCRETE_OUTCOME,
+            Params.OS_DEGRADE_ORDINALIZE_PROP, Params.OS_SERIAL_MAX_LAG, Params.OS_SERIAL_AR_COEF,
+            Params.OS_SERIAL_INDEX_MEMORY_LOW, Params.OS_SERIAL_INDEX_MEMORY_HIGH, Params.OS_SERIAL_PROP_CROSS_LAG,
+            Params.OS_PANEL_NUM_SUBJECTS, Params.OS_PANEL_EMIT_SUBJECT_COLUMN,
+            Params.OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS, Params.OS_FORM_INDEX_NOISE, Params.OS_FORM_NONLINEARITY,
+            Params.OS_FORM_INTERACTION, Params.OS_GRAPH_EDGE_DENSITY, Params.OS_DEGRADE_MISSING_MECHANISM,
+            Params.OS_DEGRADE_MISSING_PROP, Params.OS_DEGRADE_CENSOR_PROP, Params.OS_DEGRADE_CENSOR_QUANTILE,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
             Params.CONFLICT_RULE, Params.CONNECTED, Params.COV_HIGH, Params.COV_LOW, Params.COV_SYMMETRIC,

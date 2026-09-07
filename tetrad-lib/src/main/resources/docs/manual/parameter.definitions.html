@@ -7831,301 +7831,325 @@ Source:
         <li>Value Type: <span id="deEmitConfigColumn_value_type">Boolean</span></li>
     </ul>
 
-    === osNumContext ===
-    <h3 class="parameter_description" id="osNumContext">osNumContext</h3>
+    === osGraphNumContext ===
+    <h3 class="parameter_description" id="osGraphNumContext">osGraphNumContext</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osNumContext_short_desc">Number of observed context variables (min = 0)</span></li>
-        <li>Long Description: <span id="osNumContext_long_desc">
-        In the Observational Study simulation, the number of exogenous context variables (C1, ...): weather, season, region, demographics. A fraction osPropContextDiscrete are discrete; the rest continuous. In serial mode continuous context is AR(1) and discrete context is a sticky Markov chain.</span></li>
-        <li>Default Value: <span id="osNumContext_default_value">2</span></li>
-        <li>Lower Bound: <span id="osNumContext_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="osNumContext_upper_bound">2147483647</span></li>
-        <li>Value Type: <span id="osNumContext_value_type">Integer</span></li>
+        <li>Short Description: <span id="osGraphNumContext_short_desc">Number of observed context variables (min = 0)</span></li>
+        <li>Long Description: <span id="osGraphNumContext_long_desc">
+        In the Observational Study simulation, the number of exogenous context variables (C1, ...): weather, season, region, demographics. A fraction osTypePropContextDiscrete are discrete; the rest continuous. In serial mode continuous context is AR(1) and discrete context is a sticky Markov chain.</span></li>
+        <li>Default Value: <span id="osGraphNumContext_default_value">2</span></li>
+        <li>Lower Bound: <span id="osGraphNumContext_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osGraphNumContext_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumContext_value_type">Integer</span></li>
     </ul>
 
-    === osNumHiddenContext ===
-    <h3 class="parameter_description" id="osNumHiddenContext">osNumHiddenContext</h3>
+    === osGraphNumHiddenContext ===
+    <h3 class="parameter_description" id="osGraphNumHiddenContext">osGraphNumHiddenContext</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osNumHiddenContext_short_desc">Number of hidden context variables (min = 0)</span></li>
-        <li>Long Description: <span id="osNumHiddenContext_long_desc">
+        <li>Short Description: <span id="osGraphNumHiddenContext_short_desc">Number of hidden context variables (min = 0)</span></li>
+        <li>Long Description: <span id="osGraphNumHiddenContext_long_desc">
         Context variables that influence the system but are OMITTED from the dataset -- latent confounders. They appear in the true graph as latent nodes, so FCI-style evaluation is possible.</span></li>
-        <li>Default Value: <span id="osNumHiddenContext_default_value">0</span></li>
-        <li>Lower Bound: <span id="osNumHiddenContext_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="osNumHiddenContext_upper_bound">2147483647</span></li>
-        <li>Value Type: <span id="osNumHiddenContext_value_type">Integer</span></li>
+        <li>Default Value: <span id="osGraphNumHiddenContext_default_value">0</span></li>
+        <li>Lower Bound: <span id="osGraphNumHiddenContext_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osGraphNumHiddenContext_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumHiddenContext_value_type">Integer</span></li>
     </ul>
 
-    === osNumSystem ===
-    <h3 class="parameter_description" id="osNumSystem">osNumSystem</h3>
+    === osGraphNumSystem ===
+    <h3 class="parameter_description" id="osGraphNumSystem">osGraphNumSystem</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osNumSystem_short_desc">Number of system variables (min = 1)</span></li>
-        <li>Long Description: <span id="osNumSystem_long_desc">
-        The number of variables in the causal system proper (S1, ...), forming a DAG among themselves with average degree osAvgSystemDegree, with context parents.</span></li>
-        <li>Default Value: <span id="osNumSystem_default_value">6</span></li>
-        <li>Lower Bound: <span id="osNumSystem_lower_bound">1</span></li>
-        <li>Upper Bound: <span id="osNumSystem_upper_bound">2147483647</span></li>
-        <li>Value Type: <span id="osNumSystem_value_type">Integer</span></li>
+        <li>Short Description: <span id="osGraphNumSystem_short_desc">Number of system variables (min = 1)</span></li>
+        <li>Long Description: <span id="osGraphNumSystem_long_desc">
+        The number of variables in the causal system proper (S1, ...), forming a DAG among themselves with average degree osGraphAvgSystemDegree, with context parents.</span></li>
+        <li>Default Value: <span id="osGraphNumSystem_default_value">6</span></li>
+        <li>Lower Bound: <span id="osGraphNumSystem_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="osGraphNumSystem_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumSystem_value_type">Integer</span></li>
     </ul>
 
-    === osNumIndices ===
-    <h3 class="parameter_description" id="osNumIndices">osNumIndices</h3>
+    === osGraphNumIndices ===
+    <h3 class="parameter_description" id="osGraphNumIndices">osGraphNumIndices</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osNumIndices_short_desc">Number of index variables (min = 0)</span></li>
-        <li>Long Description: <span id="osNumIndices_long_desc">
-        Near-deterministic functions (noise osIndexNoise) of system variables and earlier index variables (chains, like the FWI system's ISI/BUI -> FWI). In serial mode each index is a recursive accumulator with memory drawn from [osIndexMemoryLow, osIndexMemoryHigh].</span></li>
-        <li>Default Value: <span id="osNumIndices_default_value">2</span></li>
-        <li>Lower Bound: <span id="osNumIndices_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="osNumIndices_upper_bound">2147483647</span></li>
-        <li>Value Type: <span id="osNumIndices_value_type">Integer</span></li>
+        <li>Short Description: <span id="osGraphNumIndices_short_desc">Number of index variables (min = 0)</span></li>
+        <li>Long Description: <span id="osGraphNumIndices_long_desc">
+        Near-deterministic functions (noise osFormIndexNoise) of system variables and earlier index variables (chains, like the FWI system's ISI/BUI -> FWI). In serial mode each index is a recursive accumulator with memory drawn from [osSerialIndexMemoryLow, osSerialIndexMemoryHigh].</span></li>
+        <li>Default Value: <span id="osGraphNumIndices_default_value">2</span></li>
+        <li>Lower Bound: <span id="osGraphNumIndices_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osGraphNumIndices_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumIndices_value_type">Integer</span></li>
     </ul>
 
-    === osNumOutcomes ===
-    <h3 class="parameter_description" id="osNumOutcomes">osNumOutcomes</h3>
+    === osGraphNumOutcomes ===
+    <h3 class="parameter_description" id="osGraphNumOutcomes">osGraphNumOutcomes</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osNumOutcomes_short_desc">Number of outcome variables (min = 0)</span></li>
-        <li>Long Description: <span id="osNumOutcomes_long_desc">
-        Outcome variables (Y1, ...) depending on system, index, and context variables with pairwise interactions (weight osInteraction). Discrete via softmax if osDiscreteOutcome.</span></li>
-        <li>Default Value: <span id="osNumOutcomes_default_value">1</span></li>
-        <li>Lower Bound: <span id="osNumOutcomes_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="osNumOutcomes_upper_bound">2147483647</span></li>
-        <li>Value Type: <span id="osNumOutcomes_value_type">Integer</span></li>
+        <li>Short Description: <span id="osGraphNumOutcomes_short_desc">Number of outcome variables (min = 0)</span></li>
+        <li>Long Description: <span id="osGraphNumOutcomes_long_desc">
+        Outcome variables (Y1, ...) depending on system, index, and context variables with pairwise interactions (weight osFormInteraction). Discrete via softmax if osTypeDiscreteOutcome.</span></li>
+        <li>Default Value: <span id="osGraphNumOutcomes_default_value">1</span></li>
+        <li>Lower Bound: <span id="osGraphNumOutcomes_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osGraphNumOutcomes_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumOutcomes_value_type">Integer</span></li>
     </ul>
 
-    === osAvgSystemDegree ===
-    <h3 class="parameter_description" id="osAvgSystemDegree">osAvgSystemDegree</h3>
+    === osGraphAvgSystemDegree ===
+    <h3 class="parameter_description" id="osGraphAvgSystemDegree">osGraphAvgSystemDegree</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osAvgSystemDegree_short_desc">Average degree of the system DAG (min = 0.0)</span></li>
-        <li>Long Description: <span id="osAvgSystemDegree_long_desc">
+        <li>Short Description: <span id="osGraphAvgSystemDegree_short_desc">Average degree of the system DAG (min = 0.0)</span></li>
+        <li>Long Description: <span id="osGraphAvgSystemDegree_long_desc">
         The average degree of the DAG among the system variables.</span></li>
-        <li>Default Value: <span id="osAvgSystemDegree_default_value">2.0</span></li>
-        <li>Lower Bound: <span id="osAvgSystemDegree_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osAvgSystemDegree_upper_bound">1.7976931348623157E308</span></li>
-        <li>Value Type: <span id="osAvgSystemDegree_value_type">Double</span></li>
+        <li>Default Value: <span id="osGraphAvgSystemDegree_default_value">2.0</span></li>
+        <li>Lower Bound: <span id="osGraphAvgSystemDegree_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osGraphAvgSystemDegree_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="osGraphAvgSystemDegree_value_type">Double</span></li>
     </ul>
 
-    === osPropContextDiscrete ===
-    <h3 class="parameter_description" id="osPropContextDiscrete">osPropContextDiscrete</h3>
+    === osTypePropContextDiscrete ===
+    <h3 class="parameter_description" id="osTypePropContextDiscrete">osTypePropContextDiscrete</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osPropContextDiscrete_short_desc">Fraction of observed context variables that are discrete (min = 0.0, max = 1.0)</span></li>
-        <li>Long Description: <span id="osPropContextDiscrete_long_desc">
-        Each observed context variable is independently discrete with this probability (osNumCategories levels, uniform, or a sticky Markov chain in serial mode), else continuous. Discrete parents act through level-specific shifts (conditional Gaussian style).</span></li>
-        <li>Default Value: <span id="osPropContextDiscrete_default_value">0.5</span></li>
-        <li>Lower Bound: <span id="osPropContextDiscrete_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osPropContextDiscrete_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osPropContextDiscrete_value_type">Double</span></li>
+        <li>Short Description: <span id="osTypePropContextDiscrete_short_desc">Fraction of observed context variables that are discrete (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osTypePropContextDiscrete_long_desc">
+        Each observed context variable is independently discrete with this probability (osTypeNumCategories levels, uniform, or a sticky Markov chain in serial mode), else continuous. Discrete parents act through level-specific shifts (conditional Gaussian style).</span></li>
+        <li>Default Value: <span id="osTypePropContextDiscrete_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="osTypePropContextDiscrete_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osTypePropContextDiscrete_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osTypePropContextDiscrete_value_type">Double</span></li>
     </ul>
 
-    === osNumCategories ===
-    <h3 class="parameter_description" id="osNumCategories">osNumCategories</h3>
+    === osTypeNumCategories ===
+    <h3 class="parameter_description" id="osTypeNumCategories">osTypeNumCategories</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osNumCategories_short_desc">Number of categories for discrete variables (min = 2)</span></li>
-        <li>Long Description: <span id="osNumCategories_long_desc">
+        <li>Short Description: <span id="osTypeNumCategories_short_desc">Number of categories for discrete variables (min = 2)</span></li>
+        <li>Long Description: <span id="osTypeNumCategories_long_desc">
         The number of levels for discrete context variables, discrete outcomes, and ordinalized system variables.</span></li>
-        <li>Default Value: <span id="osNumCategories_default_value">3</span></li>
-        <li>Lower Bound: <span id="osNumCategories_lower_bound">2</span></li>
-        <li>Upper Bound: <span id="osNumCategories_upper_bound">2147483647</span></li>
-        <li>Value Type: <span id="osNumCategories_value_type">Integer</span></li>
+        <li>Default Value: <span id="osTypeNumCategories_default_value">3</span></li>
+        <li>Lower Bound: <span id="osTypeNumCategories_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="osTypeNumCategories_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osTypeNumCategories_value_type">Integer</span></li>
     </ul>
 
-    === osDiscreteOutcome ===
-    <h3 class="parameter_description" id="osDiscreteOutcome">osDiscreteOutcome</h3>
+    === osTypeDiscreteOutcome ===
+    <h3 class="parameter_description" id="osTypeDiscreteOutcome">osTypeDiscreteOutcome</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osDiscreteOutcome_short_desc">Yes if outcomes are discrete via softmax</span></li>
-        <li>Long Description: <span id="osDiscreteOutcome_long_desc">
+        <li>Short Description: <span id="osTypeDiscreteOutcome_short_desc">Yes if outcomes are discrete via softmax</span></li>
+        <li>Long Description: <span id="osTypeDiscreteOutcome_long_desc">
         If yes, outcome variables are discrete, sampled from softmax logits that are linear in the (soft-clipped) parent values -- continuous-parents-to-discrete-child, logistic style.</span></li>
-        <li>Default Value: <span id="osDiscreteOutcome_default_value">false</span></li>
-        <li>Lower Bound: <span id="osDiscreteOutcome_lower_bound"></span></li>
-        <li>Upper Bound: <span id="osDiscreteOutcome_upper_bound"></span></li>
-        <li>Value Type: <span id="osDiscreteOutcome_value_type">Boolean</span></li>
+        <li>Default Value: <span id="osTypeDiscreteOutcome_default_value">false</span></li>
+        <li>Lower Bound: <span id="osTypeDiscreteOutcome_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osTypeDiscreteOutcome_upper_bound"></span></li>
+        <li>Value Type: <span id="osTypeDiscreteOutcome_value_type">Boolean</span></li>
     </ul>
 
-    === osPropOrdinalized ===
-    <h3 class="parameter_description" id="osPropOrdinalized">osPropOrdinalized</h3>
+    === osDegradeOrdinalizeProp ===
+    <h3 class="parameter_description" id="osDegradeOrdinalizeProp">osDegradeOrdinalizeProp</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osPropOrdinalized_short_desc">Fraction of system variables recorded as ordered categories (min = 0.0, max = 1.0)</span></li>
-        <li>Long Description: <span id="osPropOrdinalized_long_desc">
-        That fraction of system variables is generated continuous but RECORDED as ordered categories at random cutpoints (osNumCategories levels) -- measurement coarsening. This reproduces the ordinal nominal-coding pathology: the true graph is the graph of the underlying continuous system, and the coarsening is measurement.</span></li>
-        <li>Default Value: <span id="osPropOrdinalized_default_value">0.0</span></li>
-        <li>Lower Bound: <span id="osPropOrdinalized_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osPropOrdinalized_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osPropOrdinalized_value_type">Double</span></li>
+        <li>Short Description: <span id="osDegradeOrdinalizeProp_short_desc">Fraction of system variables recorded as ordered categories (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osDegradeOrdinalizeProp_long_desc">
+        That fraction of system variables is generated continuous but RECORDED as ordered categories at random cutpoints (osTypeNumCategories levels) -- measurement coarsening. This reproduces the ordinal nominal-coding pathology: the true graph is the graph of the underlying continuous system, and the coarsening is measurement.</span></li>
+        <li>Default Value: <span id="osDegradeOrdinalizeProp_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="osDegradeOrdinalizeProp_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osDegradeOrdinalizeProp_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osDegradeOrdinalizeProp_value_type">Double</span></li>
     </ul>
 
-    === osMaxLag ===
-    <h3 class="parameter_description" id="osMaxLag">osMaxLag</h3>
+    === osSerialMaxLag ===
+    <h3 class="parameter_description" id="osSerialMaxLag">osSerialMaxLag</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osMaxLag_short_desc">Maximum lag of the time series; 0 turns serial dependence off (min = 0)</span></li>
-        <li>Long Description: <span id="osMaxLag_long_desc">
+        <li>Short Description: <span id="osSerialMaxLag_short_desc">Maximum lag of the time series; 0 turns serial dependence off (min = 0)</span></li>
+        <li>Long Description: <span id="osSerialMaxLag_long_desc">
         If greater than 0, one time series per subject is generated, and the true graph is a
         time lag graph with this maximum lag, following the time-series conventions. Self-lags,
         AR(1) context, and index accumulators act at lag 1; each cross-lag edge acts at a lag
-        drawn uniformly from 1 to osMaxLag. If 0, rows are i.i.d. and the true graph is an
+        drawn uniformly from 1 to osSerialMaxLag. If 0, rows are i.i.d. and the true graph is an
         ordinary DAG.</span></li>
-        <li>Default Value: <span id="osMaxLag_default_value">0</span></li>
-        <li>Lower Bound: <span id="osMaxLag_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="osMaxLag_upper_bound">2147483647</span></li>
-        <li>Value Type: <span id="osMaxLag_value_type">Integer</span></li>
+        <li>Default Value: <span id="osSerialMaxLag_default_value">0</span></li>
+        <li>Lower Bound: <span id="osSerialMaxLag_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osSerialMaxLag_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osSerialMaxLag_value_type">Integer</span></li>
     </ul>
 
-    === osArCoef ===
-    <h3 class="parameter_description" id="osArCoef">osArCoef</h3>
+    === osSerialArCoef ===
+    <h3 class="parameter_description" id="osSerialArCoef">osSerialArCoef</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osArCoef_short_desc">AR(1) coefficient for continuous context in serial mode (min = 0.0, max < 1.0)</span></li>
-        <li>Long Description: <span id="osArCoef_long_desc">
+        <li>Short Description: <span id="osSerialArCoef_short_desc">AR(1) coefficient for continuous context in serial mode (min = 0.0, max < 1.0)</span></li>
+        <li>Long Description: <span id="osSerialArCoef_long_desc">
         The autoregression coefficient of continuous context variables in serial mode; the process is stationary with unit variance.</span></li>
-        <li>Default Value: <span id="osArCoef_default_value">0.7</span></li>
-        <li>Lower Bound: <span id="osArCoef_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osArCoef_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osArCoef_value_type">Double</span></li>
+        <li>Default Value: <span id="osSerialArCoef_default_value">0.7</span></li>
+        <li>Lower Bound: <span id="osSerialArCoef_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osSerialArCoef_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osSerialArCoef_value_type">Double</span></li>
     </ul>
 
-    === osIndexMemoryLow ===
-    <h3 class="parameter_description" id="osIndexMemoryLow">osIndexMemoryLow</h3>
+    === osSerialIndexMemoryLow ===
+    <h3 class="parameter_description" id="osSerialIndexMemoryLow">osSerialIndexMemoryLow</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osIndexMemoryLow_short_desc">Low end of the index accumulator memory range (min = 0.0, max < 1.0)</span></li>
-        <li>Long Description: <span id="osIndexMemoryLow_long_desc">
-        In serial mode, each index variable's accumulator memory delta (I{t} = delta I{t-1} + g(parents) + noise) is drawn uniformly from [osIndexMemoryLow, osIndexMemoryHigh] -- heterogeneous memory, from FFMC-like short memory to DC-like drought memory.</span></li>
-        <li>Default Value: <span id="osIndexMemoryLow_default_value">0.2</span></li>
-        <li>Lower Bound: <span id="osIndexMemoryLow_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osIndexMemoryLow_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osIndexMemoryLow_value_type">Double</span></li>
+        <li>Short Description: <span id="osSerialIndexMemoryLow_short_desc">Low end of the index accumulator memory range (min = 0.0, max < 1.0)</span></li>
+        <li>Long Description: <span id="osSerialIndexMemoryLow_long_desc">
+        In serial mode, each index variable's accumulator memory delta (I{t} = delta I{t-1} + g(parents) + noise) is drawn uniformly from [osSerialIndexMemoryLow, osSerialIndexMemoryHigh] -- heterogeneous memory, from FFMC-like short memory to DC-like drought memory.</span></li>
+        <li>Default Value: <span id="osSerialIndexMemoryLow_default_value">0.2</span></li>
+        <li>Lower Bound: <span id="osSerialIndexMemoryLow_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osSerialIndexMemoryLow_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osSerialIndexMemoryLow_value_type">Double</span></li>
     </ul>
 
-    === osIndexMemoryHigh ===
-    <h3 class="parameter_description" id="osIndexMemoryHigh">osIndexMemoryHigh</h3>
+    === osSerialIndexMemoryHigh ===
+    <h3 class="parameter_description" id="osSerialIndexMemoryHigh">osSerialIndexMemoryHigh</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osIndexMemoryHigh_short_desc">High end of the index accumulator memory range (min = 0.0, max < 1.0)</span></li>
-        <li>Long Description: <span id="osIndexMemoryHigh_long_desc">
-        See osIndexMemoryLow.</span></li>
-        <li>Default Value: <span id="osIndexMemoryHigh_default_value">0.9</span></li>
-        <li>Lower Bound: <span id="osIndexMemoryHigh_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osIndexMemoryHigh_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osIndexMemoryHigh_value_type">Double</span></li>
+        <li>Short Description: <span id="osSerialIndexMemoryHigh_short_desc">High end of the index accumulator memory range (min = 0.0, max < 1.0)</span></li>
+        <li>Long Description: <span id="osSerialIndexMemoryHigh_long_desc">
+        See osSerialIndexMemoryLow.</span></li>
+        <li>Default Value: <span id="osSerialIndexMemoryHigh_default_value">0.9</span></li>
+        <li>Lower Bound: <span id="osSerialIndexMemoryHigh_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osSerialIndexMemoryHigh_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osSerialIndexMemoryHigh_value_type">Double</span></li>
     </ul>
 
-    === osPropCrossLag ===
-    <h3 class="parameter_description" id="osPropCrossLag">osPropCrossLag</h3>
+    === osSerialPropCrossLag ===
+    <h3 class="parameter_description" id="osSerialPropCrossLag">osSerialPropCrossLag</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osPropCrossLag_short_desc">Probability of a cross-lag edge per ordered system pair (min = 0.0, max = 1.0)</span></li>
-        <li>Long Description: <span id="osPropCrossLag_long_desc">
+        <li>Short Description: <span id="osSerialPropCrossLag_short_desc">Probability of a cross-lag edge per ordered system pair (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osSerialPropCrossLag_long_desc">
         In serial mode, for each ordered pair of distinct system variables (X, Y), the edge X{t-1} -> Y{t} is included with this probability. Reciprocal cross-lags represent feedback honestly.</span></li>
-        <li>Default Value: <span id="osPropCrossLag_default_value">0.15</span></li>
-        <li>Lower Bound: <span id="osPropCrossLag_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osPropCrossLag_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osPropCrossLag_value_type">Double</span></li>
+        <li>Default Value: <span id="osSerialPropCrossLag_default_value">0.15</span></li>
+        <li>Lower Bound: <span id="osSerialPropCrossLag_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osSerialPropCrossLag_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osSerialPropCrossLag_value_type">Double</span></li>
     </ul>
 
-    === osNumSubjects ===
-    <h3 class="parameter_description" id="osNumSubjects">osNumSubjects</h3>
+    === osPanelNumSubjects ===
+    <h3 class="parameter_description" id="osPanelNumSubjects">osPanelNumSubjects</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osNumSubjects_short_desc">Number of independent subjects (min = 1)</span></li>
-        <li>Long Description: <span id="osNumSubjects_long_desc">
-        The sample is divided into this many independent subjects: replicates of the same system, sampleSize / osNumSubjects rows each, concatenated. Each subject has a random intercept on the system variables, which is a subject-level latent confounder in the pooled data. Subject start rows are available from getSubjectStarts; in serial mode, lagging must not cross subject boundaries.</span></li>
-        <li>Default Value: <span id="osNumSubjects_default_value">1</span></li>
-        <li>Lower Bound: <span id="osNumSubjects_lower_bound">1</span></li>
-        <li>Upper Bound: <span id="osNumSubjects_upper_bound">2147483647</span></li>
-        <li>Value Type: <span id="osNumSubjects_value_type">Integer</span></li>
+        <li>Short Description: <span id="osPanelNumSubjects_short_desc">Number of independent subjects (min = 1)</span></li>
+        <li>Long Description: <span id="osPanelNumSubjects_long_desc">
+        The sample is divided into this many independent subjects: replicates of the same system, sampleSize / osPanelNumSubjects rows each. Each subject has a random intercept on the system variables, which is a subject-level latent confounder in the pooled data. By default the subjects are concatenated into one dataset per run with the structure undeclared, as panel data usually arrive; subject start rows are then available from getSubjectStarts, and in serial mode lagging must not cross subject boundaries. See osPanelEmitSubjectColumn to name the structure in the stacked dataset, and osPanelEmitSubjectsAsDataSets to emit one data model per subject instead.</span></li>
+        <li>Default Value: <span id="osPanelNumSubjects_default_value">1</span></li>
+        <li>Lower Bound: <span id="osPanelNumSubjects_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="osPanelNumSubjects_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osPanelNumSubjects_value_type">Integer</span></li>
     </ul>
 
-    === osIndexNoise ===
-    <h3 class="parameter_description" id="osIndexNoise">osIndexNoise</h3>
+    === osPanelEmitSubjectColumn ===
+    <h3 class="parameter_description" id="osPanelEmitSubjectColumn">osPanelEmitSubjectColumn</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osIndexNoise_short_desc">Noise standard deviation for index variables (min = 0.0)</span></li>
-        <li>Long Description: <span id="osIndexNoise_long_desc">
+        <li>Short Description: <span id="osPanelEmitSubjectColumn_short_desc">Append a discrete SUBJECT column naming each row's subject in the stacked dataset (requires osPanelNumSubjects &gt; 1)</span></li>
+        <li>Long Description: <span id="osPanelEmitSubjectColumn_long_desc">
+        If set with osPanelNumSubjects greater than 1, a discrete bookkeeping column named SUBJECT is appended to the stacked dataset, giving each row's subject - the analogue of deEmitConfigColumn in the designed-experiment simulation and of the TOWN column in the corrected Boston Housing data. Its purpose is to let the panel structure be named: as the data audit's serial grouping variable (per-block centering), as the block column for within-block centering, or as a tier-0 fixed-effects variable in a knowledge-constrained search. The column is bookkeeping, not a variable of the system, and is not in the true graph; unless used as a grouping or tier variable it should be excluded from search. With one category per subject it will trip the many-discrete-levels audit finding if treated as an ordinary variable. Ignored when osPanelEmitSubjectsAsDataSets is on, where the column would be constant.</span></li>
+        <li>Default Value: <span id="osPanelEmitSubjectColumn_default_value">false</span></li>
+        <li>Lower Bound: <span id="osPanelEmitSubjectColumn_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osPanelEmitSubjectColumn_upper_bound"></span></li>
+        <li>Value Type: <span id="osPanelEmitSubjectColumn_value_type">Boolean</span></li>
+    </ul>
+
+    === osPanelEmitSubjectsAsDataSets ===
+    <h3 class="parameter_description" id="osPanelEmitSubjectsAsDataSets">osPanelEmitSubjectsAsDataSets</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osPanelEmitSubjectsAsDataSets_short_desc">Emit each subject as its own data model instead of stacking them (requires osPanelNumSubjects &gt; 1)</span></li>
+        <li>Long Description: <span id="osPanelEmitSubjectsAsDataSets_long_desc">
+        If set with osPanelNumSubjects greater than 1, each subject is emitted as a separate data model sharing the run's true graph, so the number of data models is numRuns times osPanelNumSubjects and getSubjectStarts returns {0} for each. This is the convention consumed by multi-data-set algorithms such as IMaGES, and by score pooling generally: in a comparison these algorithms are handed the simulation's data models and sum their scores across them, so each subject is scored from its own covariance and per-subject intercepts and slopes are absorbed. Note that a comparison draws its pooled selection from all data models, so with numRuns greater than 1 and differentGraphs on, subjects from different runs, with different graphs, would be pooled; use numRuns = 1, or turn differentGraphs off, in this mode. When off, the subjects are concatenated into one dataset per run.</span></li>
+        <li>Default Value: <span id="osPanelEmitSubjectsAsDataSets_default_value">false</span></li>
+        <li>Lower Bound: <span id="osPanelEmitSubjectsAsDataSets_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osPanelEmitSubjectsAsDataSets_upper_bound"></span></li>
+        <li>Value Type: <span id="osPanelEmitSubjectsAsDataSets_value_type">Boolean</span></li>
+    </ul>
+
+    === osFormIndexNoise ===
+    <h3 class="parameter_description" id="osFormIndexNoise">osFormIndexNoise</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osFormIndexNoise_short_desc">Noise standard deviation for index variables (min = 0.0)</span></li>
+        <li>Long Description: <span id="osFormIndexNoise_long_desc">
         The noise standard deviation of index variables; small values make indices near-deterministic functions of their parents.</span></li>
-        <li>Default Value: <span id="osIndexNoise_default_value">0.05</span></li>
-        <li>Lower Bound: <span id="osIndexNoise_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osIndexNoise_upper_bound">1.7976931348623157E308</span></li>
-        <li>Value Type: <span id="osIndexNoise_value_type">Double</span></li>
+        <li>Default Value: <span id="osFormIndexNoise_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="osFormIndexNoise_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osFormIndexNoise_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="osFormIndexNoise_value_type">Double</span></li>
     </ul>
 
-    === osNonlinearity ===
-    <h3 class="parameter_description" id="osNonlinearity">osNonlinearity</h3>
+    === osFormNonlinearity ===
+    <h3 class="parameter_description" id="osFormNonlinearity">osFormNonlinearity</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osNonlinearity_short_desc">Monotone transmission nonlinearity weight (min = 0.0, max = 1.0)</span></li>
-        <li>Long Description: <span id="osNonlinearity_long_desc">
+        <li>Short Description: <span id="osFormNonlinearity_short_desc">Monotone transmission nonlinearity weight (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osFormNonlinearity_long_desc">
         The mixing weight of a random strictly monotone map (sinh, asinh, signed power, or exponential) applied to each continuous parent's value before it enters a child. 0 gives linear transmission.</span></li>
-        <li>Default Value: <span id="osNonlinearity_default_value">0.3</span></li>
-        <li>Lower Bound: <span id="osNonlinearity_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osNonlinearity_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osNonlinearity_value_type">Double</span></li>
+        <li>Default Value: <span id="osFormNonlinearity_default_value">0.3</span></li>
+        <li>Lower Bound: <span id="osFormNonlinearity_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osFormNonlinearity_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osFormNonlinearity_value_type">Double</span></li>
     </ul>
 
-    === osInteraction ===
-    <h3 class="parameter_description" id="osInteraction">osInteraction</h3>
+    === osFormInteraction ===
+    <h3 class="parameter_description" id="osFormInteraction">osFormInteraction</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osInteraction_short_desc">Pairwise-interaction weight for index and outcome functions (min = 0.0, max = 1.0)</span></li>
-        <li>Long Description: <span id="osInteraction_long_desc">
+        <li>Short Description: <span id="osFormInteraction_short_desc">Pairwise-interaction weight for index and outcome functions (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osFormInteraction_long_desc">
         The weight of pairwise products of continuous parents in index and outcome functions, relative to the additive part.</span></li>
-        <li>Default Value: <span id="osInteraction_default_value">0.2</span></li>
-        <li>Lower Bound: <span id="osInteraction_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osInteraction_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osInteraction_value_type">Double</span></li>
+        <li>Default Value: <span id="osFormInteraction_default_value">0.2</span></li>
+        <li>Lower Bound: <span id="osFormInteraction_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osFormInteraction_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osFormInteraction_value_type">Double</span></li>
     </ul>
 
-    === osEdgeDensity ===
-    <h3 class="parameter_description" id="osEdgeDensity">osEdgeDensity</h3>
+    === osGraphEdgeDensity ===
+    <h3 class="parameter_description" id="osGraphEdgeDensity">osGraphEdgeDensity</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osEdgeDensity_short_desc">Multiplier on all cross-role edge probabilities (min = 0.0, max = 1.0)</span></li>
-        <li>Long Description: <span id="osEdgeDensity_long_desc">
+        <li>Short Description: <span id="osGraphEdgeDensity_short_desc">Multiplier on all cross-role edge probabilities (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osGraphEdgeDensity_long_desc">
         Scales all cross-role edge inclusion probabilities in the Observational Study
         simulation: context to system (base 0.4), system to index (0.5), index to index (0.4),
         context to index (0.2), and the parent probabilities of outcomes (system 0.5, index
         0.7, context 0.3). 1.0 gives the base densities; smaller values give sparser graphs.
         The density of the DAG among the system variables is controlled separately by
-        osAvgSystemDegree. Minimum-parent floors (indices get at least two system parents,
+        osGraphAvgSystemDegree. Minimum-parent floors (indices get at least two system parents,
         outcomes at least two parents) are kept regardless.</span></li>
-        <li>Default Value: <span id="osEdgeDensity_default_value">1.0</span></li>
-        <li>Lower Bound: <span id="osEdgeDensity_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osEdgeDensity_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osEdgeDensity_value_type">Double</span></li>
+        <li>Default Value: <span id="osGraphEdgeDensity_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="osGraphEdgeDensity_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osGraphEdgeDensity_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osGraphEdgeDensity_value_type">Double</span></li>
     </ul>
 
-    === osMissingMechanism ===
-    <h3 class="parameter_description" id="osMissingMechanism">osMissingMechanism</h3>
+    === osDegradeMissingMechanism ===
+    <h3 class="parameter_description" id="osDegradeMissingMechanism">osDegradeMissingMechanism</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osMissingMechanism_short_desc">Missingness mechanism: none, mcar, mar, or mnar</span></li>
-        <li>Long Description: <span id="osMissingMechanism_long_desc">
-        If not none, cells of system, index, and outcome variables are marked missing at an exact per-column rate of osPropMissing (context variables are always fully observed). mcar is independent of everything. mar is driven by the first observed context variable, which is fully observed, so missingness is at random given context. mnar is driven by the underlying value of the cell itself. In each case the missing cells are those with the highest driver-plus-noise scores, so the mechanism is probabilistic but the rate is exact.</span></li>
-        <li>Default Value: <span id="osMissingMechanism_default_value">none</span></li>
-        <li>Lower Bound: <span id="osMissingMechanism_lower_bound"></span></li>
-        <li>Upper Bound: <span id="osMissingMechanism_upper_bound"></span></li>
-        <li>Value Type: <span id="osMissingMechanism_value_type">String</span></li>
+        <li>Short Description: <span id="osDegradeMissingMechanism_short_desc">Missingness mechanism: none, mcar, mar, or mnar</span></li>
+        <li>Long Description: <span id="osDegradeMissingMechanism_long_desc">
+        If not none, cells of system, index, and outcome variables are marked missing at an exact per-column rate of osDegradeMissingProp (context variables are always fully observed). mcar is independent of everything. mar is driven by the first observed context variable, which is fully observed, so missingness is at random given context. mnar is driven by the underlying value of the cell itself. In each case the missing cells are those with the highest driver-plus-noise scores, so the mechanism is probabilistic but the rate is exact.</span></li>
+        <li>Default Value: <span id="osDegradeMissingMechanism_default_value">none</span></li>
+        <li>Lower Bound: <span id="osDegradeMissingMechanism_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osDegradeMissingMechanism_upper_bound"></span></li>
+        <li>Value Type: <span id="osDegradeMissingMechanism_value_type">String</span></li>
     </ul>
 
-    === osPropMissing ===
-    <h3 class="parameter_description" id="osPropMissing">osPropMissing</h3>
+    === osDegradeMissingProp ===
+    <h3 class="parameter_description" id="osDegradeMissingProp">osDegradeMissingProp</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osPropMissing_short_desc">Fraction of cells marked missing per eligible column (min = 0.0, max = 1.0)</span></li>
-        <li>Long Description: <span id="osPropMissing_long_desc">
-        The exact per-column missingness rate applied to system, index, and outcome variables when osMissingMechanism is not none.</span></li>
-        <li>Default Value: <span id="osPropMissing_default_value">0.1</span></li>
-        <li>Lower Bound: <span id="osPropMissing_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osPropMissing_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osPropMissing_value_type">Double</span></li>
+        <li>Short Description: <span id="osDegradeMissingProp_short_desc">Fraction of cells marked missing per eligible column (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osDegradeMissingProp_long_desc">
+        The exact per-column missingness rate applied to system, index, and outcome variables when osDegradeMissingMechanism is not none.</span></li>
+        <li>Default Value: <span id="osDegradeMissingProp_default_value">0.1</span></li>
+        <li>Lower Bound: <span id="osDegradeMissingProp_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osDegradeMissingProp_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osDegradeMissingProp_value_type">Double</span></li>
     </ul>
 
-    === osPropCensored ===
-    <h3 class="parameter_description" id="osPropCensored">osPropCensored</h3>
+    === osDegradeCensorProp ===
+    <h3 class="parameter_description" id="osDegradeCensorProp">osDegradeCensorProp</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osPropCensored_short_desc">Fraction of continuous system and outcome variables censored at a detection limit (min = 0.0, max = 1.0)</span></li>
-        <li>Long Description: <span id="osPropCensored_long_desc">
-        That fraction of the continuous, non-ordinalized system and outcome variables is censored at a detection limit: values beyond the limit are recorded AT the limit, with the side (right or left) chosen at random and the limit placed at the osCensorQuantile quantile. Rows are kept; this is measurement, not selection, and the true graph is unchanged. (The row-removal analogue, truncation, is selection; see the Designed Experiment simulation's deSelection.)</span></li>
-        <li>Default Value: <span id="osPropCensored_default_value">0.0</span></li>
-        <li>Lower Bound: <span id="osPropCensored_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="osPropCensored_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osPropCensored_value_type">Double</span></li>
+        <li>Short Description: <span id="osDegradeCensorProp_short_desc">Fraction of continuous system and outcome variables censored at a detection limit (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osDegradeCensorProp_long_desc">
+        That fraction of the continuous, non-ordinalized system and outcome variables is censored at a detection limit: values beyond the limit are recorded AT the limit, with the side (right or left) chosen at random and the limit placed at the osDegradeCensorQuantile quantile. Rows are kept; this is measurement, not selection, and the true graph is unchanged. (The row-removal analogue, truncation, is selection; see the Designed Experiment simulation's deSelection.)</span></li>
+        <li>Default Value: <span id="osDegradeCensorProp_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="osDegradeCensorProp_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osDegradeCensorProp_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osDegradeCensorProp_value_type">Double</span></li>
     </ul>
 
-    === osCensorQuantile ===
-    <h3 class="parameter_description" id="osCensorQuantile">osCensorQuantile</h3>
+    === osDegradeCensorQuantile ===
+    <h3 class="parameter_description" id="osDegradeCensorQuantile">osDegradeCensorQuantile</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="osCensorQuantile_short_desc">Quantile at which the censoring limit is placed (min = 0.5, max = 1.0)</span></li>
-        <li>Long Description: <span id="osCensorQuantile_long_desc">
+        <li>Short Description: <span id="osDegradeCensorQuantile_short_desc">Quantile at which the censoring limit is placed (min = 0.5, max = 1.0)</span></li>
+        <li>Long Description: <span id="osDegradeCensorQuantile_long_desc">
         For right-censoring the limit is at this quantile of the column; for left-censoring, at one minus this quantile. E.g., 0.9 censors the top (or bottom) 10 percent of values to the limit.</span></li>
-        <li>Default Value: <span id="osCensorQuantile_default_value">0.9</span></li>
-        <li>Lower Bound: <span id="osCensorQuantile_lower_bound">0.5</span></li>
-        <li>Upper Bound: <span id="osCensorQuantile_upper_bound">1.0</span></li>
-        <li>Value Type: <span id="osCensorQuantile_value_type">Double</span></li>
+        <li>Default Value: <span id="osDegradeCensorQuantile_default_value">0.9</span></li>
+        <li>Lower Bound: <span id="osDegradeCensorQuantile_lower_bound">0.5</span></li>
+        <li>Upper Bound: <span id="osDegradeCensorQuantile_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osDegradeCensorQuantile_value_type">Double</span></li>
     </ul>
 </div>
