@@ -8063,6 +8063,18 @@ Source:
         <li>Value Type: <span id="osPanelEmitSubjectsAsDataSets_value_type">Boolean</span></li>
     </ul>
 
+    === osPanelSubjectShiftSd ===
+    <h3 class="parameter_description" id="osPanelSubjectShiftSd">osPanelSubjectShiftSd</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osPanelSubjectShiftSd_short_desc">Standard deviation of each subject's random intercept on the system variables (min = 0.0)</span></li>
+        <li>Long Description: <span id="osPanelSubjectShiftSd_long_desc">
+        With osPanelNumSubjects greater than 1, each subject draws an independent random intercept for each system variable from a normal distribution with this standard deviation (for a discrete system variable, one such draw per category on its logits). System variables are on roughly unit scale before pooled standardization, so 0.5 displaces subjects by about half a standard deviation. The intercept is a pure offset on the variable that owns it, and within-subject centering removes it there exactly. It becomes a confounder that centering cannot remove only where it reaches a child through a nonlinear transmission map: the subject then sits on a different part of the curve, and the within-subject relationship differs in shape, not just in level. Larger values move subjects further along the map; larger osFormNonlinearity bends the map more. Either makes the panel structure harder to correct for. Set to 0 for subjects that are exact replicates. Ignored when osPanelNumSubjects is 1.</span></li>
+        <li>Default Value: <span id="osPanelSubjectShiftSd_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="osPanelSubjectShiftSd_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osPanelSubjectShiftSd_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="osPanelSubjectShiftSd_value_type">Double</span></li>
+    </ul>
+
     === osFormIndexNoise ===
     <h3 class="parameter_description" id="osFormIndexNoise">osFormIndexNoise</h3>
     <ul class="parameter_description_list">
