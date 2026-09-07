@@ -1081,8 +1081,20 @@ public final class SessionEditorNode extends DisplayNode {
         Class<?> modelClass = determineTheModelClass(sessionNode);
 
         if (modelClass == null && !simulation) {
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    this.config.getNodeSpecificMessage());
+            String message;
+
+            try {
+                // Derive the message from the model constructors themselves,
+                // which are the ground truth for which parent combinations
+                // work; the hand-written config messages have drifted out of
+                // sync with them and are kept only as a fallback.
+                message = NodeInputsMessage.build(sessionNode, this.config);
+            } catch (Exception e) {
+                message = this.config.getNodeSpecificMessage();
+            }
+
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), message,
+                    "Inputs Needed", JOptionPane.INFORMATION_MESSAGE);
             return false;
         }
 
