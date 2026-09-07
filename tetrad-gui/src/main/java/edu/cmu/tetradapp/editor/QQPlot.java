@@ -52,6 +52,12 @@ class QQPlot {
     private double[] comparisonVariable;
 
     /**
+     * The sorted nonmissing sample values for the selected variable, paired index-for-index with the comparison
+     * quantiles.
+     */
+    private double[] sampleVariable;
+
+    /**
      * The min value in the comparison distribution
      */
 
@@ -99,7 +105,7 @@ class QQPlot {
             }
         }
 
-        this.dataSet = dataSet.copy();
+        this.dataSet = dataSet;
         if (selectedNode == null && dataSet.getNumColumns() != 0) {
             int[] selected = dataSet.getSelectedIndices();
             assert selected != null;
@@ -117,37 +123,6 @@ class QQPlot {
     }
 
     //==================================== Public Methods ====================================//
-
-    /**
-     * @param quantile  Desired quantile you wish to find
-     * @param low       The minimum of your dataset
-     * @param high      The maximum of your dataset
-     * @param n         Your normal distribution you wish to search among
-     * @param precision The desired precision of your search (in quantiles)
-     * @param count     Feed this zero -- ensures the stack doesn't fill up
-     * @param searchCap Desired maximum number of searches -- too high and the stack might overflow!
-     * @return an estimation of the point in a Normal distribution at a specific quantile.
-     */
-    private static double findQuantile(double quantile, double low, double high, NormalDistribution n, double precision, int count, int searchCap) {
-        //System.out.println("Low: " + low + "High: " + high);
-        double mid = low + ((high - low) / 2.);
-        //System.out.println("Mid: " + mid);
-        double cdfResult = n.cumulativeProbability(mid);
-        //System.out.println("CDF: " + cdfResult + " Abs value of difference: " + TMath.abs(cdfResult - quantile) + " Count: " + count);
-        if (
-                TMath.abs(cdfResult - quantile) < precision || count > searchCap) {
-            //System.out.println("Found result: " + mid);
-            return mid;
-        } else {
-            if (cdfResult > quantile) {
-                //System.out.println("Searching lesser");
-                return QQPlot.findQuantile(quantile, low, mid - precision, n, precision, count + 1, searchCap);
-            } else {
-                //System.out.println("Searching greater");
-                return QQPlot.findQuantile(quantile, mid + precision, high, n, precision, count + 1, searchCap);
-            }
-        }
-    }
 
     /**
      * <p>getMaxSample.</p>
@@ -203,6 +178,15 @@ class QQPlot {
         return this.comparisonVariable;
     }
 
+    /**
+     * <p>Getter for the field <code>sampleVariable</code>.</p>
+     *
+     * @return the sorted nonmissing sample values, paired index-for-index with the comparison quantiles.
+     */
+    public double[] getSampleVariable() {
+        return this.sampleVariable;
+    }
+
     //============================ Private Methods =======================//
 
     /**
@@ -215,43 +199,15 @@ class QQPlot {
     }
 
     /**
-     * Calculates the ideal quantiles values for the provided dataset.
-     *
-     * @param n    Normal distribution generated from the dataset.
-     * @param data Dataset that n is generated from, and whose normality is in question.
-     */
-    private void calculateComparisonSet(NormalDistribution n, DataSet data) {
-        this.comparisonVariable = new double[data.getNumRows()];
-
-        for (int i = 0; i < data.getNumRows(); i++) {
-            double valueAtQuantile = QQPlot.findQuantile((i + 1) / (data.getNumRows() + 1.0), this.minData, this.maxData, n, .0001, 0, 50);
-            this.comparisonVariable[i] = valueAtQuantile;
-
-            if (valueAtQuantile < this.minComparison) {
-                this.minComparison = valueAtQuantile;
-            }
-            if (valueAtQuantile > this.maxComparison) {
-                this.maxComparison = valueAtQuantile;
-            }
-        }
-    }
-
-    /**
-     * Builds the q-q data if required, otherwise does nothing
+     * Builds the q-q plot data: the sorted nonmissing sample values and, for each, the corresponding quantile of a
+     * Normal distribution with the sample's mean and standard deviation. Missing (NaN) and infinite values are
+     * excluded; the i'th sorted sample value is paired with the (i + 1) / (m + 1) quantile, where m is the number of
+     * nonmissing values.
      */
     private void buildQQPlotData(Node selectedNode) {
         int columnIndex = this.dataSet.getColumnIndex(selectedNode);
 
-        double mean = 0.0;
-        double sd = 0.0;
-
-        this.minData = 10000000000000.0;
-        this.maxData = 0.0;
-
-        this.minComparison = 1000000000000.0;
-        this.maxComparison = 0.0;
-
-        //the only case in which this should be -1 is if there's a continuous variable, but it's incomplete
+        //the only case in which this should be -1 is if there's no selected variable yet
         if (columnIndex == -1) {
             for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
                 //set selected variable if there is none
@@ -262,82 +218,60 @@ class QQPlot {
                 }
             }
             if (columnIndex == -1) {
-                JOptionPane.showMessageDialog(new JFrame(), "You need at least one complete continuous variable for a q-q plot!");
-                throw new IllegalArgumentException("You need at least one complete continuous variable for a q-q plot!");
+                JOptionPane.showMessageDialog(new JFrame(), "You need at least one continuous variable for a q-q plot!");
+                throw new IllegalArgumentException("You need at least one continuous variable for a q-q plot!");
             }
         }
 
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+        // Extract the nonmissing, finite values.
+        int numRows = this.dataSet.getNumRows();
+        double[] values = new double[numRows];
+        int m = 0;
+
+        for (int i = 0; i < numRows; i++) {
             double value = this.dataSet.getDouble(i, columnIndex);
-
-            if (Double.isNaN(value) || value == Double.NEGATIVE_INFINITY
-                || value == Double.POSITIVE_INFINITY) {
-                continue;
-            }
-
-            mean += value;
-            if (value < this.minData) this.minData = value;
-            if (value > this.maxData) this.maxData = value;
-
-        }
-
-        //sort the dataset
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            for (int k = i; k < this.dataSet.getNumRows(); k++) {
-                double value1 = this.dataSet.getDouble(i, columnIndex);
-                double value2 = this.dataSet.getDouble(k, columnIndex);
-
-                if (Double.isNaN(value1) || value1 == Double.NEGATIVE_INFINITY
-                    || value1 == Double.POSITIVE_INFINITY) {
-                    continue;
-                }
-
-                if (Double.isNaN(value2) || value2 == Double.NEGATIVE_INFINITY
-                    || value2 == Double.POSITIVE_INFINITY) {
-                    continue;
-                }
-
-                if (value1 > value2) {
-                    double temp = this.dataSet.getDouble(i, columnIndex);
-                    this.dataSet.setDouble(i, columnIndex, value2);
-                    this.dataSet.setDouble(k, columnIndex, temp);
-                }
+            if (Double.isFinite(value)) {
+                values[m++] = value;
             }
         }
 
-        if (mean == 0.0) mean = 1.0;
-        else mean /= this.dataSet.getNumRows();
-
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            double value1 = this.dataSet.getDouble(i, columnIndex);
-            double value2 = this.dataSet.getDouble(i, columnIndex);
-
-            if (Double.isNaN(value1) || value1 == Double.NEGATIVE_INFINITY
-                || value1 == Double.POSITIVE_INFINITY) {
-                continue;
-            }
-
-            if (Double.isNaN(value2) || value2 == Double.NEGATIVE_INFINITY
-                || value2 == Double.POSITIVE_INFINITY) {
-                continue;
-            }
-
-            sd += (value1 - mean) * (value2 - mean);
+        if (m == 0) {
+            JOptionPane.showMessageDialog(new JFrame(),
+                    "The variable " + this.selectedVariable.getName() + " has no nonmissing values, so a q-q plot cannot be constructed for it.");
+            throw new IllegalArgumentException("No nonmissing values for variable " + this.selectedVariable.getName());
         }
 
-        if (sd == 0.0) {
-            sd = 1.0;
-        } else {
-            sd /= this.dataSet.getNumRows() - 1.0;
-            sd = TMath.sqrt(sd);
-        }
+        this.sampleVariable = new double[m];
+        System.arraycopy(values, 0, this.sampleVariable, 0, m);
+        java.util.Arrays.sort(this.sampleVariable);
 
-        //System.out.println("Mean: " + mean + " SD: " + sd + " Min: " + this.minData + " Max: " + this.maxData);
+        this.minData = this.sampleVariable[0];
+        this.maxData = this.sampleVariable[m - 1];
+
+        // Mean and standard deviation over the nonmissing values only.
+        double mean = 0.0;
+        for (int i = 0; i < m; i++) mean += this.sampleVariable[i];
+        mean /= m;
+
+        double sd = 0.0;
+        for (int i = 0; i < m; i++) {
+            double dev = this.sampleVariable[i] - mean;
+            sd += dev * dev;
+        }
+        sd = m > 1 ? TMath.sqrt(sd / (m - 1.0)) : 1.0;
+        if (!(sd > 0.0)) sd = 1.0;
 
         NormalDistribution comparison = new NormalDistribution(mean, sd);
 
-        calculateComparisonSet(comparison, this.dataSet);
+        // Theoretical quantiles, paired index-for-index with the sorted sample.
+        this.comparisonVariable = new double[m];
 
+        for (int i = 0; i < m; i++) {
+            this.comparisonVariable[i] = comparison.inverseCumulativeProbability((i + 1) / (m + 1.0));
+        }
+
+        this.minComparison = this.comparisonVariable[0];
+        this.maxComparison = this.comparisonVariable[m - 1];
     }
 }
 

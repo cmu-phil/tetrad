@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TMath;
@@ -144,13 +143,19 @@ public class ScatterPlot {
      */
     public double getCorrelationCoeff() {
         DataSet dataSet = getDataSet();
-        Matrix data = dataSet.getDoubleData();
 
         int _x = dataSet.getColumnIndex(dataSet.getVariable(this.x));
         int _y = dataSet.getColumnIndex(dataSet.getVariable(this.y));
 
-        double[] xdata = data.getColumn(_x).toArray();
-        double[] ydata = data.getColumn(_y).toArray();
+        List<Integer> rows = getConditionedRows();
+        double[] xdata = new double[rows.size()];
+        double[] ydata = new double[rows.size()];
+
+        for (int i = 0; i < rows.size(); i++) {
+            xdata[i] = dataSet.getDouble(rows.get(i), _x);
+            ydata[i] = dataSet.getDouble(rows.get(i), _y);
+        }
+
         Result result = new Result(xdata, ydata, removeZeroPointsPerPlot);
         xdata = result.xdata;
         ydata = result.ydata;
@@ -373,12 +378,18 @@ public class ScatterPlot {
 
     //======================================PRIVATE METHODS=======================================//
 
-    // Returns the rows in the data that satisfy the conditioning constraints.
+    // Returns the rows in the data that satisfy the conditioning constraints and in which both plotted
+    // variables are present (not missing). Rows with a missing x or y cannot be plotted, regressed on,
+    // or counted in the sample size, so they are excluded here, at the single point that feeds all three.
     private List<Integer> getConditionedRows() {
         List<Integer> rows = new ArrayList<>();
 
         I:
         for (int i = 0; i < this.dataSet.getNumRows(); i++) {
+            if (!present(i, this._x) || !present(i, this._y)) {
+                continue;
+            }
+
             for (Node node : this.continuousIntervals.keySet()) {
                 double[] range = this.continuousIntervals.get(node);
                 int index = this.dataSet.getColumnIndex(node);
@@ -401,6 +412,20 @@ public class ScatterPlot {
         }
 
         return rows;
+    }
+
+    /**
+     * States whether the value of the given variable in the given row is present (not missing). For continuous
+     * variables a value is present if it is finite; for discrete variables, if it is not the missing-value code.
+     */
+    private boolean present(int row, Node variable) {
+        int index = this.dataSet.getColumnIndex(variable);
+
+        if (variable instanceof DiscreteVariable) {
+            return this.dataSet.getInt(row, index) != DiscreteVariable.MISSING_VALUE;
+        } else {
+            return Double.isFinite(this.dataSet.getDouble(row, index));
+        }
     }
 
     private Vector<Point2D.Double> pairs(String x, String y) {

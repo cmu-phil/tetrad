@@ -20,7 +20,6 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TMath;
 
@@ -161,25 +160,15 @@ class QQPlotDisplayPanel extends JPanel {
         g2d.drawString(TMath.floor(this.qqPlot.getMinSample()) + "", QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(TMath.floor(this.qqPlot.getMinIdeal()) + ""), height - 2);
         g2d.drawLine(QQPlotDisplayPanel.PADDING - QQPlotDisplayPanel.DASH, height, QQPlotDisplayPanel.PADDING, height);
 
-        //draw the data points
-        int dataColumn = this.qqPlot.getDataSet().getColumnIndex(this.qqPlot.getSelectedVariable());
-
-        //set selected variable if there is none
-        if (dataColumn == -1) {
-            for (int i = 0; i < this.qqPlot.getDataSet().getNumColumns(); i++) {
-                if (this.qqPlot.getDataSet().getVariable(i) instanceof ContinuousVariable) {
-                    this.qqPlot.setSelectedVariable((ContinuousVariable) this.qqPlot.getDataSet().getVariable(i));
-                    dataColumn = i;
-                    break;
-                }
-            }
-        }
-
+        //draw the data points: the i'th sorted nonmissing sample value against the i'th comparison quantile
         g2d.setColor(new Color(255, 0, 0));
 
-        for (int i = 0; i < this.qqPlot.getDataSet().getNumRows(); i++) {
-            double x = (this.qqPlot.getDataSet().getDouble(i, dataColumn));
-            double y = (this.qqPlot.getComparisonVariable()[i]);
+        double[] sample = this.qqPlot.getSampleVariable();
+        double[] comparison = this.qqPlot.getComparisonVariable();
+
+        for (int i = 0; i < sample.length; i++) {
+            double x = sample[i];
+            double y = comparison[i];
 
             if (x >= this.qqPlot.getMinSample() && x <= this.qqPlot.getMaxSample()
                 && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample()) {
