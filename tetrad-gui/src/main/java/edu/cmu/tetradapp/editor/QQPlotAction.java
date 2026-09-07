@@ -85,7 +85,8 @@ class QQPlotAction extends AbstractAction {
                 JPanel dialog = createQQPlotDialog(dataSet.getVariable(index));
 
                 EditorWindow editorWindow =
-                        new EditorWindow(dialog, "QQPlot", null, false, (JComponent) this.dataEditor);
+                        new EditorWindow(dialog, DataWindowTitles.of("QQPlot", dataSet), null, false,
+                                (JComponent) this.dataEditor);
 
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
@@ -97,7 +98,7 @@ class QQPlotAction extends AbstractAction {
             JPanel dialog = createQQPlotDialog(null);
 
             EditorWindow editorWindow =
-                    new EditorWindow(dialog, "QQPlot", "Save", true,
+                    new EditorWindow(dialog, DataWindowTitles.of("QQPlot", dataSet), "Save", true,
                             (JComponent) this.dataEditor);
 
             DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);

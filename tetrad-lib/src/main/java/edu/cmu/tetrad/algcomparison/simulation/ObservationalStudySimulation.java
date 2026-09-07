@@ -174,7 +174,7 @@ public class ObservationalStudySimulation implements Simulation {
         this.subjectStarts = new ArrayList<>();
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
-            simulateOne(parameters);
+            simulateOne(parameters, i);
         }
     }
 
@@ -182,8 +182,9 @@ public class ObservationalStudySimulation implements Simulation {
      * Simulates one run: structure, data, coarsening; appends results.
      *
      * @param parameters the simulation parameters.
+     * @param run        the zero-based run index, used to name the emitted data sets.
      */
-    private void simulateOne(Parameters parameters) {
+    private void simulateOne(Parameters parameters, int run) {
         int numContext = Math.max(0, parameters.getInt(Params.OS_GRAPH_NUM_CONTEXT));
         int numHidden = Math.max(0, parameters.getInt(Params.OS_GRAPH_NUM_HIDDEN_CONTEXT));
         int numSystem = Math.max(1, parameters.getInt(Params.OS_GRAPH_NUM_SYSTEM));
@@ -749,7 +750,7 @@ public class ObservationalStudySimulation implements Simulation {
                 int[] rows = new int[to - from];
                 for (int r = from; r < to; r++) rows[r - from] = r;
                 DataSet subjectData = dataSet.subsetRows(rows);
-                subjectData.setName("subject" + (subj + 1));
+                subjectData.setName("Run " + (run + 1) + " Subject " + (subj + 1));
 
                 this.graphs.add(trueGraph);
                 this.contemporaneousGraphs.add(contemporaneous);
@@ -778,6 +779,7 @@ public class ObservationalStudySimulation implements Simulation {
             }
         }
 
+        dataSet.setName("Run " + (run + 1));
         this.graphs.add(trueGraph);
         this.contemporaneousGraphs.add(contemporaneous);
         this.dataSets.add(dataSet);

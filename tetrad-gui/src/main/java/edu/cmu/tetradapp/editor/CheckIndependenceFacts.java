@@ -70,7 +70,7 @@ public class CheckIndependenceFacts extends AbstractAction {
 //        JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), editor, "Independence Facts DSL Editor",
 //                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 
-        EditorWindow editorWindow = new EditorWindow(editor, "Check Independence Facts", null,
+        EditorWindow editorWindow = new EditorWindow(editor, DataWindowTitles.of("Check Independence Facts", dataModel), null,
                 false, JOptionUtils.centeringComp());
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);

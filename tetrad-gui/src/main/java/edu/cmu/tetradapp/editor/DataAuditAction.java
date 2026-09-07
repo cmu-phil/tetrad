@@ -115,7 +115,8 @@ class DataAuditAction extends AbstractAction {
             }
 
             EditorWindow covWindow = new EditorWindow(covPanel,
-                    "Covariance Matrix Audit", null, false, (JComponent) this.dataEditor);
+                    DataWindowTitles.of("Covariance Matrix Audit", cov), null, false,
+                    (JComponent) this.dataEditor);
             DesktopController.getInstance().addEditorWindow(covWindow, JLayeredPane.PALETTE_LAYER);
             covWindow.setVisible(true);
             return;
@@ -154,7 +155,8 @@ class DataAuditAction extends AbstractAction {
                 SwingUtilities.invokeLater(() -> {
                     JComponent panel = createDataAuditPanel(dataSet, pooledAudit, missingAudit);
                     EditorWindow window = new EditorWindow(panel,
-                            "Data Audit", null, false, (JComponent) DataAuditAction.this.dataEditor);
+                            DataWindowTitles.of("Data Audit", dataSet), null, false,
+                            (JComponent) DataAuditAction.this.dataEditor);
                     DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
                     window.setVisible(true);
                 });

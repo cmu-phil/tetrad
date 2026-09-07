@@ -108,7 +108,7 @@ class CalibrationCalculatorAction extends AbstractAction {
         tabs.addTab("Penalty Discount", PenaltyDiscountCalculatorPanel.create(this.dataEditor, model));
         tabs.addTab("Explanation", CalibrationExplanationPanel.create());
 
-        EditorWindow window = new EditorWindow(tabs, "Alpha/Penalty Discount Calculator", null, false,
+        EditorWindow window = new EditorWindow(tabs, DataWindowTitles.of("Alpha/Penalty Discount Calculator", model), null, false,
                 (JComponent) this.dataEditor);
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
