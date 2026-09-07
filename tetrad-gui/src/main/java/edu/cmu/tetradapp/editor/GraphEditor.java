@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
@@ -523,6 +524,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             }
 
             JComboBox<Integer> comboBox = new JComboBox<>(models);
+            ArrowKeyNavigation.install(this, comboBox);
 
             // Remember the selected model on reopen
             comboBox.setSelectedIndex(graphWrapper.getModelIndex());

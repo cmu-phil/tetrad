@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.BayesImWrapper;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -83,6 +84,7 @@ public class BayesImEditor extends JPanel {
     private void setup2(BayesImWrapper wrapper) {
         if (wrapper.getNumModels() > 0) {
             JComboBox<Integer> comp = new JComboBox<>();
+            ArrowKeyNavigation.install(this, comp);
 
             for (int i = 0; i < wrapper.getNumModels(); i++) {
                 comp.addItem(i + 1);
@@ -91,7 +93,7 @@ public class BayesImEditor extends JPanel {
             comp.setSelectedIndex(wrapper.getModelIndex());
 
             comp.addActionListener(e -> {
-                wrapper.setModelIndex(comp.getSelectedIndex() - 1);
+                wrapper.setModelIndex(comp.getSelectedIndex());
                 setEditorPanel();
                 validate();
             });

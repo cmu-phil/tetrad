@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.GraphUtils;
@@ -125,6 +126,7 @@ public class GraphCard extends JPanel {
             // Multi-graph UI
             JTabbedPane tabs = new JTabbedPane(SwingConstants.LEFT);
             tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+            ArrowKeyNavigation.install(tabs);
 
             for (int i = 0; i < graphs.size(); i++) {
                 Graph g = graphs.get(i);

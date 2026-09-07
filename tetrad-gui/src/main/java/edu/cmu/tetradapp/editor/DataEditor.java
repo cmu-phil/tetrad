@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.TabularComparison;
 
@@ -211,6 +212,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     private void rebuildTabsFrom(DataModelList list, DataModel selectedModel) {
         tabbedPane.removeAll();
+        ArrowKeyNavigation.install(tabbedPane);
         displayedModels.clear();
 
         int selectedIndex = -1;
