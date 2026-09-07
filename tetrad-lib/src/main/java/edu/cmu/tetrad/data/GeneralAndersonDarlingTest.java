@@ -162,8 +162,15 @@ public class GeneralAndersonDarlingTest {
             p = 1 - exp(-8.318 + 42.796 * aa - 59.938 * aa * aa);
         } else if (aa < 0.6) {
             p = exp(0.9177 - 4.279 * aa - 1.38 * aa * aa);
-        } else {
+        } else if (aa < 10.0) {
             p = exp(1.2937 - 5.709 * aa + 0.0186 * aa * aa);
+        } else {
+            // The Stephens interpolation above is a local quadratic fit with a positive
+            // aa^2 coefficient; outside its fitted range it turns around, so that p climbs
+            // back above any alpha near aa ~ 306 and overflows to Infinity near aa ~ 402.
+            // Following R's nortest::ad.test, report a hard floor for aa >= 10; 3.7e-24 is
+            // the formula's value at aa = 10, so the p-value is continuous at the boundary.
+            p = 3.7e-24;
         }
 
         this.aSquared = a;

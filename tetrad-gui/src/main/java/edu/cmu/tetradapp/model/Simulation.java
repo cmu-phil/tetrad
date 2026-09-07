@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.ProvidesKnowledge;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
@@ -572,18 +573,32 @@ public class Simulation extends DataWrapper implements
     }
 
     /**
-     * Retrieves the knowledge of the simulation. If the simulation implements the interface 'HasKnowledge', it returns
-     * the knowledge obtained from the simulation. Otherwise, it returns a new instance of Knowledge.
+     * Retrieves the knowledge of the simulation. If the simulation implements ProvidesKnowledge (its design implies
+     * knowledge, such as role tiers), the knowledge it provides for the selected data model is returned; if it
+     * implements AcceptsKnowledge, the knowledge it holds is returned; otherwise the knowledge given to this wrapper,
+     * if any.
      *
-     * @return the knowledge obtained from the simulation, or a new instance of Knowledge if the simulation does not
-     * implement HasKnowledge
+     * @return the knowledge.
      */
     public Knowledge getKnowledge() {
-        if (this.simulation instanceof AcceptsKnowledge) {
+        if (this.simulation instanceof ProvidesKnowledge provider) {
+            int index = Math.max(0, getDataModelList().indexOf(getSelectedDataModel()));
+            return provider.getKnowledge(index);
+        } else if (this.simulation instanceof AcceptsKnowledge) {
             return ((AcceptsKnowledge) this.simulation).getKnowledge();
         } else {
             return this.knowledge;
         }
+    }
+
+    /**
+     * Whether the simulation's design implies knowledge (ProvidesKnowledge) or the simulation was given knowledge
+     * (AcceptsKnowledge), so that a knowledge box attached to this simulation should start from it.
+     *
+     * @return true if getKnowledge() returns simulation-derived knowledge.
+     */
+    public boolean hasSimulationKnowledge() {
+        return this.simulation instanceof ProvidesKnowledge || this.simulation instanceof AcceptsKnowledge;
     }
 
     /**

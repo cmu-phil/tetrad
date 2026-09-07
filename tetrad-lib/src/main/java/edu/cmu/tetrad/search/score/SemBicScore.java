@@ -965,7 +965,111 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     @Override
     public double impliedAlpha() {
-        return StatUtils.getChiSquareP(1, getPenaltyDiscount() * this.logN);
+        return PenaltyDiscountCalibration.alpha(getPenaltyDiscount(), 1, getSampleSize());
+    }
+
+    /**
+     * Inverse of {@link #impliedAlpha()}: the penalty discount at which this score's sign rule operates at
+     * significance level {@code alpha}, i.e. the c such that P(chi-square(1) &gt; c * ln(N)) = alpha.
+     *
+     * <p>The local score difference for adding a single parent x to y given Z is -N ln(1 - r^2) - c ln(N), where r
+     * is the partial correlation (see {@link #localScoreDiff(int, int, int[])}). Under the null x _||_ y | Z the
+     * first term is asymptotically chi-square(1), so the edge is added exactly when a chi-square(1) variate exceeds
+     * c ln(N). Solving for c gives this method.</p>
+     *
+     * @param alpha      The per-test significance level, in (0, 1).
+     * @param sampleSize The sample size N used in the penalty (the effective sample size, if one is set).
+     * @return The penalty discount c = Q_chi2(1)(1 - alpha) / ln(N).
+     */
+    public static double penaltyDiscountForAlpha(double alpha, int sampleSize) {
+        return PenaltyDiscountCalibration.penaltyDiscountForAlpha(alpha, 1, sampleSize);
+    }
+
+    /**
+     * The penalty discount that holds the expected number of spurious edges over the whole search at approximately
+     * {@code expectedFalseEdges}, for {@code numVariables} variables and sample size {@code sampleSize}.
+     *
+     * <p>Rationale. Each non-adjacent pair is an opportunity for a spurious edge, and by
+     * {@link #penaltyDiscountForAlpha(double, int)} each such opportunity is taken with probability
+     * alpha(c) = P(chi-square(1) &gt; c ln N). In a sparse true graph nearly all of the p(p-1)/2 pairs are
+     * non-adjacent, so by linearity of expectation (no independence assumption is needed for the first moment)
+     * the expected number of spurious edges is approximately M alpha(c) with M = p(p-1)/2. Setting this equal to
+     * the budget and inverting gives</p>
+     *
+     * <pre>    c* = Q_chi2(1)(1 - E_FP / M) / ln(N).</pre>
+     *
+     * <p>For small alpha the chi-square(1) quantile is roughly 2 ln(1/alpha), so c* grows like 4 ln(p) / ln(N):
+     * the same ln(p)/ln(N) dependence as EBIC (Chen &amp; Chen 2008), with the multiplier fixed by a false-edge budget
+     * rather than a model-space prior. At p = 100, N = 1000, E_FP = 1 this returns c* = 2.00, which is the
+     * conventional discount at the conventional benchmark size; at p = 5000, N = 1000 it returns 4.17.</p>
+     *
+     * <p>Caveats. (1) The chi-square(1) null is asymptotic in N. (2) During search the conditioning set is the
+     * current parent set, not the true one, so the null is approximate; the greedy forward step also takes the
+     * best of many candidates, which makes M alpha an estimate of the first moment rather than a bound. Observed
+     * counts have landed within a factor of ~1.5 of the prediction. (3) This controls false positives only; the
+     * recall side is the smallest partial correlation the same rule can detect,
+     * {@link #minDetectablePartialCorrelation(double, int)}, which rises with c.</p>
+     *
+     * @param numVariables       The number of variables p.
+     * @param sampleSize         The sample size N.
+     * @param expectedFalseEdges The tolerated expected number of spurious edges over the whole graph, e.g. 1.0.
+     * @return The recommended penalty discount.
+     */
+    public static double penaltyDiscountForExpectedFalseEdges(int numVariables, int sampleSize,
+                                                              double expectedFalseEdges) {
+        return PenaltyDiscountCalibration.penaltyDiscountForExpectedFalseEdges(
+                PenaltyDiscountCalibration.uniformPairDofHistogram(numVariables, 1), sampleSize, expectedFalseEdges);
+    }
+
+    /**
+     * The smallest |partial correlation| that the sign rule accepts at penalty discount c and sample size N,
+     * i.e. the r solving -N ln(1 - r^2) = c ln(N). Edges whose true partial correlation given the rest of the
+     * parent set is below this are expected to be missed; it is the recall-side companion to
+     * {@link #penaltyDiscountForExpectedFalseEdges(int, int, double)}.
+     *
+     * @param penaltyDiscount The penalty discount c.
+     * @param sampleSize      The sample size N.
+     * @return r_min = sqrt(1 - N^(-c/N)), approximately sqrt(c ln(N) / N) for large N.
+     */
+    public static double minDetectablePartialCorrelation(double penaltyDiscount, int sampleSize) {
+        return Math.sqrt(1.0 - Math.exp(-penaltyDiscount * log(sampleSize) / sampleSize));
+    }
+
+    /**
+     * Inverse of {@link #minDetectablePartialCorrelation(double, int)}: the penalty discount at which partial
+     * correlations below {@code minPartialCorrelation} are ignored. See
+     * {@link PenaltyDiscountCalibration#penaltyDiscountForMinPartialCorrelation(double, int)}.
+     *
+     * @param minPartialCorrelation r_min.
+     * @param sampleSize            N.
+     * @return c.
+     */
+    public static double penaltyDiscountForMinPartialCorrelation(double minPartialCorrelation, int sampleSize) {
+        return PenaltyDiscountCalibration.penaltyDiscountForMinPartialCorrelation(minPartialCorrelation, sampleSize);
+    }
+
+    /**
+     * The penalty discount that holds the expected number of spurious edges at a fraction {@code fdr} of the
+     * expected number of true edges, p * expectedDegree / 2. This is the false-discovery-proportion analogue of
+     * {@link #penaltyDiscountForExpectedFalseEdges(int, int, double)}, which controls an absolute count.
+     *
+     * <p>The two differ in how the per-test level scales with p: an absolute budget gives alpha ~ 1/p^2 and hence
+     * c* ~ 4 ln(p)/ln(N), which is EBIC at gamma = 2; a fractional budget gives alpha = fdr * degree / (p - 1) ~ 1/p
+     * and hence c* ~ 2 ln(p)/ln(N), which is EBIC at gamma = 1. For a large sparse graph the fractional budget is
+     * usually the one a practitioner means. The expected degree enters only as ln(1/(fdr * degree)), so an
+     * estimate within a factor of two changes c* by about 2 ln(2)/ln(N), roughly 0.2 at N = 1000.</p>
+     *
+     * @param numVariables   The number of variables p.
+     * @param sampleSize     The sample size N.
+     * @param expectedDegree The expected average degree of the true graph (a prior guess is fine).
+     * @param fdr            The tolerated ratio of spurious to true edges, e.g. 0.01.
+     * @return The recommended penalty discount.
+     */
+    public static double penaltyDiscountForFalseDiscoveryRate(int numVariables, int sampleSize,
+                                                              double expectedDegree, double fdr) {
+        return PenaltyDiscountCalibration.penaltyDiscountForFalseDiscoveryRate(
+                PenaltyDiscountCalibration.uniformPairDofHistogram(numVariables, 1), sampleSize,
+                numVariables, expectedDegree, fdr);
     }
 
     private double getStructurePrior(int parents) {

@@ -84,7 +84,8 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT),
                 parameters.getDouble(Params.SINGULARITY_LAMBDA),
-                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION));
+                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION),
+                parameters.getBoolean(Params.BASIS_RANK_TRANSFORM));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return score;
@@ -164,7 +165,7 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
                             dataSet,
                             truncationLimit,
                             parameters.getDouble(Params.SINGULARITY_LAMBDA),
-                            common);
+                            common, parameters.getBoolean(Params.BASIS_RANK_TRANSFORM));
             score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
             scores.add(score);
@@ -196,6 +197,7 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.TRUNCATION_LIMIT);
         parameters.add(Params.ADAPTIVE_BASIS_SELECTION);
+        parameters.add(Params.BASIS_RANK_TRANSFORM);
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.DO_ONE_EQUATION_ONLY);

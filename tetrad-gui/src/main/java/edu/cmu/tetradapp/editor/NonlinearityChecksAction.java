@@ -37,7 +37,7 @@ class NonlinearityChecksAction extends AbstractAction {
         }
 
         JPanel panel = new NonlinearityChecks(dataSet);
-        EditorWindow editorWindow = new EditorWindow(panel, "Nonlinearity Checks", null,
+        EditorWindow editorWindow = new EditorWindow(panel, DataWindowTitles.of("Nonlinearity Checks", dataSet), null,
                 false, (JComponent) this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);

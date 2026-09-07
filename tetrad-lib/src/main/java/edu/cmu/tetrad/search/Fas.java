@@ -141,6 +141,15 @@ public class Fas implements IFas {
      */
     @FunctionalInterface
     public interface DeterminismGuard {
+
+        /**
+         * Determines whether a node {@code v} is determined by a set of nodes {@code S}.
+         *
+         * @param v the node to check for determination.
+         * @param S the set of nodes that may determine {@code v}.
+         * @return {@code true} if {@code v} is determined by {@code S}, {@code false} otherwise.
+         * @throws InterruptedException if the operation is interrupted.
+         */
         boolean determines(Node v, Set<Node> S) throws InterruptedException;
     }
 
@@ -154,6 +163,8 @@ public class Fas implements IFas {
      * have been deleted -- it never causes a deletion that wouldn't already have happened, so it
      * cannot introduce the propagating damage a wrongly-accepted deletion produces; it can only
      * decline to (possibly wrongly) delete.
+     *
+     * @param guard the determinism guard to set, or {@code null} to restore the default behavior.
      */
     public void setDeterminismGuard(DeterminismGuard guard) {
         this.determinismGuard = guard;
@@ -162,6 +173,8 @@ public class Fas implements IFas {
     /**
      * Returns every deletion FAS declined to make because of the determinism guard, in the order
      * encountered. Always empty if no guard was set.
+     *
+     * @return a list of blocked deletions, or an empty list if no guard was set.
      */
     public List<BlockedDeletion> getBlocked() {
         return Collections.unmodifiableList(blocked);

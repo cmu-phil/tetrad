@@ -51,15 +51,38 @@ public final class PooledIndependenceWrapper implements IndependenceWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The inner independence wrapper used to construct independence tests for pooled data sets.
+     * This wrapper is encapsulated within the {@code PooledIndependenceWrapper} to delegate
+     * independence testing on individual data sets while maintaining the pooled data operations.
+     * <ul>
+     * <li>Responsible for evaluating independence conditional on given inputs.</li>
+     * <li>Defines the underlying description, data type, and parameters of the test.</li>
+     * <li>Serves as the core component around which the pooled independence tests are built.</li>
+     * </ul>
+     * It is required to be non-null when constructing a {@code PooledIndependenceWrapper}.
+     */
     private final IndependenceWrapper inner;
+    /**
+     * A defensive copy of the default data sets used when none have been registered for the calling thread via
+     * {@link #setThreadDataSets(List)}; all pooled data sets must have the same variables by name.
+     */
     private final List<DataModel> defaultDataSets;
+    /**
+     * A defensive copy of the data sets registered for the calling thread via {@link #setThreadDataSets(List)}; all
+     * pooled data sets must have the same variables by name.
+     */
     private final transient ThreadLocal<List<DataModel>> threadDataSets = new ThreadLocal<>();
 
     /**
      * Constructs a pooled independence wrapper.
      *
-     * @param inner           the test to build for each data set.
-     * @param defaultDataSets the data sets pooled when none are registered for the calling thread.
+     * @param inner           the independence wrapper used to build one test per pooled data set.
+     * @param defaultDataSets the data sets pooled when none have been registered for the calling thread via
+     *                        {@link #setThreadDataSets(List)}; a defensive copy is kept. All pooled data sets must
+     *                        have the same variables by name.
+     * @throws NullPointerException     if {@code inner} is null.
+     * @throws IllegalArgumentException if {@code defaultDataSets} is null or empty.
      */
     public PooledIndependenceWrapper(IndependenceWrapper inner, List<DataModel> defaultDataSets) {
         if (inner == null) throw new NullPointerException("inner");
@@ -69,11 +92,15 @@ public final class PooledIndependenceWrapper implements IndependenceWrapper {
     }
 
     /**
-     * Builds one test per pooled data set and combines them by Fisher's method.
+     * Builds one test per pooled data set and combines them into an {@link IndTestMulti}, which pools the
+     * per-data-set p-values by the method selected with {@link #method(Parameters)} (Fisher's method by default,
+     * or Tippett's). The data sets used are those registered for the calling thread by
+     * {@link #setThreadDataSets(List)}, or the default list given at construction if none are registered.
      *
-     * @param ignored    ignored; the pooled data sets are used instead.
-     * @param parameters the parameters.
-     * @return the pooled test.
+     * @param ignored    ignored; the pooled data sets are used instead of this argument.
+     * @param parameters the parameters, passed through to the inner wrapper for every data set and consulted for
+     *                   {@code Params.POOLED_TEST_METHOD}.
+     * @return the pooled independence test.
      */
     @Override
     public IndependenceTest getTest(DataModel ignored, Parameters parameters) {
@@ -86,11 +113,13 @@ public final class PooledIndependenceWrapper implements IndependenceWrapper {
     }
 
     /**
-     * The combining method selected by {@code Params.POOLED_TEST_METHOD}: "tippett" for Tippett's min-p (Sidak
-     * adjusted), anything else for Fisher's method.
+     * Returns the p-value combining method selected by {@code Params.POOLED_TEST_METHOD}. The value "tippett"
+     * (case-insensitive, surrounding whitespace ignored) selects Tippett's minimum-p method with a Sidak
+     * adjustment; any other value, or no value, selects Fisher's method. Both assume the pooled data sets are
+     * independent of one another.
      *
      * @param parameters the parameters.
-     * @return the method.
+     * @return the combining method.
      */
     public static ResolveSepsets.Method method(Parameters parameters) {
         String name = parameters.getString(Params.POOLED_TEST_METHOD, "fisher");
@@ -98,9 +127,12 @@ public final class PooledIndependenceWrapper implements IndependenceWrapper {
     }
 
     /**
-     * Registers the data sets to pool for tests built on the calling thread; pass null to clear.
+     * Registers the data sets to pool for tests subsequently built on the calling thread, overriding the default
+     * list. The registration is thread-local, so concurrent searches (e.g., bootstrap replicates run in parallel)
+     * can each pool their own resampled data sets through a single shared wrapper. Pass null to clear the
+     * registration and revert to the default list.
      *
-     * @param dataSets the data sets, or null.
+     * @param dataSets the data sets to pool on this thread, or null to clear.
      */
     public void setThreadDataSets(List<DataModel> dataSets) {
         if (dataSets == null) threadDataSets.remove();
@@ -108,22 +140,41 @@ public final class PooledIndependenceWrapper implements IndependenceWrapper {
     }
 
     /**
+     * Returns the independence wrapper that is built on each pooled data set.
+     *
      * @return the inner independence wrapper.
      */
     public IndependenceWrapper getInner() {
         return inner;
     }
 
+    /**
+     * Returns a description of the pooled test, formed by prefixing the inner wrapper's description with "Pooled".
+     *
+     * @return the description.
+     */
     @Override
     public String getDescription() {
         return "Pooled " + inner.getDescription();
     }
 
+    /**
+     * Returns the data type the inner independence wrapper accepts; pooling does not change it.
+     *
+     * @return the data type of the inner independence wrapper.
+     */
     @Override
     public DataType getDataType() {
         return inner.getDataType();
     }
 
+    /**
+     * Returns the names of the parameters the inner independence wrapper uses. The combining method is read from
+     * {@code Params.POOLED_TEST_METHOD}, which is not added to this list here; callers that expose it should add
+     * it themselves.
+     *
+     * @return the parameter names of the inner independence wrapper.
+     */
     @Override
     public List<String> getParameters() {
         return inner.getParameters();

@@ -263,6 +263,11 @@ public class DiscreteBicScore implements DiscreteScore {
 
         int[] myChild = this.data[node];
 
+        // Child values must be remapped to attested-category indices exactly as parent values are below: c is
+        // the number of attested child categories, so indexing n_jk with the raw code overruns the table when a
+        // declared category does not occur in the data (ArrayIndexOutOfBoundsException).
+        Map<Integer, Integer> childCategories = attestedCategories.get(node);
+
         int nUsed = 0;
 
         if (this.testwiseRows == null) {
@@ -275,7 +280,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
                 int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
 
-                n_jk[rowIndex][myChild[i]]++;
+                n_jk[rowIndex][childCategories.get(myChild[i])]++;
                 n_j[rowIndex]++;
                 nUsed++;
             }
@@ -296,7 +301,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
                 int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
 
-                n_jk[rowIndex][myChild[i]]++;
+                n_jk[rowIndex][childCategories.get(myChild[i])]++;
                 n_j[rowIndex]++;
                 nUsed++;
             }

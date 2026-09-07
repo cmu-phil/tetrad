@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.NonlinearityTests;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetrad.util.TMath;
 
@@ -45,6 +46,7 @@ public final class NonlinearityChecks extends JPanel {
 
     private final JButton runButton = new JButton("Check Nonlinearity");
     private final JButton showStatsButton = new JButton("Show Stats");
+    private final JButton plotMatrixButton = new JButton("Plot Matrix");
 
     private final JCheckBox includeCv = new JCheckBox("Include CV (slow)", false);
     private final JCheckBox includeAdditivity = new JCheckBox("Include Additivity (Parents)", false);
@@ -131,7 +133,11 @@ public final class NonlinearityChecks extends JPanel {
         buttons.add(includeCv);
         buttons.add(includeAdditivity);
         buttons.add(showStatsButton);
+        buttons.add(plotMatrixButton);
         showStatsButton.setEnabled(false);
+        plotMatrixButton.setEnabled(false);
+        plotMatrixButton.setToolTipText("Open a plot matrix listing only the variables (X's and Y) of the "
+                + "selected row(s), so the flagged relationship can be inspected visually.");
 
         c.gridx = 0;
         c.gridy = 3;
@@ -209,8 +215,15 @@ public final class NonlinearityChecks extends JPanel {
         notesButton.setFocusable(false);
         notesButton.addActionListener(e -> showFullNotes());
 
+        JButton copyTableButton = new JButton("Copy Table");
+        copyTableButton.setFocusable(false);
+        copyTableButton.setToolTipText("Copy the results table to the clipboard as tab-separated "
+                + "text, for pasting into a spreadsheet or document.");
+        copyTableButton.addActionListener(e -> copyTableToClipboard(copyTableButton));
+
         JPanel notesButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 6));
         notesButtonPanel.setOpaque(false);
+        notesButtonPanel.add(copyTableButton);
         notesButtonPanel.add(notesButton);
 
         JPanel footer = new JPanel(new BorderLayout());
@@ -276,10 +289,13 @@ public final class NonlinearityChecks extends JPanel {
     private void wireEvents() {
         runButton.addActionListener(e -> runChecks());
         showStatsButton.addActionListener(e -> showStats());
+        plotMatrixButton.addActionListener(e -> showPlotMatrix());
 
         table.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
-            showStatsButton.setEnabled(table.getSelectedRow() >= 0 && tableModel.getRowCount() > 0);
+            boolean hasSelection = table.getSelectedRow() >= 0 && tableModel.getRowCount() > 0;
+            showStatsButton.setEnabled(hasSelection);
+            plotMatrixButton.setEnabled(hasSelection);
         });
     }
 
@@ -663,7 +679,7 @@ public final class NonlinearityChecks extends JPanel {
                 : xs.stream().map(Node::getName).collect(Collectors.joining(", "));
         String yLabel = y.getName();
 
-        return new ResultRow(index, xLabel, yLabel, reset, cv, mom, add, addit);//, addNoise);
+        return new ResultRow(index, xs, y, xLabel, yLabel, reset, cv, mom, add, addit);//, addNoise);
     }
 
     private double[] col(Node v) {
@@ -858,8 +874,50 @@ public final class NonlinearityChecks extends JPanel {
         return sets;
     }
 
-    private void showStats() {
+    /**
+     * Returns the model index of the lead selected table row, or -1 if nothing is selected. The table has a row
+     * sorter, so view indices must be converted before indexing the model.
+     */
+    private int selectedModelRow() {
         int r = table.getSelectedRow();
+        if (r < 0) return -1;
+        return table.convertRowIndexToModel(r);
+    }
+
+    /**
+     * Opens a plot matrix over the variables appearing in the selected row(s): the union of the X's and Y of each
+     * selected row, preselected on both axes. The plot matrix's row/column selectors list only these variables.
+     */
+    private void showPlotMatrix() {
+        int[] viewRows = table.getSelectedRows();
+        if (viewRows.length == 0 || tableModel.getRowCount() == 0) return;
+
+        Set<String> seen = new LinkedHashSet<>();
+        List<Node> vars = new ArrayList<>();
+        for (int vr : viewRows) {
+            ResultRow row = tableModel.getRow(table.convertRowIndexToModel(vr));
+            List<Node> rowVars = new ArrayList<>(row.xs);
+            rowVars.add(row.y);
+            for (Node v : rowVars) {
+                if (seen.add(v.getName())) vars.add(v);
+            }
+        }
+
+        if (vars.isEmpty()) return;
+
+        String title = (viewRows.length == 1)
+                ? "Plot Matrix: Row #" + tableModel.getRow(table.convertRowIndexToModel(viewRows[0])).index
+                : "Plot Matrix: " + viewRows.length + " rows";
+
+        PlotMatrix panel = new PlotMatrix(dataSet, vars, vars, vars);
+        EditorWindow editorWindow = new EditorWindow(panel, title, null, false, this);
+        DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+        editorWindow.pack();
+        editorWindow.setVisible(true);
+    }
+
+    private void showStats() {
+        int r = selectedModelRow();
         if (r < 0) return;
 
         ResultRow row = tableModel.getRow(r);
@@ -883,6 +941,39 @@ public final class NonlinearityChecks extends JPanel {
     }
 
     // ---------------- table model ----------------
+
+    /**
+     * Copies the results table (header plus all rows, in current model order) to the system
+     * clipboard as tab-separated text, and briefly flashes "Copied" on the given button as
+     * feedback. Cell values are the same formatted strings shown in the table.
+     */
+    private void copyTableToClipboard(JButton feedback) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int c = 0; c < tableModel.getColumnCount(); c++) {
+            if (c > 0) sb.append('\t');
+            sb.append(tableModel.getColumnName(c));
+        }
+        sb.append('\n');
+
+        for (int r = 0; r < tableModel.getRowCount(); r++) {
+            for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                if (c > 0) sb.append('\t');
+                Object v = tableModel.getValueAt(r, c);
+                sb.append(v == null ? "" : v.toString());
+            }
+            sb.append('\n');
+        }
+
+        java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                .setContents(new java.awt.datatransfer.StringSelection(sb.toString()), null);
+
+        String label = feedback.getText();
+        feedback.setText("Copied");
+        javax.swing.Timer t = new javax.swing.Timer(1200, ev -> feedback.setText(label));
+        t.setRepeats(false);
+        t.start();
+    }
 
     private final class ResultsTableModel extends AbstractTableModel {
         private final String[] cols = {"#", "X", "Y", "RESET", "CV", "Moment", "Additive", "Additivity (Parents)"};//, "Additive Noise"}; // NEW
@@ -949,6 +1040,8 @@ public final class NonlinearityChecks extends JPanel {
 
     private static final class ResultRow {
         final int index;
+        final List<Node> xs;
+        final Node y;
         final String xLabel;
         final String yLabel;
         final NonlinearityTests.TestResult reset;
@@ -957,7 +1050,7 @@ public final class NonlinearityChecks extends JPanel {
         final NonlinearityTests.TestResult additive;
         final NonlinearityTests.TestResult additivity;
 
-        ResultRow(int index, String xLabel, String yLabel,
+        ResultRow(int index, List<Node> xs, Node y, String xLabel, String yLabel,
                   NonlinearityTests.TestResult reset,
                   NonlinearityTests.TestResult cv,
                   NonlinearityTests.TestResult moment,
@@ -965,6 +1058,8 @@ public final class NonlinearityChecks extends JPanel {
                   NonlinearityTests.TestResult additivity
         ) {
             this.index = index;
+            this.xs = List.copyOf(xs);
+            this.y = y;
             this.xLabel = xLabel;
             this.yLabel = yLabel;
             this.reset = reset;

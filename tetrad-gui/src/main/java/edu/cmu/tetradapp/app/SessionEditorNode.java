@@ -282,7 +282,6 @@ public final class SessionEditorNode extends DisplayNode {
             @Override
             public void watch() throws InterruptedException {
 
-
                 try {
 
                     // If there is already an editor open, don't launch another one.
@@ -290,64 +289,23 @@ public final class SessionEditorNode extends DisplayNode {
                         return;
                     }
 
+                    // Model creation (the potentially long-running part) happens here, on the
+                    // watched background thread.
                     boolean created = createModel(false);
 
                     if (!created) {
                         return;
                     }
 
-                    SessionNode sessionNode = getSessionNode();
-                    boolean cloned = sessionNode.useClonedModel();
-
-                    SessionModel model = sessionNode.getModel();
-                    Class<?> modelClass = model.getClass();
-                    SessionNodeModelConfig modelConfig = getConfig().getModelConfig(modelClass);
-
-                    Object[] arguments = {model};
-                    JPanel editor = modelConfig.getEditorInstance(arguments);
-                    addEditorListener(editor);
-
-                    ModificationRegistery.registerEditor(sessionNode, editor);
-
-                    String descrip = modelConfig.name();
-                    editor.setName(getName() + " (" + descrip + ")");
-
-                    EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Done", cloned, getThis());
-    
-                    editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
-                        @Override
-                        public void internalFrameClosing(InternalFrameEvent e) {
-                            if (getChildren().iterator().hasNext()) {
-                                finishedEditingDialog();
-                            }
-
-                            ModificationRegistery.unregisterSessionNode(
-                                    sessionNode);
-                            SessionEditorNode.this.spawnedEditor = null;
-
-                            EditorWindow window = (EditorWindow) e.getSource();
-                            if (window.isCanceled() && cloned) {
-                                sessionNode.restoreOriginalModel();
-                            }
-
-                            sessionNode.forgetSavedModel();
-                        }
-                    });
-
-                    DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                    editorWindow.pack();
-                    editorWindow.setVisible(true);
-                    setSpawnedEditor(editorWindow);
-
-                    if (getSessionWrapper() != null) {
-                        getSessionWrapper().setSessionChanged(true);
-                    }
+                    // Everything from here on is Swing work -- editor construction, window
+                    // realization, and display -- and must run on the event dispatch thread.
+                    // Doing it on this background thread (as this code previously did) violates
+                    // Swing's single-thread rule and can deadlock the EDT against the AWT tree
+                    // lock, freezing the UI including the "Processing (click to stop)" dialog.
+                    SwingUtilities.invokeLater(() -> launchEditorOnEdt());
                 } catch (CouldNotCreateModelException e) {
-                    SessionUtils.showPermissibleParentsDialog(e.getModelClass(),
-                            getThis(), true, true);
-                    e.printStackTrace();
-
-                } catch (ClassCastException e) {
+                    SwingUtilities.invokeLater(() -> SessionUtils.showPermissibleParentsDialog(
+                            e.getModelClass(), getThis(), true, true));
                     e.printStackTrace();
                 } catch (Exception e) {
                     Throwable cause = e;
@@ -356,18 +314,92 @@ public final class SessionEditorNode extends DisplayNode {
                         cause = cause.getCause();
                     }
 
-                    Component centeringComp = getThis();
                     String s = cause.getMessage();
 
-                    if (!"".equals(s)) {
-                        JOptionPane.showMessageDialog(centeringComp, s,
-                                null, JOptionPane.WARNING_MESSAGE);
+                    if (s != null && !"".equals(s)) {
+                        String message = s;
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                                getThis(), message, null, JOptionPane.WARNING_MESSAGE));
                     }
 
                     e.printStackTrace();
                 }
             }
         };
+    }
+
+    /**
+     * Builds and shows the editor window for this node's model. Must be called on the event
+     * dispatch thread; the model itself has already been created on the watched background
+     * thread.
+     */
+    private void launchEditorOnEdt() {
+        try {
+            SessionNode sessionNode = getSessionNode();
+            boolean cloned = sessionNode.useClonedModel();
+
+            SessionModel model = sessionNode.getModel();
+            Class<?> modelClass = model.getClass();
+            SessionNodeModelConfig modelConfig = getConfig().getModelConfig(modelClass);
+
+            Object[] arguments = {model};
+            JPanel editor = modelConfig.getEditorInstance(arguments);
+            addEditorListener(editor);
+
+            ModificationRegistery.registerEditor(sessionNode, editor);
+
+            String descrip = modelConfig.name();
+            editor.setName(getName() + " (" + descrip + ")");
+
+            EditorWindow editorWindow = new EditorWindow(editor, editor.getName(), "Done", cloned, getThis());
+
+            editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
+                @Override
+                public void internalFrameClosing(InternalFrameEvent e) {
+                    if (getChildren().iterator().hasNext()) {
+                        finishedEditingDialog();
+                    }
+
+                    ModificationRegistery.unregisterSessionNode(
+                            sessionNode);
+                    SessionEditorNode.this.spawnedEditor = null;
+
+                    EditorWindow window = (EditorWindow) e.getSource();
+                    if (window.isCanceled() && cloned) {
+                        sessionNode.restoreOriginalModel();
+                    }
+
+                    sessionNode.forgetSavedModel();
+                }
+            });
+
+            DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+            editorWindow.pack();
+            editorWindow.setVisible(true);
+            setSpawnedEditor(editorWindow);
+
+            if (getSessionWrapper() != null) {
+                getSessionWrapper().setSessionChanged(true);
+            }
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            Throwable cause = e;
+
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+
+            Component centeringComp = getThis();
+            String s = cause.getMessage();
+
+            if (s != null && !"".equals(s)) {
+                JOptionPane.showMessageDialog(centeringComp, s,
+                        null, JOptionPane.WARNING_MESSAGE);
+            }
+
+            e.printStackTrace();
+        }
     }
 
     private JComponent getThis() {

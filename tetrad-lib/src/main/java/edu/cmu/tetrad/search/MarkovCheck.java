@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.harness.GraphoidClosureHarness;
 import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.search.utils.GraphoidAxioms;
+import edu.cmu.tetrad.search.utils.PerFactEss;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
@@ -104,6 +105,27 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * True if the checks should be parallelized. (Not always a good idea.)
      */
     private boolean parallelized = false;
+    /**
+     * True if each implied fact should be tested at its own block-based effective sample size
+     * (see {@link PerFactEss}). When enabled, fact evaluation is forced sequential, since the
+     * effective sample size is set on the shared test per fact.
+     */
+    private boolean perFactEss = false;
+    /**
+     * Row-to-block assignment for per-fact effective sample sizes; may be set directly or
+     * derived lazily from {@link #essBlockColumns}.
+     */
+    private int[] essBlockIds = null;
+    /**
+     * Column names whose distinct joint values define the blocks for per-fact effective sample
+     * sizes.
+     */
+    private java.util.List<String> essBlockColumns = null;
+    /**
+     * Cache of per-fact effective sample sizes (same fact always maps to the same value).
+     */
+    private final transient java.util.Map<IndependenceFact, Integer> essCache =
+            new java.util.concurrent.ConcurrentHashMap<>();
     /**
      * The fraction of dependent judgments for the independent case.
      */
@@ -2216,6 +2238,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
 //                    }
                 }
 
+                if (perFactEss && independenceTest instanceof EffectiveSampleSizeSettable) {
+                    ((EffectiveSampleSizeSettable) independenceTest)
+                            .setEffectiveSampleSize(perFactEffectiveSampleSize(fact));
+                }
+
                 addResult(resultsIndep, resultsDep, fact, x, y, z);
                 return new Pair<>(resultsIndep, resultsDep);
             }
@@ -2261,6 +2288,9 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 }
             }
         }
+
+        // Per-fact ESS mutates shared test state per fact, so evaluation must be sequential.
+        boolean parallelized = this.parallelized && !this.perFactEss;
 
         List<Callable<Pair<Set<IndependenceResult>, Set<IndependenceResult>>>> tasks = new ArrayList<>();
 
@@ -2721,6 +2751,72 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         }
 
         ((EffectiveSampleSizeSettable) independenceTest).setEffectiveSampleSize(sampleSize);
+    }
+
+    /**
+     * Sets whether each implied fact is tested at its own block-based effective sample size (see
+     * {@link PerFactEss}). Requires block structure to have been given via
+     * {@link #setEssBlockColumns(java.util.List)} or {@link #setEssBlockIds(int[])} before
+     * results are generated, an independence test that implements
+     * {@link EffectiveSampleSizeSettable}, and tabular data. When enabled, fact evaluation is
+     * forced sequential, and any globally set effective sample size is overridden per fact.
+     *
+     * @param perFactEss True to enable per-fact effective sample sizes.
+     */
+    public void setPerFactEss(boolean perFactEss) {
+        if (perFactEss) {
+            if (!(independenceTest instanceof EffectiveSampleSizeSettable)) {
+                throw new IllegalArgumentException(
+                        "Per-fact ESS requires an independence test that supports setting the "
+                        + "effective sample size; " + independenceTest.getClass().getSimpleName()
+                        + " does not.");
+            }
+            if (!(independenceTest.getData() instanceof edu.cmu.tetrad.data.DataSet)) {
+                throw new IllegalArgumentException("Per-fact ESS requires tabular data.");
+            }
+        }
+        this.perFactEss = perFactEss;
+        this.essCache.clear();
+    }
+
+    /**
+     * Sets the columns whose distinct joint values define the blocks for per-fact effective
+     * sample sizes (e.g., design or grouping variables identified by the data audit).
+     *
+     * @param essBlockColumns The block-defining column names.
+     */
+    public void setEssBlockColumns(java.util.List<String> essBlockColumns) {
+        this.essBlockColumns = essBlockColumns == null ? null : new ArrayList<>(essBlockColumns);
+        this.essBlockIds = null;
+        this.essCache.clear();
+    }
+
+    /**
+     * Sets the row-to-block assignment for per-fact effective sample sizes directly.
+     *
+     * @param essBlockIds One block id per row of the data.
+     */
+    public void setEssBlockIds(int[] essBlockIds) {
+        this.essBlockIds = essBlockIds == null ? null : essBlockIds.clone();
+        this.essBlockColumns = null;
+        this.essCache.clear();
+    }
+
+    /**
+     * The per-fact effective sample size for the given fact (cached; same fact always maps to
+     * the same value).
+     */
+    private synchronized int perFactEffectiveSampleSize(IndependenceFact fact) {
+        edu.cmu.tetrad.data.DataSet data = (edu.cmu.tetrad.data.DataSet) this.independenceTest.getData();
+        if (this.essBlockIds == null && this.essBlockColumns != null) {
+            this.essBlockIds = PerFactEss.blockIds(data, this.essBlockColumns);
+        }
+        if (this.essBlockIds == null) {
+            throw new IllegalStateException("Per-fact ESS is enabled, but no block structure has "
+                    + "been given; call setEssBlockColumns or setEssBlockIds first.");
+        }
+        return this.essCache.computeIfAbsent(fact,
+                f -> PerFactEss.effectiveSampleSize(data, this.essBlockIds, f));
     }
 
     /**

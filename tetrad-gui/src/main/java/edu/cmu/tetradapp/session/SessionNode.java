@@ -1737,7 +1737,13 @@ public class SessionNode implements Node {
                 }
 
                 if (_objects.isEmpty()) {
-                    return;
+                    // No argument matches this constructor's array type; move on to the other constructors
+                    // rather than giving up on the whole model. (Returning here made a parentless node's
+                    // fate depend on the reflection order of the constructors: e.g. KnowledgeBoxModel has both
+                    // (KnowledgeBoxInput[], Parameters) and (Parameters), and if the array form was listed
+                    // first the (Parameters) form was never tried, so a knowledge box with no parents could
+                    // not be opened on some JVMs.)
+                    continue;
                 }
 
                 if (parameters != null) {
@@ -1829,8 +1835,13 @@ public class SessionNode implements Node {
 
             if (constructorTypes.length == 2) {
                 if (constructorTypes[0].isArray() && constructorTypes[1] == Parameters.class) {
+                    // An array-form constructor needs at least one parent of the array's element type. If
+                    // this one doesn't fit, go on to the class's other constructors rather than rejecting
+                    // the class: e.g. KnowledgeBoxModel also has a (Parameters) constructor, which is what
+                    // makes a knowledge box with no parents legal, and whether that constructor was ever
+                    // examined used to depend on the (unspecified) order in which reflection lists them.
                     if (this.parents != null && this.parents.size() == 0) {
-                        return false;
+                        continue L;
                     }
 
                     for (Class[] parentClass : parentClasses) {
@@ -1847,7 +1858,7 @@ public class SessionNode implements Node {
                         }
 
                         if (!found) {
-                            return false;
+                            continue L;
                         }
                     }
 

@@ -78,7 +78,7 @@ import java.util.*;
  *   <li>Colombo, D., &amp; Maathuis, M. H. (2014).
  *       Order-independent constraint-based causal structure learning.
  *       <i>Journal of Machine Learning Research</i>, 15, 3741–3782.</li>
- *   <li>Ramsey, J. D., Spirtes, P., &amp; Zhang, J. (2012).
+ *   <li>Ramsey, J., Zhang, J., &amp; Spirtes, P. (2006).
  *       Adjacency-faithfulness and conservative causal inference.
  *       <i>Proceedings of UAI</i>.</li>
  * </ul>
@@ -344,24 +344,37 @@ public class PcAR implements IGraphSearch {
     public record MarkovAuditFailure(Node x, Node y, Set<Node> conditioningSet, double pValue) {
     }
 
-    /**
-     * PcAR reuses {@link Fas.DeterminismGuard} rather than defining its own: the same guard is now
-     * forwarded to the internal {@link Fas} instance (see {@link #search(List)}), so a single guard
-     * wired once via {@link #setDeterminismGuard} covers both places determinism matters -- the
-     * adjacency phase, where it can decline a contaminated deletion outright (Clark's note, "Two
-     * Detection Tiers...", Aug 15 2026: "the determinism guard is placed where it can only add
-     * edges"), and this class's own clash pass, where it still gates which flagged pairs get
-     * treated as candidate cancellations. Previously this class defined its own structurally
-     * identical interface and only ever applied it downstream of FAS, which the note correctly
-     * identified as unable to prevent a contaminated deletion FAS had already made before this
-     * class's search() even runs.
-     */
+    // Note on the determinism guard: PcAR reuses Fas.DeterminismGuard rather than defining its own.
+    // The same guard is forwarded to the internal Fas instance (see search(List)), so a single guard
+    // wired once via setDeterminismGuard covers both places determinism matters -- the adjacency
+    // phase, where it can decline a contaminated deletion outright (Clark's note, "Two Detection
+    // Tiers...", Aug 15 2026: "the determinism guard is placed where it can only add edges"), and
+    // this class's own clash pass, where it still gates which flagged pairs get treated as
+    // candidate cancellations. Previously this class defined its own structurally identical
+    // interface and only ever applied it downstream of FAS, which the note correctly identified as
+    // unable to prevent a contaminated deletion FAS had already made before search() even runs.
+
     /**
      * Functional hook supplying posterior odds that a flagged deletion is a genuine edge, for the
-     * RECOVER decision. No default is wired; see class javadoc.
+     * RECOVER decision. No default is wired; see the class javadoc and
+     * {@link DiscriminatingTestOddsEstimator} for an implementation of the paper's factorization.
      */
     @FunctionalInterface
     public interface RecoveryOddsEstimator {
+
+        /**
+         * Returns the posterior odds that the deleted pair (x, y) is a genuine edge, given the clash that flagged
+         * it. The result is compared against the threshold set by {@link #setRecoveryOddsThreshold(double)}; the
+         * edge is reinstated when {@code odds >= threshold}. Returning NaN is a valid way to say "no opinion":
+         * NaN never satisfies the comparison, so the deletion is marked but not recovered.
+         *
+         * @param x      one endpoint of the deleted pair.
+         * @param y      the other endpoint of the deleted pair.
+         * @param z      the pivot of the unshielded triple whose orientation clash flagged the pair.
+         * @param sepset the separating set FAS recorded for (x, y).
+         * @return the posterior odds (a nonnegative ratio, not a probability), or NaN if not computable.
+         * @throws InterruptedException if the calling thread is interrupted while running a test.
+         */
         double posteriorOdds(Node x, Node y, Node z, Set<Node> sepset) throws InterruptedException;
     }
 
@@ -396,6 +409,10 @@ public class PcAR implements IGraphSearch {
      * is certain," and clamping it to 1 would silently assert a confidence the bound doesn't
      * support. Callers (including {@link #paperCancellationBaseRateOdds}) should treat NaN as "this
      * estimator doesn't apply at this n," not as a large or small odds value.
+     *
+     * @param n the sample size.
+     * @return the base-rate probability {@code q_cancel(n)} in (0, 1), or NaN if the bound does not apply at
+     * this n.
      */
     public static double paperCancellationBaseRate(int n) {
         if (n <= 3) return Double.NaN;
@@ -419,6 +436,9 @@ public class PcAR implements IGraphSearch {
      * compared against any {@link #recoveryOddsThreshold} in {@code x >= threshold} form is always
      * false in Java, so this correctly falls back to MARK behavior rather than throwing or
      * producing a nonsensical negative "odds" from {@code q/(1-q)} with q &gt;= 1.
+     *
+     * @param n the sample size.
+     * @return the base-rate odds {@code q/(1-q)}, or NaN if {@link #paperCancellationBaseRate(int)} is NaN.
      */
     public static double paperCancellationBaseRateOdds(int n) {
         double q = paperCancellationBaseRate(n);
@@ -471,14 +491,30 @@ public class PcAR implements IGraphSearch {
         private final int sampleSize;
 
         /**
-         * @param test the test to run the discriminating re-test with; sample size for the
-         *             base-rate term is taken from {@code test.getSampleSize()}
+         * Constructs the estimator.
+         *
+         * @param test the test to run the discriminating re-test with; the sample size for the base-rate term
+         *             is taken from {@code test.getSampleSize()}. Ordinarily this is the same test the search
+         *             uses.
          */
         public DiscriminatingTestOddsEstimator(IndependenceTest test) {
             this.test = test;
             this.sampleSize = test.getSampleSize();
         }
 
+        /**
+         * Computes base-rate odds times the Vovk-Sellke likelihood-ratio bound from the discriminating test of
+         * (x, y) given the sepset with the pivot's membership toggled; see the class javadoc for the derivation
+         * and its limits.
+         *
+         * @param x      one endpoint of the deleted pair.
+         * @param y      the other endpoint of the deleted pair.
+         * @param z      the pivot of the flagging triple, whose membership in the sepset is toggled for the re-test.
+         * @param sepset the separating set FAS recorded for (x, y).
+         * @return the posterior odds, or NaN if the sample size is too small for the base-rate bound (in which
+         * case the caller falls back to MARK).
+         * @throws InterruptedException if the calling thread is interrupted while running the re-test.
+         */
         @Override
         public double posteriorOdds(Node x, Node y, Node z, Set<Node> sepset) throws InterruptedException {
             double baseOdds = paperCancellationBaseRateOdds(sampleSize);
@@ -515,6 +551,17 @@ public class PcAR implements IGraphSearch {
      */
     @FunctionalInterface
     public interface MarkovAuditor {
+
+        /**
+         * Audits a finished graph: enumerates (some or all of) the conditional independencies the graph implies,
+         * tests each afresh against the data, and returns those the data reject.
+         *
+         * @param g    the graph to audit (as oriented so far; under RECOVER_CORROBORATED this is called on the
+         *             pre-Meek graph inside the rescue loop as well as on the final graph).
+         * @param test the independence test to use for the fresh checks.
+         * @return the implied independencies that failed, in a deterministic order; empty if none did.
+         * @throws InterruptedException if the calling thread is interrupted while testing.
+         */
         List<MarkovAuditFailure> audit(Graph g, IndependenceTest test) throws InterruptedException;
     }
 
@@ -531,6 +578,8 @@ public class PcAR implements IGraphSearch {
 
     /**
      * Sets what to do with a tier-1 clash positive. Default {@link RescueAction#MARK}.
+     *
+     * @param action the rescue action.
      */
     public void setRescueAction(RescueAction action) {
         this.rescueAction = action;
@@ -538,7 +587,10 @@ public class PcAR implements IGraphSearch {
 
     /**
      * Sets the posterior-odds threshold at or above which a clash triggers RECOVER rather than
-     * MARK. Meaningless unless a {@link RecoveryOddsEstimator} is also set.
+     * MARK. Meaningless unless a {@link RecoveryOddsEstimator} is also set. Default positive infinity, so
+     * RECOVER behaves like MARK until both an estimator and a finite threshold are supplied.
+     *
+     * @param threshold the odds threshold; the edge is reinstated when the estimator's odds are &gt;= this.
      */
     public void setRecoveryOddsThreshold(double threshold) {
         this.recoveryOddsThreshold = threshold;
@@ -554,6 +606,8 @@ public class PcAR implements IGraphSearch {
      * since nothing changes for a later pass to act on. There is no guarantee of monotone
      * convergence in R, which is exactly why this is a bounded loop rather than a while-until-fixed-point
      * one; a larger R costs more search time for potentially no additional detections.
+     *
+     * @param r the maximum number of passes; values below 1 are treated as 1.
      */
     public void setMaxRescuePasses(int r) {
         this.maxRescuePasses = r;
@@ -566,6 +620,8 @@ public class PcAR implements IGraphSearch {
      * pair that already made it into the skeleton some other way -- e.g. from a differently
      * configured upstream search whose graph was handed in some other way -- is still checked here
      * too). See class javadoc.
+     *
+     * @param guard the guard, or null for none (the default).
      */
     public void setDeterminismGuard(Fas.DeterminismGuard guard) {
         this.determinismGuard = guard;
@@ -574,6 +630,8 @@ public class PcAR implements IGraphSearch {
     /**
      * Supplies the posterior-odds calculation (base rate x likelihood ratio, Sec. 14) used for
      * the MARK/RECOVER decision. See class javadoc.
+     *
+     * @param estimator the estimator, or null for none (the default), in which case RECOVER behaves like MARK.
      */
     public void setRecoveryOddsEstimator(RecoveryOddsEstimator estimator) {
         this.recoveryOddsEstimator = estimator;
@@ -581,7 +639,10 @@ public class PcAR implements IGraphSearch {
 
     /**
      * Supplies a real Markov-audit implication pass over the finished graph. Without this only
-     * the built-in non-collider-triple sanity check runs.
+     * the built-in non-collider-triple sanity check runs, and {@link RescueAction#RECOVER_CORROBORATED} can never
+     * corroborate anything.
+     *
+     * @param auditor the auditor, or null for none (the default).
      */
     public void setMarkovAuditor(MarkovAuditor auditor) {
         this.markovAuditor = auditor;
@@ -590,6 +651,8 @@ public class PcAR implements IGraphSearch {
     /**
      * Returns every tier-1 positive recorded during the last {@link #search()} call, in the order
      * detected. Empty if {@link RescueAction#OFF} or before search() has run.
+     *
+     * @return an unmodifiable list of contested deletions.
      */
     public List<ContestedDeletion> getContestedDeletions() {
         return Collections.unmodifiableList(contestedDeletions);
@@ -601,6 +664,8 @@ public class PcAR implements IGraphSearch {
      * {@link #getContestedDeletions()}: these name present adjacencies, not deleted pairs, and are
      * never acted on by {@link RescueAction}. Empty if {@link RescueAction#OFF} or before search()
      * has run.
+     *
+     * @return an unmodifiable list of orientation clashes.
      */
     public List<OrientationClash> getOrientationClashes() {
         return Collections.unmodifiableList(orientationClashes);
@@ -609,6 +674,8 @@ public class PcAR implements IGraphSearch {
     /**
      * Returns the diagnostic Markov-audit flags from the last {@link #search()} call. See class
      * javadoc: these are not auto-traced to a recoverable edge.
+     *
+     * @return an unmodifiable list of audit failures from the final audit of the returned graph.
      */
     public List<MarkovAuditFailure> getMarkovAuditFailures() {
         return Collections.unmodifiableList(markovAuditFailures);
@@ -622,6 +689,8 @@ public class PcAR implements IGraphSearch {
      * {@link #getMarkovAuditFailures()} (an implied independence the finished graph entails that
      * the data rejected). Always empty if no {@link #setDeterminismGuard} was set, or before
      * search() has run.
+     *
+     * @return the blocked deletions recorded by the adjacency phase.
      */
     public List<Fas.BlockedDeletion> getBlockedDeletions() {
         return fas == null ? Collections.emptyList() : fas.getBlocked();
@@ -640,6 +709,8 @@ public class PcAR implements IGraphSearch {
      * evidence, not the suspect region, and including them on the two ground-truth runs would have
      * pulled in most of the graph, defeating the point of seeding. Empty before {@link #search()}
      * has run. Deduplicated by node identity, ordered by first appearance.
+     *
+     * @return the implicated vertices, as a new insertion-ordered set.
      */
     public Set<Node> implicatedVertices() {
         Set<Node> out = new LinkedHashSet<>();
@@ -665,9 +736,11 @@ public class PcAR implements IGraphSearch {
     }
 
     /**
-     * Constructs a new instance of the PcAR algorithm with the specified independence test.
+     * Constructs a new instance of the PcAR algorithm with the specified independence test. All rescue machinery
+     * starts at its defaults: {@link RescueAction#MARK}, one rescue pass, and no determinism guard, odds estimator,
+     * or Markov auditor, so out of the box the search behaves as PC plus diagnostics.
      *
-     * @param test the independence test to be used by the algorithm
+     * @param test the independence test to be used by the algorithm; its variables are the search's variables.
      */
     public PcAR(IndependenceTest test) {
         this.test = test;
@@ -749,7 +822,8 @@ public class PcAR implements IGraphSearch {
      * Sets the timeout duration for this instance, specifying the maximum time (in milliseconds) the algorithm or
      * operation is permitted to run.
      *
-     * @param timeoutMs the timeout duration in milliseconds. A value of 0 or a negative number may indicate no timeout
+     * @param timeoutMs the timeout duration in milliseconds, measured from the start of {@link #search()}; a
+     *                  negative value (the default, -1) means no timeout. Zero is a real, immediate timeout
      *                  (depending on implementation).
      */
     public void setTimeoutMs(long timeoutMs) {
@@ -821,13 +895,22 @@ public class PcAR implements IGraphSearch {
     }
 
     /**
-     * Performs a search to generate a graph structure based on the provided list of nodes. Executes a three-step
-     * process: skeleton construction using the Fast Adjacency Search (FAS), orientation of unshielded triples as
-     * colliders, and application of Meek rules to ensure proper edge orientations.
+     * Performs the search over the given nodes. The steps are: (1) skeleton construction with the internal
+     * {@link Fas} (forwarding knowledge, depth, stability, and the determinism guard, if any); (2) collider
+     * orientation of unshielded triples by the configured {@link ColliderOrientationStyle}; (3) unless the rescue
+     * action is {@link RescueAction#OFF}, up to {@link #setMaxRescuePasses(int)} passes of clash detection over
+     * the oriented-but-pre-Meek graph, each of which records {@link ContestedDeletion}s and
+     * {@link OrientationClash}es and, under RECOVER or RECOVER_CORROBORATED, may reinstate edges and re-run
+     * collider orientation (the loop stops early after a pass that recovers nothing); (4) Meek's rules to closure,
+     * respecting knowledge; (5) a final Markov audit whose failures are available from
+     * {@link #getMarkovAuditFailures()}. All diagnostic lists are cleared at the start of each call.
      *
-     * @param nodes the list of nodes to be used as input for the search algorithm
-     * @return the resulting graph structure after the search process is completed
-     * @throws InterruptedException if the thread executing the search is interrupted
+     * @param nodes the variables to search over; must be exactly the test's variables.
+     * @return the resulting graph: a CPDAG when no edge was recovered, and otherwise a PDAG whose extra
+     * adjacencies come from the rescue passes.
+     * @throws InterruptedException     if the thread is interrupted or the timeout set by {@link #setTimeoutMs(long)}
+     *                                  expires.
+     * @throws IllegalArgumentException if {@code nodes} does not match the test's variables.
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
         checkVars(nodes);
@@ -1266,6 +1349,11 @@ public class PcAR implements IGraphSearch {
         return out;
     }
 
+    /**
+     * Returns the independence test this search uses.
+     *
+     * @return the independence test.
+     */
     public IndependenceTest getTest() { return test; }
 
 
@@ -1668,26 +1756,28 @@ public class PcAR implements IGraphSearch {
     // ------------------------------------------------------------
 
     /**
-     * An enumeration that defines the styles of collider orientation in a graph or network.
-     * This enumeration can be used in algorithms or systems that deal with graph structures,
-     * providing different approaches to orienting colliders.
+     * How unshielded triples x - z - y with x and y nonadjacent are decided to be colliders. Regardless of the
+     * style chosen here, the clash-detection pass always examines all candidate sepsets CPC-style; this setting
+     * governs only the orientation written into the returned graph.
      */
     public enum ColliderOrientationStyle {
 
         /**
-         * Represents the collider orientation style that utilizes separating sets (sepsets).
-         * This style is typically employed in graph or network algorithms where colliders
-         * are oriented based on separation properties derived from conditional independencies.
+         * Original PC: orient x -&gt; z &lt;- y iff z is not in the separating set FAS recorded for (x, y).
          */
         SEPSETS,
 
         /**
-         * Represents the collider orientation style for the Conservative PC algorithm.
+         * Conservative PC (Ramsey, Zhang, Spirtes 2006): test all subsets of the adjacents of x and of y; orient as a
+         * collider only if z is in no separating set, as a noncollider only if z is in every separating set, and
+         * leave the triple unoriented (ambiguous) otherwise.
          */
         CONSERVATIVE,
 
         /**
-         * Represents the collider orientation style for the PC-Max algorithm.
+         * PC-Max (Ramsey 2016): among all candidate separating sets, take the one with the largest p-value; orient
+         * as a collider iff z is not in it. See {@link #setMaxPGlobalOrder(boolean)} and
+         * {@link #setMaxPDepthStratified(boolean)} for the order-independent variants.
          */
         MAX_P }
 

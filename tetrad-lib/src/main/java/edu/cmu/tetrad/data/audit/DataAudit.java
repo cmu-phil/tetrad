@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -95,6 +96,47 @@ public final class DataAudit {
                     + "Tetrad GUI) tests the conditional mean E(Y|X) directly and reports whether the effects of "
                     + "several parents combine additively, which distinguishes these cases; note that its verdicts "
                     + "are direction-relative, so both regression directions are informative.";
+
+    /**
+     * The note attached by {@link #notes()} when at least one {@link FindingCode#SERIAL_DEPENDENCE} finding fired
+     * and the check was computed pooled, without a serial grouping variable.
+     * <p>
+     * File-order dependence has two distinct causes with the same signature. The rows may carry genuine serial
+     * structure - a time series or spatial sequence - in which case the dependence is a property of the process.
+     * Or the file may be sorted by block: rows grouped by subject, configuration, or condition, with within-block
+     * homogeneity masquerading as autocorrelation. Variables constant within blocks read as near-1 lag-1
+     * autocorrelation in file order, and smooth within-block sweeps read as strong positive dependence, without any
+     * temporal process at all. The pooled check does not separate these; recomputing the check within groups (via
+     * the serial grouping variable) does - under the block reading the within-group autocorrelations collapse and
+     * block-constant variables are skipped, while under the serial reading the dependence survives grouping. The
+     * two readings point at different downstream treatments, so the distinction matters before acting on the
+     * finding.
+     */
+    public static final String SERIAL_DEPENDENCE_NOTE =
+            "Serial dependence in file order was flagged with no serial grouping variable configured. This "
+                    + "signature has two distinct causes: genuine serial structure (a time series or spatial "
+                    + "sequence), or a file sorted by block (rows grouped by subject, configuration, or condition), "
+                    + "where within-block homogeneity masquerades as autocorrelation. If a discrete variable "
+                    + "identifies the blocks, recomputing the audit with it as the serial grouping variable "
+                    + "separates the two: under the block reading the within-group autocorrelations collapse and "
+                    + "block-constant variables are skipped, while under the serial reading the dependence "
+                    + "survives grouping.";
+
+    /**
+     * Cross-reference emitted when SENTINEL_VALUE fires: the check judges the shape of the observed distribution,
+     * and only the data's provenance settles whether the flagged value is a code or a measurement.
+     */
+    public static final String SENTINEL_VALUE_NOTE =
+            "A repeated point mass at the extreme of a variable's range was flagged (SENTINEL_VALUE). Whether such "
+                    + "a value is a missing-data code or a real measurement cannot be settled from the numbers "
+                    + "alone; the codebook or data dictionary for the file settles it. If it is a code, the cells "
+                    + "holding it are missing entries that the file does not mark as missing, so the missingness "
+                    + "audit understates the missing rate and the pattern of codes across variables is a "
+                    + "missingness pattern: recoding them to missing and rerunning the audit reports both. The "
+                    + "Data Audit dialog offers that recode per flagged variable. Note that the audit\'s other "
+                    + "continuous checks - correlations, near-determinism, non-Gaussianity, serial dependence - "
+                    + "were computed with the flagged value treated as data, so their verdicts for the affected "
+                    + "columns should be read after the recode, not before.";
 
     /**
      * The dataset being audited.
@@ -182,6 +224,18 @@ public final class DataAudit {
     private final MissingDataAudit missingDataAudit;
 
     /**
+     * Throws if the current thread has been interrupted, so that a caller running the audit on a worker thread (the
+     * GUI's stop dialog, for instance) can cancel it. Called between variables in each per-variable and pairwise
+     * pass. The exception is unchecked, since the audit runs in a constructor, but carries an InterruptedException
+     * as its cause so that callers can recognize it as a cancellation rather than a failure.
+     */
+    private static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new RuntimeException(new InterruptedException("Data audit interrupted."));
+        }
+    }
+
+    /**
      * Audits the given dataset with default thresholds.
      *
      * @param dataSet the dataset to audit; may not be null.
@@ -236,6 +290,7 @@ public final class DataAudit {
         this.continuousIndices = contIdx.stream().mapToInt(Integer::intValue).toArray();
 
         smallCellChecks();
+        sentinelValueCheck();
         duplicateColumnChecks();
         this.continuousCorrelation = correlationChecks();
         nearDeterminismDiscreteContinuousCheck();
@@ -370,6 +425,56 @@ public final class DataAudit {
     }
 
     /**
+     * Sets every cell of the named continuous variable that holds the given value to missing (NaN), in place, and
+     * returns the number of cells changed. This is the operation a SENTINEL_VALUE finding describes: it converts a
+     * code the file wrote as an ordinary number into a missing entry, so that the missingness audit counts it, the
+     * pairwise-complete correlations skip it, and scores and tests apply whatever missing-data policy is in force
+     * instead of treating the code as a measurement.
+     * <p>
+     * The dataset is modified in place, which is destructive and not undoable: callers that need to preserve the
+     * original should pass a copy. The comparison is exact equality against the stored double, which is what the
+     * audit's own distinct-value tally uses, so the value taken from a finding's "value" entry matches exactly the
+     * cells the finding counted. Cells already missing are left alone and are not counted in the return value.
+     * <p>
+     * Applying this to a variable the audit did not flag, or with a value the audit did not report, is permitted:
+     * the audit's detector is a heuristic and the codebook is authoritative, so a user who knows the code is
+     * entitled to recode a column the heuristic missed.
+     *
+     * @param dataSet  the dataset to modify; may not be null.
+     * @param variable the name of a continuous variable in the dataset.
+     * @param value    the value to treat as a missing-data code.
+     * @return the number of cells set to missing.
+     * @throws IllegalArgumentException if there is no such variable, or if it is discrete.
+     */
+    public static int recodeToMissing(DataSet dataSet, String variable, double value) {
+        if (dataSet == null) throw new NullPointerException("dataSet");
+
+        Node node = dataSet.getVariable(variable);
+
+        if (node == null) {
+            throw new IllegalArgumentException("No such variable in the dataset: " + variable);
+        }
+
+        if (node instanceof DiscreteVariable) {
+            throw new IllegalArgumentException("Variable " + variable + " is discrete; recoding to missing here is "
+                    + "defined for continuous variables only, since a discrete sentinel is a category and removing "
+                    + "it renumbers the remaining ones.");
+        }
+
+        int j = dataSet.getColumnIndex(node);
+        int changed = 0;
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            if (dataSet.getDouble(i, j) == value) {
+                dataSet.setDouble(i, j, Double.NaN);
+                changed++;
+            }
+        }
+
+        return changed;
+    }
+
+    /**
      * Returns cross-references to other diagnostics bearing on the findings that fired, in a fixed order, or an empty
      * list if none apply. These are not recommendations about the data or the analysis; each note names a further
      * measurement that would resolve an ambiguity the audit cannot resolve on its own, and the audit takes no
@@ -381,6 +486,10 @@ public final class DataAudit {
     public List<String> notes() {
         List<String> notes = new ArrayList<>();
         if (hasFinding(FindingCode.NON_GAUSSIAN)) notes.add(NON_GAUSSIAN_NOTE);
+        if (hasFinding(FindingCode.SERIAL_DEPENDENCE) && this.config.serialGroupVariable == null) {
+            notes.add(SERIAL_DEPENDENCE_NOTE);
+        }
+        if (hasFinding(FindingCode.SENTINEL_VALUE)) notes.add(SENTINEL_VALUE_NOTE);
         return notes;
     }
 
@@ -629,6 +738,152 @@ public final class DataAudit {
     }
 
     /**
+     * Flags continuous variables whose extreme observed value is a repeated point mass separated from the remainder
+     * of the distribution by a gap far larger than the typical spacing between adjacent observed values elsewhere in
+     * the column: the signature of a sentinel code standing in for a measurement that was not taken.
+     * <p>
+     * Both ends of the range are examined, since codes appear as implausibly low values (0, -1, -999) and as
+     * implausibly high ones (99, 999, 9999); a variable coded at both ends yields two findings. Three conditions
+     * must hold at an end for it to be flagged. The value must repeat at least {@code sentinelMinCount} times and
+     * account for at least {@code sentinelMinMass} of the observed values, so that an isolated extreme observation
+     * is not mistaken for a code. And the gap from that value to its nearest observed neighbor must be at least
+     * {@code sentinelGapRatio} times the median spacing between adjacent distinct values among the rest of the
+     * column, which is what separates a code from a legitimate floor: a count variable whose zero means "none" sits
+     * one ordinary step below its neighbors, whereas a code sits far outside the measured range. The candidate is
+     * excluded from the spacing reference so that its own gap does not inflate the quantity it is compared against.
+     * <p>
+     * The reference is a median of spacings rather than a spread statistic such as the interquartile range for a
+     * reason worth recording: when the code carries a large share of the mass, it dominates the column's spread, and
+     * an IQR-based reference grows with the very contamination the check is looking for, so heavily coded columns
+     * escape detection. A spacing-based reference is computed from the uncoded values alone and does not.
+     * <p>
+     * Only continuous, non-constant variables are examined. A constant column is flagged CONSTANT_COLUMN and is
+     * already excluded from the continuous indices; a discrete variable's sentinel category is visible in its level
+     * list and needs no inference from spacing.
+     */
+    private void sentinelValueCheck() {
+        int n = this.dataSet.getNumRows();
+
+        for (int j : this.continuousIndices) {
+            checkInterrupted();
+
+            double[] observed = new double[n];
+            int m = 0;
+
+            for (int i = 0; i < n; i++) {
+                if (MissingDataAudit.isMissing(this.dataSet, i, j)) continue;
+                observed[m++] = this.dataSet.getDouble(i, j);
+            }
+
+            if (m == 0) continue;
+
+            double[] sorted = Arrays.copyOf(observed, m);
+            Arrays.sort(sorted);
+
+            double[] distinct = new double[m];
+            int[] counts = new int[m];
+            int k = 0;
+
+            for (int i = 0; i < m; i++) {
+                if (k > 0 && sorted[i] == distinct[k - 1]) {
+                    counts[k - 1]++;
+                } else {
+                    distinct[k] = sorted[i];
+                    counts[k] = 1;
+                    k++;
+                }
+            }
+
+            if (k < this.config.sentinelMinDistinct) continue;
+
+            sentinelCandidate(j, distinct, counts, k, m, true);
+            sentinelCandidate(j, distinct, counts, k, m, false);
+        }
+    }
+
+    /**
+     * Examines one end of a continuous variable's observed range for a sentinel code and adds a SENTINEL_VALUE
+     * finding if the count, mass and gap conditions of {@link #sentinelValueCheck()} all hold there.
+     *
+     * @param j        the column index of the variable.
+     * @param distinct the distinct observed values, ascending, in positions 0 through k - 1.
+     * @param counts   the number of observations at each distinct value, in the same positions.
+     * @param k        the number of distinct observed values; at least sentinelMinDistinct, hence at least three.
+     * @param m        the number of observed (non-missing) values in the column.
+     * @param low      true to examine the minimum, false to examine the maximum.
+     */
+    private void sentinelCandidate(int j, double[] distinct, int[] counts, int k, int m, boolean low) {
+        int index = low ? 0 : k - 1;
+        double candidate = distinct[index];
+        int count = counts[index];
+        double mass = count / (double) m;
+
+        if (count < this.config.sentinelMinCount) return;
+        if (mass < this.config.sentinelMinMass) return;
+
+        double gap = low ? distinct[1] - distinct[0] : distinct[k - 1] - distinct[k - 2];
+
+        // Median spacing between adjacent distinct values among the k - 1 values other than the candidate, which
+        // furnish k - 2 consecutive differences. Excluding the candidate keeps its own gap out of the reference.
+        double[] spacings = new double[k - 2];
+
+        for (int t = 0; t < k - 2; t++) {
+            int a = low ? t + 1 : t;
+            spacings[t] = distinct[a + 1] - distinct[a];
+        }
+
+        Arrays.sort(spacings);
+        int half = spacings.length / 2;
+        double medianSpacing = spacings.length % 2 == 1
+                ? spacings[half] : 0.5 * (spacings[half - 1] + spacings[half]);
+
+        if (!(medianSpacing > 0)) return;
+
+        double gapRatio = gap / medianSpacing;
+
+        if (gapRatio < this.config.sentinelGapRatio) return;
+
+        boolean commonCode = isCommonMissingCode(candidate);
+
+        Map<String, Double> values = new LinkedHashMap<>();
+        values.put("value", candidate);
+        values.put("count", (double) count);
+        values.put("mass", mass);
+        values.put("gap", gap);
+        values.put("medianSpacing", medianSpacing);
+        values.put("gapRatio", gapRatio);
+        values.put("atMinimum", low ? 1.0 : 0.0);
+        values.put("commonMissingCode", commonCode ? 1.0 : 0.0);
+
+        this.findings.add(new AuditFinding(FindingCode.SENTINEL_VALUE, AuditFinding.Severity.WARNING,
+                List.of(this.names[j]), values,
+                "Continuous variable " + this.names[j] + " has " + count + " of its " + m + " observed values ("
+                        + fmt(100 * mass) + "%) at its " + (low ? "minimum" : "maximum") + " " + fmt(candidate)
+                        + ", separated from the rest of the distribution by a gap of " + fmt(gap) + ", "
+                        + fmt(gapRatio) + " times the median spacing between adjacent observed values elsewhere in "
+                        + "the column"
+                        + (commonCode ? "; " + fmt(candidate) + " is a value commonly written as a missing-data code"
+                        : "") + "."));
+    }
+
+    /**
+     * True for the values most often written into data files as missing-data codes. This is used only to annotate a
+     * SENTINEL_VALUE finding, never to trigger one: the count, mass and gap conditions decide, and a code that is
+     * not on this list (a study-specific one such as -6, say) is flagged on the same evidence as one that is.
+     *
+     * @param x the candidate value.
+     * @return True if x is a conventional missing-data code.
+     */
+    private static boolean isCommonMissingCode(double x) {
+        if (x != Math.rint(x)) return false;
+
+        long v = (long) Math.rint(x);
+
+        return v == 0L || v == -1L || v == -8L || v == -9L || v == -88L || v == -99L || v == -999L || v == -9999L
+                || v == 99L || v == 999L || v == 9999L;
+    }
+
+    /**
      * Flags small observed marginal cells for discrete variables and small expected pairwise cells for pairs of
      * discrete variables (expected counts computed under independence from the observed margins).
      */
@@ -667,6 +922,7 @@ public final class DataAudit {
 
         // Pairwise expected cells.
         for (int a = 0; a < this.names.length; a++) {
+            checkInterrupted();
             if (!this.discrete[a] || this.constant[a]) continue;
 
             for (int b = a + 1; b < this.names.length; b++) {
@@ -720,6 +976,7 @@ public final class DataAudit {
         double[][] corr = new double[pc][pc];
 
         for (int a = 0; a < pc; a++) {
+            checkInterrupted();
             corr[a][a] = 1.0;
 
             for (int b = a + 1; b < pc; b++) {
@@ -829,12 +1086,34 @@ public final class DataAudit {
                 this.r2OnOthers.put(this.continuousNames.get(a), r2);
 
                 if (!singular && r2 >= this.config.r2Determinism) {
-                    this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
-                            AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
-                            Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
-                            "Continuous variable " + this.continuousNames.get(a)
-                                    + " is nearly a linear function of the other continuous variables (R^2 = "
-                                    + fmt(r2) + ")."));
+                    double[] subsetR2 = new double[1];
+                    List<Integer> subset = explainingSubset(c, a, r2, subsetR2);
+
+                    StringBuilder msg = new StringBuilder("Continuous variable " + this.continuousNames.get(a)
+                            + " is nearly a linear function of the other continuous variables (R^2 = "
+                            + fmt(r2) + ").");
+
+                    if (!subset.isEmpty()) {
+                        List<String> subsetNames = new ArrayList<>();
+                        for (int b : subset) subsetNames.add(this.continuousNames.get(b));
+                        boolean reached = subsetR2[0] >= EXPLAINING_SUBSET_FRACTION * r2;
+                        msg.append(reached
+                                ? " One small subset accounts for most of this: R^2 = "
+                                : " The dependence is diffuse; the best small subset found greedily gives R^2 = ")
+                                .append(fmt(subsetR2[0])).append(" on {")
+                                .append(String.join(", ", subsetNames))
+                                .append("}. With near-collinear predictors this subset choice is not unique.");
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                                AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
+                                Map.of("rSquared", r2, "threshold", this.config.r2Determinism,
+                                        "subsetRSquared", subsetR2[0], "subsetSize", (double) subset.size()),
+                                msg.toString()));
+                    } else {
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                                AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
+                                Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
+                                msg.toString()));
+                    }
                 }
             }
         } catch (Exception e) {
@@ -854,6 +1133,7 @@ public final class DataAudit {
         int n = this.dataSet.getNumRows();
 
         for (int a = 0; a < this.names.length; a++) {
+            checkInterrupted();
             if (!this.discrete[a] || this.constant[a]) continue;
 
             for (int jc : this.continuousIndices) {
@@ -886,11 +1166,11 @@ public final class DataAudit {
 
                 betweenSS -= sum * sum / m;
                 double eta2 = Math.min(1.0, Math.max(0.0, betweenSS / totalSS));
-                String key = this.names[a] + "|" + this.dataSet.getVariables().get(jc).getName();
+                String key = this.names[a] + "|" + this.names[jc];
                 this.etaSquared.put(key, eta2);
 
                 if (eta2 >= this.config.etaSquaredDeterminism) {
-                    String contName = this.dataSet.getVariables().get(jc).getName();
+                    String contName = this.names[jc];
                     this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_DISCRETE_CONTINUOUS,
                             AuditFinding.Severity.WARNING, List.of(this.names[a], contName),
                             Map.of("etaSquared", eta2, "threshold", this.config.etaSquaredDeterminism),
@@ -960,6 +1240,7 @@ public final class DataAudit {
             if (ops > budget) break;
 
             for (int t = 0; t < p; t++) {
+                checkInterrupted();
                 if (this.constant[t]) continue;
 
                 List<Integer> pool = new ArrayList<>(determiners);
@@ -1145,6 +1426,7 @@ public final class DataAudit {
         int n = this.dataSet.getNumRows();
 
         for (int j : this.continuousIndices) {
+            checkInterrupted();
             List<Double> values = new ArrayList<>();
 
             for (int i = 0; i < n; i++) {
@@ -1156,7 +1438,7 @@ public final class DataAudit {
             double[] x = values.stream().mapToDouble(Double::doubleValue).toArray();
             AndersonDarlingTest test = new AndersonDarlingTest(x);
             double p = test.getP();
-            String name = this.dataSet.getVariables().get(j).getName();
+            String name = this.names[j];
             this.adPValues.put(name, p);
 
             if (p < this.config.adAlpha) {
@@ -1235,6 +1517,7 @@ public final class DataAudit {
         }
 
         for (int j : this.continuousIndices) {
+            checkInterrupted();
             // Partition rows into group subsequences in file order (one group if no grouping variable). Rows where
             // the grouping variable is missing are excluded, since their group is unknown.
             Map<Integer, List<Integer>> groupRows = new LinkedHashMap<>();
@@ -1319,7 +1602,7 @@ public final class DataAudit {
             q *= m * (m + 2.0);
             double p = Math.min(1.0, Math.max(0.0, 1.0 - edu.cmu.tetrad.util.ProbUtils.chisqCdf(q, maxLag)));
 
-            String name = this.dataSet.getVariables().get(j).getName();
+            String name = this.names[j];
             this.lag1Autocorrelations.put(name, r1);
             this.ljungBoxPValues.put(name, p);
 
@@ -1439,6 +1722,7 @@ public final class DataAudit {
         int n = this.dataSet.getNumRows();
 
         for (int a = 0; a < p; a++) {
+            checkInterrupted();
             if (this.constant[a]) continue;
 
             for (int b = a + 1; b < p; b++) {
@@ -1599,6 +1883,96 @@ public final class DataAudit {
         }
 
         return m;
+    }
+
+    /**
+     * Fraction of the full R^2 that a greedily chosen predictor subset must reach for the subset to be reported as
+     * accounting for the dependence in NEAR_DETERMINISM_CONTINUOUS messages.
+     */
+    public static final double EXPLAINING_SUBSET_FRACTION = 0.99;
+
+    /**
+     * Maximum number of predictors the greedy explaining-subset search will select.
+     */
+    public static final int EXPLAINING_SUBSET_MAX_SIZE = 5;
+
+    /**
+     * Greedy forward selection on a correlation matrix, used to localize a NEAR_DETERMINISM_CONTINUOUS finding: for
+     * column a, predictors are added one at a time, each step choosing the column that most increases the R^2 of a
+     * on the selected set, stopping when the subset R^2 reaches {@link #EXPLAINING_SUBSET_FRACTION} of fullR2 or the
+     * set reaches {@link #EXPLAINING_SUBSET_MAX_SIZE} predictors. The achieved subset R^2 is written to
+     * achievedR2[0], clamped to [0, 1].
+     * <p>
+     * With near-collinear predictors the selected set is not unique: if a is nearly duplicated by each of two
+     * predictors, which one is selected first is an arbitrary consequence of tie-breaking. The result is one small
+     * explaining set, not an attribution of cause. On a pairwise-complete matrix that is not positive semidefinite,
+     * subset R^2 values describe the assembled matrix, not any single sample. Candidates whose submatrix cannot be
+     * inverted are skipped.
+     *
+     * @param corr       the correlation matrix.
+     * @param a          the column whose linear dependence on the others is being localized.
+     * @param fullR2     the R^2 of column a on all other columns (from the VIF diagonal).
+     * @param achievedR2 a length-1 array receiving the R^2 of a on the returned subset.
+     * @return the selected column indices in order of selection; empty if no candidate increases R^2.
+     */
+    public static List<Integer> explainingSubset(Matrix corr, int a, double fullR2, double[] achievedR2) {
+        int p = corr.getNumRows();
+        List<Integer> selected = new ArrayList<>();
+        double bestR2 = 0.0;
+        achievedR2[0] = 0.0;
+
+        while (selected.size() < EXPLAINING_SUBSET_MAX_SIZE && bestR2 < EXPLAINING_SUBSET_FRACTION * fullR2) {
+            int bestCandidate = -1;
+            double bestCandidateR2 = bestR2;
+
+            for (int b = 0; b < p; b++) {
+                if (b == a || selected.contains(b)) continue;
+
+                int s = selected.size() + 1;
+                Matrix rss = new Matrix(s, s);
+                double[] ras = new double[s];
+
+                for (int i = 0; i < s; i++) {
+                    int vi = i < s - 1 ? selected.get(i) : b;
+                    ras[i] = corr.get(a, vi);
+
+                    for (int j = 0; j < s; j++) {
+                        int vj = j < s - 1 ? selected.get(j) : b;
+                        rss.set(i, j, corr.get(vi, vj));
+                    }
+                }
+
+                double r2;
+
+                try {
+                    Matrix inv = rss.inverse();
+                    r2 = 0.0;
+
+                    for (int i = 0; i < s; i++) {
+                        for (int j = 0; j < s; j++) {
+                            r2 += ras[i] * inv.get(i, j) * ras[j];
+                        }
+                    }
+                } catch (Exception e) {
+                    continue; // Singular or near-singular submatrix; skip this candidate.
+                }
+
+                r2 = Math.min(1.0, Math.max(0.0, r2));
+
+                if (r2 > bestCandidateR2 + 1e-12) {
+                    bestCandidateR2 = r2;
+                    bestCandidate = b;
+                }
+            }
+
+            if (bestCandidate < 0) break; // No candidate improves R^2.
+
+            selected.add(bestCandidate);
+            bestR2 = bestCandidateR2;
+        }
+
+        achievedR2[0] = bestR2;
+        return selected;
     }
 
     /**
@@ -1767,6 +2141,31 @@ public final class DataAudit {
         private final double cellDeterminismTolerance;
 
         /**
+         * The minimum number of cells at an extreme value for SENTINEL_VALUE to fire there. Default 3. An absolute
+         * floor, so that a single extreme observation is never flagged however small the sample.
+         */
+        private final int sentinelMinCount;
+
+        /**
+         * The minimum share of a column's observed values that must sit at an extreme value for SENTINEL_VALUE to
+         * fire there. Default 0.005. A relative floor, which binds at large n where the count floor does not.
+         */
+        private final double sentinelMinMass;
+
+        /**
+         * The minimum ratio of the gap between the candidate extreme value and its nearest observed neighbor to the
+         * median spacing between adjacent distinct values among the rest of the column, for SENTINEL_VALUE to fire.
+         * Default 3.0. This is the condition that separates a code from a legitimate floor or ceiling.
+         */
+        private final double sentinelGapRatio;
+
+        /**
+         * The minimum number of distinct observed values for the SENTINEL_VALUE check to run on a column. Default 5.
+         * At least three are needed for the spacing reference to be computable at all.
+         */
+        private final int sentinelMinDistinct;
+
+        /**
          * Constructs a config with default thresholds.
          */
         public Config() {
@@ -1830,7 +2229,8 @@ public final class DataAudit {
             this(fewContinuousValues, manyDiscreteLevels, smallCellCount, minExpectedPairwiseCell, highCorrelation,
                     r2Determinism, etaSquaredDeterminism, adAlpha, minAdSampleSize, lowSampleRatio,
                     nearConstantFrequency, nearConstantVariance, serialMaxLag, serialAlpha,
-                    serialMinAbsAutocorrelation, minSerialSampleSize, serialGroupVariable, 3, 30, 1e-9);
+                    serialMinAbsAutocorrelation, minSerialSampleSize, serialGroupVariable, 3, 30, 1e-9,
+                    3, 0.005, 3.0, 5);
         }
 
         /**
@@ -1844,7 +2244,9 @@ public final class DataAudit {
                        int serialMaxLag, double serialAlpha, double serialMinAbsAutocorrelation,
                        int minSerialSampleSize, String serialGroupVariable,
                        int cellDeterminismMaxSetSize, int cellDeterminismMaxCardinality,
-                       double cellDeterminismTolerance) {
+                       double cellDeterminismTolerance,
+                       int sentinelMinCount, double sentinelMinMass,
+                       double sentinelGapRatio, int sentinelMinDistinct) {
             this.fewContinuousValues = fewContinuousValues;
             this.manyDiscreteLevels = manyDiscreteLevels;
             this.smallCellCount = smallCellCount;
@@ -1865,6 +2267,10 @@ public final class DataAudit {
             this.cellDeterminismMaxSetSize = cellDeterminismMaxSetSize;
             this.cellDeterminismMaxCardinality = cellDeterminismMaxCardinality;
             this.cellDeterminismTolerance = cellDeterminismTolerance;
+            this.sentinelMinCount = sentinelMinCount;
+            this.sentinelMinMass = sentinelMinMass;
+            this.sentinelGapRatio = sentinelGapRatio;
+            this.sentinelMinDistinct = sentinelMinDistinct;
         }
 
         /**
@@ -1876,7 +2282,9 @@ public final class DataAudit {
         public Config withHighCorrelation(double highCorrelation) {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
-                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
         }
 
         /**
@@ -1888,7 +2296,9 @@ public final class DataAudit {
         public Config withSmallCellCount(int smallCellCount) {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
-                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
         }
 
         /**
@@ -1900,7 +2310,9 @@ public final class DataAudit {
         public Config withAdAlpha(double adAlpha) {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
-                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
         }
 
         /**
@@ -1912,7 +2324,9 @@ public final class DataAudit {
         public Config withSerialGroupVariable(String serialGroupVariable) {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, serialGroupVariable,
-                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
         }
 
         /**
@@ -1934,7 +2348,9 @@ public final class DataAudit {
                     this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
                     this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
-                    cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+                    cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
         }
 
         /**
@@ -1950,7 +2366,9 @@ public final class DataAudit {
                     this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
                     this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
-                    this.cellDeterminismMaxSetSize, cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+                    this.cellDeterminismMaxSetSize, cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
         }
 
         /**
@@ -1966,13 +2384,79 @@ public final class DataAudit {
                     this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
                     this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
-                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, cellDeterminismTolerance);
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
         }
 
+        /**
+         * Sets the serial correlation alpha value.
+         *
+         * @param serialAlpha the serial correlation alpha value.
+         * @return a new Config object with the updated serial correlation alpha value.
+         */
         public Config withSerialAlpha(double serialAlpha) {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
-                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance);
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given minimum cell count for SENTINEL_VALUE.
+         *
+         * @param sentinelMinCount the new value.
+         * @return the new config.
+         */
+        public Config withSentinelMinCount(int sentinelMinCount) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation,
+                    this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
+                    this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given minimum observed-value share for SENTINEL_VALUE.
+         *
+         * @param sentinelMinMass the new value.
+         * @return the new config.
+         */
+        public Config withSentinelMinMass(double sentinelMinMass) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation,
+                    this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
+                    this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given minimum gap-to-median-spacing ratio for SENTINEL_VALUE.
+         *
+         * @param sentinelGapRatio the new value.
+         * @return the new config.
+         */
+        public Config withSentinelGapRatio(double sentinelGapRatio) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation,
+                    this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
+                    this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, sentinelGapRatio, this.sentinelMinDistinct);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given minimum distinct-value count for the SENTINEL_VALUE check to run.
+         *
+         * @param sentinelMinDistinct the new value.
+         * @return the new config.
+         */
+        public Config withSentinelMinDistinct(int sentinelMinDistinct) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation,
+                    this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
+                    this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, sentinelMinDistinct);
         }
     }
 }

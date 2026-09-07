@@ -253,6 +253,11 @@ public class PermutationSearch {
                 prefix = new ArrayList<>(this.order);
                 List<String> tier = this.knowledge.getTier(i);
 
+                // Skip empty tiers (e.g., an unused tier 0 when the user numbers tiers from 1);
+                // otherwise an empty suborder is passed to the suborder search, which is wasted
+                // work and can trigger spurious iteration-cap warnings.
+                if (tier.isEmpty()) continue;
+
                 for (Node node : order) {
                     String name = node.getName();
                     if (!tier.contains(name)) continue;

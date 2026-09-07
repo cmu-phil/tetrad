@@ -330,6 +330,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         // General
         fcit.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        fcit.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
         fcit.setKnowledge(this.knowledge);
 
         return fcit.search();
@@ -401,6 +402,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
 
         params.add(Params.VERBOSE);
+        params.add(Params.LOG_FINAL_ORIENTATIONS);
 
         return params;
     }

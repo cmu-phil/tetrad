@@ -751,6 +751,10 @@ public final class Params {
      */
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
     /**
+     * Constant <code>BASIS_RANK_TRANSFORM="basisRankTransform"</code>
+     */
+    public static final String BASIS_RANK_TRANSFORM = "basisRankTransform";
+    /**
      * Constant <code>POISSON_LAMBDA="poissonLambda"</code>
      */
     public static final String POISSON_LAMBDA = "poissonLambda";
@@ -759,9 +763,17 @@ public final class Params {
      */
     public static final String USE_BES = "useBes";
     /**
+     * Constant <code>USE_ILS_RESTARTS="useIlsRestarts"</code>
+     */
+    public static final String USE_ILS_RESTARTS = "useIlsRestarts";
+    /**
      * Constant <code>NUM_STARTS="numStarts"</code>
      */
     public static final String NUM_STARTS = "numStarts";
+    /**
+     * Constant <code>FLOP_NUM_RESTARTS="flopNumRestarts"</code>
+     */
+    public static final String FLOP_NUM_RESTARTS = "flopNumRestarts";
     /**
      * Constant <code>CACHE_SCORES="cacheScores"</code>
      */
@@ -1032,6 +1044,10 @@ public final class Params {
      * Constant <code>GUARANTEE_PAG_DEFAULT_TRUE="guaranteePagDefaultTrue"</code>
      */
     public static final String DO_LEGALITY_GATING = "doLegalityGating";
+    /**
+     * Constant <code>LOG_FINAL_ORIENTATIONS="logFinalOrientations"</code>
+     */
+    public static final String LOG_FINAL_ORIENTATIONS = "logFinalOrientations";
     /**
      * Constant <code>REMOVE_ALMOST_CYCLES="removeAlmostCycles"</code>
      */
@@ -1362,6 +1378,10 @@ public final class Params {
      */
     public static final String USE_MAX_ACROSS_STRATA = "useMaxAcrossStrata";
     /**
+     * Constant <code>USE_ADAPTIVE_Z_BINS="useAdaptiveZBins"</code>
+     */
+    public static final String USE_ADAPTIVE_Z_BINS = "useAdaptiveZBins";
+    /**
      * Constant <code>MINIMAX_PERMUTATIONS="miniMaxPermutations"</code>
      */
     public static final String MINIMAX_PERMUTATIONS = "minimaxPermutations";
@@ -1399,6 +1419,11 @@ public final class Params {
      * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
      */
     public static final String MINIMAX_FF_FEATURES = "minimaxFfFeatures";
+
+    /**
+     * Constant <code>TRFF_SYMMETRIZED="trffSymmetrized"</code>
+     */
+    public static final String TRFF_SYMMETRIZED = "trffSymmetrized";
     /**
      * Constant <code>MINIMAX_RFF_FEATURES="minimaxRffFeatures"</code>
      */
@@ -1435,37 +1460,6 @@ public final class Params {
      */
     public static final String GCM_RFF_SIGMA = "gcmRffSigma";
     /**
-     * Constant <code>LEGENDRE_DEGREE="minimaxLegendreDegree"</code> Degree of the Legendre polynomial used in
-     * the MLegendre BIC scoring methodology.
-     */
-    public static final String LEGENDRE_DEGREE = "minimaxLegendreDegree";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_CLIP="minimaxLegendreClip"</code> Clip value for the Legendre BIC scoring
-     * methodology.
-     */
-    public static final String LEGENDRE_CLIP = "minimaxLegendreClip";
-    /**
-     * Constant <code>MINIMAX_LEGENDRE_RIDGE="minimaxLegendreRidge"</code> Ridge parameter for the Minimax Legendre
-     * scoring methodology.
-     */
-    public static final String LEGENDRE_RIDGE = "minimaxLegendreRidge";
-    /**
-     * Constant <code>LEGENDRE_RFF_FEATURES="minimaxLegendreRffFeatures"</code> Number
-     */
-    public static final String LEGENDRE_NU = "minimaxLegendreNu";
-    /**
-     * Constant <code>LEGENDRE_RFF_SIGMA="minimaxLegendreRffSigma"</code>
-     */
-    public static final String LEGENDRE_IRLS_ITERS = "minimaxLegendreIrlsIters";
-    /**
-     * Constant <code>LEGENDRE_MAX_ITERATIONS="minimaxLegendreMaxIterations"</code>
-     */
-    public static final String LEGENDRE_IRLS_TOL = "minimaxLegendreIrlsTol";
-    /**
-     * Constant <code>LEGENDRE_INIT_SCALE="minimaxLegendreMaxIterations"</code>
-     */
-    public static final String LEGENDRE_INIT_SCALE = "minimaxLegendreInitScale";
-    /**
      * Constant <code>DAO_SF_OUT="daoSfOut"</code>
      */
     public static final String DAO_SF_OUT = "daoSfOut";
@@ -1477,11 +1471,193 @@ public final class Params {
      * Constant <code>DAO_SF_IN="daoSfIn"</code>
      */
     public static final String DAO_SF_IN = "daoSfIn";
+    /**
+     * Constant <code>BGE_ALPHA_MU="bgeAlphaMu"</code>
+     */
+    public static final String BGE_ALPHA_MU = "bgeAlphaMu";
+    /**
+     * Constant <code>BGE_ALPHA_W_OFFSET="bgeAlphaWOffset"</code>
+     */
+    public static final String BGE_ALPHA_W_OFFSET = "bgeAlphaWOffset";
+    /**
+     * Constant <code>DISCRETE_INTERACTION_ORDER="discreteInteractionOrder"</code>
+     */
+    public static final String DISCRETE_INTERACTION_ORDER = "discreteInteractionOrder";
+    /**
+     * Constant <code>DE_NUM_FACTORS="deNumFactors"</code>
+     */
+    public static final String DE_NUM_FACTORS = "deNumFactors";
+    /**
+     * Constant <code>DE_NUM_DERIVED="deNumDerived"</code>
+     */
+    public static final String DE_NUM_DERIVED = "deNumDerived";
+    /**
+     * Constant <code>DE_NUM_RESPONSES="deNumResponses"</code>
+     */
+    public static final String DE_NUM_RESPONSES = "deNumResponses";
+    /**
+     * Constant <code>DE_MIN_LEVELS="deMinLevels"</code>
+     */
+    public static final String DE_MIN_LEVELS = "deMinLevels";
+    /**
+     * Constant <code>DE_MAX_LEVELS="deMaxLevels"</code>
+     */
+    public static final String DE_MAX_LEVELS = "deMaxLevels";
+    /**
+     * Constant <code>DE_COUPLING="deCoupling"</code>
+     */
+    public static final String DE_COUPLING = "deCoupling";
+    /**
+     * Constant <code>DE_DERIVED_NOISE="deDerivedNoise"</code>
+     */
+    public static final String DE_DERIVED_NOISE = "deDerivedNoise";
+    /**
+     * Constant <code>DE_INTERACTION="deInteraction"</code>
+     */
+    public static final String DE_INTERACTION = "deInteraction";
+    /**
+     * Constant <code>DE_RESPONSE_NOISE="deResponseNoise"</code>
+     */
+    public static final String DE_RESPONSE_NOISE = "deResponseNoise";
+    /**
+     * Constant <code>DE_SELECTION="deSelection"</code>
+     */
+    public static final String DE_SELECTION = "deSelection";
+    /**
+     * Constant <code>DE_SORT_BY_CONFIGURATION="deSortByConfiguration"</code>
+     */
+    public static final String DE_SORT_BY_CONFIGURATION = "deSortByConfiguration";
+
+    /**
+     * Constant <code>DE_EMIT_CONFIG_COLUMN="deEmitConfigColumn"</code>
+     */
+    public static final String DE_EMIT_CONFIG_COLUMN = "deEmitConfigColumn";
+    /**
+     * Constant <code>OS_GRAPH_NUM_CONTEXT="osGraphNumContext"</code>
+     */
+    public static final String OS_GRAPH_NUM_CONTEXT = "osGraphNumContext";
+    /**
+     * Constant <code>OS_GRAPH_NUM_HIDDEN_CONTEXT="osGraphNumHiddenContext"</code>
+     */
+    public static final String OS_GRAPH_NUM_HIDDEN_CONTEXT = "osGraphNumHiddenContext";
+    /**
+     * Constant <code>OS_GRAPH_NUM_SYSTEM="osGraphNumSystem"</code>
+     */
+    public static final String OS_GRAPH_NUM_SYSTEM = "osGraphNumSystem";
+    /**
+     * Constant <code>OS_GRAPH_NUM_INDICES="osGraphNumIndices"</code>
+     */
+    public static final String OS_GRAPH_NUM_INDICES = "osGraphNumIndices";
+    /**
+     * Constant <code>OS_GRAPH_NUM_OUTCOMES="osGraphNumOutcomes"</code>
+     */
+    public static final String OS_GRAPH_NUM_OUTCOMES = "osGraphNumOutcomes";
+    /**
+     * Constant <code>OS_GRAPH_AVG_SYSTEM_DEGREE="osGraphAvgSystemDegree"</code>
+     */
+    public static final String OS_GRAPH_AVG_SYSTEM_DEGREE = "osGraphAvgSystemDegree";
+    /**
+     * Constant <code>OS_TYPE_PROP_CONTEXT_DISCRETE="osTypePropContextDiscrete"</code>
+     */
+    public static final String OS_TYPE_PROP_CONTEXT_DISCRETE = "osTypePropContextDiscrete";
+    /**
+     * Constant <code>OS_TYPE_PROP_SYSTEM_DISCRETE="osTypePropSystemDiscrete"</code>
+     */
+    public static final String OS_TYPE_PROP_SYSTEM_DISCRETE = "osTypePropSystemDiscrete";
+    /**
+     * Constant <code>OS_TYPE_NUM_CATEGORIES="osTypeNumCategories"</code>
+     */
+    public static final String OS_TYPE_NUM_CATEGORIES = "osTypeNumCategories";
+    /**
+     * Constant <code>OS_TYPE_DISCRETE_OUTCOME="osTypeDiscreteOutcome"</code>
+     */
+    public static final String OS_TYPE_DISCRETE_OUTCOME = "osTypeDiscreteOutcome";
+    /**
+     * Constant <code>OS_DEGRADE_ORDINALIZE_PROP="osDegradeOrdinalizeProp"</code>
+     */
+    public static final String OS_DEGRADE_ORDINALIZE_PROP = "osDegradeOrdinalizeProp";
+    /**
+     * Constant <code>OS_SERIAL_MAX_LAG="osSerialMaxLag"</code>
+     */
+    public static final String OS_SERIAL_MAX_LAG = "osSerialMaxLag";
+    /**
+     * Constant <code>OS_SERIAL_AR_COEF="osSerialArCoef"</code>
+     */
+    public static final String OS_SERIAL_AR_COEF = "osSerialArCoef";
+    /**
+     * Constant <code>OS_SERIAL_INDEX_MEMORY_LOW="osSerialIndexMemoryLow"</code>
+     */
+    public static final String OS_SERIAL_INDEX_MEMORY_LOW = "osSerialIndexMemoryLow";
+    /**
+     * Constant <code>OS_SERIAL_INDEX_MEMORY_HIGH="osSerialIndexMemoryHigh"</code>
+     */
+    public static final String OS_SERIAL_INDEX_MEMORY_HIGH = "osSerialIndexMemoryHigh";
+    /**
+     * Constant <code>OS_SERIAL_PROP_CROSS_LAG="osSerialPropCrossLag"</code>
+     */
+    public static final String OS_SERIAL_PROP_CROSS_LAG = "osSerialPropCrossLag";
+    /**
+     * Constant <code>OS_PANEL_NUM_SUBJECTS="osPanelNumSubjects"</code>
+     */
+    public static final String OS_PANEL_NUM_SUBJECTS = "osPanelNumSubjects";
+    /**
+     * Constant <code>OS_PANEL_EMIT_SUBJECT_COLUMN="osPanelEmitSubjectColumn"</code>
+     */
+    public static final String OS_PANEL_EMIT_SUBJECT_COLUMN = "osPanelEmitSubjectColumn";
+    /**
+     * Constant <code>OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS="osPanelEmitSubjectsAsDataSets"</code>
+     */
+    public static final String OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS = "osPanelEmitSubjectsAsDataSets";
+    /**
+     * Constant <code>OS_FORM_INDEX_NOISE="osFormIndexNoise"</code>
+     */
+    public static final String OS_FORM_INDEX_NOISE = "osFormIndexNoise";
+    /**
+     * Constant <code>OS_FORM_NONLINEARITY="osFormNonlinearity"</code>
+     */
+    public static final String OS_FORM_NONLINEARITY = "osFormNonlinearity";
+    /**
+     * Constant <code>OS_FORM_INTERACTION="osFormInteraction"</code>
+     */
+    public static final String OS_FORM_INTERACTION = "osFormInteraction";
+    /**
+     * Constant <code>OS_GRAPH_EDGE_DENSITY="osGraphEdgeDensity"</code>
+     */
+    public static final String OS_GRAPH_EDGE_DENSITY = "osGraphEdgeDensity";
+    /**
+     * Constant <code>OS_DEGRADE_MISSING_MECHANISM="osDegradeMissingMechanism"</code>
+     */
+    public static final String OS_DEGRADE_MISSING_MECHANISM = "osDegradeMissingMechanism";
+    /**
+     * Constant <code>OS_DEGRADE_MISSING_PROP="osDegradeMissingProp"</code>
+     */
+    public static final String OS_DEGRADE_MISSING_PROP = "osDegradeMissingProp";
+    /**
+     * Constant <code>OS_DEGRADE_CENSOR_PROP="osDegradeCensorProp"</code>
+     */
+    public static final String OS_DEGRADE_CENSOR_PROP = "osDegradeCensorProp";
+    /**
+     * Constant <code>OS_DEGRADE_CENSOR_QUANTILE="osDegradeCensorQuantile"</code>
+     */
+    public static final String OS_DEGRADE_CENSOR_QUANTILE = "osDegradeCensorQuantile";
 
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET, Params.ALPHA, Params.APPLY_R1, Params.AVG_DEGREE, Params.BASIS_TYPE,
+            Params.DE_NUM_FACTORS, Params.DE_NUM_DERIVED, Params.DE_NUM_RESPONSES,
+            Params.DE_MIN_LEVELS, Params.DE_MAX_LEVELS, Params.DE_COUPLING,
+            Params.DE_DERIVED_NOISE, Params.DE_INTERACTION, Params.DE_RESPONSE_NOISE,
+            Params.DE_SELECTION, Params.DE_SORT_BY_CONFIGURATION, Params.DE_EMIT_CONFIG_COLUMN,
+            Params.OS_GRAPH_NUM_CONTEXT, Params.OS_GRAPH_NUM_HIDDEN_CONTEXT, Params.OS_GRAPH_NUM_SYSTEM,
+            Params.OS_GRAPH_NUM_INDICES, Params.OS_GRAPH_NUM_OUTCOMES, Params.OS_GRAPH_AVG_SYSTEM_DEGREE,
+            Params.OS_TYPE_PROP_CONTEXT_DISCRETE, Params.OS_TYPE_PROP_SYSTEM_DISCRETE, Params.OS_TYPE_NUM_CATEGORIES, Params.OS_TYPE_DISCRETE_OUTCOME,
+            Params.OS_DEGRADE_ORDINALIZE_PROP, Params.OS_SERIAL_MAX_LAG, Params.OS_SERIAL_AR_COEF,
+            Params.OS_SERIAL_INDEX_MEMORY_LOW, Params.OS_SERIAL_INDEX_MEMORY_HIGH, Params.OS_SERIAL_PROP_CROSS_LAG,
+            Params.OS_PANEL_NUM_SUBJECTS, Params.OS_PANEL_EMIT_SUBJECT_COLUMN,
+            Params.OS_PANEL_EMIT_SUBJECTS_AS_DATA_SETS, Params.OS_FORM_INDEX_NOISE, Params.OS_FORM_NONLINEARITY,
+            Params.OS_FORM_INTERACTION, Params.OS_GRAPH_EDGE_DENSITY, Params.OS_DEGRADE_MISSING_MECHANISM,
+            Params.OS_DEGRADE_MISSING_PROP, Params.OS_DEGRADE_CENSOR_PROP, Params.OS_DEGRADE_CENSOR_QUANTILE,
             Params.CCI_SCORE_ALPHA, Params.CG_EXACT, Params.COEF_HIGH, Params.COEF_LOW, Params.COEF_SYMMETRIC,
             Params.COLLIDER_DISCOVERY_RULE, Params.COMPLETE_RULE_SET_USED, Params.CONCURRENT_FAS,
             Params.CONFLICT_RULE, Params.CONNECTED, Params.COV_HIGH, Params.COV_LOW, Params.COV_SYMMETRIC,
@@ -1514,7 +1690,8 @@ public final class Params {
             Params.THRESHOLD_NO_RANDOM_CONSTRAIN_SEARCH, Params.THRESHOLD_NO_RANDOM_DATA_SEARCH, Params.TWO_CYCLE_ALPHA,
             Params.UPPER_BOUND, Params.USE_CORR_DIFF_ADJACENCIES, Params.USE_FAS_ADJACENCIES, Params.USE_GAP,
             Params.USE_MAX_P_ORIENTATION_HEURISTIC, Params.USE_SKEW_ADJACENCIES, Params.TETRAD_TEST_BPC, Params.VAR_HIGH,
-            Params.VAR_LOW, Params.VERBOSE
+            Params.VAR_LOW, Params.VERBOSE, Params.BGE_ALPHA_MU, Params.BGE_ALPHA_W_OFFSET,
+            Params.DISCRETE_INTERACTION_ORDER
     ));
     private static final Set<String> BOOTSTRAPPING_PARAMS = new HashSet<>(Arrays.asList(
             Params.ADD_ORIGINAL_DATASET,

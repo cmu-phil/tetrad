@@ -24,11 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.MagToPag;
-import edu.cmu.tetrad.search.utils.PagLegalityCheck;
-import edu.cmu.tetrad.search.utils.R0R4StrategyTestBased;
-import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -116,6 +112,10 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      */
     private boolean completeRuleSetUsed = true;
     /**
+     * Whether the working PAG replicates across time lags (SVAR).
+     */
+    private boolean replicatingGraph = false;
+    /**
      * The maximum path length for the discriminating path rule.
      */
     private int maxDiscriminatingPathLength = -1;
@@ -127,6 +127,14 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      * Whether verbose output should be printed.
      */
     private boolean verbose = false;
+    /**
+     * Whether the final FCI orientation engine logs its rule-by-rule output (R0 collider copies,
+     * R1-R4 firings, BK orientation banners, discriminating-path stamps). Separate from
+     * {@link #verbose}, which controls the search-level narrative (removals tried and committed,
+     * sepsets, saturating step): the gated path re-runs the full orientation inside every trial,
+     * so orientation logging is voluminous and is off by default even when {@code verbose} is on.
+     */
+    private boolean logFinalOrientations = false;
     /**
      * A boolean flag indicating whether to use the maximum p-value heuristic during certain operations in the Star-FCI
      * algorithm. The default value is {@code false}, disabling the heuristic by default.
@@ -393,7 +401,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         Graph cpdag = getMarkovDag(verbose);
-        Graph pag = GraphTransforms.dagToPag(cpdag, false);
+        Graph pag = rewrap(GraphTransforms.dagToPag(cpdag, false));
 
         if (lvHeuristicOnly) {
             return pag;
@@ -536,7 +544,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         // fixpoint by trying the surviving test-confirmed removals JOINTLY. See the
         // saturatingRemoval javadoc for the witness case and the escalation ladder.
         if (doLegalityGating) {
-            pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets);
+            pag = rewrap(saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets));
         }
 
         // Ungated greedy path: run the single final orientation. If the result already passes the
@@ -550,8 +558,8 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
 
             if (!legalPagModuloKnowledge(pag, new LinkedHashSet<>(selection), fciOrient).isLegalPag()) {
-                pag = GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
-                        excludeSelectionBias, Integer.MAX_VALUE);
+                pag = rewrap(GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
+                        excludeSelectionBias, Integer.MAX_VALUE));
             }
         }
 
@@ -567,14 +575,14 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
             Graph refined = refineWithKnowledge(pag, refineOrient);
 
             if (legalPagModuloKnowledge(refined, new LinkedHashSet<>(selection), refineOrient).isLegalPag()) {
-                pag = refined;
+                pag = rewrap(refined);
             } else if (verbose) {
                 TetradLogger.getInstance().log("Final knowledge refinement failed the modulo-knowledge "
                         + "certificate (likely a knowledge/data conflict); returning the unrefined graph.");
             }
         }
 
-        pag = GraphUtils.replaceNodes(pag, nodes);
+        pag = rewrap(GraphUtils.replaceNodes(pag, nodes));
 
         if (verbose) {
             TetradLogger.getInstance().log("*-FCI finished.");
@@ -699,8 +707,10 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
 
         if (!legal.isLegalPag()) {
             if (verbose) {
+                IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
                 TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
-                        + "), but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
+                        + "); sepset = " + sepset + ", p-value = " + result.getPValue()
+                        + ", but it didn't lead to a legal PAG (reverted). Reason: " + legal.getReason());
             }
 
             return pag;                                // committed sepset map untouched
@@ -716,6 +726,21 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         }
 
         return _pag;
+    }
+
+    /**
+     * Formats a batch of candidate removals as "a -- c (sepset = [...])" pairs for verbose logging,
+     * so stall traces show which edges were tried and under which separating sets.
+     */
+    private String formatBatch(List<Set<Node>> batch, Map<Set<Node>, Set<Node>> foundSepsets) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < batch.size(); i++) {
+            if (i > 0) sb.append(", ");
+            List<Node> pn = new ArrayList<>(batch.get(i));
+            sb.append(pn.get(0)).append(" -- ").append(pn.get(1))
+                    .append(" (sepset = ").append(foundSepsets.get(batch.get(i))).append(")");
+        }
+        return sb.toString();
     }
 
     /**
@@ -757,7 +782,8 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
 
         if (verbose) {
             TetradLogger.getInstance().log("Saturating step: " + stalled.size()
-                    + " separable edge(s) survived the single-edge fixpoint; trying joint removal.");
+                    + " separable edge(s) survived the single-edge fixpoint; trying joint removal: "
+                    + formatBatch(stalled, foundSepsets) + ".");
         }
 
         // Trial 1: full saturation; then one leave-one-out rung. (A singleton R retries the
@@ -798,12 +824,14 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
                 }
                 if (verbose) {
                     TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
-                            + stalled.size() + " edge(s) jointly (legal PAG).");
+                            + stalled.size() + " edge(s) jointly (legal PAG): "
+                            + formatBatch(batch, foundSepsets) + ".");
                 }
                 return trial;
             } else if (verbose) {
                 TetradLogger.getInstance().log("\tSaturating step: joint removal of " + batch.size()
-                        + " edge(s) not legal (reverted). Reason: " + legal.getReason());
+                        + " edge(s) not legal (reverted): " + formatBatch(batch, foundSepsets)
+                        + ". Reason: " + legal.getReason());
             }
         }
 
@@ -820,7 +848,7 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      * discarded with the trial.
      */
     private FciOrient buildFciOrient(SepsetMap sepsetMap) {
-        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
+        R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, logFinalOrientations);
         // Respect the user's depth/length knobs instead of hardcoding unlimited. With
         // usePossibleDsep == false the R4 discriminating-path resolution must not be the
         // back door through which unbounded (possible-D-SEP-scale) conditioning searches
@@ -829,13 +857,13 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
         strategy.setMaxLength(this.maxDiscriminatingPathLength);
         strategy.setSepsetMap(sepsetMap);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
-        strategy.setVerbose(false);
+        strategy.setVerbose(logFinalOrientations);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(-1);
         fciOrient.setMaxDiscriminatingPathLength(maxDiscriminatingPathLength);
         fciOrient.setUseR4(true);
-        fciOrient.setVerbose(false);
+        fciOrient.setVerbose(logFinalOrientations);
         return fciOrient;
     }
 
@@ -1014,6 +1042,27 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
     }
 
     /**
+     * Indicates whether the final FCI orientation engine logs its rule-by-rule output.
+     *
+     * @return true if final-orientation logging is enabled, false otherwise.
+     */
+    public boolean isLogFinalOrientations() {
+        return logFinalOrientations;
+    }
+
+    /**
+     * Sets whether the final FCI orientation engine logs its rule-by-rule output (R1-R4 firings,
+     * BK orientation banners, discriminating-path stamps). Independent of {@link #setVerbose}:
+     * setting {@code verbose} alone yields the search-level narrative without the orientation
+     * flood; setting this flag alone yields only the orientation output.
+     *
+     * @param logFinalOrientations True, if so.
+     */
+    public void setLogFinalOrientations(boolean logFinalOrientations) {
+        this.logFinalOrientations = logFinalOrientations;
+    }
+
+    /**
      * Returns the independence test used in search.
      *
      * @return This test.
@@ -1041,6 +1090,53 @@ public abstract class StarFciGuaranteePag implements IGraphSearch {
      *                construction process.
      * @return a Graph object representing the Markov Directed Acyclic Graph (DAG).
      * @throws InterruptedException if the process is interrupted during execution.
+     */
+
+    /**
+     * Returns whether the working PAG replicates across time lags.
+     *
+     * @return true if replicating.
+     */
+    public boolean isReplicatingGraph() {
+        return this.replicatingGraph;
+    }
+
+    /**
+     * Sets whether the working PAG should be a replicating (time-lag repeating) graph: if set,
+     * the PAG is maintained as a ReplicatingGraph with a LagReplicationPolicy, so that edge
+     * additions, removals, and endpoint orientations are mirrored across homologous lagged
+     * variable pairs during the search, as in the other SVAR-capable algorithms. Subclasses
+     * should consult isReplicatingGraph() to propagate the setting to the search that produces
+     * the initial Markov DAG.
+     *
+     * @param replicatingGraph true if the graph should replicate across time lags.
+     */
+    public void setReplicatingGraph(boolean replicatingGraph) {
+        this.replicatingGraph = replicatingGraph;
+    }
+
+    /**
+     * Re-wraps a graph in the replication policy if it is in force (operations that build fresh
+     * graphs would otherwise silently drop the wrapper).
+     *
+     * @param g the graph.
+     * @return the graph, wrapped if replication is in force.
+     */
+    private Graph rewrap(Graph g) {
+        return this.replicatingGraph && !(g instanceof ReplicatingGraph)
+                ? new ReplicatingGraph(g, new LagReplicationPolicy())
+                : g;
+    }
+
+    /**
+     * Constructs and returns the Markov Directed Acyclic Graph (DAG) representation
+     * of a probabilistic model. This method may provide additional details
+     * during execution if the verbose option is enabled.
+     *
+     * @param verbose a boolean flag indicating whether to enable verbose logging
+     *                during the construction of the Markov DAG.
+     * @return a Graph object representing the Markov DAG.
+     * @throws InterruptedException if the operation is interrupted during execution.
      */
     public abstract Graph getMarkovDag(boolean verbose) throws InterruptedException;
 

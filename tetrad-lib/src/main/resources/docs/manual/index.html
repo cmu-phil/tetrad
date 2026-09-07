@@ -4019,8 +4019,20 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             This step is needed for correctness but for large models, since usually
             nearly all edges are oriented in the CPDAG, it is heuristically not needed.</p>
         <p> numStarts - The number of times the algorithm should be re-run from different
-            random starting permutations. The model with the most optimal BIC score will
+            starting permutations. The model with the most optimal BIC score will
             be selected.</p>
+        <p> useIlsRestarts - If true, restarts after the first perturb the best order
+            found so far with about ln(m) random transpositions and rerun the search from
+            there (iterated local search), in the style of the FLOP algorithm, rather than
+            starting from a fresh random permutation. A perturbed order is only a few
+            swaps away from a local optimum, so it typically reconverges much faster than
+            a descent from a random order; in benchmarks this has given the same accuracy
+            as random restarts in roughly half the time. The number of restarts is still
+            controlled by numStarts.</p>
+        <p> numThreads - The number of threads used to score candidate positions within
+            a reinsertion step. Note that the search itself is sequential and each
+            parallel region is short, so the speedup from additional threads is well
+            below linear.</p>
         <p> allowInternalRandomness - If true, the algorithm allow the algorithm to
             use certain heuristic random steps. This can improve performance, but
             may make the algorithm non-deterministic.</p>
@@ -4057,11 +4069,99 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h4>Parameters</h4>
 
-    <p><a href="#graspDepth">graspDepth</a>, <a
-            href="#graspNonSingularDepth">graspNonSingularDepth</a> <a
-            href="#graspSingularDepth">graspSingularDepth</a> <a
-            href="#graspOrderedAlg">graspOrderedAlg</a> <a
-            href="#verbose">verbose</a> <a href="#numStarts">numStarts</a>
+    <p><a href="#useBes">useBes</a>, <a
+            href="#numStarts">numStarts</a> <a
+            href="#useIlsRestarts">useIlsRestarts</a> <a
+            href="#useDataOrder">useDataOrder</a> <a
+            href="#numThreads">numThreads</a> <a
+            href="#outputCpdag">outputCpdag</a> <a
+            href="#timeLag">timeLag</a> <a
+            href="#timeLagReplicatingGraph">timeLagReplicatingGraph</a> <a
+            href="#seed">seed</a> <a href="#verbose">verbose</a>
+
+    </p>
+
+    <h3>The FLOP Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="flop">
+
+        <p> FLOP (Fast Learning of Order and Parents) is a permutation search of the
+            same family as BOSS and GRaSP, due to Wienobst, Henckel, and Weichwald
+            (2026). Like BOSS it searches over topological orders, repeatedly removing
+            each variable from the order and reinserting it at its best-scoring
+            position until no reinsertion improves the total score. It differs from
+            BOSS in three respects.</p>
+
+        <p> First, parent sets are chosen by a non-greedy grow-shrink procedure rather
+            than a greedy one: the grow phase adds any variable that improves the local
+            score, not necessarily the best such variable, and the shrink phase removes
+            any parent whose removal improves it. Candidates are visited in random order,
+            so repeated searches from the same order can settle on different DAGs of
+            equal score. Second, when a variable enters or leaves a candidate prefix the
+            parent set is updated by a warm start from the previous parent set, with
+            early exits in the cases where the changed variable cannot affect the
+            result. Third, the search is restarted by iterated local search rather than
+            by independent random restarts: each restart perturbs the best order found
+            so far by about ln(p) random transpositions, rather than drawing a fresh
+            random order.</p>
+
+        <p> This implementation is specialized to the linear Gaussian BIC score and
+            takes continuous data or a covariance matrix. It does not accept an
+            arbitrary Score object, and knowledge is not currently supported. For
+            searches needing either of those, use BOSS, which supports the same
+            iterated local search through its useIlsRestarts parameter.</p>
+
+        <p> The parameters are as follows:</p>
+
+        <p> penaltyDiscount - The multiplier on the ln(N) * |parents| BIC penalty term,
+            written lambda in the paper. The default is 2, following Foygel and Drton
+            (2010).</p>
+
+        <p> flopNumRestarts - The number of iterated local search restarts. Note that
+            this differs in meaning from BOSS's numStarts: zero restarts gives one
+            search, from the initial order described below, rather than no search. More
+            restarts can never return a worse-scoring graph, so this parameter trades
+            runtime against score.</p>
+
+        <p> seed - The random seed for the perturbations and for the grow-shrink
+            candidate orderings, or -1 for a nondeterministic seed. Because the local
+            search is randomized, results are reproducible only when this is set.</p>
+
+        <p> The initial order is constructed by a pivoted Cholesky decomposition of the
+            correlation matrix, which places strongly correlated variables adjacently.
+            The motivation is that grow-shrink parent selection can fail on far-apart
+            ancestor-descendant pairs whose marginal dependence is too weak to detect at
+            finite sample sizes, path graphs being the canonical hard case; an order
+            that puts such pairs close together avoids asking grow-shrink to detect
+            those dependencies. This order is available separately, for use with BOSS or
+            GRaSP, as edu.cmu.tetrad.search.utils.FlopInitialOrder.</p>
+
+        <p> Wienobst, M., Henckel, L., &amp; Weichwald, S. (2026). Embracing discrete
+            search: a reasonable approach to causal structure learning.</p>
+
+        <p> Foygel, R., &amp; Drton, M. (2010). Extended Bayesian information criteria
+            for Gaussian graphical models. Advances in Neural Information Processing
+            Systems, 23.</p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Causal sufficiency; continuous variables with a linear Gaussian
+        model.</p>
+
+    <h4>Output Format</h4>
+
+    <p>The CPDAG equivalence class of DAGs representing estimated
+        possible causal structures over the set of variables.</p>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#penaltyDiscount">penaltyDiscount</a>, <a
+            href="#flopNumRestarts">flopNumRestarts</a> <a
+            href="#seed">seed</a> <a href="#verbose">verbose</a>
 
     </p>
 
@@ -5429,6 +5529,65 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#alpha">alpha</a>, pythonCiServer, <a href="#verbose">verbose</a>, missingDataPolicy</p>
 
+    <h3>Minimax Conditional Independence Test</h3>
+
+    <div id="minimax-ci-test">
+        <p>A stratified permutation test of X _||_ Y | Z. The conditioning set is discretized: each continuous Z
+            variable is binned, and each combination of Z bins (and discrete Z values) forms a stratum. Within each
+            stratum, X is permuted relative to Y to build a permutation null for a within-stratum association statistic
+            (a correlation-based statistic for continuous pairs; a G-type statistic when X or Y is discrete), and the
+            per-stratum permutation p-values are combined across strata by a conservative quantile ("soft minimax")
+            aggregation. Because the permutation is carried out within strata, the test makes no distributional or
+            functional-form assumptions about the dependence of X and Y on Z.</p>
+        <p>The permutation null is exact for X _||_ Y | bin(Z), not X _||_ Y | Z: residual variation of Z within a bin
+            is a bin-geometry bias that does not shrink as n grows, so with a fixed number of bins the test's size
+            degrades as n increases. By default the number of bins per continuous Z dimension therefore grows
+            adaptively at the n^(2/5) rate of Neykov, Balakrishnan, and Wasserman (2021), capped so that expected
+            stratum sizes stay workable (useAdaptiveZBins; set it false to control binsPerContZ manually). Intended
+            scope: conditioning sets with at most about two continuous variables and n of roughly 1000 or more;
+            residual size inflation of a few percentage points above nominal remains at smaller n, and power falls as
+            strata multiply. Best used for spot checks of individual facts rather than as the test inside a search.
+            Mixed data. See Neykov, M., Balakrishnan, S., & Wasserman, L. (2021). Minimax optimal conditional
+            independence testing. The Annals of Statistics, 49(4), 2151-2177.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, useAdaptiveZBins, binsPerContZ, binsPerContXY, minStratumSize,
+        minimaxPermutations, maxCellsPerStratum, maxObservedLevelsPerVar, <a href="#verbose">verbose</a>,
+        missingDataPolicy</p>
+
+    <h3>TRFF LR Test</h3>
+
+    <div id="trff-lr-test">
+        <p>A likelihood-ratio conditional independence test built on the TRFF BIC score's local model: each variable
+            is regressed on its conditioning set using ridge regression over random Fourier features of the continuous
+            conditioners plus indicator columns for discrete conditioners, with a Student-t error model for continuous
+            targets and a multinomial logistic model for discrete targets. To test X _||_ Y | Z, a reduced model
+            (Y given Z) and a full model (Y given Z plus X) are fit on a single shared design matrix in which the
+            reduced model's columns are a prefix of the full model's columns - the full design appends a linear X
+            column and a fresh block of random Fourier features over (Z, X), or the indicator columns of X when X is
+            discrete - so the two models are nested by construction and the likelihood-ratio statistic is nonnegative.
+            Explicit linear columns for the continuous conditioners are included in both designs so that linear
+            conditional means are represented exactly and the random features carry only the nonlinear remainder.</p>
+        <p>The degrees of freedom are approximated by the difference in ridge effective degrees of freedom. For a
+            discrete target the deviance is referred to a chi-square with those degrees of freedom. For a continuous
+            target the error scale is profiled per model, and the chi-square reference fails when the added block is
+            not small relative to n; the statistic is therefore converted to the classical F form and referred to an F
+            distribution, which agrees with the chi-square when the added block is small and remains calibrated when
+            it is not. The test is symmetrized: both directions (target Y, adding X; and target X, adding Y) are
+            computed and the more conservative p-value is reported, so results do not depend on argument order. The
+            reference distributions are approximations rather than exact permutation or Wilks results, and the test
+            should be considered experimental; with the default number of random features it is also computationally
+            heavy inside a search. Mixed data.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, minimaxRidge,
+        minimaxFfFeatures, <a href="#penaltyDiscount">penaltyDiscount</a>, trffSymmetrized,
+        <a href="#verbose">verbose</a>, missingDataPolicy</p>
+
     <h2>Scoring Functions</h2>
 
     <p>Like the tests, above, all the below tests do testwise deletion
@@ -5485,6 +5644,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#structurePrior">structurePrior</a></p>
 
+    <h3>DG-BGe (Degenerate Gaussian BGe) Score</h3>
+
+    <div id="dg-bge-score">
+        <p>DG-BGe is the BGe score (see) applied to the degenerate Gaussian embedding of the DG-BIC score: continuous variables are kept as they are and each discrete variable is replaced by one 0/1 indicator column per category but the last, and the resulting columns are scored with the Normal-Wishart marginal likelihood, taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets of the child and its parents. On purely continuous data this is exactly the BGe score; on purely discrete data it is the marginal-likelihood counterpart of DG-BIC in the way that BDeu is the counterpart of the discrete BIC score, though, like DG-BIC, it models only additive (main-effect) dependence of a child's indicators on the parents' indicators, not interactions among parents. It is BF-BGe with truncation limit 1 and no rescaling; see that entry for the hyperparameters and for discreteInteractionOrder, which adds interaction columns among discrete parents (saturating the parent design at high enough order) at the cost of score equivalence. Decomposable, and score-equivalent at interaction order 1; "higher is better." Mixed data. Experimental.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#discreteInteractionOrder">discreteInteractionOrder</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
+
     <h3>M-separation Score</h3>
 
     <div id="m-sep-score"><p> This uses m-separation to make something
@@ -5524,6 +5693,17 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Parameters</h4>
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
+
+    <h3>BGe Score</h3>
+
+    <div id="bge-score">
+        <p>BGe (Bayesian Gaussian equivalent) is the Gaussian analog of the BDeu score: the local score of a family Y | Pa is the exact log marginal likelihood of the data for that family under a Normal-Wishart prior on the mean and precision of the linear Gaussian model, so no asymptotic penalty term is involved. It is score-equivalent and decomposable, and "higher is better." See Geiger, D., and Heckerman, D. (2002), Parameter priors for directed acyclic graphical models and the characterization of several probability distributions, Annals of Statistics 30(5), 1412-1440, and the corrected formula in Kuipers, J., Moffa, G., and Heckerman, D. (2014), Addendum on the scoring of Gaussian directed acyclic graphical models, Annals of Statistics 42(4), 1689-1691.</p>
+        <p>The prior has two hyperparameters: bgeAlphaMu, the prior precision on the mean (alpha_mu), and bgeAlphaWOffset, the Wishart degrees of freedom above the number of variables p (alpha_w = p + bgeAlphaWOffset). The prior mean is the sample mean and the prior scale matrix is T = t diag(s_j^2), with t = alpha_mu (alpha_w - p - 1) / (alpha_mu + 1) and s_j^2 the sample variance of variable j; for unit-variance data this is the bnlearn/Kuipers default T = t I, and scaling to the sample variances makes the DAG ranking invariant to the units of measurement. The defaults alpha_mu = 1, alpha_w = p + 2 follow Kuipers et al. and bnlearn. As with BDeu's prior equivalent sample size, larger alpha_mu tends to favor denser graphs. Supports an effective sample size. Continuous data or a covariance matrix.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
 
     <h3>EBIC Score</h3>
 
@@ -5748,6 +5928,18 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <h4>Parameters</h4>
 
     <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#penaltyDiscount">penaltyDiscount</a>, <a href="#singularityLambda">singularityLambda</a>, <a href="#doOneEquationOnly">doOneEquationOnly</a>, missingDataPolicy</p>
+
+    <h3>BF-BGe (Basis Function BGe) Score</h3>
+
+    <div id="bf-bge-score">
+        <p>BF-BGe is the BGe score applied to the same embedding BF-BIC uses: each continuous variable is expanded into its Legendre basis columns up to truncationLimit and each discrete variable into one indicator column per category but the last. Where BF-BIC scores the expanded family with a BIC-penalized Gaussian likelihood, BF-BGe scores it with the exact Normal-Wishart marginal likelihood of the BGe score (see), taking the family score to be log p(D_{A,B}) - log p(D_B) over the embedded column sets A of the child and B of its parents. This replaces the BIC penalty on the whole expanded block (the source of BF-BIC's conservatism on weak linear edges) with the Bayesian Occam factor, in the same way that BDeu replaces the discrete BIC penalty. The score is decomposable and score-equivalent, and because the prior scale is added to the scatter matrix, no singularity lambda is needed. "Higher is better."</p>
+        <p>The prior conventions and hyperparameters are those of the BGe score; alpha_mu acts only through the prior scale, so smaller values make edges more expensive (bgeAlphaMu = 0.1 tracks SEM BIC at penalty discount 2 in null false-positive rate; the default 1 sits between penalty discounts 1 and 2). Embedded columns with zero variance (unobserved categories) are dropped. Mixed data. Experimental.</p>
+        <p>With discreteInteractionOrder above 1, a family's parent block is augmented with products of indicator columns from up to that many distinct discrete parents, so that a discrete child can depend on its discrete parents through interactions and not only main effects; an order at least the number of discrete parents gives the saturated design, the same span as BDeu's conditional table, with empty-cell columns dropped. This is not score-equivalent (Markov-equivalent DAGs may score differently), so use it with BOSS or GRaSP; the default order 1 is the score-equivalent additive design.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#truncationLimit">truncationLimit</a>, adaptiveBasisSelection, <a href="#bgeAlphaMu">bgeAlphaMu</a>, <a href="#bgeAlphaWOffset">bgeAlphaWOffset</a>, <a href="#discreteInteractionOrder">discreteInteractionOrder</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy</p>
 
     <h3>Blocks-BIC Score</h3>
 
@@ -12239,6 +12431,36 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="effectiveSampleSize_upper_bound">2147483647</span></li>
             <li>Value Type: <span
                     id="effectiveSampleSize_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="bgeAlphaMu">bgeAlphaMu</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="bgeAlphaMu_short_desc">BGe prior precision on the mean (alpha_mu)</span></li>
+            <li>Long Description: <span id="bgeAlphaMu_long_desc">The prior precision on the mean in the Normal-Wishart prior of the BGe score (bnlearn's iss.mu). Acts like a prior equivalent sample size for the mean; larger values tend to favor denser graphs. Default 1.</span></li>
+            <li>Default Value: <span id="bgeAlphaMu_default_value">1.0</span></li>
+            <li>Lower Bound: <span id="bgeAlphaMu_lower_bound">1.0E-4</span></li>
+            <li>Upper Bound: <span id="bgeAlphaMu_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="bgeAlphaMu_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="bgeAlphaWOffset">bgeAlphaWOffset</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="bgeAlphaWOffset_short_desc">BGe Wishart degrees of freedom above the number of variables (alpha_w = p + offset)</span></li>
+            <li>Long Description: <span id="bgeAlphaWOffset_long_desc">The degrees of freedom of the Wishart prior in the BGe score, given as an offset above the number of variables p, so alpha_w = p + bgeAlphaWOffset. Must exceed 1 so that the prior scale t = alpha_mu (alpha_w - p - 1) / (alpha_mu + 1) is positive. The default 2 gives alpha_w = p + alpha_mu + 1 for the default alpha_mu = 1, as recommended by Kuipers et al. (2014) and used by bnlearn.</span></li>
+            <li>Default Value: <span id="bgeAlphaWOffset_default_value">2.0</span></li>
+            <li>Lower Bound: <span id="bgeAlphaWOffset_lower_bound">1.01</span></li>
+            <li>Upper Bound: <span id="bgeAlphaWOffset_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span id="bgeAlphaWOffset_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="discreteInteractionOrder">discreteInteractionOrder</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span id="discreteInteractionOrder_short_desc">Interaction order among discrete parents in the BGe embedding scores (1 = additive)</span></li>
+            <li>Long Description: <span id="discreteInteractionOrder_long_desc">For the BF-BGe and DG-BGe scores: the maximum number of distinct discrete parents whose indicator columns are multiplied to form interaction columns in a family's parent block. 1 (the default) is the additive design of DG-BIC and BF-BIC. 2 adds pairwise interactions; an order at least the number of discrete parents gives the saturated design, the same span as BDeu's conditional table. Empty-cell product columns are dropped. Orders above 1 are not score-equivalent, so they are intended for permutation searches such as BOSS and GRaSP.</span></li>
+            <li>Default Value: <span id="discreteInteractionOrder_default_value">1</span></li>
+            <li>Lower Bound: <span id="discreteInteractionOrder_lower_bound">1</span></li>
+            <li>Upper Bound: <span id="discreteInteractionOrder_upper_bound">20</span></li>
+            <li>Value Type: <span id="discreteInteractionOrder_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.RegressionRunner;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
@@ -141,6 +142,7 @@ public class RegressionEditor extends JPanel {
 
         if (numModels > 1) {
             JComboBox<Integer> comp = new JComboBox<>();
+            ArrowKeyNavigation.install(this, comp);
 
             for (int i = 0; i < numModels; i++) {
                 comp.addItem(i + 1);

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
@@ -113,6 +114,7 @@ public final class SimulationGraphEditor extends JPanel {
      */
     private void reset() {
         tabbedPane().removeAll();
+        ArrowKeyNavigation.install(tabbedPane());
         setPreferredSize(new Dimension(600, 400));
 
         removeAll();

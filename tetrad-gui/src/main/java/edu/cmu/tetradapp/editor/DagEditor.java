@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.DagWrapper;
+import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.session.DelegatesEditing;
 import edu.cmu.tetradapp.ui.PaddingPanel;
@@ -370,6 +371,7 @@ public final class DagEditor extends JPanel
             }
 
             JComboBox<Integer> comboBox = new JComboBox(models.toArray());
+            ArrowKeyNavigation.install(this, comboBox);
 
             // Remember the selected model on reopen
             comboBox.setSelectedIndex(dagWrapper.getModelIndex());

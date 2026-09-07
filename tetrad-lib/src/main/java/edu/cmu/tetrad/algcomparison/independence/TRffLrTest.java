@@ -26,10 +26,9 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.score.LegendreBicScore;
-import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.test.LegendreLrIndependenceTest;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.search.score.TRffBicScore;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -38,23 +37,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for the Legendre LR CI test built on {@link LegendreBicScore}.
+ * Wrapper for the TRFF likelihood-ratio CI test built on {@link TRffBicScore}.
  *
- * <p>Tests X ⟂ Y | Z by comparing local fits:
- * reduced: Y ~ Z
- * full:    Y ~ Z ∪ {X}
- * using an LR statistic with an EDF-based df approximation.</p>
+ * <p>Tests X &perp; Y | Z by comparing nested local fits on a common row subset:
+ * reduced child ~ Z versus full child ~ Z + extra(X), using an LR statistic with a
+ * &Delta;EDF-based df approximation. The reduced model's design columns are a prefix of the
+ * full model's, so the models are nested by construction and the LR statistic is
+ * nonnegative. The test is symmetrized: both directions (child Y, added X) and (child X,
+ * added Y) are computed and the more conservative p-value is reported.</p>
  *
  * @author josephramsey
  */
-//@TestOfIndependence(
-//        name = "Legendre-LR-Test",
-//        command = "legendre-lr-test",
-//        dataType = DataType.Mixed
-//)
-//@Mixed
-//@General
-public final class LegendreLrIndTest implements IndependenceWrapper {
+@TestOfIndependence(
+        name = "TRFF-LR-Test",
+        command = "trff-lr-test",
+        dataType = DataType.Mixed
+)
+@Mixed
+@General
+public final class TRffLrTest implements IndependenceWrapper {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -62,68 +63,74 @@ public final class LegendreLrIndTest implements IndependenceWrapper {
     /**
      * Required no-arg ctor for algcomparison discovery/serialization.
      */
-    public LegendreLrIndTest() {
+    public TRffLrTest() {
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns a TRFF LR test.
+     */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "Legendre-LR-Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "TRFF-LR-Test");
         // Build the score from the mixed dataset
-        LegendreBicScore score = new LegendreBicScore(SimpleDataLoader.getMixedDataSet(dataSet));
+        TRffBicScore score = new TRffBicScore(SimpleDataLoader.getMixedDataSet(dataSet));
 
-        // Core knobs (only set what exists in your Params; remove any you don't have)
+        // Standard knobs
         score.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
-
-        // If you’ve defined these Params, wire them; otherwise delete these blocks.
-        score.setLegendreDegree(parameters.getInt(Params.LEGENDRE_DEGREE));
-        score.setLegendreClip(parameters.getDouble(Params.LEGENDRE_CLIP));
         score.setRidge(parameters.getDouble(Params.MINIMAX_RIDGE));
-        score.setNu(parameters.getDouble(Params.LEGENDRE_NU));
-        score.setIrlsIters(parameters.getInt(Params.MINIMAX_IRLS_ITERS));
-        score.setIrlsTol(parameters.getDouble(Params.LEGENDRE_IRLS_TOL));
+        score.setRffFeatures(parameters.getInt(Params.MINIMAX_FF_FEATURES));
+        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
-        score.setUseInteractions(true);
-        score.setInteractionMaxParents(3);
-
-        // CI test: default to disabling interactions during testing to preserve nesting.
-        boolean disableInteractionsForTest = true;
-
-        LegendreLrIndependenceTest test = new LegendreLrIndependenceTest(score, disableInteractionsForTest);
+        // CI test
+        edu.cmu.tetrad.search.test.TRffLrTest test =
+                new edu.cmu.tetrad.search.test.TRffLrTest(score);
 
         // Standard knobs
         test.setAlpha(parameters.getDouble(Params.ALPHA));
+        test.setSymmetrized(parameters.getBoolean(Params.TRFF_SYMMETRIZED));
         test.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return test;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the name of the test.
+     */
     @Override
     public String getDescription() {
-        return "Legendre LRT";
+        return "TRFF LR Test (TRffBicScore)";
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the data type of the test, which is mixed.
+     *
+     * @see DataType
+     */
     @Override
     public DataType getDataType() {
         return DataType.Mixed;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Returns the parameters of the test.
+     */
     @Override
     public List<String> getParameters() {
         List<String> p = new ArrayList<>();
         p.add(Params.ALPHA);
-
-        // Keep this list in sync with what you actually support.
         p.add(Params.EFFECTIVE_SAMPLE_SIZE);
-
-        // Optional score/test knobs — include only if you actually define these Params
-        p.add(Params.LEGENDRE_DEGREE);
-        p.add(Params.LEGENDRE_CLIP);
-        p.add(Params.LEGENDRE_RIDGE);
-        p.add(Params.LEGENDRE_NU);
-        p.add(Params.MINIMAX_IRLS_ITERS);
-        p.add(Params.MINIMAX_IRLS_ITERS);
-
+        p.add(Params.MINIMAX_RIDGE);
+        p.add(Params.MINIMAX_FF_FEATURES);
         p.add(Params.PENALTY_DISCOUNT);
+        p.add(Params.TRFF_SYMMETRIZED);
         p.add(Params.VERBOSE);
 
         p.add(Params.MISSING_DATA_POLICY);

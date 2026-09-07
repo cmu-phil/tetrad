@@ -119,6 +119,19 @@ public class MarkovCheckEditor extends JPanel {
      * should be removed in the analysis.
      */
     private final JCheckBox removeExtraneousVariables;
+    /**
+     * Checkbox enabling per-fact effective sample sizes computed from block structure (see
+     * edu.cmu.tetrad.search.utils.PerFactEss). Added 2026-8-30.
+     */
+    private final JCheckBox perFactEssCheckBox = new JCheckBox("Per-Fact ESS");
+    /**
+     * Opens the chooser for the block-defining columns used by per-fact ESS.
+     */
+    private final JButton essBlocksButton = new JButton("Blocks...");
+    /**
+     * The block-defining columns for per-fact ESS.
+     */
+    private final java.util.List<String> essBlockColumns = new java.util.ArrayList<>();
 //    /**
 //     * A checkbox component that enables the user to toggle the inclusion or exclusion of the dependent distribution
 //     * in the analysis.
@@ -397,6 +410,12 @@ public class MarkovCheckEditor extends JPanel {
         verbose.addActionListener(e -> {
             model.setVerbose(verbose.isSelected());
         });
+
+        perFactEssCheckBox.setToolTipText(
+                "Test each implied fact at a block-based effective sample size (choose block "
+                + "columns with Blocks...). Corrects anti-conservative dependence judgments "
+                + "under block-structured serial dependence.");
+        essBlocksButton.addActionListener(e -> chooseEssBlockColumns());
 
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
         testDescTextArea.setEditable(true);
@@ -684,6 +703,78 @@ public class MarkovCheckEditor extends JPanel {
         return PathsAction.getStringField(parameter, parameters, defaultValue);
     }
 
+    /**
+     * Opens a multi-select chooser over the data columns for the per-fact ESS block-defining
+     * variables.
+     */
+    private void chooseEssBlockColumns() {
+        DataModel dataModel = model.getDataModel();
+        if (!(dataModel instanceof DataSet dataSet)) {
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                    "Per-fact ESS requires tabular data.", "Per-Fact ESS", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        java.util.List<String> names = dataSet.getVariableNames();
+        JList<String> list = new JList<>(names.toArray(new String[0]));
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        for (int i = 0; i < names.size(); i++) {
+            if (essBlockColumns.contains(names.get(i))) list.addSelectionInterval(i, i);
+        }
+
+        int option = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                new JScrollPane(list),
+                "Blocks are the distinct joint values of the selected columns",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (option == JOptionPane.OK_OPTION) {
+            essBlockColumns.clear();
+            essBlockColumns.addAll(list.getSelectedValuesList());
+            showEssBlockSummary(JOptionUtils.centeringComp(), dataSet, essBlockColumns);
+        }
+    }
+
+    /**
+     * Summarizes the block structure implied by the selected columns: the number of blocks and
+     * the median block size, with warnings when the blocks are nearly singletons (per-fact ESS
+     * will have little effect) or very few (ICC estimates unstable). Added 2026-8-30.
+     */
+    static void showEssBlockSummary(java.awt.Component parent, edu.cmu.tetrad.data.DataSet dataSet,
+                                            java.util.List<String> columns) {
+        if (columns.isEmpty()) {
+            JOptionPane.showMessageDialog(parent, "No block columns selected; per-fact ESS will not be applied.",
+                    "Per-Fact ESS Blocks", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int[] ids = edu.cmu.tetrad.search.utils.PerFactEss.blockIds(dataSet, columns);
+        int k = edu.cmu.tetrad.search.utils.PerFactEss.numBlocks(ids);
+        int n = dataSet.getNumRows();
+
+        int[] counts = new int[k];
+        for (int id : ids) counts[id]++;
+        java.util.Arrays.sort(counts);
+        double median = (k % 2 == 1) ? counts[k / 2] : 0.5 * (counts[k / 2 - 1] + counts[k / 2]);
+
+        String msg = k + " blocks; median block size " + (median == Math.rint(median)
+                ? String.valueOf((int) median) : String.valueOf(median)) + " (n = " + n + ").";
+        int type = JOptionPane.INFORMATION_MESSAGE;
+
+        if (k > n / 2) {
+            msg += "\n\nWarning: the blocks are nearly singletons, so per-fact ESS will have little "
+                    + "effect. If that is not intended, a within-block-varying column may have been "
+                    + "included by mistake.";
+            type = JOptionPane.WARNING_MESSAGE;
+        } else if (k < 10) {
+            msg += "\n\nWarning: very few blocks; ICC estimates and block-level effective sample "
+                    + "sizes will be unstable.";
+            type = JOptionPane.WARNING_MESSAGE;
+        }
+
+        JOptionPane.showMessageDialog(parent, msg, "Per-Fact ESS Blocks", type);
+    }
+
+
     private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane,
                                 JLabel conditioningSetsLabel, JCheckBox removeExtranenousVariables,
                                 JCheckBox verbose,
@@ -704,6 +795,8 @@ public class MarkovCheckEditor extends JPanel {
                                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                         .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                         .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(perFactEssCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(essBlocksButton)
                                                 )
                                                 .addGroup(layout.createSequentialGroup()
                                                         .addComponent(testLabel)
@@ -740,6 +833,8 @@ public class MarkovCheckEditor extends JPanel {
                                                 .addComponent(removeExtranenousVariables, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 //                                .addComponent(checkDependentDistribution, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                                 .addComponent(verbose, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(perFactEssCheckBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(essBlocksButton)
                                 )
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(pane, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
@@ -767,6 +862,29 @@ public class MarkovCheckEditor extends JPanel {
                 model.getMarkovCheck().setFindSmallestSubset(removeExtraneousVariables.isSelected());
 
                 model.getMarkovCheck().setFractionResample(fraction.getValue());
+
+                try {
+                    if (perFactEssCheckBox.isSelected()) {
+                        if (essBlockColumns.isEmpty()) {
+                            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                                    "Per-fact ESS is checked, but no block columns are chosen; "
+                                    + "choose them with Blocks... Proceeding without per-fact ESS.",
+                                    "Per-Fact ESS", JOptionPane.WARNING_MESSAGE);
+                            model.getMarkovCheck().setPerFactEss(false);
+                        } else {
+                            model.getMarkovCheck().setEssBlockColumns(essBlockColumns);
+                            model.getMarkovCheck().setPerFactEss(true);
+                        }
+                    } else {
+                        model.getMarkovCheck().setPerFactEss(false);
+                    }
+                } catch (IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            ex.getMessage() + " Proceeding without per-fact ESS.",
+                            "Per-Fact ESS", JOptionPane.WARNING_MESSAGE);
+                    perFactEssCheckBox.setSelected(false);
+                }
+
                 try {
                     model.getMarkovCheck().generateResults(true, clear);
                 } catch (Exception e) {

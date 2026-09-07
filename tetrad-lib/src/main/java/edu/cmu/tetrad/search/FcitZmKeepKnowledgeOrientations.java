@@ -202,6 +202,13 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
      */
     private boolean superVerbose = false;
     /**
+     * Whether the FCI orientation engine logs its rule-by-rule output (R1-R4 firings,
+     * discriminating-path stamps). OR'd with superVerbose for the engine only, so it can be
+     * enabled from the interface without the full superVerbose narration, and superVerbose
+     * alone behaves exactly as before.
+     */
+    private boolean logFinalOrientations = false;
+    /**
      * Specifies the orientation rules or procedures used in the FCIT algorithm for orienting edges in a PAG (Partial
      * Ancestral Graph). This variable determines how unshielded colliders, discriminating paths, and other structural
      * elements of the PAG are identified and processed during the search. The orientation strategy implemented in this
@@ -457,12 +464,12 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
 
         R0R4StrategyTestBased strategy = new R0R4StrategyTestBased(test, timeout);
         strategy.setSepsetMap(sepsets);
-        strategy.setVerbose(superVerbose);
+        strategy.setVerbose(superVerbose || logFinalOrientations);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.RECURSIVE);
         strategy.setDepth(depth);
 
         fciOrient = new FciOrient(new SepsetBackfillR0R4Strategy(strategy));
-        fciOrient.setVerbose(superVerbose);
+        fciOrient.setVerbose(superVerbose || logFinalOrientations);
         fciOrient.setParallel(false); // We're doing parallel lookahead.
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
         fciOrient.setRecursiveDepth(recursiveDepth);
@@ -1715,6 +1722,17 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
      */
     public void setSuperVerbose(boolean superVerbose) {
         this.superVerbose = superVerbose;
+    }
+
+    /**
+     * Sets whether the FCI orientation engine logs its rule-by-rule output (R1-R4 firings,
+     * discriminating-path stamps). Independent of verbose; OR'd with superVerbose for the
+     * engine, so superVerbose alone behaves as before.
+     *
+     * @param logFinalOrientations True, if so.
+     */
+    public void setLogFinalOrientations(boolean logFinalOrientations) {
+        this.logFinalOrientations = logFinalOrientations;
     }
 
     /**

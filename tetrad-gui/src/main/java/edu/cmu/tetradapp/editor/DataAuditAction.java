@@ -25,8 +25,11 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.audit.AuditFinding;
 import edu.cmu.tetrad.data.audit.CovarianceAudit;
 import edu.cmu.tetrad.data.audit.DataAudit;
+import edu.cmu.tetrad.data.audit.FindingCode;
 import edu.cmu.tetrad.data.missing.MissingDataAudit;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.ErrorDialogs;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,7 +37,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Displays a data audit for the selected dataset, combining the general data-quality audit
@@ -55,6 +61,12 @@ import java.util.List;
  * term and with a nonlinear or non-additive dependence on parents. The footer is absent when there are no notes.
  * All computation is done by the library classes, so this dialog reports exactly what causal-cmd and py-tetrad
  * report for the same dataset.
+ * <p>
+ * The audit runs off the event thread under a {@link WatchedProcess}, so a wide dataset shows the usual
+ * "Processing (click to stop)" dialog instead of freezing the interface, and the Stop button cancels it: the audit
+ * checks its thread's interrupt flag between variables in each of its per-variable and pairwise passes. Only the
+ * Swing assembly of the result happens on the event thread. The same applies to the grouped recomputation triggered
+ * by the serial-dependence grouping control.
  * <p>
  * When the selected model is a covariance (or correlation) matrix rather than a tabular dataset, the dialog instead
  * shows the covariance matrix audit ({@link CovarianceAudit}): a Findings tab and a Report tab containing the
@@ -103,7 +115,8 @@ class DataAuditAction extends AbstractAction {
             }
 
             EditorWindow covWindow = new EditorWindow(covPanel,
-                    "Covariance Matrix Audit", null, false, (JComponent) this.dataEditor);
+                    DataWindowTitles.of("Covariance Matrix Audit", cov), null, false,
+                    (JComponent) this.dataEditor);
             DesktopController.getInstance().addEditorWindow(covWindow, JLayeredPane.PALETTE_LAYER);
             covWindow.setVisible(true);
             return;
@@ -119,20 +132,36 @@ class DataAuditAction extends AbstractAction {
             return;
         }
 
-        JComponent panel;
+        // Run the audit off the event thread so that the interface stays responsive and the user can stop it. Only
+        // the Swing assembly is done on the event thread, once the audit has finished.
+        new WatchedProcess() {
+            @Override
+            public void watch() throws InterruptedException {
+                DataAudit pooledAudit;
+                MissingDataAudit missingAudit;
 
-        try {
-            panel = createDataAuditPanel(dataSet);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(findOwner(), "Could not compute the data audit: "
-                    + ex.getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+                try {
+                    pooledAudit = new DataAudit(dataSet);
+                    missingAudit = missingAuditFor(dataSet, pooledAudit);
+                } catch (RuntimeException ex) {
+                    if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
 
-        EditorWindow window = new EditorWindow(panel,
-                "Data Audit", null, false, (JComponent) this.dataEditor);
-        DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
-        window.setVisible(true);
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(findOwner(),
+                            "Could not compute the data audit: " + ex.getMessage(), "Error",
+                            JOptionPane.WARNING_MESSAGE));
+                    return;
+                }
+
+                SwingUtilities.invokeLater(() -> {
+                    JComponent panel = createDataAuditPanel(dataSet, pooledAudit, missingAudit);
+                    EditorWindow window = new EditorWindow(panel,
+                            DataWindowTitles.of("Data Audit", dataSet), null, false,
+                            (JComponent) DataAuditAction.this.dataEditor);
+                    DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+                    window.setVisible(true);
+                });
+            }
+        };
     }
 
     //============================== Private methods ============================//
@@ -182,10 +211,28 @@ class DataAuditAction extends AbstractAction {
      */
     static JComponent createDataAuditPanel(DataSet dataSet) {
         DataAudit pooledAudit = new DataAudit(dataSet);
+        return createDataAuditPanel(dataSet, pooledAudit, missingAuditFor(dataSet, pooledAudit));
+    }
 
-        // The DataAudit's delegated missingness audit is null for complete data; the dialog wants one either way.
-        MissingDataAudit missingAudit = pooledAudit.getMissingDataAudit() != null
+    /**
+     * The missingness audit to display: the DataAudit's delegated one, which is null for complete data, or a fresh
+     * one when the dialog wants one either way.
+     */
+    private static MissingDataAudit missingAuditFor(DataSet dataSet, DataAudit pooledAudit) {
+        return pooledAudit.getMissingDataAudit() != null
                 ? pooledAudit.getMissingDataAudit() : new MissingDataAudit(dataSet);
+    }
+
+    /**
+     * Builds the audit panel from an already computed audit. Split from {@link #createDataAuditPanel(DataSet)} so
+     * that the action can compute the audit on a background thread and assemble the Swing components on the event
+     * thread.
+     */
+    static JComponent createDataAuditPanel(DataSet dataSet, DataAudit pooledAudit, MissingDataAudit missingAudit) {
+        // The recode control edits the dataset, so the missingness audit and the grouped-audit cache below both go
+        // stale when it fires. Both are held indirectly so that the recode handler can replace them.
+        MissingDataAudit[] missingRef = {missingAudit};
+        java.util.Map<String, DataAudit> groupCache = new java.util.HashMap<>();
 
         DataAuditJTable findingsTable =
                 new DataAuditJTable(new DataAuditFindingsModel(pooledAudit.getFindings()), 4);
@@ -236,11 +283,15 @@ class DataAuditAction extends AbstractAction {
         north.add(summary, BorderLayout.CENTER);
 
         JComponent groupControl = createGroupControl(dataSet, pooledAudit, missingAudit,
-                findingsTable, variablesTable, summary);
+                findingsTable, variablesTable, summary, groupCache);
 
-        if (groupControl != null) {
-            north.add(groupControl, BorderLayout.SOUTH);
-        }
+        JComponent recodeControl = createRecodeControl(dataSet, findingsTable, variablesTable, summary,
+                missingText, missingRef, groupCache);
+
+        Box southOfSummary = Box.createVerticalBox();
+        if (groupControl != null) southOfSummary.add(groupControl);
+        southOfSummary.add(recodeControl);
+        north.add(southOfSummary, BorderLayout.SOUTH);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(north, BorderLayout.NORTH);
@@ -369,7 +420,8 @@ class DataAuditAction extends AbstractAction {
      */
     private static JComponent createGroupControl(DataSet dataSet, DataAudit pooledAudit,
                                                  MissingDataAudit missingAudit, DataAuditJTable findingsTable,
-                                                 DataAuditJTable variablesTable, JLabel summary) {
+                                                 DataAuditJTable variablesTable, JLabel summary,
+                                                 java.util.Map<String, DataAudit> cache) {
         java.util.List<String> discreteNames = dataSet.getVariables().stream()
                 .filter(v -> v instanceof edu.cmu.tetrad.data.DiscreteVariable)
                 .map(edu.cmu.tetrad.graph.Node::getName).toList();
@@ -383,29 +435,45 @@ class DataAuditAction extends AbstractAction {
         combo.setToolTipText("Compute row autocorrelations within groups of the selected discrete variable "
                 + "(for block-structured data such as stacked regions or subjects).");
 
-        java.util.Map<String, DataAudit> cache = new java.util.HashMap<>();
+        cache.clear();
         cache.put(none, pooledAudit);
 
         combo.addActionListener(e -> {
             String selected = (String) combo.getSelectedItem();
-            DataAudit current;
+            DataAudit cached = cache.get(selected);
 
-            try {
-                current = cache.computeIfAbsent(selected, name ->
-                        new DataAudit(dataSet, new DataAudit.Config().withSerialGroupVariable(name)));
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(combo, "Could not compute the grouped audit: "
-                        + ex.getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
-                combo.setSelectedItem(none);
+            if (cached != null) {
+                applyGroupedAudit(dataSet, pooledAudit, cached, selected, none, missingAudit, findingsTable,
+                        variablesTable, summary);
                 return;
             }
 
-            boolean grouped = !none.equals(selected);
-            findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
-            sizeFindingsColumns(findingsTable);
-            variablesTable.setAuditModel(new DataAuditVariablesModel(dataSet, pooledAudit,
-                    grouped ? current : null, missingAudit));
-            summary.setText(summaryLine(dataSet, current, missingAudit));
+            // A grouped audit reruns every check, so on a wide dataset it takes as long as the original; run it
+            // off the event thread under the stop dialog, like the original, and swap the result in afterwards.
+            new WatchedProcess() {
+                @Override
+                public void watch() throws InterruptedException {
+                    DataAudit current;
+
+                    try {
+                        current = new DataAudit(dataSet, new DataAudit.Config().withSerialGroupVariable(selected));
+                    } catch (RuntimeException ex) {
+                        SwingUtilities.invokeLater(() -> combo.setSelectedItem(none));
+                        if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
+
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(combo,
+                                "Could not compute the grouped audit: " + ex.getMessage(), "Error",
+                                JOptionPane.WARNING_MESSAGE));
+                        return;
+                    }
+
+                    SwingUtilities.invokeLater(() -> {
+                        cache.put(selected, current);
+                        applyGroupedAudit(dataSet, pooledAudit, current, selected, none, missingAudit,
+                                findingsTable, variablesTable, summary);
+                    });
+                }
+            };
         });
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
@@ -413,6 +481,180 @@ class DataAuditAction extends AbstractAction {
         controls.add(new JLabel("Serial dependence within groups of:"));
         controls.add(combo);
         return controls;
+    }
+
+    /**
+     * Builds the sentinel recode control: a button that sets to missing the cells holding the codes named by the
+     * SENTINEL_VALUE findings currently selected in the Findings table. The button is disabled unless at least one
+     * such finding is selected, so it can only ever act on a value the audit reported and the user picked.
+     * <p>
+     * The recode is offered rather than performed because the audit cannot tell a code from a measurement: the check
+     * judges the shape of the observed distribution, and only the file's codebook settles what the flagged value
+     * means. The confirmation dialog therefore states the edit exactly - variable, value, and number of cells - and
+     * says that the dataset is modified in place and the edit cannot be undone, since the dataset is the one every
+     * downstream box in the session reads.
+     * <p>
+     * After the recode the audit is recomputed, off the event thread under the stop dialog as elsewhere in this
+     * dialog, and the findings, per-variable facts, summary line and missingness text are all replaced: the point of
+     * the recode is that the missingness numbers change, and the continuous checks that had been computed with the
+     * code treated as data are recomputed without it. The grouped-audit cache is cleared for the same reason.
+     */
+    private static JComponent createRecodeControl(DataSet dataSet, DataAuditJTable findingsTable,
+                                                  DataAuditJTable variablesTable, JLabel summary,
+                                                  JTextArea missingText, MissingDataAudit[] missingRef,
+                                                  Map<String, DataAudit> groupCache) {
+        JButton recode = new JButton("Recode Selected Sentinel Values to Missing...");
+        recode.setEnabled(false);
+        recode.setToolTipText("Set to missing the cells holding the codes named by the SENTINEL_VALUE findings "
+                + "selected above. Modifies the dataset in place; not undoable.");
+
+        findingsTable.getSelectionModel().addListSelectionListener(
+                e -> recode.setEnabled(!selectedSentinelFindings(findingsTable).isEmpty()));
+
+        recode.addActionListener(e -> {
+            List<AuditFinding> selected = selectedSentinelFindings(findingsTable);
+            if (selected.isEmpty()) return;
+
+            // One edit per (variable, value) pair, in selection order, with duplicates collapsed: the same finding
+            // can be reached twice through a multi-column selection in the table.
+            Map<String, Double> edits = new LinkedHashMap<>();
+
+            for (AuditFinding finding : selected) {
+                Double value = finding.getValues().get("value");
+                if (value != null) edits.put(finding.getVariables().get(0), value);
+            }
+
+            StringBuilder sb = new StringBuilder("Set the following cells to missing?\n\n");
+
+            for (Map.Entry<String, Double> edit : edits.entrySet()) {
+                int cells = 0;
+                int j = dataSet.getColumnIndex(dataSet.getVariable(edit.getKey()));
+
+                for (int i = 0; i < dataSet.getNumRows(); i++) {
+                    if (dataSet.getDouble(i, j) == edit.getValue()) cells++;
+                }
+
+                sb.append("    ").append(edit.getKey()).append(" = ").append(edit.getValue())
+                        .append("    (").append(cells).append(" of ").append(dataSet.getNumRows())
+                        .append(" cells)\n");
+            }
+
+            sb.append("\nThe audit cannot tell a missing-data code from a real measurement; the codebook for the "
+                    + "file settles that. This edit modifies the dataset in place, for every box downstream of it "
+                    + "in the session, and cannot be undone.");
+
+            int choice = JOptionPane.showConfirmDialog(recode, sb.toString(), "Recode to Missing",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (choice != JOptionPane.OK_OPTION) return;
+
+            int changed = 0;
+
+            try {
+                for (Map.Entry<String, Double> edit : edits.entrySet()) {
+                    changed += DataAudit.recodeToMissing(dataSet, edit.getKey(), edit.getValue());
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(recode, "Could not recode: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            final int totalChanged = changed;
+
+            new WatchedProcess() {
+                @Override
+                public void watch() throws InterruptedException {
+                    DataAudit current;
+                    MissingDataAudit missing;
+
+                    try {
+                        current = new DataAudit(dataSet);
+                        missing = missingAuditFor(dataSet, current);
+                    } catch (RuntimeException ex) {
+                        if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
+
+                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(recode,
+                                "The cells were recoded, but the audit could not be recomputed: " + ex.getMessage()
+                                        + " Reopen the Data Audit to see the updated findings.", "Error",
+                                JOptionPane.WARNING_MESSAGE));
+                        return;
+                    }
+
+                    SwingUtilities.invokeLater(() -> {
+                        missingRef[0] = missing;
+                        groupCache.clear();
+
+                        findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
+                        sizeFindingsColumns(findingsTable);
+                        variablesTable.setAuditModel(
+                                new DataAuditVariablesModel(dataSet, current, null, missing));
+                        missingText.setText(missingnessText(dataSet, missing));
+                        missingText.setCaretPosition(0);
+                        summary.setText(summaryLine(dataSet, current, missing)
+                                + "  " + totalChanged + " cell(s) recoded to missing.");
+                        recode.setEnabled(false);
+                    });
+                }
+            };
+        });
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        controls.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        controls.add(recode);
+        return controls;
+    }
+
+    /**
+     * The SENTINEL_VALUE findings in the Findings table's current selection, in row order, without duplicates. The
+     * table sorts and the selection is by cell, so selected view rows are mapped to model rows and repeated rows
+     * (one per selected column) are collapsed.
+     *
+     * @param findingsTable the findings table.
+     * @return the selected sentinel findings, possibly empty.
+     */
+    private static List<AuditFinding> selectedSentinelFindings(DataAuditJTable findingsTable) {
+        List<AuditFinding> selected = new ArrayList<>();
+
+        if (!(findingsTable.getModel() instanceof DataAuditFindingsModel model)) return selected;
+
+        for (int viewRow : findingsTable.getSelectedRows()) {
+            AuditFinding finding = model.getFinding(findingsTable.convertRowIndexToModel(viewRow));
+
+            if (finding.getCode() == FindingCode.SENTINEL_VALUE && !selected.contains(finding)) {
+                selected.add(finding);
+            }
+        }
+
+        return selected;
+    }
+
+    /**
+     * Swaps a (pooled or grouped) audit's results into the dialog: findings, per-variable facts, and summary line.
+     * Must be called on the event thread.
+     */
+    private static void applyGroupedAudit(DataSet dataSet, DataAudit pooledAudit, DataAudit current,
+                                          String selected, String none, MissingDataAudit missingAudit,
+                                          DataAuditJTable findingsTable, DataAuditJTable variablesTable,
+                                          JLabel summary) {
+        boolean grouped = !none.equals(selected);
+        findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
+        sizeFindingsColumns(findingsTable);
+        variablesTable.setAuditModel(new DataAuditVariablesModel(dataSet, pooledAudit,
+                grouped ? current : null, missingAudit));
+
+        // For block-sorted data the total finding count is invariant under grouping (each
+        // block-constant variable's SERIAL_DEPENDENCE finding converts to a
+        // GROUP_CONSTANT_VARIABLE finding), and the "Lag-1 r (grouped)" column is the last
+        // of eleven, typically outside the visible viewport. Without the cues below, the
+        // canonical use case looks like a no-op.
+        summary.setText(summaryLine(dataSet, current, missingAudit)
+                + (grouped ? "  Serial dependence computed within groups of " + selected + "." : ""));
+
+        if (grouped) {
+            int lastCol = variablesTable.getColumnCount() - 1;
+            variablesTable.scrollRectToVisible(variablesTable.getCellRect(0, lastCol, true));
+        }
     }
 
     /**

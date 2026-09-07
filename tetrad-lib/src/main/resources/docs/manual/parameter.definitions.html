@@ -585,6 +585,40 @@ Source:
     </ul>
 
 
+    === bgeAlphaMu ===
+    <h3 class="parameter_description" id="bgeAlphaMu">bgeAlphaMu</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bgeAlphaMu_short_desc">BGe prior precision on the mean (alpha_mu)</span></li>
+        <li>Long Description: <span id="bgeAlphaMu_long_desc">
+                    The prior precision on the mean in the Normal-Wishart prior of the BGe score
+                    (bnlearn's iss.mu). Acts like a prior equivalent sample size for the mean;
+                    larger values tend to favor denser graphs. Default 1.
+        </span></li>
+        <li>Default Value: <span id="bgeAlphaMu_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="bgeAlphaMu_lower_bound">1.0E-4</span></li>
+        <li>Upper Bound: <span id="bgeAlphaMu_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bgeAlphaMu_value_type">Double</span></li>
+    </ul>
+
+
+    === bgeAlphaWOffset ===
+    <h3 class="parameter_description" id="bgeAlphaWOffset">bgeAlphaWOffset</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="bgeAlphaWOffset_short_desc">BGe Wishart degrees of freedom above the number of variables (alpha_w = p + offset)</span></li>
+        <li>Long Description: <span id="bgeAlphaWOffset_long_desc">
+                    The degrees of freedom of the Wishart prior in the BGe score, given as an offset
+                    above the number of variables p, so alpha_w = p + bgeAlphaWOffset. Must exceed 1 so
+                    that the prior scale t = alpha_mu (alpha_w - p - 1) / (alpha_mu + 1) is positive.
+                    The default 2 gives alpha_w = p + alpha_mu + 1 for the default alpha_mu = 1, as
+                    recommended by Kuipers et al. (2014) and used by bnlearn.
+        </span></li>
+        <li>Default Value: <span id="bgeAlphaWOffset_default_value">2.0</span></li>
+        <li>Lower Bound: <span id="bgeAlphaWOffset_lower_bound">1.01</span></li>
+        <li>Upper Bound: <span id="bgeAlphaWOffset_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="bgeAlphaWOffset_value_type">Double</span></li>
+    </ul>
+
+
     === bootstrappingNumThreads ===
     <h3 class="parameter_description" id="bootstrappingNumThreads">bootstrappingNumThreads</h3>
     <ul class="parameter_description_list">
@@ -1348,6 +1382,27 @@ Source:
             <span id="differentGraphs_upper_bound"></span></li>
         <li>Value Type:
             <span id="differentGraphs_value_type">Boolean</span></li>
+    </ul>
+
+
+    === discreteInteractionOrder ===
+    <h3 class="parameter_description" id="discreteInteractionOrder">discreteInteractionOrder</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="discreteInteractionOrder_short_desc">Interaction order among discrete parents in the BGe embedding scores (1 = additive)</span></li>
+        <li>Long Description: <span id="discreteInteractionOrder_long_desc">
+                    For the BF-BGe and DG-BGe scores: the maximum number of distinct discrete parents whose
+                    indicator columns are multiplied to form interaction columns in a family's parent block.
+                    1 (the default) is the additive design of DG-BIC and BF-BIC, in which a discrete child
+                    depends on its discrete parents only through main effects. 2 adds pairwise interactions;
+                    an order at least the number of discrete parents gives the saturated design, the same span
+                    as BDeu's conditional table. Empty-cell product columns are dropped. Orders above 1 are
+                    not score-equivalent (Markov-equivalent DAGs may score differently), so they are intended
+                    for permutation searches such as BOSS and GRaSP.
+        </span></li>
+        <li>Default Value: <span id="discreteInteractionOrder_default_value">1</span></li>
+        <li>Lower Bound: <span id="discreteInteractionOrder_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="discreteInteractionOrder_upper_bound">20</span></li>
+        <li>Value Type: <span id="discreteInteractionOrder_value_type">Integer</span></li>
     </ul>
 
 
@@ -2486,6 +2541,26 @@ Source:
             Bound: <span id="doLegalityGating_upper_bound"></span></li>
         <li>Value
             Type: <span id="doLegalityGating_value_type">Boolean</span></li>
+    </ul>
+
+    === logFinalOrientations ===
+    <h3 class="parameter_description" id="logFinalOrientations">logFinalOrientations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="logFinalOrientations_short_desc">
+             Yes to log the rule-by-rule output of the final FCI orientation
+        </span></li>
+        <li>Long Description: <span id="logFinalOrientations_long_desc">
+             Yes to log the rule-by-rule output of the final FCI orientation (R1-R4 firings,
+             discriminating path stamps, BK orientation). Separate from the verbose flag, which
+             gives the search-level narrative (removals tried and committed, sepsets, saturating
+             step) without this voluminous orientation output.
+     </span></li>
+        <li>Default Value: <span id="logFinalOrientations_default_value">false</span></li>
+        <li>Lower Bound: <span id="logFinalOrientations_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="logFinalOrientations_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="logFinalOrientations_value_type">Boolean</span></li>
     </ul>
 
     === henckelPruning ===
@@ -4138,20 +4213,56 @@ Source:
     </ul>
 
 
+    === flopNumRestarts ===
+    <h3 class="parameter_description" id="flopNumRestarts">flopNumRestarts</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="flopNumRestarts_short_desc">The number of iterated local search (ILS)
+        restarts for FLOP (default 20)</span></li>
+        <li>Long Description: <span id="flopNumRestarts_long_desc"> The number of iterated local search restarts.
+        Zero gives a single local search from the principled initial order. Each restart perturbs the best-found
+        order with about ln(p) random transpositions and reruns the local search, keeping the best-scoring result;
+        more restarts can never yield a worse-scoring graph, at the expense of run-time.</span></li>
+        <li>Default Value: <span id="flopNumRestarts_default_value">20</span></li>
+        <li>Lower Bound: <span id="flopNumRestarts_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="flopNumRestarts_upper_bound">2147483647</span></li>
+        <li>Value Type:
+            <span id="flopNumRestarts_value_type">Integer</span></li>
+    </ul>
+
+
     === numStarts ===
     <h3 class="parameter_description" id="numStarts">numStarts</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="numStarts_short_desc">The number of restarts, random after the
-        first (default 1)</span></li>
-        <li>Long Description: <span id="numStarts_long_desc"> The number of times the algorithm should
-        be started from different initializations. By default, the algorithm
-        will be run through at least once using the initialized parameters
-        (zero random restarts).</span></li>
+        <li>Short Description: <span id="numStarts_short_desc">The number of restarts of the search
+        (default 1)</span></li>
+        <li>Long Description: <span id="numStarts_long_desc"> The number of times the algorithm should be started
+        and run to completion, with the best-scoring result kept. By default, restarts after the first begin from
+        fresh random orders. Some algorithms offer an alternative restart style; for example, BOSS with the
+        useIlsRestarts option perturbs the best order found so far (iterated local search) instead of starting from
+        a fresh random order.</span></li>
         <li>Default Value: <span id="numStarts_default_value">1</span></li>
         <li>Lower Bound: <span id="numStarts_lower_bound">1</span></li>
         <li>Upper Bound: <span id="numStarts_upper_bound">2147483647</span></li>
         <li>Value Type:
             <span id="numStarts_value_type">Integer</span></li>
+    </ul>
+
+
+    === useIlsRestarts ===
+    <h3 class="parameter_description" id="useIlsRestarts">useIlsRestarts</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useIlsRestarts_short_desc">Yes if restarts should use iterated local
+        search (ILS) rather than fresh random orders (default No)</span></li>
+        <li>Long Description: <span id="useIlsRestarts_long_desc"> If Yes, restarts after the first perturb the
+        best order found so far with about ln(m) random transpositions and rerun the search from there, in the
+        style of the FLOP algorithm (Wienobst, Henckel, and Weichwald, 2026), rather than starting from a fresh
+        random order. ILS restarts typically reconverge much faster than random restarts and escape local optima
+        more effectively per unit of compute. The number of restarts is controlled by numStarts.</span></li>
+        <li>Default Value: <span id="useIlsRestarts_default_value">false</span></li>
+        <li>Lower Bound: <span id="useIlsRestarts_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useIlsRestarts_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="useIlsRestarts_value_type">Boolean</span></li>
     </ul>
 
 
@@ -5381,6 +5492,28 @@ Source:
 
 
     === semBicStructurePrior ===
+    <h3 class="parameter_description" id="basisRankTransform">basisRankTransform</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="basisRankTransform_short_desc">Rank-transform continuous variables to
+        [-1, 1] before the basis-function embedding</span></li>
+        <li>Long Description: <span id="basisRankTransform_long_desc">If true, each continuous variable is
+        replaced by its mid-ranks mapped to a uniform grid on [-1, 1] before the Legendre expansion, so the basis
+        is exactly orthogonal under the empirical measure and every row has the same leverage. The default
+        min-max scaling concentrates the higher-order basis columns on the few most extreme rows; the resulting
+        likelihood-ratio statistic has a power-law null tail, so a handful of high-leverage rows can produce a
+        spurious nonlinear edge at any penalty discount. With the rank transform the null is chi-square on its
+        nominal degrees of freedom, a chi-square calibration of the penalty discount (Data Editor, Tools, Alpha/Penalty
+        Discount Calculator) is exact, and the score is invariant to
+        monotone transformations of the marginals. The cost is that the score models the copula rather than the
+        joint distribution with its marginals (about 6 percent of the likelihood-ratio statistic on Gaussian
+        data, with a gain on skewed data).</span></li>
+        <li>Default Value: <span id="basisRankTransform_default_value">false</span></li>
+        <li>Lower Bound: <span id="basisRankTransform_lower_bound"></span></li>
+        <li>Upper Bound: <span id="basisRankTransform_upper_bound"></span></li>
+        <li>Value Type: <span id="basisRankTransform_value_type">Boolean</span></li>
+    </ul>
+
+
     <h3 class="parameter_description" id="semBicStructurePrior">semBicStructurePrior</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="semBicStructurePrior_short_desc">Structure Prior for SEM BIC
@@ -6654,23 +6787,29 @@ Source:
     <h3 class="parameter_description" id="binsPerContZ">binsPerContZ</h3>
     <ul class="parameter_description_list">
         <li>Short Description:
-            <span id="binsPerContZ_short_desc">Bins per continuous Z variable</span>
+            <span id="binsPerContZ_short_desc">Bins per continuous Z variable (fixed mode)</span>
         </li>
         <li>Long Description:
             <span id="binsPerContZ_long_desc">
             Number of quantile bins used to discretize continuous conditioning (Z)
-            variables when forming strata. Increasing this value yields finer
-            conditioning but increases the number of strata and data requirements.
+            variables when forming strata. Used only when adaptive Z binning
+            (useAdaptiveZBins) is disabled. Note that with a fixed bin count the
+            level of a stratified permutation test degrades as the sample size
+            grows: within-bin residual dependence under the conditional-independence
+            null is a fixed bias determined by the bin width, while the permutation
+            reference tightens with n. The bin count must therefore grow with n
+            (roughly n^(2/5)); prefer adaptive binning except in controlled
+            experiments.
         </span>
         </li>
         <li>Default Value:
-            <span id="binsPerContZ_default_value">4</span>
+            <span id="binsPerContZ_default_value">16</span>
         </li>
         <li>Lower Bound:
             <span id="binsPerContZ_lower_bound">2</span>
         </li>
         <li>Upper Bound:
-            <span id="binsPerContZ_upper_bound">10</span>
+            <span id="binsPerContZ_upper_bound">200</span>
         </li>
         <li>Value Type:
             <span id="binsPerContZ_value_type">Integer</span>
@@ -6757,6 +6896,74 @@ Source:
         </li>
         <li>Value Type:
             <span id="minStratumSize_value_type">Integer</span>
+        </li>
+    </ul>
+
+
+    === useAdaptiveZBins ===
+    <h3 class="parameter_description" id="useAdaptiveZBins">useAdaptiveZBins</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="useAdaptiveZBins_short_desc">Adaptive bins for continuous Z</span>
+        </li>
+        <li>Long Description:
+            <span id="useAdaptiveZBins_long_desc">
+            If enabled (recommended), the number of quantile bins per continuous
+            conditioning (Z) variable grows with the sample size at the rate
+            d ~ n^(2/5) of Neykov, Balakrishnan and Wasserman (2021), capped so
+            that the expected number of samples per stratum remains workable when
+            several continuous Z variables multiply the cell count. This growth is
+            required for the permutation calibration to control the test's level:
+            with a fixed bin count, within-bin residual dependence under the
+            conditional-independence null does not shrink with n, and the test
+            becomes increasingly anticonservative as the sample size grows. If
+            disabled, the fixed binsPerContZ value is used instead.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="useAdaptiveZBins_default_value">true</span>
+        </li>
+        <li>Lower Bound:
+            <span id="useAdaptiveZBins_lower_bound"></span>
+        </li>
+        <li>Upper Bound:
+            <span id="useAdaptiveZBins_upper_bound"></span>
+        </li>
+        <li>Value Type:
+            <span id="useAdaptiveZBins_value_type">Boolean</span>
+        </li>
+    </ul>
+
+
+    === trffSymmetrized ===
+    <h3 class="parameter_description" id="trffSymmetrized">trffSymmetrized</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description:
+            <span id="trffSymmetrized_short_desc">Symmetrize the TRFF LR test over (X, Y)</span>
+        </li>
+        <li>Long Description:
+            <span id="trffSymmetrized_long_desc">
+            If enabled (the default), the TRFF LR test is computed in both
+            directions - regressing Y on Z plus X, and regressing X on Z plus Y -
+            and the larger (more conservative) p-value is reported, so the result
+            does not depend on the order of the pair, as constraint-based
+            algorithms expect. Each direction controls its level, so the maximum
+            does as well. If disabled, only the direction with Y as the
+            regression target is computed, which halves the cost per query but
+            makes the test asymmetric in its arguments.
+        </span>
+        </li>
+        <li>Default Value:
+            <span id="trffSymmetrized_default_value">true</span>
+        </li>
+        <li>Lower Bound:
+            <span id="trffSymmetrized_lower_bound"></span>
+        </li>
+        <li>Upper Bound:
+            <span id="trffSymmetrized_upper_bound"></span>
+        </li>
+        <li>Value Type:
+            <span id="trffSymmetrized_value_type">Boolean</span>
         </li>
     </ul>
 
@@ -7181,216 +7388,10 @@ Source:
         </li>
     </ul>
 
-    === minimaxLegendreDegree ===
-    <h3 class="parameter_description" id="minimaxLegendreDegree">minimaxLegendreDegree</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="minimaxLegendreDegree_short_desc">
-            Legendre truncation degree (t)
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="minimaxLegendreDegree_long_desc">
-        Number of Legendre polynomial basis functions used per continuous parent
-        in the Legendre score.
-        For each continuous parent X, the model includes P₁(x), …, P_t(x),
-        where x is the globally z-scored variable mapped to [-1,1].
-        Larger values increase nonlinear flexibility but also increase model
-        complexity and effective degrees of freedom.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="minimaxLegendreDegree_default_value">8</span>
-        </li>
-        <li>Lower Bound:
-            <span id="minimaxLegendreDegree_lower_bound">1</span>
-        </li>
-        <li>Upper Bound:
-            <span id="minimaxLegendreDegree_upper_bound">50</span>
-        </li>
-        <li>Value Type:
-            <span id="minimaxLegendreDegree_value_type">Integer</span>
-        </li>
-    </ul>
 
-    === minimaxLegendreClip ===
-    <h3 class="parameter_description" id="minimaxLegendreClip">minimaxLegendreClip</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="minimaxLegendreClip_short_desc">
-            Z-score clipping for Legendre mapping
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="minimaxLegendreClip_long_desc">
-        Continuous variables are globally z-scored and mapped to [-1,1] via
-        x = clamp(z / clip).
-        This parameter controls the clipping threshold.
-        Smaller values cause stronger saturation at ±1; larger values
-        preserve more linear behavior.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="minimaxLegendreClip_default_value">3.0</span>
-        </li>
-        <li>Lower Bound:
-            <span id="minimaxLegendreClip_lower_bound">1e-3</span>
-        </li>
-        <li>Upper Bound:
-            <span id="minimaxLegendreClip_upper_bound">1.0e6</span>
-        </li>
-        <li>Value Type:
-            <span id="minimaxLegendreClip_value_type">Double</span>
-        </li>
-    </ul>
 
-    === minimaxLegendreRidge ===
-    <h3 class="parameter_description" id="minimaxLegendreRidge">minimaxLegendreRidge</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="minimaxLegendreRidge_short_desc">
-            Ridge regularization strength
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="minimaxLegendreRidge_long_desc">
-        ℓ₂ (ridge) regularization applied to all non-intercept coefficients
-        in both the Student-t regression and multinomial logistic models.
-        Larger values shrink coefficients more strongly and reduce effective
-        degrees of freedom.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="minimaxLegendreRidge_default_value">1e-3</span>
-        </li>
-        <li>Lower Bound:
-            <span id="minimaxLegendreRidge_lower_bound">1e-12</span>
-        </li>
-        <li>Upper Bound:
-            <span id="minimaxLegendreRidge_upper_bound">1.0e6</span>
-        </li>
-        <li>Value Type:
-            <span id="minimaxLegendreRidge_value_type">Double</span>
-        </li>
-    </ul>
 
-    === minimaxLegendreNu ===
-    <h3 class="parameter_description" id="minimaxLegendreNu">minimaxLegendreNu</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="minimaxLegendreNu_short_desc">
-            Student-t degrees of freedom (ν)
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="minimaxLegendreNu_long_desc">
-        Degrees of freedom parameter ν for the Student-t likelihood used
-        for continuous children.
-        Smaller values produce heavier tails (more robustness to outliers).
-        As ν → ∞, the model approaches Gaussian regression.
-        Must be greater than 2.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="minimaxLegendreNu_default_value">5.0</span>
-        </li>
-        <li>Lower Bound:
-            <span id="minimaxLegendreNu_lower_bound">2.01</span>
-        </li>
-        <li>Upper Bound:
-            <span id="minimaxLegendreNu_upper_bound">1.0e6</span>
-        </li>
-        <li>Value Type:
-            <span id="minimaxLegendreNu_value_type">Double</span>
-        </li>
-    </ul>
 
-    === minimaxLegendreInitScale ===
-    <h3 class="parameter_description" id="minimaxLegendreInitScale">minimaxLegendreInitScale</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="minimaxLegendreInitScale_short_desc">
-            Initial scale for Student-t IRLS
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="minimaxLegendreInitScale_long_desc">
-        Initial scale parameter used in the iterative reweighted least
-        squares (IRLS) procedure for Student-t regression.
-        The scale is subsequently profiled during fitting.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="minimaxLegendreInitScale_default_value">1.0</span>
-        </li>
-        <li>Lower Bound:
-            <span id="minimaxLegendreInitScale_lower_bound">1e-6</span>
-        </li>
-        <li>Upper Bound:
-            <span id="minimaxLegendreInitScale_upper_bound">1.0e6</span>
-        </li>
-        <li>Value Type:
-            <span id="minimaxLegendreInitScale_value_type">Double</span>
-        </li>
-    </ul>
-
-    === minimaxLegendreIrlsIters ===
-    <h3 class="parameter_description" id="minimaxLegendreIrlsIters">minimaxLegendreIrlsIters</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="minimaxLegendreIrlsIters_short_desc">
-            IRLS iterations
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="minimaxLegendreIrlsIters_long_desc">
-        Maximum number of IRLS iterations used for fitting both
-        Student-t and multinomial logistic models.
-        Larger values may improve convergence but increase runtime.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="minimaxLegendreIrlsIters_default_value">8</span>
-        </li>
-        <li>Lower Bound:
-            <span id="minimaxLegendreIrlsIters_lower_bound">1</span>
-        </li>
-        <li>Upper Bound:
-            <span id="minimaxLegendreIrlsIters_upper_bound">200</span>
-        </li>
-        <li>Value Type:
-            <span id="minimaxLegendreIrlsIters_value_type">Integer</span>
-        </li>
-    </ul>
-
-    === minimaxLegendreIrlsTol ===
-    <h3 class="parameter_description" id="minimaxLegendreIrlsTol">minimaxLegendreIrlsTol</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description:
-            <span id="minimaxLegendreIrlsTol_short_desc">
-            IRLS convergence tolerance
-        </span>
-        </li>
-        <li>Long Description:
-            <span id="minimaxLegendreIrlsTol_long_desc">
-        Convergence tolerance for the IRLS procedure.
-        Iterations stop when successive objective values change by less than
-        this relative threshold.
-        </span>
-        </li>
-        <li>Default Value:
-            <span id="minimaxLegendreIrlsTol_default_value">1e-6</span>
-        </li>
-        <li>Lower Bound:
-            <span id="minimaxLegendreIrlsTol_lower_bound">0.0</span>
-        </li>
-        <li>Upper Bound:
-            <span id="minimaxLegendreIrlsTol_upper_bound">1.0</span>
-        </li>
-        <li>Value Type:
-            <span id="minimaxLegendreIrlsTol_value_type">Double</span>
-        </li>
-    </ul>
 
     === pythonExe ===
     <h3 class="parameter_description" id="pythonExe">pythonExe</h3>
@@ -7676,5 +7677,491 @@ Source:
         <li>Lower Bound: <span id="missingEssMode_lower_bound"></span></li>
         <li>Upper Bound: <span id="missingEssMode_upper_bound"></span></li>
         <li>Value Type: <span id="missingEssMode_value_type">String</span></li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    === deNumFactors ===
+    <h3 class="parameter_description" id="deNumFactors">deNumFactors</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deNumFactors_short_desc">Number of grid-valued design factors (min = 2)</span></li>
+        <li>Long Description: <span id="deNumFactors_long_desc">
+        In the Designed Experiment simulation, the number of exogenous design factors (F1, F2, ...). These take a small number of evenly spaced levels, sampled uniformly, mimicking factors SET by an experimenter rather than sampled from a distribution.</span></li>
+        <li>Default Value: <span id="deNumFactors_default_value">4</span></li>
+        <li>Lower Bound: <span id="deNumFactors_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="deNumFactors_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deNumFactors_value_type">Integer</span></li>
+    </ul>
+
+    === deNumDerived ===
+    <h3 class="parameter_description" id="deNumDerived">deNumDerived</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deNumDerived_short_desc">Number of near-deterministic derived intermediates (min = 0)</span></li>
+        <li>Long Description: <span id="deNumDerived_long_desc">
+        The number of derived variables (D1, ...), each a near-deterministic smooth function of a random subset of the design factors (like a computed boundary-layer parameter), with noise standard deviation deDerivedNoise.</span></li>
+        <li>Default Value: <span id="deNumDerived_default_value">1</span></li>
+        <li>Lower Bound: <span id="deNumDerived_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="deNumDerived_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deNumDerived_value_type">Integer</span></li>
+    </ul>
+
+    === deNumResponses ===
+    <h3 class="parameter_description" id="deNumResponses">deNumResponses</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deNumResponses_short_desc">Number of measured responses (min = 1)</span></li>
+        <li>Long Description: <span id="deNumResponses_long_desc">
+        The number of response variables (R1, ...). Each is a function of all factors and derived variables, mixing additive and pairwise-interaction parts by weight deInteraction, plus noise with standard deviation deResponseNoise. Responses are the only genuinely 'measured' random variables in the design.</span></li>
+        <li>Default Value: <span id="deNumResponses_default_value">1</span></li>
+        <li>Lower Bound: <span id="deNumResponses_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="deNumResponses_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deNumResponses_value_type">Integer</span></li>
+    </ul>
+
+    === deMinLevels ===
+    <h3 class="parameter_description" id="deMinLevels">deMinLevels</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deMinLevels_short_desc">Minimum number of levels per design factor (min = 2)</span></li>
+        <li>Long Description: <span id="deMinLevels_long_desc">
+        Each design factor's number of grid levels is drawn uniformly between deMinLevels and deMaxLevels.</span></li>
+        <li>Default Value: <span id="deMinLevels_default_value">4</span></li>
+        <li>Lower Bound: <span id="deMinLevels_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="deMinLevels_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deMinLevels_value_type">Integer</span></li>
+    </ul>
+
+    === deMaxLevels ===
+    <h3 class="parameter_description" id="deMaxLevels">deMaxLevels</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deMaxLevels_short_desc">Maximum number of levels per design factor (min = 2)</span></li>
+        <li>Long Description: <span id="deMaxLevels_long_desc">
+        Each design factor's number of grid levels is drawn uniformly between deMinLevels and deMaxLevels.</span></li>
+        <li>Default Value: <span id="deMaxLevels_default_value">12</span></li>
+        <li>Lower Bound: <span id="deMaxLevels_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="deMaxLevels_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="deMaxLevels_value_type">Integer</span></li>
+    </ul>
+
+    === deCoupling ===
+    <h3 class="parameter_description" id="deCoupling">deCoupling</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deCoupling_short_desc">Probability that a factor is protocol-coupled to an earlier factor (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="deCoupling_long_desc">
+        With this probability, a design factor's value range is scaled by a randomly chosen earlier uncoupled factor (a non-factorial design, as when larger chord lengths are tested only at smaller attack angles). Coupling produces strong protocol-induced dependence among the inputs and appears as a directed edge in the true graph.</span></li>
+        <li>Default Value: <span id="deCoupling_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="deCoupling_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deCoupling_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="deCoupling_value_type">Double</span></li>
+    </ul>
+
+    === deDerivedNoise ===
+    <h3 class="parameter_description" id="deDerivedNoise">deDerivedNoise</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deDerivedNoise_short_desc">Noise standard deviation for derived variables (min = 0.0)</span></li>
+        <li>Long Description: <span id="deDerivedNoise_long_desc">
+        The standard deviation of the noise added to each derived variable's unit-variance systematic part. Small values make derived variables near-deterministic functions of their parents, the classic hard case for score-based orientation.</span></li>
+        <li>Default Value: <span id="deDerivedNoise_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="deDerivedNoise_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deDerivedNoise_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="deDerivedNoise_value_type">Double</span></li>
+    </ul>
+
+    === deInteraction ===
+    <h3 class="parameter_description" id="deInteraction">deInteraction</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deInteraction_short_desc">Pairwise-interaction mixing weight for derived and response functions (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="deInteraction_long_desc">
+        The weight of the pairwise-interaction part (products of the mapped parents) relative to the additive part in derived and response functions. High values mimic interaction-heavy physics such as Strouhal scaling, which violates the additivity assumed by per-parent basis expansions.</span></li>
+        <li>Default Value: <span id="deInteraction_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="deInteraction_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deInteraction_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="deInteraction_value_type">Double</span></li>
+    </ul>
+
+    === deResponseNoise ===
+    <h3 class="parameter_description" id="deResponseNoise">deResponseNoise</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deResponseNoise_short_desc">Noise standard deviation for response variables (min = 0.0)</span></li>
+        <li>Long Description: <span id="deResponseNoise_long_desc">
+        The standard deviation of the noise added to each response's unit-variance systematic part. The default 0.4 gives R-squared of about 0.85 given the inputs.</span></li>
+        <li>Default Value: <span id="deResponseNoise_default_value">0.4</span></li>
+        <li>Lower Bound: <span id="deResponseNoise_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deResponseNoise_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="deResponseNoise_value_type">Double</span></li>
+    </ul>
+
+    === deSelection ===
+    <h3 class="parameter_description" id="deSelection">deSelection</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deSelection_short_desc">Fraction of rows dropped by selection on measurability (min = 0.0, max < 1.0)</span></li>
+        <li>Long Description: <span id="deSelection_long_desc">
+        If greater than 0, the lowest deSelection fraction of rows by (first response plus noise) is dropped before the dataset is returned, as when rows exist only where the response was above a noise floor. Selection induces dependence among the inputs in the observed sample that is NOT in the true (pre-selection) graph; extra input-input edges found by searches on selected data are expected and are part of what this simulation studies.</span></li>
+        <li>Default Value: <span id="deSelection_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="deSelection_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="deSelection_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="deSelection_value_type">Double</span></li>
+    </ul>
+
+    === deSortByConfiguration ===
+    <h3 class="parameter_description" id="deSortByConfiguration">deSortByConfiguration</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deSortByConfiguration_short_desc">Emit rows grouped into configuration blocks, sweeping the first factor within each block</span></li>
+        <li>Long Description: <span id="deSortByConfiguration_long_desc">
+        If set, rows are emitted grouped into configuration blocks: the first factor is swept through its full level grid in ascending order within each block (like the frequency sweep in the Airfoil data), and the remaining factors are drawn once per block and held constant across the block. The data-generating structure is unchanged; only the row order and the repeated-measures grouping differ. The emitted file then shows strong serial dependence in file order that is BLOCK structure (repeated measures), not time-series structure: block-constant factors read as near-1 lag-1 autocorrelation, and the dependence collapses when autocorrelations are computed within groups (for example, via the data audit's serial grouping variable). These two readings of a serial dependence finding call for different remedies: clustering or configuration-level aggregation and blocks-by-configuration resampling here, versus lag modeling for genuine time series. Combined with deSelection, block lengths vary naturally, as the measurable frequency bands per configuration vary in Airfoil.</span></li>
+        <li>Default Value: <span id="deSortByConfiguration_default_value">false</span></li>
+        <li>Lower Bound: <span id="deSortByConfiguration_lower_bound"></span></li>
+        <li>Upper Bound: <span id="deSortByConfiguration_upper_bound"></span></li>
+        <li>Value Type: <span id="deSortByConfiguration_value_type">Boolean</span></li>
+    </ul>
+
+    === deEmitConfigColumn ===
+    <h3 class="parameter_description" id="deEmitConfigColumn">deEmitConfigColumn</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="deEmitConfigColumn_short_desc">Append a discrete CONFIG column naming each row's configuration block (requires deSortByConfiguration)</span></li>
+        <li>Long Description: <span id="deEmitConfigColumn_long_desc">
+        If set together with deSortByConfiguration, a discrete bookkeeping column named CONFIG is appended to the dataset, giving each row's configuration block - the analogue of the TOWN column in the corrected Boston Housing data. Its purpose is to let the block structure be named in grouped analyses; in particular, selecting it as the data audit's serial grouping variable recomputes the serial dependence check with per-block centering, which separates block structure from genuine time-series structure. The column is bookkeeping, not a variable of the system: it should be excluded from causal searches, and since it has one category per block it will trip the many-discrete-levels audit finding if treated as an ordinary variable. Has no effect when deSortByConfiguration is off.</span></li>
+        <li>Default Value: <span id="deEmitConfigColumn_default_value">false</span></li>
+        <li>Lower Bound: <span id="deEmitConfigColumn_lower_bound"></span></li>
+        <li>Upper Bound: <span id="deEmitConfigColumn_upper_bound"></span></li>
+        <li>Value Type: <span id="deEmitConfigColumn_value_type">Boolean</span></li>
+    </ul>
+
+    === osGraphNumContext ===
+    <h3 class="parameter_description" id="osGraphNumContext">osGraphNumContext</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osGraphNumContext_short_desc">Number of observed context variables (min = 0)</span></li>
+        <li>Long Description: <span id="osGraphNumContext_long_desc">
+        In the Observational Study simulation, the number of exogenous context variables (C1, ...): weather, season, region, demographics. A fraction osTypePropContextDiscrete are discrete; the rest continuous. In serial mode continuous context is AR(1) and discrete context is a sticky Markov chain.</span></li>
+        <li>Default Value: <span id="osGraphNumContext_default_value">2</span></li>
+        <li>Lower Bound: <span id="osGraphNumContext_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osGraphNumContext_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumContext_value_type">Integer</span></li>
+    </ul>
+
+    === osGraphNumHiddenContext ===
+    <h3 class="parameter_description" id="osGraphNumHiddenContext">osGraphNumHiddenContext</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osGraphNumHiddenContext_short_desc">Number of hidden context variables (min = 0)</span></li>
+        <li>Long Description: <span id="osGraphNumHiddenContext_long_desc">
+        Context variables that influence the system but are OMITTED from the dataset -- latent confounders. They appear in the true graph as latent nodes, so FCI-style evaluation is possible.</span></li>
+        <li>Default Value: <span id="osGraphNumHiddenContext_default_value">0</span></li>
+        <li>Lower Bound: <span id="osGraphNumHiddenContext_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osGraphNumHiddenContext_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumHiddenContext_value_type">Integer</span></li>
+    </ul>
+
+    === osGraphNumSystem ===
+    <h3 class="parameter_description" id="osGraphNumSystem">osGraphNumSystem</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osGraphNumSystem_short_desc">Number of system variables (min = 1)</span></li>
+        <li>Long Description: <span id="osGraphNumSystem_long_desc">
+        The number of variables in the causal system proper (S1, ...), forming a DAG among themselves with average degree osGraphAvgSystemDegree, with context parents.</span></li>
+        <li>Default Value: <span id="osGraphNumSystem_default_value">6</span></li>
+        <li>Lower Bound: <span id="osGraphNumSystem_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="osGraphNumSystem_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumSystem_value_type">Integer</span></li>
+    </ul>
+
+    === osGraphNumIndices ===
+    <h3 class="parameter_description" id="osGraphNumIndices">osGraphNumIndices</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osGraphNumIndices_short_desc">Number of index variables (min = 0)</span></li>
+        <li>Long Description: <span id="osGraphNumIndices_long_desc">
+        Near-deterministic functions (noise osFormIndexNoise) of system variables and earlier index variables (chains, like the FWI system's ISI/BUI -> FWI). In serial mode each index is a recursive accumulator with memory drawn from [osSerialIndexMemoryLow, osSerialIndexMemoryHigh].</span></li>
+        <li>Default Value: <span id="osGraphNumIndices_default_value">2</span></li>
+        <li>Lower Bound: <span id="osGraphNumIndices_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osGraphNumIndices_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumIndices_value_type">Integer</span></li>
+    </ul>
+
+    === osGraphNumOutcomes ===
+    <h3 class="parameter_description" id="osGraphNumOutcomes">osGraphNumOutcomes</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osGraphNumOutcomes_short_desc">Number of outcome variables (min = 0)</span></li>
+        <li>Long Description: <span id="osGraphNumOutcomes_long_desc">
+        Outcome variables (Y1, ...) depending on system, index, and context variables with pairwise interactions (weight osFormInteraction). Discrete via softmax if osTypeDiscreteOutcome.</span></li>
+        <li>Default Value: <span id="osGraphNumOutcomes_default_value">1</span></li>
+        <li>Lower Bound: <span id="osGraphNumOutcomes_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osGraphNumOutcomes_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osGraphNumOutcomes_value_type">Integer</span></li>
+    </ul>
+
+    === osGraphAvgSystemDegree ===
+    <h3 class="parameter_description" id="osGraphAvgSystemDegree">osGraphAvgSystemDegree</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osGraphAvgSystemDegree_short_desc">Average degree of the system DAG (min = 0.0)</span></li>
+        <li>Long Description: <span id="osGraphAvgSystemDegree_long_desc">
+        The average degree of the DAG among the system variables.</span></li>
+        <li>Default Value: <span id="osGraphAvgSystemDegree_default_value">2.0</span></li>
+        <li>Lower Bound: <span id="osGraphAvgSystemDegree_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osGraphAvgSystemDegree_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="osGraphAvgSystemDegree_value_type">Double</span></li>
+    </ul>
+
+    === osTypePropContextDiscrete ===
+    <h3 class="parameter_description" id="osTypePropContextDiscrete">osTypePropContextDiscrete</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osTypePropContextDiscrete_short_desc">Fraction of observed context variables that are discrete (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osTypePropContextDiscrete_long_desc">
+        Each observed context variable is independently discrete with this probability (osTypeNumCategories levels, uniform, or a sticky Markov chain in serial mode), else continuous. Discrete parents act through level-specific shifts (conditional Gaussian style).</span></li>
+        <li>Default Value: <span id="osTypePropContextDiscrete_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="osTypePropContextDiscrete_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osTypePropContextDiscrete_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osTypePropContextDiscrete_value_type">Double</span></li>
+    </ul>
+
+    === osTypePropSystemDiscrete ===
+    <h3 class="parameter_description" id="osTypePropSystemDiscrete">osTypePropSystemDiscrete</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osTypePropSystemDiscrete_short_desc">Fraction of system variables that are discrete (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osTypePropSystemDiscrete_long_desc">
+        A fixed count, round(osTypePropSystemDiscrete times osGraphNumSystem), of the system variables is made discrete with osTypeNumCategories levels, chosen at random. Unlike ordinalization, these are genuinely discrete causes: each is generated from its parents through softmax logits, as discrete outcomes are, and enters its children through per-category shifts, as discrete context does, so a discrete variable can sit inside the causal system with both parents and children. That is the case in which conditional-Gaussian and degenerate-Gaussian treatments of mixed data differ most, and the one that discrete context and outcomes alone cannot produce. Discrete system variables are never ordinalized or censored. In serial mode each has a sticky self-lag, keeping its previous value with probability equal to its self-lag coefficient and otherwise being redrawn from its parents, and takes part in no cross-lag edges. In panel mode the subject effect is a per-category shift on its logits. No random draws are made when the count is zero, so existing seeds are unaffected by the default.</span></li>
+        <li>Default Value: <span id="osTypePropSystemDiscrete_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="osTypePropSystemDiscrete_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osTypePropSystemDiscrete_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osTypePropSystemDiscrete_value_type">Double</span></li>
+    </ul>
+
+    === osTypeNumCategories ===
+    <h3 class="parameter_description" id="osTypeNumCategories">osTypeNumCategories</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osTypeNumCategories_short_desc">Number of categories for discrete variables (min = 2)</span></li>
+        <li>Long Description: <span id="osTypeNumCategories_long_desc">
+        The number of levels for discrete context variables, discrete outcomes, and ordinalized system variables.</span></li>
+        <li>Default Value: <span id="osTypeNumCategories_default_value">3</span></li>
+        <li>Lower Bound: <span id="osTypeNumCategories_lower_bound">2</span></li>
+        <li>Upper Bound: <span id="osTypeNumCategories_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osTypeNumCategories_value_type">Integer</span></li>
+    </ul>
+
+    === osTypeDiscreteOutcome ===
+    <h3 class="parameter_description" id="osTypeDiscreteOutcome">osTypeDiscreteOutcome</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osTypeDiscreteOutcome_short_desc">Yes if outcomes are discrete via softmax</span></li>
+        <li>Long Description: <span id="osTypeDiscreteOutcome_long_desc">
+        If yes, outcome variables are discrete, sampled from softmax logits that are linear in the (soft-clipped) parent values -- continuous-parents-to-discrete-child, logistic style.</span></li>
+        <li>Default Value: <span id="osTypeDiscreteOutcome_default_value">false</span></li>
+        <li>Lower Bound: <span id="osTypeDiscreteOutcome_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osTypeDiscreteOutcome_upper_bound"></span></li>
+        <li>Value Type: <span id="osTypeDiscreteOutcome_value_type">Boolean</span></li>
+    </ul>
+
+    === osDegradeOrdinalizeProp ===
+    <h3 class="parameter_description" id="osDegradeOrdinalizeProp">osDegradeOrdinalizeProp</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osDegradeOrdinalizeProp_short_desc">Fraction of system variables recorded as ordered categories (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osDegradeOrdinalizeProp_long_desc">
+        That fraction of system variables is generated continuous but RECORDED as ordered categories at random cutpoints (osTypeNumCategories levels) -- measurement coarsening. This reproduces the ordinal nominal-coding pathology: the true graph is the graph of the underlying continuous system, and the coarsening is measurement.</span></li>
+        <li>Default Value: <span id="osDegradeOrdinalizeProp_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="osDegradeOrdinalizeProp_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osDegradeOrdinalizeProp_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osDegradeOrdinalizeProp_value_type">Double</span></li>
+    </ul>
+
+    === osSerialMaxLag ===
+    <h3 class="parameter_description" id="osSerialMaxLag">osSerialMaxLag</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osSerialMaxLag_short_desc">Maximum lag of the time series; 0 turns serial dependence off (min = 0)</span></li>
+        <li>Long Description: <span id="osSerialMaxLag_long_desc">
+        If greater than 0, one time series per subject is generated, and the true graph is a
+        time lag graph with this maximum lag, following the time-series conventions. Self-lags,
+        AR(1) context, and index accumulators act at lag 1; each cross-lag edge acts at a lag
+        drawn uniformly from 1 to osSerialMaxLag. If 0, rows are i.i.d. and the true graph is an
+        ordinary DAG.</span></li>
+        <li>Default Value: <span id="osSerialMaxLag_default_value">0</span></li>
+        <li>Lower Bound: <span id="osSerialMaxLag_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="osSerialMaxLag_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osSerialMaxLag_value_type">Integer</span></li>
+    </ul>
+
+    === osSerialArCoef ===
+    <h3 class="parameter_description" id="osSerialArCoef">osSerialArCoef</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osSerialArCoef_short_desc">AR(1) coefficient for continuous context in serial mode (min = 0.0, max < 1.0)</span></li>
+        <li>Long Description: <span id="osSerialArCoef_long_desc">
+        The autoregression coefficient of continuous context variables in serial mode; the process is stationary with unit variance.</span></li>
+        <li>Default Value: <span id="osSerialArCoef_default_value">0.7</span></li>
+        <li>Lower Bound: <span id="osSerialArCoef_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osSerialArCoef_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osSerialArCoef_value_type">Double</span></li>
+    </ul>
+
+    === osSerialIndexMemoryLow ===
+    <h3 class="parameter_description" id="osSerialIndexMemoryLow">osSerialIndexMemoryLow</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osSerialIndexMemoryLow_short_desc">Low end of the index accumulator memory range (min = 0.0, max < 1.0)</span></li>
+        <li>Long Description: <span id="osSerialIndexMemoryLow_long_desc">
+        In serial mode, each index variable's accumulator memory delta (I{t} = delta I{t-1} + g(parents) + noise) is drawn uniformly from [osSerialIndexMemoryLow, osSerialIndexMemoryHigh] -- heterogeneous memory, from FFMC-like short memory to DC-like drought memory.</span></li>
+        <li>Default Value: <span id="osSerialIndexMemoryLow_default_value">0.2</span></li>
+        <li>Lower Bound: <span id="osSerialIndexMemoryLow_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osSerialIndexMemoryLow_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osSerialIndexMemoryLow_value_type">Double</span></li>
+    </ul>
+
+    === osSerialIndexMemoryHigh ===
+    <h3 class="parameter_description" id="osSerialIndexMemoryHigh">osSerialIndexMemoryHigh</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osSerialIndexMemoryHigh_short_desc">High end of the index accumulator memory range (min = 0.0, max < 1.0)</span></li>
+        <li>Long Description: <span id="osSerialIndexMemoryHigh_long_desc">
+        See osSerialIndexMemoryLow.</span></li>
+        <li>Default Value: <span id="osSerialIndexMemoryHigh_default_value">0.9</span></li>
+        <li>Lower Bound: <span id="osSerialIndexMemoryHigh_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osSerialIndexMemoryHigh_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osSerialIndexMemoryHigh_value_type">Double</span></li>
+    </ul>
+
+    === osSerialPropCrossLag ===
+    <h3 class="parameter_description" id="osSerialPropCrossLag">osSerialPropCrossLag</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osSerialPropCrossLag_short_desc">Probability of a cross-lag edge per ordered system pair (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osSerialPropCrossLag_long_desc">
+        In serial mode, for each ordered pair of distinct system variables (X, Y), the edge X{t-1} -> Y{t} is included with this probability. Reciprocal cross-lags represent feedback honestly.</span></li>
+        <li>Default Value: <span id="osSerialPropCrossLag_default_value">0.15</span></li>
+        <li>Lower Bound: <span id="osSerialPropCrossLag_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osSerialPropCrossLag_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osSerialPropCrossLag_value_type">Double</span></li>
+    </ul>
+
+    === osPanelNumSubjects ===
+    <h3 class="parameter_description" id="osPanelNumSubjects">osPanelNumSubjects</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osPanelNumSubjects_short_desc">Number of independent subjects (min = 1)</span></li>
+        <li>Long Description: <span id="osPanelNumSubjects_long_desc">
+        The sample is divided into this many independent subjects: replicates of the same system, sampleSize / osPanelNumSubjects rows each. Each subject has a random intercept on the system variables, which is a subject-level latent confounder in the pooled data. By default the subjects are concatenated into one dataset per run with the structure undeclared, as panel data usually arrive; subject start rows are then available from getSubjectStarts, and in serial mode lagging must not cross subject boundaries. See osPanelEmitSubjectColumn to name the structure in the stacked dataset, and osPanelEmitSubjectsAsDataSets to emit one data model per subject instead.</span></li>
+        <li>Default Value: <span id="osPanelNumSubjects_default_value">1</span></li>
+        <li>Lower Bound: <span id="osPanelNumSubjects_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="osPanelNumSubjects_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="osPanelNumSubjects_value_type">Integer</span></li>
+    </ul>
+
+    === osPanelEmitSubjectColumn ===
+    <h3 class="parameter_description" id="osPanelEmitSubjectColumn">osPanelEmitSubjectColumn</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osPanelEmitSubjectColumn_short_desc">Append a discrete SUBJECT column naming each row's subject in the stacked dataset (requires osPanelNumSubjects &gt; 1)</span></li>
+        <li>Long Description: <span id="osPanelEmitSubjectColumn_long_desc">
+        If set with osPanelNumSubjects greater than 1, a discrete bookkeeping column named SUBJECT is appended to the stacked dataset, giving each row's subject - the analogue of deEmitConfigColumn in the designed-experiment simulation and of the TOWN column in the corrected Boston Housing data. Its purpose is to let the panel structure be named: as the data audit's serial grouping variable (per-block centering), as the block column for within-block centering, or as a tier-0 fixed-effects variable in a knowledge-constrained search. The column is bookkeeping, not a variable of the system, and is not in the true graph; unless used as a grouping or tier variable it should be excluded from search. With one category per subject it will trip the many-discrete-levels audit finding if treated as an ordinary variable. Ignored when osPanelEmitSubjectsAsDataSets is on, where the column would be constant.</span></li>
+        <li>Default Value: <span id="osPanelEmitSubjectColumn_default_value">false</span></li>
+        <li>Lower Bound: <span id="osPanelEmitSubjectColumn_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osPanelEmitSubjectColumn_upper_bound"></span></li>
+        <li>Value Type: <span id="osPanelEmitSubjectColumn_value_type">Boolean</span></li>
+    </ul>
+
+    === osPanelEmitSubjectsAsDataSets ===
+    <h3 class="parameter_description" id="osPanelEmitSubjectsAsDataSets">osPanelEmitSubjectsAsDataSets</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osPanelEmitSubjectsAsDataSets_short_desc">Emit each subject as its own data model instead of stacking them (requires osPanelNumSubjects &gt; 1)</span></li>
+        <li>Long Description: <span id="osPanelEmitSubjectsAsDataSets_long_desc">
+        If set with osPanelNumSubjects greater than 1, each subject is emitted as a separate data model sharing the run's true graph, so the number of data models is numRuns times osPanelNumSubjects and getSubjectStarts returns {0} for each. This is the convention consumed by multi-data-set algorithms such as IMaGES, and by score pooling generally: in a comparison these algorithms are handed the simulation's data models and sum their scores across them, so each subject is scored from its own covariance and per-subject intercepts and slopes are absorbed. Note that a comparison draws its pooled selection from all data models, so with numRuns greater than 1 and differentGraphs on, subjects from different runs, with different graphs, would be pooled; use numRuns = 1, or turn differentGraphs off, in this mode. When off, the subjects are concatenated into one dataset per run.</span></li>
+        <li>Default Value: <span id="osPanelEmitSubjectsAsDataSets_default_value">false</span></li>
+        <li>Lower Bound: <span id="osPanelEmitSubjectsAsDataSets_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osPanelEmitSubjectsAsDataSets_upper_bound"></span></li>
+        <li>Value Type: <span id="osPanelEmitSubjectsAsDataSets_value_type">Boolean</span></li>
+    </ul>
+
+    === osFormIndexNoise ===
+    <h3 class="parameter_description" id="osFormIndexNoise">osFormIndexNoise</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osFormIndexNoise_short_desc">Noise standard deviation for index variables (min = 0.0)</span></li>
+        <li>Long Description: <span id="osFormIndexNoise_long_desc">
+        The noise standard deviation of index variables; small values make indices near-deterministic functions of their parents.</span></li>
+        <li>Default Value: <span id="osFormIndexNoise_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="osFormIndexNoise_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osFormIndexNoise_upper_bound">1.7976931348623157E308</span></li>
+        <li>Value Type: <span id="osFormIndexNoise_value_type">Double</span></li>
+    </ul>
+
+    === osFormNonlinearity ===
+    <h3 class="parameter_description" id="osFormNonlinearity">osFormNonlinearity</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osFormNonlinearity_short_desc">Monotone transmission nonlinearity weight (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osFormNonlinearity_long_desc">
+        The mixing weight of a random strictly monotone map (sinh, asinh, signed power, or exponential) applied to each continuous parent's value before it enters a child. 0 gives linear transmission.</span></li>
+        <li>Default Value: <span id="osFormNonlinearity_default_value">0.3</span></li>
+        <li>Lower Bound: <span id="osFormNonlinearity_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osFormNonlinearity_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osFormNonlinearity_value_type">Double</span></li>
+    </ul>
+
+    === osFormInteraction ===
+    <h3 class="parameter_description" id="osFormInteraction">osFormInteraction</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osFormInteraction_short_desc">Pairwise-interaction weight for index and outcome functions (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osFormInteraction_long_desc">
+        The weight of pairwise products of continuous parents in index and outcome functions, relative to the additive part.</span></li>
+        <li>Default Value: <span id="osFormInteraction_default_value">0.2</span></li>
+        <li>Lower Bound: <span id="osFormInteraction_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osFormInteraction_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osFormInteraction_value_type">Double</span></li>
+    </ul>
+
+    === osGraphEdgeDensity ===
+    <h3 class="parameter_description" id="osGraphEdgeDensity">osGraphEdgeDensity</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osGraphEdgeDensity_short_desc">Multiplier on all cross-role edge probabilities (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osGraphEdgeDensity_long_desc">
+        Scales all cross-role edge inclusion probabilities in the Observational Study
+        simulation: context to system (base 0.4), system to index (0.5), index to index (0.4),
+        context to index (0.2), and the parent probabilities of outcomes (system 0.5, index
+        0.7, context 0.3). 1.0 gives the base densities; smaller values give sparser graphs.
+        The density of the DAG among the system variables is controlled separately by
+        osGraphAvgSystemDegree. Minimum-parent floors (indices get at least two system parents,
+        outcomes at least two parents) are kept regardless.</span></li>
+        <li>Default Value: <span id="osGraphEdgeDensity_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="osGraphEdgeDensity_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osGraphEdgeDensity_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osGraphEdgeDensity_value_type">Double</span></li>
+    </ul>
+
+    === osDegradeMissingMechanism ===
+    <h3 class="parameter_description" id="osDegradeMissingMechanism">osDegradeMissingMechanism</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osDegradeMissingMechanism_short_desc">Missingness mechanism: none, mcar, mar, or mnar</span></li>
+        <li>Long Description: <span id="osDegradeMissingMechanism_long_desc">
+        If not none, cells of system, index, and outcome variables are marked missing at an exact per-column rate of osDegradeMissingProp (context variables are always fully observed). mcar is independent of everything. mar is driven by the first observed context variable, which is fully observed, so missingness is at random given context. mnar is driven by the underlying value of the cell itself. In each case the missing cells are those with the highest driver-plus-noise scores, so the mechanism is probabilistic but the rate is exact.</span></li>
+        <li>Default Value: <span id="osDegradeMissingMechanism_default_value">none</span></li>
+        <li>Lower Bound: <span id="osDegradeMissingMechanism_lower_bound"></span></li>
+        <li>Upper Bound: <span id="osDegradeMissingMechanism_upper_bound"></span></li>
+        <li>Value Type: <span id="osDegradeMissingMechanism_value_type">String</span></li>
+    </ul>
+
+    === osDegradeMissingProp ===
+    <h3 class="parameter_description" id="osDegradeMissingProp">osDegradeMissingProp</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osDegradeMissingProp_short_desc">Fraction of cells marked missing per eligible column (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osDegradeMissingProp_long_desc">
+        The exact per-column missingness rate applied to system, index, and outcome variables when osDegradeMissingMechanism is not none.</span></li>
+        <li>Default Value: <span id="osDegradeMissingProp_default_value">0.1</span></li>
+        <li>Lower Bound: <span id="osDegradeMissingProp_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osDegradeMissingProp_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osDegradeMissingProp_value_type">Double</span></li>
+    </ul>
+
+    === osDegradeCensorProp ===
+    <h3 class="parameter_description" id="osDegradeCensorProp">osDegradeCensorProp</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osDegradeCensorProp_short_desc">Fraction of continuous system and outcome variables censored at a detection limit (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osDegradeCensorProp_long_desc">
+        That fraction of the continuous, non-ordinalized system and outcome variables is censored at a detection limit: values beyond the limit are recorded AT the limit, with the side (right or left) chosen at random and the limit placed at the osDegradeCensorQuantile quantile. Rows are kept; this is measurement, not selection, and the true graph is unchanged. (The row-removal analogue, truncation, is selection; see the Designed Experiment simulation's deSelection.)</span></li>
+        <li>Default Value: <span id="osDegradeCensorProp_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="osDegradeCensorProp_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osDegradeCensorProp_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osDegradeCensorProp_value_type">Double</span></li>
+    </ul>
+
+    === osDegradeCensorQuantile ===
+    <h3 class="parameter_description" id="osDegradeCensorQuantile">osDegradeCensorQuantile</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osDegradeCensorQuantile_short_desc">Quantile at which the censoring limit is placed (min = 0.5, max = 1.0)</span></li>
+        <li>Long Description: <span id="osDegradeCensorQuantile_long_desc">
+        For right-censoring the limit is at this quantile of the column; for left-censoring, at one minus this quantile. E.g., 0.9 censors the top (or bottom) 10 percent of values to the limit.</span></li>
+        <li>Default Value: <span id="osDegradeCensorQuantile_default_value">0.9</span></li>
+        <li>Lower Bound: <span id="osDegradeCensorQuantile_lower_bound">0.5</span></li>
+        <li>Upper Bound: <span id="osDegradeCensorQuantile_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osDegradeCensorQuantile_value_type">Double</span></li>
     </ul>
 </div>

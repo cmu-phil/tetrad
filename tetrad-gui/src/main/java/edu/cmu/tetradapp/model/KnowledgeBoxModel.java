@@ -117,6 +117,28 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
             return;
         }
 
+        // A simulation whose design implies knowledge (role tiers, for the observational-study
+        // and designed-experiment simulations) or that was given knowledge (time series):
+        // start the box from that knowledge rather than from an empty one.
+        if (inputs.length == 1 && inputs[0] instanceof Simulation sim && sim.hasSimulationKnowledge()) {
+            Knowledge simKnowledge = sim.getKnowledge();
+            if (simKnowledge != null && !simKnowledge.isEmpty()) {
+                this.params = params;
+                for (Node node : sim.getVariables()) {
+                    this.variables.add(node);
+                    this.variableNames.add(node.getName());
+                }
+                this.knowledge = simKnowledge.copy();
+                this.numTiers = Math.max(this.numTiers, this.knowledge.getNumTiers());
+                if (sim.getSelectedDataModel() instanceof DataSet dataSet) {
+                    this.knowledge.setTestingData(dataSet);
+                }
+                params.set("__myKnowledge", this.knowledge);
+                TetradLogger.getInstance().log("Knowledge");
+                return;
+            }
+        }
+
         for (KnowledgeBoxInput input : inputs) {
             if (input == null) {
                 throw new NullPointerException();

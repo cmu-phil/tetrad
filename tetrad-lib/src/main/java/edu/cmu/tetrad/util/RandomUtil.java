@@ -60,6 +60,14 @@ public class RandomUtil {
     private static final ThreadLocal<RandomUtil> randomUtils =
             ThreadLocal.withInitial(RandomUtil::new);
     /**
+     * The standard normal distribution, shared by {@link #normalCdf(double, double, double)}. Constructed once: the
+     * two-argument NormalDistribution constructor seeds a fresh Well19937c generator on every call, which made
+     * normalCdf cost microseconds rather than nanoseconds and dominated, e.g., the Anderson-Darling test on wide
+     * datasets. No random generator is attached (null), which is fine because only the deterministic
+     * cumulativeProbability method is ever called on it; it must not be used for sampling.
+     */
+    private static final NormalDistribution STANDARD_NORMAL = new NormalDistribution(null, 0, 1);
+    /**
      * Underlying RNG used everywhere in this class.
      */
     private UniformRandomProvider randomGenerator;
@@ -390,7 +398,7 @@ public class RandomUtil {
             throw new IllegalArgumentException("Standard deviation must be > 0: " + sd);
         }
 
-        return new NormalDistribution(0, 1).cumulativeProbability((value - mean) / sd);
+        return STANDARD_NORMAL.cumulativeProbability((value - mean) / sd);
     }
 
     /**

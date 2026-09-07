@@ -59,7 +59,11 @@ public abstract class WatchedProcess {
     private Thread longRunningThread;
     private JDialog dialog;
 
-    private boolean interrupted;
+    /**
+     * Written on the EDT (stop click), read on the background thread via isInterrupted();
+     * volatile so the background thread is guaranteed to see the write.
+     */
+    private volatile boolean interrupted;
 
     /**
      * Constructor.
@@ -153,15 +157,18 @@ public abstract class WatchedProcess {
         JButton stopButton = new JButton("Processing (click to stop)...");
 
         stopButton.addActionListener(e -> {
+            // This listener already runs on the EDT; interrupt and dispose directly rather
+            // than re-queuing, so stopping does not depend on the EDT staying responsive for
+            // further events.
+            interrupted = true;
+
             if (longRunningThread != null) {
-                SwingUtilities.invokeLater(() -> longRunningThread.interrupt());
+                longRunningThread.interrupt();
             }
 
             if (dialog != null) {
-                SwingUtilities.invokeLater(() -> dialog.dispose());
+                dialog.dispose();
             }
-
-            interrupted = true;
         });
 
         JPanel panel = new JPanel();
