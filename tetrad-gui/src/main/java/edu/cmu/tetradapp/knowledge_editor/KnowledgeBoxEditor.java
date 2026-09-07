@@ -778,8 +778,6 @@ public class KnowledgeBoxEditor extends JPanel {
 
             textRow.add(Box.createHorizontalGlue());
 
-            JButton regexAdd = new JButton("Find");
-
             JCheckBox forbiddenCheckbox =
                     new JCheckBox("Forbid Within Tier", getKnowledge().isTierForbiddenWithin(_tier));
             styleCheckBox(forbiddenCheckbox);
@@ -803,25 +801,6 @@ public class KnowledgeBoxEditor extends JPanel {
             });
 
             forbiddenCheckboxes.add(forbiddenCheckbox);
-
-            textRow.add(regexAdd);
-
-            regexAdd.addActionListener((e) -> {
-                String regex = JOptionPane.showInputDialog("Search Cpdag");
-                try {
-                    getKnowledge().removeFromTiers(regex);
-                    getKnowledge().addToTier(_tier, regex);
-                } catch (IllegalArgumentException iae) {
-                    JOptionPane.showMessageDialog(upReference, iae.getMessage());
-                }
-
-                notifyKnowledge();
-
-                this.tiersPanel.removeAll();
-                this.tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
-                this.tiersPanel.revalidate();
-                this.tiersPanel.repaint();
-            });
 
             textRow.add(forbiddenCheckbox);
 
