@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.Simulation;
+import edu.cmu.tetradapp.util.ErrorDialogs;
 
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
@@ -588,7 +589,15 @@ public class SessionNode implements Node {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
+
+                // This catch runs on the WatchedProcess worker thread during downstream propagation. Showing a
+                // modal JOptionPane directly from that thread while the modal "Processing" dialog is up blocks the
+                // worker inside the dialog and can deadlock with the Processing dialog's modality; and when the
+                // exception's message is null (e.g., a NullPointerException), the dialog is blank. ErrorDialogs
+                // queues the dialog on the EDT without blocking this thread and always shows the exception type
+                // and message.
+                ErrorDialogs.showError(JOptionUtils.centeringComp(), "Error",
+                        getDisplayName() + " could not be executed.", e);
             }
         }
     }

@@ -497,7 +497,11 @@ public final class SessionEditorNode extends DisplayNode {
 
                     e.printStackTrace();
 
-                    JOptionPane.showMessageDialog(sessionEditorNode, message);
+                    // Session events fire on the WatchedProcess worker thread during propagation (see
+                    // adjustToModel); a modal dialog shown directly from that thread can deadlock with the modal
+                    // "Processing" dialog, so queue it on the EDT instead.
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(sessionEditorNode, message));
                 }
             }
         });
