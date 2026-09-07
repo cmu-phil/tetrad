@@ -23,6 +23,7 @@ package edu.cmu.tetrad.calculator.expression;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.distribution.*;
 import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.util.FastMath;
 import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
@@ -99,6 +100,7 @@ public class ExpressionManager {
         descriptors.add(new PowExpressionDescriptor2());
         descriptors.add(new ExponentialExpressionDescriptor2());
         descriptors.add(new SquareRootExpressionDescriptor());
+        descriptors.add(new CubeRootExpressionDescriptor());
 
         // cosh needs to come before cos in parsing. Same for others.
         descriptors.add(new CoshExpressionDescriptor());
@@ -109,6 +111,10 @@ public class ExpressionManager {
         descriptors.add(new SinExpressionDescriptor());
         descriptors.add(new TanExpressionDescriptor());
 
+        descriptors.add(new AsinhExpressionDescriptor());
+        descriptors.add(new AcoshExpressionDescriptor());
+        descriptors.add(new AtanhExpressionDescriptor());
+
         descriptors.add(new AcosExpressionDescriptor());
         descriptors.add(new AsinExpressionDescriptor());
         descriptors.add(new AtanExpressionDescriptor());
@@ -117,6 +123,10 @@ public class ExpressionManager {
         descriptors.add(new ExpExpressionDescriptor());
         descriptors.add(new NaturalLogExpressionDescriptor());
         descriptors.add(new Log10ExpressionDescriptor());
+        descriptors.add(new Log2ExpressionDescriptor());
+        descriptors.add(new Log1pExpressionDescriptor());
+        descriptors.add(new LogitExpressionDescriptor());
+        descriptors.add(new LogExpressionDescriptor());
         descriptors.add(new RoundExpressionDescriptor());
         descriptors.add(new CeilExpressionDescriptor());
         descriptors.add(new FloorExpressionDescriptor());
@@ -124,6 +134,7 @@ public class ExpressionManager {
         descriptors.add(new RandomExpressionDescriptor());
         descriptors.add(new MaxExpressionDescriptor());
         descriptors.add(new MinExpressionDescriptor());
+        descriptors.add(new ModExpressionDescriptor());
         descriptors.add(new SignumExpressionDescriptor());
 
         descriptors.add(new AndExpressionDescriptor());
@@ -156,6 +167,8 @@ public class ExpressionManager {
         descriptors.add(new NExpressionDescriptor());
         descriptors.add(new ParetoExpressionDescriptor());
         descriptors.add(new PoissonExpressionDescriptor());
+        descriptors.add(new BernoulliExpressionDescriptor());
+        descriptors.add(new BinomialExpressionDescriptor());
         descriptors.add(new SplitExpressionDescriptor());
         descriptors.add(new StudentTExpressionDescriptor());
         descriptors.add(new TriangularExpressionDescriptor());
@@ -209,7 +222,7 @@ public class ExpressionManager {
 
 
         public AdditionExpressionDescriptor() {
-            super("Addition", "+", Position.BOTH, true);
+            super("Addition", "+", Position.BOTH);
         }
 
 
@@ -251,7 +264,7 @@ public class ExpressionManager {
 
 
         public SubtractionExpressionDescriptor() {
-            super("Subtraction", "-", Position.INFIX, false);
+            super("Subtraction", "-", Position.INFIX);
         }
 
 
@@ -290,7 +303,7 @@ public class ExpressionManager {
 
 
         public CeilExpressionDescriptor() {
-            super("Ceil", "ceil", Position.PREFIX, false);
+            super("Ceil", "ceil", Position.PREFIX, 1);
         }
 
 
@@ -316,7 +329,7 @@ public class ExpressionManager {
 
 
         public SignumExpressionDescriptor() {
-            super("Signum", "signum", Position.PREFIX, false);
+            super("Signum", "signum", Position.PREFIX, 1);
         }
 
 
@@ -345,7 +358,7 @@ public class ExpressionManager {
 
 
         public CosExpressionDescriptor() {
-            super("Cosine", "cos", Position.PREFIX, false);
+            super("Cosine", "cos", Position.PREFIX, 1);
         }
 
 
@@ -371,7 +384,7 @@ public class ExpressionManager {
 
 
         public CoshExpressionDescriptor() {
-            super("Hyperbolic Cosine", "cosh", Position.PREFIX, false);
+            super("Hyperbolic Cosine", "cosh", Position.PREFIX, 1);
         }
 
 
@@ -397,7 +410,7 @@ public class ExpressionManager {
 
 
         public AcosExpressionDescriptor() {
-            super("Arc Cosine", "acos", Position.PREFIX, false);
+            super("Arc Cosine", "acos", Position.PREFIX, 1);
         }
 
 
@@ -427,7 +440,7 @@ public class ExpressionManager {
 
 
         public FloorExpressionDescriptor() {
-            super("Floor", "floor", Position.PREFIX, false);
+            super("Floor", "floor", Position.PREFIX, 1);
         }
 
 
@@ -456,7 +469,7 @@ public class ExpressionManager {
 
 
         public AbsoluteValueExpressionDescriptor() {
-            super("Abs", "abs", Position.PREFIX, false);
+            super("Abs", "abs", Position.PREFIX, 1);
         }
 
 
@@ -482,7 +495,7 @@ public class ExpressionManager {
 
 
         public Log10ExpressionDescriptor() {
-            super("Log base 10", "log10", Position.PREFIX, false);
+            super("Log base 10", "log10", Position.PREFIX, 1);
         }
 
 
@@ -504,6 +517,243 @@ public class ExpressionManager {
 
 
     /**
+     * Natural log, under the conventional token "log". Same function as "ln".
+     */
+    private static class LogExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public LogExpressionDescriptor() {
+            super("Log base e", "log", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("log must have one and only one argument.");
+            }
+            return new AbstractExpression("log", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    return TMath.log(getExpressions().getFirst().evaluate(context));
+                }
+            };
+        }
+    }
+
+    /**
+     * Log base 2.
+     */
+    private static class Log2ExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public Log2ExpressionDescriptor() {
+            super("Log base 2", "log2", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("log2 must have one and only one argument.");
+            }
+            return new AbstractExpression("log2", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    return TMath.log(getExpressions().getFirst().evaluate(context)) / TMath.log(2.0);
+                }
+            };
+        }
+    }
+
+    /**
+     * Log of one plus the argument, log(1 + x). Useful for count data containing zeros.
+     */
+    private static class Log1pExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public Log1pExpressionDescriptor() {
+            super("Log(1 + x)", "log1p", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("log1p must have one and only one argument.");
+            }
+            return new AbstractExpression("log1p", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    return TMath.log1p(getExpressions().getFirst().evaluate(context));
+                }
+            };
+        }
+    }
+
+    /**
+     * Logit, log(x / (1 - x)), the inverse of the logistic function. Useful for proportions in (0, 1).
+     */
+    private static class LogitExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public LogitExpressionDescriptor() {
+            super("Logit", "logit", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("logit must have one and only one argument.");
+            }
+            return new AbstractExpression("logit", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    double x = getExpressions().getFirst().evaluate(context);
+                    return TMath.log(x / (1.0 - x));
+                }
+            };
+        }
+    }
+
+    /**
+     * Cube root. Unlike sqrt, defined for negative arguments, so useful for signed data.
+     */
+    private static class CubeRootExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public CubeRootExpressionDescriptor() {
+            super("Cube Root", "cbrt", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("cbrt must have one and only one argument.");
+            }
+            return new AbstractExpression("cbrt", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    return TMath.cbrt(getExpressions().getFirst().evaluate(context));
+                }
+            };
+        }
+    }
+
+    /**
+     * Inverse hyperbolic sine. A common variance-stabilizing transform for signed data with zeros.
+     */
+    private static class AsinhExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public AsinhExpressionDescriptor() {
+            super("Inverse Hyperbolic Sine", "asinh", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("asinh must have one and only one argument.");
+            }
+            return new AbstractExpression("asinh", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    return FastMath.asinh(getExpressions().getFirst().evaluate(context));
+                }
+            };
+        }
+    }
+
+    /**
+     * Inverse hyperbolic cosine.
+     */
+    private static class AcoshExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public AcoshExpressionDescriptor() {
+            super("Inverse Hyperbolic Cosine", "acosh", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("acosh must have one and only one argument.");
+            }
+            return new AbstractExpression("acosh", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    return FastMath.acosh(getExpressions().getFirst().evaluate(context));
+                }
+            };
+        }
+    }
+
+    /**
+     * Inverse hyperbolic tangent (the Fisher z transform for correlations).
+     */
+    private static class AtanhExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public AtanhExpressionDescriptor() {
+            super("Inverse Hyperbolic Tangent", "atanh", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("atanh must have one and only one argument.");
+            }
+            return new AbstractExpression("atanh", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    return FastMath.atanh(getExpressions().getFirst().evaluate(context));
+                }
+            };
+        }
+    }
+
+    /**
+     * Remainder of the first argument divided by the second, with the sign of the first argument
+     * (Java % semantics).
+     */
+    private static class ModExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public ModExpressionDescriptor() {
+            super("Remainder", "mod", Position.PREFIX, 2);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 2) {
+                throw new ExpressionInitializationException("mod must have two arguments.");
+            }
+            return new AbstractExpression("mod", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    return getExpressions().getFirst().evaluate(context)
+                           % getExpressions().get(1).evaluate(context);
+                }
+            };
+        }
+    }
+
+    /**
      * Multiplication.
      */
     private static class MultiplicationExpressionDescriptor extends AbstractExpressionDescriptor {
@@ -512,7 +762,7 @@ public class ExpressionManager {
 
 
         public MultiplicationExpressionDescriptor() {
-            super("Multiplication", "*", Position.BOTH, true);
+            super("Multiplication", "*", Position.BOTH);
         }
 
 
@@ -545,7 +795,7 @@ public class ExpressionManager {
 
 
         public DivisionExpressionDescriptor() {
-            super("Division", "/", Position.BOTH, true);
+            super("Division", "/", Position.BOTH);
         }
 
 
@@ -575,7 +825,7 @@ public class ExpressionManager {
 
 
         public NaturalLogExpressionDescriptor() {
-            super("Log base e", "ln", Position.PREFIX, false);
+            super("Log base e", "ln", Position.PREFIX, 1);
         }
 
 
@@ -604,7 +854,7 @@ public class ExpressionManager {
 
 
         public RandomExpressionDescriptor() {
-            super("Random", "random", Position.PREFIX, false);
+            super("Random", "random", Position.PREFIX, 0);
         }
 
 
@@ -632,7 +882,7 @@ public class ExpressionManager {
 
 
         public RoundExpressionDescriptor() {
-            super("Round", "round", Position.PREFIX, false);
+            super("Round", "round", Position.PREFIX, 1);
         }
 
 
@@ -662,7 +912,7 @@ public class ExpressionManager {
 
 
         public TanExpressionDescriptor() {
-            super("Tangent", "tan", Position.PREFIX, false);
+            super("Tangent", "tan", Position.PREFIX, 1);
         }
 
 
@@ -688,7 +938,7 @@ public class ExpressionManager {
 
 
         public TanhExpressionDescriptor() {
-            super("Hyperbolic tangent", "tanh", Position.PREFIX, false);
+            super("Hyperbolic tangent", "tanh", Position.PREFIX, 1);
         }
 
 
@@ -714,7 +964,7 @@ public class ExpressionManager {
 
 
         public AtanExpressionDescriptor() {
-            super("Arc Tangent", "atan", Position.PREFIX, false);
+            super("Arc Tangent", "atan", Position.PREFIX, 1);
         }
 
 
@@ -740,7 +990,7 @@ public class ExpressionManager {
 
 
         public LogisticExpressionDescriptor() {
-            super("Logistic", "logistic", Position.PREFIX, false);
+            super("Logistic", "logistic", Position.PREFIX, 1);
         }
 
 
@@ -767,7 +1017,7 @@ public class ExpressionManager {
 
 
         public ExpExpressionDescriptor() {
-            super("exp", "exp", Position.PREFIX, false);
+            super("exp", "exp", Position.PREFIX, 1);
         }
 
 
@@ -797,7 +1047,7 @@ public class ExpressionManager {
 
 
         public SquareRootExpressionDescriptor() {
-            super("Square Root", "sqrt", Position.PREFIX, false);
+            super("Square Root", "sqrt", Position.PREFIX, 1);
         }
 
 
@@ -826,7 +1076,7 @@ public class ExpressionManager {
 
 
         public SinExpressionDescriptor() {
-            super("Sine", "sin", Position.PREFIX, false);
+            super("Sine", "sin", Position.PREFIX, 1);
         }
 
 
@@ -852,7 +1102,7 @@ public class ExpressionManager {
 
 
         public SinhExpressionDescriptor() {
-            super("Sinh", "sinh", Position.PREFIX, false);
+            super("Sinh", "sinh", Position.PREFIX, 1);
         }
 
 
@@ -878,7 +1128,7 @@ public class ExpressionManager {
 
 
         public AsinExpressionDescriptor() {
-            super("Arc Sine", "asin", Position.PREFIX, false);
+            super("Arc Sine", "asin", Position.PREFIX, 1);
         }
 
 
@@ -909,7 +1159,7 @@ public class ExpressionManager {
 
 
         public PowExpressionDescriptor() {
-            super("Power", "pow", Position.PREFIX, false);
+            super("Power", "pow", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -939,7 +1189,7 @@ public class ExpressionManager {
 
 
         public PowExpressionDescriptor2() {
-            super("Power", "^", Position.INFIX, false);
+            super("Power", "^", Position.INFIX);
         }
 
         //=========================== Public Methods =========================//
@@ -1032,7 +1282,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public ChiSquareExpressionDescriptor() {
-            super("Chi Square", "ChiSquare", Position.PREFIX, false);
+            super("Chi Square", "ChiSquare", Position.PREFIX, 1);
         }
 
         //=========================== Public Methods =========================//
@@ -1067,7 +1317,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public GammaExpressionDescriptor() {
-            super("Gamma", "Gamma", Position.PREFIX, false);
+            super("Gamma", "Gamma", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1104,7 +1354,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public BetaExpressionDescriptor() {
-            super("Beta", "Beta", Position.PREFIX, false);
+            super("Beta", "Beta", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1140,7 +1390,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public CauchyExpressionDescriptor() {
-            super("Cauchy", "Cauchy", Position.PREFIX, false);
+            super("Cauchy", "Cauchy", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1177,7 +1427,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public FExpressionDescriptor() {
-            super("FDist", "FDist", Position.PREFIX, false);
+            super("FDist", "FDist", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1213,7 +1463,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public GumbelExpressionDescriptor() {
-            super("Gumbel", "Gumbel", Position.PREFIX, false);
+            super("Gumbel", "Gumbel", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1249,7 +1499,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public LaplaceExpressionDescriptor() {
-            super("Laplace", "Laplace", Position.PREFIX, false);
+            super("Laplace", "Laplace", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1285,7 +1535,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public LevyExpressionDescriptor() {
-            super("Levy", "Levy", Position.PREFIX, false);
+            super("Levy", "Levy", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1321,7 +1571,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public NakagamiExpressionDescriptor() {
-            super("Nakagami", "Nakagami", Position.PREFIX, false);
+            super("Nakagami", "Nakagami", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1357,7 +1607,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public ParetoExpressionDescriptor() {
-            super("Pareto", "Pareto", Position.PREFIX, false);
+            super("Pareto", "Pareto", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1393,7 +1643,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public TriangularExpressionDescriptor() {
-            super("Triangular", "Triangular", Position.PREFIX, false);
+            super("Triangular", "Triangular", Position.PREFIX, 3);
         }
 
         //=========================== Public Methods =========================//
@@ -1431,7 +1681,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public UniformExpressionDescriptor() {
-            super("Uniform", "Uniform", Position.PREFIX, false);
+            super("Uniform", "Uniform", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1467,7 +1717,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public UExpressionDescriptor() {
-            super("Uniform", "U", Position.PREFIX, false);
+            super("Uniform", "U", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1503,7 +1753,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public WeibullExpressionDescriptor() {
-            super("Weibull", "Weibull", Position.PREFIX, false);
+            super("Weibull", "Weibull", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1539,7 +1789,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public PoissonExpressionDescriptor() {
-            super("Poisson", "Poisson", Position.PREFIX, false);
+            super("Poisson", "Poisson", Position.PREFIX, 1);
         }
 
         //=========================== Public Methods =========================//
@@ -1574,12 +1824,92 @@ public class ExpressionManager {
         }
     }
 
+    /**
+     * Draws from a Bernoulli distribution: 1 with the given probability, else 0.
+     */
+    private static class BernoulliExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public BernoulliExpressionDescriptor() {
+            super("Bernoulli", "Bernoulli", Position.PREFIX, 1);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 1) {
+                throw new ExpressionInitializationException("Bernoulli must have one argument, the probability of a 1.");
+            }
+
+            return new AbstractExpression("Bernoulli", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double p = getExpressions().getFirst().evaluate(context);
+                    return new BinomialDistribution(randomGenerator, 1, p).sample();
+                }
+
+                public RealDistribution getRealDistribution(Context context) {
+                    throw new IllegalArgumentException("Bernoulli does not have a p.d.f.");
+                }
+
+                public IntegerDistribution getIntegerDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    double p = getExpressions().getFirst().evaluate(context);
+                    return new BinomialDistribution(randomGenerator, 1, p);
+                }
+            };
+        }
+    }
+
+    /**
+     * Draws from a Binomial distribution with the given number of trials and success probability.
+     */
+    private static class BinomialExpressionDescriptor extends AbstractExpressionDescriptor {
+        @Serial
+        private static final long serialVersionUID = 23L;
+
+        public BinomialExpressionDescriptor() {
+            super("Binomial", "Binomial", Position.PREFIX, 2);
+        }
+
+        public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
+            if (expressions.length != 2) {
+                throw new ExpressionInitializationException("Binomial must have two arguments, the number of trials and the success probability.");
+            }
+
+            return new AbstractExpression("Binomial", Position.PREFIX, expressions) {
+                @Serial
+                private static final long serialVersionUID = 23L;
+
+                public double evaluate(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    int n = (int) getExpressions().getFirst().evaluate(context);
+                    double p = getExpressions().get(1).evaluate(context);
+                    return new BinomialDistribution(randomGenerator, n, p).sample();
+                }
+
+                public RealDistribution getRealDistribution(Context context) {
+                    throw new IllegalArgumentException("Binomial does not have a p.d.f.");
+                }
+
+                public IntegerDistribution getIntegerDistribution(Context context) {
+                    RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
+                    int n = (int) getExpressions().getFirst().evaluate(context);
+                    double p = getExpressions().get(1).evaluate(context);
+                    return new BinomialDistribution(randomGenerator, n, p);
+                }
+            };
+        }
+    }
+
     private static class IndicatorExpressionDescriptor extends AbstractExpressionDescriptor {
         @Serial
         private static final long serialVersionUID = 23L;
 
         public IndicatorExpressionDescriptor() {
-            super("Indicator", "Indicator", Position.PREFIX, false);
+            super("Indicator", "Indicator", Position.PREFIX, 1);
         }
 
         //=========================== Public Methods =========================//
@@ -1610,7 +1940,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public ExponentialExpressionDescriptor() {
-            super("Exponential", "Exponential", Position.PREFIX, false);
+            super("Exponential", "Exponential", Position.PREFIX, 1);
         }
 
         //=========================== Public Methods =========================//
@@ -1653,7 +1983,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public ExponentialExpressionDescriptor2() {
-            super("Exp", "Exp", Position.PREFIX, false);
+            super("Exp", "Exp", Position.PREFIX, 1);
         }
 
         //=========================== Public Methods =========================//
@@ -1697,7 +2027,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public LogNormalExpressionDescriptor() {
-            super("LogNormal", "LogNormal", Position.PREFIX, false);
+            super("LogNormal", "LogNormal", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1749,7 +2079,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public NormalExpressionDescriptor() {
-            super("Normal", "Normal", Position.PREFIX, false);
+            super("Normal", "Normal", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1785,7 +2115,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public TruncNormalExpressionDescriptor() {
-            super("TruncNormal", "TruncNormal", Position.PREFIX, false);
+            super("TruncNormal", "TruncNormal", Position.PREFIX, 4);
         }
 
         //=========================== Public Methods =========================//
@@ -1828,7 +2158,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public NExpressionDescriptor() {
-            super("Normal", "N", Position.PREFIX, false);
+            super("Normal", "N", Position.PREFIX, 2);
         }
 
         //=========================== Public Methods =========================//
@@ -1867,7 +2197,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public DiscreteExpressionDescriptor() {
-            super("Discrete", "Discrete", Position.PREFIX, false);
+            super("Discrete", "Discrete", Position.PREFIX, true);
         }
 
         //=========================== Public Methods =========================//
@@ -1931,7 +2261,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public MixtureDescriptor() {
-            super("mixture", "mixture", Position.PREFIX, false);
+            super("mixture", "mixture", Position.PREFIX, true);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -1959,7 +2289,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public StudentTExpressionDescriptor() {
-            super("StudentT", "StudentT", Position.PREFIX, false);
+            super("StudentT", "StudentT", Position.PREFIX, 1);
         }
 
         //=========================== Public Methods =========================//
@@ -1999,7 +2329,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public SplitExpressionDescriptor() {
-            super("Split", "Split", Position.PREFIX, false);
+            super("Split", "Split", Position.PREFIX, true);
         }
 
         //=========================== Public Methods =========================//
@@ -2134,7 +2464,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public XOrExpressionDescriptor() {
-            super("Exclusive or", "XOR", Position.PREFIX, false);
+            super("Exclusive or", "XOR", Position.PREFIX, 2);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2162,7 +2492,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public LessThanExpressionDescriptor() {
-            super("Less Than", "<", Position.BOTH, true);
+            super("Less Than", "<", Position.BOTH);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2189,7 +2519,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public LessThanOrEqualExpressionDescriptor() {
-            super("Less Than Or Equals", "<=", Position.BOTH, true);
+            super("Less Than Or Equals", "<=", Position.BOTH);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2216,7 +2546,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public EqualsExpressionDescriptor() {
-            super("Equals", "=", Position.BOTH, true);
+            super("Equals", "=", Position.BOTH);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2243,7 +2573,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public GreaterThanExpressionDescriptor() {
-            super("Greater Than", ">", Position.BOTH, true);
+            super("Greater Than", ">", Position.BOTH);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2270,7 +2600,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public GreaterThanOrEqualExpressionDescriptor() {
-            super("Greater Than Or Equals", ">=", Position.BOTH, true);
+            super("Greater Than Or Equals", ">=", Position.BOTH);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2297,7 +2627,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public IfExpressionDescriptor() {
-            super("If", "IF", Position.PREFIX, true);
+            super("If", "IF", Position.PREFIX, 3);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2325,7 +2655,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public NewExpressionDescriptor() {
-            super("New Parameter", "NEW", Position.PREFIX, true);
+            super("New Parameter", "NEW", Position.PREFIX, 1);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2353,7 +2683,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public NewExpressionDescriptor2() {
-            super("New Parameter", "new", Position.PREFIX, true);
+            super("New Parameter", "new", Position.PREFIX, 1);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2381,7 +2711,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public TSumExpressionDescriptor() {
-            super("Template Sum", "TSUM", Position.PREFIX, true);
+            super("Template Sum", "TSUM", Position.PREFIX, 1);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2405,7 +2735,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public TSumExpressionDescriptor2() {
-            super("Template Sum", "tsum", Position.PREFIX, true);
+            super("Template Sum", "tsum", Position.PREFIX, 1);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2429,7 +2759,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public TProductExpressionDescriptor() {
-            super("Template Product", "TPROD", Position.PREFIX, true);
+            super("Template Product", "TPROD", Position.PREFIX, 1);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2453,7 +2783,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public TProductExpressionDescriptor2() {
-            super("Template Product", "tprod", Position.PREFIX, true);
+            super("Template Product", "tprod", Position.PREFIX, 1);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2480,7 +2810,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public DiscErrorExpressionDescriptor() {
-            super("DiscError", "DiscError", Position.PREFIX, false);
+            super("DiscError", "DiscError", Position.PREFIX, true);
         }
 
         //=========================== Public Methods =========================//
@@ -2581,7 +2911,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public ClipExpressionDescriptor() {
-            super("clip", "clip", Position.PREFIX, true);
+            super("clip", "clip", Position.PREFIX, 3);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
@@ -2613,7 +2943,7 @@ public class ExpressionManager {
         private static final long serialVersionUID = 23L;
 
         public BoundExpressionDescriptor() {
-            super("bound", "bound", Position.PREFIX, true);
+            super("bound", "bound", Position.PREFIX, 3);
         }
 
         public Expression createExpression(Expression... expressions) throws ExpressionInitializationException {
