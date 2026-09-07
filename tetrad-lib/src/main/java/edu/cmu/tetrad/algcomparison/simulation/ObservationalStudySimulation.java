@@ -45,7 +45,15 @@ import java.util.List;
  * nodes, so FCI-style evaluation is possible.</li>
  * <li><b>System variables</b> (S1, ...): a causal DAG among themselves (average degree
  * osGraphAvgSystemDegree), with context parents, monotone transmission nonlinearity
- * (osFormNonlinearity), and heterogeneous non-Gaussian noise. In serial mode each system variable
+ * (osFormNonlinearity), and heterogeneous non-Gaussian noise. A fixed count
+ * round(osTypePropSystemDiscrete * osGraphNumSystem) of them, chosen at random, are DISCRETE
+ * (osTypeNumCategories levels): generated from their parents through softmax logits, entering
+ * their children through per-category shifts, so a discrete variable can sit inside the system
+ * with both parents and children - the case in which conditional-Gaussian and
+ * degenerate-Gaussian treatments differ. Discrete system variables are never ordinalized or
+ * censored; in serial mode they have a sticky self-lag (previous value kept with probability
+ * equal to the self-lag coefficient) and no cross-lag edges; in panel mode the subject effect
+ * is a per-category shift on their logits. In serial mode each system variable
  * has a self-lag, and cross-lag edges (probability osSerialPropCrossLag per ordered pair) allow
  * honest representation of feedback as X{t-1} -> Y{t}, Y{t-1} -> X{t}.</li>
  * <li><b>Index variables</b> (I1, ...): near-deterministic functions (noise osFormIndexNoise) of
@@ -183,6 +191,7 @@ public class ObservationalStudySimulation implements Simulation {
         int numOutcomes = Math.max(0, parameters.getInt(Params.OS_GRAPH_NUM_OUTCOMES));
         double avgDegree = parameters.getDouble(Params.OS_GRAPH_AVG_SYSTEM_DEGREE);
         double propContextDiscrete = parameters.getDouble(Params.OS_TYPE_PROP_CONTEXT_DISCRETE);
+        double propSystemDiscrete = parameters.getDouble(Params.OS_TYPE_PROP_SYSTEM_DISCRETE);
         int numCategories = Math.max(2, parameters.getInt(Params.OS_TYPE_NUM_CATEGORIES));
         boolean discreteOutcome = parameters.getBoolean(Params.OS_TYPE_DISCRETE_OUTCOME);
         double propOrdinalized = parameters.getDouble(Params.OS_DEGRADE_ORDINALIZE_PROP);
@@ -239,11 +248,27 @@ public class ObservationalStudySimulation implements Simulation {
             isDiscrete[col] = discreteOutcome;
         }
 
-        // Ordinalized system variables (generated continuous, recorded discrete).
+        // Discrete system variables: a fixed count round(osTypePropSystemDiscrete * numSystem),
+        // chosen at random. They are generated from their parents through softmax logits (as
+        // discrete outcomes are) and enter their children through per-category shifts (as
+        // discrete context does), so a discrete variable can sit INSIDE the system with both
+        // parents and children. No random draws are made when the count is zero, so existing
+        // seeds are unaffected.
+        int numSysDisc = (int) Math.round(propSystemDiscrete * numSystem);
+        if (numSysDisc > 0) {
+            List<Integer> pool = new ArrayList<>();
+            for (int j = 0; j < numSystem; j++) pool.add(nC + j);
+            for (int k = 0; k < numSysDisc && !pool.isEmpty(); k++) {
+                isDiscrete[pool.remove(rand.nextInt(pool.size()))] = true;
+            }
+        }
+
+        // Ordinalized system variables (generated continuous, recorded discrete); drawn from
+        // the system variables that are not already discrete.
         boolean[] ordinalized = new boolean[total];
-        int numOrd = (int) Math.round(propOrdinalized * numSystem);
         List<Integer> sysCols = new ArrayList<>();
-        for (int j = 0; j < numSystem; j++) sysCols.add(nC + j);
+        for (int j = 0; j < numSystem; j++) if (!isDiscrete[nC + j]) sysCols.add(nC + j);
+        int numOrd = Math.min(sysCols.size(), (int) Math.round(propOrdinalized * numSystem));
         for (int k = 0; k < numOrd; k++) {
             int pick = sysCols.remove(rand.nextInt(sysCols.size()));
             ordinalized[pick] = true;
@@ -332,6 +357,7 @@ public class ObservationalStudySimulation implements Simulation {
 
             for (int i = sys0; i < idx0; i++) {
                 for (int j = sys0; j < idx0; j++) {
+                    if (isDiscrete[i] || isDiscrete[j]) continue; // discrete system: self-lag only
                     if (i != j && rand.nextDouble() < propCrossLag) {
                         crossLag[i][j] = true;
                         crossLagCoef[i][j] = rand.nextUniform(0.2, 0.5)
@@ -386,9 +412,9 @@ public class ObservationalStudySimulation implements Simulation {
             for (int k = 0; k < cs.size(); k++) interCoefArr[j][k] = cs.get(k);
         }
 
-        // Softmax logit coefficients for discrete outcomes.
+        // Softmax logit coefficients for discrete system variables and discrete outcomes.
         double[][][] logitCoef = new double[total][][];
-        for (int y = out0; y < total; y++) {
+        for (int y = sys0; y < total; y++) {
             if (!isDiscrete[y]) continue;
             logitCoef[y] = new double[numCategories][total];
             for (int k = 0; k < numCategories; k++) {
@@ -414,8 +440,18 @@ public class ObservationalStudySimulation implements Simulation {
 
             // Subject random intercepts on system variables (latent in pooled data).
             double[] subjShift = new double[total];
+            double[][] subjLogitShift = new double[total][]; // per-category, discrete system
             if (numSubjects > 1) {
-                for (int s = sys0; s < idx0; s++) subjShift[s] = rand.nextGaussian(0, 0.5);
+                for (int s = sys0; s < idx0; s++) {
+                    if (isDiscrete[s]) {
+                        subjLogitShift[s] = new double[numCategories];
+                        for (int k = 0; k < numCategories; k++) {
+                            subjLogitShift[s][k] = rand.nextGaussian(0, 0.5);
+                        }
+                    } else {
+                        subjShift[s] = rand.nextGaussian(0, 0.5);
+                    }
+                }
             }
 
             // History ring: hist[0] is the previous row (lag 1), hist[k-1] is lag k.
@@ -477,7 +513,15 @@ public class ObservationalStudySimulation implements Simulation {
                     }
 
                     if (isDiscrete[j]) {
-                        // Discrete outcome via softmax over parent contributions.
+                        if (serial && histCount > 0 && j < idx0 && rand.nextDouble() < selfLag[j]) {
+                            // Discrete system variable's self-lag: sticky, keeps its previous
+                            // value with probability selfLag[j]; otherwise redrawn from parents.
+                            row[j] = hist[0][j];
+                            continue;
+                        }
+
+                        // Discrete system variable or outcome via softmax over parent
+                        // contributions, plus a per-category subject shift in panel mode.
                         double[] logits = new double[numCategories];
                         for (int k = 0; k < numCategories; k++) {
                             for (int i = 0; i < total; i++) {
@@ -485,6 +529,7 @@ public class ObservationalStudySimulation implements Simulation {
                                 double v = isDiscrete[i] ? row[i] : softclip(row[i]);
                                 logits[k] += logitCoef[j][k][i] * v;
                             }
+                            if (subjLogitShift[j] != null) logits[k] += subjLogitShift[j][k];
                         }
                         row[j] = sampleSoftmax(logits, rand);
                     } else {
@@ -979,6 +1024,7 @@ public class ObservationalStudySimulation implements Simulation {
         parameters.add(Params.OS_GRAPH_NUM_OUTCOMES);
         parameters.add(Params.OS_GRAPH_AVG_SYSTEM_DEGREE);
         parameters.add(Params.OS_TYPE_PROP_CONTEXT_DISCRETE);
+        parameters.add(Params.OS_TYPE_PROP_SYSTEM_DISCRETE);
         parameters.add(Params.OS_TYPE_NUM_CATEGORIES);
         parameters.add(Params.OS_TYPE_DISCRETE_OUTCOME);
         parameters.add(Params.OS_DEGRADE_ORDINALIZE_PROP);

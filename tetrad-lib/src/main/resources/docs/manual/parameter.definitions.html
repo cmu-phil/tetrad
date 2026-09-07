@@ -7915,6 +7915,18 @@ Source:
         <li>Value Type: <span id="osTypePropContextDiscrete_value_type">Double</span></li>
     </ul>
 
+    === osTypePropSystemDiscrete ===
+    <h3 class="parameter_description" id="osTypePropSystemDiscrete">osTypePropSystemDiscrete</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="osTypePropSystemDiscrete_short_desc">Fraction of system variables that are discrete (min = 0.0, max = 1.0)</span></li>
+        <li>Long Description: <span id="osTypePropSystemDiscrete_long_desc">
+        A fixed count, round(osTypePropSystemDiscrete times osGraphNumSystem), of the system variables is made discrete with osTypeNumCategories levels, chosen at random. Unlike ordinalization, these are genuinely discrete causes: each is generated from its parents through softmax logits, as discrete outcomes are, and enters its children through per-category shifts, as discrete context does, so a discrete variable can sit inside the causal system with both parents and children. That is the case in which conditional-Gaussian and degenerate-Gaussian treatments of mixed data differ most, and the one that discrete context and outcomes alone cannot produce. Discrete system variables are never ordinalized or censored. In serial mode each has a sticky self-lag, keeping its previous value with probability equal to its self-lag coefficient and otherwise being redrawn from its parents, and takes part in no cross-lag edges. In panel mode the subject effect is a per-category shift on its logits. No random draws are made when the count is zero, so existing seeds are unaffected by the default.</span></li>
+        <li>Default Value: <span id="osTypePropSystemDiscrete_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="osTypePropSystemDiscrete_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="osTypePropSystemDiscrete_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="osTypePropSystemDiscrete_value_type">Double</span></li>
+    </ul>
+
     === osTypeNumCategories ===
     <h3 class="parameter_description" id="osTypeNumCategories">osTypeNumCategories</h3>
     <ul class="parameter_description_list">

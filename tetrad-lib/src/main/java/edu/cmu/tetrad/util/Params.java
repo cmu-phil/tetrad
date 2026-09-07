@@ -1561,6 +1561,10 @@ public final class Params {
      */
     public static final String OS_TYPE_PROP_CONTEXT_DISCRETE = "osTypePropContextDiscrete";
     /**
+     * Constant <code>OS_TYPE_PROP_SYSTEM_DISCRETE="osTypePropSystemDiscrete"</code>
+     */
+    public static final String OS_TYPE_PROP_SYSTEM_DISCRETE = "osTypePropSystemDiscrete";
+    /**
      * Constant <code>OS_TYPE_NUM_CATEGORIES="osTypeNumCategories"</code>
      */
     public static final String OS_TYPE_NUM_CATEGORIES = "osTypeNumCategories";
@@ -1647,7 +1651,7 @@ public final class Params {
             Params.DE_SELECTION, Params.DE_SORT_BY_CONFIGURATION, Params.DE_EMIT_CONFIG_COLUMN,
             Params.OS_GRAPH_NUM_CONTEXT, Params.OS_GRAPH_NUM_HIDDEN_CONTEXT, Params.OS_GRAPH_NUM_SYSTEM,
             Params.OS_GRAPH_NUM_INDICES, Params.OS_GRAPH_NUM_OUTCOMES, Params.OS_GRAPH_AVG_SYSTEM_DEGREE,
-            Params.OS_TYPE_PROP_CONTEXT_DISCRETE, Params.OS_TYPE_NUM_CATEGORIES, Params.OS_TYPE_DISCRETE_OUTCOME,
+            Params.OS_TYPE_PROP_CONTEXT_DISCRETE, Params.OS_TYPE_PROP_SYSTEM_DISCRETE, Params.OS_TYPE_NUM_CATEGORIES, Params.OS_TYPE_DISCRETE_OUTCOME,
             Params.OS_DEGRADE_ORDINALIZE_PROP, Params.OS_SERIAL_MAX_LAG, Params.OS_SERIAL_AR_COEF,
             Params.OS_SERIAL_INDEX_MEMORY_LOW, Params.OS_SERIAL_INDEX_MEMORY_HIGH, Params.OS_SERIAL_PROP_CROSS_LAG,
             Params.OS_PANEL_NUM_SUBJECTS, Params.OS_PANEL_EMIT_SUBJECT_COLUMN,
