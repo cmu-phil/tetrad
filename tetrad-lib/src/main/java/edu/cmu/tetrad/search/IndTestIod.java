@@ -25,7 +25,9 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.NaturalSort;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,6 +45,12 @@ import java.util.*;
  * The idea of this implementation is that one initializes this test with multiple independence tests (for multiple
  * datasets), then a call to the independence check method for X _||_ Y | Z list the independence tests from among
  * these, calls each and gets a p-value, then uses a resolution method (such as Fisher's) to resolve these p-values.
+ * <p>
+ * If no dataset contains all of x, y, and z, the pooled p-value is 0 and the pair is judged dependent. For a pair of
+ * variables that are never jointly measured, this holds for every conditioning set, so such a pair always remains
+ * adjacent in a constraint-based search; this is the correct convention, since no dataset can rule the edge out.
+ * Note, however, that endpoint orientations on such an edge are not supported by any data either; see FciIod, which
+ * resets them to circles.
  * <p>
  * Based on work by Rob Tillman, Peter Spirtes, and referencing earlier work by David Danks.
  *
@@ -141,7 +149,29 @@ public class IndTestIod implements IndependenceTest {
         double p = ResolveSepsets.getPValuePooled(ResolveSepsets.Method.fisher, tests, x, y, z);
         boolean independent = p > alpha;
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, Double.NaN);
+        if (this.verbose && independent) {
+            TetradLogger.getInstance().log(LogUtilsSearch.independenceFactMsg(x, y, z, p));
+        }
+
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, this.alpha - p);
+    }
+
+    /**
+     * Returns true just in case some dataset contains both of the given variables, so that at least one component
+     * test can say anything at all about their relationship.
+     *
+     * @param x The first node.
+     * @param y The second node.
+     * @return True if some component test contains both variables, false otherwise.
+     */
+    public boolean isJointlyMeasured(Node x, Node y) {
+        for (IndependenceTest test : this.tests) {
+            if (test.getVariable(x.getName()) != null && test.getVariable(y.getName()) != null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

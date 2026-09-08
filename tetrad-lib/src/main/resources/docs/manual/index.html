@@ -4316,6 +4316,13 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             Proceedings.
         </p>
 
+        <p>For each queried independence, the p-values of the datasets containing all the relevant variables are
+            pooled using Fisher's method. A pair of variables that are never jointly measured in any dataset is
+            always judged dependent, so such a pair remains adjacent in the output; no dataset can rule the edge out.
+            Since no dataset supports any endpoint orientation on such an edge either, both of its endpoints are
+            reset to circles in the returned graph.
+        </p>
+
     </div>
 
     <h3>ION</h3>
