@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.search.work_in_progress.Ion;
+import edu.cmu.tetrad.search.Ion;
 import org.junit.Test;
 
 import java.util.ArrayList;
