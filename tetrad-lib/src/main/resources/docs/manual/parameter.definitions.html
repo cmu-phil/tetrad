@@ -2886,6 +2886,46 @@ Source:
     </ul>
 
 
+    === ionAdjacencySearch ===
+    <h3 class="parameter_description" id="ionAdjacencySearch">ionAdjacencySearch</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="ionAdjacencySearch_short_desc">
+                Yes if ION should iterate over separation facts one at a time
+            </span></li>
+        <li>Long Description: <span id="ionAdjacencySearch_long_desc">If Yes, the ION branch and prune
+                step iterates over the recorded separation facts one at a time, blocking the possibly
+                connecting paths for each fact in turn. If No, all facts are handled together in a
+                single pass. Iterating one fact at a time can reduce the number of candidate graphs
+                held in memory at once.</span></li>
+        <li>Default Value:
+            <span id="ionAdjacencySearch_default_value">false</span></li>
+        <li>Lower Bound:
+            <span id="ionAdjacencySearch_lower_bound"></span></li>
+        <li>Upper Bound: <span id="ionAdjacencySearch_upper_bound"></span></li>
+        <li>Value Type: <span id="ionAdjacencySearch_value_type">Boolean</span></li>
+    </ul>
+
+
+    === ionPathLengthSearch ===
+    <h3 class="parameter_description" id="ionPathLengthSearch">ionPathLengthSearch</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="ionPathLengthSearch_short_desc">
+                Yes if ION should block possibly connecting paths shortest first
+            </span></li>
+        <li>Long Description: <span id="ionPathLengthSearch_long_desc">If Yes, the ION branch and prune
+                step considers possibly connecting paths in order of increasing length, blocking
+                shorter paths before longer ones. This prunes the search space earlier and usually
+                reduces run time and memory use. If No, paths of all lengths are considered
+                together.</span></li>
+        <li>Default Value:
+            <span id="ionPathLengthSearch_default_value">true</span></li>
+        <li>Lower Bound:
+            <span id="ionPathLengthSearch_lower_bound"></span></li>
+        <li>Upper Bound: <span id="ionPathLengthSearch_upper_bound"></span></li>
+        <li>Value Type: <span id="ionPathLengthSearch_value_type">Boolean</span></li>
+    </ul>
+
+
     === ipen ===
     <h3 class="parameter_description" id="ipen">ipen</h3>
     <ul class="parameter_description_list">

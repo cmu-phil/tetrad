@@ -1645,6 +1645,15 @@ public final class Params {
      */
     public static final String OS_DEGRADE_CENSOR_QUANTILE = "osDegradeCensorQuantile";
 
+    /**
+     * Constant <code>ION_PATH_LENGTH_SEARCH="ionPathLengthSearch"</code>
+     */
+    public static final String ION_PATH_LENGTH_SEARCH = "ionPathLengthSearch";
+    /**
+     * Constant <code>ION_ADJACENCY_SEARCH="ionAdjacencySearch"</code>
+     */
+    public static final String ION_ADJACENCY_SEARCH = "ionAdjacencySearch";
+
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -1675,6 +1684,7 @@ public final class Params {
             Params.INCLUDE_NEGATIVE_SKEWS_FOR_BETA, Params.INCLUDE_POSITIVE_COEFS,
             Params.INCLUDE_POSITIVE_SKEWS_FOR_BETA, Params.INCLUDE_STRUCTURE_MODEL,
             Params.INTERVAL_BETWEEN_RECORDINGS, Params.INTERVAL_BETWEEN_SHOCKS, Params.IPEN, Params.IS, Params.ITR,
+            Params.ION_PATH_LENGTH_SEARCH, Params.ION_ADJACENCY_SEARCH,
             Params.KCI_ALPHA, Params.KCI_CUTOFF, Params.KCI_EPSILON, Params.KCI_NUM_BOOTSTRAPS, Params.KCI_USE_APPROXIMATION,
             Params.SCALING_FACTOR, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
             Params.LATENT_MEASURED_IMPURE_PARENTS, Params.LOWER_BOUND, Params.MAX_CATEGORIES, Params.MAX_DEGREE,

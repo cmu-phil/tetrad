@@ -20,12 +20,23 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.GraphTransforms;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.Ion;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -124,5 +135,104 @@ public class TestIon {
 
         assertTrue("ION output should include a graph with the chain skeleton A-B-C.",
                 containsChainSkeleton);
+    }
+
+    /**
+     * Smoke test for the algcomparison wrapper: two datasets with overlapping variable sets are simulated from the
+     * single chain X1 -&gt; X2 -&gt; X3 -&gt; X4, BFCI is run on each with the chosen test and score, and ION integrates the
+     * results. The returned graph must be non-null, acyclic, and defined over the union of the variables.
+     */
+    @Test
+    public void testAlgcomparisonWrapper() throws Exception {
+        RandomUtil.getInstance().setSeed(38482838L);
+
+        Graph dag = new EdgeListGraph(List.of(new GraphNode("X1"), new GraphNode("X2"),
+                new GraphNode("X3"), new GraphNode("X4")));
+        dag.addDirectedEdge(dag.getNode("X1"), dag.getNode("X2"));
+        dag.addDirectedEdge(dag.getNode("X2"), dag.getNode("X3"));
+        dag.addDirectedEdge(dag.getNode("X3"), dag.getNode("X4"));
+
+        SemPm pm = new SemPm(dag);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(1000, false);
+
+        DataSet data1 = data.subsetColumns(List.of(data.getVariable("X1"), data.getVariable("X2"),
+                data.getVariable("X3")));
+        data1.setName("data1");
+        DataSet data2 = data.subsetColumns(List.of(data.getVariable("X2"), data.getVariable("X3"),
+                data.getVariable("X4")));
+        data2.setName("data2");
+
+        edu.cmu.tetrad.algcomparison.algorithm.multi.Ion ion
+                = new edu.cmu.tetrad.algcomparison.algorithm.multi.Ion(new FisherZ(), new SemBicScore());
+
+        Graph graph = ion.search(List.of((edu.cmu.tetrad.data.DataModel) data1, data2), new Parameters());
+
+        assertTrue("Wrapper should return a graph.", graph != null);
+        assertFalse("Wrapper returned a graph with a directed cycle: " + graph,
+                graph.paths().existsDirectedCycle());
+        assertTrue("Wrapper output should contain all four variables.",
+                graph.getNode("X1") != null && graph.getNode("X2") != null
+                && graph.getNode("X3") != null && graph.getNode("X4") != null);
+    }
+
+    /**
+     * Tests that ION infers correct structure from jointly inconsistent inputs, as arise when the input PAGs are
+     * estimated from finite samples. Ten datasets are simulated from a single random 10-node, 10-edge DAG, each
+     * dataset drops each column independently with probability 0.1, and the ION wrapper is run with default
+     * parameters. Since the per-dataset PAGs are estimated from different finite samples, they conflict with one
+     * another, and a version of ION that treats every recorded fact as a hard constraint returns nothing. The
+     * majority-voted, best-effort version is required to return an acyclic graph in which correct adjacencies
+     * outnumber incorrect ones, with at least two correct.
+     */
+    @Test
+    public void testRecoversEdgesFromNoisyOverlappingDatasets() throws Exception {
+        RandomUtil.getInstance().setSeed(48258235L);
+
+        Graph dag = RandomGraph.randomGraph(10, 0, 10, 100, 100, 100, false);
+
+        SemPm pm = new SemPm(dag);
+        SemIm im = new SemIm(pm);
+
+        List<DataModel> dataSets = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            DataSet data = im.simulateData(1000, false);
+
+            List<Node> keep = new ArrayList<>();
+            for (Node v : data.getVariables()) {
+                if (RandomUtil.getInstance().nextDouble() > 0.1) keep.add(v);
+            }
+            if (keep.size() < 2) keep = new ArrayList<>(data.getVariables());
+
+            DataSet sub = data.subsetColumns(keep);
+            sub.setName("data" + (i + 1));
+            dataSets.add(sub);
+        }
+
+        edu.cmu.tetrad.algcomparison.algorithm.multi.Ion ion
+                = new edu.cmu.tetrad.algcomparison.algorithm.multi.Ion(new FisherZ(), new SemBicScore());
+
+        Graph out = ion.search(dataSets, new Parameters());
+
+        assertFalse("ION should not return a cyclic graph", out.paths().existsDirectedCycle());
+        assertTrue("ION should infer at least some edges from noisy overlapping datasets",
+                out.getNumEdges() > 0);
+
+        Graph truePag = GraphTransforms.dagToPag(dag, false);
+
+        int correct = 0;
+        int incorrect = 0;
+        for (Edge edge : out.getEdges()) {
+            Node a = truePag.getNode(edge.getNode1().getName());
+            Node b = truePag.getNode(edge.getNode2().getName());
+            if (truePag.isAdjacentTo(a, b)) correct++;
+            else incorrect++;
+        }
+
+        assertTrue("ION should infer at least two correct adjacencies, but inferred " + correct,
+                correct >= 2);
+        assertTrue("Correct adjacencies (" + correct + ") should outnumber incorrect ones (" + incorrect + ")",
+                correct > incorrect);
     }
 }
