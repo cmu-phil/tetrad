@@ -113,59 +113,6 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Canonical ranking: best candidate sorts first.
-     * Priority chain: (1) fewer Markov violations; (2) fewer edges when alpha > 0.01;
-     * (3) higher Model-P; (4) stable key tie-break.
-     */
-//    /**
-//     * Canonical ranking: best candidate sorts first.
-//     * Priority chain:
-//     *   (1) fewer Markov violations (smaller delta);
-//     *   (2) fewer edges, but only for candidates that have "earned" the edges
-//     *       comparison — removals, no-ops, or candidates whose Model-P clears alpha.
-//     *       Candidates with NaN Model-P are treated as not having earned it (they
-//     *       haven't been evaluated yet), so they sort after those that have.
-//     *   (3) higher Model-P, with NaN sorting last (unknown is worse than known);
-//     *   (4) stable key tie-break.
-//     */
-//    public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
-//        if (a == null && b == null) return 0;
-//        if (a == null) return 1;
-//        if (b == null) return -1;
-//
-//        int c;
-//
-//        // (1) Fewer Markov violations wins.
-//        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
-//        if (c != 0) return c;
-//
-//        // (2) Edges comparison — only candidates that are removals, no-ops, or
-//        // whose Model-P clears alpha "earn" the edges comparison. Candidates with
-//        // NaN Model-P have not been evaluated yet and so are treated as not earning
-//        // it (MAX_VALUE sinks them relative to earned candidates but ties among
-//        // themselves, so the next key breaks them).
-//        int edges1 = earnsEdgesComparison(a) ? a.edgesAfter() : Integer.MAX_VALUE;
-//        int edges2 = earnsEdgesComparison(b) ? b.edgesAfter() : Integer.MAX_VALUE;
-//        c = Integer.compare(edges1, edges2);
-//        if (c != 0) return c;
-//
-//        // (3) Higher Model-P wins. NaN sorts last (unknown/unevaluated is worse
-//        // than any real value).
-//        c = compareModelPDesc(a.modelPAfter(), b.modelPAfter());
-//        if (c != 0) return c;
-//
-//        c = compareModelPDesc(a.nodePAfter(), b.nodePAfter());
-//        if (c != 0) return c;
-//
-//        c  = compareModelPDesc(a.modelPAfter() - a.modelPBefore(), b.modelPAfter() - b.modelPBefore());
-//        if (c != 0) return c;
-//
-//        // (4) Stable tie-break on keys and descriptions.
-//        return stableTieBreak(a, b);
-//    };
-
-
-    /**
-     * Canonical ranking: best candidate sorts first.
      * Priority chain:
      *   (0) Markov-passing beats non-passing. A candidate "passes" when its
      *       Model-P exceeds alpha. Within the non-passing group, a larger
