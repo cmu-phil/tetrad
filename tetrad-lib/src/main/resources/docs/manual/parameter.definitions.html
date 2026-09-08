@@ -7908,7 +7908,7 @@ Source:
     <ul class="parameter_description_list">
         <li>Short Description: <span id="osTypePropContextDiscrete_short_desc">Fraction of observed context variables that are discrete (min = 0.0, max = 1.0)</span></li>
         <li>Long Description: <span id="osTypePropContextDiscrete_long_desc">
-        Each observed context variable is independently discrete with this probability (osTypeNumCategories levels, uniform, or a sticky Markov chain in serial mode), else continuous. Discrete parents act through level-specific shifts (conditional Gaussian style).</span></li>
+        A fixed count, round(osTypePropContextDiscrete times osGraphNumContext), of the observed context variables is made discrete, chosen at random (osTypeNumCategories levels, uniform, or a sticky Markov chain in serial mode); the rest are continuous. Discrete parents act through level-specific shifts (conditional Gaussian style). No random draws are made when the count is zero, so existing seeds are unaffected by a setting of 0.</span></li>
         <li>Default Value: <span id="osTypePropContextDiscrete_default_value">0.5</span></li>
         <li>Lower Bound: <span id="osTypePropContextDiscrete_lower_bound">0.0</span></li>
         <li>Upper Bound: <span id="osTypePropContextDiscrete_upper_bound">1.0</span></li>
