@@ -114,7 +114,7 @@ public final class VertexRepairSearch implements IGraphSearch {
     /**
      * Canonical ranking: best candidate sorts first.
      * Priority chain:
-     *   (0) Markov-passing beats non-passing. A candidate "passes" when its
+         *   (0) Markov-passing beats non-passing. A candidate "passes" when its
      *       Model-P exceeds alpha. Within the non-passing group, a larger
      *       Model-P is preferred — this gives the search a gradient toward
      *       clearing alpha when it's stuck in a non-I-map region. NaN
