@@ -37,6 +37,14 @@ import java.util.*;
  * some variables in common and others not in common. The algorithm returns a complete set of PAGs over every variable
  * form an input PAG_of_the_true_DAG that are consistent (same d-separations and d-connections) with every input
  * PAG_of_the_true_DAG.
+ * <p>
+ * Reference: Danks, D., Glymour, C., &amp; Tillman, R. E. (2008). Integrating locally learned causal structures with
+ * overlapping variables. In Advances in Neural Information Processing Systems 21 (NIPS 2008), pp. 1665-1672.
+ * <p>
+ * Graphs that contain a directed cycle or that entail an independence known (from the input PAGs) not to hold are
+ * rejected and removed from the search, per step 3.c of the reference. Note that if the input PAGs are jointly
+ * inconsistent (which can happen when they are estimated from finite samples of different datasets), the output list
+ * may be empty.
  *
  * @author Robert Tillman
  * @author josephramsey
@@ -233,8 +241,7 @@ public class Ion {
         }
         String message3 = "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
         TetradLogger.getInstance().log(message3);
-        System.out.println("step2");
-        System.out.println(graph);
+        TetradLogger.getInstance().log("Graph after step 2: " + graph);
 
         /*
          * Step 3
@@ -253,12 +260,15 @@ public class Ion {
 //        Queue<Graph> step3PagsSet = new LinkedList<Graph>();
         HashSet<Graph> step3PagsSet = new HashSet<>();
         Set<Graph> reject = new HashSet<>();
-        // if no d-separations, nothing left to search
+        // if no d-separations, nothing left to search; still reject the graph if it is cyclic
+        // or predicts an independence known not to hold
         if (this.separations.isEmpty()) {
             // makes orientations preventing definite noncolliders from becoming colliders
             // do final orientations
 //            doFinalOrientation(graph);
-            step3PagsSet.add(graph);
+            if (!rejected(graph, associations, reject)) {
+                step3PagsSet.add(graph);
+            }
         }
         // sets length to iterate once if search over path lengths not enabled, otherwise set to 2
         int numNodes = graph.getNumNodes();
@@ -285,7 +295,7 @@ public class Ion {
                 this.recGraphs.add(searchPags.size());
                 step3PagsSet.clear();
                 while (!searchPags.isEmpty()) {
-                    System.out.println("ION Step 3 size: " + searchPags.size());
+                    TetradLogger.getInstance().log("ION Step 3 size: " + searchPags.size());
                     double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
                     if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
                     // deques first PAG from searchPags
@@ -319,9 +329,13 @@ public class Ion {
                             }
                         }
                     }
-                    // accept PAG_of_the_true_DAG go to next PAG_of_the_true_DAG if no possibly d-connecting undirectedPaths
+                    // accept PAG_of_the_true_DAG go to next PAG_of_the_true_DAG if no possibly d-connecting undirectedPaths;
+                    // the graph must still pass the rejection test (no cycles, no independencies known not to hold),
+                    // since the seed graph from step 2 enters the queue without having been checked
                     if (mConnections.isEmpty()) {
-                        step3PagsSet.add(pag);
+                        if (!rejected(pag, associations, reject)) {
+                            step3PagsSet.add(pag);
+                        }
                         continue;
                     }
                     // maps conditioning sets to list of possibly d-connecting undirectedPaths
@@ -445,6 +459,10 @@ public class Ion {
                             continue;
                         }
                         Graph changed = gc.applyTo(pag);
+                        // reject if the change could not be applied
+                        if (changed == null) {
+                            continue;
+                        }
                         // if graph change has already been rejected move on to next graph
                         if (reject.contains(changed)) {
                             continue;
@@ -453,10 +471,10 @@ public class Ion {
                         if (step3PagsSet.contains(changed)) {
                             continue;
                         }
-                        // reject if null, predicts false independencies or has cycle
-                        if (predictsFalseIndependence(associations, changed)
-                            || changed.paths().existsDirectedCycle()) {
-                            reject.add(changed);
+                        // reject if it predicts false independencies or has a cycle; rejected graphs
+                        // are removed from the search (step 3.c of Danks, Glymour, and Tillman 2008)
+                        if (rejected(changed, associations, reject)) {
+                            continue;
                         }
                         // makes orientations preventing definite noncolliders from becoming colliders
                         // do final orientations
@@ -682,7 +700,9 @@ public class Ion {
                 largestit = i;
             }
         }
-        averageit /= this.recGraphs.size();
+        if (!this.recGraphs.isEmpty()) {
+            averageit /= this.recGraphs.size();
+        }
         double totalhit = 0;
         double longesthit = 0;
         double averagehit = 0;
@@ -919,6 +939,29 @@ public class Ion {
                 if (pag.paths().isMSeparatedFrom(
                         assocFact.getX(), assocFact.getY(), conditioningSet, false))
                     return true;
+        return false;
+    }
+
+    /**
+     * Step 3.c rejection test: a graph is rejected if it contains a directed cycle or predicts an independence known
+     * (from the input PAGs) not to hold. Rejected graphs are recorded in the given reject set so that duplicates
+     * encountered later can be skipped without retesting.
+     *
+     * @param graph        The graph to test.
+     * @param associations The associations recorded from the input PAGs.
+     * @param reject       The set of graphs rejected so far; the graph is added to this set if it is rejected here.
+     * @return True if the graph is rejected.
+     */
+    private boolean rejected(Graph graph, Set<IonIndependenceFacts> associations, Set<Graph> reject) {
+        if (reject.contains(graph)) {
+            return true;
+        }
+
+        if (predictsFalseIndependence(associations, graph) || graph.paths().existsDirectedCycle()) {
+            reject.add(graph);
+            return true;
+        }
+
         return false;
     }
 
@@ -1298,9 +1341,6 @@ public class Ion {
             return false;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            graph.getEndpoint(x, y);
-        }
         return true;
     }
 
