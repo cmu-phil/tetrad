@@ -17,6 +17,8 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 import javax.swing.table.*;
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -24,6 +26,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.Preferences;
 
 
@@ -255,6 +259,61 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 //        }
 //    }
 
+    // =========================================================================
+    // Live graph view (updated as the repair applies edits)
+    // =========================================================================
+
+    /**
+     * Workbench of the currently open "Current Graph" window, or null when none is open.
+     * EDT-confined: written when the window opens and closes, read by the coalesced
+     * refresh task.
+     */
+    private GraphWorkbench liveWorkbench = null;
+
+    /**
+     * Text tab of the currently open "Current Graph" window, or null when none is open.
+     * EDT-confined alongside {@link #liveWorkbench}.
+     */
+    private JTextArea liveTextArea = null;
+
+    /**
+     * Latest repaired graph awaiting display; written by the repair thread, drained on
+     * the EDT. Holding only the latest is the coalescing: bursts of applied edits
+     * overwrite each other here and a single scheduled task paints whatever is newest.
+     */
+    private final AtomicReference<Graph> pendingLiveGraph = new AtomicReference<>();
+
+    /**
+     * True while a live-view refresh task is scheduled on the EDT but has not yet run;
+     * prevents scheduling one task per applied edit.
+     */
+    private final AtomicBoolean liveRefreshScheduled = new AtomicBoolean(false);
+
+    /**
+     * Queues {@code g} (already a defensive copy, per the {@link RepairListener}
+     * contract) for display in the open "Current Graph" window, if any. Callable from
+     * any thread; a no-op when no graph window is open. Layout is carried over from the
+     * graph currently on the workbench so nodes do not jump between refreshes.
+     */
+    private void refreshLiveGraphView(Graph g) {
+        if (g == null) return;
+        pendingLiveGraph.set(g);
+        if (!liveRefreshScheduled.compareAndSet(false, true)) return;
+        SwingUtilities.invokeLater(() -> {
+            liveRefreshScheduled.set(false);
+            Graph latest = pendingLiveGraph.getAndSet(null);
+            if (latest == null) return;
+            if (liveWorkbench != null) {
+                LayoutUtil.arrangeBySourceGraph(latest, liveWorkbench.getGraph());
+                liveWorkbench.setGraph(latest);
+            }
+            if (liveTextArea != null) {
+                liveTextArea.setText(String.valueOf(latest));
+                liveTextArea.setCaretPosition(0);
+            }
+        });
+    }
+
     private final class PanelRepairListener implements RepairListener {
 
         private final CandidateTableModel tableModel;
@@ -270,20 +329,31 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
 
         @Override
         public void editApplied(CandidateEdit edit, Graph currentGraph) {
-            populateNodeCombo();
-//            baseModel.setGraph(safeCopy(repairSearch.getGraph()));
-            tableModel.fireTableDataChanged();
-            SwingUtilities.invokeLater(() ->
-                    statusLabel.setText("Applied: " + edit.description()));
+            // Fired on the repair thread; currentGraph is a defensive copy per the
+            // listener contract, so it is safe to hand straight to the live view. The
+            // base model is deliberately NOT updated here: every setGraph fires
+            // PROP_GRAPH, and the check editor answers that with a full Markov re-check
+            // and an undo-history entry -- per applied edit. The model is set once, at
+            // convergence, by runRepairWatched; the live window is how mid-repair
+            // progress is displayed.
+            refreshLiveGraphView(currentGraph);
+            SwingUtilities.invokeLater(() -> {
+                populateNodeCombo();
+                tableModel.fireTableDataChanged();
+                statusLabel.setText("Applied: " + edit.description());
+            });
         }
 
         @Override
         public void repairConverged(int totalEdits, String message) {
+            // Fired on the repair thread after the last edit; push the final graph so
+            // the live window shows the converged state even if the last coalesced
+            // refresh raced the final edit. Reading getGraph() here is safe: the search
+            // has just finished on this same thread.
+            refreshLiveGraphView(safeCopy(repairSearch.getGraph()));
             SwingUtilities.invokeLater(() -> {
                 populateNodeCombo();
                 statusLabel.setText(message);
-                // Pass a distinct instance so PROP_GRAPH actually fires in the base model.
-//                baseModel.setGraph(safeCopy(repairSearch.getGraph()));
             });
         }
     }
@@ -764,7 +834,11 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     }
 
     private void showGraphWindow() {
-        Graph graph = repairSearch.getGraph();
+        // Display a copy: getGraph() returns the live working graph, which background
+        // repairs mutate; the window must never share structure with it. The window is
+        // registered as the live view, so applied edits repaint it (see
+        // refreshLiveGraphView), and closing it unregisters it.
+        Graph graph = safeCopy(repairSearch.getGraph());
         GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.setEnableEditing(false);
         JScrollPane renderScroll = new JScrollPane(workbench);
@@ -778,6 +852,17 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         tabs.addTab("Text", textScroll);
         tabs.setTabPlacement(JTabbedPane.RIGHT);
         EditorWindow editorWindow = new EditorWindow(tabs, "Current Graph", "OK", false, this);
+        liveWorkbench = workbench;
+        liveTextArea = ta;
+        editorWindow.addInternalFrameListener(new InternalFrameAdapter() {
+            @Override
+            public void internalFrameClosed(InternalFrameEvent e) {
+                // Only clear if this window is still the registered live view; a newer
+                // window may have replaced it.
+                if (liveWorkbench == workbench) liveWorkbench = null;
+                if (liveTextArea == ta) liveTextArea = null;
+            }
+        });
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
         editorWindow.setVisible(true);

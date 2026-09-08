@@ -196,8 +196,9 @@ public class VertexCheckEditor extends JPanel {
             if (!applyingGraphProgrammatically) {
                 Object oldV = evt.getOldValue();
                 if (oldV instanceof Graph oldG) {
-                    graphHistory.push(safeCopy(oldG));
-
+                    // Push exactly once, on the EDT. (The previous code pushed the same
+                    // graph twice -- once synchronously here and once in the deferred
+                    // task -- so every change cost two undo clicks.)
                     SwingUtilities.invokeLater(() -> {
                         graphHistory.push(safeCopy(oldG));
                         updateUndoButtonEnabled();
