@@ -327,6 +327,21 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return the implied independence facts for the vertex
      */
     public static List<IndependenceFact> computeImpliedFactsForVertex(Graph graph, Node x, ConditioningSetType conditioningSetType, Graph preparedMag) {
+        // Contract guard (added 2026-9-9): a graph implies no independence facts about
+        // a vertex it does not contain, so such a vertex gets an empty list rather than
+        // a downstream failure. Before this guard, a data variable absent from the
+        // graph (the checked graph was learned on, or edited to, a subset of the data
+        // columns) NPE'd inside the ordered-local-Markov path -- getNode returned null
+        // and getModelForNode dereferenced it -- and, more quietly, would have
+        // FABRICATED facts under the uniform-Z types: a foreign x has empty adjacency,
+        // so LOCAL_MARKOV would pair it against the graph's nodes with an empty
+        // conditioning set, asserting marginal independencies the graph says nothing
+        // about.
+        if (graph == null || x == null || x.getName() == null
+                || graph.getNode(x.getName()) == null) {
+            return new ArrayList<>();
+        }
+
         if (preparedMag != null) {
             if (conditioningSetType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY) {
                 Node _x = preparedMag.getNode(x.getName());

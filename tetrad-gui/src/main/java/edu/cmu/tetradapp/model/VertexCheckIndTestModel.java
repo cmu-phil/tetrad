@@ -411,9 +411,26 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         List<Node> vars = new ArrayList<>(independenceTest.getVariables());
         vars.sort(Comparator.comparing(Node::getName));
 
+        // Data variables absent from the graph are skipped, not failed on (added
+        // 2026-9-9). The overview lists every data variable, but a graph learned on or
+        // edited to a subset of the data columns implies no facts about the missing
+        // ones; their rows stay blank. Before this, the first such variable killed the
+        // whole sweep (NPE deep in the ordered-local-Markov fact computation), leaving
+        // EVERY row blank -- e.g. a fire-weather data set containing BUI checked
+        // against a graph from which BUI was excluded for near-determinism.
+        List<String> notInGraph = new ArrayList<>();
         for (Node x : vars) {
             if (cancelled.getAsBoolean()) return;     // skip vertices not yet started
+            if (alignedGraph.getNode(x.getName()) == null) {
+                notInGraph.add(x.getName());
+                continue;
+            }
             runVertex(alignedGraph, x, cancelled);
+        }
+        if (!notInGraph.isEmpty()) {
+            TetradLogger.getInstance().log("Vertex check: " + notInGraph.size()
+                    + " data variable(s) not in the graph were skipped (no implied facts): "
+                    + String.join(", ", notInGraph));
         }
 
         // Compute the model-level summary HERE, on the worker thread, so the
@@ -646,7 +663,14 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         Graph alignedGraph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         Node x = alignedGraph.getNode(vertexName);
-        if (x == null) throw new IllegalArgumentException("Vertex not found: " + vertexName);
+        // Lenient for the UI (changed 2026-9-9 from a throw): the overview lists every
+        // data variable, so clicking the row of one not in the graph is a legitimate
+        // action; there is simply nothing to compute for it, and its row stays blank.
+        if (x == null) {
+            TetradLogger.getInstance().log("Vertex check: '" + vertexName
+                    + "' is not in the graph; nothing to compute.");
+            return;
+        }
 
         runVertex(alignedGraph, x);
     }
