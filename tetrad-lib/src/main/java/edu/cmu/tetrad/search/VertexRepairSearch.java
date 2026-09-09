@@ -2046,36 +2046,28 @@ public final class VertexRepairSearch implements IGraphSearch {
     private GlobalEvalCache buildBaselineCache(Graph g) {
         if (g == null) return new GlobalEvalCache(Map.of());
         Map<String, VertexContribution> out = new HashMap<>();
-        List<Node> nodes = g.getNodes();
-        // Prepare the graph-level MAG transform once for all vertices of this graph
-        // rather than once per vertex inside computeImpliedFactsForVertex. (Changed
-        // from the pre-2026-8-13 implementation, which redid the legality checks and
-        // CPDAG-to-DAG-to-MAG conversion for every vertex; the conversion is
-        // deterministic, so the facts are identical.)
-        Graph preparedMag = MarkovCheck.prepareMagForVertexFacts(g, type);
-        for (Node v : nodes) {
-            if (v == null) continue;
-            out.put(v.getName(), evalVertexContribution(g, v, preparedMag));
+        // Whole-graph fact model computed ONCE and bucketed per vertex (changed
+        // 2026-9-9). The previous per-vertex path -- prepareMagForVertexFacts once,
+        // then computeImpliedFactsForVertex per vertex -- shared the MAG transform but
+        // NOT the ordered-local model itself, which getModelForNode recomputed for
+        // every vertex: V full-model computations per baseline. The facts, and hence
+        // the contributions, are identical.
+        Map<String, List<IndependenceFact>> byVertex =
+                MarkovCheck.computeImpliedFactsByVertex(g, type);
+        for (Node v : g.getNodes()) {
+            if (v == null || v.getName() == null) continue;
+            out.put(v.getName(), evalVertexContribution(byVertex.get(v.getName())));
         }
         return new GlobalEvalCache(out);
     }
 
-    private VertexContribution evalVertexContribution(Graph g, Node vInGraph) {
-        return evalVertexContribution(g, vInGraph, null);
-    }
-
     /**
-     * Per-vertex contribution with an optional MAG prepared once per graph via
-     * {@link MarkovCheck#prepareMagForVertexFacts}. A null {@code preparedMag} behaves
-     * exactly as before, preparing per call.
+     * Per-vertex contribution from an explicit fact list, typically one bucket of
+     * {@link MarkovCheck#computeImpliedFactsByVertex}. (Refactored 2026-9-9 from the
+     * graph-plus-vertex signature; the evaluation over the facts is unchanged.)
      */
-    private VertexContribution evalVertexContribution(Graph g, Node vInGraph, Graph preparedMag) {
-        if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of());
-        Node v = g.getNode(vInGraph.getName());
-        if (v == null) return new VertexContribution(Map.of(), Map.of());
-
-        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type, preparedMag);
-        if (facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
+    private VertexContribution evalVertexContribution(List<IndependenceFact> facts) {
+        if (facts == null || facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
 
         Map<String, Boolean> viol = new LinkedHashMap<>();
         Map<String, Double> pByKey = new LinkedHashMap<>();
@@ -2123,11 +2115,19 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
 
         if (affectedVertexNames != null && !affectedVertexNames.isEmpty()) {
-            // Prepare the candidate graph's MAG transform once and share it across all
-            // affected vertices, instead of redoing the legality checks and
-            // CPDAG-to-DAG-to-MAG conversion per vertex. (Changed from the pre-2026-8-13
-            // implementation; the conversion is deterministic, so the facts are identical.)
-            Graph preparedMag = MarkovCheck.prepareMagForVertexFacts(candidateGraph, type);
+            // For the ordered-local-Markov types, the whole-graph fact model is
+            // computed ONCE and bucketed per vertex (changed 2026-9-9; previously the
+            // MAG transform was shared but getModelForNode recomputed the full model
+            // for every affected vertex). For the uniform-Z types, whose per-vertex
+            // facts are local and cheap, per-vertex computation is kept: the bulk
+            // method would compute facts for ALL vertices when only the affected few
+            // are needed.
+            boolean wholeGraphModel =
+                    type == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY
+                            || type == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION;
+            Map<String, List<IndependenceFact>> byVertex = wholeGraphModel
+                    ? MarkovCheck.computeImpliedFactsByVertex(candidateGraph, type)
+                    : null;
             for (String name : affectedVertexNames) {
                 if (name == null) continue;
                 Node v = candidateGraph.getNode(name);
@@ -2135,7 +2135,10 @@ public final class VertexRepairSearch implements IGraphSearch {
                     contrib.remove(name);
                     continue;
                 }
-                contrib.put(name, evalVertexContribution(candidateGraph, v, preparedMag));
+                List<IndependenceFact> facts = (byVertex != null)
+                        ? byVertex.get(name)
+                        : MarkovCheck.computeImpliedFactsForVertex(candidateGraph, v, type);
+                contrib.put(name, evalVertexContribution(facts));
             }
         }
 

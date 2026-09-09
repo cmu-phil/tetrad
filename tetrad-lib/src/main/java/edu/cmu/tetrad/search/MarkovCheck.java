@@ -243,16 +243,71 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public static Set<IndependenceFact> computeAllImpliedFacts(Graph g, ConditioningSetType setType) {
         Set<IndependenceFact> allImpliedFacts = new HashSet<>();
+        for (List<IndependenceFact> facts : computeImpliedFactsByVertex(g, setType).values()) {
+            allImpliedFacts.addAll(facts);
+        }
+        return allImpliedFacts;
+    }
 
-        // Prepare the graph-level MAG transform once (relevant for the ordered-local-Markov
-        // types); null for other types, in which case the per-vertex path is unchanged.
-        Graph preparedMag = prepareMagForVertexFacts(g, setType);
+    /**
+     * Computes the implied independence facts for EVERY vertex of {@code graph} at once,
+     * keyed by vertex name. Equivalent, vertex for vertex, to calling
+     * {@link #computeImpliedFactsForVertex(Graph, Node, ConditioningSetType)} for each
+     * vertex -- the same facts, with the same X/Y name-order normalization -- but for
+     * the two ordered-local-Markov conditioning types it computes the whole-graph model
+     * ONCE and buckets its facts by endpoint, instead of recomputing the full model per
+     * vertex inside {@code getModelForNode}. (Added 2026-9-9. The per-vertex path cost
+     * V full-model computations per graph -- measured at 4.7x/13.5x/23.5x the single-model
+     * cost at V = 10/20/30 -- and callers that evaluate every candidate graph of a
+     * repair search paid it per candidate.) For the other conditioning types, whose
+     * per-vertex facts are local and cheap, this simply loops the per-vertex method.
+     *
+     * <p>Every vertex of the graph gets an entry; vertices with no facts map to an
+     * empty list. Each fact appears in the bucket of both of its endpoints, matching
+     * the per-vertex method's filter.
+     *
+     * @param graph   the graph whose implied facts are to be computed
+     * @param setType the conditioning set type
+     * @return a map from vertex name to that vertex's implied facts; never null
+     */
+    public static Map<String, List<IndependenceFact>> computeImpliedFactsByVertex(
+            Graph graph, ConditioningSetType setType) {
+        Map<String, List<IndependenceFact>> out = new LinkedHashMap<>();
+        if (graph == null) return out;
 
-        for (Node x : g.getNodes()) {
-            allImpliedFacts.addAll(computeImpliedFactsForVertex(g, x, setType, preparedMag));
+        for (Node n : graph.getNodes()) {
+            if (n != null && n.getName() != null) out.put(n.getName(), new ArrayList<>());
         }
 
-        return allImpliedFacts;
+        if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY
+                || setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION) {
+            Graph mag = prepareMagForVertexFacts(graph, setType);
+            if (mag == null) return out;
+            Set<IndependenceFact> model =
+                    (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY)
+                            ? OrderedLocalMarkovProperty.getModel(mag)
+                            : OrderedLocalMarkovPropertySinkElimination.getModel(mag);
+
+            for (IndependenceFact f : model) {
+                if (f == null || f.getX() == null || f.getY() == null) continue;
+                // Same normalization as getModelForNode: X/Y in name order.
+                Node X = f.getX(), Y = f.getY();
+                IndependenceFact norm = (X.getName().compareTo(Y.getName()) <= 0)
+                        ? new IndependenceFact(X, Y, f.getZ())
+                        : new IndependenceFact(Y, X, f.getZ());
+                List<IndependenceFact> bx = out.get(X.getName());
+                if (bx != null) bx.add(norm);
+                List<IndependenceFact> by = out.get(Y.getName());
+                if (by != null) by.add(norm);
+            }
+            return out;
+        }
+
+        for (Node x : graph.getNodes()) {
+            if (x == null || x.getName() == null) continue;
+            out.put(x.getName(), computeImpliedFactsForVertex(graph, x, setType));
+        }
+        return out;
     }
 
     /**
