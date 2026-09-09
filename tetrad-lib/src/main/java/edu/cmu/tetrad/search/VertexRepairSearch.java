@@ -1635,7 +1635,14 @@ public final class VertexRepairSearch implements IGraphSearch {
         // for PAGs (2^8 = 256) than for the locality-served types (2^12 = 4096).
         final int MAX_FREE = (graphType == AdjustmentGraphType.PAG) ? 8 : 12;
         final int MAX_MOVES = 5000;
-        if (freeEdges.size() > MAX_FREE) return List.of();
+        // Above the cap, fall back to the pairwise collider moves rather than returning
+        // nothing (added 2026-9-9; previously a node with more free edges than the cap
+        // got NO pattern moves at all, so a new collider at a high-degree hub was
+        // unreachable -- exactly the cliff the cap created). The fallback covers the
+        // reachability case the full masks exist for at m-choose-2 cost instead of 2^m.
+        if (freeEdges.size() > MAX_FREE) {
+            return enumeratePairwiseColliderFallback(g, x, freeEdges, MAX_MOVES);
+        }
 
         List<CandidateEdit> out = new ArrayList<>();
         int m = freeEdges.size();
@@ -1658,25 +1665,15 @@ public final class VertexRepairSearch implements IGraphSearch {
                 olds.add(old);
                 boolean intoX = ((mask & (1 << i)) != 0);
                 String yn = (y.getName() == null) ? "?" : y.getName();
-                Edge ne;
-                if (graphType == AdjustmentGraphType.PAG) {
-                    Endpoint eyKeep = endpointAt(old, y);
-                    // Selection bias is excluded, so a tail at x is only compatible with
-                    // an arrow at y: x --- y and x o-- y are inadmissible. Orienting the
-                    // edge out of x therefore forces the arrowhead at y, rather than
-                    // keeping y's existing circle or tail. Orienting into x can keep y's
-                    // endpoint, since y o-> x, y <-> x and y --> x are all admissible.
-                    // (Changed 2026-8-13; the previous code kept y's endpoint in both
-                    // directions, silently emitting the selection-bias edge y o-- x for
-                    // every o-o edge oriented out of x.)
-                    ne = intoX
-                            ? new Edge(y, x, eyKeep, Endpoint.ARROW)
-                            : new Edge(y, x, Endpoint.ARROW, Endpoint.TAIL);
-                } else {
-                    ne = intoX
-                            ? new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)
-                            : new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
-                }
+                // Per-type endpoint policy lives in the two helpers (extracted 2026-9-9,
+                // shared with the pairwise fallback). For PAGs in particular: selection
+                // bias is excluded, so orienting out of x forces the arrowhead at y
+                // (x --- y and x o-- y are inadmissible), while orienting into x keeps
+                // y's endpoint, since y o-> x, y <-> x and y --> x are all admissible.
+                // (Policy set 2026-8-13; the pre-8-13 code kept y's endpoint in both
+                // directions, silently emitting the selection-bias edge y o-- x for
+                // every o-o edge oriented out of x.)
+                Edge ne = intoX ? orientedIntoX(old, x, y) : orientedOutOfX(x, y);
                 news.add(ne);
                 if (intoX) parents.add(yn);
                 else children.add(yn);
@@ -1703,6 +1700,146 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
 
         return out;
+    }
+
+    /**
+     * The edge that orients {@code old} into {@code x}, per graph type. For PAGs the
+     * distal endpoint at {@code y} is kept (y o-&gt; x, y &lt;-&gt; x and y --&gt; x are
+     * all admissible); for the directed types the result is y --&gt; x. Shared by the
+     * full mask enumeration and the pairwise fallback so the two cannot drift apart.
+     */
+    private Edge orientedIntoX(Edge old, Node x, Node y) {
+        if (graphType == AdjustmentGraphType.PAG) {
+            return new Edge(y, x, endpointAt(old, y), Endpoint.ARROW);
+        }
+        return new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW);
+    }
+
+    /**
+     * The edge that orients an x-incident edge out of {@code x}, per graph type. For
+     * PAGs the arrowhead at {@code y} is forced (selection bias is excluded, so a tail
+     * at x is only compatible with an arrow at y); for the directed types the result is
+     * x --&gt; y. Shared by the full mask enumeration and the pairwise fallback.
+     */
+    private Edge orientedOutOfX(Node x, Node y) {
+        if (graphType == AdjustmentGraphType.PAG) {
+            return new Edge(y, x, Endpoint.ARROW, Endpoint.TAIL);
+        }
+        return new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
+    }
+
+    /**
+     * Fallback pattern moves for a node whose free-edge count exceeds the cap in
+     * {@link #enumerateIncidentOrientationPatternMoves}, where the full 2^m mask
+     * enumeration is unaffordable. (Added 2026-9-9; previously such nodes got no
+     * pattern moves at all, so a new collider at a high-degree hub was unreachable --
+     * single-arrowhead moves are erased by canonicalization unless class-forced.)
+     *
+     * <p>Each enumerated move is a COMPLETE orientation of the free star at x, i.e. a
+     * specific mask of the full enumeration, never a partial one:
+     * <ul>
+     *   <li>For each pair of free edges whose distal nodes are NOT adjacent in
+     *       {@code g}: the pair oriented into {@code x} and every other free edge
+     *       oriented out -- the hypothesis "x is a collider of exactly this pair". The
+     *       into-pair installs an unshielded collider, which is class-forced and so
+     *       survives canonicalization; the out-orientations that are not class-forced
+     *       are simply erased by it. Pairs with adjacent distals are skipped: a
+     *       shielded double arrowhead is generally not class-forced and the move
+     *       canonicalizes to a disguised no-op, so those pairs mostly buy wasted
+     *       evaluations. The omission this accepts: a shielded collider forced via a
+     *       discriminating path is not proposed by this fallback (below the cap, the
+     *       full masks still cover it).</li>
+     *   <li>One "all free edges into x" move, since a hub that is a common effect of
+     *       its neighbors is cheap to test and common in practice.</li>
+     * </ul>
+     *
+     * <p>Partial moves that leave some free edges untouched were tried first and are
+     * deliberately NOT emitted: the untouched circles at x hand
+     * {@code zhangMagFromPag}'s circle-component completion the discretion to orient
+     * them, and a completion choice pointing one of them into x poisons the screening
+     * facts with dependencies the data genuinely rejects, sinking the candidate at any
+     * alpha. Complete orientations leave the completion no discretion at x.
+     *
+     * <p>Cost is m-choose-2 rather than 2^m, further bounded by {@code maxMoves}. The
+     * labels use the same format as the full mask enumeration, so a fallback move and
+     * the identical below-cap mask carry the same dedup key.
+     */
+    private List<CandidateEdit> enumeratePairwiseColliderFallback(Graph g, Node x,
+                                                                  List<Edge> freeEdges,
+                                                                  int maxMoves) {
+        if (g == null || x == null || freeEdges == null || freeEdges.size() < 2) {
+            return List.of();
+        }
+
+        // Resolve distal nodes once; drop malformed entries.
+        List<Edge> edges = new ArrayList<>(freeEdges.size());
+        List<Node> distals = new ArrayList<>(freeEdges.size());
+        for (Edge e : freeEdges) {
+            if (e == null) continue;
+            Node y = e.getDistalNode(x);
+            if (y == null) continue;
+            edges.add(e);
+            distals.add(y);
+        }
+        int m = edges.size();
+        if (m < 2) return List.of();
+
+        List<CandidateEdit> out = new ArrayList<>();
+
+        for (int i = 0; i < m && out.size() < maxMoves; i++) {
+            for (int j = i + 1; j < m && out.size() < maxMoves; j++) {
+                if (g.isAdjacentTo(distals.get(i), distals.get(j))) continue; // unshielded only
+                out.add(starOrientationMove(x, edges, distals, Set.of(i, j)));
+            }
+        }
+
+        // The all-into-x move.
+        if (out.size() < maxMoves) {
+            Set<Integer> all = new LinkedHashSet<>();
+            for (int i = 0; i < m; i++) all.add(i);
+            out.add(starOrientationMove(x, edges, distals, all));
+        }
+
+        return out;
+    }
+
+    /**
+     * Builds the complete star-orientation move at {@code x}: the free edges at the
+     * given indices oriented into {@code x}, all others out. The label matches the
+     * full mask enumeration's format for the identical configuration.
+     */
+    private CandidateEdit starOrientationMove(Node x, List<Edge> edges, List<Node> distals,
+                                              Set<Integer> intoIndices) {
+        String xName = (x.getName() == null) ? "?" : x.getName();
+        List<Edge> olds = new ArrayList<>(edges.size());
+        List<Edge> news = new ArrayList<>(edges.size());
+        List<String> into = new ArrayList<>();
+        List<String> outOf = new ArrayList<>();
+
+        for (int i = 0; i < edges.size(); i++) {
+            Edge old = edges.get(i);
+            Node y = distals.get(i);
+            String yn = (y.getName() == null) ? "?" : y.getName();
+            olds.add(old);
+            if (intoIndices.contains(i)) {
+                news.add(orientedIntoX(old, x, y));
+                into.add(yn);
+            } else {
+                news.add(orientedOutOfX(x, y));
+                outOf.add(yn);
+            }
+        }
+        into.sort(NaturalSort.naturalComparator());
+        outOf.sort(NaturalSort.naturalComparator());
+
+        String label = (graphType == AdjustmentGraphType.PAG)
+                ? "Orient incident edges at " + xName
+                + " | Into={" + String.join(",", into) + "}"
+                + " | OutOf={" + String.join(",", outOf) + "}"
+                : "Orient incident edges at " + xName
+                + " | Pa={" + String.join(",", into) + "}"
+                + " | Ch={" + String.join(",", outOf) + "}";
+        return CandidateEdit.replaceEdges(label, olds, news);
     }
 
     private List<Edge> edgeMenuForPair(Node x, Node y) {

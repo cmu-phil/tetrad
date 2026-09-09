@@ -93,6 +93,69 @@ public class TestVertexRepairPagMoves {
                         .getProximalEndpoint(out.getNode("y")));
     }
 
+    /**
+     * Above-cap fallback (added 2026-9-9). True DAG: y -> x <- z with x -> c1..c7, so x
+     * has NINE incident edges -- above the PAG free-edge cap of eight, where the full
+     * 2^m mask enumeration is skipped. Start PAG: the all-circles nine-edge star.
+     * Before the fallback, such a node got NO pattern moves at all (the cap cliff), the
+     * collider was unreachable, and repair densified instead. The pairwise fallback
+     * proposes the complete star orientation "y,z into x, all c's out", which is the
+     * true configuration; canonicalization then yields the true PAG exactly.
+     *
+     * <p>Alpha is 0.001 rather than 0.01, deliberately: the true model implies ~36
+     * facts, and raw violation counts charge the true model its false rejections
+     * (expected alpha times the fact count) while sparser-fact wrong models escape
+     * them. At 0.01 this seed draws two false rejections and the true configuration
+     * loses the violations tier; at 0.001 the noise floor sits below the signal.
+     */
+    @Test
+    public void testColliderReachableAboveFreeEdgeCap() throws Exception {
+        RandomUtil.getInstance().setSeed(55221L);
+
+        String[] names = {"y", "z", "x", "c1", "c2", "c3", "c4", "c5", "c6", "c7"};
+        Graph trueDag = new EdgeListGraph();
+        for (String n : names) trueDag.addNode(new GraphNode(n));
+        trueDag.addDirectedEdge(trueDag.getNode("y"), trueDag.getNode("x"));
+        trueDag.addDirectedEdge(trueDag.getNode("z"), trueDag.getNode("x"));
+        for (int i = 1; i <= 7; i++) {
+            trueDag.addDirectedEdge(trueDag.getNode("x"), trueDag.getNode("c" + i));
+        }
+
+        SemPm pm = new SemPm(trueDag);
+        SemIm im = new SemIm(pm);
+        for (Edge e : trueDag.getEdges()) im.setEdgeCoef(e.getNode1(), e.getNode2(), 0.8);
+        DataSet data = im.simulateData(SAMPLE_SIZE, false);
+
+        Graph start = new EdgeListGraph();
+        for (String n : names) start.addNode(new GraphNode(n));
+        for (String n : new String[]{"y", "z", "c1", "c2", "c3", "c4", "c5", "c6", "c7"}) {
+            start.addNondirectedEdge(start.getNode(n), start.getNode("x"));
+        }
+
+        VertexRepairSearch search = new VertexRepairSearch(start,
+                new IndTestFisherZ(data, 0.001),
+                ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
+        search.setGraphType(VertexRepairSearch.AdjustmentGraphType.PAG);
+        search.setRepairStrategy(VertexRepairSearch.RepairStrategy.GLOBAL_QUEUE);
+        search.setSeed(SEARCH_SEED);
+
+        Graph out = search.search();
+
+        Node xo = out.getNode("x");
+        assertEquals("Arrowhead at x on the y-x edge (collider installed above the cap)",
+                Endpoint.ARROW, out.getEdge(out.getNode("y"), xo).getProximalEndpoint(xo));
+        assertEquals("Arrowhead at x on the z-x edge (collider installed above the cap)",
+                Endpoint.ARROW, out.getEdge(out.getNode("z"), xo).getProximalEndpoint(xo));
+        for (int i = 1; i <= 7; i++) {
+            Node c = out.getNode("c" + i);
+            assertTrue("x and c" + i + " should remain adjacent", out.isAdjacentTo(xo, c));
+            assertEquals("Arrowhead at c" + i + " (child edge oriented out of x)",
+                    Endpoint.ARROW, out.getEdge(xo, c).getProximalEndpoint(c));
+        }
+        assertEquals("Exactly the nine true adjacencies (no densification)",
+                9, out.getNumEdges());
+    }
+
     private record Problem(Graph start, DataSet data) {
     }
 
