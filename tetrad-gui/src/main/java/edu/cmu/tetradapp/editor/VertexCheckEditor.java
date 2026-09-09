@@ -868,6 +868,27 @@ public class VertexCheckEditor extends JPanel {
             @Override
             protected void done() {
                 if (!isCancelled()) {
+                    // Surface background failures rather than swallowing them (added
+                    // 2026-9-9). SwingWorker captures any exception thrown by
+                    // doInBackground and rethrows it only from get(); this done() never
+                    // called get(), so a failure in runAllVertices left the overview
+                    // table blank and the model diagnostics at "(not computed)" with no
+                    // indication anything went wrong.
+                    try {
+                        get();
+                    } catch (java.util.concurrent.ExecutionException e) {
+                        Throwable cause = (e.getCause() != null) ? e.getCause() : e;
+                        TetradLogger.getInstance().log("Vertex check failed: " + cause);
+                        java.io.StringWriter sw = new java.io.StringWriter();
+                        cause.printStackTrace(new java.io.PrintWriter(sw));
+                        TetradLogger.getInstance().log(sw.toString());
+                        cause.printStackTrace();
+                        JOptionPane.showMessageDialog(VertexCheckEditor.this,
+                                "Vertex check failed: " + cause,
+                                "Vertex Check Error", JOptionPane.ERROR_MESSAGE);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                     overviewModel.fireTableDataChanged();
                     refreshModelDiagnostics();
                     String active;
@@ -955,6 +976,19 @@ public class VertexCheckEditor extends JPanel {
             @Override
             protected void done() {
                 if (isCancelled()) return;
+                // Same exception surfacing as runAllAndRefresh's worker (added 2026-9-9).
+                try {
+                    get();
+                } catch (java.util.concurrent.ExecutionException e) {
+                    Throwable cause = (e.getCause() != null) ? e.getCause() : e;
+                    TetradLogger.getInstance().log("Vertex check failed: " + cause);
+                    cause.printStackTrace();
+                    JOptionPane.showMessageDialog(VertexCheckEditor.this,
+                            "Vertex check failed: " + cause,
+                            "Vertex Check Error", JOptionPane.ERROR_MESSAGE);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 updateTable(sel);
             }
         };
