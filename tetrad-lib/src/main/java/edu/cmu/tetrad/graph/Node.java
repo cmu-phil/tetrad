@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.graph;
 
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
@@ -214,61 +215,23 @@ public interface Node extends TetradSerializable, Comparable<Node> {
     Node like(String name);
 
     /**
-     * Returns the hashcode for this node.
+     * Compares this node to the given node by name, using the shared display order for
+     * possibly-lagged names: unlagged names first, then lagged names in order of increasing lag,
+     * with natural ordering of base names within a lag group and the raw name as a final
+     * tiebreaker, so distinct names never compare equal. Never throws.
+     * <p>
+     * This replaces a bucketed comparison that ordered names by concatenating all their digits,
+     * under which distinct lagged names such as "X12:3" and "X1:23" compared equal (both reduce
+     * to the digit string "123"), names with digit runs too long for an int crashed with
+     * NumberFormatException, and cross-bucket comparisons fell back to raw string order in ways
+     * that could violate transitivity.
      *
-     * @param node the object to be compared.
-     * @return the hashcode for this node.
+     * @param node the node to be compared.
+     * @return a negative integer, zero, or a positive integer as this node's name orders before,
+     * the same as, or after the given node's name.
      */
     default int compareTo(Node node) {
-        String node1 = getName();
-        String node2 = node.getName();
-
-        boolean isAlpha1 = Node.ALPHA.matcher(node1).matches();
-        boolean isAlpha2 = Node.ALPHA.matcher(node2).matches();
-        boolean isAlphaNum1 = Node.ALPHA_NUM.matcher(node1).matches();
-        boolean isAlphaNum2 = Node.ALPHA_NUM.matcher(node2).matches();
-        boolean isLag1 = Node.LAG.matcher(node1).matches();
-        boolean isLag2 = Node.LAG.matcher(node2).matches();
-
-        if (isAlpha1) {
-            if (isLag2) {
-                return -1;
-            }
-        } else if (isAlphaNum1) {
-            if (isAlphaNum2) {
-                String s1 = node1.replaceAll("\\d+", "");
-                String s2 = node2.replaceAll("\\d+", "");
-                if (s1.equals(s2)) {
-                    String n1 = node1.replaceAll("\\D+", "");
-                    String n2 = node2.replaceAll("\\D+", "");
-
-                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
-                } else {
-                    return s1.compareTo(s2);
-                }
-            } else if (isLag2) {
-                return -1;
-            }
-        } else if (isLag1) {
-            if (isAlpha2 || isAlphaNum2) {
-                return 1;
-            } else if (isLag2) {
-                String l1 = node1.replaceAll(":", "");
-                String l2 = node2.replaceAll(":", "");
-                String s1 = l1.replaceAll("\\d+", "");
-                String s2 = l2.replaceAll("\\d+", "");
-                if (s1.equals(s2)) {
-                    String n1 = l1.replaceAll("\\D+", "");
-                    String n2 = l2.replaceAll("\\D+", "");
-
-                    return Integer.valueOf(n1).compareTo(Integer.valueOf(n2));
-                } else {
-                    return s1.compareTo(s2);
-                }
-            }
-        }
-
-        return node1.compareTo(node2);
+        return NaturalSort.lagAscendingComparator().compare(getName(), node.getName());
     }
 
     /**
