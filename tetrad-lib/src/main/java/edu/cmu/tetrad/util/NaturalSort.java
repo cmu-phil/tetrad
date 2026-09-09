@@ -55,6 +55,38 @@ public class NaturalSort {
     }
 
     /**
+     * Returns a comparator over possibly-lagged names that puts unlagged names first, then lagged
+     * names in order of increasing lag; within a lag group, and among the unlagged names, ordering
+     * is by the natural order of the base name, with the raw string as a final tiebreaker so that
+     * distinct names never compare equal. This is the display order used by GUI variable lists,
+     * where current-time variables belong at the top -- the reverse macro-order of
+     * {@link #naturalComparator()}, which puts the deepest lags first for time-ordered listings.
+     * A name is treated as lagged under the same definition as {@link LaggedNaturalKey}: exactly
+     * one colon with an integer suffix. Anything else, including names with non-integer colon
+     * suffixes such as {@code "price:usd"}, sorts among the unlagged names, so comparison never
+     * throws. This replaces ad hoc GUI comparators that compared lag suffixes as strings, which
+     * put {@code "X:10"} before {@code "X:2"}.
+     *
+     * @return a comparator imposing the display order described above
+     */
+    public static Comparator<String> lagAscendingComparator() {
+        return (s1, s2) -> {
+            LaggedNaturalKey k1 = LaggedNaturalKey.from(s1);
+            LaggedNaturalKey k2 = LaggedNaturalKey.from(s2);
+
+            int lag1 = k1.lagged ? k1.lag : 0;
+            int lag2 = k2.lagged ? k2.lag : 0;
+
+            if (lag1 != lag2) {
+                return Integer.compare(lag1, lag2);
+            }
+
+            int c = k1.name.compareTo(k2.name);
+            return c != 0 ? c : s1.compareTo(s2);
+        };
+    }
+
+    /**
      * Represents a natural key for a possibly-lagged node name of the form
      * {@code "name"} or {@code "name:lag"}. Valid lagged names sort before all
      * unlagged names, grouped in order of decreasing lag; within a lag group,
