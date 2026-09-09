@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * May 7, 2019 2:53:27 PM
+ * Static final string constants for use in parameter maps.
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
  * @version $Id: $Id
