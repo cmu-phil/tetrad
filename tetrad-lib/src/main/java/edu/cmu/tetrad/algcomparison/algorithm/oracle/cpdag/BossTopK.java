@@ -78,29 +78,29 @@ public class BossTopK extends AbstractBootstrapAlgorithm implements Algorithm, T
     /**
      * Parameter name: number of top models to retain.
      */
-    private static final String TOP_K = "topK";
+    private static final String TOP_K = Params.TOP_K;
 
     /**
      * Parameter name: split threshold delta (>= 0). 0 disables splitting.
      */
-    private static final String SPLIT_DELTA = "splitDelta";
+    private static final String SPLIT_DELTA = Params.SPLIT_DELTA;
 
     /**
      * Parameter name: hard cap on the total number of hill-climb runs.
      */
-    private static final String MAX_RUNS = "maxRuns";
+    private static final String MAX_RUNS = Params.MAX_RUNS;
 
     /**
      * Parameter name: whether to de-duplicate top models by Markov equivalence class (canonical CPDAG) instead of by
      * permutation. Defaults to true.
      */
-    private static final String DEDUP_BY_CPDAG = "dedupByCpdag";
+    private static final String DEDUP_BY_CPDAG = Params.DEDUP_BY_CPDAG;
 
     /**
      * Parameter name: whether to offer every ordering visited across all branches to the top-k pool (including
      * within-branch suboptimal orderings), rather than only each branch's converged optimum. Defaults to false.
      */
-    private static final String OPTIMAL_ACROSS_BRANCHES = "optimalAcrossBranches";
+    private static final String OPTIMAL_ACROSS_BRANCHES = Params.OPTIMAL_ACROSS_BRANCHES;
 
     /**
      * The score to use.

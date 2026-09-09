@@ -65,13 +65,13 @@ public class Cord implements IndependenceWrapper {
     // CORD-specific parameter names. These are local so the wrapper compiles and runs against stock
     // Tetrad; they match the constants used by {@code Cord}, so the same Params + ParamDescriptions
     // entries render both tests in the GUI parameter grid.
-    private static final String CORD_SYMMETRIC = "cordSymmetric";
-    private static final String CORD_NUM_THRESHOLDS = "cordNumThresholds";
-    private static final String CORD_NUM_ESTIMATORS = "cordNumEstimators";
-    private static final String CORD_LEARNING_RATE = "cordLearningRate";
-    private static final String CORD_MAX_LEAF_NODES = "cordMaxLeafNodes";
-    private static final String CORD_SEED = "cordSeed";
-    private static final String CORD_ENGINE = "cordEngine";
+    private static final String CORD_SYMMETRIC = Params.CORD_SYMMETRIC;
+    private static final String CORD_NUM_THRESHOLDS = Params.CORD_NUM_THRESHOLDS;
+    private static final String CORD_NUM_ESTIMATORS = Params.CORD_NUM_ESTIMATORS;
+    private static final String CORD_LEARNING_RATE = Params.CORD_LEARNING_RATE;
+    private static final String CORD_MAX_LEAF_NODES = Params.CORD_MAX_LEAF_NODES;
+    private static final String CORD_SEED = Params.CORD_SEED;
+    private static final String CORD_ENGINE = Params.CORD_ENGINE;
 
     /**
      * Constructs a new instance of the algorithm.

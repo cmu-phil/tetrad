@@ -558,6 +558,28 @@ Source:
             <span id="basisType_value_type">Integer</span></li>
     </ul>
 
+    === betaHigh ===
+    <h3 class="parameter_description" id="betaHigh">betaHigh</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="betaHigh_short_desc">Upper end of the range for the sine coefficient</span></li>
+        <li>Long Description: <span id="betaHigh_long_desc">Upper end of the uniform range from which the coefficient on the sine term of each structural equation is drawn in the Linear Sine simulation. See betaLow.</span></li>
+        <li>Default Value: <span id="betaHigh_default_value">3.0</span></li>
+        <li>Lower Bound: <span id="betaHigh_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="betaHigh_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="betaHigh_value_type">Double</span></li>
+    </ul>
+
+    === betaLow ===
+    <h3 class="parameter_description" id="betaLow">betaLow</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="betaLow_short_desc">Lower end of the range for the sine coefficient</span></li>
+        <li>Long Description: <span id="betaLow_long_desc">Lower end of the uniform range from which the coefficient on the sine term of each structural equation is drawn in the Linear Sine simulation. Together with betaHigh this fixes the amplitude of the nonlinear component.</span></li>
+        <li>Default Value: <span id="betaLow_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="betaLow_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="betaLow_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="betaLow_value_type">Double</span></li>
+    </ul>
+
     === bgeAlphaMu ===
     <h3 class="parameter_description" id="bgeAlphaMu">bgeAlphaMu</h3>
     <ul class="parameter_description_list">
@@ -759,6 +781,83 @@ Source:
             <span id="cciScoreAlpha_upper_bound">1.0</span></li>
         <li>Value Type:
             <span id="cciScoreAlpha_value_type">Double</span></li>
+    </ul>
+
+    === cdnodColliderStyle ===
+    <h3 class="parameter_description" id="cdnodColliderStyle">cdnodColliderStyle</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cdnodColliderStyle_short_desc">Collider orientation rule: 1 = sepsets, 2 = conservative, 3 = max-p</span></li>
+        <li>Long Description: <span id="cdnodColliderStyle_long_desc">Selects how colliders are oriented in CD-NOD. 1 uses the sepset found during adjacency search, which is fastest but inherits any error in that sepset. 2 (conservative) orients a collider only when every sepset for the pair agrees, marking the triple ambiguous otherwise, so it trades orientations for reliability. 3 (max-p) picks the sepset with the largest p-value for the conditional independence, which is usually more accurate than 1 and less timid than 2. Any other value falls back to 1.</span></li>
+        <li>Default Value: <span id="cdnodColliderStyle_default_value">1</span></li>
+        <li>Lower Bound: <span id="cdnodColliderStyle_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="cdnodColliderStyle_upper_bound">3</span></li>
+        <li>Value Type: <span id="cdnodColliderStyle_value_type">Integer</span></li>
+    </ul>
+
+    === cdnodContextMargin ===
+    <h3 class="parameter_description" id="cdnodContextMargin">cdnodContextMargin</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cdnodContextMargin_short_desc">Score margin a context variable must clear to be retained as a parent</span></li>
+        <li>Long Description: <span id="cdnodContextMargin_long_desc">The improvement in score that adding a context variable as a parent must exceed before that context variable is kept. Larger values make the algorithm more conservative about attributing a variable's behavior to the context (regime, environment, or dataset index) rather than to the system variables.</span></li>
+        <li>Default Value: <span id="cdnodContextMargin_default_value">0.1</span></li>
+        <li>Lower Bound: <span id="cdnodContextMargin_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="cdnodContextMargin_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="cdnodContextMargin_value_type">Double</span></li>
+    </ul>
+
+    === cdnodExcludeContextsFromS ===
+    <h3 class="parameter_description" id="cdnodExcludeContextsFromS">cdnodExcludeContextsFromS</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cdnodExcludeContextsFromS_short_desc">Bar context variables from appearing in separating sets</span></li>
+        <li>Long Description: <span id="cdnodExcludeContextsFromS_long_desc">If true, context variables are never included in the separating sets used for collider orientation. This is appropriate when the context variable is understood as an exogenous regime indicator that should explain differences in mechanism rather than screen off system variables from one another. If false, context variables compete for inclusion in sepsets on the same footing as system variables.</span></li>
+        <li>Default Value: <span id="cdnodExcludeContextsFromS_default_value">false</span></li>
+        <li>Lower Bound: <span id="cdnodExcludeContextsFromS_lower_bound"></span></li>
+        <li>Upper Bound: <span id="cdnodExcludeContextsFromS_upper_bound"></span></li>
+        <li>Value Type: <span id="cdnodExcludeContextsFromS_value_type">Boolean</span></li>
+    </ul>
+
+    === cdnodGreedyContexts ===
+    <h3 class="parameter_description" id="cdnodGreedyContexts">cdnodGreedyContexts</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cdnodGreedyContexts_short_desc">Add context parents greedily rather than exhaustively</span></li>
+        <li>Long Description: <span id="cdnodGreedyContexts_long_desc">If true, context variables are added as parents one at a time in order of score improvement, stopping when no remaining context variable clears the margin. If false, context subsets are considered together, which is more thorough but combinatorially more expensive.</span></li>
+        <li>Default Value: <span id="cdnodGreedyContexts_default_value">true</span></li>
+        <li>Lower Bound: <span id="cdnodGreedyContexts_lower_bound"></span></li>
+        <li>Upper Bound: <span id="cdnodGreedyContexts_upper_bound"></span></li>
+        <li>Value Type: <span id="cdnodGreedyContexts_value_type">Boolean</span></li>
+    </ul>
+
+    === cdnodMaxContextsPerNode ===
+    <h3 class="parameter_description" id="cdnodMaxContextsPerNode">cdnodMaxContextsPerNode</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cdnodMaxContextsPerNode_short_desc">Maximum number of context variables attached to any one node</span></li>
+        <li>Long Description: <span id="cdnodMaxContextsPerNode_long_desc">A cap on how many context variables may be retained as parents of a single node. Keeping this at 1 reflects the common assumption that a node's mechanism changes with at most one regime indicator; raising it allows a node to depend on several context variables at once, at the cost of more parameters and a greater risk of spurious context attachments.</span></li>
+        <li>Default Value: <span id="cdnodMaxContextsPerNode_default_value">1</span></li>
+        <li>Lower Bound: <span id="cdnodMaxContextsPerNode_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="cdnodMaxContextsPerNode_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="cdnodMaxContextsPerNode_value_type">Integer</span></li>
+    </ul>
+
+    === cdnodMaxPMargin ===
+    <h3 class="parameter_description" id="cdnodMaxPMargin">cdnodMaxPMargin</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cdnodMaxPMargin_short_desc">Margin by which the best sepset must win under the max-p rule</span></li>
+        <li>Long Description: <span id="cdnodMaxPMargin_long_desc">Under the max-p collider rule, the p-value of the winning sepset must exceed that of the best competing sepset by at least this margin before the collider is oriented. The default of 0.0 orients whenever there is any advantage at all. Raising it suppresses orientations that rest on a near-tie between competing sepsets, which is a common source of unstable orientations near the significance boundary. Has no effect unless cdnodColliderStyle is 3.</span></li>
+        <li>Default Value: <span id="cdnodMaxPMargin_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="cdnodMaxPMargin_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="cdnodMaxPMargin_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="cdnodMaxPMargin_value_type">Double</span></li>
+    </ul>
+
+    === cdnodScoreContexts ===
+    <h3 class="parameter_description" id="cdnodScoreContexts">cdnodScoreContexts</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="cdnodScoreContexts_short_desc">Score context variables as candidate parents</span></li>
+        <li>Long Description: <span id="cdnodScoreContexts_long_desc">If true, context variables participate in scoring as candidate parents of system variables, which is what allows CD-NOD to detect that a mechanism differs across regimes. If false, context variables are carried along but never scored, and the search reduces to the corresponding non-context algorithm.</span></li>
+        <li>Default Value: <span id="cdnodScoreContexts_default_value">true</span></li>
+        <li>Lower Bound: <span id="cdnodScoreContexts_lower_bound"></span></li>
+        <li>Upper Bound: <span id="cdnodScoreContexts_upper_bound"></span></li>
+        <li>Value Type: <span id="cdnodScoreContexts_value_type">Boolean</span></li>
     </ul>
 
     === cellTableType ===
@@ -1012,6 +1111,17 @@ Source:
         <li>Lower Bound: <span id="connected_lower_bound"></span></li>
         <li>Upper Bound: <span id="connected_upper_bound"></span></li>
         <li>Value Type: <span id="connected_value_type">Boolean</span></li>
+    </ul>
+
+    === convergenceThreshold ===
+    <h3 class="parameter_description" id="convergenceThreshold">convergenceThreshold</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="convergenceThreshold_short_desc">Convergence tolerance for the factor analysis iteration</span></li>
+        <li>Long Description: <span id="convergenceThreshold_long_desc">The factor extraction iterates until successive estimates of a loading differ by less than this amount. Smaller values give a more precisely converged solution at the cost of more iterations. Note that this is a convergence tolerance, not a loading cutoff; the cutoff used for drawing edges is fa_threshold.</span></li>
+        <li>Default Value: <span id="convergenceThreshold_default_value">0.001</span></li>
+        <li>Lower Bound: <span id="convergenceThreshold_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="convergenceThreshold_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="convergenceThreshold_value_type">Double</span></li>
     </ul>
 
     === cordEngine ===
@@ -1905,6 +2015,17 @@ Source:
             Type: <span id="extraEdgeRemovalStep_value_type">Integer</span></li>
     </ul>
 
+    === fa_threshold ===
+    <h3 class="parameter_description" id="fa_threshold">fa_threshold</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fa_threshold_short_desc">Minimum absolute loading for an edge from a factor to a variable</span></li>
+        <li>Long Description: <span id="fa_threshold_long_desc">After factors are extracted, an edge is drawn from a factor to a measured variable when the absolute value of the corresponding loading exceeds this threshold. Raising it yields a sparser, more interpretable measurement model and drops weakly loading variables; lowering it retains more edges, including ones attributable to noise. This is a loading cutoff and is distinct from convergenceThreshold, which controls when the iteration stops.</span></li>
+        <li>Default Value: <span id="fa_threshold_default_value">0.2</span></li>
+        <li>Lower Bound: <span id="fa_threshold_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="fa_threshold_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="fa_threshold_value_type">Double</span></li>
+    </ul>
+
     === faithfulnessAssumed ===
     <h3 class="parameter_description" id="faithfulnessAssumed">faithfulnessAssumed</h3>
     <ul class="parameter_description_list">
@@ -2100,6 +2221,17 @@ Source:
             Type: <span id="fcitStartsWith_value_type">Integer</span></li>
     </ul>
 
+    === fDegree ===
+    <h3 class="parameter_description" id="fDegree">fDegree</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fDegree_short_desc">Degree of the polynomial basis in the MVP likelihood, or -1 to choose automatically</span></li>
+        <li>Long Description: <span id="fDegree_long_desc">The degree of the polynomial expansion used in the mixed variable polynomial likelihood for the MVP score and the MVP likelihood ratio test. A value of -1 lets the implementation choose the degree from the data. Higher degrees allow more flexible conditional mean functions but consume degrees of freedom quickly and can destabilize the test at small sample sizes.</span></li>
+        <li>Default Value: <span id="fDegree_default_value">-1</span></li>
+        <li>Lower Bound: <span id="fDegree_lower_bound">-1</span></li>
+        <li>Upper Bound: <span id="fDegree_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="fDegree_value_type">Integer</span></li>
+    </ul>
+
     === fdrQ ===
     <h3 class="parameter_description" id="fdrQ">fdrQ</h3>
     <ul class="parameter_description_list">
@@ -2246,6 +2378,28 @@ Source:
             <span id="fofcAlpha_upper_bound">1.0</span></li>
         <li>Value Type:
             <span id="fofcAlpha_value_type">Double</span></li>
+    </ul>
+
+    === gammaHigh ===
+    <h3 class="parameter_description" id="gammaHigh">gammaHigh</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="gammaHigh_short_desc">Upper end of the range for the sine frequency</span></li>
+        <li>Long Description: <span id="gammaHigh_long_desc">Upper end of the uniform range from which the frequency multiplier inside the sine term is drawn in the Linear Sine simulation. See gammaLow.</span></li>
+        <li>Default Value: <span id="gammaHigh_default_value">1.5</span></li>
+        <li>Lower Bound: <span id="gammaHigh_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="gammaHigh_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="gammaHigh_value_type">Double</span></li>
+    </ul>
+
+    === gammaLow ===
+    <h3 class="parameter_description" id="gammaLow">gammaLow</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="gammaLow_short_desc">Lower end of the range for the sine frequency</span></li>
+        <li>Long Description: <span id="gammaLow_long_desc">Lower end of the uniform range from which the frequency multiplier inside the sine term is drawn in the Linear Sine simulation. Higher frequencies produce more oscillation over the range of the parent and so a more strongly nonlinear dependence.</span></li>
+        <li>Default Value: <span id="gammaLow_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="gammaLow_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="gammaLow_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="gammaLow_value_type">Double</span></li>
     </ul>
 
     === gcmControlFunction ===
@@ -3168,6 +3322,28 @@ Source:
         <li>Value Type: <span id="instanceSpecificAlpha_value_type">Double</span></li>
     </ul>
 
+    === interceptHigh ===
+    <h3 class="parameter_description" id="interceptHigh">interceptHigh</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="interceptHigh_short_desc">Upper end of the range for the equation intercept</span></li>
+        <li>Long Description: <span id="interceptHigh_long_desc">Upper end of the uniform range from which the intercept of each structural equation is drawn in the Linear Sine simulation. See interceptLow.</span></li>
+        <li>Default Value: <span id="interceptHigh_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="interceptHigh_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="interceptHigh_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="interceptHigh_value_type">Double</span></li>
+    </ul>
+
+    === interceptLow ===
+    <h3 class="parameter_description" id="interceptLow">interceptLow</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="interceptLow_short_desc">Lower end of the range for the equation intercept</span></li>
+        <li>Long Description: <span id="interceptLow_long_desc">Lower end of the uniform range from which the intercept of each structural equation is drawn in the Linear Sine simulation.</span></li>
+        <li>Default Value: <span id="interceptLow_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="interceptLow_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="interceptLow_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="interceptLow_value_type">Double</span></li>
+    </ul>
+
     === intervalBetweenRecordings ===
     <h3 class="parameter_description" id="intervalBetweenRecordings">intervalBetweenRecordings</h3>
     <ul class="parameter_description_list">
@@ -3491,6 +3667,28 @@ Source:
         <li>Upper Bound: <span id="lambda1_upper_bound">Infinity</span></li>
         <li>Value Type:
             <span id="lambda1_value_type">Double</span></li>
+    </ul>
+
+    === linearHigh ===
+    <h3 class="parameter_description" id="linearHigh">linearHigh</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="linearHigh_short_desc">Upper end of the range for the linear coefficient</span></li>
+        <li>Long Description: <span id="linearHigh_long_desc">Upper end of the uniform range from which the coefficient on the linear term of each structural equation is drawn in the Linear Sine simulation. See linearLow.</span></li>
+        <li>Default Value: <span id="linearHigh_default_value">1.0</span></li>
+        <li>Lower Bound: <span id="linearHigh_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="linearHigh_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="linearHigh_value_type">Double</span></li>
+    </ul>
+
+    === linearLow ===
+    <h3 class="parameter_description" id="linearLow">linearLow</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="linearLow_short_desc">Lower end of the range for the linear coefficient</span></li>
+        <li>Long Description: <span id="linearLow_long_desc">Lower end of the uniform range from which the coefficient on the linear term of each structural equation is drawn in the Linear Sine simulation. Together with linearHigh this fixes the strength of the linear component relative to the sine component.</span></li>
+        <li>Default Value: <span id="linearLow_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="linearLow_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="linearLow_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="linearLow_value_type">Double</span></li>
     </ul>
 
     === logFinalOrientations ===
@@ -4078,6 +4276,17 @@ Source:
         <li>Lower Bound: <span id="mimicGroupSpecs_lower_bound"></span></li>
         <li>Upper Bound: <span id="mimicGroupSpecs_upper_bound"></span></li>
         <li>Value Type: <span id="mimicGroupSpecs_value_type">String</span></li>
+    </ul>
+
+    === mimicNumSharedParents ===
+    <h3 class="parameter_description" id="mimicNumSharedParents">mimicNumSharedParents</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="mimicNumSharedParents_short_desc">Number of measured parents shared between latent groups</span></li>
+        <li>Long Description: <span id="mimicNumSharedParents_long_desc">The number of measured variables that serve as a parent to more than one latent in the generated MIMIC structure. Shared parents are the impurity that makes the measurement model harder to recover, so setting this above zero is the way to test how a clustering algorithm degrades when purity fails.</span></li>
+        <li>Default Value: <span id="mimicNumSharedParents_default_value">0</span></li>
+        <li>Lower Bound: <span id="mimicNumSharedParents_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="mimicNumSharedParents_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="mimicNumSharedParents_value_type">Integer</span></li>
     </ul>
 
     === mimLatentGroupSpecs ===
@@ -4723,6 +4932,17 @@ Source:
             Bound: <span id="numCategoriesToDiscretize_lower_bound">2</span></li>
         <li>Upper Bound: <span id="numCategoriesToDiscretize_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="numCategoriesToDiscretize_value_type">Integer</span></li>
+    </ul>
+
+    === numFactors ===
+    <h3 class="parameter_description" id="numFactors">numFactors</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="numFactors_short_desc">Number of factors to extract</span></li>
+        <li>Long Description: <span id="numFactors_long_desc">The number of latent factors the factor analysis extracts. This is fixed in advance rather than estimated, so it should be set from theory or from a scree plot on the same data.</span></li>
+        <li>Default Value: <span id="numFactors_default_value">2</span></li>
+        <li>Lower Bound: <span id="numFactors_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="numFactors_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="numFactors_value_type">Integer</span></li>
     </ul>
 
     === numFfFeatures ===
@@ -5633,6 +5853,28 @@ Source:
             Type: <span id="percentResampleSize_value_type">Integer</span></li>
     </ul>
 
+    === percentStability ===
+    <h3 class="parameter_description" id="percentStability">percentStability</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="percentStability_short_desc">Proportion of subsample graphs in which an edge must appear to be retained</span></li>
+        <li>Long Description: <span id="percentStability_long_desc">In stability selection, the wrapped algorithm is run on many subsamples and an edge is placed in the output graph when it appears, with the same orientation, in more than this proportion of the subsample graphs. Higher values yield sparser and more conservative graphs. Note that because orientation must also agree, edges whose direction is unstable are dropped even when adjacency is stable.</span></li>
+        <li>Default Value: <span id="percentStability_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="percentStability_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="percentStability_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="percentStability_value_type">Double</span></li>
+    </ul>
+
+    === percentSubsampleSize ===
+    <h3 class="parameter_description" id="percentSubsampleSize">percentSubsampleSize</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="percentSubsampleSize_short_desc">Size of each subsample as a proportion of the full sample</span></li>
+        <li>Long Description: <span id="percentSubsampleSize_long_desc">The proportion of rows drawn for each subsample in stability selection and in StARS. The customary choice is one half, which keeps subsamples large enough to be informative while making them differ enough from one another for instability to be measurable.</span></li>
+        <li>Default Value: <span id="percentSubsampleSize_default_value">0.5</span></li>
+        <li>Lower Bound: <span id="percentSubsampleSize_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="percentSubsampleSize_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="percentSubsampleSize_value_type">Double</span></li>
+    </ul>
+
     === piThr ===
     <h3 class="parameter_description" id="piThr">piThr</h3>
     <ul class="parameter_description_list">
@@ -6121,6 +6363,28 @@ Source:
         <li>Lower Bound: <span id="rcit.rcitMode_lower_bound"></span></li>
         <li>Upper Bound: <span id="rcit.rcitMode_upper_bound"></span></li>
         <li>Value Type: <span id="rcit.rcitMode_value_type">Boolean</span></li>
+    </ul>
+
+    === rcitNumF ===
+    <h3 class="parameter_description" id="rcitNumF">rcitNumF</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rcitNumF_short_desc">Number of random Fourier features for the conditioning set</span></li>
+        <li>Long Description: <span id="rcitNumF_long_desc">The number of random Fourier features used to approximate the kernel over the conditioning set in the external RCIT test. More features give a closer approximation to the exact kernel test and more power, at a roughly linear cost in time and memory.</span></li>
+        <li>Default Value: <span id="rcitNumF_default_value">100</span></li>
+        <li>Lower Bound: <span id="rcitNumF_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="rcitNumF_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="rcitNumF_value_type">Integer</span></li>
+    </ul>
+
+    === rcitNumF2 ===
+    <h3 class="parameter_description" id="rcitNumF2">rcitNumF2</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rcitNumF2_short_desc">Number of random Fourier features for the two variables being tested</span></li>
+        <li>Long Description: <span id="rcitNumF2_long_desc">The number of random Fourier features used for the pair of variables whose independence is being tested in the external RCIT test. This is normally much smaller than rcitNumF, since only two variables are involved rather than the whole conditioning set.</span></li>
+        <li>Default Value: <span id="rcitNumF2_default_value">5</span></li>
+        <li>Lower Bound: <span id="rcitNumF2_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="rcitNumF2_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="rcitNumF2_value_type">Integer</span></li>
     </ul>
 
     === rcitNumFeatures ===
@@ -6836,6 +7100,17 @@ Source:
         <li>Upper Bound:
             <span id="standardize_upper_bound"></span></li>
         <li>Value Type: <span id="standardize_value_type">Boolean</span></li>
+    </ul>
+
+    === StARS.cutoff ===
+    <h3 class="parameter_description" id="StARS.cutoff">StARS.cutoff</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="StARS.cutoff_short_desc">Instability cutoff beta for StARS</span></li>
+        <li>Long Description: <span id="StARS.cutoff_long_desc">The StARS instability cutoff. StARS selects the least sparse penalty whose estimated edge instability across subsamples stays strictly below this value. Smaller values demand a more stable graph and therefore yield sparser output. The conventional choice in the StARS literature is 0.05.</span></li>
+        <li>Default Value: <span id="StARS.cutoff_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="StARS.cutoff_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="StARS.cutoff_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="StARS.cutoff_value_type">Double</span></li>
     </ul>
 
     === startFromCompleteGraph ===
@@ -7761,6 +8036,17 @@ Source:
         <li>Upper Bound: <span id="useSkewAdjacencies_upper_bound"></span></li>
         <li>Value Type:
             <span id="useSkewAdjacencies_value_type">Boolean</span></li>
+    </ul>
+
+    === useVarimax ===
+    <h3 class="parameter_description" id="useVarimax">useVarimax</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useVarimax_short_desc">Use the varimax-rotated factor solution</span></li>
+        <li>Long Description: <span id="useVarimax_long_desc">If true, the graph is built from the varimax-rotated loadings, which concentrate each variable's weight on as few factors as possible and so usually give a more interpretable measurement model. If false, the unrotated successive-residual solution is used instead. Note that rotation changes which edges pass the fa_threshold cutoff, so the two settings can produce different graphs.</span></li>
+        <li>Default Value: <span id="useVarimax_default_value">true</span></li>
+        <li>Lower Bound: <span id="useVarimax_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useVarimax_upper_bound"></span></li>
+        <li>Value Type: <span id="useVarimax_value_type">Boolean</span></li>
     </ul>
 
     === varHigh ===

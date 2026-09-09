@@ -26,6 +26,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
 
+import edu.cmu.tetrad.annotation.AnnotatedClass;
+import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
+import edu.cmu.tetrad.annotation.ScoreAnnotations;
+import edu.cmu.tetrad.annotation.TestOfIndependenceAnnotations;
+import edu.cmu.tetrad.util.Params;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -34,6 +40,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -271,5 +279,99 @@ public class ParameterDefinitionsTest {
 
         assertEquals("Parameter entries in " + RESOURCE + " are not in alphabetical order by id. First break: "
                      + firstOutOfOrder + ".", expected, actual);
+    }
+
+    /**
+     * Collects every parameter name that some annotated algorithm, test, or score advertises through
+     * getParameters(), mapped to the classes that advertise it.
+     * <p>
+     * Classes without a no-argument constructor are skipped rather than failed, since they cannot be
+     * interrogated this way; the coverage is therefore a lower bound on what reaches the editors.
+     */
+    private static Map<String, Set<String>> reachableParameters() {
+        Map<String, Set<String>> reached = new TreeMap<>();
+
+        List<Class<?>> classes = new ArrayList<>();
+        for (AnnotatedClass<edu.cmu.tetrad.annotation.Algorithm> c
+                : AlgorithmAnnotations.getInstance().getAnnotatedClasses()) classes.add(c.clazz());
+        for (AnnotatedClass<edu.cmu.tetrad.annotation.TestOfIndependence> c
+                : TestOfIndependenceAnnotations.getInstance().getAnnotatedClasses()) classes.add(c.clazz());
+        for (AnnotatedClass<edu.cmu.tetrad.annotation.Score> c
+                : ScoreAnnotations.getInstance().getAnnotatedClasses()) classes.add(c.clazz());
+
+        for (Class<?> clazz : classes) {
+            try {
+                Object instance = clazz.getDeclaredConstructor().newInstance();
+                Object result = clazz.getMethod("getParameters").invoke(instance);
+
+                if (result instanceof Iterable<?> names) {
+                    for (Object name : names) {
+                        reached.computeIfAbsent(String.valueOf(name), k -> new TreeSet<>())
+                                .add(clazz.getSimpleName());
+                    }
+                }
+            } catch (Throwable ignored) {
+                // Not default-constructible, or getParameters() is unavailable; nothing to check here.
+            }
+        }
+
+        return reached;
+    }
+
+    /**
+     * Every parameter that reaches an editor must be declared as a constant in Params.
+     * <p>
+     * Params is the registry of parameter names. A name introduced as a bare string literal in some
+     * getParameters() list works, but it is invisible to anyone reading Params and is exactly how the same
+     * concept ends up with two spellings.
+     */
+    @Test
+    public void testReachableParametersAreDeclaredInParams() throws Exception {
+        Set<String> declared = new TreeSet<>();
+
+        for (java.lang.reflect.Field field : Params.class.getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isPublic(field.getModifiers())
+                && java.lang.reflect.Modifier.isStatic(field.getModifiers())
+                && field.getType() == String.class) {
+                declared.add((String) field.get(null));
+            }
+        }
+
+        List<String> offenders = new ArrayList<>();
+        for (Map.Entry<String, Set<String>> entry : reachableParameters().entrySet()) {
+            if (!declared.contains(entry.getKey())) {
+                offenders.add(entry.getKey() + " (from " + entry.getValue() + ")");
+            }
+        }
+
+        assertEquals("Parameters advertised by getParameters() but not declared in Params: " + offenders,
+                new ArrayList<String>(), offenders);
+    }
+
+    /**
+     * Every parameter that reaches an editor must have an entry in the definitions file.
+     * <p>
+     * ParamDescriptions.get does not fail for an unknown name; it fabricates an entry with an Integer default of
+     * zero and the short description "Please add a description for X to the manual." So an undocumented
+     * parameter renders as an integer field reading zero regardless of the type the algorithm reads it as, and
+     * a parameter read with getBoolean throws outright.
+     */
+    @Test
+    public void testReachableParametersAreDocumented() throws IOException {
+        Set<String> documented = new TreeSet<>();
+        for (Element heading : headings(doc())) {
+            documented.add(heading.id());
+        }
+
+        List<String> offenders = new ArrayList<>();
+        for (Map.Entry<String, Set<String>> entry : reachableParameters().entrySet()) {
+            if (!documented.contains(entry.getKey())) {
+                offenders.add(entry.getKey() + " (from " + entry.getValue() + ")");
+            }
+        }
+
+        assertEquals("Parameters advertised by getParameters() but absent from " + RESOURCE
+                     + "; these render as an integer field defaulting to zero: " + offenders,
+                new ArrayList<String>(), offenders);
     }
 }
