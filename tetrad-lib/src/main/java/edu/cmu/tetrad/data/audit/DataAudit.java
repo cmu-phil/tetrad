@@ -273,6 +273,7 @@ public final class DataAudit {
         MissingDataAudit mda = new MissingDataAudit(dataSet);
         this.missingDataAudit = mda.anyMissing() ? mda : null;
 
+        variableNameCheck();
         censusCheck();
         constancyChecks();
 
@@ -596,6 +597,114 @@ public final class DataAudit {
     }
 
     //==================================== CHECKS ====================================//
+
+    /**
+     * Flags variable names that collide with naming conventions Tetrad's own machinery gives special meaning,
+     * aggregated into one finding per collision category so that a fully lagged dataset (in which every name past
+     * lag zero carries a colon suffix by design) produces one INFO finding rather than one per column. The
+     * categories, in the order emitted, are: names of the form base:k with nonnegative integer k, which the
+     * time-series machinery reads as base lagged k steps (INFO, since lagged data carries such names on purpose);
+     * names containing a colon whose suffix does not parse as a lag (WARNING, since such names collide with the
+     * lag-suffix convention without being readable as lags); names beginning with "E_", the prefix under which SEM
+     * graphs generate error-term nodes -- with a note when the remainder after "E_" is itself the name of another
+     * variable in this dataset, so that a generated error node would collide with it outright (WARNING); and names
+     * containing '*' or ',', which knowledge specifications interpret as a wildcard and a list separator
+     * respectively (WARNING). Purely a property of the header; reads no data cells.
+     */
+    private void variableNameCheck() {
+        List<String> lagLike = new ArrayList<>();
+        List<String> colonNotLag = new ArrayList<>();
+        List<String> errorPrefixed = new ArrayList<>();
+        List<String> errorCollisions = new ArrayList<>();
+        List<String> specChars = new ArrayList<>();
+
+        Set<String> nameSet = new HashSet<>(Arrays.asList(this.names));
+
+        for (String name : this.names) {
+            int colon = name.indexOf(':');
+
+            if (colon >= 0) {
+                boolean validLag;
+
+                try {
+                    validLag = Integer.parseInt(name.substring(colon + 1)) >= 0;
+                } catch (NumberFormatException e) {
+                    validLag = false;
+                }
+
+                if (validLag) {
+                    lagLike.add(name);
+                } else {
+                    colonNotLag.add(name);
+                }
+            }
+
+            if (name.startsWith("E_")) {
+                errorPrefixed.add(name);
+
+                if (nameSet.contains(name.substring(2))) {
+                    errorCollisions.add(name);
+                }
+            }
+
+            if (name.indexOf('*') >= 0 || name.indexOf(',') >= 0) {
+                specChars.add(name);
+            }
+        }
+
+        if (!lagLike.isEmpty()) {
+            this.findings.add(new AuditFinding(FindingCode.RESERVED_VARIABLE_NAME,
+                    AuditFinding.Severity.INFO, lagLike,
+                    Map.of("count", (double) lagLike.size()),
+                    "Names of the form base:k, which Tetrad's time-series machinery reads as base lagged k steps ("
+                            + listSome(lagLike) + "). If this dataset is lagged data, that reading is the intended "
+                            + "one."));
+        }
+
+        if (!colonNotLag.isEmpty()) {
+            this.findings.add(new AuditFinding(FindingCode.RESERVED_VARIABLE_NAME,
+                    AuditFinding.Severity.WARNING, colonNotLag,
+                    Map.of("count", (double) colonNotLag.size()),
+                    "Names containing a colon whose suffix does not parse as a lag (" + listSome(colonNotLag)
+                            + "). The colon in variable names is reserved by Tetrad's time-series machinery for lag "
+                            + "suffixes, as in X:1 for X lagged once, and lagging data with such names is refused."));
+        }
+
+        if (!errorPrefixed.isEmpty()) {
+            String collisionText = errorCollisions.isEmpty() ? ""
+                    : " For " + listSome(errorCollisions) + ", the remainder after \"E_\" names another variable in "
+                      + "this dataset, so a generated error node for that variable would have exactly this name.";
+
+            this.findings.add(new AuditFinding(FindingCode.RESERVED_VARIABLE_NAME,
+                    AuditFinding.Severity.WARNING, errorPrefixed,
+                    Map.of("count", (double) errorPrefixed.size()),
+                    "Names beginning with \"E_\" (" + listSome(errorPrefixed) + "), the prefix under which SEM "
+                            + "graphs generate error-term nodes and which some graph utilities treat as marking an "
+                            + "error term." + collisionText));
+        }
+
+        if (!specChars.isEmpty()) {
+            this.findings.add(new AuditFinding(FindingCode.RESERVED_VARIABLE_NAME,
+                    AuditFinding.Severity.WARNING, specChars,
+                    Map.of("count", (double) specChars.size()),
+                    "Names containing '*' or ',' (" + listSome(specChars) + "); knowledge specifications interpret "
+                            + "'*' as a wildcard and ',' as a list separator."));
+        }
+    }
+
+    /**
+     * Renders up to eight of the given names as a comma-separated list, appending "and k more" past that, for use
+     * in finding messages whose full variable lists are carried by the finding itself.
+     */
+    private static String listSome(List<String> names) {
+        int limit = 8;
+
+        if (names.size() <= limit) {
+            return String.join(", ", names);
+        }
+
+        return String.join(", ", names.subList(0, limit)) + ", and " + (names.size() - limit) + " more";
+    }
 
     /**
      * Counts distinct observed values per column and flags continuous variables with few distinct values and discrete

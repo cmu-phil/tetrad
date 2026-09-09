@@ -282,5 +282,17 @@ public enum FindingCode {
      * or the matrix was regularized, shrunk, or model-implied. The finding's message states which case holds. Emitted only
      * by {@link CovarianceAudit}; the dataset analog is COMPLETE_CASES_FORCE_SINGULARITY.
      */
-    SAMPLE_SIZE_FORCES_SINGULARITY
+    SAMPLE_SIZE_FORCES_SINGULARITY,
+
+    /**
+     * A variable name collides with a naming convention that Tetrad's own machinery gives special meaning. The
+     * cases reported are: a name of the form base:k with integer k, which the time-series machinery reads as
+     * base lagged k steps (INFO, since the data may genuinely be lagged); a name containing a colon whose suffix
+     * does not parse as a lag, which collides with the lag-suffix convention without being readable as a lag
+     * (WARNING); a name beginning with "E_", the prefix under which SEM graphs generate error-term nodes and
+     * which some graph utilities treat as marking an error term (WARNING); and a name containing '*' or ',',
+     * characters that knowledge specifications interpret as a wildcard and a list separator respectively
+     * (WARNING). The finding reports the property; it takes no position on whether the name should change.
+     */
+    RESERVED_VARIABLE_NAME
 }
