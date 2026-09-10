@@ -116,9 +116,11 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     private boolean verbose;
     /**
-     * The penalty penaltyDiscount, 1 for standard BIC.
+     * The penalty penaltyDiscount, 1 for standard BIC. Initialized to 1 so that every constructor yields standard
+     * BIC unless a discount is set; previously the constructors that take a data set and no discount left the field
+     * at 0 on complete data (no penalty at all) while setting 1 on missing data.
      */
-    private double penaltyDiscount;
+    private double penaltyDiscount = 1.0;
     /**
      * The structure prior, 0 for standard BIC.
      */

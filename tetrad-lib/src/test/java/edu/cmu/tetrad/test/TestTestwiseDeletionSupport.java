@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.score.*;
+import edu.cmu.tetrad.search.test.IndTestBasisFunctionBlocks;
 import edu.cmu.tetrad.search.test.IndTestBasisFunctionLrt;
 import edu.cmu.tetrad.search.test.IndTestDegenerateGaussianLrt;
 import edu.cmu.tetrad.search.test.Kci;
@@ -35,7 +36,6 @@ import edu.cmu.tetrad.search.test.Rcit;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.util.*;
@@ -253,15 +253,12 @@ public class TestTestwiseDeletionSupport {
         DataSet listwise = MissingDataUtils.listwiseDelete(missing);
         MissingDataSpec tw = MissingDataSpec.testwise();
 
-        // Note: SemBicScore's complete-data constructor leaves its penalty discount at 0 until set, while its
-        // test-wise branch sets 1.0; the DG-BIC wrapper always sets it, and so does this test.
-        DegenerateGaussianScore dgFull = new DegenerateGaussianScore(full, true, 0.0);
-        DegenerateGaussianScore dgTw = new DegenerateGaussianScore(missing, true, 0.0, tw);
-        DegenerateGaussianScore dgLw = new DegenerateGaussianScore(listwise, true, 0.0);
-        for (DegenerateGaussianScore dg : new DegenerateGaussianScore[]{dgFull, dgTw, dgLw}) dg.setPenaltyDiscount(1.0);
-
+        // SemBicScore's penalty discount now defaults to 1 in every constructor (it was 0 on complete data and 1
+        // on missing data), so no explicit setPenaltyDiscount is needed for these to agree.
         Score[][] triples = new Score[][]{
-                {dgFull, dgTw, dgLw},
+                {new DegenerateGaussianScore(full, true, 0.0),
+                        new DegenerateGaussianScore(missing, true, 0.0, tw),
+                        new DegenerateGaussianScore(listwise, true, 0.0)},
                 {new DegenerateGaussianBgeScore(full),
                         new DegenerateGaussianBgeScore(missing, tw),
                         new DegenerateGaussianBgeScore(listwise)},
@@ -328,25 +325,32 @@ public class TestTestwiseDeletionSupport {
                 {new IndTestBasisFunctionLrt(full, 3, 0.0),
                         new IndTestBasisFunctionLrt(missing, 3, 0.0, tw),
                         new IndTestBasisFunctionLrt(listwise, 3, 0.0)},
+                {new IndTestBasisFunctionBlocks(full, 3, 1, false),
+                        new IndTestBasisFunctionBlocks(missing, 3, 1, false, tw),
+                        new IndTestBasisFunctionBlocks(listwise, 3, 1, false)},
         };
 
         for (IndependenceTest[] t : triples) {
             String name = t[0].getClass().getSimpleName();
             assertEquals(name, MissingValueSupport.TESTWISE, t[1].getMissingValueSupport());
 
+            // The blocks test is invariant to the within-block basis (which differs between the missing-data
+            // and listwise instances for the complete variables) only up to rounding; the covariance LRTs are
+            // exact.
+            double tol = t[0] instanceof IndTestBasisFunctionBlocks ? 1e-6 : 1e-9;
+
             double p0 = t[0].checkIndependence(v.get(0), v.get(2), Set.of(v.get(1))).getPValue();
             double p1 = t[1].checkIndependence(v.get(0), v.get(2), Set.of(v.get(1))).getPValue();
-            assertEquals(name, p0, p1, 1e-9);
+            assertEquals(name, p0, p1, tol);
 
             double q2 = t[2].checkIndependence(v.get(4), v.get(0), Set.of(v.get(1), v.get(2))).getPValue();
             double q1 = t[1].checkIndependence(v.get(4), v.get(0), Set.of(v.get(1), v.get(2))).getPValue();
-            assertEquals(name, q2, q1, 1e-9);
+            assertEquals(name, q2, q1, tol);
         }
 
-        // Kernel tests on the continuous columns only. KCI draws from RandomUtil in its bandwidth heuristic, so
-        // each comparison re-seeds before both calls; and RCIT's row-subset semantics are those of setRows (which,
-        // pre-existingly, differ from constructing on the subset), so its identity is against setRows on the
-        // complete rows of a filled-in copy.
+        // Kernel tests on the continuous columns only. Both are deterministic (KCI's bandwidth subsample is
+        // evenly spaced rather than random; RCIT's random-feature seed no longer depends on the row set), so the
+        // identities are exact, both against the complete data and against the listwise subset.
         DataSet[] cpair = continuousWithMissingLast(6, 0.12);
         DataSet cfull = cpair[0];
         DataSet cmissing = cpair[1];
@@ -363,20 +367,28 @@ public class TestTestwiseDeletionSupport {
         Kci kTw = new Kci(cmissing, tw);
         assertEquals(MissingValueSupport.TESTWISE, kTw.getMissingValueSupport());
 
-        RandomUtil.getInstance().setSeed(11);
         double kp0 = new Kci(cfull).checkIndependence(cv.get(0), cv.get(2), Set.of(cv.get(1))).getPValue();
-        RandomUtil.getInstance().setSeed(11);
         double kp1 = kTw.checkIndependence(cv.get(0), cv.get(2), Set.of(cv.get(1))).getPValue();
         assertEquals(kp0, kp1, 1e-9);
 
-        RandomUtil.getInstance().setSeed(12);
         double kq2 = new Kci(clistwise).checkIndependence(cv.get(3), cv.get(0), Set.of(cv.get(2))).getPValue();
-        RandomUtil.getInstance().setSeed(12);
         double kq1 = kTw.checkIndependence(cv.get(3), cv.get(0), Set.of(cv.get(2))).getPValue();
         assertEquals(kq2, kq1, 1e-9);
 
+        // KCI is deterministic: repeated calls agree exactly.
+        assertEquals(kp0, new Kci(cfull).checkIndependence(cv.get(0), cv.get(2), Set.of(cv.get(1))).getPValue(), 0.0);
+
+        // KCI on missing data with no spec throws (previously: silent NaN-to-0 imputation).
+        try {
+            new Kci(cmissing);
+            fail("Expected a failure for KCI on missing data with no spec.");
+        } catch (IllegalArgumentException e) {
+            // Expected.
+        }
+
         Rcit rFull = new Rcit(cfull);
         Rcit rTw = new Rcit(cmissing, new Parameters(), tw);
+        Rcit rLw = new Rcit(clistwise);
         Rcit rRows = new Rcit(cfilled);
         rRows.setRows(completeRows);
 
@@ -384,6 +396,8 @@ public class TestTestwiseDeletionSupport {
         assertEquals(rFull.checkIndependence(cv.get(0), cv.get(2), Set.of(cv.get(1))).getPValue(),
                 rTw.checkIndependence(cv.get(0), cv.get(2), Set.of(cv.get(1))).getPValue(), 1e-9);
         assertEquals(rRows.checkIndependence(cv.get(3), cv.get(0), Set.of(cv.get(2))).getPValue(),
+                rTw.checkIndependence(cv.get(3), cv.get(0), Set.of(cv.get(2))).getPValue(), 1e-9);
+        assertEquals(rLw.checkIndependence(cv.get(3), cv.get(0), Set.of(cv.get(2))).getPValue(),
                 rTw.checkIndependence(cv.get(3), cv.get(0), Set.of(cv.get(2))).getPValue(), 1e-9);
 
         // After a test-wise call, the RCIT instance is back on its full active row set.
@@ -429,6 +443,8 @@ public class TestTestwiseDeletionSupport {
         List<Node> mv = mixed.getVariables();
         List<Node> cvars = cont.getVariables();
         assertNotNull(new edu.cmu.tetrad.algcomparison.independence.DegenerateGaussianLrt()
+                .getTest(mixed, testwise).checkIndependence(mv.get(4), mv.get(0), Set.of(mv.get(1))));
+        assertNotNull(new edu.cmu.tetrad.algcomparison.independence.BasisFunctionLrt()
                 .getTest(mixed, testwise).checkIndependence(mv.get(4), mv.get(0), Set.of(mv.get(1))));
         assertNotNull(new edu.cmu.tetrad.algcomparison.independence.Kci()
                 .getTest(cont, testwise));

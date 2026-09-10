@@ -930,8 +930,12 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         names.sort(String::compareTo);
         for (String s : names) h = 1099511628211L * (h ^ s.hashCode());
 
-        h = 1099511628211L * (h ^ getActiveRowCount());
-        h = 1099511628211L * (h ^ activeRowsHash());
+        // Changes from the pre-2026-9 implementation: the seed previously also mixed in the active row count and
+        // a hash of the active row list, so the random Fourier basis drawn for a block depended on how the rows
+        // were represented: rows == null and setRows(0..n-1) drew different bases, and a test on a subset data
+        // set disagreed with the same test via setRows on the parent data set. The basis is a fixed random
+        // projection and has no reason to depend on the rows; the row set remains part of the feature-cache key
+        // (featKey) and of the permutation seed, where it belongs.
         return h;
     }
 

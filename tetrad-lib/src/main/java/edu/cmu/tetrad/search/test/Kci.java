@@ -181,13 +181,13 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
      * If true, each test is evaluated on the rows (within the active rows) that are complete on x, y, and z, by
      * delegating to a fresh instance over those rows. Set by the {@link #Kci(DataSet, MissingDataSpec)} constructor
-     * under the TESTWISE policy. When false and the data has missing values, NaN entries are z-scored to 0 (the
-     * causal-learn convention), which is a silent imputation.
+     * under the TESTWISE policy.
      */
     private boolean testwiseDeletion = false;
 
     /**
-     * Constructs a Kci instance with the given DataSet.
+     * Constructs a Kci instance with the given DataSet. A data set with missing values is rejected; use
+     * {@link #Kci(DataSet, MissingDataSpec)} to choose a policy.
      *
      * @param dataSet the dataset containing the data to be analyzed. It is used to initialize the data matrix, variable
      *                list, and other attributes.
@@ -199,18 +199,20 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     /**
      * Constructs a Kci instance with an explicit missing-data specification. On a data set with missing values the
      * supported policies are LISTWISE and TESTWISE; under TESTWISE each test is computed on the rows complete on x,
-     * y, and z. A null spec leaves the legacy behavior in place (missing entries become 0 after z-scoring, as in
-     * causal-learn).
+     * y, and z. A null spec on missing data throws.
      *
      * @param dataSet the dataset.
-     * @param spec    the missing-data specification, or null for the legacy behavior.
+     * @param spec    the missing-data specification, or null (equivalent to FAIL on missing data).
      */
     public Kci(DataSet dataSet, MissingDataSpec spec) {
-        if (spec != null) {
-            dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "Kci");
-            this.testwiseDeletion = spec.getPolicy() == edu.cmu.tetrad.data.missing.MissingDataPolicy.TESTWISE
-                    && dataSet.existsMissingValue();
-        }
+        if (dataSet == null) throw new NullPointerException("Data set is null.");
+
+        // A null spec on missing data fails, as for the other tests and scores; previously each missing entry was
+        // silently replaced by 0 after z-scoring (the causal-learn convention), an imputation nobody chose.
+        dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "Kci");
+        this.testwiseDeletion = spec != null
+                && spec.getPolicy() == edu.cmu.tetrad.data.missing.MissingDataPolicy.TESTWISE
+                && dataSet.existsMissingValue();
 
         this.dataSet = DataTransforms.standardizeData(dataSet);
 
@@ -308,16 +310,18 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     private static int[] uniformSample(int n, int m) {
-        int[] idx = new int[n];
-        for (int i = 0; i < n; i++) idx[i] = i;
-        // Partial FisherâYates
-        for (int i = 0; i < m; i++) {
-            int j = i + RandomUtil.getInstance().nextInt(n - i);
-            int t = idx[i];
-            idx[i] = idx[j];
-            idx[j] = t;
+        // Changes from the pre-2026-9 implementation: the m rows used for the median-distance bandwidth heuristic
+        // were previously a random subsample drawn from the global RandomUtil, so two calls on identical input
+        // returned different p-values (and the result depended on unrelated prior draws). The rows are now
+        // evenly spaced through the active row set, which is deterministic and, for exchangeable rows, an
+        // equally good sample of pairwise distances.
+        int[] idx = new int[m];
+        if (m >= n) {
+            for (int i = 0; i < m; i++) idx[i] = i;
+        } else {
+            for (int i = 0; i < m; i++) idx[i] = (int) (((long) i * (n - 1)) / (double) (m - 1));
         }
-        return Arrays.copyOf(idx, m);
+        return idx;
     }
 
     /**
