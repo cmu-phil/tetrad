@@ -673,6 +673,93 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         return simulate(nSamples, params.seed ^ 0x9E3779B97F4A7C15L);
     }
 
+    // ── Conditional draws for a single child ───────────────────────────────
+
+    /**
+     * Copies one observed row into the parallel continuous / discrete row
+     * arrays used by the mechanisms, so a child can be generated conditional
+     * on an observed parent configuration.
+     *
+     * @param source  the dataset to read from (any dataset over these variables)
+     * @param row     the row index in {@code source}
+     * @param contRow output array of length {@link #getNumVariables()}
+     * @param discRow output array of length {@link #getNumVariables()}
+     */
+    public void fillRowFromData(DataSet source, int row, double[] contRow, int[] discRow) {
+        int p = variables.size();
+        for (int j = 0; j < p; j++) {
+            if (isDiscrete[j]) {
+                discRow[j] = safeGetInt(source, row, j);
+                contRow[j] = 0.0;
+            } else {
+                contRow[j] = source.getDouble(row, j);
+                discRow[j] = 0;
+            }
+        }
+    }
+
+    /**
+     * Generates one value of node {@code childIdx} from its fitted mechanism,
+     * reading the parents from {@code contRow} / {@code discRow} and writing
+     * the result into the child's slot of the same arrays. Other slots are
+     * untouched. Safe to call concurrently from multiple threads.
+     *
+     * @param childIdx index of the child in the variable list
+     * @param contRow  continuous slots (parents read; child written if continuous)
+     * @param discRow  discrete slots (parents read; child written if discrete)
+     * @param rng      source of noise / categorical draws
+     * @throws IllegalStateException if {@link #fit()} has not been called
+     */
+    public void generateChild(int childIdx, double[] contRow, int[] discRow, Random rng) {
+        Mechanism mech = mechanisms[childIdx];
+        if (mech == null) throw new IllegalStateException("fit() must be called before generateChild().");
+        mech.generateOneRow(data, contRow, discRow, rng);
+    }
+
+    /**
+     * For a discrete child, the generative class distribution p(Y | pa) given
+     * the parent values in {@code contRow} / {@code discRow}: exactly the
+     * distribution {@link #generateChild} samples from, including any
+     * {@code lambdaParents} mixing with base rates.
+     *
+     * @param childIdx index of a discrete child
+     * @param contRow  continuous parent slots
+     * @param discRow  discrete parent slots
+     * @return a fresh probability array over the child's categories
+     * @throws IllegalArgumentException if the child is not discrete
+     * @throws IllegalStateException    if {@link #fit()} has not been called
+     */
+    public double[] childProbsGiven(int childIdx, double[] contRow, int[] discRow) {
+        Mechanism mech = mechanisms[childIdx];
+        if (mech == null) throw new IllegalStateException("fit() must be called before childProbsGiven().");
+        if (mech instanceof DiscreteMechanism dm) {
+            return dm.mixedProbsFromGenerated(contRow, discRow);
+        }
+        if (mech instanceof RootDiscreteMechanism rdm) {
+            return rdm.probs.clone();
+        }
+        throw new IllegalArgumentException("Node " + variables.get(childIdx).getName() + " is not discrete.");
+    }
+
+    /**
+     * Returns the number of variables.
+     *
+     * @return the length of the row arrays used by {@link #fillRowFromData} and {@link #generateChild}
+     */
+    public int getNumVariables() {
+        return variables.size();
+    }
+
+    /**
+     * Reports whether a variable is discrete.
+     *
+     * @param idx variable index
+     * @return true if the variable at {@code idx} is discrete
+     */
+    public boolean isDiscreteVariable(int idx) {
+        return isDiscrete[idx];
+    }
+
     /**
      * Simulates data by generating continuous and discrete values for all variables
      * in the trained directed acyclic graph (DAG) model. The simulation uses a specified
@@ -1995,10 +2082,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         double residMean;
         double residSd;
 
-        // reusable simulation buffers
-        private final double[] workX;
-        private final double[] workXE;
-
         ContinuousMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, Random rng) {
             super(childIndex, parentIdx, encoder);
 
@@ -2006,8 +2089,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             this.netMean = new MlpRegressor(encoder.featureDim, layers, rng);
             this.netGNM = new MlpRegressor(encoder.featureDim + 1, layers, rng);
 
-            this.workX = new double[encoder.featureDim];
-            this.workXE = new double[encoder.featureDim + 1];
         }
 
         @Override
@@ -2120,6 +2201,12 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         @Override
         void generateOneRow(DataSet data, double[] contRow, int[] discRow, Random rng) {
+            // Buffers are method-local so that concurrent simulations sharing this
+            // mechanism (e.g. parallel edge-strength computation) cannot corrupt
+            // each other's feature vectors.
+            double[] workX  = new double[encoder.featureDim];
+            double[] workXE = new double[encoder.featureDim + 1];
+
             // parent features from already-generated parents
             encoder.encodeFromGenerated(contRow, discRow, workX);
 
@@ -2188,6 +2275,8 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         @Override
         double predictRow(DataSet data, int row) {
+            double[] workX  = new double[encoder.featureDim];
+            double[] workXE = new double[encoder.featureDim + 1];
             encoder.encodeRow(data, row, workX);
             // Use zero noise (e=0) for a point prediction — equivalent to
             // predicting the conditional mean E[Y | pa(Y)].
@@ -2291,11 +2380,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         double[] baseProbs; // empirical p(y) over training rows
 
-        // reusable simulation buffers
-        private final double[] workX;
-        private final double[] workPNet;
-        private final double[] workPMix;
-
         DiscreteMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, int numLevels, Random rng) {
             super(childIndex, parentIdx, encoder);
             this.numLevels = numLevels;
@@ -2303,9 +2387,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             int[] layers = params.getHiddenLayers();
             this.net = new MlpSoftmaxClassifier(encoder.featureDim, layers, numLevels, rng);
 
-            this.workX = new double[encoder.featureDim];
-            this.workPNet = new double[numLevels];
-            this.workPMix = new double[numLevels];
         }
 
         @Override
@@ -2358,6 +2439,21 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         @Override
         void generateOneRow(DataSet data, double[] contRow, int[] discRow, Random rng) {
+            discRow[childIndex] = sampleCategorical(mixedProbsFromGenerated(contRow, discRow), rng);
+        }
+
+        /**
+         * The generative class distribution p(Y | pa) for an already-generated
+         * (or explicitly supplied) parent row: the network's softmax mixed with
+         * the base rates by {@code lambdaParents}. This is exactly the
+         * distribution {@link #generateOneRow} samples from. Buffers are
+         * method-local so the mechanism is safe to share across threads.
+         */
+        double[] mixedProbsFromGenerated(double[] contRow, int[] discRow) {
+            double[] workX    = new double[encoder.featureDim];
+            double[] workPNet = new double[numLevels];
+            double[] workPMix = new double[numLevels];
+
             encoder.encodeFromGenerated(contRow, discRow, workX);
             net.predictProbsInto(workX, workPNet);
 
@@ -2382,7 +2478,7 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
                 }
             }
 
-            discRow[childIndex] = sampleCategorical(workPMix, rng);
+            return workPMix;
         }
 
         private double[] empiricalProbs(DataSet data, TrainingRows tr, int col, int K) {
@@ -2414,15 +2510,13 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         @Override
         double predictRow(DataSet data, int row) {
-            encoder.encodeRow(data, row, workX);
-            net.predictProbsInto(workX, workPNet);
-            return argmax(workPNet);   // return modal class as double
+            return argmax(predictNodeProbs(data, row));   // modal class as double
         }
 
         @Override
         double[] predictNodeProbs(DataSet data, int row) {
+            double[] workX = new double[encoder.featureDim];
             encoder.encodeRow(data, row, workX);
-            // Return a copy — workPNet is a reusable buffer.
             double[] probs = new double[numLevels];
             net.predictProbsInto(workX, probs);
             return probs;

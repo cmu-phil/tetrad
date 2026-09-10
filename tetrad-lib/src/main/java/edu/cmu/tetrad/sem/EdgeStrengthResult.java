@@ -8,24 +8,33 @@ import java.io.Serial;
  * Result of a single edge-strength computation performed by
  * {@link NNEstimator#computeEdgeStrength(String, String, int)}.
  *
- * <p>Edge strength is defined as the change in the marginal distribution of
- * the child variable when the edge from parent to child is removed from the
- * DAG and the child's mechanism is retrained without that parent.
+ * <p>Edge strength here is the <em>intervention</em> strength of Janzing et
+ * al. (2013), as implemented in DoWhy's {@code arrow_strength}: the child's
+ * fitted mechanism is held fixed, and for each observed parent configuration
+ * the child is drawn many times with the configuration as is and many times
+ * again with the parent's input replaced by an independent draw from that
+ * parent's marginal. The difference between the two conditional distributions
+ * is measured and averaged over configurations. Nothing is retrained.
  *
- * <p>Two complementary measures are reported:
+ * <p>Because the mechanism is not refit, a parent that is redundant with
+ * another parent still registers as strong if the mechanism actually uses
+ * it. That is the intended contrast with
+ * {@link NNEstimator#computePartialEdgeStrength}, which asks whether the
+ * parent adds held-out predictive information beyond the other parents.
+ *
+ * <p>Three measures are reported:
  * <ul>
- *   <li><b>MMD²</b> — Maximum Mean Discrepancy between the marginal
- *       distribution of the child under the original model and under the
- *       edge-removed model. This is nonparametric and captures shape changes
- *       as well as variance changes. Higher = stronger edge.</li>
- *   <li><b>Variance difference</b> (continuous nodes only) — the increase in
- *       marginal variance of the child when the edge is removed:
- *       var(Y_removed) − var(Y_original). Positive means the edge was
- *       explaining variance. Analogous to DoWhy's arrow_strength default
- *       metric.</li>
- *   <li><b>KL divergence</b> (discrete nodes only) — KL(P_removed ‖ P_original)
- *       in bits, where P is the empirical marginal class distribution.
- *       Analogous to DoWhy's arrow_strength for categorical targets.</li>
+ *   <li><b>MMD²</b> — mean over configurations of the Maximum Mean
+ *       Discrepancy between the two sets of conditional draws, with a
+ *       continuous child standardized by its observed standard deviation so
+ *       values are comparable across children. Higher = stronger edge.</li>
+ *   <li><b>Variance difference</b> (continuous) — mean over configurations of
+ *       var(Y | pa, X randomized) − var(Y | pa). DoWhy's default for
+ *       continuous targets. Reported both raw ({@link #varianceDiff}) and
+ *       divided by the child's observed variance ({@link #varianceDiffFrac}).</li>
+ *   <li><b>KL divergence</b> (discrete) — mean over configurations and
+ *       randomized draws of KL(P(Y | pa) ‖ P(Y | pa, X randomized)) in bits.
+ *       DoWhy's default for categorical targets.</li>
  * </ul>
  */
 public final class EdgeStrengthResult implements TetradSerializable {
@@ -33,40 +42,53 @@ public final class EdgeStrengthResult implements TetradSerializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /** Name of the parent variable (tail of the removed edge). */
+    /** Name of the parent variable (tail of the edge). */
     public final String parentName;
 
-    /** Name of the child variable (head of the removed edge). */
+    /** Name of the child variable (head of the edge). */
     public final String childName;
 
     /** {@code true} if the child variable is discrete. */
     public final boolean discreteChild;
 
     /**
-     * MMD² between the marginal distribution of the child under the original
-     * model and under the edge-removed model. Valid for both continuous and
-     * discrete children. Higher = stronger edge.
+     * Mean over parent configurations of MMD² between draws of the child with
+     * the configuration fixed and draws with the parent's input randomized.
+     * Continuous children are standardized by their observed SD first.
+     * Higher = stronger edge.
      */
     public final double mmd2;
 
     /**
-     * Increase in marginal variance of the child when the edge is removed:
-     * var(Y_removed) − var(Y_original).
+     * Mean over parent configurations of
+     * var(Y | pa, X randomized) − var(Y | pa), in the child's units squared.
      * NaN for discrete children.
      */
     public final double varianceDiff;
 
     /**
-     * KL divergence KL(P_removed ‖ P_original) in bits, where P is the
-     * empirical marginal class distribution of the child.
+     * {@link #varianceDiff} divided by the child's observed marginal variance,
+     * so it is comparable across children. NaN for discrete children.
+     */
+    public final double varianceDiffFrac;
+
+    /**
+     * Mean over configurations and randomized draws of
+     * KL(P(Y | pa) ‖ P(Y | pa, X randomized)) in bits.
      * NaN for continuous children.
      */
     public final double klDivBits;
 
     /**
-     * Number of rows simulated from each model for the comparison.
+     * Number of observed parent configurations the measures were averaged over.
      */
     public final int simulatedN;
+
+    /**
+     * Number of draws of the child per configuration, for each of the two
+     * conditions.
+     */
+    public final int drawsPerConfig;
 
     // ── constructor ───────────────────────────────────────────────────────────
 
@@ -75,31 +97,36 @@ public final class EdgeStrengthResult implements TetradSerializable {
                        boolean discreteChild,
                        double mmd2,
                        double varianceDiff,
+                       double varianceDiffFrac,
                        double klDivBits,
-                       int simulatedN) {
-        this.parentName    = parentName;
-        this.childName     = childName;
-        this.discreteChild = discreteChild;
-        this.mmd2          = mmd2;
-        this.varianceDiff  = varianceDiff;
-        this.klDivBits     = klDivBits;
-        this.simulatedN    = simulatedN;
+                       int simulatedN,
+                       int drawsPerConfig) {
+        this.parentName       = parentName;
+        this.childName        = childName;
+        this.discreteChild    = discreteChild;
+        this.mmd2             = mmd2;
+        this.varianceDiff     = varianceDiff;
+        this.varianceDiffFrac = varianceDiffFrac;
+        this.klDivBits        = klDivBits;
+        this.simulatedN       = simulatedN;
+        this.drawsPerConfig   = drawsPerConfig;
     }
 
     // ── display ───────────────────────────────────────────────────────────────
 
     /**
-     * Returns a human-readable one-line summary.
-     * @return a human-readable one-line summary
+     * One-line summary suitable for a status bar.
+     *
+     * @return a formatted summary line
      */
     public String toSummaryLine() {
         if (!discreteChild) {
             return String.format(
-                    "%s → %s  |  MMD² = %.4f  |  ΔVar = %.4f  (n = %d)",
-                    parentName, childName, mmd2, varianceDiff, simulatedN);
+                    "%s → %s  |  MMD² = %.4f  |  ΔVar/Var(Y) = %.4f  (configs = %d)",
+                    parentName, childName, mmd2, varianceDiffFrac, simulatedN);
         } else {
             return String.format(
-                    "%s → %s  |  MMD² = %.4f  |  KL = %.4f bits  (n = %d)",
+                    "%s → %s  |  MMD² = %.4f  |  KL = %.4f bits  (configs = %d)",
                     parentName, childName, mmd2, klDivBits, simulatedN);
         }
     }

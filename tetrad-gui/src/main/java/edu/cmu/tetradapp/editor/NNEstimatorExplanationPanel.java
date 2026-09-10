@@ -126,34 +126,38 @@ final class NNEstimatorExplanationPanel {
 
             <h2>Tab: Edge Strength</h2>
 
-            <p>This tab asks, for one edge X to Y at a time, how much the edge contributes. The method is
-            the same for every measure: keep every mechanism in the graph fixed except Y's, retrain Y's
-            mechanism with X removed from its parents, and compare. Only the one structural equation changes,
-            so nothing cascades through the rest of the graph.</p>
+            <p>This tab asks, for one edge X to Y at a time, how much the edge contributes. Two different
+            questions are answered, and it matters which one you are reading.</p>
 
-            <p>Two kinds of measure are reported for each edge.</p>
+            <p><b>Intervention measures</b> (MMD squared, delta variance, KL) answer: how much does Y's fitted
+            mechanism actually use X? Nothing is retrained. For each of a number of observed parent
+            configurations, set by the <b>Parent configs</b> spinner, the tool draws Y many times from the
+            mechanism with the configuration as observed, and many times again with X's input replaced by an
+            independent draw from X's own distribution, everything else held fixed. The two sets of draws are
+            compared and the comparison averaged over configurations. This is the arrow strength of Janzing and
+            colleagues, as DoWhy implements it. <b>MMD squared</b> is a nonparametric distance between the two
+            sets of draws, computed on Y standardized by its observed spread so values are comparable across
+            children. For a continuous Y, <b>delta variance over variance of Y</b> is the extra spread that
+            randomizing X induces in Y given its other parents, as a fraction of Y's total variance; for a
+            linear mechanism it is the coefficient squared times the variance of X, divided by the variance of
+            Y. For a discrete Y, <b>KL divergence</b> in bits measures how far the class probabilities move when
+            X is randomized.</p>
 
-            <p><b>Marginal measures</b> compare the distribution of Y under the full model against the
-            distribution of Y under the reduced model, each estimated by simulating the number of rows in the
-            <b>Simulated n</b> spinner. There are three of them. <b>MMD squared</b> is a nonparametric distance
-            between the two distributions of Y; it picks up any change in shape. For a continuous Y, <b>delta
-            variance</b> is the variance of Y with the edge removed minus its variance with the edge present;
-            a large positive value means the parent was absorbing a lot of Y's variation. For a discrete Y,
-            <b>KL divergence</b> in bits measures how far the class frequencies move when the edge is cut.
-            These are analogous to what DoWhy reports under the name arrow strength.</p>
+            <p><b>The partial measure</b> answers a different question: does X add anything to held-out
+            prediction of Y once Y's other parents are known? For continuous Y the tool retrains Y's mechanism
+            without X, takes the residual, and asks how much of that residual X can explain, as out-of-sample R
+            squared from a small cross-validated regression using the <b>CV k</b> spinner. For discrete Y it is
+            the cross-validated improvement in cross-entropy of the full mechanism over the reduced one.
+            Positive values are shown green and bold.</p>
 
-            <p><b>The partial measure</b> controls for Y's other parents first. For continuous Y: predict Y from
-            its other parents with the reduced mechanism, take the residual, and ask how much of that residual
-            X can explain, measured as out-of-sample R squared from a small cross-validated regression of the
-            residual on X using the <b>CV k</b> spinner. This is the nonparametric cousin of partial R squared.
-            For discrete Y it is the cross-validated improvement in cross-entropy of the full model over the
-            reduced model. Positive values are shown green and bold: X carries information about Y beyond what
-            the other parents carry.</p>
-
-            <p>Why both? The marginal measures can be large for an edge whose parent is nearly a copy of another
-            parent, because removing either one changes Y's distribution. The partial measure will be near zero
-            for both such edges, because each is redundant given the other. When the two kinds of measure
-            disagree, that is the usual reason.</p>
+            <p>Why both? They disagree in exactly one common situation, and the disagreement is the point. If
+            another parent W carries nearly the same information as X, the partial measure is near zero for
+            both, because each is redundant given the other. The intervention measures stay large for whichever
+            of the two the network actually leans on, because the mechanism is not refit and still uses that
+            input. So a row with a large intervention strength and a near-zero partial means "this edge does
+            real work in the fitted model, but you could drop it and another parent would take over." A row
+            with both near zero is an edge the model neither uses nor needs. A row with both large is an
+            edge that is doing work no other parent can do.</p>
 
             <p><b>Compute Parent Strengths</b> handles the selected child; <b>Compute All</b> handles every edge
             in the DAG, clearing previous results first. Results appear as each edge finishes, are kept across
@@ -165,8 +169,9 @@ final class NNEstimatorExplanationPanel {
             and larger means more different. It is estimated here with 512 random Fourier features at a fixed
             bandwidth, so it is fast and slightly noisy. It has no natural units and no fixed threshold. Use it
             comparatively: this edge versus that edge on the same tab, this DAG versus that DAG with the same
-            data and the same simulated sample size. Do not compare values across tabs, across datasets, or
-            across sample sizes.</p>
+            data and the same settings. On the Edge Strength tab it is computed on a standardized child, so
+            edges into different children can be compared. Do not compare values across tabs or across
+            datasets.</p>
 
             <h2>What this tool does not tell you</h2>
 
@@ -179,9 +184,10 @@ final class NNEstimatorExplanationPanel {
               <li><b>A dense DAG will always fit at least as well as a sparse one</b> on the training data,
               because adding parents can only add inputs to a network. Prefer the Cross-Validation numbers,
               and among DAGs that generalize equally well, prefer the one with fewer edges.</li>
-              <li><b>Edge strength is not effect size.</b> It measures how much Y's distribution or
-              predictability depends on X within this fitted model. A strong edge can still be confounded if the
-              DAG is wrong.</li>
+              <li><b>Edge strength is not effect size.</b> It measures how much Y's fitted mechanism uses X, or
+              how much X adds to prediction, within this model. A strong edge can still be confounded if the
+              DAG is wrong. The intervention measures are also only as good as the fit: a network that
+              over- or under-shoots a slope will over- or under-state that edge by the square of the error.</li>
               <li><b>Small networks under-fit sharp nonlinearities</b> such as thresholds or high-frequency
               oscillation. If a scatter plot on the left has structure the right cannot match, that is the
               model's limit, not evidence about the DAG.</li>
@@ -196,8 +202,9 @@ final class NNEstimatorExplanationPanel {
               <li>Look at Observed vs. Resimulated for the variables you care most about. If the right side
               is obviously wrong, nothing downstream is worth reading.</li>
               <li>Run Cross-Validation. Note any node with out-of-sample R squared near zero or negative.</li>
-              <li>Run Compute All on the Edge Strength tab. Sort by the partial column. Edges with partial
-              values near zero are candidates for removal; check whether removing them hurts cross-validation.</li>
+              <li>Run Compute All on the Edge Strength tab. Sort by the partial column for edges you could
+              drop; sort by MMD squared for edges the model leans on. Edges near zero on both are the
+              candidates for removal; check whether removing them hurts cross-validation.</li>
               <li>Resimulate once or twice more and confirm that whatever you concluded survives a change of
               seed.</li>
             </ol>

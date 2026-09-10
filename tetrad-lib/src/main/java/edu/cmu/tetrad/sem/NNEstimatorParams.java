@@ -41,6 +41,15 @@ public final class NNEstimatorParams implements TetradSerializable {
      */
     public int mmdMaxRows = 5000;
 
+    /**
+     * Number of draws of the child per parent configuration when computing
+     * edge strength ({@link NNEstimator#computeEdgeStrength}). Each
+     * configuration is drawn this many times with the mechanism as fitted, and
+     * this many times again with the parent's input randomized.
+     * Default: 200.
+     */
+    public int edgeDrawsPerConfig = 200;
+
     /** Creates a parameter object with all defaults. */
     public NNEstimatorParams() {}
 }

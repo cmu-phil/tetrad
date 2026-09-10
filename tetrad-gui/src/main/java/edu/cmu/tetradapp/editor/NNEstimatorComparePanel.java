@@ -32,8 +32,9 @@ import java.util.concurrent.*;
  * <ol>
  *   <li><b>Cross-Validation</b> — k-fold OOS metrics per node plus whole-graph
  *       MMD². Results are restored from the model on relaunch.</li>
- *   <li><b>Edge Strength</b> — select a child node and compute the marginal
- *       and partial strength of each of its parent edges. Results appear
+ *   <li><b>Edge Strength</b> — select a child node and compute the
+ *       intervention strength (mechanism held fixed, parent randomized) and
+ *       partial strength of each of its parent edges. Results appear
  *       progressively as each parent is computed, are accumulated across
  *       multiple child selections, and are restored from the model on
  *       relaunch.</li>
@@ -72,8 +73,9 @@ public final class NNEstimatorComparePanel extends JPanel {
     // ── tab 2: edge strength ──────────────────────────────────────────────────
 
     private final JComboBox<String> childCombo = new JComboBox<>();
-    private final JSpinner edgeSimNSpinner =
-            new JSpinner(new SpinnerNumberModel(5000, 100, 1_000_000, 500));
+    /** Number of observed parent configurations each edge strength is averaged over. */
+    private final JSpinner edgeConfigSpinner =
+            new JSpinner(new SpinnerNumberModel(300, 10, 100_000, 50));
     private final JButton computeEdgeButton = new JButton("Compute Parent Strengths");
     private final JButton computeAllButton  = new JButton("Compute All");  // NEW
     private final JLabel edgeProgressLabel = new JLabel(" ");
@@ -115,7 +117,7 @@ public final class NNEstimatorComparePanel extends JPanel {
 //        computeEdgeButton.setEnabled(fitted);
 //        computeAllButton.setEnabled(fitted && childCombo.getItemCount() > 0);
 
-        edgeSimNSpinner.setValue(observed.getNumRows());
+        edgeConfigSpinner.setValue(TMath.max(10, TMath.min(300, observed.getNumRows())));
 
         // Build tabs.
         JTabbedPane tabs = new JTabbedPane();
@@ -212,8 +214,8 @@ public final class NNEstimatorComparePanel extends JPanel {
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         controls.add(new JLabel("Child node:"));
         controls.add(childCombo);
-        controls.add(new JLabel("Simulated n:"));
-        controls.add(edgeSimNSpinner);
+        controls.add(new JLabel("Parent configs:"));
+        controls.add(edgeConfigSpinner);
         controls.add(new JLabel("  CV k:"));
         controls.add(edgeKSpinner);
         controls.add(computeEdgeButton);
@@ -243,10 +245,12 @@ public final class NNEstimatorComparePanel extends JPanel {
 
         JLabel note = new JLabel(
                 "<html><i>"
-                        + "MMD² and ΔVar: marginal effect of removing the edge. "
-                        + "Partial R²: OOS R² of residual regression R ~ X after controlling for "
-                        + "other parents — positive (green/bold) = X explains variance beyond other parents. "
-                        + "KL divergence in bits for discrete nodes."
+                        + "MMD², ΔVar/Var(Y) and KL: intervention strength — the child's fitted mechanism is held "
+                        + "fixed and the parent's input is replaced by an independent draw, averaged over "
+                        + "observed parent configurations (DoWhy arrow strength). "
+                        + "Partial: held-out gain from the parent after controlling for the other parents — "
+                        + "positive (green/bold) = the parent adds information beyond them. "
+                        + "A redundant parent scores high on the first and near zero on the second."
                         + "</i></html>");
         note.setFont(note.getFont().deriveFont(Font.PLAIN, 11f));
         note.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
@@ -403,7 +407,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                 return;
             }
 
-            int simN  = ((Number) edgeSimNSpinner.getValue()).intValue();
+            int numConfigs = ((Number) edgeConfigSpinner.getValue()).intValue();
             int cvK   = ((Number) kSpinner.getValue()).intValue();
             int total = allEdges.size();
 
@@ -432,7 +436,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                     EdgeStrengthResult edge = model.getEstimator()
                             .computeEdgeStrength(
                                     pc.parent().getName(),
-                                    pc.child().getName(), simN);
+                                    pc.child().getName(), numConfigs);
                     PartialEdgeStrengthResult partial = model.getEstimator()
                             .computePartialEdgeStrength(
                                     pc.parent().getName(),
@@ -535,7 +539,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                 return;
             }
 
-            int simN  = ((Number) edgeSimNSpinner.getValue()).intValue();
+            int numConfigs = ((Number) edgeConfigSpinner.getValue()).intValue();
             int cvK   = ((Number) kSpinner.getValue()).intValue();
             int total = parents.size();
 
@@ -566,7 +570,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                 completion.submit(() -> {
                     EdgeStrengthResult edge = model.getEstimator()
                             .computeEdgeStrength(
-                                    parent.getName(), childName, simN);
+                                    parent.getName(), childName, numConfigs);
                     PartialEdgeStrengthResult partial = model.getEstimator()
                             .computePartialEdgeStrength(
                                     parent.getName(), childName, cvK);
@@ -810,8 +814,8 @@ public final class NNEstimatorComparePanel extends JPanel {
     private static final class EdgeStrengthTableModel extends AbstractTableModel {
 
         private static final String[] COLUMNS =
-                {"Edge", "MMD²", "ΔVar / KL (bits)",
-                        "Partial R² / Xent Improv.", "Type", "Sim n"};
+                {"Edge", "MMD²", "ΔVar/Var(Y) / KL (bits)",
+                        "Partial R² / Xent Improv.", "Type", "Configs"};
 
         static final int COL_EDGE    = 0;
         static final int COL_MMD2    = 1;
@@ -844,7 +848,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                 case COL_MMD2  -> fmt(e.mmd2);
                 case COL_DELTA -> e.discreteChild
                         ? fmt(e.klDivBits) + " bits"
-                        : fmt(e.varianceDiff);
+                        : fmt(e.varianceDiffFrac);
                 case COL_PARTIAL -> {
                     if (p == null) yield "—";
                     yield p.discreteChild

@@ -432,130 +432,212 @@ public final class NNEstimator implements TetradSerializable {
     // ── Edge strength ─────────────────────────────────────────────────────────
 
     /**
-     * Computes the strength of a single edge (parentName → childName) by
-     * retraining <em>only the child's mechanism</em> without that parent,
-     * holding all other node mechanisms fixed, and comparing the resulting
-     * marginal distribution of the child to the original.
+     * Computes the intervention strength of a single edge (parentName → childName)
+     * in the sense of Janzing et al. (2013) and DoWhy's {@code arrow_strength}.
      *
-     * <p>This is the correct isolation: only the affected structural equation
-     * is changed, so the comparison cleanly reflects the contribution of that
-     * one edge rather than cascading changes through the graph.
+     * <p>The child's fitted mechanism is held fixed; nothing is retrained. For
+     * each of {@code numConfigs} parent configurations, sampled with
+     * replacement from the observed rows on which the child's parents are all
+     * present, the child is drawn {@code edgeDrawsPerConfig} times with the
+     * configuration as is, and {@code edgeDrawsPerConfig} times again with the
+     * parent's slot replaced by an independent draw from that parent's observed
+     * marginal. The two conditional distributions are compared and the result
+     * averaged over configurations.
      *
-     * <p>Three complementary measures are returned:
+     * <p>Because the mechanism is not refit, this measures how much the
+     * mechanism <em>uses</em> the parent, not whether the parent is predictively
+     * necessary. A parent that is redundant with another parent still registers
+     * as strong here if the network relies on it; see
+     * {@link #computePartialEdgeStrength} for the complementary question.
+     *
+     * <p>Three measures are returned:
      * <ul>
-     *   <li><b>MMD²</b> — nonparametric, captures any distributional change.</li>
-     *   <li><b>Variance difference</b> (continuous) — var(Y_removed) − var(Y_original).
-     *       Analogous to DoWhy's default arrow_strength metric.</li>
-     *   <li><b>KL divergence in bits</b> (discrete) — KL(P_removed ‖ P_original).
-     *       Analogous to DoWhy's categorical arrow_strength metric.</li>
+     *   <li><b>MMD²</b> — mean over configurations of the MMD² between the two
+     *       sets of draws. A continuous child is standardized by its observed SD
+     *       first, so values are comparable across children.</li>
+     *   <li><b>Variance difference</b> (continuous) — mean over configurations
+     *       of var(Y | pa, X randomized) − var(Y | pa); also returned as a
+     *       fraction of the child's observed variance. For a linear mechanism
+     *       Y = aX + …, this is a²·var(X).</li>
+     *   <li><b>KL divergence in bits</b> (discrete) — mean over configurations
+     *       and randomized draws of KL(P(Y | pa) ‖ P(Y | pa, X randomized)).</li>
      * </ul>
      *
-     * <p>Requires {@link #fit()} to have been called first.
+     * <p>Safe to call concurrently for different edges. Requires {@link #fit()}.
      *
      * @param parentName name of the parent variable (tail of the edge)
      * @param childName  name of the child variable (head of the edge)
-     * @param simulatedN number of rows to simulate from each model for
-     *                   comparison; larger = more stable (suggest &ge; 2000)
-     * @return an {@link EdgeStrengthResult} with all three measures
+     * @param numConfigs number of observed parent configurations to average
+     *                   over; larger = more stable (suggest a few hundred)
+     * @return an {@link EdgeStrengthResult}
      * @throws IllegalStateException    if {@link #fit()} has not been called
-     * @throws IllegalArgumentException if the edge does not exist, or either
-     *                                  variable name is not found
+     * @throws IllegalArgumentException if the edge does not exist, either
+     *                                  variable name is not found, or no
+     *                                  observed row has the child's parents
+     *                                  all present
      */
     public EdgeStrengthResult computeEdgeStrength(String parentName,
                                                   String childName,
-                                                  int simulatedN) {
-//        if (true) {
-//            return new EdgeStrengthResult(parentName, childName, false, 0.0, 0.0, 0.0, 0);
-//        }
-
+                                                  int numConfigs) {
         checkFitted();
-        if (simulatedN < 1)
-            throw new IllegalArgumentException("simulatedN must be >= 1");
+        if (numConfigs < 1)
+            throw new IllegalArgumentException("numConfigs must be >= 1");
+        int m = Math.max(2, params.edgeDrawsPerConfig);
 
         // ── Validate edge ─────────────────────────────────────────────────────
-
         Node parentNode = findVariable(parentName);
         Node childNode  = findVariable(childName);
-
         if (!dag.isParentOf(parentNode, childNode)) {
             throw new IllegalArgumentException(
                     "No edge " + parentName + " → " + childName + " in the DAG.");
         }
-
         boolean isDisc = (childNode instanceof DiscreteVariable);
 
-        // ── Build reduced parent index array for the child ────────────────────
-
-        List<Node> allParents = dag.getParents(childNode);
-        List<Integer> reducedParentIdxList = new ArrayList<>();
-
+        List<Node> variables = observedData.getVariables();
+        int p = variables.size();
         Map<String, Integer> indexByName = new HashMap<>();
-        for (int j = 0; j < observedData.getVariables().size(); j++) {
-            indexByName.put(observedData.getVariables().get(j).getName(), j);
+        for (int j = 0; j < p; j++) indexByName.put(variables.get(j).getName(), j);
+        int childIdx  = indexByName.get(childName);
+        int parentIdx = indexByName.get(parentName);
+        boolean parentIsDisc = fittedSimulator.isDiscreteVariable(parentIdx);
+
+        int[] parentCols = dag.getParents(childNode).stream()
+                .mapToInt(q -> indexByName.get(q.getName())).toArray();
+
+        // ── Observed rows usable as parent configurations ─────────────────────
+        int n = observedData.getNumRows();
+        List<Integer> usable = new ArrayList<>();
+        for (int r = 0; r < n; r++) {
+            boolean ok = true;
+            for (int c : parentCols) {
+                if (fittedSimulator.isDiscreteVariable(c)) {
+                    if (TrainedDagSimulatorGNM.safeGetInt(observedData, r, c) < 0) { ok = false; break; }
+                } else {
+                    if (!Double.isFinite(observedData.getDouble(r, c))) { ok = false; break; }
+                }
+            }
+            if (ok) usable.add(r);
+        }
+        if (usable.isEmpty())
+            throw new IllegalArgumentException(
+                    "No observed row has all parents of " + childName + " present.");
+
+        // ── Pool of independent parent values (observed marginal of X) ────────
+        double[] xPoolCont = null;
+        int[]    xPoolDisc = null;
+        if (parentIsDisc) {
+            xPoolDisc = IntStream.range(0, n)
+                    .map(r -> TrainedDagSimulatorGNM.safeGetInt(observedData, r, parentIdx))
+                    .filter(v -> v >= 0).toArray();
+        } else {
+            xPoolCont = IntStream.range(0, n)
+                    .mapToDouble(r -> observedData.getDouble(r, parentIdx))
+                    .filter(Double::isFinite).toArray();
+        }
+        if ((parentIsDisc && xPoolDisc.length == 0) || (!parentIsDisc && xPoolCont.length == 0))
+            throw new IllegalArgumentException("No observed values for " + parentName + ".");
+
+        // ── Child scale, for standardizing MMD² and ΔVar ──────────────────────
+        double childVar = Double.NaN, childSd = 1.0;
+        if (!isDisc) {
+            childVar = columnVariance(observedData, childIdx);
+            if (Double.isFinite(childVar) && childVar > 0) childSd = TMath.sqrt(childVar);
         }
 
-        for (Node p : allParents) {
-            if (!p.getName().equals(parentName)) {
-                Integer idx = indexByName.get(p.getName());
-                if (idx != null) reducedParentIdxList.add(idx);
+        // ── Main loop over configurations ─────────────────────────────────────
+        // Two RNG streams: one for the child's noise (shared by both conditions,
+        // so the comparison is coupled), one for selecting configurations and
+        // the randomized parent values.
+        long base = params.seed ^ mixEdgeSeed(parentIdx, childIdx);
+        Random selRng = new Random(base ^ 0xA5A5A5A5A5A5A5A5L);
+
+        double[] contRow = new double[p];
+        int[]    discRow = new int[p];
+        double[][] drawsFull = new double[m][1];
+        double[][] drawsCut  = new double[m][1];
+
+        double sumMmd2 = 0.0, sumDVar = 0.0, sumKlBits = 0.0;
+        int    countMmd = 0,  countDVar = 0, countKl = 0;
+
+        for (int c = 0; c < numConfigs; c++) {
+            int row = usable.get(selRng.nextInt(usable.size()));
+            fittedSimulator.fillRowFromData(observedData, row, contRow, discRow);
+            long noiseSeed = base ^ ((long) c * 0x9E3779B97F4A7C15L);
+
+            // Condition A: configuration as observed.
+            double[] pFull = null;
+            if (isDisc) pFull = fittedSimulator.childProbsGiven(childIdx, contRow, discRow);
+            Random rngA = new Random(noiseSeed);
+            for (int i = 0; i < m; i++) {
+                fittedSimulator.generateChild(childIdx, contRow, discRow, rngA);
+                drawsFull[i][0] = isDisc ? discRow[childIdx] : contRow[childIdx] / childSd;
+            }
+
+            // Condition B: parent slot replaced by an independent draw each time.
+            Random rngB = new Random(noiseSeed);
+            double klAcc = 0.0; int klN = 0;
+            for (int i = 0; i < m; i++) {
+                if (parentIsDisc) discRow[parentIdx] = xPoolDisc[selRng.nextInt(xPoolDisc.length)];
+                else              contRow[parentIdx] = xPoolCont[selRng.nextInt(xPoolCont.length)];
+                if (isDisc) {
+                    double[] pCut = fittedSimulator.childProbsGiven(childIdx, contRow, discRow);
+                    double kl = klDivergenceBits(pFull, pCut);
+                    if (Double.isFinite(kl)) { klAcc += kl; klN++; }
+                }
+                fittedSimulator.generateChild(childIdx, contRow, discRow, rngB);
+                drawsCut[i][0] = isDisc ? discRow[childIdx] : contRow[childIdx] / childSd;
+            }
+
+            // ── Per-configuration measures ────────────────────────────────────
+            double mmd2 = RandomFeatureMMD.compute(
+                    drawsFull, drawsCut,
+                    params.mmdFeatures,
+                    params.mmdSeed ^ c,
+                    1.0,
+                    params.mmdMaxRows);
+            if (Double.isFinite(mmd2)) { sumMmd2 += mmd2; countMmd++; }
+
+            if (!isDisc) {
+                double vFull = sampleVariance(drawsFull) * childSd * childSd;
+                double vCut  = sampleVariance(drawsCut)  * childSd * childSd;
+                if (Double.isFinite(vFull) && Double.isFinite(vCut)) {
+                    sumDVar += (vCut - vFull); countDVar++;
+                }
+            } else if (klN > 0) {
+                sumKlBits += klAcc / klN; countKl++;
             }
         }
 
-        int[] reducedParentIndices = reducedParentIdxList.stream()
-                .mapToInt(Integer::intValue).toArray();
-
-        int childIndex = indexByName.get(childName);
-
-        // ── Build hybrid simulator: only child mechanism retrained ────────────
-
-        TrainedDagSimulatorGNM hybridSim = fittedSimulator.withReducedParents(
-                childIndex, reducedParentIndices, params.seed ^ 0xDEADBEEFL);
-
-        // ── Simulate from both models ─────────────────────────────────────────
-
-        DataSet origSim    = fittedSimulator.simulate(simulatedN).toDataSet();
-        DataSet reducedSim = hybridSim.simulate(simulatedN).toDataSet();
-
-        // ── Extract child column marginals ────────────────────────────────────
-
-        int origCol    = origSim.getColumnIndex(origSim.getVariable(childName));
-        int reducedCol = reducedSim.getColumnIndex(reducedSim.getVariable(childName));
-
-        double[][] origVec    = extractColumn(origSim,    origCol,    isDisc);
-        double[][] reducedVec = extractColumn(reducedSim, reducedCol, isDisc);
-
-        // ── MMD² on marginal ──────────────────────────────────────────────────
-
-        double mmd2 = RandomFeatureMMD.compute(
-                origVec, reducedVec,
-                params.mmdFeatures,
-                params.mmdSeed,
-                1.0,
-                params.mmdMaxRows);
-
-        // ── Variance difference (continuous) ──────────────────────────────────
-
-        double varianceDiff = Double.NaN;
-        if (!isDisc) {
-            double varOrig    = columnVariance(origSim,    origCol);
-            double varReduced = columnVariance(reducedSim, reducedCol);
-            varianceDiff = varReduced - varOrig;
-        }
-
-        // ── KL divergence in bits (discrete) ─────────────────────────────────
-
-        double klDivBits = Double.NaN;
-        if (isDisc) {
-            int L = ((DiscreteVariable) childNode).getNumCategories();
-            double[] pOrig    = empiricalProbs(origSim,    origCol,    L);
-            double[] pReduced = empiricalProbs(reducedSim, reducedCol, L);
-            klDivBits = klDivergenceBits(pReduced, pOrig);
-        }
+        double mmd2 = countMmd > 0 ? sumMmd2 / countMmd : Double.NaN;
+        double dVar = (!isDisc && countDVar > 0) ? sumDVar / countDVar : Double.NaN;
+        double dVarFrac = (!isDisc && Double.isFinite(dVar) && Double.isFinite(childVar) && childVar > 0)
+                ? dVar / childVar : Double.NaN;
+        double klBits = (isDisc && countKl > 0) ? sumKlBits / countKl : Double.NaN;
 
         return new EdgeStrengthResult(
                 parentName, childName, isDisc,
-                mmd2, varianceDiff, klDivBits,
-                simulatedN);
+                mmd2, dVar, dVarFrac, klBits,
+                numConfigs, m);
+    }
+
+    private static long mixEdgeSeed(int parentIdx, int childIdx) {
+        long h = 0x5DEECE66DL;
+        h = h * 31 + parentIdx;
+        h = h * 31 + childIdx;
+        h ^= (h >>> 29);
+        h *= 0xBF58476D1CE4E5B9L;
+        h ^= (h >>> 32);
+        return h;
+    }
+
+    /** Sample variance of a one-column matrix. */
+    private static double sampleVariance(double[][] col) {
+        int n = col.length;
+        if (n < 2) return Double.NaN;
+        double sum = 0, sum2 = 0;
+        for (double[] r : col) { sum += r[0]; sum2 += r[0] * r[0]; }
+        double mean = sum / n;
+        return (sum2 - n * mean * mean) / (n - 1);
     }
 
     /**
@@ -780,20 +862,6 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
-     * Extracts a single column as an (n x 1) matrix for MMD² input.
-     */
-    private static double[][] extractColumn(DataSet data, int col, boolean isDisc) {
-        int n = data.getNumRows();
-        double[][] out = new double[n][1];
-        for (int i = 0; i < n; i++) {
-            out[i][0] = isDisc
-                    ? TrainedDagSimulatorGNM.safeGetInt(data, i, col)
-                    : data.getDouble(i, col);
-        }
-        return out;
-    }
-
-    /**
      * Sample variance of a continuous column.
      */
     private static double columnVariance(DataSet data, int col) {
@@ -808,25 +876,6 @@ public final class NNEstimator implements TetradSerializable {
         if (count < 2) return Double.NaN;
         double mean = sum / count;
         return (sum2 - count * mean * mean) / (count - 1);
-    }
-
-    /**
-     * Empirical marginal class probabilities for a discrete column.
-     */
-    private static double[] empiricalProbs(DataSet data, int col, int L) {
-        double[] counts = new double[L];
-        int total = 0;
-        for (int i = 0; i < data.getNumRows(); i++) {
-            int v = TrainedDagSimulatorGNM.safeGetInt(data, i, col);
-            if (v < 0 || v >= L) continue;
-            counts[v]++; total++;
-        }
-        double[] p = new double[L];
-        if (total > 0)
-            for (int k = 0; k < L; k++) p[k] = counts[k] / total;
-        else
-            for (int k = 0; k < L; k++) p[k] = 1.0 / L;
-        return p;
     }
 
     /**
