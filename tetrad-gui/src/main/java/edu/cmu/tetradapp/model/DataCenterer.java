@@ -21,15 +21,15 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.List;
-
 /**
- * Standardizes all columns in a continuous data set.
+ * Centers every continuous column of each data set in the parent, subtracting the column's mean over its non-missing
+ * values. Discrete columns are copied through unchanged, so mixed data sets can be centered; previously they were
+ * rejected. Missing values stay missing. Each data set in a list is centered separately, so a list of per-subject
+ * data sets (e.g. from Split Data) is centered within subject, which removes between-subject shifts before the data
+ * sets are concatenated.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -54,14 +54,9 @@ public class DataCenterer extends DataWrapper {
                 throw new IllegalArgumentException("Not a data set: " + model.getName());
             }
 
-            if (!(dataSet.isContinuous())) {
-                throw new IllegalArgumentException("Not a continuous data set: " + dataSet.getName());
-            }
-
-            Matrix data2 = DataTransforms.centerData(dataSet.getDoubleData());
-            List<Node> list = dataSet.getVariables();
-
-            DataSet dataSet2 = new BoxDataSet(new VerticalDoubleDataBox(data2.transpose().toArray()), list);
+            // DataTransforms.center copies the data set, centers the continuous columns over their non-missing
+            // values and leaves discrete columns as they are.
+            DataSet dataSet2 = DataTransforms.center(dataSet);
             dataSet2.setName(dataSet.getName());
             outList.add(dataSet2);
         }

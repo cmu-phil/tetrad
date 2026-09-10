@@ -232,6 +232,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             }
         }
 
+        // With many data sets (e.g. one per subject from Split Data) wrapped tabs stack into rows and crowd out
+        // the table; a scrolling tab strip keeps the layout usable.
+        tabbedPane.setTabLayoutPolicy(tabbedPane.getTabCount() > 8
+                ? JTabbedPane.SCROLL_TAB_LAYOUT : JTabbedPane.WRAP_TAB_LAYOUT);
+
         if (tabbedPane.getTabCount() > 0) {
             if (selectedIndex < 0) {
                 selectedIndex = 0;

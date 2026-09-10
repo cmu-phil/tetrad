@@ -433,6 +433,43 @@ public final class DataSubsetter {
         return new int[]{kept, base.size()};
     }
 
+    /**
+     * Returns the indices of all rows of {@code source} satisfying every condition in {@code conditionSpec}, in
+     * increasing order. A null or blank spec matches every row. This is the condition language of the Data Subset
+     * tool exposed for reuse; see {@link #parseConditions(DataSet, String)} for the syntax.
+     * <p>
+     * Rows with a missing value for any conditioned variable never match, for any operator.
+     *
+     * @param source        the source data set.
+     * @param conditionSpec the condition specification, e.g. {@code "A = cat1 and X in [1, 2)"}.
+     * @return the matching row indices.
+     * @throws IllegalArgumentException if the spec is invalid for this data set.
+     */
+    public static List<Integer> rowsSatisfying(DataSet source, String conditionSpec) {
+        Objects.requireNonNull(source, "source");
+        List<Integer> all = new ArrayList<>(source.getNumRows());
+        for (int i = 0; i < source.getNumRows(); i++) all.add(i);
+        return applyConditions(source, all, parseConditions(source, conditionSpec));
+    }
+
+    /**
+     * Quotes a variable name or category value for use in a condition specification if it contains anything other
+     * than letters, digits, underscores and periods, so that the parser will not mistake part of it for an operator
+     * or keyword.
+     *
+     * @param token the name or value.
+     * @return the token, double-quoted if necessary.
+     */
+    public static String quoteIfNeeded(String token) {
+        if (token == null || token.isEmpty()) return "\"\"";
+        for (int i = 0; i < token.length(); i++) {
+            if (!isWordChar(token.charAt(i))) return "\"" + token + "\"";
+        }
+        String lower = token.toLowerCase(Locale.ROOT);
+        if (lower.equals("and") || lower.equals("in") || lower.equals("not")) return "\"" + token + "\"";
+        return token;
+    }
+
     // ------------------------------------------------------------------------
     // Row conditions
     // ------------------------------------------------------------------------
