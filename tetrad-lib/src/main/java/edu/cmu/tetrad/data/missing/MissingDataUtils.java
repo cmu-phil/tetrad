@@ -364,9 +364,10 @@ public final class MissingDataUtils {
                             + "It supports " + supported + ". Either set "
                             + Params.MISSING_DATA_POLICY + " = 'listwise', or choose a test/score with native "
                             + "support for '" + canonical + "' (test-wise: Fisher Z, SEM BIC, BGe, EBIC, GIC, "
-                            + "Poisson Prior, BDeu, Discrete BIC, CG-BIC, DG-BIC, DG-BGe, BF-BIC, BF-BGe, CG-LRT, "
-                            + "DG-LRT, Chi-Square, G-Square, KCI, RCIT, CCI, GCM; EM covariance: Fisher Z, SEM BIC, "
-                            + "BGe, EBIC, GIC, Poisson Prior).");
+                            + "Poisson Prior, ZS Bound, HT SEM BIC, RFF BIC, TRFF BIC, KCV BIC, FFML, BDeu, "
+                            + "Discrete BIC, CG-BIC, DG-BIC, DG-BGe, BF-BIC, BF-BGe, CG-LRT, DG-LRT, BF-LRT, "
+                            + "Blocks-Test, Chi-Square, G-Square, KCI, RCIT, CCI, GCM, Poisson Prior Test; EM "
+                            + "covariance: Fisher Z, SEM BIC, BGe, EBIC, GIC, Poisson Prior, ZS Bound).");
                 }
             }
             case "mi", "multipleimputation", "multiple_imputation" -> throw new IllegalArgumentException(caller
@@ -383,8 +384,8 @@ public final class MissingDataUtils {
      * block tests and scores from a {@link BlockSpec} rather than from the data model handed to
      * {@code getTest}/{@code getScore}. The embedded dataset is checked; under the "listwise" policy a new
      * BlockSpec is returned wrapping the complete-case dataset with the same blocks, block variables, and ranks
-     * (blocks index columns, which row deletion does not disturb). No block component currently has native
-     * test-wise or EM support, so those policies throw here.
+     * (blocks index columns, which row deletion does not disturb). This form declares no native policies; block
+     * components with native test-wise support (e.g., the Wilks blocks test) use the four-argument form.
      *
      * @param blockSpec  The block spec.
      * @param parameters The parameters.
@@ -393,11 +394,27 @@ public final class MissingDataUtils {
      * @throws IllegalArgumentException As for the data-model gate.
      */
     public static BlockSpec gate(BlockSpec blockSpec, Parameters parameters, String caller) {
+        return gate(blockSpec, parameters, java.util.Set.of(), caller);
+    }
+
+    /**
+     * As {@link #gate(BlockSpec, Parameters, String)}, for block components that implement some policies natively;
+     * see {@link #gate(DataModel, Parameters, java.util.Set, String)} for the meaning of the native set.
+     *
+     * @param blockSpec      The block spec.
+     * @param parameters     The parameters.
+     * @param nativePolicies The policies the block component implements natively, from among "testwise" and "em".
+     * @param caller         The user-facing name of the test or score, for error messages.
+     * @return The block spec, possibly rebuilt on the complete-case dataset under the "listwise" policy.
+     * @throws IllegalArgumentException As for the data-model gate.
+     */
+    public static BlockSpec gate(BlockSpec blockSpec, Parameters parameters, java.util.Set<String> nativePolicies,
+                                 String caller) {
         if (blockSpec == null) {
             return null;
         }
 
-        DataModel gated = gate(blockSpec.dataSet(), parameters, false, caller);
+        DataModel gated = gate(blockSpec.dataSet(), parameters, nativePolicies, caller);
 
         if (gated == blockSpec.dataSet()) {
             return blockSpec;

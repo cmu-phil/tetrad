@@ -69,7 +69,7 @@ public class HeavyTailSemBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "HT SEM BIC Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "HT SEM BIC Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.HeavyTailSemBicScore score;

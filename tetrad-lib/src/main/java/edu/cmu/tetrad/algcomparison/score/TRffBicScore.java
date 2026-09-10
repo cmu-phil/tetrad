@@ -71,7 +71,7 @@ public class TRffBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "TRFF BIC Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "TRFF BIC Score");
         final edu.cmu.tetrad.search.score.TRffBicScore score;
         if (dataSet instanceof DataSet) {
             this.dataSet = DataTransforms.standardizeData((DataSet) dataSet);

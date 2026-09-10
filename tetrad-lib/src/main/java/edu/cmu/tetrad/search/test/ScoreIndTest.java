@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -351,8 +352,14 @@ public class ScoreIndTest implements IndependenceTest {
 
         return indices;
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Delegates to the wrapped score: this test has exactly the missing-data support of its score.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return this.score.getMissingValueSupport();
+    }
 }
-
-
-
-

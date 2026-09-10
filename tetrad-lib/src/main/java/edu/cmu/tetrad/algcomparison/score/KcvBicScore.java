@@ -70,7 +70,7 @@ public class KcvBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "KCV BIC Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "KCV BIC Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.KcvBicScore score;

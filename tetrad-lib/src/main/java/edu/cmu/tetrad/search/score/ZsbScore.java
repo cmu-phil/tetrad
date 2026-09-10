@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -80,6 +81,10 @@ public class ZsbScore implements Score, EffectiveSampleSizeSettable {
     private List<Double> lambdas;
     // The data, if it is set.
     private Matrix data;
+    // True if each family's residual variance is computed on the rows complete on that family (test-wise deletion);
+    // set when the data set has missing values, as in EbicScore. Before 2026-9 this was hard-wired false, so a data
+    // set with missing values produced a NaN covariance matrix and NaN scores.
+    private boolean calculateRowSubsets = false;
     // Singularity lambda
     private double lambda = 0.0;
     private int nEff;
@@ -107,8 +112,21 @@ public class ZsbScore implements Score, EffectiveSampleSizeSettable {
      * @param precomputeCovariances a boolean
      */
     public ZsbScore(DataSet dataSet, boolean precomputeCovariances) {
-        this(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
+        if (dataSet == null) {
+            throw new NullPointerException();
+        }
+
+        this.variables = dataSet.getVariables();
+        this.sampleSize = dataSet.getNumRows();
+        setEffectiveSampleSize(-1);
         this.data = dataSet.getDoubleData();
+
+        if (!dataSet.existsMissingValue()) {
+            setCovariances(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
+            this.calculateRowSubsets = false;
+        } else {
+            this.calculateRowSubsets = true;
+        }
     }
 
     private static double zhangShenLambda(int m0, double pn, double riskBound) {
@@ -145,9 +163,6 @@ public class ZsbScore implements Score, EffectiveSampleSizeSettable {
      */
     public double localScore(int i, int... parents) {
         int pn = variables.size() - 1;
-
-        // True if row subsets should be calculated.
-        boolean calculateRowSubsets = false;
 
         if (this.estMaxParents == null) {
             this.estMaxParents = new int[variables.size()];
@@ -337,7 +352,15 @@ public class ZsbScore implements Score, EffectiveSampleSizeSettable {
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed from a data set with missing values, each family's residual variance is computed on the rows
+     * complete on that family (the full effective sample size is kept in the likelihood term, as in SemBicScore).
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
 }
-
-
-

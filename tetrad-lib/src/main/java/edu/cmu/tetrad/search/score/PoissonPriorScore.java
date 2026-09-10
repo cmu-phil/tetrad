@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -288,7 +289,16 @@ public class PoissonPriorScore implements Score, EffectiveSampleSizeSettable {
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed from a data set with missing values, each family's residual variance is computed on the
+     * rows complete on that family (SemBicScore's row-subset path; the full effective sample size is kept in the
+     * likelihood term). The score can also be built from an EM-estimated covariance matrix.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
 }
-
-
-

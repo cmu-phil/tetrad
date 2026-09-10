@@ -70,7 +70,7 @@ public class RffBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "RFF BIC Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "RFF BIC Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.RffBicScore score;

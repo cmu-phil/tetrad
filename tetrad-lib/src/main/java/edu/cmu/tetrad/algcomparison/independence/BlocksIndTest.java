@@ -89,8 +89,8 @@ public class BlocksIndTest implements BlockIndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        BlockSpec blockSpec = MissingDataUtils.gate(this.blockSpec, parameters, "Blocks-Test");
-        IndTestBlocksWilkes test = new IndTestBlocksWilkes(blockSpec);
+        BlockSpec blockSpec = MissingDataUtils.gate(this.blockSpec, parameters, java.util.Set.of("testwise"), "Blocks-Test");
+        IndTestBlocksWilkes test = new IndTestBlocksWilkes(blockSpec, MissingDataUtils.fromParameters(parameters));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         return test;
     }

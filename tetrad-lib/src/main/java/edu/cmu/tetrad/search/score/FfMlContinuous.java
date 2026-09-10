@@ -1,10 +1,10 @@
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
@@ -433,7 +433,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
      * <p>
      * If mFeatures > d, rows are generated in blocks of size d; orthogonality holds within each block.
      */
-    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd) {
+    private static double[][] sampleOrthogonalW(int mFeatures, int d, double wStd, java.util.Random rng) {
         double[][] W = new double[mFeatures][d];
         if (d <= 0) return W;
 
@@ -447,7 +447,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             double[][] Q = new double[block][d];
             for (int i = 0; i < block; i++) {
                 for (int j = 0; j < d; j++) {
-                    Q[i][j] = RandomUtil.getInstance().nextGaussian();
+                    Q[i][j] = rng.nextGaussian();
                 }
             }
 
@@ -468,7 +468,7 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
             // Step 3: scale each row by chi(d) radius (approximate Gaussian row norm)
             for (int i = 0; i < block; i++) {
-                double r = chiRadius(d);     // ~ ||N(0,I_d)||
+                double r = chiRadius(d, rng);     // ~ ||N(0,I_d)||
 
                 double s = wStd * r;
                 int outRow = filled + i;
@@ -486,10 +486,10 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
     /**
      * Radius r ~ chi(d) via sqrt(sum_k g_k^2), g_k ~ N(0,1).
      */
-    private static double chiRadius(int d) {
+    private static double chiRadius(int d, java.util.Random rng) {
         double ss = 0.0;
         for (int k = 0; k < d; k++) {
-            double g = RandomUtil.getInstance().nextGaussian();
+            double g = rng.nextGaussian();
             ss += g * g;
         }
         return TMath.sqrt(TMath.max(1e-18, ss));
@@ -895,8 +895,12 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
         // Sample W (m x d) and b (m)
         // Store as [m][d] for fast dot(row,d) per feature.
+        // Changes from the pre-2026-9 implementation: the draws came from the global RandomUtil, so two
+        // instances on identical data gave different scores and the 'seed' argument had no effect. They now
+        // come from a local generator seeded by 'seed', as the class contract states.
         double[][] W;
         double[] b;
+        final java.util.Random rng = new java.util.Random(mix64(seed));
 
         if (featureType == FeatureType.RFF) {
 
@@ -905,16 +909,16 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
             for (int j = 0; j < mFeatures; j++) {
                 for (int k = 0; k < d; k++) {
-                    W[j][k] = wStd * RandomUtil.getInstance().nextGaussian();
+                    W[j][k] = wStd * rng.nextGaussian();
                 }
-                b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else if (featureType == FeatureType.ORF) {
-            W = sampleOrthogonalW(mFeatures, d, wStd);
+            W = sampleOrthogonalW(mFeatures, d, wStd, rng);
 
             b = new double[mFeatures];
             for (int j = 0; j < mFeatures; j++) {
-                b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+                b[j] = 2.0 * TMath.PI * rng.nextDouble();
             }
         } else {
             throw new IllegalArgumentException("featureType must be RFF or ORF");
@@ -1122,8 +1126,9 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
 
         final ConcurrentHashMap<Long, double[]> cache = phaseCacheRef.get();
         return cache.computeIfAbsent(key, k -> {
+            java.util.Random rng = new java.util.Random(mix64(k));
             double[] b = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            for (int j = 0; j < mFeatures; j++) b[j] = 2.0 * TMath.PI * rng.nextDouble();
             return b;
         });
     }
@@ -1133,8 +1138,9 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
         final ConcurrentHashMap<Long, double[]> cache = omegaCacheRef.get();
 
         return cache.computeIfAbsent(key, k -> {
+            java.util.Random rng = new java.util.Random(mix64(k));
             double[] g = new double[mFeatures];
-            for (int j = 0; j < mFeatures; j++) g[j] = RandomUtil.getInstance().nextGaussian(); // N(0,1)
+            for (int j = 0; j < mFeatures; j++) g[j] = rng.nextGaussian(); // N(0,1)
             return g;
         });
     }
@@ -1152,19 +1158,32 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
             return 1.0;
         }
 
-        // Use first m rows (or all if smaller) for bandwidth estimation; deterministic.
-        int m = TMath.min(nEff, bwMaxRows);
-        m = TMath.max(5, m);
+        // Use the first m rows (or all if smaller) for bandwidth estimation; deterministic. With missing values,
+        // the rows are the first m that are complete on every variable of the design (before 2026-9 NaN entries
+        // entered the pairwise distances and shifted the median).
+        int[] design = new int[d];
+        {
+            int col = 0;
+            for (int v = 0; v < p; v++) if (v != child) design[col++] = v;
+        }
+        int[] candidates = calculateRowSubsets ? validRows(design) : null;
+        int available = candidates == null ? nEff : candidates.length;
+
+        int m = TMath.min(available, bwMaxRows);
+        m = TMath.max(TMath.min(5, available), m);
+        if (m < 3) {
+            childBw2Cache[child] = 1.0;
+            return 1.0;
+        }
 
         double[][] Z = new double[m][d];
 
-        int col = 0;
-        for (int v = 0; v < p; v++) {
-            if (v == child) continue;
+        for (int col = 0; col < d; col++) {
+            int v = design[col];
             for (int r = 0; r < m; r++) {
-                Z[r][col] = zCols[v][r]; // assumes no missing; if missing-heavy, you can add a local validRows subset here
+                int row = candidates == null ? r : candidates[r];
+                Z[r][col] = zCols[v][row];
             }
-            col++;
         }
 
         bw2 = medianDistanceSquaredND(Z, m);
@@ -1274,5 +1293,16 @@ public final class FfMlContinuous implements Score, EffectiveSampleSizeSettable 
          * in high-dimensional data transformations.
          */
         ORF
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: each local score is computed on the rows complete on the child and its parents (the
+     * pre-existing row-subset path, now declared).
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }
