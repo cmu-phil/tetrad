@@ -95,14 +95,14 @@ public final class AdequacyReport implements TetradSerializable {
         StringBuilder sb = new StringBuilder();
         sb.append("DAG Adequacy Report\n\n");
 
-        sb.append("Mean improvement over baseline: ")
+        sb.append("Mean training improvement over marginal baseline (R² for continuous, nats for discrete): ")
                 .append(meanImprovement).append("\n");
         sb.append("Fraction nodes improved: ")
                 .append(fracNodesImproved).append("\n");
         sb.append("Global MMD^2 (real vs simulated): ")
                 .append(String.format("mmd2 = %.3e%n", mmd2)).append("\n\n");
 
-        sb.append("Per-node heldout improvement:\n");
+        sb.append("Per-node training improvement (in-sample; see CVReport for held-out):\n");
         for (NodeAdequacySummary s : nodeSummaries) {
             sb.append("  ").append(s.node)
                     .append("  improvement=").append(s.improvement)

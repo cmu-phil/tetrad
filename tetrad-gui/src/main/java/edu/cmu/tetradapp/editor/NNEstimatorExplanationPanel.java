@@ -74,12 +74,14 @@ final class NNEstimatorExplanationPanel {
             <h2>The status line at the bottom</h2>
 
             <p>After a fit, the footer reports the sample size of the resimulation, the whole-table MMD squared
-            between observed and resimulated data, the mean per-node improvement over a baseline, and the
-            fraction of nodes that improved at all. Two cautions. First, the per-node improvement is measured on
-            the training rows, not on held-out rows, so it is optimistic; the Cross-Validation tab gives the
-            honest version. Second, this MMD squared is computed on standardized data, while the MMD squared
-            values on the other two tabs are computed on the raw scale, so do not compare a footer value with a
-            tab value.</p>
+            between observed and resimulated data on standardized variables, and the fraction of resimulated
+            rows in which some mechanism was asked to extrapolate: a simulated parent value more than four
+            training standard deviations from its training mean. When that fraction is more than a few
+            percent, expect tails on the right side of the plot tab that the data never had; the network has
+            no idea what to do out there. Until you run cross-validation the footer also shows how many nodes
+            beat their marginal baseline on the training rows, which is optimistic; once cross-validation has
+            run, the held-out summary takes its place. The MMD squared values in the footer and in the
+            Cross-Validation tab are both computed on standardized data, so they can be compared.</p>
 
             <h2>Tab: Observed vs. Resimulated</h2>
 

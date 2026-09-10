@@ -90,6 +90,15 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
      */
     private final List<NodeReport> nodeReports = Collections.synchronizedList(new ArrayList<>());
 
+    /**
+     * Set while {@link #withReducedParents} refits a single mechanism, so that
+     * the refit does not append a report to this simulator's list. Without
+     * this, every edge-strength or partial-strength computation would leave a
+     * report behind on the fitted or fold simulator it was derived from.
+     */
+    private static final ThreadLocal<Boolean> SUPPRESS_NODE_REPORTS =
+            ThreadLocal.withInitial(() -> false);
+
     // -------------------- fit reporting --------------------
     /**
      * A final variable representing a DataSet object.
@@ -203,17 +212,22 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
                 new InputEncoder(data, reducedParentIndices, params.maxDiscreteLevels);
 
         Mechanism reduced;
-        if (!isDiscrete[nodeIndex]) {
-            ContinuousMechanism cm = new ContinuousMechanism(
-                    nodeIndex, reducedParentIndices, reducedEncoder, initRng);
-            cm.fit(data, fitRng, params);
-            reduced = cm;
-        } else {
-            int L = ((DiscreteVariable) variables.get(nodeIndex)).getNumCategories();
-            DiscreteMechanism dm = new DiscreteMechanism(
-                    nodeIndex, reducedParentIndices, reducedEncoder, L, initRng);
-            dm.fit(data, fitRng, params);
-            reduced = dm;
+        SUPPRESS_NODE_REPORTS.set(true);
+        try {
+            if (!isDiscrete[nodeIndex]) {
+                ContinuousMechanism cm = new ContinuousMechanism(
+                        nodeIndex, reducedParentIndices, reducedEncoder, initRng);
+                cm.fit(data, fitRng, params);
+                reduced = cm;
+            } else {
+                int L = ((DiscreteVariable) variables.get(nodeIndex)).getNumCategories();
+                DiscreteMechanism dm = new DiscreteMechanism(
+                        nodeIndex, reducedParentIndices, reducedEncoder, L, initRng);
+                dm.fit(data, fitRng, params);
+                reduced = dm;
+            }
+        } finally {
+            SUPPRESS_NODE_REPORTS.set(false);
         }
 
         hybridMechanisms[nodeIndex] = reduced;
@@ -544,121 +558,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
     }
 
     /**
-     * Fits a single-input MLP regression of {@code rVals} ~ {@code xVals} using
-     * k-fold cross-validation and returns the OOS R².
-     *
-     * <p>Used by {@link NNEstimator#computePartialEdgeStrength} to measure how
-     * much a single parent X explains in the residuals R = Y − Ŷ, after the
-     * other parents have already been accounted for by the fitted mechanism.
-     *
-     * <p>Uses the same {@link MlpRegressor} and training hyperparameters as the
-     * main fit, keeping the residual regression consistent with the primary model.
-     *
-     * @param xVals  observed values of the parent variable (length n)
-     * @param rVals  residuals R = Y − Ŷ (length n); NaN entries are skipped
-     * @param k      number of CV folds
-     * @param seed   random seed for weight initialization and fold shuffling
-     * @return OOS R² of the residual regression; NaN if insufficient data
-     */
-    public double fitResidualRegressionOosR2(double[] xVals, double[] rVals,
-                                             int k, long seed) {
-        // Collect valid (finite) rows.
-        List<Integer> valid = new ArrayList<>();
-        for (int i = 0; i < xVals.length; i++) {
-            if (Double.isFinite(xVals[i]) && Double.isFinite(rVals[i]))
-                valid.add(i);
-        }
-
-        int nValid = valid.size();
-        if (nValid < k * 2) return Double.NaN;   // too few rows
-
-        // Baseline: variance of residuals (denominator for R²).
-        double sum = 0, sum2 = 0;
-        for (int i : valid) { sum += rVals[i]; sum2 += rVals[i] * rVals[i]; }
-        double mean    = sum / nValid;
-        double residVar = (sum2 - nValid * mean * mean) / (nValid - 1);
-        if (!Double.isFinite(residVar) || residVar <= 0) return Double.NaN;
-
-        // Shuffle valid indices for CV.
-        int[] order = valid.stream().mapToInt(Integer::intValue).toArray();
-        Random rng = new Random(seed);
-        for (int i = nValid - 1; i > 0; i--) {
-            int j = rng.nextInt(i + 1);
-            int t = order[i]; order[i] = order[j]; order[j] = t;
-        }
-
-        int foldSize = nValid / k;
-        double totalSse = 0.0;
-        int    totalN   = 0;
-
-        int[] layers = params.getHiddenLayers();
-
-        for (int fold = 0; fold < k; fold++) {
-            int testStart = fold * foldSize;
-            int testEnd   = (fold == k - 1) ? nValid : testStart + foldSize;
-
-            // Build encoded train/test arrays — single continuous input, z-scored.
-            // Compute mean/sd of X on training rows only.
-            double xSum = 0, xSum2 = 0;
-            int xCount = 0;
-            for (int vi = 0; vi < nValid; vi++) {
-                if (vi >= testStart && vi < testEnd) continue;
-                double x = xVals[order[vi]];
-                xSum += x; xSum2 += x * x; xCount++;
-            }
-            double xMean = (xCount > 0) ? xSum / xCount : 0.0;
-            double xVar  = (xCount > 1)
-                    ? (xSum2 - xCount * xMean * xMean) / (xCount - 1) : 1.0;
-            double xSd   = TMath.sqrt(TMath.max(1e-12, xVar));
-
-            int trainN = nValid - (testEnd - testStart);
-            int testN  = testEnd - testStart;
-
-            double[][] Xtr = new double[trainN][1];
-            double[]   Ytr = new double[trainN];
-            double[][] Xte = new double[testN][1];
-            double[]   Yte = new double[testN];
-
-            int ti = 0, vi2 = 0;
-            for (int vi = 0; vi < nValid; vi++) {
-                double xz = (xVals[order[vi]] - xMean) / xSd;
-                double r  = rVals[order[vi]];
-                if (vi >= testStart && vi < testEnd) {
-                    Xte[vi2][0] = xz; Yte[vi2] = r; vi2++;
-                } else {
-                    Xtr[ti][0]  = xz; Ytr[ti]  = r; ti++;
-                }
-            }
-
-            // Fit MLP on training fold.
-            MlpRegressor mlp = new MlpRegressor(1, layers,
-                    new Random(mixSeed(seed, fold, 0xCAFEBABEL)));
-
-            int[]   idx = new int[trainN];
-            for (int i = 0; i < trainN; i++) idx[i] = i;
-
-            for (int ep = 0; ep < params.epochs; ep++) {
-                shuffleIndices(idx, new Random(mixSeed(seed, fold * 1000 + ep, 0L)));
-                for (int start = 0; start < trainN; start += params.batchSize) {
-                    int end = TMath.min(trainN, start + params.batchSize);
-                    mlp.sgdStep(Xtr, Ytr, idx, start, end, params.lr, params.l2);
-                }
-            }
-
-            // Evaluate on test fold.
-            for (int i = 0; i < testN; i++) {
-                double pred = mlp.predict(Xte[i]);
-                double err  = Yte[i] - pred;
-                totalSse += err * err;
-                totalN++;
-            }
-        }
-
-        double oosMse = (totalN > 0) ? totalSse / totalN : Double.NaN;
-        return Double.isFinite(oosMse) ? 1.0 - oosMse / residVar : Double.NaN;
-    }
-
-    /**
      * Simulates data by generating continuous and discrete values for all variables in the
      * trained directed acyclic graph (DAG) model. It performs the simulation using a specified
      * number of samples and a seed for random number generation.
@@ -787,21 +686,36 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         Map<String, Integer> indexByName = new HashMap<>();
         for (int j = 0; j < variables.size(); j++) indexByName.put(variables.get(j).getName(), j);
 
+        // Support tracking: before each child is generated, how far its
+        // continuous parents' simulated values sit from the training range,
+        // in training z-units. Counted per variable and per row.
+        long[] exceed1 = new long[p];
+        long[] exceed2 = new long[p];
+        long rowsExceed1 = 0;
+        double zWarn1 = params.zWarn1, zWarn2 = params.zWarn2;
+
         for (int r = 0; r < nSamples; r++) {
+            boolean rowFlag = false;
             for (Node child : topo) {
                 Integer idx = indexByName.get(child.getName());
                 if (idx == null) continue;
                 Mechanism mech = mechanisms[idx];
                 if (mech == null) continue;
+                double z = mech.encoder.maxAbsParentZ(cont[r]);
+                if (z > zWarn1) { exceed1[idx]++; rowFlag = true; }
+                if (z > zWarn2) exceed2[idx]++;
                 mech.generateOneRow(data, cont[r], disc[r], rng);
             }
+            if (rowFlag) rowsExceed1++;
         }
 
-        return new SimResult(cont, disc, variables, dag);
+        return new SimResult(cont, disc, variables, dag,
+                exceed1, exceed2, nSamples, zWarn1, zWarn2, rowsExceed1);
     }
 
     private void addNodeReportContinuous(int childIdx, int[] parentIdx, int trainingRowsUsed,
                                          double mse, double residMean, double residSd) {
+        if (SUPPRESS_NODE_REPORTS.get()) return;
         String childName = variables.get(childIdx).getName();
         List<String> parents = new ArrayList<>();
         for (int pi : parentIdx) parents.add(variables.get(pi).getName());
@@ -821,6 +735,7 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
     private void addNodeReportDiscrete(int childIdx, int[] parentIdx, int trainingRowsUsed,
                                        double xent, int numLevels) {
+        if (SUPPRESS_NODE_REPORTS.get()) return;
         String childName = variables.get(childIdx).getName();
         List<String> parents = new ArrayList<>();
         for (int pi : parentIdx) parents.add(variables.get(pi).getName());
@@ -1262,6 +1177,20 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
          * @param discRow An array containing the discrete input variables for the current row.
          * @param out An array where the encoded output will be stored. It must be preallocated with the correct size.
          */
+        /**
+         * Largest |z| among this node's continuous parents for an already
+         * generated row, using the training mean and SD of each parent.
+         * Returns 0 if there are no continuous parents.
+         */
+        double maxAbsParentZ(double[] contRow) {
+            double best = 0.0;
+            for (int k = 0; k < contParents.length; k++) {
+                double z = TMath.abs((contRow[contParents[k]] - mean[k]) / sd[k]);
+                if (z > best) best = z;
+            }
+            return best;
+        }
+
         void encodeFromGenerated(double[] contRow, int[] discRow, double[] out) {
             Arrays.fill(out, 0.0);
 
@@ -1914,12 +1843,19 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
          */
         public final double zWarn2;
 
+        /**
+         * Number of simulated rows in which at least one node's continuous
+         * parents exceeded {@link #zWarn1} in training z-units, i.e. rows where
+         * some mechanism was asked to extrapolate.
+         */
+        public final long rowsExceedWarn1;
+
         // Backwards-compatible ctor (same shape as your current code expects)
         SimResult(double[][] cont, int[][] disc, List<Node> variables, Graph trueDag) {
             this(cont, disc, variables, trueDag,
                     null, null,
                     cont != null ? cont.length : 0L,
-                    Double.NaN, Double.NaN);
+                    Double.NaN, Double.NaN, 0L);
         }
 
         // Extended ctor (use if you track warnings in simulate())
@@ -1931,7 +1867,9 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
                   long[] zExceedWarn2,
                   long nSamples,
                   double zWarn1,
-                  double zWarn2) {
+                  double zWarn2,
+                  long rowsExceedWarn1) {
+            this.rowsExceedWarn1 = rowsExceedWarn1;
             this.cont = cont;
             this.disc = disc;
             this.variables = new ArrayList<>(variables);
@@ -1965,7 +1903,9 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             sb.append("bootstrapRoots=").append(bootstrapRoots).append("\n");
 
             if (Double.isFinite(zWarn1) && Double.isFinite(zWarn2)) {
-                sb.append("zWarn1=").append(zWarn1).append(" zWarn2=").append(zWarn2).append("\n\n");
+                sb.append("zWarn1=").append(zWarn1).append(" zWarn2=").append(zWarn2).append("\n");
+                sb.append("rows with any parent |z| > zWarn1: ").append(rowsExceedWarn1)
+                        .append(" of ").append(nSamples).append("\n\n");
                 sb.append("Support warnings (fraction of rows where max|z(parent)| exceeds thresholds)\n");
 
                 long denom = TMath.max(1L, nSamples);

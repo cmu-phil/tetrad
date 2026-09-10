@@ -45,6 +45,9 @@ public final class TrainedDagAdequacy {
             TrainedDagSimulatorGNM simulator,
             AdequacyParams params) {
 
+        // Baselines must be on the raw scale, because the simulator's training
+        // MSE / cross-entropy are on the raw scale. Only MMD² uses standardized data.
+        DataSet rawReal = real;
         real = DataTransforms.standardizeData(real);
         simulated = DataTransforms.standardizeData(simulated);
 
@@ -59,7 +62,7 @@ public final class TrainedDagAdequacy {
             boolean isRoot = (r.parents == null || r.parents.isEmpty());
 
             double holdout = r.discreteChild ? r.xentTrain : r.mseTrain;
-            double baseline = estimateBaseline(real, r);
+            double baseline = estimateBaseline(rawReal, r);
 
             double improvement;
 
@@ -68,17 +71,23 @@ public final class TrainedDagAdequacy {
                 if (!Double.isFinite(holdout) && Double.isFinite(baseline)) holdout = baseline;
                 if (!Double.isFinite(baseline) && Double.isFinite(holdout)) baseline = holdout;
             } else if (Double.isFinite(holdout) && Double.isFinite(baseline)) {
-                improvement = baseline - holdout;
+                // Continuous: training R² = 1 − MSE / var(Y), scale-free.
+                // Discrete: entropy − training cross-entropy, in nats.
+                improvement = r.discreteChild
+                        ? baseline - holdout
+                        : (baseline > 0 ? (baseline - holdout) / baseline : Double.NaN);
             } else {
                 improvement = Double.NaN;
             }
 
             NodeAdequacySummary s = new NodeAdequacySummary(
-                    r.node, r.discreteChild, r.parents, holdout, baseline);
+                    r.node, r.discreteChild, r.parents, holdout, baseline, improvement);
 
             summaries.add(s);
 
-            if (Double.isFinite(improvement)) {
+            // Roots have no parents and improvement 0 by construction; leave
+            // them out of the tally so it matches the CV report's non-root count.
+            if (!isRoot && Double.isFinite(improvement)) {
                 totalImprovement += improvement;
                 count++;
                 if (improvement > 0) improved++;

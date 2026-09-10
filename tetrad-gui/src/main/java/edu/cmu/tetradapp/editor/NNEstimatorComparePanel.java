@@ -135,7 +135,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         if (existingCv != null) {
             cvTableModel.setReport(existingCv);
             cvSummaryLabel.setText(existingCv.toStatusLine());
-            status.setText(existingCv.toStatusLine());
+            refreshAdequacyStatus(model);
         }
 
         // ── Restore persisted edge-strength results ───────────────────────────
@@ -371,7 +371,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                         CVReport report = get();
                         cvTableModel.setReport(report);
                         cvSummaryLabel.setText(report != null ? report.toStatusLine() : " ");
-                        status.setText(report != null ? report.toStatusLine() : "CV complete.");
+                        refreshAdequacyStatus(model);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         cvSummaryLabel.setText("Cross-validation interrupted.");
@@ -664,13 +664,26 @@ public final class NNEstimatorComparePanel extends JPanel {
                     + "before running CV or computing edge strengths.");
             return;
         }
-        status.setText(String.format(
-                "n = %d  |  MMD² = %.4f  |  Mean node improvement = %.4f"
-                        + "  |  Nodes improved = %.0f%%",
-                model.getSampleSize(),
-                report.getMmd2(),
-                report.getMeanImprovement(),
-                report.getFracImproved() * 100.0));
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("n = %d  |  MMD² = %.4f", model.getSampleSize(), report.getMmd2()));
+
+        double extrap = model.getExtrapolationFraction();
+        if (Double.isFinite(extrap)) {
+            sb.append(String.format("  |  Extrapolating rows = %.1f%%", extrap * 100.0));
+        }
+
+        CVReport cv = model.getCvReport();
+        if (cv != null) {
+            sb.append("  |  ").append(cv.toStatusLine());
+        } else {
+            sb.append(String.format("  |  Training fit (in-sample): %.0f%% of nodes beat marginal",
+                    report.getFracImproved() * 100.0));
+        }
+        status.setText(sb.toString());
+        status.setToolTipText("MMD² is on standardized data. Extrapolating rows: fraction of "
+                + "resimulated rows where some parent lay more than 4 training SDs from its "
+                + "training mean. Run Cross-Validation for held-out fit; until then the fit "
+                + "shown is on the training rows.");
     }
 
     // ── CV table styling ──────────────────────────────────────────────────────

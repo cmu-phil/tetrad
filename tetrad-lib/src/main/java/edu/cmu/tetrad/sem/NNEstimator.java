@@ -89,6 +89,13 @@ public final class NNEstimator implements TetradSerializable {
      */
     private CVReport cvReport;
 
+    /**
+     * Fraction of rows in the most recent simulation in which some node's
+     * continuous parents fell more than {@code zWarn1} training SDs from their
+     * training mean; NaN until {@link #simulate} is called.
+     */
+    private double lastExtrapolationFraction = Double.NaN;
+
     // ── constructors ─────────────────────────────────────────────────────────
 
     /**
@@ -139,10 +146,32 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
-     * Converts a DataSet to a double matrix for MMD² computation.
-     * Discrete variables are represented by their integer code cast to double.
+     * Mean and SD of each continuous column (SD floored at a small positive
+     * value); discrete columns get mean 0 and SD 1 so their codes pass through.
      */
-    private static double[][] toMatrix(DataSet data, List<Node> variables) {
+    private static void columnMoments(DataSet data, List<Node> variables, double[] mu, double[] sd) {
+        int n = data.getNumRows();
+        for (int j = 0; j < variables.size(); j++) {
+            if (variables.get(j) instanceof DiscreteVariable) { mu[j] = 0.0; sd[j] = 1.0; continue; }
+            double sum = 0, sum2 = 0; int c = 0;
+            for (int i = 0; i < n; i++) {
+                double v = data.getDouble(i, j);
+                if (!Double.isFinite(v)) continue;
+                sum += v; sum2 += v * v; c++;
+            }
+            double m = c > 0 ? sum / c : 0.0;
+            double var = c > 1 ? (sum2 - c * m * m) / (c - 1) : 1.0;
+            mu[j] = m;
+            sd[j] = TMath.sqrt(TMath.max(var, 1e-12));
+        }
+    }
+
+    /**
+     * Converts a DataSet to a double matrix for MMD² computation, standardizing
+     * each continuous column with the supplied moments.
+     */
+    private static double[][] toStandardizedMatrix(DataSet data, List<Node> variables,
+                                                   double[] mu, double[] sd) {
         int n = data.getNumRows();
         int p = variables.size();
         double[][] out = new double[n][p];
@@ -150,7 +179,7 @@ public final class NNEstimator implements TetradSerializable {
             for (int j = 0; j < p; j++) {
                 out[i][j] = (variables.get(j) instanceof DiscreteVariable)
                         ? TrainedDagSimulatorGNM.safeGetInt(data, i, j)
-                        : data.getDouble(i, j);
+                        : (data.getDouble(i, j) - mu[j]) / sd[j];
             }
         }
         return out;
@@ -180,6 +209,8 @@ public final class NNEstimator implements TetradSerializable {
         TrainedDagSimulatorGNM.SimResult result = fittedSimulator.simulate(sampleSize);
         simulatedData = result.toDataSet();
         simulatedData.setName("Simulated");
+        lastExtrapolationFraction = result.nSamples > 0
+                ? result.rowsExceedWarn1 / (double) result.nSamples : Double.NaN;
 
         adequacyReport = TrainedDagAdequacy.mmd2(
                 observedData,
@@ -288,11 +319,16 @@ public final class NNEstimator implements TetradSerializable {
             }
 
             // ── Whole-graph OOS MMD² ──────────────────────────────────────────────
+            // Both blocks are standardized with the training fold's mean and SD,
+            // so the value is on the same scale as the footer's MMD² and is
+            // comparable across datasets. Discrete codes are left as is.
             try {
                 TrainedDagSimulatorGNM.SimResult simResult = sim.simulate(testN);
                 DataSet simTest = simResult.toDataSet();
-                double[][] X = toMatrix(testSet, variables);
-                double[][] Y = toMatrix(simTest, variables);
+                double[] mu = new double[p], sdv = new double[p];
+                columnMoments(fm.train[fold], variables, mu, sdv);
+                double[][] X = toStandardizedMatrix(testSet, variables, mu, sdv);
+                double[][] Y = toStandardizedMatrix(simTest, variables, mu, sdv);
                 double mmd2 = RandomFeatureMMD.compute(
                         X, Y,
                         params.mmdFeatures,
@@ -475,6 +511,18 @@ public final class NNEstimator implements TetradSerializable {
      */
     public AdequacyReport getAdequacyReport() {
         return adequacyReport;
+    }
+
+    /**
+     * Returns the fraction of rows in the most recent simulation where at
+     * least one mechanism was asked to extrapolate: some continuous parent lay
+     * more than the GNM's {@code zWarn1} training SDs from its training mean.
+     * Such rows are where resimulated tails the data never had come from.
+     *
+     * @return the extrapolation fraction, or NaN if nothing has been simulated
+     */
+    public double getLastExtrapolationFraction() {
+        return lastExtrapolationFraction;
     }
 
     // ── private helpers ──────────────────────────────────────────────────────

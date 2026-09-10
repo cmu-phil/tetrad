@@ -208,6 +208,16 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
     }
 
     /**
+     * Returns the fraction of rows in the most recent resimulation in which
+     * some mechanism was asked to extrapolate beyond its training range.
+     *
+     * @return the extrapolation fraction, or NaN if nothing has been simulated
+     */
+    public double getExtrapolationFraction() {
+        return estimator == null ? Double.NaN : estimator.getLastExtrapolationFraction();
+    }
+
+    /**
      * Returns the CV report from the most recent {@link #runCrossValidate}
      * call, preferring the live estimator copy and falling back to the
      * persisted copy after a session reload.
