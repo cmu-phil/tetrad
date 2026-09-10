@@ -259,9 +259,57 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
 
     private NNEstimatorParams buildParams() {
         NNEstimatorParams p = new NNEstimatorParams();
-        p.seed = System.nanoTime();
+        NNEstimatorParams d = new NNEstimatorParams();
+        p.seed = parameters.getBoolean(RANDOMIZE_SEED, false)
+                ? System.nanoTime()
+                : parameters.getLong(SEED, DEFAULT_SEED);
+        p.hidden             = parameters.getInt(HIDDEN, d.hidden);
+        p.epochs             = parameters.getInt(EPOCHS, d.epochs);
+        p.lr                 = parameters.getDouble(LEARNING_RATE, d.lr);
+        p.l2                 = parameters.getDouble(WEIGHT_DECAY, d.l2);
+        p.mmdFeatures        = parameters.getInt(MMD_FEATURES, d.mmdFeatures);
+        p.edgeDrawsPerConfig = parameters.getInt(EDGE_DRAWS_PER_CONFIG, d.edgeDrawsPerConfig);
+        p.edgeRepeats        = parameters.getInt(EDGE_REPEATS, d.edgeRepeats);
+        p.edgeNullRefits     = parameters.getInt(EDGE_NULL_REFITS, d.edgeNullRefits);
+        p.shuffleFolds       = parameters.getBoolean(SHUFFLE_FOLDS, d.shuffleFolds);
         return p;
     }
+
+    /**
+     * Returns the session parameters this model reads.
+     *
+     * @return the parameters object shared with the params editor
+     */
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    // ── parameter keys (read by buildParams, written by NNEstimatorParamsEditor) ──
+
+    /** Long. Seed for training, simulation, folds, and edge strength. */
+    public static final String SEED = "nnSeed";
+    /** Default seed; fixed so two NN Estimator boxes on the same data are comparable. */
+    public static final long DEFAULT_SEED = 42L;
+    /** Boolean. If true, a fresh time-based seed is used on every resimulate. */
+    public static final String RANDOMIZE_SEED = "nnRandomizeSeed";
+    /** Integer. Hidden units per node network. */
+    public static final String HIDDEN = "nnHidden";
+    /** Integer. Training epochs per node. */
+    public static final String EPOCHS = "nnEpochs";
+    /** Double. SGD learning rate. */
+    public static final String LEARNING_RATE = "nnLearningRate";
+    /** Double. L2 weight decay. */
+    public static final String WEIGHT_DECAY = "nnWeightDecay";
+    /** Integer. Random Fourier features for MMD². */
+    public static final String MMD_FEATURES = "nnMmdFeatures";
+    /** Integer. Child draws per parent configuration in edge strength. */
+    public static final String EDGE_DRAWS_PER_CONFIG = "nnEdgeDrawsPerConfig";
+    /** Integer. Independent repeats of each edge-strength computation. */
+    public static final String EDGE_REPEATS = "nnEdgeRepeats";
+    /** Integer. Refits for the refit-noise null; 0 to skip. */
+    public static final String EDGE_NULL_REFITS = "nnEdgeNullRefits";
+    /** Boolean. Shuffle rows before cutting CV folds. */
+    public static final String SHUFFLE_FOLDS = "nnShuffleFolds";
 
     // ── nested types ──────────────────────────────────────────────────────────
 

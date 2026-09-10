@@ -385,6 +385,16 @@ public final class NNEstimator implements TetradSerializable {
         DataSet[] test  = new DataSet[k];
         TrainedDagSimulatorGNM[] sims = new TrainedDagSimulatorGNM[k];
 
+        // Row order used for blocking: file order, or a seeded permutation.
+        int[] order = IntStream.range(0, n).toArray();
+        if (params.shuffleFolds) {
+            Random shuffleRng = new Random(params.seed ^ 0x5F01D5L);
+            for (int i = n - 1; i > 0; i--) {
+                int j = shuffleRng.nextInt(i + 1);
+                int t = order[i]; order[i] = order[j]; order[j] = t;
+            }
+        }
+
         IntStream.range(0, k).parallel().forEach(fold -> {
             int testStart = fold * foldSize;
             int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
@@ -394,9 +404,10 @@ public final class NNEstimator implements TetradSerializable {
             int[] trainRows = new int[trainN];
             int[] testRows  = new int[testN];
             int ti = 0, vi = 0;
-            for (int r = 0; r < n; r++) {
-                if (r >= testStart && r < testEnd) testRows[vi++] = r;
-                else                               trainRows[ti++] = r;
+            for (int pos = 0; pos < n; pos++) {
+                int r = order[pos];
+                if (pos >= testStart && pos < testEnd) testRows[vi++] = r;
+                else                                   trainRows[ti++] = r;
             }
             train[fold] = rowSubset(observedData, trainRows);
             test[fold]  = rowSubset(observedData, testRows);
@@ -489,7 +500,8 @@ public final class NNEstimator implements TetradSerializable {
 
     /**
      * Computes the intervention strength of a single edge (parentName → childName)
-     * in the sense of Janzing et al. (2013) and DoWhy's {@code arrow_strength}.
+     * in the sense of Janzing et al. (2013) and DoWhy's {@code arrow_strength},
+     * with a Monte Carlo error bar and a refit-noise null.
      *
      * <p>The child's fitted mechanism is held fixed; nothing is retrained. For
      * each of {@code numConfigs} parent configurations, sampled with
@@ -499,6 +511,16 @@ public final class NNEstimator implements TetradSerializable {
      * parent's slot replaced by an independent draw from that parent's observed
      * marginal. The two conditional distributions are compared and the result
      * averaged over configurations.
+     *
+     * <p>That whole pass is repeated {@code edgeRepeats} times with fresh
+     * configurations, noise, and randomized values; the reported measures are
+     * the means over repeats and their standard deviations are reported
+     * alongside. Separately, a refit-noise null is computed once per child and
+     * shared by all edges into it: the child's mechanism is retrained with the
+     * <em>same</em> parents under {@code edgeNullRefits} new seeds, and the same
+     * conditional MMD² is measured between original and refit. An edge whose
+     * MMD² does not clear that band is not distinguishable from training noise;
+     * see {@link EdgeStrengthResult#isAboveNoise()}.
      *
      * <p>Because the mechanism is not refit, this measures how much the
      * mechanism <em>uses</em> the parent, not whether the parent is predictively
@@ -524,7 +546,7 @@ public final class NNEstimator implements TetradSerializable {
      * @param parentName name of the parent variable (tail of the edge)
      * @param childName  name of the child variable (head of the edge)
      * @param numConfigs number of observed parent configurations to average
-     *                   over; larger = more stable (suggest a few hundred)
+     *                   over per repeat; larger = more stable (suggest a few hundred)
      * @return an {@link EdgeStrengthResult}
      * @throws IllegalStateException    if {@link #fit()} has not been called
      * @throws IllegalArgumentException if the edge does not exist, either
@@ -539,6 +561,7 @@ public final class NNEstimator implements TetradSerializable {
         if (numConfigs < 1)
             throw new IllegalArgumentException("numConfigs must be >= 1");
         int m = Math.max(2, params.edgeDrawsPerConfig);
+        int reps = Math.max(1, params.edgeRepeats);
 
         // ── Validate edge ─────────────────────────────────────────────────────
         Node parentNode = findVariable(parentName);
@@ -550,13 +573,124 @@ public final class NNEstimator implements TetradSerializable {
         boolean isDisc = (childNode instanceof DiscreteVariable);
 
         List<Node> variables = observedData.getVariables();
-        int p = variables.size();
         Map<String, Integer> indexByName = new HashMap<>();
-        for (int j = 0; j < p; j++) indexByName.put(variables.get(j).getName(), j);
+        for (int j = 0; j < variables.size(); j++) indexByName.put(variables.get(j).getName(), j);
         int childIdx  = indexByName.get(childName);
         int parentIdx = indexByName.get(parentName);
-        boolean parentIsDisc = fittedSimulator.isDiscreteVariable(parentIdx);
 
+        double childVar = isDisc ? Double.NaN : columnVariance(observedData, childIdx);
+
+        // ── Repeats of the intervention pass ──────────────────────────────────
+        double[] mmd = new double[reps], dv = new double[reps], kl = new double[reps];
+        for (int r = 0; r < reps; r++) {
+            PassResult pr = conditionalPass(parentIdx, childIdx, numConfigs, m,
+                    fittedSimulator, true, r);
+            mmd[r] = pr.mmd2(); dv[r] = pr.dVar(); kl[r] = pr.klBits();
+        }
+        double mmd2 = mean(mmd), mmd2Sd = sd(mmd);
+        double dVar = isDisc ? Double.NaN : mean(dv);
+        double dVarFrac = (!isDisc && Double.isFinite(dVar) && Double.isFinite(childVar) && childVar > 0)
+                ? dVar / childVar : Double.NaN;
+        double dVarFracSd = (!isDisc && Double.isFinite(childVar) && childVar > 0)
+                ? sd(dv) / childVar : Double.NaN;
+        double klBits = isDisc ? mean(kl) : Double.NaN;
+        double klBitsSd = isDisc ? sd(kl) : Double.NaN;
+
+        // ── Refit-noise null for this child (cached, shared by its edges) ─────
+        NullBand nb = getNullBand(childIdx, numConfigs, m);
+
+        return new EdgeStrengthResult(
+                parentName, childName, isDisc,
+                mmd2, mmd2Sd,
+                dVar, dVarFrac, dVarFracSd,
+                klBits, klBitsSd,
+                numConfigs, m, reps,
+                nb.mean, nb.sd, nb.refits);
+    }
+
+    /** Result of one conditional pass over parent configurations. */
+    private record PassResult(double mmd2, double dVar, double klBits) {}
+
+    /** Refit-noise null for one child: MMD² between original and same-parent refits. */
+    private record NullBand(double mean, double sd, int refits) {}
+
+    /** Cached null bands keyed by child index. Not serialized. */
+    private transient Map<Integer, NullBand> nullBands;
+
+    /** Per-child locks so concurrent edges into one child compute its null once. */
+    private transient Map<Integer, Object> nullLocks;
+
+    /**
+     * Returns the refit-noise null for a child, computing and caching it on
+     * first use. With {@code edgeNullRefits == 0} the band is NaN. Concurrent
+     * callers for the same child wait for the first computation rather than
+     * repeating it.
+     */
+    private NullBand getNullBand(int childIdx, int numConfigs, int m) {
+        int refits = Math.max(0, params.edgeNullRefits);
+        if (refits == 0) return new NullBand(Double.NaN, Double.NaN, 0);
+
+        Object lock;
+        synchronized (this) {
+            if (nullBands == null) nullBands = new HashMap<>();
+            if (nullLocks == null) nullLocks = new HashMap<>();
+            NullBand cached = nullBands.get(childIdx);
+            if (cached != null) return cached;
+            lock = nullLocks.computeIfAbsent(childIdx, k -> new Object());
+        }
+
+        synchronized (lock) {
+            synchronized (this) {
+                NullBand cached = nullBands.get(childIdx);
+                if (cached != null) return cached;
+            }
+
+            List<Node> variables = observedData.getVariables();
+            Map<String, Integer> indexByName = new HashMap<>();
+            for (int j = 0; j < variables.size(); j++) indexByName.put(variables.get(j).getName(), j);
+            Node childNode = variables.get(childIdx);
+            int[] allParents = dag.getParents(childNode).stream()
+                    .mapToInt(q -> indexByName.get(q.getName())).toArray();
+
+            double[] vals = new double[refits];
+            for (int j = 0; j < refits; j++) {
+                long refitSeed = params.seed ^ mixEdgeSeed(childIdx, 1000 + j);
+                TrainedDagSimulatorGNM refit =
+                        fittedSimulator.withReducedParents(childIdx, allParents, refitSeed);
+                // Same conditional pass, but condition B is the refit with no
+                // randomization; the parent-slot argument is unused.
+                PassResult pr = conditionalPass(childIdx, childIdx, numConfigs, m,
+                        refit, false, 500 + j);
+                vals[j] = pr.mmd2();
+            }
+            NullBand nb = new NullBand(mean(vals), sd(vals), refits);
+            synchronized (this) {
+                nullBands.put(childIdx, nb);
+            }
+            return nb;
+        }
+    }
+
+    /**
+     * One pass over sampled parent configurations. Condition A draws the
+     * child from the fitted simulator with the configuration as is. Condition
+     * B draws it from {@code simB}; if {@code randomizeParent}, the parent's
+     * slot is replaced by an independent observed value before each draw.
+     * The two conditions share noise seeds so the comparison is coupled.
+     *
+     * @param seedMix distinguishes repeats; different values sample different
+     *                configurations and noise
+     */
+    private PassResult conditionalPass(int parentIdx, int childIdx, int numConfigs, int m,
+                                       TrainedDagSimulatorGNM simB, boolean randomizeParent,
+                                       long seedMix) {
+        List<Node> variables = observedData.getVariables();
+        int p = variables.size();
+        Node childNode = variables.get(childIdx);
+        boolean isDisc = fittedSimulator.isDiscreteVariable(childIdx);
+        boolean parentIsDisc = fittedSimulator.isDiscreteVariable(parentIdx);
+        Map<String, Integer> indexByName = new HashMap<>();
+        for (int j = 0; j < p; j++) indexByName.put(variables.get(j).getName(), j);
         int[] parentCols = dag.getParents(childNode).stream()
                 .mapToInt(q -> indexByName.get(q.getName())).toArray();
 
@@ -576,41 +710,42 @@ public final class NNEstimator implements TetradSerializable {
         }
         if (usable.isEmpty())
             throw new IllegalArgumentException(
-                    "No observed row has all parents of " + childName + " present.");
+                    "No observed row has all parents of " + childNode.getName() + " present.");
 
         // ── Pool of independent parent values (observed marginal of X) ────────
         double[] xPoolCont = null;
         int[]    xPoolDisc = null;
-        if (parentIsDisc) {
-            xPoolDisc = IntStream.range(0, n)
-                    .map(r -> TrainedDagSimulatorGNM.safeGetInt(observedData, r, parentIdx))
-                    .filter(v -> v >= 0).toArray();
-        } else {
-            xPoolCont = IntStream.range(0, n)
-                    .mapToDouble(r -> observedData.getDouble(r, parentIdx))
-                    .filter(Double::isFinite).toArray();
+        if (randomizeParent) {
+            if (parentIsDisc) {
+                xPoolDisc = IntStream.range(0, n)
+                        .map(r -> TrainedDagSimulatorGNM.safeGetInt(observedData, r, parentIdx))
+                        .filter(v -> v >= 0).toArray();
+                if (xPoolDisc.length == 0)
+                    throw new IllegalArgumentException("No observed values for " + variables.get(parentIdx).getName() + ".");
+            } else {
+                xPoolCont = IntStream.range(0, n)
+                        .mapToDouble(r -> observedData.getDouble(r, parentIdx))
+                        .filter(Double::isFinite).toArray();
+                if (xPoolCont.length == 0)
+                    throw new IllegalArgumentException("No observed values for " + variables.get(parentIdx).getName() + ".");
+            }
         }
-        if ((parentIsDisc && xPoolDisc.length == 0) || (!parentIsDisc && xPoolCont.length == 0))
-            throw new IllegalArgumentException("No observed values for " + parentName + ".");
 
-        // ── Child scale, for standardizing MMD² and ΔVar ──────────────────────
-        double childVar = Double.NaN, childSd = 1.0;
+        // ── Child scale, for standardizing MMD² ───────────────────────────────
+        double childSd = 1.0;
         if (!isDisc) {
-            childVar = columnVariance(observedData, childIdx);
-            if (Double.isFinite(childVar) && childVar > 0) childSd = TMath.sqrt(childVar);
+            double v = columnVariance(observedData, childIdx);
+            if (Double.isFinite(v) && v > 0) childSd = TMath.sqrt(v);
         }
 
         // ── Main loop over configurations ─────────────────────────────────────
-        // Two RNG streams: one for the child's noise (shared by both conditions,
-        // so the comparison is coupled), one for selecting configurations and
-        // the randomized parent values.
-        long base = params.seed ^ mixEdgeSeed(parentIdx, childIdx);
+        long base = params.seed ^ mixEdgeSeed(parentIdx, childIdx) ^ (seedMix * 0x9E3779B97F4A7C15L);
         Random selRng = new Random(base ^ 0xA5A5A5A5A5A5A5A5L);
 
         double[] contRow = new double[p];
         int[]    discRow = new int[p];
-        double[][] drawsFull = new double[m][1];
-        double[][] drawsCut  = new double[m][1];
+        double[][] drawsA = new double[m][1];
+        double[][] drawsB = new double[m][1];
 
         double sumMmd2 = 0.0, sumDVar = 0.0, sumKlBits = 0.0;
         int    countMmd = 0,  countDVar = 0, countKl = 0;
@@ -620,33 +755,35 @@ public final class NNEstimator implements TetradSerializable {
             fittedSimulator.fillRowFromData(observedData, row, contRow, discRow);
             long noiseSeed = base ^ ((long) c * 0x9E3779B97F4A7C15L);
 
-            // Condition A: configuration as observed.
-            double[] pFull = null;
-            if (isDisc) pFull = fittedSimulator.childProbsGiven(childIdx, contRow, discRow);
+            // Condition A: configuration as observed, fitted simulator.
+            double[] pA = null;
+            if (isDisc) pA = fittedSimulator.childProbsGiven(childIdx, contRow, discRow);
             Random rngA = new Random(noiseSeed);
             for (int i = 0; i < m; i++) {
                 fittedSimulator.generateChild(childIdx, contRow, discRow, rngA);
-                drawsFull[i][0] = isDisc ? discRow[childIdx] : contRow[childIdx] / childSd;
+                drawsA[i][0] = isDisc ? discRow[childIdx] : contRow[childIdx] / childSd;
             }
 
-            // Condition B: parent slot replaced by an independent draw each time.
+            // Condition B: simB, with the parent slot randomized if requested.
             Random rngB = new Random(noiseSeed);
             double klAcc = 0.0; int klN = 0;
             for (int i = 0; i < m; i++) {
-                if (parentIsDisc) discRow[parentIdx] = xPoolDisc[selRng.nextInt(xPoolDisc.length)];
-                else              contRow[parentIdx] = xPoolCont[selRng.nextInt(xPoolCont.length)];
+                if (randomizeParent) {
+                    if (parentIsDisc) discRow[parentIdx] = xPoolDisc[selRng.nextInt(xPoolDisc.length)];
+                    else              contRow[parentIdx] = xPoolCont[selRng.nextInt(xPoolCont.length)];
+                }
                 if (isDisc) {
-                    double[] pCut = fittedSimulator.childProbsGiven(childIdx, contRow, discRow);
-                    double kl = klDivergenceBits(pFull, pCut);
+                    double[] pB = simB.childProbsGiven(childIdx, contRow, discRow);
+                    double kl = klDivergenceBits(pA, pB);
                     if (Double.isFinite(kl)) { klAcc += kl; klN++; }
                 }
-                fittedSimulator.generateChild(childIdx, contRow, discRow, rngB);
-                drawsCut[i][0] = isDisc ? discRow[childIdx] : contRow[childIdx] / childSd;
+                simB.generateChild(childIdx, contRow, discRow, rngB);
+                drawsB[i][0] = isDisc ? discRow[childIdx] : contRow[childIdx] / childSd;
             }
 
             // ── Per-configuration measures ────────────────────────────────────
             double mmd2 = RandomFeatureMMD.compute(
-                    drawsFull, drawsCut,
+                    drawsA, drawsB,
                     params.mmdFeatures,
                     params.mmdSeed ^ c,
                     1.0,
@@ -654,26 +791,34 @@ public final class NNEstimator implements TetradSerializable {
             if (Double.isFinite(mmd2)) { sumMmd2 += mmd2; countMmd++; }
 
             if (!isDisc) {
-                double vFull = sampleVariance(drawsFull) * childSd * childSd;
-                double vCut  = sampleVariance(drawsCut)  * childSd * childSd;
-                if (Double.isFinite(vFull) && Double.isFinite(vCut)) {
-                    sumDVar += (vCut - vFull); countDVar++;
+                double vA = sampleVariance(drawsA) * childSd * childSd;
+                double vB = sampleVariance(drawsB) * childSd * childSd;
+                if (Double.isFinite(vA) && Double.isFinite(vB)) {
+                    sumDVar += (vB - vA); countDVar++;
                 }
             } else if (klN > 0) {
                 sumKlBits += klAcc / klN; countKl++;
             }
         }
 
-        double mmd2 = countMmd > 0 ? sumMmd2 / countMmd : Double.NaN;
-        double dVar = (!isDisc && countDVar > 0) ? sumDVar / countDVar : Double.NaN;
-        double dVarFrac = (!isDisc && Double.isFinite(dVar) && Double.isFinite(childVar) && childVar > 0)
-                ? dVar / childVar : Double.NaN;
-        double klBits = (isDisc && countKl > 0) ? sumKlBits / countKl : Double.NaN;
+        return new PassResult(
+                countMmd  > 0 ? sumMmd2   / countMmd  : Double.NaN,
+                countDVar > 0 ? sumDVar   / countDVar : Double.NaN,
+                countKl   > 0 ? sumKlBits / countKl   : Double.NaN);
+    }
 
-        return new EdgeStrengthResult(
-                parentName, childName, isDisc,
-                mmd2, dVar, dVarFrac, klBits,
-                numConfigs, m);
+    private static double mean(double[] v) {
+        double s = 0; int n = 0;
+        for (double x : v) if (Double.isFinite(x)) { s += x; n++; }
+        return n > 0 ? s / n : Double.NaN;
+    }
+
+    private static double sd(double[] v) {
+        double mu = mean(v);
+        if (!Double.isFinite(mu)) return Double.NaN;
+        double s = 0; int n = 0;
+        for (double x : v) if (Double.isFinite(x)) { s += (x - mu) * (x - mu); n++; }
+        return n > 1 ? TMath.sqrt(s / (n - 1)) : Double.NaN;
     }
 
     private static long mixEdgeSeed(int parentIdx, int childIdx) {
@@ -873,7 +1018,11 @@ public final class NNEstimator implements TetradSerializable {
 
     private TrainedDagSimulatorGNM buildSimulator(DataSet data, long seed) {
         TrainedDagSimulatorGNM.Params gnmParams = new TrainedDagSimulatorGNM.Params();
-        gnmParams.seed = seed;
+        gnmParams.seed   = seed;
+        gnmParams.hidden = params.hidden;
+        gnmParams.epochs = params.epochs;
+        gnmParams.lr     = params.lr;
+        gnmParams.l2     = params.l2;
         return new TrainedDagSimulatorGNM(data, dag, gnmParams);
     }
 

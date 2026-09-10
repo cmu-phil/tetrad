@@ -247,7 +247,9 @@ public final class NNEstimatorComparePanel extends JPanel {
                 "<html><i>"
                         + "MMD², ΔVar/Var(Y) and KL: intervention strength — the child's fitted mechanism is held "
                         + "fixed and the parent's input is replaced by an independent draw, averaged over "
-                        + "observed parent configurations (DoWhy arrow strength). "
+                        + "observed parent configurations (DoWhy arrow strength); ± SD is across repeats. "
+                        + "Null MMD²: what retraining the child with the same parents produces; gray italic = "
+                        + "not above that band. "
                         + "Partial: held-out R² (or cross-entropy) gain from the parent after controlling for the "
                         + "other parents, on the same folds as the Cross-Validation tab — "
                         + "positive (green/bold) = the parent adds information beyond them. "
@@ -488,7 +490,9 @@ public final class NNEstimatorComparePanel extends JPanel {
                                         edgeResultLabel.setText(
                                                 "Strongest overall: "
                                                         + strongest.edge().toSummaryLine()));
-                        status.setText("All edge strengths computed.");
+                        long above = results.stream().filter(p -> p.edge().isAboveNoise()).count();
+                        status.setText("All edge strengths computed: " + above + " of "
+                                + results.size() + " above the refit-noise band.");
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         edgeProgressLabel.setText("Interrupted.");
@@ -727,7 +731,17 @@ public final class NNEstimatorComparePanel extends JPanel {
                 setHorizontalAlignment(modelCol == EdgeStrengthTableModel.COL_EDGE
                         ? SwingConstants.LEFT : SwingConstants.RIGHT);
 
-                if (modelCol == EdgeStrengthTableModel.COL_PARTIAL
+                int modelRow = table.convertRowIndexToModel(row);
+                boolean aboveNoise = edgeTableModel.isAboveNoise(modelRow);
+                setToolTipText(null);
+
+                if ((modelCol == EdgeStrengthTableModel.COL_MMD2
+                     || modelCol == EdgeStrengthTableModel.COL_NULL) && !aboveNoise) {
+                    setForeground(Color.GRAY);
+                    setFont(getFont().deriveFont(Font.ITALIC));
+                    setToolTipText("MMD² is within the refit-noise band for this child: "
+                            + "not distinguishable from training randomness.");
+                } else if (modelCol == EdgeStrengthTableModel.COL_PARTIAL
                         && value instanceof String s && !s.equals("—")) {
                     try {
                         double v = Double.parseDouble(s);
@@ -815,15 +829,22 @@ public final class NNEstimatorComparePanel extends JPanel {
     private static final class EdgeStrengthTableModel extends AbstractTableModel {
 
         private static final String[] COLUMNS =
-                {"Edge", "MMD²", "ΔVar/Var(Y) / KL (bits)",
-                        "Partial ΔR² / Xent Improv.", "Type", "Configs"};
+                {"Edge", "MMD²", "± SD", "Null MMD²", "ΔVar/Var(Y) / KL (bits)",
+                        "Partial ΔR² / Xent Improv.", "Type", "Configs × reps"};
 
         static final int COL_EDGE    = 0;
         static final int COL_MMD2    = 1;
-        static final int COL_DELTA   = 2;
-        static final int COL_PARTIAL = 3;
-        static final int COL_TYPE    = 4;
-        static final int COL_N       = 5;
+        static final int COL_MMD2_SD = 2;
+        static final int COL_NULL    = 3;
+        static final int COL_DELTA   = 4;
+        static final int COL_PARTIAL = 5;
+        static final int COL_TYPE    = 6;
+        static final int COL_N       = 7;
+
+        /** Whether the row's MMD² clears its refit-noise band; used by the renderer. */
+        boolean isAboveNoise(int row) {
+            return rows.get(row).edge().isAboveNoise();
+        }
 
         private record EdgeRow(EdgeStrengthResult edge,
                                PartialEdgeStrengthResult partial) {}
@@ -845,8 +866,13 @@ public final class NNEstimatorComparePanel extends JPanel {
             EdgeStrengthResult        e = er.edge();
             PartialEdgeStrengthResult p = er.partial();
             return switch (col) {
-                case COL_EDGE  -> e.parentName + " \u2192 " + e.childName;
-                case COL_MMD2  -> fmt(e.mmd2);
+                case COL_EDGE    -> e.parentName + " \u2192 " + e.childName;
+                case COL_MMD2    -> fmt(e.mmd2);
+                case COL_MMD2_SD -> fmt(e.mmd2Sd);
+                case COL_NULL    -> Double.isFinite(e.nullMmd2)
+                        ? fmt(e.nullMmd2) + (Double.isFinite(e.nullMmd2Sd)
+                                             ? " ± " + fmt(e.nullMmd2Sd) : "")
+                        : "—";
                 case COL_DELTA -> e.discreteChild
                         ? fmt(e.klDivBits) + " bits"
                         : fmt(e.varianceDiffFrac);
@@ -859,7 +885,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                                ? fmt(p.partialR2) : "—");
                 }
                 case COL_TYPE -> e.discreteChild ? "Discrete" : "Continuous";
-                case COL_N    -> e.simulatedN;
+                case COL_N    -> e.simulatedN + " × " + e.numRepeats;
                 default -> "";
             };
         }

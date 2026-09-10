@@ -1106,6 +1106,9 @@
                 <model-class>edu.cmu.tetradapp.model.NNEstimatorModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.NNEstimatorEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.NNEstimatorParamsEditor
+                </params-editor-class>
             </model>
         </models>
         <display-component image="estimatorIcon.gif"/>

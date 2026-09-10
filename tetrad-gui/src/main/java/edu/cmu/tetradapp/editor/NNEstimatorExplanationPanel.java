@@ -43,7 +43,7 @@ final class NNEstimatorExplanationPanel {
      * that it lays out the same on every platform.
      */
     private static final String HTML = """
-            <html><body style="font-family: sans-serif; font-size: 11pt; margin: 12px;">
+            <html><body style="font-family: sans-serif; font-size: 14pt; margin: 14px; line-height: 1.35;">
 
             <h2>What this tool is</h2>
 
@@ -62,9 +62,14 @@ final class NNEstimatorExplanationPanel {
 
             <p>The networks are deliberately small: one hidden layer of 48 units, trained for 200 passes over the
             data with mild weight decay. They are meant to be faithful enough to reproduce the joint distribution
-            implied by the DAG, not to win a prediction contest. Each time you press <b>Resimulate</b> the
-            estimator is refit from a fresh random seed, so two resimulations of the same data and DAG will not
-            be identical. If a number matters to you, run it more than once and see whether it moves.</p>
+            implied by the DAG, not to win a prediction contest. The layer size, epochs, learning rate, and
+            weight decay can be changed in the node's parameter dialog.</p>
+
+            <p>Fitting is seeded. By default the seed is fixed, so pressing <b>Resimulate</b> again gives the
+            same result, and two NN Estimator boxes on the same data and DAG give the same numbers, which is
+            what you want when comparing DAGs. To see how much a number moves under a different fit, change
+            the seed in the parameter dialog, or tick <b>Randomize the seed</b> there and resimulate a few
+            times. If a number matters to you, do that at least once.</p>
 
             <h2>The status line at the bottom</h2>
 
@@ -120,10 +125,11 @@ final class NNEstimatorExplanationPanel {
             to learn the mechanism, or that the true relationship is one this small network cannot represent.
             It does not by itself say which.</p>
 
-            <p>One detail worth knowing: the folds are contiguous blocks of rows in file order, not random
-            draws. If your rows are in time order this is a blocked cross-validation, which is what you want
-            for serially dependent data. If your rows are sorted by some variable, each held-out block is a
-            biased slice and the numbers will be pessimistic. Shuffle the rows first in that case.</p>
+            <p>One detail worth knowing: by default the folds are contiguous blocks of rows in file order, not
+            random draws. If your rows are in time order this is a blocked cross-validation, which is what you
+            want for serially dependent data. If your rows are sorted by some variable, each held-out block is
+            a biased slice and the numbers will be pessimistic. In that case turn on <b>Shuffle rows before
+            cutting folds</b> in the parameter dialog; the permutation uses the seed, so it is reproducible.</p>
 
             <h2>Tab: Edge Strength</h2>
 
@@ -131,7 +137,7 @@ final class NNEstimatorExplanationPanel {
             questions are answered, and it matters which one you are reading.</p>
 
             <p><b>Intervention measures</b> (MMD squared, delta variance, KL) answer: how much does Y's fitted
-            mechanism actually use X? Nothing is retrained. For each of a number of observed parent
+            mechanism actually use X? Nothing is retrained for the measure itself. For each of a number of observed parent
             configurations, set by the <b>Parent configs</b> spinner, the tool draws Y many times from the
             mechanism with the configuration as observed, and many times again with X's input replaced by an
             independent draw from X's own distribution, everything else held fixed. The two sets of draws are
@@ -143,6 +149,18 @@ final class NNEstimatorExplanationPanel {
             linear mechanism it is the coefficient squared times the variance of X, divided by the variance of
             Y. For a discrete Y, <b>KL divergence</b> in bits measures how far the class probabilities move when
             X is randomized.</p>
+
+            <p>Two more columns keep these numbers honest. <b>Plus or minus SD</b> is the spread of MMD squared
+            across independent repeats of the whole computation, each with fresh configurations and draws;
+            the number of repeats is a parameter. MMD squared is the noisier of the measures, typically a
+            tenth or so of its value; the variance-based measure is far more stable, so use it for ranking
+            when the two disagree. <b>Null MMD squared</b> is the refit-noise band: Y's mechanism is retrained
+            with the <i>same</i> parents under a few new seeds, and the same conditional MMD squared is measured
+            between the original and each refit. That is how much the fitted conditional moves from training
+            randomness alone. An edge whose MMD squared does not clear the null mean plus two null standard
+            deviations is shown in gray italics, and the status line counts how many edges clear it. The
+            band is per child and shared by all edges into that child. It is a rough threshold, not a test;
+            with only a few refits the standard deviation is itself uncertain.</p>
 
             <p><b>The partial measure</b> answers a different question: does X add anything to held-out
             prediction of Y once Y's other parents are known? It uses the same k folds as the
@@ -213,8 +231,9 @@ final class NNEstimatorExplanationPanel {
               <li>Run Compute All on the Edge Strength tab. Sort by the partial column for edges you could
               drop; sort by MMD squared for edges the model leans on. Edges near zero on both are the
               candidates for removal; check whether removing them hurts cross-validation.</li>
-              <li>Resimulate once or twice more and confirm that whatever you concluded survives a change of
-              seed.</li>
+              <li>Change the seed in the parameter dialog, resimulate, and confirm that whatever you concluded
+              survives a different fit. The plus-or-minus and null columns tell you what to expect from
+              Monte Carlo and training noise; a different seed tells you what the fit itself does.</li>
             </ol>
 
             </body></html>

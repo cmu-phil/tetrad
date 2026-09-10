@@ -102,6 +102,25 @@ public class NNEstimatorPartialStrengthTest {
     }
 
     @Test
+    public void testShuffledFoldsAreReproducibleAndSensible() {
+        DataSet d = linear(1, 1500, 2.0, 1.0, -1);
+        NNEstimatorParams p = new NNEstimatorParams();
+        p.seed = 7L;
+        p.shuffleFolds = true;
+        NNEstimator a = new NNEstimator(d, collider(d.getVariables()), p);
+        NNEstimator b = new NNEstimator(d, collider(d.getVariables()), p);
+        a.fit();
+        b.fit();
+        CVReport ra = a.crossValidate(5);
+        CVReport rb = b.crossValidate(5);
+        double r2a = Double.NaN, r2b = Double.NaN;
+        for (NodeCVSummary s : ra.nodeSummaries) if (s.node.equals("Y")) r2a = s.oosR2;
+        for (NodeCVSummary s : rb.nodeSummaries) if (s.node.equals("Y")) r2b = s.oosR2;
+        assertEquals("same seed, same permutation, same result (up to parallel summation order)", r2a, r2b, 1e-9);
+        assertEquals("shuffled folds on iid rows should give R² near 5/6", 5.0 / 6.0, r2a, 0.08);
+    }
+
+    @Test
     public void testRedundantParentHasNearZeroPartial() {
         DataSet d = linear(2, 1500, 1.0, 1.0, 0.05);
         NNEstimator est = fitted(d, collider(d.getVariables()));

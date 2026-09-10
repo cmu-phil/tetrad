@@ -22,6 +22,12 @@ import java.io.Serial;
  * {@link NNEstimator#computePartialEdgeStrength}, which asks whether the
  * parent adds held-out predictive information beyond the other parents.
  *
+ * <p>Each measure is the mean over {@link #numRepeats} independent passes,
+ * with the standard deviation across passes reported alongside. A
+ * refit-noise null ({@link #nullMmd2}) gives the MMD² that training
+ * randomness alone produces for this child; {@link #isAboveNoise()} compares
+ * the edge to it.
+ *
  * <p>Three measures are reported:
  * <ul>
  *   <li><b>MMD²</b> — mean over configurations of the Maximum Mean
@@ -59,6 +65,9 @@ public final class EdgeStrengthResult implements TetradSerializable {
      */
     public final double mmd2;
 
+    /** Standard deviation of {@link #mmd2} across repeats; NaN if one repeat. */
+    public final double mmd2Sd;
+
     /**
      * Mean over parent configurations of
      * var(Y | pa, X randomized) − var(Y | pa), in the child's units squared.
@@ -72,6 +81,9 @@ public final class EdgeStrengthResult implements TetradSerializable {
      */
     public final double varianceDiffFrac;
 
+    /** Standard deviation of {@link #varianceDiffFrac} across repeats; NaN if one repeat or discrete. */
+    public final double varianceDiffFracSd;
+
     /**
      * Mean over configurations and randomized draws of
      * KL(P(Y | pa) ‖ P(Y | pa, X randomized)) in bits.
@@ -79,8 +91,12 @@ public final class EdgeStrengthResult implements TetradSerializable {
      */
     public final double klDivBits;
 
+    /** Standard deviation of {@link #klDivBits} across repeats; NaN if one repeat or continuous. */
+    public final double klDivBitsSd;
+
     /**
-     * Number of observed parent configurations the measures were averaged over.
+     * Number of observed parent configurations the measures were averaged over,
+     * per repeat.
      */
     public final int simulatedN;
 
@@ -90,26 +106,71 @@ public final class EdgeStrengthResult implements TetradSerializable {
      */
     public final int drawsPerConfig;
 
+    /** Number of independent repeats the means and SDs are taken over. */
+    public final int numRepeats;
+
+    /**
+     * Refit-noise null: mean over refits of the same conditional MMD² between
+     * the child's original mechanism and a refit with the same parents under a
+     * new seed. This is the MMD² that training randomness alone produces.
+     * Shared by all edges into this child. NaN if no refits were run.
+     */
+    public final double nullMmd2;
+
+    /** Standard deviation of {@link #nullMmd2} across refits; NaN if fewer than two. */
+    public final double nullMmd2Sd;
+
+    /** Number of refits the null is based on; 0 if skipped. */
+    public final int nullRefits;
+
     // ── constructor ───────────────────────────────────────────────────────────
 
     EdgeStrengthResult(String parentName,
                        String childName,
                        boolean discreteChild,
                        double mmd2,
+                       double mmd2Sd,
                        double varianceDiff,
                        double varianceDiffFrac,
+                       double varianceDiffFracSd,
                        double klDivBits,
+                       double klDivBitsSd,
                        int simulatedN,
-                       int drawsPerConfig) {
-        this.parentName       = parentName;
-        this.childName        = childName;
-        this.discreteChild    = discreteChild;
-        this.mmd2             = mmd2;
-        this.varianceDiff     = varianceDiff;
-        this.varianceDiffFrac = varianceDiffFrac;
-        this.klDivBits        = klDivBits;
-        this.simulatedN       = simulatedN;
-        this.drawsPerConfig   = drawsPerConfig;
+                       int drawsPerConfig,
+                       int numRepeats,
+                       double nullMmd2,
+                       double nullMmd2Sd,
+                       int nullRefits) {
+        this.parentName         = parentName;
+        this.childName          = childName;
+        this.discreteChild      = discreteChild;
+        this.mmd2               = mmd2;
+        this.mmd2Sd             = mmd2Sd;
+        this.varianceDiff       = varianceDiff;
+        this.varianceDiffFrac   = varianceDiffFrac;
+        this.varianceDiffFracSd = varianceDiffFracSd;
+        this.klDivBits          = klDivBits;
+        this.klDivBitsSd        = klDivBitsSd;
+        this.simulatedN         = simulatedN;
+        this.drawsPerConfig     = drawsPerConfig;
+        this.numRepeats         = numRepeats;
+        this.nullMmd2           = nullMmd2;
+        this.nullMmd2Sd         = nullMmd2Sd;
+        this.nullRefits         = nullRefits;
+    }
+
+    /**
+     * Whether the edge's MMD² clears the refit-noise band: the null mean plus
+     * two null standard deviations (or just the null mean if only one refit
+     * was run). If no null was computed this returns {@code true}, because
+     * there is nothing to compare against, not because the edge is strong.
+     *
+     * @return true if the intervention MMD² is above the refit-noise band
+     */
+    public boolean isAboveNoise() {
+        if (!Double.isFinite(nullMmd2)) return true;
+        double band = nullMmd2 + (Double.isFinite(nullMmd2Sd) ? 2.0 * nullMmd2Sd : 0.0);
+        return mmd2 > band;
     }
 
     // ── display ───────────────────────────────────────────────────────────────
@@ -120,14 +181,19 @@ public final class EdgeStrengthResult implements TetradSerializable {
      * @return a formatted summary line
      */
     public String toSummaryLine() {
+        String sd = Double.isFinite(mmd2Sd) ? String.format(" ± %.4f", mmd2Sd) : "";
+        String nul = Double.isFinite(nullMmd2)
+                ? String.format("  |  null MMD² = %.4f%s", nullMmd2,
+                isAboveNoise() ? "" : " (not above noise)")
+                : "";
         if (!discreteChild) {
             return String.format(
-                    "%s → %s  |  MMD² = %.4f  |  ΔVar/Var(Y) = %.4f  (configs = %d)",
-                    parentName, childName, mmd2, varianceDiffFrac, simulatedN);
+                    "%s → %s  |  MMD² = %.4f%s  |  ΔVar/Var(Y) = %.4f%s  (configs = %d × %d)",
+                    parentName, childName, mmd2, sd, varianceDiffFrac, nul, simulatedN, numRepeats);
         } else {
             return String.format(
-                    "%s → %s  |  MMD² = %.4f  |  KL = %.4f bits  (configs = %d)",
-                    parentName, childName, mmd2, klDivBits, simulatedN);
+                    "%s → %s  |  MMD² = %.4f%s  |  KL = %.4f bits%s  (configs = %d × %d)",
+                    parentName, childName, mmd2, sd, klDivBits, nul, simulatedN, numRepeats);
         }
     }
 

@@ -92,6 +92,8 @@ public class NNEstimatorEdgeStrengthTest {
         DataSet d = linear(1, 2500, 2.0, 1.0, -1);
         NNEstimatorParams p = new NNEstimatorParams();
         p.seed = 7L;
+        p.edgeRepeats = 1;
+        p.edgeNullRefits = 0;
         NNEstimator est = new NNEstimator(d, collider(d.getVariables()), p);
         est.fit();
 
@@ -115,12 +117,59 @@ public class NNEstimatorEdgeStrengthTest {
         DataSet d = linear(1, 1500, 2.0, 1.0, -1);
         NNEstimatorParams p = new NNEstimatorParams();
         p.seed = 7L;
+        p.edgeRepeats = 2;
+        p.edgeNullRefits = 1;
         NNEstimator est = new NNEstimator(d, collider(d.getVariables()), p);
         est.fit();
         EdgeStrengthResult a = est.computeEdgeStrength("X", "Y", 100);
         EdgeStrengthResult b = est.computeEdgeStrength("X", "Y", 100);
         assertEquals(a.mmd2, b.mmd2, 0.0);
         assertEquals(a.varianceDiff, b.varianceDiff, 0.0);
+    }
+
+    @Test
+    public void testRepeatsGiveSdAndNullSeparatesZeroEdge() {
+        // Y = 2X + 0·W + e. W is a parent in the DAG with no effect.
+        DataSet d = linear(4, 2000, 2.0, 0.0, -1);
+        NNEstimatorParams p = new NNEstimatorParams();
+        p.seed = 7L;
+        p.edgeRepeats = 3;
+        p.edgeNullRefits = 3;
+        NNEstimator est = new NNEstimator(d, collider(d.getVariables()), p);
+        est.fit();
+
+        EdgeStrengthResult ex = est.computeEdgeStrength("X", "Y", 150);
+        EdgeStrengthResult ew = est.computeEdgeStrength("W", "Y", 150);
+
+        assertEquals(3, ex.numRepeats);
+        assertTrue("SD across repeats should be finite and non-negative", ex.mmd2Sd >= 0);
+        assertTrue("SD should be small relative to the mean for a strong edge, got "
+                + ex.mmd2Sd / ex.mmd2, ex.mmd2Sd < 0.5 * ex.mmd2);
+
+        assertEquals(3, ex.nullRefits);
+        assertTrue("null band should be finite", Double.isFinite(ex.nullMmd2));
+        assertEquals("null band is per child and shared by both edges into Y",
+                ex.nullMmd2, ew.nullMmd2, 0.0);
+
+        assertTrue("strong edge should clear the refit-noise band", ex.isAboveNoise());
+        assertFalse("zero-coefficient edge should not clear the band, mmd2=" + ew.mmd2
+                + " null=" + ew.nullMmd2 + "±" + ew.nullMmd2Sd, ew.isAboveNoise());
+    }
+
+    @Test
+    public void testNullCanBeSkipped() {
+        DataSet d = linear(4, 1200, 2.0, 1.0, -1);
+        NNEstimatorParams p = new NNEstimatorParams();
+        p.seed = 7L;
+        p.edgeRepeats = 1;
+        p.edgeNullRefits = 0;
+        NNEstimator est = new NNEstimator(d, collider(d.getVariables()), p);
+        est.fit();
+        EdgeStrengthResult ex = est.computeEdgeStrength("X", "Y", 100);
+        assertEquals(0, ex.nullRefits);
+        assertTrue(Double.isNaN(ex.nullMmd2));
+        assertTrue(Double.isNaN(ex.mmd2Sd));
+        assertTrue("with no null there is nothing to fail against", ex.isAboveNoise());
     }
 
     @Test
@@ -131,6 +180,8 @@ public class NNEstimatorEdgeStrengthTest {
         DataSet d = linear(2, 2500, 1.0, 1.0, 0.05);
         NNEstimatorParams p = new NNEstimatorParams();
         p.seed = 7L;
+        p.edgeRepeats = 1;
+        p.edgeNullRefits = 0;
         NNEstimator est = new NNEstimator(d, collider(d.getVariables()), p);
         est.fit();
 
