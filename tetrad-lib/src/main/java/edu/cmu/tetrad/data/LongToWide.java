@@ -286,6 +286,75 @@ public final class LongToWide {
     }
 
     /**
+     * Returns the names the wide columns would have, in order, without building the wide data set: the kept row
+     * keys (if any), then for each value variable one name per observed level of the column key. This is what
+     * {@link #apply(DataSet)} produces, and it lets an editor preview the outcome of a configuration.
+     *
+     * @param data The long-format data set.
+     * @return The wide column names.
+     * @throws IllegalArgumentException As {@link #apply(DataSet)}, for an invalid specification.
+     */
+    public List<String> columnNames(DataSet data) {
+        if (data == null) throw new NullPointerException("data == null");
+
+        List<Integer> keyCols = new ArrayList<>();
+        for (String k : this.rowKeys) keyCols.add(column(data, k));
+
+        int colKeyIdx = column(data, this.columnKey);
+        if (!(data.getVariable(colKeyIdx) instanceof DiscreteVariable colKeyVar)) {
+            throw new IllegalArgumentException("The column key '" + this.columnKey + "' must be a discrete variable.");
+        }
+
+        List<Integer> valueCols = resolveValueColumns(data, keyCols, colKeyIdx);
+
+        boolean[] levelObserved = new boolean[colKeyVar.getNumCategories()];
+        for (int i = 0; i < data.getNumRows(); i++) {
+            int level = data.getInt(i, colKeyIdx);
+            if (level >= 0 && level < levelObserved.length) levelObserved[level] = true;
+        }
+
+        List<String> names = new ArrayList<>();
+        Set<String> used = new HashSet<>();
+
+        if (this.keepRowKeys) {
+            for (int c : keyCols) names.add(uniqueName(used, data.getVariable(c).getName()));
+        }
+
+        boolean prefix = this.includeValueName || valueCols.size() > 1;
+
+        for (int vc : valueCols) {
+            String v = data.getVariable(vc).getName();
+            for (int level = 0; level < levelObserved.length; level++) {
+                if (!levelObserved[level]) continue;
+                String levelName = colKeyVar.getCategory(level);
+                levelName = this.levelNames.getOrDefault(levelName, levelName);
+                names.add(uniqueName(used, prefix ? v + this.separator + levelName : levelName));
+            }
+        }
+
+        return names;
+    }
+
+    private List<Integer> resolveValueColumns(DataSet data, List<Integer> keyCols, int colKeyIdx) {
+        List<Integer> valueCols = new ArrayList<>();
+        if (this.valueVariables.isEmpty()) {
+            for (int j = 0; j < data.getNumColumns(); j++) {
+                if (j == colKeyIdx || keyCols.contains(j)) continue;
+                valueCols.add(j);
+            }
+        } else {
+            for (String v : this.valueVariables) {
+                int j = column(data, v);
+                if (j == colKeyIdx || keyCols.contains(j)) {
+                    throw new IllegalArgumentException("Value variable '" + v + "' is also a key.");
+                }
+                valueCols.add(j);
+            }
+        }
+        return valueCols;
+    }
+
+    /**
      * Applies the transform.
      *
      * @param data The long-format data set.
@@ -306,21 +375,7 @@ public final class LongToWide {
                     + "(its levels become the column suffixes); found " + data.getVariable(colKeyIdx).getClass().getSimpleName() + ".");
         }
 
-        List<Integer> valueCols = new ArrayList<>();
-        if (this.valueVariables.isEmpty()) {
-            for (int j = 0; j < data.getNumColumns(); j++) {
-                if (j == colKeyIdx || keyCols.contains(j)) continue;
-                valueCols.add(j);
-            }
-        } else {
-            for (String v : this.valueVariables) {
-                int j = column(data, v);
-                if (j == colKeyIdx || keyCols.contains(j)) {
-                    throw new IllegalArgumentException("Value variable '" + v + "' is also a key.");
-                }
-                valueCols.add(j);
-            }
-        }
+        List<Integer> valueCols = resolveValueColumns(data, keyCols, colKeyIdx);
 
         // ---- Units (row keys, in order of first appearance) and levels (in category order, observed only) ----
         int n = data.getNumRows();
