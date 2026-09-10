@@ -153,6 +153,49 @@ public class TestLongToWide {
     }
 
     /**
+     * Level renaming and the level-only naming option, plus the short-name suggestion heuristic: common tokens
+     * dropped, distinguishing leading and trailing tokens kept, uniqueness enforced.
+     */
+    @Test
+    public void testLevelNamesAndSuggestions() {
+        java.util.Map<String, String> names = new java.util.LinkedHashMap<>();
+        names.put("Unit 1 (A)", "U1");
+        names.put("Final", "F");
+
+        DataSet w = new LongToWide("assessment", "student")
+                .setValueVariables(List.of("score"))
+                .setDefaultAggregation(LongToWide.Aggregation.MEAN)
+                .setLevelNames(names)
+                .setIncludeValueName(false)
+                .apply(longData()).wide();
+        assertEquals(List.of("U1", "Unit_2", "F"),
+                List.of(w.getVariable(0).getName(), w.getVariable(1).getName(), w.getVariable(2).getName()));
+
+        // With two value variables the value name is kept regardless of the option.
+        DataSet w2 = new LongToWide("assessment", "student")
+                .setDefaultAggregation(LongToWide.Aggregation.MEAN)
+                .setAggregation("passed", LongToWide.Aggregation.LAST)
+                .setLevelNames(names)
+                .setIncludeValueName(false)
+                .apply(longData()).wide();
+        assertEquals("score.U1", w2.getVariable(0).getName());
+        assertEquals("passed.F", w2.getVariable(5).getName());
+
+        java.util.Map<String, String> s = LongToWide.suggestShortLevelNames(List.of(
+                "Unit 01 Mastery Assessment_ Gases Report ver 1",
+                "Unit 01 Mastery Assessment_ Gases Report ver 2",
+                "Unit 02 Mastery Assessment_ Thermochemistry ver A",
+                "Unit 06 Mastery Assessments_ Kinetics ver B",
+                "Chem 1b Final Exam"), 20);
+        assertEquals("01_Gases_Report_1", s.get("Unit 01 Mastery Assessment_ Gases Report ver 1"));
+        assertEquals("01_Gases_Report_2", s.get("Unit 01 Mastery Assessment_ Gases Report ver 2"));
+        assertEquals("02_Thermochemistry_A", s.get("Unit 02 Mastery Assessment_ Thermochemistry ver A"));
+        assertEquals("06_Kinetics_B", s.get("Unit 06 Mastery Assessments_ Kinetics ver B"));
+        assertEquals("Chem_1b_Final_Exam", s.get("Chem 1b Final Exam"));
+        assertEquals(5, new java.util.HashSet<>(s.values()).size());
+    }
+
+    /**
      * A discrete value variable rejects a numeric aggregation, and an unknown variable is reported by name.
      */
     @Test

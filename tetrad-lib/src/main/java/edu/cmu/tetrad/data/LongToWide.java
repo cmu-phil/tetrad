@@ -96,6 +96,8 @@ public final class LongToWide {
     private boolean sanitizeNames = true;
     private boolean keepRowKeys = false;
     private String separator = ".";
+    private boolean includeValueName = true;
+    private final Map<String, String> levelNames = new HashMap<>();
 
     /**
      * Constructs a transform with the given row key(s) and column key. Value variables default to every other
@@ -172,6 +174,104 @@ public final class LongToWide {
     public LongToWide setKeepRowKeys(boolean keepRowKeys) {
         this.keepRowKeys = keepRowKeys;
         return this;
+    }
+
+    /**
+     * Sets short names for levels of the column key: an output column for level {@code L} uses
+     * {@code levelNames.get(L)} in place of {@code L} when present. Levels not in the map keep their own names. See
+     * {@link #suggestShortLevelNames(List, int)} for a starting point.
+     *
+     * @param levelNames Map from level (category string of the column key) to the name to use for it.
+     * @return This transform.
+     */
+    public LongToWide setLevelNames(Map<String, String> levelNames) {
+        this.levelNames.clear();
+        if (levelNames != null) this.levelNames.putAll(levelNames);
+        return this;
+    }
+
+    /**
+     * If false, and exactly one value variable is spread, output columns are named by level alone (e.g.,
+     * {@code Final} rather than {@code score.Final}). With more than one value variable the value name is always
+     * included, since the level alone would not be unique. The default is true.
+     *
+     * @param includeValueName Whether to prefix the level with the value variable's name.
+     * @return This transform.
+     */
+    public LongToWide setIncludeValueName(boolean includeValueName) {
+        this.includeValueName = includeValueName;
+        return this;
+    }
+
+    /**
+     * Suggests short, unique, sanitized names for a set of levels, for the user to edit: each level is sanitized
+     * (as by {@link #setSanitizeNames(boolean)}), split into tokens at underscores, tokens shared by more than half
+     * of the levels are dropped when at least three levels are present (so "Mastery" and "Assessment" fall away
+     * while "Unit_01" and "ver_A" stay), the remaining tokens are rejoined, and the result is truncated to
+     * {@code maxLength} characters. Names made identical by this process are disambiguated with a numeric suffix.
+     * This is a heuristic starting point, not a decision: the names should be reviewed.
+     *
+     * @param levels    The levels, in the order the columns will be produced.
+     * @param maxLength The maximum length of a suggested name (at least 4).
+     * @return A map from level to suggested name, in level order.
+     */
+    public static Map<String, String> suggestShortLevelNames(List<String> levels, int maxLength) {
+        if (levels == null) throw new NullPointerException("levels == null");
+        maxLength = Math.max(4, maxLength);
+
+        List<List<String>> tokens = new ArrayList<>();
+        Map<String, Integer> tokenCounts = new HashMap<>();
+
+        for (String level : levels) {
+            String clean = sanitize(level);
+            List<String> toks = new ArrayList<>();
+            for (String t : clean.split("_")) if (!t.isEmpty()) toks.add(t);
+            tokens.add(toks);
+            for (String t : new HashSet<>(toks)) tokenCounts.merge(t.toLowerCase(), 1, Integer::sum);
+        }
+
+        boolean dropCommon = levels.size() >= 3;
+        Map<String, String> out = new LinkedHashMap<>();
+        Set<String> used = new HashSet<>();
+
+        for (int i = 0; i < levels.size(); i++) {
+            List<String> kept = new ArrayList<>();
+            for (String t : tokens.get(i)) {
+                if (!(dropCommon && isCommon(t, tokenCounts, levels.size()))) kept.add(t);
+            }
+            if (kept.isEmpty()) kept = new ArrayList<>(tokens.get(i)); // everything was common; keep the original
+
+            // Too long: drop middle tokens, longest first, so that the leading token (often a unit or topic) and
+            // the trailing token (often a version or variant) survive; truncate only as a last resort.
+            while (String.join("_", kept).length() > maxLength && kept.size() > 2) {
+                int longest = -1;
+                for (int j = 1; j < kept.size() - 1; j++) {
+                    if (longest < 0 || kept.get(j).length() > kept.get(longest).length()) longest = j;
+                }
+                kept.remove(longest);
+            }
+
+            String name = String.join("_", kept);
+            if (name.isEmpty()) name = "level";
+            if (name.length() > maxLength) name = name.substring(0, maxLength).replaceAll("_+$", "");
+
+            String candidate = name;
+            int k = 2;
+            while (!used.add(candidate)) candidate = name + "_" + (k++);
+            out.put(levels.get(i), candidate);
+        }
+
+        return out;
+    }
+
+    /**
+     * A token is common if it, or its singular (trailing "s" removed), occurs in more than half of the levels.
+     */
+    private static boolean isCommon(String token, Map<String, Integer> tokenCounts, int numLevels) {
+        String t = token.toLowerCase();
+        int count = tokenCounts.getOrDefault(t, 0);
+        if (t.endsWith("s") && t.length() > 3) count += tokenCounts.getOrDefault(t.substring(0, t.length() - 1), 0);
+        return count * 2 > numLevels;
     }
 
     /**
@@ -291,8 +391,12 @@ public final class LongToWide {
                         + "variable '" + v.getName() + "'; use FIRST, LAST, or COUNT.");
             }
 
+            boolean prefix = this.includeValueName || valueCols.size() > 1;
+
             for (int level : levels) {
-                String name = uniqueName(usedNames, v.getName() + this.separator + colKeyVar.getCategory(level));
+                String levelName = colKeyVar.getCategory(level);
+                levelName = this.levelNames.getOrDefault(levelName, levelName);
+                String name = uniqueName(usedNames, prefix ? v.getName() + this.separator + levelName : levelName);
 
                 if (agg == Aggregation.COUNT || v instanceof ContinuousVariable) {
                     outVars.add(new ContinuousVariable(name));
@@ -430,8 +534,12 @@ public final class LongToWide {
         }
     }
 
+    private static String sanitize(String raw) {
+        return raw.trim().replaceAll("[^A-Za-z0-9_.\\-]+", "_");
+    }
+
     private String uniqueName(Set<String> used, String raw) {
-        String name = this.sanitizeNames ? raw.trim().replaceAll("[^A-Za-z0-9_.\\-]+", "_") : raw;
+        String name = this.sanitizeNames ? sanitize(raw) : raw;
         String candidate = name;
         int k = 2;
         while (!used.add(candidate)) candidate = name + "_" + (k++);
