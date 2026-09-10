@@ -91,14 +91,16 @@ public enum FindingCode {
 
     /**
      * A continuous variable is nearly a linear function of the other continuous variables (multiple R-squared above
-     * threshold), a near-faithfulness violation that destabilizes conditional independence judgments.
+     * threshold), a near-faithfulness violation that destabilizes conditional independence judgments. This is the
+     * linear member of the continuous-determiner pair; NEAR_DETERMINISM_NONLINEAR covers smooth nonlinear
+     * mechanisms and fires only where this check did not.
      */
-    NEAR_DETERMINISM_CONTINUOUS,
+    NEAR_DETERMINISM_LINEAR,
 
     /**
      * A continuous variable is nearly a smooth (generally nonlinear) function of a small set of other continuous
      * variables: the leave-one-out cross-validated R-squared of a spline regression of the variable on the set is at
-     * or above threshold, while the linear check (NEAR_DETERMINISM_CONTINUOUS) did not fire for the variable.
+     * or above threshold, while the linear check (NEAR_DETERMINISM_LINEAR) did not fire for the variable.
      * Computed or derived columns whose defining formulas are nonlinear -- for example, the FWI fire-weather indices,
      * which are exponential functions of their inputs -- are detected here and not by the linear check; the
      * cell-inspection finding (DETERMINISTIC_RELATION) covers the complementary case where the determining variables
@@ -204,7 +206,7 @@ public enum FindingCode {
      * minimal determining sets are reported: once a set is found for a variable, its supersets are not searched. A
      * pair already reported as DUPLICATE_COLUMNS is not re-reported here as a one-element determinism. The linear
      * whole-matrix analog is EXACT_LINEAR_DEPENDENCE; the regression- and eta-squared-based near-determinism
-     * findings (NEAR_DETERMINISM_CONTINUOUS, NEAR_DETERMINISM_DISCRETE_CONTINUOUS) cover linear and single-discrete
+     * findings (NEAR_DETERMINISM_LINEAR, NEAR_DETERMINISM_DISCRETE_CONTINUOUS) cover linear and single-discrete
      * mechanisms, NEAR_DETERMINISM_NONLINEAR covers smooth functions of many-valued continuous determiners, while
      * this finding is nonparametric and joint over few-valued determiners, so it detects nonlinear functions of
      * variable combinations (e.g., a boundary-layer quantity computed from several experimental settings) that the

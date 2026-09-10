@@ -73,7 +73,7 @@ public class TestDataAuditNonlinearDeterminism {
         DataAudit audit = new DataAudit(ds);
 
         // The linear check must NOT have fired for Y; that blindness is what this finding exists for.
-        for (AuditFinding f : audit.getFindings(FindingCode.NEAR_DETERMINISM_CONTINUOUS)) {
+        for (AuditFinding f : audit.getFindings(FindingCode.NEAR_DETERMINISM_LINEAR)) {
             assertTrue("Linear near-determinism should not fire for Y", !f.getVariables().get(0).equals("Y"));
         }
 
@@ -185,7 +185,7 @@ public class TestDataAuditNonlinearDeterminism {
 
         // The linear check must not have claimed these targets; the partition between the two findings is part of
         // the contract.
-        for (AuditFinding f : audit.getFindings(FindingCode.NEAR_DETERMINISM_CONTINUOUS)) {
+        for (AuditFinding f : audit.getFindings(FindingCode.NEAR_DETERMINISM_LINEAR)) {
             String target = f.getVariables().get(0);
             assertTrue("Linear and nonlinear findings must not overlap on " + target,
                     !target.equals("ISI") && !target.equals("FWI"));

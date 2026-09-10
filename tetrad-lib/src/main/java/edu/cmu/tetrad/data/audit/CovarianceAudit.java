@@ -545,7 +545,7 @@ public final class CovarianceAudit {
     /**
      * Computes the eigenvalues of the implied correlation matrix; flags COVARIANCE_NOT_PSD and
      * EXACT_LINEAR_DEPENDENCE, and computes R-squared of each variable on the others (flagging
-     * NEAR_DETERMINISM_CONTINUOUS) where the matrix is invertible.
+     * NEAR_DETERMINISM_LINEAR) where the matrix is invertible.
      */
     private void eigenChecks() {
         if (this.correlation == null) return;
@@ -644,13 +644,13 @@ public final class CovarianceAudit {
                                 .append(fmt(subsetR2[0])).append(" on {")
                                 .append(String.join(", ", subsetNames))
                                 .append("}. With near-collinear predictors this subset choice is not unique.");
-                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_LINEAR,
                                 AuditFinding.Severity.WARNING, List.of(this.variableNames.get(a)),
                                 Map.of("rSquared", r2, "threshold", this.config.r2Determinism,
                                         "subsetRSquared", subsetR2[0], "subsetSize", (double) subset.size()),
                                 msg.toString()));
                     } else {
-                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_LINEAR,
                                 AuditFinding.Severity.WARNING, List.of(this.variableNames.get(a)),
                                 Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
                                 msg.toString()));
@@ -782,7 +782,7 @@ public final class CovarianceAudit {
          * @param symmetryTolerance             relative tolerance for COVARIANCE_NOT_SYMMETRIC.
          * @param duplicateCorrelationTolerance tolerance for DUPLICATE_COLUMNS.
          * @param highCorrelation               threshold for HIGH_CORRELATION.
-         * @param r2Determinism                 threshold for NEAR_DETERMINISM_CONTINUOUS.
+         * @param r2Determinism                 threshold for NEAR_DETERMINISM_LINEAR.
          * @param psdTolerance                  relative eigenvalue tolerance for COVARIANCE_NOT_PSD.
          * @param rankTolerance                 relative eigenvalue tolerance for the rank.
          * @param extremeVarianceRatio          threshold for EXTREME_VARIANCE_SCALE.

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Regression pins for the explaining-subset localization of the NEAR_DETERMINISM_CONTINUOUS finding in
+ * Regression pins for the explaining-subset localization of the NEAR_DETERMINISM_LINEAR finding in
  * {@link DataAudit}: the finding message must name a small predictor subset accounting for the dependence, rather
  * than only reporting that the variable is nearly a linear function of all of the others.
  */
@@ -41,7 +41,7 @@ public class TestDataAuditExplainingSubset {
     }
 
     private static AuditFinding findingFor(DataSet d, String var) {
-        for (AuditFinding f : new DataAudit(d).getFindings(FindingCode.NEAR_DETERMINISM_CONTINUOUS)) {
+        for (AuditFinding f : new DataAudit(d).getFindings(FindingCode.NEAR_DETERMINISM_LINEAR)) {
             if (f.getVariables().contains(var)) return f;
         }
         return null;

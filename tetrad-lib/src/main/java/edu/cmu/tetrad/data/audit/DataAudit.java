@@ -59,7 +59,7 @@ import java.util.Set;
  * all subsequent checks in the same audit: constant columns contribute nothing to small-cell, correlation,
  * near-determinism, non-Gaussianity, or serial-dependence diagnostics, and a constant continuous column would
  * otherwise poison the pairwise-complete correlation matrix (its correlations are undefined), masking findings such
- * as NEAR_DETERMINISM_CONTINUOUS among the remaining variables. Each CONSTANT_COLUMN finding states this exclusion
+ * as NEAR_DETERMINISM_LINEAR among the remaining variables. Each CONSTANT_COLUMN finding states this exclusion
  * in its message. Consequently {@link #getContinuousNames()} and the correlation-based accessors cover only the
  * non-constant continuous variables, while whole-dataset summaries (distinct-value counts, the sample-size ratio,
  * and missingness statistics) continue to describe the dataset as given.
@@ -1213,13 +1213,13 @@ public final class DataAudit {
                                 .append(fmt(subsetR2[0])).append(" on {")
                                 .append(String.join(", ", subsetNames))
                                 .append("}. With near-collinear predictors this subset choice is not unique.");
-                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_LINEAR,
                                 AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
                                 Map.of("rSquared", r2, "threshold", this.config.r2Determinism,
                                         "subsetRSquared", subsetR2[0], "subsetSize", (double) subset.size()),
                                 msg.toString()));
                     } else {
-                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_LINEAR,
                                 AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
                                 Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
                                 msg.toString()));
@@ -1294,7 +1294,7 @@ public final class DataAudit {
     /**
      * Flags continuous variables that are nearly smooth (generally nonlinear) functions of small sets of other
      * continuous variables, which the linear (multiple R-squared) check cannot see. For each continuous target not
-     * already flagged as NEAR_DETERMINISM_CONTINUOUS, a determining subset is grown greedily, one variable at a
+     * already flagged as NEAR_DETERMINISM_LINEAR, a determining subset is grown greedily, one variable at a
      * time up to the configured maximum size, scoring each candidate set by the leave-one-out cross-validated
      * R-squared of a natural-cubic-spline regression of the target on the set; the finding
      * NEAR_DETERMINISM_NONLINEAR is emitted for the first (hence smallest) subset whose leave-one-out R-squared
@@ -1325,7 +1325,7 @@ public final class DataAudit {
         Set<String> linearFlagged = new HashSet<>();
 
         for (AuditFinding f : this.findings) {
-            if (f.getCode() == FindingCode.NEAR_DETERMINISM_CONTINUOUS && !f.getVariables().isEmpty()) {
+            if (f.getCode() == FindingCode.NEAR_DETERMINISM_LINEAR && !f.getVariables().isEmpty()) {
                 linearFlagged.add(f.getVariables().get(0));
             }
         }
@@ -2448,7 +2448,7 @@ public final class DataAudit {
 
     /**
      * Fraction of the full R^2 that a greedily chosen predictor subset must reach for the subset to be reported as
-     * accounting for the dependence in NEAR_DETERMINISM_CONTINUOUS messages.
+     * accounting for the dependence in NEAR_DETERMINISM_LINEAR messages.
      */
     public static final double EXPLAINING_SUBSET_FRACTION = 0.99;
 
@@ -2458,7 +2458,7 @@ public final class DataAudit {
     public static final int EXPLAINING_SUBSET_MAX_SIZE = 5;
 
     /**
-     * Greedy forward selection on a correlation matrix, used to localize a NEAR_DETERMINISM_CONTINUOUS finding: for
+     * Greedy forward selection on a correlation matrix, used to localize a NEAR_DETERMINISM_LINEAR finding: for
      * column a, predictors are added one at a time, each step choosing the column that most increases the R^2 of a
      * on the selected set, stopping when the subset R^2 reaches {@link #EXPLAINING_SUBSET_FRACTION} of fullR2 or the
      * set reaches {@link #EXPLAINING_SUBSET_MAX_SIZE} predictors. The achieved subset R^2 is written to
@@ -2756,7 +2756,7 @@ public final class DataAudit {
          * @param smallCellCount          threshold for SMALL_MARGINAL_CELL.
          * @param minExpectedPairwiseCell threshold for SMALL_PAIRWISE_CELLS.
          * @param highCorrelation         threshold for HIGH_CORRELATION.
-         * @param r2Determinism           threshold for NEAR_DETERMINISM_CONTINUOUS.
+         * @param r2Determinism           threshold for NEAR_DETERMINISM_LINEAR.
          * @param etaSquaredDeterminism   threshold for NEAR_DETERMINISM_DISCRETE_CONTINUOUS.
          * @param adAlpha                 alpha for NON_GAUSSIAN.
          * @param minAdSampleSize         minimum column n for the Anderson-Darling test.
@@ -2782,7 +2782,7 @@ public final class DataAudit {
          * @param smallCellCount              threshold for SMALL_MARGINAL_CELL.
          * @param minExpectedPairwiseCell     threshold for SMALL_PAIRWISE_CELLS.
          * @param highCorrelation             threshold for HIGH_CORRELATION.
-         * @param r2Determinism               threshold for NEAR_DETERMINISM_CONTINUOUS.
+         * @param r2Determinism               threshold for NEAR_DETERMINISM_LINEAR.
          * @param etaSquaredDeterminism       threshold for NEAR_DETERMINISM_DISCRETE_CONTINUOUS.
          * @param adAlpha                     alpha for NON_GAUSSIAN.
          * @param minAdSampleSize             minimum column n for the Anderson-Darling test.
