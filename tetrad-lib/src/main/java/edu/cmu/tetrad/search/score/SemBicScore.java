@@ -122,6 +122,14 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     private double penaltyDiscount = 1.0;
     /**
+     * How many singularities to log in full before only counting them.
+     */
+    private static final int MAX_SINGULARITIES_LOGGED = 10;
+    /**
+     * The number of local-score evaluations that failed with a singularity.
+     */
+    private final java.util.concurrent.atomic.AtomicInteger numSingularities = new java.util.concurrent.atomic.AtomicInteger();
+    /**
      * The structure prior, 0 for standard BIC.
      */
     private double structurePrior;
@@ -382,6 +390,15 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         System.arraycopy(rows, 0, filterColumns, cols.length, rows.length);
         List<Integer> validRows = TestwiseRows.forMatrix(data).validRows(filterColumns, rowsInData);
 
+        // With no more complete rows than variables, the sample covariance is undefined (0 or 1 rows gives NaN) or
+        // rank deficient, and chooseInverse would fail on NaN with an IllegalArgumentException that no caller
+        // catches. Report it as a singularity instead, so that localScore returns NaN and the search treats the
+        // parent set as unscorable rather than dying. This arises with test-wise deletion on sparse data, e.g. a
+        // wide table in which few units are observed on every one of several assessments. Added 2026-9-10.
+        if (validRows.size() <= cols.length) {
+            throw new SingularMatrixException();
+        }
+
         Matrix cov = new Matrix(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
@@ -612,7 +629,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return Double.NaN;
         }
 
@@ -653,7 +670,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, nEff);
         }
 
@@ -678,7 +695,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return Double.NaN;
         }
 
@@ -714,6 +731,36 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, lambda);
         return -0.5 * this.nEff * (TMath.log(2 * TMath.PI * sigmaSquared) + 1);
 //        return -(double) (this.nEff / 2.0) * log(sigmaSquared);
+    }
+
+    /**
+     * Records a singularity in a local-score evaluation. The first few are logged in full, after which they are
+     * only counted: on sparse data under test-wise deletion there can be many thousands, which swamps the log.
+     * See getNumSingularities().
+     */
+    private void noteSingularity(int i, int[] parents) {
+        int n = this.numSingularities.incrementAndGet();
+
+        if (n <= MAX_SINGULARITIES_LOGGED) {
+            TetradLogger.getInstance().log("Singularity encountered when scoring "
+                    + LogUtilsSearch.getScoreFact(i, parents, variables));
+
+            if (n == MAX_SINGULARITIES_LOGGED) {
+                TetradLogger.getInstance().log("Further singularities will be counted but not logged; see "
+                        + "SemBicScore.getNumSingularities().");
+            }
+        }
+    }
+
+    /**
+     * Returns the number of local-score evaluations that failed with a singularity (and so returned NaN) since
+     * this score was constructed. A large count, e.g. under test-wise deletion on sparse data, means many parent
+     * sets could not be scored at all.
+     *
+     * @return The count.
+     */
+    public int getNumSingularities() {
+        return this.numSingularities.get();
     }
 
     /**

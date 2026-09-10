@@ -981,6 +981,20 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <model name="Join Datasets on Key" acronym="Join"
+                   help="data" category="Column operations">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>
+                    edu.cmu.tetradapp.model.datamanip.JoinDatasetsWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.JoinDatasetsParamsEditor
+                </params-editor-class>
+            </model>
             <model name="Implied Covariance Matrix--Measured" acronym="Implied Covar Meas" help="data"
                    category="implied">
                 <logger>

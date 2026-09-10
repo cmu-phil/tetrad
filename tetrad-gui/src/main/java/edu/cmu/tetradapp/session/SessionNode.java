@@ -1019,7 +1019,8 @@ public class SessionNode implements Node {
      */
     public Object[] getModelConstructorArguments(Class modelClass) {
         List<Object> parentModels = listParentModels(); // never returns null
-        parentModels.add(getParam(modelClass));
+        Parameters param = getParam(modelClass);
+        parentModels.add(param);
 
         Constructor[] constructors = modelClass.getConstructors();
 
@@ -1032,7 +1033,51 @@ public class SessionNode implements Node {
             }
         }
 
+        // Array-form constructors (X[] parents, Parameters params), e.g. the data-manipulation models taking
+        // DataWrapper[]: the parent models are the array's elements, so the flat list of matching parents plus
+        // the parameter object is what a parameter editor should see. Added 2026-9-10.
+        if (param != null) {
+            for (Constructor constructor : constructors) {
+                List<Object> matched = arrayFormParents(constructor.getParameterTypes(), parentModels);
+
+                if (matched != null) {
+                    matched.add(param);
+                    return matched.toArray();
+                }
+            }
+        }
+
         return null;
+    }
+
+    /**
+     * For a constructor of the form (X[] parents, Parameters params), returns the given objects assignable to X,
+     * or null if the constructor is not of that form or no object matches. Before this, such constructors were
+     * recognized when creating the model (see createModelUsingArguments) but not by
+     * existsParameterizedConstructor or getModelConstructorArguments, which insisted that the number of
+     * candidates equal the number of constructor parameters; so a model taking DataWrapper[] with two data
+     * parents (or with one, since DataWrapper[] is not assignable from DataWrapper) never had its parameter
+     * editor shown. Added 2026-9-10.
+     *
+     * @param parameterTypes the constructor's parameter types
+     * @param objects        the candidate parent models (and the parameter object, which is ignored here)
+     * @return the matching parents, in order, or null
+     */
+    private static List<Object> arrayFormParents(Class[] parameterTypes, List<?> objects) {
+        if (parameterTypes.length != 2 || !parameterTypes[0].isArray() || parameterTypes[1] != Parameters.class) {
+            return null;
+        }
+
+        Class<?> component = parameterTypes[0].getComponentType();
+        List<Object> matched = new ArrayList<>();
+
+        for (Object o : objects) {
+            if (o != null && !(o instanceof Parameters) && component.isAssignableFrom(o.getClass())) {
+                matched.add(o);
+            }
+        }
+
+        return matched.isEmpty() ? null : matched;
     }
 
     /**
@@ -1176,6 +1221,11 @@ public class SessionNode implements Node {
                 Object[] arguments = assignParameters(parameterTypes, parentModels);
 
                 if (arguments != null) {
+                    return true;
+                }
+
+                // Array-form constructor (X[] parents, Parameters params); see arrayFormParents. Added 2026-9-10.
+                if (param != null && arrayFormParents(parameterTypes, parentModels) != null) {
                     return true;
                 }
             }
