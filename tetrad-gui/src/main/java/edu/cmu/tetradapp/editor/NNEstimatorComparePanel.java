@@ -28,7 +28,7 @@ import java.util.concurrent.*;
 /**
  * Side-by-side visual comparison panel for {@link NNEstimatorModel}.
  *
- * <p>The panel has three tabs:
+ * <p>The panel has four tabs:
  * <ol>
  *   <li><b>Cross-Validation</b> — k-fold OOS metrics per node plus whole-graph
  *       MMD². Results are restored from the model on relaunch.</li>
@@ -38,6 +38,9 @@ import java.util.concurrent.*;
  *       multiple child selections, and are restored from the model on
  *       relaunch.</li>
  *   <li><b>Observed vs. Resimulated</b> — side-by-side plot matrix.</li>
+ *   <li><b>Explanation</b> — static plain-language account of what the
+ *       estimator fits, what each tab computes, and how to read the numbers
+ *       (see {@link NNEstimatorExplanationPanel}).</li>
  * </ol>
  *
  * <p>All long-running operations run on background threads via
@@ -54,6 +57,13 @@ public final class NNEstimatorComparePanel extends JPanel {
     // ── tab 1: cross-validation ───────────────────────────────────────────────
 
     private final JSpinner kSpinner;
+    /**
+     * Second spinner for the Edge Strength tab. A Swing component can have
+     * only one parent, so the CV tab's {@link #kSpinner} cannot also be placed
+     * on the Edge Strength tab; this one shares its {@link SpinnerNumberModel}
+     * so the two stay in sync.
+     */
+    private final JSpinner edgeKSpinner;
     private final JButton runCvButton = new JButton("Run Cross-Validation");
     private final JLabel cvSummaryLabel = new JLabel(" ");
     private final CVTableModel cvTableModel = new CVTableModel();
@@ -94,6 +104,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         int n0 = TMath.max(1, observed.getNumRows());
         this.nSpinner = new JSpinner(new SpinnerNumberModel(n0, 1, 10_000_000, 50));
         this.kSpinner = new JSpinner(new SpinnerNumberModel(5, 2, TMath.min(20, n0), 1));
+        this.edgeKSpinner = new JSpinner(kSpinner.getModel());
 
         // Fallback to observed data if no simulation exists yet (e.g. after reload).
         this.simulated = model.getSimulatedData() != null
@@ -111,6 +122,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         tabs.addTab("Cross-Validation",         buildCvTab());
         tabs.addTab("Edge Strength",            buildEdgeStrengthTab());
         tabs.addTab("Observed vs. Resimulated", buildPlotTab());
+        tabs.addTab("Explanation",              NNEstimatorExplanationPanel.create());
 
         add(tabs,          BorderLayout.CENTER);
         add(buildFooter(), BorderLayout.SOUTH);
@@ -203,7 +215,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         controls.add(new JLabel("Simulated n:"));
         controls.add(edgeSimNSpinner);
         controls.add(new JLabel("  CV k:"));
-        controls.add(kSpinner);
+        controls.add(edgeKSpinner);
         controls.add(computeEdgeButton);
         controls.add(computeAllButton);   // NEW
 
