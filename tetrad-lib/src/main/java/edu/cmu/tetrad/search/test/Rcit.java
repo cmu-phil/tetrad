@@ -935,7 +935,7 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         // were represented: rows == null and setRows(0..n-1) drew different bases, and a test on a subset data
         // set disagreed with the same test via setRows on the parent data set. The basis is a fixed random
         // projection and has no reason to depend on the rows; the row set remains part of the feature-cache key
-        // (featKey) and of the permutation seed, where it belongs.
+        // (featKey), where it belongs.
         return h;
     }
 
@@ -945,8 +945,9 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         h = 1099511628211L * (h ^ x.getName().hashCode());
         h = 1099511628211L * (h ^ y.getName().hashCode());
         for (Node z : Z) h = 1099511628211L * (h ^ z.getName().hashCode());
-        h = 1099511628211L * (h ^ getActiveRowCount());
-        h = 1099511628211L * (h ^ activeRowsHash());
+        // As for seedForBlock, the seed no longer depends on the active row count or row list: with those mixed
+        // in, rows == null and setRows(0..n-1) drew different permutation sequences on identical data. The seed
+        // is per fact and per user seed; the row set enters through the data being permuted.
         h = 1099511628211L * (h ^ (doRcit ? 1 : 0));
         return h ^ seed;
     }
