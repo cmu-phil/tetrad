@@ -93,6 +93,39 @@ public final class MissingDataUtils {
     }
 
     /**
+     * Applies a missing-data specification to a dataset for a component that supports only the deletion policies
+     * natively: returns the dataset itself when it is complete or the policy is TESTWISE (the component then does
+     * its own per-family or per-test row selection), its complete cases under LISTWISE, and throws otherwise. A
+     * null spec on missing data is treated as FAIL.
+     *
+     * @param dataSet The dataset.
+     * @param spec    The spec, or null (FAIL on missing data).
+     * @param caller  The name of the calling component, for messages.
+     * @return The dataset to analyze.
+     * @throws IllegalArgumentException      If the policy is FAIL or EM_COVARIANCE and the dataset has missing
+     *                                       values.
+     * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION.
+     */
+    public static DataSet resolveDeletionPolicy(DataSet dataSet, MissingDataSpec spec, String caller) {
+        if (dataSet == null) throw new NullPointerException("Data set is null.");
+        if (!dataSet.existsMissingValue()) return dataSet;
+
+        MissingDataPolicy policy = spec == null ? MissingDataPolicy.FAIL : spec.getPolicy();
+
+        return switch (policy) {
+            case LISTWISE -> listwiseDelete(dataSet);
+            case TESTWISE -> dataSet;
+            case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(caller
+                    + ": MULTIPLE_IMPUTATION is handled by a search wrapper over imputed datasets, not by a single "
+                    + "test or score.");
+            default -> throw new IllegalArgumentException(caller + ": The dataset contains missing values and the "
+                    + "missing-data policy is " + policy + ". This component supports LISTWISE and TESTWISE deletion "
+                    + "on missing data; use MissingDataSpec.listwise() or MissingDataSpec.testwise(), or impute the "
+                    + "data first. " + briefSummary(dataSet));
+        };
+    }
+
+    /**
      * Returns a new dataset consisting of the rows of the given dataset that have no missing entries (listwise
      * deletion). The given dataset is not modified.
      *
@@ -330,8 +363,10 @@ public final class MissingDataUtils {
                             + ": This test/score does not support the missing-data policy '" + canonical + "'. "
                             + "It supports " + supported + ". Either set "
                             + Params.MISSING_DATA_POLICY + " = 'listwise', or choose a test/score with native "
-                            + "support for '" + canonical + "' (e.g., Fisher Z, SEM BIC, BDeu, Discrete BIC, "
-                            + "Conditional Gaussian BIC, Degenerate Gaussian BIC).");
+                            + "support for '" + canonical + "' (test-wise: Fisher Z, SEM BIC, BGe, EBIC, GIC, "
+                            + "Poisson Prior, BDeu, Discrete BIC, CG-BIC, DG-BIC, DG-BGe, BF-BIC, BF-BGe, CG-LRT, "
+                            + "DG-LRT, Chi-Square, G-Square, KCI, RCIT, CCI, GCM; EM covariance: Fisher Z, SEM BIC, "
+                            + "BGe, EBIC, GIC, Poisson Prior).");
                 }
             }
             case "mi", "multipleimputation", "multiple_imputation" -> throw new IllegalArgumentException(caller

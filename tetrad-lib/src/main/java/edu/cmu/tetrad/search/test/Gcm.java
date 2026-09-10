@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.IndependenceFact;
@@ -1054,5 +1055,16 @@ public final class Gcm implements IndependenceTest, RowsSettable {
             double[] beta = solveSymmetric(A, b);
             return new FittedLinRidge(meanX, meany, beta);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: each test is evaluated on the (active) rows complete on x, y, and z; this has always been the
+     * behavior of this test, and is now declared.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

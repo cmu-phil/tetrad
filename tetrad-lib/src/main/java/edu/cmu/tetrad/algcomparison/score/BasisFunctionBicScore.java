@@ -71,7 +71,7 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BF-BIC (Basis Function BIC)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "BF-BIC (Basis Function BIC)");
         this.dataSet = dataSet;
 
         // Changes from the pre-2026-8 implementation: the singularity lambda was previously read
@@ -85,7 +85,8 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
                 parameters.getInt(Params.TRUNCATION_LIMIT),
                 parameters.getDouble(Params.SINGULARITY_LAMBDA),
                 parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION),
-                parameters.getBoolean(Params.BASIS_RANK_TRANSFORM));
+                parameters.getBoolean(Params.BASIS_RANK_TRANSFORM),
+                MissingDataUtils.fromParameters(parameters));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return score;

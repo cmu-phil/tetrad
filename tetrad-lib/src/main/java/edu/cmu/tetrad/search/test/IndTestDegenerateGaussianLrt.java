@@ -21,6 +21,10 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
@@ -58,7 +62,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     private final DataSet embeddedDataSetFull;   // full embedded dataset (all rows)
     // ---- Params / state ----
     private final int sampleSizeFull;
-    private SimpleMatrix covarianceMatrix;       // covariance of embedded data (full or subset)
+    private SimpleMatrix covarianceMatrix;       // covariance of embedded data (full or subset); null under test-wise
+    private final TestwiseCovariance testwise;   // per-test covariance over complete rows; null unless test-wise
     // ---- Row subset ----
     private List<Integer> rows = null;           // null => all rows
     private int sampleSize;                      // current sample size (full or subset)
@@ -75,7 +80,24 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
      * @param dataSet The data being analyzed.
      */
     public IndTestDegenerateGaussianLrt(DataSet dataSet) {
+        this(dataSet, null);
+    }
+
+    /**
+     * Constructs the test with an explicit missing-data specification. On a data set with missing values the
+     * supported policies are LISTWISE and TESTWISE. Under TESTWISE the embedding carries NaN in every derived
+     * column of a variable wherever that variable is missing, and each test computes the covariance of the embedded
+     * columns of x, y, and z over the rows complete on all of them, using the number of such rows as the sample
+     * size of the likelihood ratio statistic (an explicit effective sample size acts as a deflation factor). A null
+     * spec on missing data is treated as FAIL.
+     *
+     * @param dataSet The data being analyzed.
+     * @param spec    The missing-data specification, or null.
+     */
+    public IndTestDegenerateGaussianLrt(DataSet dataSet, MissingDataSpec spec) {
         if (dataSet == null) throw new NullPointerException("dataSet == null");
+
+        dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "IndTestDegenerateGaussianLrt");
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
@@ -95,8 +117,15 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
         this.sampleSize = sampleSizeFull;
         setEffectiveSampleSize(-1);
 
-        // Default: covariance on full embedded data.
-        this.covarianceMatrix = DataUtils.cov(this.embeddedDataSetFull.getDoubleData().getSimpleMatrix());
+        if (this.embeddedDataSetFull.existsMissingValue()) {
+            // Test-wise: no single covariance matrix; each test computes its own over its complete rows.
+            this.testwise = new TestwiseCovariance(this.embeddedDataSetFull.getDoubleData());
+            this.covarianceMatrix = null;
+        } else {
+            // Default: covariance on full embedded data.
+            this.testwise = null;
+            this.covarianceMatrix = DataUtils.cov(this.embeddedDataSetFull.getDoubleData().getSimpleMatrix());
+        }
 
         // Keep lambda behavior as before.
         this.setLambda(lambda);
@@ -180,11 +209,37 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
 
         // Variance estimates
         double eps = 1e-10;
-        double sigma0_sq = TMath.max(eps, computeResidualVariance(xIndices, zIndices));
-        double sigma1_sq = TMath.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
+        double sigma0_sq;
+        double sigma1_sq;
+        double n;
+
+        if (this.testwise == null) {
+            sigma0_sq = TMath.max(eps, computeResidualVariance(xIndices, zIndices));
+            sigma1_sq = TMath.max(eps, computeResidualVariance(xIndices, concatArrays(yIndices, zIndices)));
+            n = nEff;
+        } else {
+            // Test-wise: covariance of all embedded columns of x, y, z over the rows complete on them (within the
+            // current row subset, if any), with indices remapped into that family covariance.
+            int[] all = concatArrays(concatArrays(xIndices, yIndices), zIndices);
+            TestwiseCovariance.Family fam = this.testwise.family(all, this.rows);
+
+            if (fam.n() < 3) {
+                this.pValue = 1.0;
+                return 1.0;
+            }
+
+            SimpleMatrix famCov = new SimpleMatrix(fam.cov().toArray());
+            int[] xPos = positions(0, xIndices.length);
+            int[] yPos = positions(xIndices.length, yIndices.length);
+            int[] zPos = positions(xIndices.length + yIndices.length, zIndices.length);
+
+            sigma0_sq = TMath.max(eps, computeResidualVariance(xPos, zPos, famCov));
+            sigma1_sq = TMath.max(eps, computeResidualVariance(xPos, concatArrays(yPos, zPos), famCov));
+            n = fam.n() * (nEff / (double) this.sampleSize);
+        }
 
         // LR statistic
-        double LR_stat = nEff * TMath.log(sigma0_sq / sigma1_sq);
+        double LR_stat = n * TMath.log(sigma0_sq / sigma1_sq);
 
         int df = yIndices.length;
         if (df == 0) {
@@ -208,6 +263,19 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
      * Computes the variance of residuals given the indices of predictors.
      */
     private double computeResidualVariance(int[] xIndices, int[] predictorIndices) {
+        return computeResidualVariance(xIndices, predictorIndices, this.covarianceMatrix);
+    }
+
+    private static int[] positions(int start, int length) {
+        int[] pos = new int[length];
+        for (int i = 0; i < length; i++) pos[i] = start + i;
+        return pos;
+    }
+
+    /**
+     * Computes the variance of residuals given the indices of predictors, from the given covariance matrix.
+     */
+    private double computeResidualVariance(int[] xIndices, int[] predictorIndices, SimpleMatrix covarianceMatrix) {
         if (predictorIndices.length == 0) {
             return StatUtils.extractSubMatrix(covarianceMatrix, xIndices, xIndices).trace() / xIndices.length;
         }
@@ -255,7 +323,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
             this.rows = null;
             this.sampleSize = sampleSizeFull;
             setEffectiveSampleSize(-1);
-            this.covarianceMatrix = DataUtils.cov(this.embeddedDataSetFull.getDoubleData().getSimpleMatrix());
+            if (this.testwise == null) {
+                this.covarianceMatrix = DataUtils.cov(this.embeddedDataSetFull.getDoubleData().getSimpleMatrix());
+            }
             return;
         }
 
@@ -271,8 +341,10 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
         this.sampleSize = this.rows.size();
         setEffectiveSampleSize(-1);
 
-        DataSet subEmbedded = subsetRows(this.embeddedDataSetFull, this.rows);
-        this.covarianceMatrix = DataUtils.cov(subEmbedded.getDoubleData().getSimpleMatrix());
+        if (this.testwise == null) {
+            DataSet subEmbedded = subsetRows(this.embeddedDataSetFull, this.rows);
+            this.covarianceMatrix = DataUtils.cov(subEmbedded.getDoubleData().getSimpleMatrix());
+        }
     }
 
     private DataSet subsetRows(DataSet ds, List<Integer> rows) {
@@ -408,5 +480,16 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest, Effective
     @Override
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("This method is not implemented.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test uses the rows complete on the
+     * embedded columns of x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

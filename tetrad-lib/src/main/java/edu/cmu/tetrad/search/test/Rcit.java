@@ -2,6 +2,10 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
@@ -124,6 +128,12 @@ public final class Rcit implements IndependenceTest, RowsSettable {
     private List<Integer> rows = null;
     private int n;
 
+    /**
+     * If true, each test is evaluated on the active rows complete on x, y, and z; see the constructor taking a
+     * {@link MissingDataSpec}.
+     */
+    private boolean testwiseDeletion = false;
+
     // ---------------- knobs ----------------
     private double alpha = 0.05;
     private double lastP = NaN;
@@ -168,6 +178,25 @@ public final class Rcit implements IndependenceTest, RowsSettable {
      * @param params the set of parameters to configure the behavior of the Rcit instance; must not be null.
      */
     public Rcit(DataSet dataSet, Parameters params) {
+        this(dataSet, params, null);
+    }
+
+    /**
+     * Constructs an instance with an explicit missing-data specification. On a data set with missing values the
+     * supported policies are LISTWISE and TESTWISE; under TESTWISE each test is computed on the active rows that
+     * are complete on x, y, and z (by a temporary row override, which invalidates the feature cache for that test).
+     * A null spec leaves the legacy behavior in place.
+     *
+     * @param dataSet the dataset; must not be null.
+     * @param params  the parameters; must not be null.
+     * @param spec    the missing-data specification, or null.
+     */
+    public Rcit(DataSet dataSet, Parameters params, MissingDataSpec spec) {
+        if (spec != null) {
+            dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "Rcit");
+            this.testwiseDeletion = spec.getPolicy() == MissingDataPolicy.TESTWISE && dataSet.existsMissingValue();
+        }
+
         this.data = DataTransforms.standardizeData(dataSet);
         this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
         this.n = getActiveRowCount();
@@ -472,6 +501,47 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
 
+        if (this.testwiseDeletion) {
+            List<Integer> complete = completeRows(x, y, z);
+
+            if (complete.size() < getActiveRowCount()) {
+                List<Integer> saved = this.rows;
+                try {
+                    setRows(complete);
+                    return checkIndependenceOnActiveRows(x, y, z);
+                } finally {
+                    setRows(saved);
+                }
+            }
+        }
+
+        return checkIndependenceOnActiveRows(x, y, z);
+    }
+
+    /**
+     * The active rows on which none of x, y, z is missing.
+     */
+    private List<Integer> completeRows(Node x, Node y, Set<Node> z) {
+        List<Integer> cols = new ArrayList<>();
+        cols.add(data.getColumnIndex(x));
+        cols.add(data.getColumnIndex(y));
+        if (z != null) for (Node v : z) cols.add(data.getColumnIndex(v));
+
+        int m = getActiveRowCount();
+        List<Integer> out = new ArrayList<>(m);
+        R:
+        for (int i = 0; i < m; i++) {
+            int r = activeRowIndex(i);
+            for (int c : cols) {
+                if (Double.isNaN(data.getDouble(r, c))) continue R;
+            }
+            out.add(r);
+        }
+        return out;
+    }
+
+    private IndependenceResult checkIndependenceOnActiveRows(Node x, Node y, Set<Node> z)
+            throws InterruptedException {
         List<Node> Z = (z == null) ? List.of() : new ArrayList<>(z);
 
         // keep consistent determinism
@@ -1282,5 +1352,16 @@ public final class Rcit implements IndependenceTest, RowsSettable {
          * Represents the permutation-based approximation
          */
         PERMUTATION
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test is evaluated on the rows complete on
+     * x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

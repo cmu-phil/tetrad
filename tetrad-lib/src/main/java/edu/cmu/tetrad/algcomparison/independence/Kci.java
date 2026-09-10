@@ -65,8 +65,9 @@ public class Kci implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "KCI (Kernel Conditional Independence Test)");
-        edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci((DataSet) dataSet);
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "KCI (Kernel Conditional Independence Test)");
+        edu.cmu.tetrad.search.test.Kci kci = new edu.cmu.tetrad.search.test.Kci((DataSet) dataSet,
+                MissingDataUtils.fromParameters(parameters));
         kci.setAlpha(parameters.getDouble(Params.ALPHA));
 
         kci.setEpsilon(parameters.getDouble(Params.KCI_EPSILON));

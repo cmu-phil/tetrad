@@ -66,8 +66,9 @@ public class Rcit implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "RCIT (Random Conditional Independence Test)");
-        edu.cmu.tetrad.search.test.Rcit test = new edu.cmu.tetrad.search.test.Rcit((DataSet) dataSet);
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "RCIT (Random Conditional Independence Test)");
+        edu.cmu.tetrad.search.test.Rcit test = new edu.cmu.tetrad.search.test.Rcit((DataSet) dataSet,
+                new edu.cmu.tetrad.util.Parameters(), MissingDataUtils.fromParameters(parameters));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 //        test.setDoRcit(parameters.getBoolean(Params.RCIT_MODE));
         test.setLambda(parameters.getDouble(Params.RCIT_LAMBDA));

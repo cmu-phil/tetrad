@@ -68,7 +68,7 @@ public class PoissonPriorScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("em"), "Poisson Prior Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"), "Poisson Prior Score");
         dataSet = MissingDataUtils.emCovarianceIfRequested(dataSet, parameters, "Poisson Prior Score");
         this.dataSet = dataSet;
 

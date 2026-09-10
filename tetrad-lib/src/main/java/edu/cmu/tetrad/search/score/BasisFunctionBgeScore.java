@@ -23,6 +23,10 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.Matrix;
@@ -102,9 +106,14 @@ public class BasisFunctionBgeScore implements Score {
     private final Map<Integer, List<Integer>> embedding;
 
     /**
-     * Covariance matrix of the embedded data.
+     * Covariance matrix of the embedded data; null under test-wise deletion.
      */
     private final ICovarianceMatrix embeddedCov;
+
+    /**
+     * Per-family covariance provider over the embedded data under test-wise deletion; null otherwise.
+     */
+    private final TestwiseCovariance testwise;
 
     /**
      * Sample variances of the embedded columns.
@@ -183,11 +192,33 @@ public class BasisFunctionBgeScore implements Score {
      * @see Embedding#pruneUninformativeBasisColumns(DataSet, Map, ICovarianceMatrix)
      */
     public BasisFunctionBgeScore(DataSet dataSet, int truncationLimit, boolean adaptiveBasisSelection) {
-        this(dataSet, truncationLimit, embed(dataSet, truncationLimit, 1), adaptiveBasisSelection);
+        this(dataSet, truncationLimit, adaptiveBasisSelection, null);
     }
 
     /**
-     * Shared constructor over a prepared embedding.
+     * As {@link #BasisFunctionBgeScore(DataSet, int, boolean)}, with an explicit missing-data specification. On a
+     * data set with missing values the supported policies are LISTWISE and TESTWISE. Under TESTWISE the embedding
+     * carries NaN in every derived column of a variable wherever that variable is missing, and each family's
+     * scatter matrix is formed from the covariance of the family's embedded columns over the rows complete on those
+     * columns, with the family's own complete-row count as N. Interaction columns (discrete interaction order above
+     * 1) are not available under TESTWISE. A null spec on missing data is treated as FAIL.
+     *
+     * @param dataSet                the (mixed) data set.
+     * @param truncationLimit        the truncation limit of the basis.
+     * @param adaptiveBasisSelection whether to apply the BIC-crossing screen (under TESTWISE the screen is computed
+     *                               from pairwise-deletion correlations).
+     * @param spec                   the missing-data specification, or null.
+     */
+    public BasisFunctionBgeScore(DataSet dataSet, int truncationLimit, boolean adaptiveBasisSelection,
+                                 MissingDataSpec spec) {
+        this(MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "BasisFunctionBgeScore"), truncationLimit,
+                embed(MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "BasisFunctionBgeScore"), truncationLimit, 1),
+                adaptiveBasisSelection);
+    }
+
+    /**
+     * Shared constructor over a prepared embedding. If the embedded data contains NaN (which the embedding produces
+     * exactly where the source data was missing), the score operates in test-wise mode.
      *
      * @param dataSet                the original data set.
      * @param truncationLimit        the truncation limit recorded for {@link #getTruncationLimit()}.
@@ -204,8 +235,17 @@ public class BasisFunctionBgeScore implements Score {
         this.truncationLimit = truncationLimit;
 
         DataSet embeddedData = embedded.embeddedData();
-        this.embeddedCov = new CovarianceMatrix(embeddedData);
         this.embeddedDim = embeddedData.getNumColumns();
+
+        boolean missing = embeddedData.existsMissingValue();
+        this.testwise = missing ? new TestwiseCovariance(embeddedData.getDoubleData()) : null;
+
+        // Under test-wise deletion there is no single covariance matrix; the pairwise matrix stands in for it in
+        // the screening and zero-variance checks below, and each family's covariance is computed on demand.
+        ICovarianceMatrix cov = missing
+                ? this.testwise.pairwiseCovarianceMatrix(embeddedData.getVariables())
+                : new CovarianceMatrix(embeddedData);
+        this.embeddedCov = missing ? null : cov;
 
         this.embeddedColumns = new double[this.embeddedDim][this.sampleSize];
         for (int j = 0; j < this.embeddedDim; j++) {
@@ -222,12 +262,12 @@ public class BasisFunctionBgeScore implements Score {
         Map<Integer, List<Integer>> map = embedded.embedding();
         if (adaptiveBasisSelection) {
             map = Embedding.pruneUninformativeBasisColumns(dataSet, map,
-                    new edu.cmu.tetrad.data.CorrelationMatrix(embeddedData));
+                    new edu.cmu.tetrad.data.CorrelationMatrix(cov));
         }
 
         this.embeddedVariances = new double[this.embeddedDim];
         for (int j = 0; j < this.embeddedDim; j++) {
-            this.embeddedVariances[j] = this.embeddedCov.getValue(j, j);
+            this.embeddedVariances[j] = cov.getValue(j, j);
         }
 
         // Drop zero-variance embedded columns (e.g., unobserved categories); they carry no information and would
@@ -269,10 +309,17 @@ public class BasisFunctionBgeScore implements Score {
         System.arraycopy(bCols, 0, abCols, 0, bCols.length);
         for (int j = 0; j < a.size(); j++) abCols[bCols.length + j] = a.get(j);
 
+        if (this.testwise != null && this.discreteInteractionOrder > 1) {
+            throw new UnsupportedOperationException("BasisFunctionBgeScore: discrete interaction order > 1 is not "
+                    + "available under test-wise deletion.");
+        }
+
         InteractionBlock block = interactionBlock(parents);
 
         double score;
-        if (block == null || block.size() == 0) {
+        if (this.testwise != null) {
+            score = logMarginalTestwise(abCols, abCols) - logMarginalTestwise(bCols, abCols);
+        } else if (block == null || block.size() == 0) {
             score = logMarginal(abCols) - logMarginal(bCols);
         } else {
             score = logMarginal(abCols, block) - logMarginal(bCols, block);
@@ -589,6 +636,10 @@ public class BasisFunctionBgeScore implements Score {
         int k = s.length;
         if (k == 0) return 0.0;
 
+        if (this.testwise != null) {
+            return logMarginalTestwise(s, s);
+        }
+
         Matrix sub = this.embeddedCov.getSelection(s, s);
         double[][] cov = new double[k][k];
         double[] var = new double[k];
@@ -597,6 +648,46 @@ public class BasisFunctionBgeScore implements Score {
             var[i] = this.embeddedVariances[s[i]];
         }
         return logMarginal(cov, var);
+    }
+
+    /**
+     * Test-wise log p(D_S) for the columns S, with the sample restricted to the rows complete on the columns
+     * {@code rowSet}. In {@link #localScore(int, int...)} both the child-plus-parents marginal and the parents
+     * marginal are evaluated on the rows complete on child plus parents, so the two marginals share one sample.
+     *
+     * @param s      The columns to score (a subset of rowSet).
+     * @param rowSet The columns whose complete rows define the sample.
+     * @return The log marginal likelihood, or NaN if fewer than two rows are complete.
+     */
+    private double logMarginalTestwise(int[] s, int[] rowSet) {
+        int k = s.length;
+        if (k == 0) return 0.0;
+
+        TestwiseCovariance.Family fam = this.testwise.family(rowSet);
+        if (fam.n() < 2) return Double.NaN;
+
+        // Positions of s within rowSet.
+        int[] pos = new int[k];
+        for (int i = 0; i < k; i++) {
+            pos[i] = -1;
+            for (int j = 0; j < rowSet.length; j++) {
+                if (rowSet[j] == s[i]) {
+                    pos[i] = j;
+                    break;
+                }
+            }
+            if (pos[i] < 0) throw new IllegalArgumentException("Column " + s[i] + " is not in the row set.");
+        }
+
+        double[][] cov = new double[k][k];
+        double[] var = new double[k];
+        for (int i = 0; i < k; i++) {
+            for (int j = 0; j < k; j++) cov[i][j] = fam.cov().get(pos[i], pos[j]);
+            var[i] = fam.cov().get(pos[i], pos[i]);
+        }
+
+        double nFamily = fam.n() * (this.nEff / (double) this.sampleSize);
+        return logMarginal(cov, var, nFamily);
     }
 
     /**
@@ -631,10 +722,16 @@ public class BasisFunctionBgeScore implements Score {
      * (2014) eq. (10), with prior mean = sample mean and T_S = t diag(var).
      */
     private double logMarginal(double[][] cov, double[] var) {
+        return logMarginal(cov, var, this.nEff);
+    }
+
+    /**
+     * As above, with an explicit sample size (the family's own complete-row count under test-wise deletion).
+     */
+    private double logMarginal(double[][] cov, double[] var, double n) {
         int k = var.length;
         if (k == 0) return 0.0;
 
-        double n = this.nEff;
         double a = this.alphaWOffset; // alpha_w - p
         double t = this.alphaMu * (this.alphaWOffset - 1.0) / (this.alphaMu + 1.0);
         double aK = (a + k) / 2.0;
@@ -694,5 +791,16 @@ public class BasisFunctionBgeScore implements Score {
         }
 
         return logDet;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each family is scored on the rows complete on
+     * that family's embedded columns.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

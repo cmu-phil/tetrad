@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
@@ -71,16 +72,21 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
     }
 
     /**
-     * Constructs the score from a dataset with an explicit missing-data specification. This score cannot handle
-     * missing values natively: its indicator embedding of discrete categories is undefined for the missing-value
-     * sentinel, and prior to the Phase 1 refactor missing data silently produced statistically undefined scores. A
-     * dataset with missing values is therefore rejected unless the policy is LISTWISE.
+     * Constructs the score from a dataset with an explicit missing-data specification. Supported policies on a
+     * dataset with missing values are LISTWISE (complete cases only) and TESTWISE: the embedding propagates a
+     * missing source entry to NaN in every derived column of that variable, and the underlying
+     * {@link SemBicScore} then computes each family's covariance over the rows complete on that family's embedded
+     * columns. EM_COVARIANCE is not offered, because the indicator columns of the embedding are not Gaussian and
+     * an EM-estimated covariance of them has no interpretation. A null spec on missing data is treated as FAIL,
+     * matching the behavior since the Phase 1 refactor (before which missing data silently produced statistically
+     * undefined scores).
      *
      * @param dataSet               The dataset.
      * @param precomputeCovariances True if covariances should be precomputed.
      * @param lambda                Singularity lambda
      * @param spec                  The missing-data specification, or null (equivalent to FAIL on missing data).
-     * @throws IllegalArgumentException      If the dataset has missing values and the policy is not LISTWISE.
+     * @throws IllegalArgumentException      If the dataset has missing values and the policy is FAIL or
+     *                                       EM_COVARIANCE.
      * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
      *                                       by a single score; see Phase 3).
      */
@@ -90,19 +96,23 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
             throw new NullPointerException();
         }
 
+        boolean testwise = false;
+
         if (dataSet.existsMissingValue()) {
             MissingDataPolicy policy = spec == null ? MissingDataPolicy.FAIL : spec.getPolicy();
 
             switch (policy) {
                 case LISTWISE -> dataSet = MissingDataUtils.listwiseDelete(dataSet);
+                case TESTWISE -> testwise = true;
                 case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
                         "DegenerateGaussianScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed "
                                 + "datasets, not by a single score.");
                 default -> throw new IllegalArgumentException(
-                        "DegenerateGaussianScore: The dataset contains missing values, which this score cannot "
-                                + "handle (its indicator embedding is undefined for missing values; previously this "
-                                + "produced statistically undefined results). Use MissingDataSpec.listwise(), or "
-                                + "impute the data first. " + MissingDataUtils.briefSummary(dataSet));
+                        "DegenerateGaussianScore: The dataset contains missing values and the missing-data policy "
+                                + "is " + policy + ". This score supports LISTWISE and TESTWISE deletion on missing "
+                                + "data (EM_COVARIANCE is not meaningful for the indicator embedding); use "
+                                + "MissingDataSpec.listwise() or MissingDataSpec.testwise(), or impute the data "
+                                + "first. " + MissingDataUtils.briefSummary(dataSet));
             }
         }
 
@@ -117,7 +127,11 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
         DataSet convertedData = embeddedData.embeddedData();
         this.embedding = embeddedData.embedding();
 
-        this.bic = new SemBicScore(convertedData, precomputeCovariances);
+        // Under TESTWISE the embedded data carries NaN wherever the source was missing, and SemBicScore's own
+        // test-wise path takes over; the explicit spec avoids its legacy-default warning.
+        this.bic = testwise
+                ? new SemBicScore(convertedData, precomputeCovariances, MissingDataSpec.testwise())
+                : new SemBicScore(convertedData, precomputeCovariances);
         this.bic.setEffectiveSampleSize(this.nEff);
         this.bic.setLambda(lambda);
         this.bic.setStructurePrior(0);
@@ -247,5 +261,15 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
         }
         this.bic.setEffectiveSampleSize(this.nEff);
     }
-}
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: the embedding propagates missing source entries to every derived column, and the underlying
+     * SemBicScore then computes each family's statistics over the rows complete on that family.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
+}

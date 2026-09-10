@@ -131,8 +131,8 @@ public class TestMixedMissingData {
     }
 
     /**
-     * Capability declarations: ConditionalGaussianScore declares TESTWISE; the guarded scores keep the interface
-     * default, NONE.
+     * Capability declarations: ConditionalGaussianScore and (since the embedding propagates missingness)
+     * DegenerateGaussianScore declare TESTWISE; MvpScore keeps the interface default, NONE.
      */
     @Test
     public void testCapabilityDeclarations() {
@@ -140,7 +140,7 @@ public class TestMixedMissingData {
 
         assertEquals(MissingValueSupport.TESTWISE,
                 new ConditionalGaussianScore(complete, 1.0, true).getMissingValueSupport());
-        assertEquals(MissingValueSupport.NONE,
+        assertEquals(MissingValueSupport.TESTWISE,
                 new DegenerateGaussianScore(complete, true, 0.0).getMissingValueSupport());
         assertEquals(MissingValueSupport.NONE,
                 new MvpScore(complete, 1.0, -1, true, -1).getMissingValueSupport());

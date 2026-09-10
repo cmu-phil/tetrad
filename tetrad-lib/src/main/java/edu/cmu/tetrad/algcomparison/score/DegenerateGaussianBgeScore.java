@@ -68,7 +68,7 @@ public class DegenerateGaussianBgeScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "DG-BGe (Degenerate Gaussian BGe Score)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "DG-BGe (Degenerate Gaussian BGe Score)");
         this.dataSet = dataSet;
 
         if (!(dataSet instanceof DataSet)) {
@@ -76,7 +76,8 @@ public class DegenerateGaussianBgeScore implements ScoreWrapper {
         }
 
         edu.cmu.tetrad.search.score.DegenerateGaussianBgeScore score =
-                new edu.cmu.tetrad.search.score.DegenerateGaussianBgeScore((DataSet) dataSet);
+                new edu.cmu.tetrad.search.score.DegenerateGaussianBgeScore((DataSet) dataSet,
+                        MissingDataUtils.fromParameters(parameters));
 
         score.setAlphaMu(parameters.getDouble(Params.BGE_ALPHA_MU));
         score.setAlphaWOffset(parameters.getDouble(Params.BGE_ALPHA_W_OFFSET));

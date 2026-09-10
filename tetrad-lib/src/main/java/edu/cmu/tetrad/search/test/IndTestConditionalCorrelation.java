@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search.test;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -219,8 +220,15 @@ public final class IndTestConditionalCorrelation implements IndependenceTest, Ro
     public void setRows(List<Integer> rows) {
         cci.setRows(rows);
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: each test is evaluated on the (active) rows complete on x, y, and z; this has always been the
+     * behavior of this test, and is now declared.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
 }
-
-
-
-

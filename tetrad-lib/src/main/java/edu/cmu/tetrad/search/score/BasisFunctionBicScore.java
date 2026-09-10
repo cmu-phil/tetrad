@@ -22,6 +22,11 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.Embedding;
 import edu.cmu.tetrad.util.StatUtils;
@@ -131,6 +136,30 @@ public class BasisFunctionBicScore implements Score {
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection,
                                  boolean rankTransform) {
+        this(dataSet, truncationLimit, lambda, adaptiveBasisSelection, rankTransform, null);
+    }
+
+    /**
+     * As {@link #BasisFunctionBicScore(DataSet, int, double, boolean, boolean)}, with an explicit missing-data
+     * specification. On a data set with missing values the supported policies are LISTWISE and TESTWISE. Under
+     * TESTWISE the embedding carries NaN in every derived column of a variable wherever that variable is missing,
+     * and the underlying {@link SemBicScore} computes each family's covariance over the rows complete on that
+     * family's embedded columns (from the raw embedded columns rather than the correlation matrix; the two differ
+     * only by a per-column scale, which contributes the same constant to every parent set of a node and so leaves
+     * all score comparisons unchanged). With adaptive basis selection, the screen is computed from
+     * pairwise-deletion correlations. A null spec on missing data is treated as FAIL.
+     *
+     * @param dataSet                the data
+     * @param truncationLimit        the truncation limit of the basis
+     * @param lambda                 the singularity lambda
+     * @param adaptiveBasisSelection see the four-argument constructor
+     * @param rankTransform          if true, rank-transform continuous variables before embedding
+     * @param spec                   the missing-data specification, or null
+     */
+    public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection,
+                                 boolean rankTransform, MissingDataSpec spec) {
+        dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "BasisFunctionBicScore");
+
         this.variables = dataSet.getVariables();
         this.truncationLimit = truncationLimit;
         this.rankTransform = rankTransform;
@@ -140,8 +169,14 @@ public class BasisFunctionBicScore implements Score {
                 rankTransform ? Embedding.RANK_TRANSFORM : 1);
         DataSet embeddedData = result.embeddedData();
 
-        // We will zero out the correlations that are very close to zero.
-        CorrelationMatrix correlationMatrix = new CorrelationMatrix(embeddedData);
+        boolean testwise = embeddedData.existsMissingValue();
+
+        // We will zero out the correlations that are very close to zero. Under test-wise deletion the
+        // pairwise-deletion correlation matrix is used for screening only.
+        ICovarianceMatrix correlationMatrix = testwise
+                ? new CorrelationMatrix(new TestwiseCovariance(embeddedData.getDoubleData())
+                .pairwiseCovarianceMatrix(embeddedData.getVariables()))
+                : new CorrelationMatrix(embeddedData);
 
         // With adaptive basis selection, higher-order basis columns that cannot produce a BIC-positive pairwise
         // association with any other variable's block are dropped from the embedding. The correlation matrix and
@@ -150,7 +185,9 @@ public class BasisFunctionBicScore implements Score {
                 ? Embedding.pruneUninformativeBasisColumns(dataSet, result.embedding(), correlationMatrix)
                 : result.embedding();
 
-        this.bic = new SemBicScore(correlationMatrix);
+        this.bic = testwise
+                ? new SemBicScore(embeddedData, true, MissingDataSpec.testwise())
+                : new SemBicScore(correlationMatrix);
         this.bic.setPenaltyDiscount(penaltyDiscount);
         this.bic.setLambda(lambda);
 
@@ -469,5 +506,15 @@ public class BasisFunctionBicScore implements Score {
     public void setDoOneEquationOnly(boolean doOneEquationOnly) {
         this.doOneEquationOnly = doOneEquationOnly;
     }
-}
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each family is scored on the rows complete on
+     * that family's embedded columns.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
+}
