@@ -169,23 +169,23 @@ public class TestMissingDataPolicyPhase3 {
     }
 
     /**
-     * DG-BIC is listwise-only (its indicator embedding is undefined for missing values): the gate now refuses
-     * test-wise and em up front, while listwise succeeds.
+     * DG-BIC supports listwise and (since 2026-9, with the embedding propagating missing values to every derived
+     * column) test-wise deletion; em is refused, since an EM covariance of indicator columns has no interpretation.
      */
     @Test
-    public void testDgBicListwiseOnly() {
+    public void testDgBicDeletionPolicies() {
         DataSet disc = discreteWithMissing();
 
         assertNotNull(new DegenerateGaussianBicScore().getScore(disc, policy("listwise")));
-        assertThrows(IllegalArgumentException.class,
-                () -> new DegenerateGaussianBicScore().getScore(disc, policy("testwise")));
+        edu.cmu.tetrad.search.score.Score tw = new DegenerateGaussianBicScore().getScore(disc, policy("testwise"));
+        org.junit.Assert.assertTrue(Double.isFinite(tw.localScore(0, 1)));
         assertThrows(IllegalArgumentException.class,
                 () -> new DegenerateGaussianBicScore().getScore(disc, policy("em")));
     }
 
     /**
-     * The Poisson Prior Test gains the same EM-covariance route as its score wrapper, and the resulting test runs
-     * end-to-end.
+     * The Poisson Prior Test gains the same EM-covariance route as its score wrapper, and (since 2026-9) the same
+     * test-wise route; both resulting tests run end-to-end.
      */
     @Test
     public void testPoissonBicTestEmRoute() throws InterruptedException {
@@ -194,8 +194,10 @@ public class TestMissingDataPolicyPhase3 {
         IndependenceTest test = new PoissonBicTest().getTest(cont, policy("em"));
         exercise(test);
 
+        IndependenceTest testwise = new PoissonBicTest().getTest(cont, policy("testwise"));
+        exercise(testwise);
+
         assertNotNull(new PoissonBicTest().getTest(cont, policy("listwise")));
-        assertThrows(IllegalArgumentException.class, () -> new PoissonBicTest().getTest(cont, policy("testwise")));
         assertThrows(IllegalArgumentException.class, () -> new PoissonBicTest().getTest(cont, new Parameters()));
     }
 }
