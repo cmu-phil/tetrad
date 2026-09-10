@@ -224,7 +224,44 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         });
         setEnabled(this.enableEditing);
 
+        boolean unpositioned = false;
+        for (Node node : graph.getNodes()) {
+            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
+                unpositioned = true;
+                break;
+            }
+        }
+
         LayoutUtil.defaultLayout(graph);
+
+        // The display nodes were created by setGraph above, before the default layout assigned positions. If the
+        // default layout ran (a circle up to 20 nodes, a square beyond), widen it for the display nodes' label
+        // sizes and place them; a graph that arrived with positions (e.g., from a saved session) is left as is.
+        if (unpositioned) {
+            widenDefaultLayout();
+        }
+    }
+
+    /**
+     * Widens the default layout for the display nodes' label sizes and positions the display nodes at the model
+     * nodes' centers.
+     */
+    private void widenDefaultLayout() {
+        if (this.graph.getNumNodes() <= 20) {
+            LayoutUtils.widenCircleForLabels(this.graph, this);
+        } else {
+            LayoutUtils.respaceSquareForLabels(this.graph, this);
+        }
+
+        for (Node node : this.graph.getNodes()) {
+            DisplayNode d = (DisplayNode) getModelNodesToDisplay().get(node);
+            if (d == null) continue;
+            Dimension dim = d.getSize();
+            if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
+            d.setLocation(node.getCenterX() - dim.width / 2, node.getCenterY() - dim.height / 2);
+        }
+
+        fitCanvasToNodes();
     }
 
     private static Color uiColor(String key, Color fallback) {
@@ -951,7 +988,300 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayNode.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
         }
 
+        separateNodes();
+        fitCanvasToNodes();
+
         // setGraphWithoutNotify(graph);
+    }
+
+    /**
+     * Keeps display nodes from overlapping after a layout, preserving the layout's structure. Layouts that place
+     * nodes on rows or columns (knowledge tiers, lag rows, layered drawings, causal order, the square) are
+     * respaced within those rows and columns, so a tier stays a tier and a lag stays a row; layouts with no such
+     * structure (Fruchterman-Reingold, Kamada-Kawai) get the pairwise push-apart of {@link #resolveNodeOverlaps()}.
+     * The circle layout is widened by {@link LayoutUtils} before it reaches here and needs neither.
+     */
+    private void separateNodes() {
+        if (!spreadStructuredLayout()) {
+            resolveNodeOverlaps();
+        }
+    }
+
+    /**
+     * Respaces a layout whose nodes lie on rows (nodes sharing a center y) or columns (sharing a center x) so that
+     * no two boxes overlap, without moving any node off its row or column. A grid (rows and columns both present,
+     * as in tiers and lag graphs) is respaced by whole columns, each just far enough from the previous for their
+     * widest nodes to clear, and by whole rows likewise for their tallest, so alignment across rows and columns is
+     * kept; existing gaps that already suffice are preserved. Rows alone are spread within each row and then
+     * pushed apart; columns alone likewise.
+     *
+     * @return True if row or column structure was found (whether or not anything had to move); false for a layout
+     * in which no two nodes share a coordinate.
+     */
+    public boolean spreadStructuredLayout() {
+        List<DisplayNode> nodes = new ArrayList<>();
+        List<Node> model = new ArrayList<>();
+
+        for (Node modelNode : this.graph.getNodes()) {
+            DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(modelNode);
+            if (displayNode == null) continue;
+            nodes.add(displayNode);
+            model.add(modelNode);
+        }
+
+        int n = nodes.size();
+        if (n < 2) return false;
+
+        int[] cx = new int[n];
+        int[] cy = new int[n];
+        int[] w = new int[n];
+        int[] h = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            Dimension dim = nodes.get(i).getSize();
+            if (dim.width <= 0 || dim.height <= 0) dim = nodes.get(i).getPreferredSize();
+            cx[i] = model.get(i).getCenterX();
+            cy[i] = model.get(i).getCenterY();
+            w[i] = dim.width;
+            h[i] = dim.height;
+        }
+
+        Map<Integer, List<Integer>> rows = new TreeMap<>();
+        Map<Integer, List<Integer>> cols = new TreeMap<>();
+        for (int i = 0; i < n; i++) {
+            rows.computeIfAbsent(cy[i], k -> new ArrayList<>()).add(i);
+            cols.computeIfAbsent(cx[i], k -> new ArrayList<>()).add(i);
+        }
+
+        boolean hasRows = rows.values().stream().anyMatch(g -> g.size() > 1);
+        boolean hasCols = cols.values().stream().anyMatch(g -> g.size() > 1);
+        if (!hasRows && !hasCols) return false;
+
+        int margin = NODE_OVERLAP_MARGIN;
+        boolean moved = false;
+
+        // A grid (rows and columns both present, as in tiers and lag graphs) is respaced by whole columns and
+        // whole rows, so that alignment across rows and columns is kept. Rows alone are spread within each row;
+        // columns alone within each column.
+        boolean grid = hasRows && hasCols;
+
+        if (hasRows && !grid) {
+            // Within each row: push right as needed, carrying the accumulated shift.
+            for (List<Integer> row : rows.values()) {
+                row.sort(Comparator.comparingInt(i -> cx[i]));
+                int shift = 0;
+                for (int k = 1; k < row.size(); k++) {
+                    int prev = row.get(k - 1);
+                    int cur = row.get(k);
+                    int carried = cx[cur] + shift;
+                    int needed = cx[prev] + (w[prev] + w[cur]) / 2 + margin;
+                    int newX = Math.max(carried, needed);
+                    shift = newX - cx[cur];
+                    if (newX != cx[cur]) moved = true;
+                    cx[cur] = newX;
+                }
+            }
+        }
+
+        if (hasRows) {
+            // Between rows: push down as needed.
+            int shift = 0;
+            int prevY = Integer.MIN_VALUE;
+            int prevH = 0;
+            for (Map.Entry<Integer, List<Integer>> e : rows.entrySet()) {
+                int y = e.getKey();
+                List<Integer> row = e.getValue();
+                int rowH = 0;
+                for (int i : row) rowH = Math.max(rowH, h[i]);
+                int newY = y + shift;
+                if (prevY != Integer.MIN_VALUE) {
+                    newY = Math.max(newY, prevY + (prevH + rowH) / 2 + margin);
+                }
+                shift = newY - y;
+                if (newY != y) {
+                    moved = true;
+                    for (int i : row) cy[i] = newY;
+                }
+                prevY = newY;
+                prevH = rowH;
+            }
+        }
+
+        if (hasCols && !grid) {
+            // Within each column: push down as needed.
+            for (List<Integer> col : cols.values()) {
+                col.sort(Comparator.comparingInt(i -> cy[i]));
+                int shift = 0;
+                for (int k = 1; k < col.size(); k++) {
+                    int prev = col.get(k - 1);
+                    int cur = col.get(k);
+                    int carried = cy[cur] + shift;
+                    int needed = cy[prev] + (h[prev] + h[cur]) / 2 + margin;
+                    int newY = Math.max(carried, needed);
+                    shift = newY - cy[cur];
+                    if (newY != cy[cur]) moved = true;
+                    cy[cur] = newY;
+                }
+            }
+        }
+
+        if (hasCols) {
+            // Between columns: push right as needed, by the columns' widest nodes.
+            {
+                int shift = 0;
+                int prevX = Integer.MIN_VALUE;
+                int prevW = 0;
+                for (Map.Entry<Integer, List<Integer>> e : cols.entrySet()) {
+                    int x = e.getKey();
+                    List<Integer> col = e.getValue();
+                    int colW = 0;
+                    for (int i : col) colW = Math.max(colW, w[i]);
+                    int newX = x + shift;
+                    if (prevX != Integer.MIN_VALUE) {
+                        newX = Math.max(newX, prevX + (prevW + colW) / 2 + margin);
+                    }
+                    shift = newX - x;
+                    if (newX != x) {
+                        moved = true;
+                        for (int i : col) cx[i] = newX;
+                    }
+                    prevX = newX;
+                    prevW = colW;
+                }
+            }
+        }
+
+        if (!moved) return true;
+
+        for (int i = 0; i < n; i++) {
+            DisplayNode d = nodes.get(i);
+            d.setLocation(cx[i] - w[i] / 2, cy[i] - h[i] / 2);
+            model.get(i).setCenter(cx[i], cy[i]);
+        }
+
+        fitCanvasToNodes();
+        return true;
+    }
+
+    /**
+     * Grows the workbench's preferred size (and scrollable maximum) to hold every display node, and repaints.
+     */
+    private void fitCanvasToNodes() {
+        adjustPreferredSize();
+        if (getPreferredSize().getWidth() > getMaxX()) setMaxX((int) getPreferredSize().getWidth());
+        if (getPreferredSize().getHeight() > getMaxY()) setMaxY((int) getPreferredSize().getHeight());
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * The gap kept between the boxes of any two display nodes by {@link #resolveNodeOverlaps()}, in pixels.
+     */
+    public static final int NODE_OVERLAP_MARGIN = 10;
+
+    /**
+     * Moves display nodes apart until no two of their boxes (padded by {@link #NODE_OVERLAP_MARGIN}) overlap, and
+     * writes the resulting centers back to the model nodes so the layout persists. This is the fallback for
+     * layouts with no row or column structure to preserve (Fruchterman-Reingold, Kamada-Kawai), whose centers are
+     * placed without regard to how wide a node's label makes it; structured layouts use
+     * {@link #spreadStructuredLayout()} instead. Overlapping pairs are separated along the
+     * axis of smaller overlap, each node moving half the distance, repeatedly until no overlap remains (or a fixed
+     * iteration budget is spent); the result is then shifted so that no node leaves the workbench's top-left. A
+     * layout with no overlaps is left exactly as it was.
+     *
+     * @return True if any node was moved.
+     */
+    public boolean resolveNodeOverlaps() {
+        List<DisplayNode> nodes = new ArrayList<>();
+        List<Node> model = new ArrayList<>();
+
+        for (Node modelNode : this.graph.getNodes()) {
+            DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(modelNode);
+            if (displayNode == null) continue;
+            nodes.add(displayNode);
+            model.add(modelNode);
+        }
+
+        int n = nodes.size();
+        if (n < 2) return false;
+
+        double[] cx = new double[n];
+        double[] cy = new double[n];
+        double[] w = new double[n];
+        double[] h = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            DisplayNode d = nodes.get(i);
+            Dimension dim = d.getSize();
+            if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
+            cx[i] = d.getX() + dim.width / 2.0;
+            cy[i] = d.getY() + dim.height / 2.0;
+            w[i] = dim.width + NODE_OVERLAP_MARGIN;
+            h[i] = dim.height + NODE_OVERLAP_MARGIN;
+        }
+
+        boolean moved = false;
+
+        for (int iter = 0; iter < 500; iter++) {
+            boolean any = false;
+
+            for (int i = 0; i < n; i++) {
+                for (int j = i + 1; j < n; j++) {
+                    double dx = cx[j] - cx[i];
+                    double dy = cy[j] - cy[i];
+                    double overlapX = (w[i] + w[j]) / 2.0 - Math.abs(dx);
+                    double overlapY = (h[i] + h[j]) / 2.0 - Math.abs(dy);
+
+                    if (overlapX <= 0 || overlapY <= 0) continue;
+                    any = true;
+
+                    // Coincident centers: separate along a deterministic direction.
+                    if (dx == 0 && dy == 0) {
+                        dx = ((i + j) % 2 == 0) ? 1 : -1;
+                        dy = 0.5;
+                    }
+
+                    // Move apart along the axis needing the smaller shift; the push is split between the two.
+                    if (overlapX < overlapY) {
+                        double sign = dx >= 0 ? 1 : -1;
+                        cx[i] -= sign * overlapX / 2.0;
+                        cx[j] += sign * overlapX / 2.0;
+                    } else {
+                        double sign = dy >= 0 ? 1 : -1;
+                        cy[i] -= sign * overlapY / 2.0;
+                        cy[j] += sign * overlapY / 2.0;
+                    }
+                }
+            }
+
+            if (!any) break;
+            moved = true;
+        }
+
+        if (!moved) return false;
+
+        // Keep everything on the canvas: nothing may extend past the top-left margin.
+        double minLeft = Double.POSITIVE_INFINITY;
+        double minTop = Double.POSITIVE_INFINITY;
+        for (int i = 0; i < n; i++) {
+            minLeft = Math.min(minLeft, cx[i] - w[i] / 2.0);
+            minTop = Math.min(minTop, cy[i] - h[i] / 2.0);
+        }
+        double shiftX = minLeft < NODE_OVERLAP_MARGIN ? NODE_OVERLAP_MARGIN - minLeft : 0;
+        double shiftY = minTop < NODE_OVERLAP_MARGIN ? NODE_OVERLAP_MARGIN - minTop : 0;
+
+        for (int i = 0; i < n; i++) {
+            DisplayNode d = nodes.get(i);
+            Dimension dim = d.getSize();
+            if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
+            int centerX = (int) Math.round(cx[i] + shiftX);
+            int centerY = (int) Math.round(cy[i] + shiftY);
+            d.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
+            model.get(i).setCenter(centerX, centerY);
+        }
+
+        fitCanvasToNodes();
+        return true;
     }
 
     /**

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.workbench;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetradapp.util.GraphEditorUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetrad.util.TMath;
@@ -597,13 +598,95 @@ public class LayoutUtils {
             }
         }
 
-        Rectangle r = layoutEditable.getVisibleRect();
-
-        int m = TMath.min(r.width, r.height) / 2;
-
         LayoutUtil.circleLayout(graph);
+        widenCircleForLabels(graph, layoutEditable);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
+    }
+
+    /**
+     * Enlarges a circle layout so that adjacent nodes do not overlap: the lib's circle radius grows with the
+     * number of nodes but not with their label widths, so long names (e.g., from a long-to-wide reshaping) were
+     * drawn on top of one another. The chord between neighbors is made at least the widest node box plus the
+     * workbench's overlap margin; a circle already wide enough is left as is. Positions are scaled about the
+     * circle's center, then shifted so no node leaves the top-left of the canvas.
+     *
+     * @param graph          The graph, already laid out in a circle.
+     * @param layoutEditable The editable, for the display node sizes.
+     */
+    static void widenCircleForLabels(Graph graph, LayoutEditable layoutEditable) {
+        List<Node> nodes = new ArrayList<>();
+        double maxWidth = 0;
+        double maxHeight = 0;
+
+        for (Node node : graph.getNodes()) {
+            Object o = layoutEditable.getModelNodesToDisplay().get(node);
+            if (!(o instanceof DisplayNode d)) continue;
+            nodes.add(node);
+            Dimension dim = d.getPreferredSize();
+            maxWidth = Math.max(maxWidth, dim.width);
+            maxHeight = Math.max(maxHeight, dim.height);
+        }
+
+        int n = nodes.size();
+        if (n < 3) return;
+
+        double cx = 0, cy = 0;
+        for (Node node : nodes) {
+            cx += node.getCenterX();
+            cy += node.getCenterY();
+        }
+        cx /= n;
+        cy /= n;
+
+        double radius = 0;
+        for (Node node : nodes) radius += Math.hypot(node.getCenterX() - cx, node.getCenterY() - cy);
+        radius /= n;
+        if (radius <= 0) return;
+
+        final double fcx = cx, fcy = cy;
+        nodes.sort(Comparator.comparingDouble(node -> Math.atan2(node.getCenterY() - fcy, node.getCenterX() - fcx)));
+
+        // For each pair of neighbors, the smallest radius at which their boxes are apart: boxes on a circle of
+        // radius r at angles a and b are separated horizontally by r |cos a - cos b| and vertically by
+        // r |sin a - sin b|, and they are apart if either separation exceeds the corresponding box extent (plus
+        // margin). Neighbors at the top and bottom of the circle need the horizontal separation (wide labels
+        // make it large); neighbors at the sides need only the vertical one. The required radius is the largest
+        // of the per-pair minima.
+        double margin = AbstractWorkbench.NODE_OVERLAP_MARGIN;
+        double requiredRadius = 0;
+
+        for (int i = 0; i < n; i++) {
+            Node p = nodes.get(i);
+            Node q = nodes.get((i + 1) % n);
+            DisplayNode dp = (DisplayNode) layoutEditable.getModelNodesToDisplay().get(p);
+            DisplayNode dq = (DisplayNode) layoutEditable.getModelNodesToDisplay().get(q);
+            double wNeed = (dp.getPreferredSize().width + dq.getPreferredSize().width) / 2.0 + margin;
+            double hNeed = (dp.getPreferredSize().height + dq.getPreferredSize().height) / 2.0 + margin;
+
+            double a = Math.atan2(p.getCenterY() - cy, p.getCenterX() - cx);
+            double b = Math.atan2(q.getCenterY() - cy, q.getCenterX() - cx);
+            double dcos = Math.abs(Math.cos(a) - Math.cos(b));
+            double dsin = Math.abs(Math.sin(a) - Math.sin(b));
+
+            double byWidth = dcos > 1e-9 ? wNeed / dcos : Double.POSITIVE_INFINITY;
+            double byHeight = dsin > 1e-9 ? hNeed / dsin : Double.POSITIVE_INFINITY;
+            double pairRadius = Math.min(byWidth, byHeight);
+            if (Double.isFinite(pairRadius)) requiredRadius = Math.max(requiredRadius, pairRadius);
+        }
+
+        if (requiredRadius <= radius) return;
+
+        double scale = requiredRadius / radius;
+        double left = maxWidth / 2.0 + AbstractWorkbench.NODE_OVERLAP_MARGIN;
+        double top = maxHeight / 2.0 + AbstractWorkbench.NODE_OVERLAP_MARGIN;
+
+        for (Node node : nodes) {
+            double x = cx + (node.getCenterX() - cx) * scale;
+            double y = cy + (node.getCenterY() - cy) * scale;
+            node.setCenter((int) Math.round(x - cx + requiredRadius + left),
+                    (int) Math.round(y - cy + requiredRadius + top));
+        }
     }
 
     /**
@@ -620,11 +703,82 @@ public class LayoutUtils {
             }
         }
 
-        Rectangle r = layoutEditable.getVisibleRect();
-
         LayoutUtil.squareLayout(graph);
+        respaceSquareForLabels(graph, layoutEditable);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
+    }
+
+    /**
+     * Respaces a square layout (see {@link LayoutUtil#squareLayout(Graph)}) for the display nodes' label sizes,
+     * keeping it a rectangle with aligned corners: the lib places the nodes, in natural order, along the top row
+     * (left to right), the right column (top to bottom), the bottom row (right to left), and the left column
+     * (bottom to top), on a grid with fixed 70 by 50 spacing. Here the grid's column positions are recomputed from
+     * the widest node in each column (the top node and the bottom node sharing that column) and its row positions
+     * from the tallest node in each row, each position just far enough from the previous to clear plus the
+     * workbench's overlap margin, but never closer than the lib's own spacing. A square already wide enough is left
+     * as is.
+     *
+     * @param graph          The graph, already laid out as a square by the lib.
+     * @param layoutEditable The editable, for the display node sizes.
+     */
+    static void respaceSquareForLabels(Graph graph, LayoutEditable layoutEditable) {
+        List<Node> nodes = new ArrayList<>(graph.getNodes());
+        nodes.removeIf(node -> !(layoutEditable.getModelNodesToDisplay().get(node) instanceof DisplayNode));
+        nodes.sort(NaturalSort.naturalComparator());
+
+        int n = nodes.size();
+        if (n < 2) return;
+
+        int side = n / 4;
+        if (n % 4 != 0) side++;
+
+        // Grid coordinates (column index cIdx in 0..side, row index rIdx in 0..side) of each node, as the lib
+        // assigns them.
+        int[] cIdx = new int[n];
+        int[] rIdx = new int[n];
+        for (int i = 0; i < n; i++) {
+            if (i < side) {
+                cIdx[i] = i;
+                rIdx[i] = 0;
+            } else if (i < 2 * side) {
+                cIdx[i] = side;
+                rIdx[i] = i - side;
+            } else if (i < 3 * side) {
+                cIdx[i] = side - (i - 2 * side);
+                rIdx[i] = side;
+            } else {
+                cIdx[i] = 0;
+                rIdx[i] = side - (i - 3 * side);
+            }
+        }
+
+        int[] colW = new int[side + 1];
+        int[] rowH = new int[side + 1];
+        for (int i = 0; i < n; i++) {
+            Dimension dim = ((DisplayNode) layoutEditable.getModelNodesToDisplay().get(nodes.get(i))).getPreferredSize();
+            colW[cIdx[i]] = Math.max(colW[cIdx[i]], dim.width);
+            rowH[rIdx[i]] = Math.max(rowH[rIdx[i]], dim.height);
+        }
+
+        final int libSpaceX = 70;
+        final int libSpaceY = 50;
+        int margin = AbstractWorkbench.NODE_OVERLAP_MARGIN;
+
+        // The lib's origin (70, 50) is kept unless a wide first column or tall first row needs more room, so
+        // that a square that already fits is left exactly where the lib put it.
+        int[] colX = new int[side + 1];
+        int[] rowY = new int[side + 1];
+        colX[0] = Math.max(70, colW[0] / 2 + margin);
+        rowY[0] = Math.max(50, rowH[0] / 2 + margin);
+        for (int k = 1; k <= side; k++) {
+            colX[k] = colX[k - 1] + Math.max(libSpaceX, (colW[k - 1] + colW[k]) / 2 + margin);
+            rowY[k] = rowY[k - 1] + Math.max(libSpaceY, (rowH[k - 1] + rowH[k]) / 2 + margin);
+        }
+
+        for (int i = 0; i < n; i++) {
+            nodes.get(i).setCenter(colX[cIdx[i]], rowY[rIdx[i]]);
+        }
     }
 
     /**
