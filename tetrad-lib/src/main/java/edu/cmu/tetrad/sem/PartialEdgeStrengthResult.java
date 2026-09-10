@@ -5,30 +5,30 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.Serial;
 
 /**
- * Result of a partial (residualized) edge strength computation performed by
+ * Result of a partial edge strength computation performed by
  * {@link NNEstimator#computePartialEdgeStrength(String, String, int)}.
  *
- * <p>Partial edge strength asks: after accounting for everything Y's other
- * parents explain, how much additional variance does X explain in the
- * residual? This is the nonparametric analog of partial R² in regression,
- * and is less contaminated by inter-parent correlations than the marginal
- * edge strength in {@link EdgeStrengthResult}.
+ * <p>Partial edge strength asks: once Y's other parents are accounted for,
+ * does X add anything to held-out prediction of Y? It is computed on the
+ * same k folds as {@link NNEstimator#crossValidate(int)}: on each fold the
+ * full model (all parents) and a reduced model (Y's mechanism retrained on
+ * the fold's training rows without X) both predict the held-out rows, and
+ * the difference in held-out score is reported.
  *
- * <p>The computation:
- * <ol>
- *   <li>Uses the fitted mechanism for Y to predict Ŷ from all parents.</li>
- *   <li>Computes residuals R = Y − Ŷ on the observed data.</li>
- *   <li>Fits a small NN of R ~ X (single parent) via k-fold CV.</li>
- *   <li>Reports the OOS R² of that residual regression.</li>
- * </ol>
+ * <ul>
+ *   <li><b>Continuous child:</b> {@link #partialR2} = R²_full − R²_reduced,
+ *       with R² = 1 − OOS MSE / marginal variance, matching the
+ *       Cross-Validation table. {@link #residualVariance} holds the reduced
+ *       model's held-out MSE.</li>
+ *   <li><b>Discrete child:</b> {@link #partialXentImprovement} =
+ *       xent_reduced − xent_full in nats.</li>
+ * </ul>
  *
- * <p>A positive {@link #partialR2} means X explains additional variance in Y
- * beyond what the other parents already account for — strong evidence the
- * edge is real. A near-zero or negative value suggests X adds little once
- * the other parents are controlled for.
- *
- * <p>Note: for discrete children cross-entropy improvement is used instead
- * of R², since R² is not meaningful for discrete outcomes.
+ * <p>Positive means X carries information about Y that the other parents do
+ * not. Near zero means X is redundant given the other parents, which is
+ * not the same as X not being a cause; see {@link EdgeStrengthResult} for
+ * the complementary intervention measure, which stays large for a redundant
+ * parent the fitted mechanism actually uses.
  */
 public final class PartialEdgeStrengthResult implements TetradSerializable {
 
@@ -45,16 +45,17 @@ public final class PartialEdgeStrengthResult implements TetradSerializable {
     public final boolean discreteChild;
 
     /**
-     * OOS R² of the residual regression R ~ X, estimated by k-fold CV.
-     * Positive = X explains variance in the residual beyond other parents.
+     * Held-out R² of the full model minus held-out R² of the model with X
+     * removed from Y's parents, on the same k folds as the CV table.
+     * Positive = X adds predictive information beyond the other parents.
      * NaN for discrete children.
      */
     public final double partialR2;
 
     /**
-     * Baseline variance of the residuals R = Y − Ŷ.
-     * This is the variance left unexplained by the other parents.
-     * NaN for discrete children.
+     * Held-out MSE of the reduced model (Y predicted from its other parents,
+     * without X). Kept under its original field name for session
+     * compatibility. NaN for discrete children.
      */
     public final double residualVariance;
 
@@ -95,7 +96,7 @@ public final class PartialEdgeStrengthResult implements TetradSerializable {
     public String toSummaryLine() {
         if (!discreteChild) {
             return String.format(
-                    "%s → %s  |  Partial R² = %.4f  |  Residual var = %.4f  (k=%d)",
+                    "%s → %s  |  Partial ΔR² = %.4f  |  Reduced OOS MSE = %.4f  (k=%d)",
                     parentName, childName, partialR2, residualVariance, numFolds);
         } else {
             return String.format(

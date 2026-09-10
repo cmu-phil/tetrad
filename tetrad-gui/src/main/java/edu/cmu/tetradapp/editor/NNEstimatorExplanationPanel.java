@@ -100,7 +100,8 @@ final class NNEstimatorExplanationPanel {
             <p>This tab answers a different question: not "does the model reproduce the data it was trained
             on," but "does each variable's mechanism predict rows it has never seen." The rows are split into
             k blocks, each block is held out in turn, a fresh model is trained on the rest, and the held-out rows
-            are predicted from their parents.</p>
+            are predicted from their parents. The k fold models are kept and shared with the Edge Strength
+            tab, so the partial strengths there are measured on exactly these folds.</p>
 
             <p>For a <b>continuous</b> variable the table reports out-of-sample R squared: one minus the
             held-out mean squared error divided by the variable's marginal variance. Zero means knowing the
@@ -144,11 +145,18 @@ final class NNEstimatorExplanationPanel {
             X is randomized.</p>
 
             <p><b>The partial measure</b> answers a different question: does X add anything to held-out
-            prediction of Y once Y's other parents are known? For continuous Y the tool retrains Y's mechanism
-            without X, takes the residual, and asks how much of that residual X can explain, as out-of-sample R
-            squared from a small cross-validated regression using the <b>CV k</b> spinner. For discrete Y it is
-            the cross-validated improvement in cross-entropy of the full mechanism over the reduced one.
-            Positive values are shown green and bold.</p>
+            prediction of Y once Y's other parents are known? It uses the same k folds as the
+            Cross-Validation tab, set by the <b>CV k</b> spinner. On each fold, the fold's full model predicts
+            the held-out rows, and so does a reduced model in which only Y's mechanism has been retrained,
+            on that fold's training rows, without X. For a continuous Y the number reported is the
+            difference in held-out R squared, full minus reduced, with R squared defined exactly as in the
+            Cross-Validation table. For independent parents these differences add up to Y's R squared in that
+            table. For a discrete Y it is the difference in held-out cross-entropy, in nats. Positive values
+            are shown green and bold.</p>
+
+            <p>The fold models are built once, the first time either this tab or the Cross-Validation tab
+            needs them at a given k, and reused after that. Compute All on a large graph is therefore mostly
+            the cost of one small retrain of the child per fold per edge.</p>
 
             <p>Why both? They disagree in exactly one common situation, and the disagreement is the point. If
             another parent W carries nearly the same information as X, the partial measure is near zero for

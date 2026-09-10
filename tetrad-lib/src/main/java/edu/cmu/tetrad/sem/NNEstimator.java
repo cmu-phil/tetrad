@@ -27,7 +27,9 @@ import java.util.stream.IntStream;
  *   <li>Computes an {@link AdequacyReport} comparing the observed and simulated
  *       joint distributions (MMD² plus per-node summaries).</li>
  *   <li>Optionally runs k-fold cross-validation to produce honest OOS metrics
- *       at both the node level and the whole-graph level ({@link #crossValidate}).</li>
+ *       at both the node level and the whole-graph level ({@link #crossValidate});
+ *       the fold models are cached and reused by
+ *       {@link #computePartialEdgeStrength}.</li>
  * </ol>
  *
  * <p>This class has no dependency on any GUI toolkit and can be used directly
@@ -206,17 +208,21 @@ public final class NNEstimator implements TetradSerializable {
      * Runs k-fold cross-validation and returns a {@link CVReport} with honest
      * OOS metrics at both the node level and the whole-graph level.
      *
-     * <p>For each fold:
+     * <p>The k fold models (one simulator trained on each set of k−1 training
+     * folds) are built once by {@link #getFoldModels(int)} and cached, so that
+     * {@link #computePartialEdgeStrength} can reuse exactly the same folds.
+     * For each fold:
      * <ol>
-     *   <li>A fresh {@link TrainedDagSimulatorGNM} is trained on the k-1
-     *       training folds.</li>
-     *   <li>Node-level OOS MSE (continuous) or 0-1 loss (discrete) is computed
-     *       by calling {@link TrainedDagSimulatorGNM#predictNode} on each
-     *       held-out row. Root nodes are skipped.</li>
+     *   <li>Node-level OOS MSE (continuous) or cross-entropy (discrete) is
+     *       computed by calling {@link TrainedDagSimulatorGNM#predictNode} on
+     *       each held-out row. Root nodes are skipped.</li>
      *   <li>A whole-graph OOS MMD² is computed by simulating
      *       {@code testSize} rows from the fold-trained model and comparing
      *       the joint distribution to the held-out rows.</li>
      * </ol>
+     *
+     * <p>Folds are contiguous blocks of rows in file order (a blocked CV);
+     * shuffle the rows first if they are sorted by some variable.
      *
      * <p>This method does <em>not</em> require {@link #fit()} to have been called
      * first — it is self-contained. It does not update the full-data fitted model;
@@ -226,9 +232,7 @@ public final class NNEstimator implements TetradSerializable {
      * @return a {@link CVReport} with per-node and whole-graph OOS metrics
      */
     public CVReport crossValidate(int k) {
-        int n = observedData.getNumRows();
-        if (k < 2) throw new IllegalArgumentException("k must be >= 2");
-        if (k > n) throw new IllegalArgumentException("k must be <= number of rows (" + n + ")");
+        FoldModels fm = getFoldModels(k);
 
         List<Node> variables = observedData.getVariables();
         int p = variables.size();
@@ -244,7 +248,6 @@ public final class NNEstimator implements TetradSerializable {
             xentDisc[j] = new DoubleAdder();
             nDisc[j]    = new AtomicInteger(0);
         }
-
         DoubleAdder totalMmd2Adder  = new DoubleAdder();
         AtomicInteger mmd2CountAtomic = new AtomicInteger(0);
 
@@ -252,45 +255,18 @@ public final class NNEstimator implements TetradSerializable {
         double[] baselineMse  = computeBaselineMse(variables);
         double[] baselineXent = computeBaselineXent(variables);
 
-        int foldSize = n / k;
-
-        // ── Parallel fold loop ────────────────────────────────────────────────────
-        // Each fold trains its own simulator on its own training subset — no shared
-        // mutable state between folds. Accumulators use DoubleAdder/AtomicInteger
-        // for lock-free thread-safe updates.
-
         IntStream.range(0, k).parallel().forEach(fold -> {
-            int testStart = fold * foldSize;
-            int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
-            int testN     = testEnd - testStart;
-            int trainN    = n - testN;
-
-            // Partition row indices.
-            int[] trainRows = new int[trainN];
-            int[] testRows  = new int[testN];
-            int ti = 0, vi = 0;
-            for (int r = 0; r < n; r++) {
-                if (r >= testStart && r < testEnd) testRows[vi++] = r;
-                else                               trainRows[ti++] = r;
-            }
-
-            DataSet trainSet = rowSubset(observedData, trainRows);
-            DataSet testSet  = rowSubset(observedData, testRows);
-
-            // Train a fresh simulator on this fold's training data.
-            long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
-            TrainedDagSimulatorGNM sim = buildSimulator(trainSet, foldSeed);
-            sim.fit();
+            TrainedDagSimulatorGNM sim = fm.sims[fold];
+            DataSet testSet = fm.test[fold];
+            int testN = testSet.getNumRows();
 
             // ── Node-level OOS ────────────────────────────────────────────────────
-
             for (int j = 0; j < p; j++) {
                 Node var     = variables.get(j);
                 boolean isDisc = (var instanceof DiscreteVariable);
 
                 for (int ti2 = 0; ti2 < testN; ti2++) {
                     double pred = sim.predictNode(j, testSet, ti2);
-
                     // NaN signals a root node — no conditional prediction available.
                     if (!Double.isFinite(pred)) continue;
 
@@ -312,21 +288,17 @@ public final class NNEstimator implements TetradSerializable {
             }
 
             // ── Whole-graph OOS MMD² ──────────────────────────────────────────────
-
             try {
                 TrainedDagSimulatorGNM.SimResult simResult = sim.simulate(testN);
                 DataSet simTest = simResult.toDataSet();
-
                 double[][] X = toMatrix(testSet, variables);
                 double[][] Y = toMatrix(simTest, variables);
-
                 double mmd2 = RandomFeatureMMD.compute(
                         X, Y,
                         params.mmdFeatures,
                         params.mmdSeed ^ fold,
                         1.0,
                         params.mmdMaxRows);
-
                 totalMmd2Adder.add(mmd2);
                 mmd2CountAtomic.incrementAndGet();
             } catch (Exception ignored) {
@@ -335,9 +307,7 @@ public final class NNEstimator implements TetradSerializable {
         });
 
         // ── Assemble per-node summaries (non-root nodes only) ─────────────────────
-
         List<NodeCVSummary> summaries = new ArrayList<>();
-
         for (int j = 0; j < p; j++) {
             Node var     = variables.get(j);
             boolean isDisc = (var instanceof DiscreteVariable);
@@ -364,8 +334,94 @@ public final class NNEstimator implements TetradSerializable {
 
         double meanMmd2 = (mmd2CountAtomic.get() > 0)
                 ? totalMmd2Adder.sum() / mmd2CountAtomic.get() : Double.NaN;
+
         cvReport = new CVReport(k, summaries, meanMmd2);
         return cvReport;
+    }
+
+    // ── Fold models ───────────────────────────────────────────────────────────
+
+    /**
+     * The k fold models of a k-fold split: for each fold, the training rows,
+     * the held-out rows, and a simulator fitted on the training rows only.
+     * Built once per k and shared by {@link #crossValidate} and
+     * {@link #computePartialEdgeStrength} so their numbers live on the same
+     * folds.
+     */
+    private static final class FoldModels {
+        final int k;
+        final DataSet[] train;
+        final DataSet[] test;
+        final TrainedDagSimulatorGNM[] sims;
+
+        FoldModels(int k, DataSet[] train, DataSet[] test, TrainedDagSimulatorGNM[] sims) {
+            this.k = k;
+            this.train = train;
+            this.test = test;
+            this.sims = sims;
+        }
+    }
+
+    /** Cached fold models; rebuilt only when k changes. Not serialized. */
+    private transient FoldModels foldModels;
+
+    /**
+     * Returns the fold models for a k-fold split, building and caching them
+     * on first use (in parallel over folds). Folds are contiguous blocks of
+     * rows in file order. Thread-safe: concurrent callers wait for the first
+     * build rather than each building their own.
+     *
+     * @param k number of folds; must be &ge; 2 and &le; n
+     * @return the cached fold models for this k
+     */
+    private synchronized FoldModels getFoldModels(int k) {
+        int n = observedData.getNumRows();
+        if (k < 2) throw new IllegalArgumentException("k must be >= 2");
+        if (k > n) throw new IllegalArgumentException("k must be <= number of rows (" + n + ")");
+        if (foldModels != null && foldModels.k == k) return foldModels;
+
+        int foldSize = n / k;
+        DataSet[] train = new DataSet[k];
+        DataSet[] test  = new DataSet[k];
+        TrainedDagSimulatorGNM[] sims = new TrainedDagSimulatorGNM[k];
+
+        IntStream.range(0, k).parallel().forEach(fold -> {
+            int testStart = fold * foldSize;
+            int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
+            int testN     = testEnd - testStart;
+            int trainN    = n - testN;
+
+            int[] trainRows = new int[trainN];
+            int[] testRows  = new int[testN];
+            int ti = 0, vi = 0;
+            for (int r = 0; r < n; r++) {
+                if (r >= testStart && r < testEnd) testRows[vi++] = r;
+                else                               trainRows[ti++] = r;
+            }
+            train[fold] = rowSubset(observedData, trainRows);
+            test[fold]  = rowSubset(observedData, testRows);
+
+            long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
+            TrainedDagSimulatorGNM sim = buildSimulator(train[fold], foldSeed);
+            sim.fit();
+            sims[fold] = sim;
+        });
+
+        foldModels = new FoldModels(k, train, test, sims);
+        return foldModels;
+    }
+
+    /**
+     * Reports whether fold models for {@code k} are currently cached.
+     *
+     * @param k number of folds
+     * @return true if a call to {@link #crossValidate(int)} or
+     * {@link #computePartialEdgeStrength} at this k would reuse cached
+     * fold models rather than refitting
+     */
+    public boolean hasFoldModels(int k) {
+        FoldModels fm = foldModels;
+        return fm != null && fm.k == k;
     }
 
     /**
@@ -641,38 +697,36 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
-     * Computes the partial edge strength of X → Y by residualizing Y on its
-     * other parents and measuring how much X explains in the residual via
-     * k-fold cross-validation.
+     * Computes the partial edge strength of X → Y: the held-out predictive
+     * gain from X once Y's other parents are accounted for, on the same
+     * k folds {@link #crossValidate(int)} uses.
      *
-     * <p>This is the nonparametric analog of partial R² in regression. Unlike
-     * {@link #computeEdgeStrength}, which measures the marginal contribution
-     * of X averaged over the joint distribution of all parents, this method
-     * controls for the other parents first — making it less sensitive to
-     * inter-parent correlations and giving a cleaner signal about whether X
-     * causally contributes to Y.
+     * <p>For each fold, the cached fold model (all mechanisms trained on the
+     * training rows) is the <em>full</em> model. A <em>reduced</em> model is
+     * made from it by retraining only Y's mechanism, on the same training
+     * rows, without X. Both predict the held-out rows.
      *
-     * <p>For continuous children:
-     * <ol>
-     *   <li>Compute residuals R = Y − Ŷ on the observed data, where Ŷ is
-     *       the zero-noise point prediction of the fitted mechanism using all
-     *       parents (i.e. the conditional mean estimate).</li>
-     *   <li>Pass R and the observed values of X to
-     *       {@link TrainedDagSimulatorGNM#fitResidualRegressionOosR2}, which
-     *       fits a small MLP of R ~ X via k-fold CV and returns OOS R².</li>
-     * </ol>
+     * <p>For a continuous child the result is the difference in held-out
+     * R², where R² = 1 − OOS MSE / marginal variance exactly as in the
+     * Cross-Validation table:
+     * <pre>  partialR2 = R²_full − R²_reduced = (MSE_reduced − MSE_full) / var(Y)</pre>
+     * For a discrete child it is the difference in held-out cross-entropy,
+     * in nats: {@code xent_reduced − xent_full}. Positive means X adds
+     * information the other parents do not carry.
      *
-     * <p>For discrete children, a CV cross-entropy improvement is computed
-     * by comparing the full model (all parents) against the reduced model
-     * (all parents except X) on held-out folds.
+     * <p>This is the complement of {@link #computeEdgeStrength}: a parent that
+     * is redundant with another parent scores near zero here even if the
+     * fitted mechanism leans on it, because the reduced mechanism can use the
+     * other parent instead.
      *
-     * <p>Requires {@link #fit()} to have been called first.
+     * <p>Requires {@link #fit()} to have been called first. Safe to call
+     * concurrently for different edges; the first call at a given k builds the
+     * fold models and later calls reuse them.
      *
      * @param parentName name of the parent variable X
      * @param childName  name of the child variable Y
-     * @param k          number of CV folds for the residual regression
-     * @return a {@link PartialEdgeStrengthResult} with partial R² (continuous)
-     *         or cross-entropy improvement (discrete)
+     * @param k          number of CV folds
+     * @return a {@link PartialEdgeStrengthResult}
      * @throws IllegalStateException    if {@link #fit()} has not been called
      * @throws IllegalArgumentException if the edge does not exist or either
      *                                  variable is not found
@@ -682,174 +736,94 @@ public final class NNEstimator implements TetradSerializable {
         checkFitted();
 
         // ── Validate ──────────────────────────────────────────────────────────
-
         Node parentNode = findVariable(parentName);
         Node childNode  = findVariable(childName);
-
         if (!dag.isParentOf(parentNode, childNode)) {
             throw new IllegalArgumentException(
                     "No edge " + parentName + " → " + childName + " in the DAG.");
         }
-
         boolean isDisc = (childNode instanceof DiscreteVariable);
-
-        int n = observedData.getNumRows();
-        if (k < 2) throw new IllegalArgumentException("k must be >= 2");
-        if (k > n) throw new IllegalArgumentException(
-                "k must be <= number of rows (" + n + ")");
-
-        // ── Build column index map ────────────────────────────────────────────
 
         List<Node> variables = observedData.getVariables();
         Map<String, Integer> indexByName = new HashMap<>();
         for (int j = 0; j < variables.size(); j++) {
             indexByName.put(variables.get(j).getName(), j);
         }
-        int childIdx  = indexByName.get(childName);
-        int parentIdx = indexByName.get(parentName);
+        int childIdx = indexByName.get(childName);
 
-        // ── Continuous child ──────────────────────────────────────────────────
+        int[] reducedParentIndices = dag.getParents(childNode).stream()
+                .filter(q -> !q.getName().equals(parentName))
+                .mapToInt(q -> indexByName.get(q.getName()))
+                .toArray();
+
+        FoldModels fm = getFoldModels(k);
+
+        // Per-fold accumulators; folds run in parallel and each writes only
+        // its own slot. The reduced child mechanism is a fresh object per fold,
+        // and the shared fold simulators are safe for concurrent prediction.
+        double[] sseFullF = new double[k], sseRedF = new double[k];
+        double[] xentFullF = new double[k], xentRedF = new double[k];
+        int[] nContF = new int[k], nDiscF = new int[k];
+
+        IntStream.range(0, k).parallel().forEach(fold -> {
+            TrainedDagSimulatorGNM full = fm.sims[fold];
+            long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
+            TrainedDagSimulatorGNM reduced = full.withReducedParents(
+                    childIdx, reducedParentIndices, foldSeed ^ 0xDEADBEEFL);
+
+            DataSet testSet = fm.test[fold];
+            int testN = testSet.getNumRows();
+
+            for (int i = 0; i < testN; i++) {
+                if (!isDisc) {
+                    double yObs = testSet.getDouble(i, childIdx);
+                    if (!Double.isFinite(yObs)) continue;
+                    double yFull = full.predictNode(childIdx, testSet, i);
+                    double yRed  = reduced.predictNode(childIdx, testSet, i);
+                    if (!Double.isFinite(yFull) || !Double.isFinite(yRed)) continue;
+                    sseFullF[fold] += (yObs - yFull) * (yObs - yFull);
+                    sseRedF[fold]  += (yObs - yRed)  * (yObs - yRed);
+                    nContF[fold]++;
+                } else {
+                    int obs = TrainedDagSimulatorGNM.safeGetInt(testSet, i, childIdx);
+                    double[] pFull = full.predictNodeProbs(childIdx, testSet, i);
+                    double[] pRed  = reduced.predictNodeProbs(childIdx, testSet, i);
+                    if (pFull == null || pRed == null) continue;
+                    if (obs < 0 || obs >= pFull.length) continue;
+                    xentFullF[fold] += -TMath.log(TMath.max(pFull[obs], 1e-300));
+                    xentRedF[fold]  += -TMath.log(TMath.max(pRed[obs],  1e-300));
+                    nDiscF[fold]++;
+                }
+            }
+        });
+
+        double sseFull = 0.0, sseRed = 0.0, xentFull = 0.0, xentRed = 0.0;
+        int nCont = 0, nDisc = 0;
+        for (int fold = 0; fold < k; fold++) {
+            sseFull += sseFullF[fold]; sseRed += sseRedF[fold]; nCont += nContF[fold];
+            xentFull += xentFullF[fold]; xentRed += xentRedF[fold]; nDisc += nDiscF[fold];
+        }
 
         if (!isDisc) {
-
-            // Build reduced parent index array: all parents of Y except X.
-            List<Node> allParents = dag.getParents(childNode);
-            int[] reducedParentIndices = allParents.stream()
-                    .filter(p -> !p.getName().equals(parentName))
-                    .mapToInt(p -> indexByName.get(p.getName()))
-                    .toArray();
-
-            // Build reduced simulator: retrain only Y's mechanism without X,
-            // all other mechanisms unchanged.
-            TrainedDagSimulatorGNM reducedSim = fittedSimulator.withReducedParents(
-                    childIdx, reducedParentIndices, params.seed ^ 0xDEADBEEFL);
-
-            // Compute residuals R = Y - Ŷ_reduced on all observed rows.
-            // Ŷ_reduced is the prediction from the reduced mechanism (without X),
-            // so R still contains X's signal — it has not been absorbed yet.
-            double[] xVals = new double[n];
-            double[] rVals = new double[n];
-
-            double residSum = 0, residSum2 = 0;
-            int residCount = 0;
-
-            for (int i = 0; i < n; i++) {
-                double yObs = observedData.getDouble(i, childIdx);
-                double yHat = reducedSim.predictNode(childIdx, observedData, i);
-                double xVal = observedData.getDouble(i, parentIdx);
-
-                xVals[i] = xVal;
-
-                if (Double.isFinite(yObs) && Double.isFinite(yHat)) {
-                    double r = yObs - yHat;
-                    rVals[i] = r;
-                    residSum  += r;
-                    residSum2 += r * r;
-                    residCount++;
-                } else {
-                    rVals[i] = Double.NaN;
-                }
-            }
-
-            // Residual variance — baseline for partial R².
-            double residVar = Double.NaN;
-            if (residCount > 1) {
-                double residMean = residSum / residCount;
-                residVar = (residSum2 - residCount * residMean * residMean)
-                        / (residCount - 1);
-            }
-
-            // OOS R² of residual regression R ~ X via TrainedDagSimulatorGNM.
-            double partialR2 = fittedSimulator.fitResidualRegressionOosR2(
-                    xVals, rVals, k, params.seed ^ 0xDEADBEEFL);
-
+            double mseFull = nCont > 0 ? sseFull / nCont : Double.NaN;
+            double mseRed  = nCont > 0 ? sseRed  / nCont : Double.NaN;
+            double baseVar = computeBaselineMse(variables)[childIdx];
+            double partialR2 = (Double.isFinite(mseFull) && Double.isFinite(mseRed)
+                    && Double.isFinite(baseVar) && baseVar > 0)
+                    ? (mseRed - mseFull) / baseVar : Double.NaN;
             return new PartialEdgeStrengthResult(
                     parentName, childName, false,
-                    partialR2, residVar, Double.NaN, k);
-
-            // ── Discrete child ────────────────────────────────────────────────────
-
+                    partialR2, mseRed, Double.NaN, k);
         } else {
-
-            // Build reduced parent index array: all parents of Y except X.
-            List<Node> allParents = dag.getParents(childNode);
-            int[] reducedParentIndices = allParents.stream()
-                    .filter(p -> !p.getName().equals(parentName))
-                    .mapToInt(p -> indexByName.get(p.getName()))
-                    .toArray();
-
-            int L = ((DiscreteVariable) childNode).getNumCategories();
-            int foldSize = n / k;
-
-            double totalXentFull    = 0.0;
-            double totalXentReduced = 0.0;
-            int    totalN           = 0;
-
-            for (int fold = 0; fold < k; fold++) {
-                int testStart = fold * foldSize;
-                int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
-                int testN     = testEnd - testStart;
-                int trainN    = n - testN;
-
-
-                // Partition row indices.
-                int[] trainRows = new int[trainN];
-                int[] testRows  = new int[testN];
-                int ti = 0, vi = 0;
-                for (int r = 0; r < n; r++) {
-                    if (r >= testStart && r < testEnd) testRows[vi++]  = r;
-                    else                               trainRows[ti++] = r;
-                }
-
-                DataSet trainSet = rowSubset(observedData, trainRows);
-                DataSet testSet  = rowSubset(observedData, testRows);
-
-                // Full model: all parents, trained on this fold's training data.
-                long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
-                TrainedDagSimulatorGNM fullSim = buildSimulator(trainSet, foldSeed);
-                fullSim.fit();
-
-                // Reduced model: all parents except X, retrain child only.
-                TrainedDagSimulatorGNM reducedSim = fullSim.withReducedParents(
-                        childIdx, reducedParentIndices, foldSeed ^ 0xDEADBEEFL);
-
-                // Evaluate cross-entropy of both models on held-out rows.
-                for (int ti2 = 0; ti2 < testN; ti2++) {
-                    int obs = TrainedDagSimulatorGNM.safeGetInt(
-                            testSet, ti2, childIdx);
-                    if (obs < 0 || obs >= L) continue;
-
-                    double[] fullProbs    = fullSim.predictNodeProbs(
-                            childIdx, testSet, ti2);
-                    double[] reducedProbs = reducedSim.predictNodeProbs(
-                            childIdx, testSet, ti2);
-
-                    if (fullProbs == null || reducedProbs == null) continue;
-
-                    totalXentFull    += -TMath.log(
-                            TMath.max(fullProbs[obs],    1e-300));
-                    totalXentReduced += -TMath.log(
-                            TMath.max(reducedProbs[obs], 1e-300));
-                    totalN++;
-                }
-            }
-
-            // Positive improvement = full model (with X) beats reduced model.
-            double xentFull    = (totalN > 0)
-                    ? totalXentFull    / totalN : Double.NaN;
-            double xentReduced = (totalN > 0)
-                    ? totalXentReduced / totalN : Double.NaN;
-            double improvement = (Double.isFinite(xentFull)
-                    && Double.isFinite(xentReduced))
-                    ? xentReduced - xentFull
-                    : Double.NaN;
-
+            double xf = nDisc > 0 ? xentFull / nDisc : Double.NaN;
+            double xr = nDisc > 0 ? xentRed  / nDisc : Double.NaN;
+            double improvement = (Double.isFinite(xf) && Double.isFinite(xr))
+                    ? xr - xf : Double.NaN;
             return new PartialEdgeStrengthResult(
                     parentName, childName, true,
                     Double.NaN, Double.NaN, improvement, k);
         }
     }
-
 
     // ── private helpers ───────────────────────────────────────────────────────
 

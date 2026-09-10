@@ -248,7 +248,8 @@ public final class NNEstimatorComparePanel extends JPanel {
                         + "MMD², ΔVar/Var(Y) and KL: intervention strength — the child's fitted mechanism is held "
                         + "fixed and the parent's input is replaced by an independent draw, averaged over "
                         + "observed parent configurations (DoWhy arrow strength). "
-                        + "Partial: held-out gain from the parent after controlling for the other parents — "
+                        + "Partial: held-out R² (or cross-entropy) gain from the parent after controlling for the "
+                        + "other parents, on the same folds as the Cross-Validation tab — "
                         + "positive (green/bold) = the parent adds information beyond them. "
                         + "A redundant parent scores high on the first and near zero on the second."
                         + "</i></html>");
@@ -815,7 +816,7 @@ public final class NNEstimatorComparePanel extends JPanel {
 
         private static final String[] COLUMNS =
                 {"Edge", "MMD²", "ΔVar/Var(Y) / KL (bits)",
-                        "Partial R² / Xent Improv.", "Type", "Configs"};
+                        "Partial ΔR² / Xent Improv.", "Type", "Configs"};
 
         static final int COL_EDGE    = 0;
         static final int COL_MMD2    = 1;
