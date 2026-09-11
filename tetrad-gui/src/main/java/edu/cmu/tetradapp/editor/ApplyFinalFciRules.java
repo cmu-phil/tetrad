@@ -71,7 +71,7 @@ public class ApplyFinalFciRules extends AbstractAction implements ClipboardOwner
      * @param e the event that triggered the action.
      */
     public void actionPerformed(ActionEvent e) {
-        this.workbench.deselectAll();
+//        this.workbench.deselectAll();
         Graph graph = this.workbench.getGraph();
 
         if (graph == null) {

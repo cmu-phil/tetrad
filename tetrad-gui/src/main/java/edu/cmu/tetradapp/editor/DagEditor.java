@@ -165,7 +165,7 @@ public final class DagEditor extends JPanel
     @Override
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
+//        getWorkbench().deselectAll();
 
         sessionElements.forEach(sessionElement -> {
             if (sessionElement instanceof GraphNode) {

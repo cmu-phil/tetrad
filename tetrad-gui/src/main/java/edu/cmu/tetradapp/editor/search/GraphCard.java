@@ -30,6 +30,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -234,6 +235,10 @@ public class GraphCard extends JPanel {
         graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
 
         menuBar.add(graph);
+
+        // The same Layout menu the workbench offers on its right-click popup, where it was easy to miss; the
+        // workbench is itself the LayoutEditable, as in the popup. Added 2026-9-12.
+        menuBar.add(new LayoutMenu(this.workbench));
 
         return menuBar;
     }

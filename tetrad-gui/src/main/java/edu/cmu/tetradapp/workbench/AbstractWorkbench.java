@@ -2313,6 +2313,16 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 }
             }
 
+            // A right click (or control-click) on the background is what opens the popup with the Layout menu
+            // (see handleMousePressed), and the click event arrives after the popup has been launched. Clearing
+            // the selection here meant every layout chosen from that popup started from an empty selection, so
+            // "Distance From Selected" had nothing to work with and a selection made to track variables through a
+            // relayout was lost before the layout ran. The layouts themselves preserve selection; only this click
+            // discarded it. Added 2026-9-12.
+            if (isRightClickPopupAllowed() && (SwingUtilities.isRightMouseButton(e) || e.isControlDown())) {
+                return;
+            }
+
             deselectAll();
         }
     }
@@ -2954,7 +2964,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     private void doDoubleClickAction(DisplayNode node) {
-        deselectAll();
+//        deselectAll();
         node.doDoubleClickAction(getGraph());
     }
 

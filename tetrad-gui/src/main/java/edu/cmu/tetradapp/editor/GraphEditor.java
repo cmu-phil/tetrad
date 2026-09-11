@@ -188,7 +188,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     @Override
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
+//        getWorkbench().deselectAll();
 
         sessionElements.forEach(o -> {
             if (o instanceof GraphNode modelNode) {

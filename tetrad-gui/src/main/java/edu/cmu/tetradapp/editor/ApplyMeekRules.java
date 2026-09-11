@@ -67,7 +67,7 @@ public class ApplyMeekRules extends AbstractAction implements ClipboardOwner {
      * Selects all directed edges in the given display graph.
      */
     public void actionPerformed(ActionEvent e) {
-        this.workbench.deselectAll();
+//        this.workbench.deselectAll();
         Graph graph = this.workbench.getGraph();
 
         if (graph == null) {
