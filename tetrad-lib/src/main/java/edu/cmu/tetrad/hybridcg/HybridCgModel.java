@@ -22,6 +22,7 @@ package edu.cmu.tetrad.hybridcg;
 
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.MixedDataBox;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -1161,6 +1162,9 @@ public final class HybridCgModel {
 
                 // For each case, compute rowIndex from (disc parents, discretized cont parents), then increment count for Y
                 for (int r = 0; r < data.getNumRows(); r++) {
+                    // Available-case: skip any case with a missing value in this child's family.
+                    if (familyHasMissing(pm, data, y, dps, cps, colIndex, r)) continue;
+
                     int yVal = data.getInt(r, colIndex[y]);
 
                     int[] discVals = new int[dps.length];
@@ -1197,6 +1201,9 @@ public final class HybridCgModel {
                 // Group rows by discrete-parent configuration
                 Map<IntVector, List<Integer>> groups = new HashMap<>();
                 for (int r = 0; r < data.getNumRows(); r++) {
+                    // Available-case: skip any case with a missing value in this child's family.
+                    if (familyHasMissing(pm, data, y, dps, cps, colIndex, r)) continue;
+
                     int[] discVals = new int[dps.length];
                     for (int i = 0; i < dps.length; i++) discVals[i] = data.getInt(r, colIndex[dps[i]]);
                     groups.computeIfAbsent(new IntVector(discVals), k -> new ArrayList<>()).add(r);
@@ -1234,7 +1241,15 @@ public final class HybridCgModel {
 //                    for (int t = 0; t < m; t++)
 //                        im.setCoefficient(y, row, t, RandomUtil.getInstance().nextUniform(-1, 1));
 
-                    SimpleMatrix beta = Xm.pseudoInverse().mult(ym); // (m+1) x 1
+                    SimpleMatrix beta;
+                    try {
+                        beta = Xm.pseudoInverse().mult(ym); // (m+1) x 1
+                    } catch (IllegalArgumentException ex) {
+                        throw new IllegalArgumentException("OLS failed for continuous child "
+                                + pm.nodes[y].getName() + " in discrete-parent configuration "
+                                + Arrays.toString(e.getKey().values) + " (n = " + n + ", "
+                                + (m + 1) + " coefficients). Check for non-finite values.", ex);
+                    }
 
                     im.setMean(y, row, beta.get(0));
                     for (int t = 0; t < m; t++) {
@@ -1258,6 +1273,22 @@ public final class HybridCgModel {
                     for (int row = 0; row < rows; row++) im.setVariance(y, row, s2);
                 }
             }
+        }
+
+        /**
+         * True if any variable in child y's family (y, its discrete parents, its continuous parents) is missing in
+         * case r. Discrete missing is DiscreteVariable.MISSING_VALUE; continuous missing is NaN (non-finite).
+         */
+        private static boolean familyHasMissing(HybridCgPm pm, DataSet data, int y, int[] dps, int[] cps,
+                                                int[] colIndex, int r) {
+            if (pm.isDiscrete[y]) {
+                if (data.getInt(r, colIndex[y]) == DiscreteVariable.MISSING_VALUE) return true;
+            } else {
+                if (!Double.isFinite(data.getDouble(r, colIndex[y]))) return true;
+            }
+            for (int dp : dps) if (data.getInt(r, colIndex[dp]) == DiscreteVariable.MISSING_VALUE) return true;
+            for (int cp : cps) if (!Double.isFinite(data.getDouble(r, colIndex[cp]))) return true;
+            return false;
         }
 
         // ======== Small helper for map keys ========
