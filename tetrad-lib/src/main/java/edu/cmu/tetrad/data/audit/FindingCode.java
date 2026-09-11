@@ -94,6 +94,10 @@ public enum FindingCode {
      * threshold), a near-faithfulness violation that destabilizes conditional independence judgments. This is the
      * linear member of the continuous-determiner pair; NEAR_DETERMINISM_NONLINEAR covers smooth nonlinear
      * mechanisms and fires only where this check did not.
+     * <p>
+     * The determined variable is listed FIRST in the finding's variable list. When a small subset of the other
+     * variables accounts for most of the dependence, that subset follows it, as in the other determinism findings;
+     * when the dependence is diffuse the list holds the determined variable alone.
      */
     NEAR_DETERMINISM_LINEAR,
 

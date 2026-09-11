@@ -414,6 +414,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         graph.add(new PathsAction(getWorkbench(), parameters));
         UnderliningsAction underliningsAction = new UnderliningsAction(getWorkbench());
         graph.add(underliningsAction);
+        graph.add(new FindVariableAction(getWorkbench()));
 
         return graph;
     }

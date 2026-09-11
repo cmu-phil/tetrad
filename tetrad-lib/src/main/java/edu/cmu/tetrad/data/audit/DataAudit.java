@@ -1213,8 +1213,15 @@ public final class DataAudit {
                                 .append(fmt(subsetR2[0])).append(" on {")
                                 .append(String.join(", ", subsetNames))
                                 .append("}. With near-collinear predictors this subset choice is not unique.");
+                        // Determined variable first, then the explaining subset when it accounts for most of the
+                        // dependence, matching the convention of the other determinism findings; see
+                        // FindingCode.NEAR_DETERMINISM_LINEAR. Added 2026-9-12.
+                        List<String> vars = new ArrayList<>();
+                        vars.add(this.continuousNames.get(a));
+                        if (reached) vars.addAll(subsetNames);
+
                         this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_LINEAR,
-                                AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
+                                AuditFinding.Severity.WARNING, vars,
                                 Map.of("rSquared", r2, "threshold", this.config.r2Determinism,
                                         "subsetRSquared", subsetR2[0], "subsetSize", (double) subset.size()),
                                 msg.toString()));

@@ -956,6 +956,46 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * Scrolls the workbench so that the given node is centered in the visible area (as nearly as the workbench's
+     * bounds allow), deselects everything, and selects that node. Unlike {@link #scrollWorkbenchToNode(Node)},
+     * which scrolls only as far as needed to bring the node into view and so tends to leave it at an edge, this
+     * puts the node where the eye lands, which is what a find-variable control wants on a graph too large for its
+     * scroll pane. Added 2026-9-12.
+     *
+     * @param modelNode the model node to show.
+     * @return true if the node has a display node in this workbench and was shown.
+     */
+    public final boolean centerWorkbenchOnNode(Node modelNode) {
+        Object o = getModelNodesToDisplay().get(modelNode);
+
+        if (!(o instanceof DisplayNode displayNode)) {
+            return false;
+        }
+
+        Rectangle bounds = displayNode.getBounds();
+        Rectangle visible = getVisibleRect();
+
+        if (visible.width > 0 && visible.height > 0) {
+            int x = bounds.x + bounds.width / 2 - visible.width / 2;
+            int y = bounds.y + bounds.height / 2 - visible.height / 2;
+            x = Math.max(0, Math.min(x, getWidth() - visible.width));
+            y = Math.max(0, Math.min(y, getHeight() - visible.height));
+            scrollRectToVisible(new Rectangle(x, y, visible.width, visible.height));
+        } else {
+            scrollRectToVisible(bounds);
+        }
+
+        deselectAll();
+
+        if (isAllowNodeEdgeSelection()) {
+            displayNode.setSelected(true);
+        }
+
+        repaint();
+        return true;
+    }
+
+    /**
      * <p>getBackground.</p>
      *
      * @return a {@link java.awt.Color} object

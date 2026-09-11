@@ -486,6 +486,7 @@ public final class SemGraphEditor extends JPanel
         graph.add(graphProperties);
         graph.add(pathsAction);
         graph.add(new UnderliningsAction(getWorkbench()));
+        graph.add(new FindVariableAction(getWorkbench()));
         graph.addSeparator();
 
         JMenuItem errorTerms = new JMenuItem();

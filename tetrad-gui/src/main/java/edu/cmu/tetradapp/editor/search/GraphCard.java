@@ -222,6 +222,7 @@ public class GraphCard extends JPanel {
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench, algorithmRunner.getParameters()));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.add(new FindVariableAction(this.workbench));
         graph.addSeparator();
 
         graph.add(GraphUtils.getHighlightMenu(this.workbench));

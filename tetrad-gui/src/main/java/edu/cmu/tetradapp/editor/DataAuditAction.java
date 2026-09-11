@@ -25,7 +25,9 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.audit.AuditFinding;
 import edu.cmu.tetrad.data.audit.CovarianceAudit;
 import edu.cmu.tetrad.data.audit.DataAudit;
+import edu.cmu.tetrad.data.audit.DeterminismRemovalSuggester;
 import edu.cmu.tetrad.data.audit.FindingCode;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.data.missing.MissingDataAudit;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ErrorDialogs;
@@ -560,49 +562,208 @@ class DataAuditAction extends AbstractAction {
                 return;
             }
 
-            final int totalChanged = changed;
-
-            new WatchedProcess() {
-                @Override
-                public void watch() throws InterruptedException {
-                    DataAudit current;
-                    MissingDataAudit missing;
-
-                    try {
-                        current = new DataAudit(dataSet);
-                        missing = missingAuditFor(dataSet, current);
-                    } catch (RuntimeException ex) {
-                        if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
-
-                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(recode,
-                                "The cells were recoded, but the audit could not be recomputed: " + ex.getMessage()
-                                        + " Reopen the Data Audit to see the updated findings.", "Error",
-                                JOptionPane.WARNING_MESSAGE));
-                        return;
-                    }
-
-                    SwingUtilities.invokeLater(() -> {
-                        missingRef[0] = missing;
-                        groupCache.clear();
-
-                        findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
-                        sizeFindingsColumns(findingsTable);
-                        variablesTable.setAuditModel(
-                                new DataAuditVariablesModel(dataSet, current, null, missing));
-                        missingText.setText(missingnessText(dataSet, missing));
-                        missingText.setCaretPosition(0);
-                        summary.setText(summaryLine(dataSet, current, missing)
-                                + "  " + totalChanged + " cell(s) recoded to missing.");
-                        recode.setEnabled(false);
-                    });
-                }
-            };
+            recomputeAudit(dataSet, recode, "The cells were recoded", changed + " cell(s) recoded to missing.",
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache,
+                    () -> recode.setEnabled(false));
         });
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         controls.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
         controls.add(recode);
+        controls.add(createRemoveDeterminismControl(dataSet, findingsTable, variablesTable, summary, missingText,
+                missingRef, groupCache));
         return controls;
+    }
+
+    /**
+     * Recomputes the audit after an in-place edit of the dataset, off the event thread under the stop dialog, and
+     * replaces the findings, per-variable facts, summary line and missingness text. The grouped-audit cache is
+     * cleared, since every grouped audit was computed on the old data.
+     *
+     * @param dataSet     the (already edited) dataset.
+     * @param parent      a component for error dialogs.
+     * @param editDone    a phrase describing the edit, for the error message if the audit fails ("The cells were
+     *                    recoded").
+     * @param summaryNote a note appended to the summary line ("3 cell(s) recoded to missing.").
+     * @param afterSwap   run on the event thread after the new results are in place; may be null.
+     */
+    private static void recomputeAudit(DataSet dataSet, JComponent parent, String editDone, String summaryNote,
+                                       DataAuditJTable findingsTable, DataAuditJTable variablesTable,
+                                       JLabel summary, JTextArea missingText, MissingDataAudit[] missingRef,
+                                       Map<String, DataAudit> groupCache, Runnable afterSwap) {
+        new WatchedProcess() {
+            @Override
+            public void watch() throws InterruptedException {
+                DataAudit current;
+                MissingDataAudit missing;
+
+                try {
+                    current = new DataAudit(dataSet);
+                    missing = missingAuditFor(dataSet, current);
+                } catch (RuntimeException ex) {
+                    if (ErrorDialogs.isInterruption(ex)) throw new InterruptedException("Data audit stopped.");
+
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(parent,
+                            editDone + ", but the audit could not be recomputed: " + ex.getMessage()
+                                    + " Reopen the Data Audit to see the updated findings.", "Error",
+                            JOptionPane.WARNING_MESSAGE));
+                    return;
+                }
+
+                SwingUtilities.invokeLater(() -> {
+                    missingRef[0] = missing;
+                    groupCache.clear();
+
+                    findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
+                    sizeFindingsColumns(findingsTable);
+                    variablesTable.setAuditModel(
+                            new DataAuditVariablesModel(dataSet, current, null, missing));
+                    missingText.setText(missingnessText(dataSet, missing));
+                    missingText.setCaretPosition(0);
+                    summary.setText(summaryLine(dataSet, current, missing) + "  " + summaryNote);
+                    if (afterSwap != null) afterSwap.run();
+                });
+            }
+        };
+    }
+
+    /**
+     * Builds the determinism-removal control: a button that opens a dialog listing the variables whose removal
+     * would resolve the determinism findings currently shown (duplicate columns, deterministic and
+     * near-deterministic relations, discrete coarsenings), each with a checkbox and the reason, as computed by
+     * {@link DeterminismRemovalSuggester}. The user chooses which to remove; the chosen columns are removed from
+     * the dataset in place and the audit is recomputed.
+     * <p>
+     * Like the sentinel recode, this is offered rather than performed. The suggester's convention (remove the
+     * determined variable, the second of a duplicate pair, or the discrete coarsening) is a guess at which column
+     * is derived; the codebook settles it, and the user may prefer to drop a determiner instead. Removal modifies
+     * the dataset every downstream box reads and cannot be undone; an open data editor shows the change after it
+     * is closed and reopened.
+     */
+    private static JComponent createRemoveDeterminismControl(DataSet dataSet, DataAuditJTable findingsTable,
+                                                             DataAuditJTable variablesTable, JLabel summary,
+                                                             JTextArea missingText, MissingDataAudit[] missingRef,
+                                                             Map<String, DataAudit> groupCache) {
+        JButton remove = new JButton("Remove Variables Creating Determinism...");
+        remove.setToolTipText("Choose variables to remove so that the determinism findings above are resolved. "
+                + "Modifies the dataset in place; not undoable.");
+
+        remove.addActionListener(e -> {
+            if (!(findingsTable.getModel() instanceof DataAuditFindingsModel model)) return;
+
+            List<AuditFinding> findings = new ArrayList<>();
+            for (int i = 0; i < model.getRowCount(); i++) findings.add(model.getFinding(i));
+
+            List<DeterminismRemovalSuggester.Suggestion> suggestions = DeterminismRemovalSuggester.suggest(findings);
+
+            if (suggestions.isEmpty()) {
+                JOptionPane.showMessageDialog(remove, "The audit reports no determinism findings that name a "
+                        + "variable to remove.", "Remove Variables Creating Determinism",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            List<String> chosen = showRemovalDialog(remove, suggestions);
+            if (chosen == null || chosen.isEmpty()) return;
+
+            int choice = JOptionPane.showConfirmDialog(remove, "Remove " + chosen.size() + " variable(s) from "
+                            + "the dataset?\n\n    " + String.join("\n    ", chosen) + "\n\nThis modifies the "
+                            + "dataset in place, for every box downstream of it in the session, and cannot be "
+                            + "undone. An open data editor shows the change after it is closed and reopened.",
+                    "Remove Variables", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (choice != JOptionPane.OK_OPTION) return;
+
+            int removedCount = 0;
+
+            try {
+                for (String name : chosen) {
+                    Node variable = dataSet.getVariable(name);
+                    if (variable == null) continue;
+                    dataSet.removeColumn(variable);
+                    removedCount++;
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(remove, "Could not remove: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            recomputeAudit(dataSet, remove, "The variables were removed", removedCount + " variable(s) removed.",
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, null);
+        });
+
+        return remove;
+    }
+
+    /**
+     * Shows the removal dialog: a table of suggested variables with a checkbox (recommended ones checked), the
+     * finding code, and the reason. Returns the names the user checked, or null if the dialog was cancelled.
+     */
+    private static List<String> showRemovalDialog(JComponent parent,
+                                                  List<DeterminismRemovalSuggester.Suggestion> suggestions) {
+        String[] columns = {"Remove", "Variable", "Finding", "Reason"};
+        Object[][] rows = new Object[suggestions.size()][4];
+
+        for (int i = 0; i < suggestions.size(); i++) {
+            DeterminismRemovalSuggester.Suggestion s = suggestions.get(i);
+            rows[i][0] = s.recommended();
+            rows[i][1] = s.variable();
+            rows[i][2] = s.code().name();
+            rows[i][3] = s.reason();
+        }
+
+        javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(rows, columns) {
+            @Override
+            public Class<?> getColumnClass(int col) {
+                return col == 0 ? Boolean.class : String.class;
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return col == 0;
+            }
+        };
+
+        JTable table = new JTable(tableModel);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        table.getColumnModel().getColumn(0).setPreferredWidth(60);
+        table.getColumnModel().getColumn(0).setMaxWidth(70);
+        table.getColumnModel().getColumn(1).setPreferredWidth(200);
+        table.getColumnModel().getColumn(2).setPreferredWidth(230);
+        table.getColumnModel().getColumn(3).setPreferredWidth(520);
+        table.setRowHeight(table.getRowHeight() + 2);
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setPreferredSize(new Dimension(1000, Math.min(500, 60 + 22 * suggestions.size())));
+
+        JTextArea note = new JTextArea("Checked rows are recommended: for each determinism finding, the variable "
+                + "the audit judged to be determined (or the second of a duplicate pair, or the discrete coarsening "
+                + "of a continuous variable) is proposed, and findings already resolved by an earlier removal are "
+                + "listed unchecked. Which member of a relationship is the derived one is a fact about how the "
+                + "file was built; uncheck a row, or check an unrecommended one, if you know better.");
+        note.setEditable(false);
+        note.setLineWrap(true);
+        note.setWrapStyleWord(true);
+        note.setOpaque(false);
+        note.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(note, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
+
+        int result = JOptionPane.showConfirmDialog(parent, panel, "Remove Variables Creating Determinism",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result != JOptionPane.OK_OPTION) return null;
+
+        if (table.isEditing()) table.getCellEditor().stopCellEditing();
+
+        List<String> chosen = new ArrayList<>();
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            if (Boolean.TRUE.equals(tableModel.getValueAt(i, 0))) chosen.add((String) tableModel.getValueAt(i, 1));
+        }
+        return chosen;
     }
 
     /**

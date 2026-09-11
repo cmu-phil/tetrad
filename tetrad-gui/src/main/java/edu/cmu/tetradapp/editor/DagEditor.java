@@ -476,6 +476,7 @@ public final class DagEditor extends JPanel
 
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+        graph.add(new FindVariableAction(getWorkbench()));
 
 //        JMenu revert = new JMenu("Revert Graph");
 //        graph.add(revert);
