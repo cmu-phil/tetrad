@@ -114,6 +114,14 @@ public final class HybridCgImEditor extends JPanel {
 
         left.add(filterField, BorderLayout.NORTH);
         left.add(new JScrollPane(varList), BorderLayout.CENTER);
+
+        JButton showGraph = new JButton("Show Graph");
+        showGraph.setToolTipText("Show the model graph with edges colored by estimated strength");
+        showGraph.addActionListener(e -> HybridCgGraphViewer.show(im, this, "Hybrid CG Graph"));
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        south.add(showGraph);
+        left.add(south, BorderLayout.SOUTH);
+
         left.setPreferredSize(new Dimension(220, 480));
         return left;
     }

@@ -482,6 +482,12 @@ public final class GraphUtils {
                 newEdge.addEdgeTypeProbability(p);
             }
 
+            // Carry over display attributes; graph copies pass through here, so dropping them would lose any
+            // special line color or annotation before the workbench ever sees the edge.
+            newEdge.setLineColor(edge.getLineColor());
+            newEdge.setAnnotation(edge.getAnnotation());
+            newEdge.setHighlighted(edge.isHighlighted());
+
             convertedGraph.addEdge(newEdge);
         }
 

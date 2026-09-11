@@ -1767,6 +1767,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             displayEdge.setHighlighted(true);
         }
 
+        // Honor a special line color set on the model edge; null leaves the workbench default.
+        if (modelEdge.getLineColor() != null) {
+            displayEdge.setLineColor(modelEdge.getLineColor());
+        }
+
         if (pagEdgeSpecializationMarked) {
 
             // Mark the edge as a specialization if it is one. For directed edges only; the method setting these
@@ -2581,6 +2586,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                             + " " + endpoint1 + "-" + endpoint2 + " "
                             + edge.getNode2().getName()
                             + _properties
+                            + annotationHtml(edge)
                             + glossHtml(edge)
                             + "</html>";
 
@@ -2634,6 +2640,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                         }
                     }
 
+                    text.append(annotationHtml(edge));
                     text.append(glossHtml(edge));
                     text.append("</html>");
 
@@ -2656,6 +2663,17 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 }
             }
         }
+    }
+
+    /**
+     * Returns the edge's annotation (see {@link Edge#setAnnotation}) as an HTML fragment for the tooltip, or the empty
+     * string if there is none.
+     */
+    private static String annotationHtml(Edge edge) {
+        String a = edge.getAnnotation();
+        if (a == null || a.isEmpty()) return "";
+        a = a.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return "<br><div style='width:320px;margin-top:4px'>" + a + "</div>";
     }
 
     /**
