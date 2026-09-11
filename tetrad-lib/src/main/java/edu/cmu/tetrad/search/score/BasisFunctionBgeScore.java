@@ -679,11 +679,23 @@ public class BasisFunctionBgeScore implements Score {
             if (pos[i] < 0) throw new IllegalArgumentException("Column " + s[i] + " is not in the row set.");
         }
 
-        double[][] cov = new double[k][k];
-        double[] var = new double[k];
+        // The constructor drops columns with zero variance over all available rows, but under test-wise deletion
+        // a column can still be constant on this family's complete rows (e.g., a category that never occurs among
+        // them). Such a column carries no information here and would give a zero prior scale and a zero pivot, so
+        // drop it for this family, consistently across the two terms of the local score since both use rowSet.
+        List<Integer> keep = new ArrayList<>(k);
         for (int i = 0; i < k; i++) {
-            for (int j = 0; j < k; j++) cov[i][j] = fam.cov().get(pos[i], pos[j]);
-            var[i] = fam.cov().get(pos[i], pos[i]);
+            if (fam.cov().get(pos[i], pos[i]) > 1e-12) keep.add(i);
+        }
+        int kk = keep.size();
+        if (kk == 0) return 0.0;
+
+        double[][] cov = new double[kk][kk];
+        double[] var = new double[kk];
+        for (int i = 0; i < kk; i++) {
+            int pi = pos[keep.get(i)];
+            for (int j = 0; j < kk; j++) cov[i][j] = fam.cov().get(pi, pos[keep.get(j)]);
+            var[i] = fam.cov().get(pi, pi);
         }
 
         double nFamily = fam.n() * (this.nEff / (double) this.sampleSize);

@@ -721,12 +721,36 @@ class DataAuditAction extends AbstractAction {
 
             @Override
             public boolean isCellEditable(int row, int col) {
-                return col == 0;
+                // The checkbox column is toggled directly on click (below) rather than through the table's Boolean
+                // cell editor, which did not respond inside this modal dialog on macOS.
+                return false;
             }
         };
 
         JTable table = new JTable(tableModel);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                int viewRow = table.rowAtPoint(e.getPoint());
+                int viewCol = table.columnAtPoint(e.getPoint());
+                if (viewRow < 0 || viewCol < 0 || table.convertColumnIndexToModel(viewCol) != 0) return;
+                toggleRemove(tableModel, table.convertRowIndexToModel(viewRow));
+            }
+        });
+
+        // Space toggles the selected rows.
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_SPACE, 0), "toggleRemove");
+        table.getActionMap().put("toggleRemove", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                for (int viewRow : table.getSelectedRows()) {
+                    toggleRemove(tableModel, table.convertRowIndexToModel(viewRow));
+                }
+            }
+        });
         table.getColumnModel().getColumn(0).setPreferredWidth(60);
         table.getColumnModel().getColumn(0).setMaxWidth(70);
         table.getColumnModel().getColumn(1).setPreferredWidth(200);
@@ -757,13 +781,16 @@ class DataAuditAction extends AbstractAction {
 
         if (result != JOptionPane.OK_OPTION) return null;
 
-        if (table.isEditing()) table.getCellEditor().stopCellEditing();
-
         List<String> chosen = new ArrayList<>();
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             if (Boolean.TRUE.equals(tableModel.getValueAt(i, 0))) chosen.add((String) tableModel.getValueAt(i, 1));
         }
         return chosen;
+    }
+
+    private static void toggleRemove(javax.swing.table.DefaultTableModel model, int modelRow) {
+        boolean current = Boolean.TRUE.equals(model.getValueAt(modelRow, 0));
+        model.setValueAt(!current, modelRow, 0);
     }
 
     /**

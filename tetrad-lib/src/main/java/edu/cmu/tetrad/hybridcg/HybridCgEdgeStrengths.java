@@ -51,7 +51,8 @@ import java.util.Map;
  *   across the parent's values in units of the residual standard deviation, d, squashed to d / (1 + d).</li>
  * </ul>
  * Linear strengths are raw coefficients and are only comparable after scaling; {@link #coloredGraph} scales them by
- * the largest absolute coefficient in the model. Tabular strengths are already in [0, 1].
+ * the largest absolute coefficient in the model and takes the square root of the ratio. Tabular strengths are
+ * already in [0, 1] and are used as is.
  */
 public final class HybridCgEdgeStrengths {
 
@@ -142,8 +143,8 @@ public final class HybridCgEdgeStrengths {
 
     /**
      * Returns a copy of the IM's graph (sharing node objects, with new edge objects) whose edges carry a line color
-     * and a tooltip annotation reflecting their strength. Linear intensities are scaled by the largest absolute
-     * coefficient in the model; tabular intensities are used as is.
+     * and a tooltip annotation reflecting their strength. Linear intensities are the square root of the ratio to the
+     * largest absolute coefficient in the model; tabular intensities are used as is.
      *
      * @param im the instantiated model
      * @return a colored display copy of the graph
@@ -164,7 +165,10 @@ public final class HybridCgEdgeStrengths {
             if (s != null) {
                 double intensity;
                 if (s.isLinear()) {
-                    intensity = maxAbsCoef > 0 ? Math.min(1.0, s.value() / maxAbsCoef) : 0.0;
+                    // Square root spreads the low end: a coefficient at a quarter of the model maximum
+                    // gets half intensity rather than a quarter, so one large coefficient does not
+                    // push everything else into the palest shade.
+                    intensity = maxAbsCoef > 0 ? Math.sqrt(Math.min(1.0, s.value() / maxAbsCoef)) : 0.0;
                 } else {
                     intensity = Math.max(0.0, Math.min(1.0, s.value()));
                 }
