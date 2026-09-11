@@ -33,6 +33,7 @@ import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphNodeMeasured;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.workbench.IDisplayEdge;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -871,11 +872,18 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             });
 
+            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient");
+            shadeEdges.setToolTipText("Color edges blue (positive) or vermillion (negative), darker for larger "
+                    + "|coefficient| relative to the largest in the model; error covariances by their correlation.");
+            shadeEdges.addActionListener((e) -> graphicalEditor().setShadeEdges(shadeEdges.isSelected()));
+
             JMenu params = new JMenu("Parameters");
             params.add(this.errorTerms);
             params.addSeparator();
             params.add(covariances);
             params.add(correlations);
+            params.addSeparator();
+            params.add(shadeEdges);
             params.addSeparator();
 
             if (!SemImEditor.this.wrapper.getSemIm().isCyclic()) {
@@ -1194,6 +1202,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          */
         private boolean editable = true;
         private Container dialog;
+        /**
+         * Whether display edges are shaded by coefficient sign and relative magnitude.
+         */
+        private boolean shadeEdges = false;
 
         /**
          * Constructs a SemIm graphical editor for the given SemIm.
@@ -1471,7 +1483,72 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 resetNodeLabel(node, implCovar);
             }
 
+            resetEdgeShading(implCovar);
+
             workbench().repaint();
+        }
+
+        /**
+         * Turns edge shading on or off and refreshes the display.
+         *
+         * @param shade true to shade edges by coefficient
+         */
+        public void setShadeEdges(boolean shade) {
+            this.shadeEdges = shade;
+            resetLabels();
+        }
+
+        /**
+         * Applies or clears per-edge line colors on the display edges. Coefficient edges are shaded by sign, with
+         * intensity the square root of |coef| relative to the largest |coef| in the model; error covariance edges are
+         * shaded by the sign of the covariance with intensity the square root of the implied |correlation|. Edges
+         * without a parameter (e.g. edges to error nodes) get the default color. Display edges are recreated whenever
+         * the workbench graph changes, so this runs from resetLabels rather than once.
+         */
+        private void resetEdgeShading(Matrix implCovar) {
+            Map<Edge, Object> display = workbench().getModelEdgesToDisplay();
+
+            double maxAbsCoef = 0.0;
+            if (this.shadeEdges) {
+                for (Edge edge : graph().getEdges()) {
+                    Parameter p = getEdgeParameter(edge);
+                    if (p != null && p.getType() == ParamType.COEF) {
+                        double v = semIm().getParamValue(p);
+                        if (Double.isFinite(v)) maxAbsCoef = Math.max(maxAbsCoef, Math.abs(v));
+                    }
+                }
+            }
+
+            for (Edge edge : graph().getEdges()) {
+                Object o = display.get(edge);
+                if (!(o instanceof IDisplayEdge displayEdge)) continue;
+
+                Color color = null;
+
+                if (this.shadeEdges) {
+                    Parameter p = getEdgeParameter(edge);
+                    if (p != null) {
+                        double val = semIm().getParamValue(p);
+                        double intensity = 0.0;
+
+                        if (p.getType() == ParamType.COEF) {
+                            intensity = maxAbsCoef > 0 ? Math.sqrt(Math.abs(val) / maxAbsCoef) : 0.0;
+                        } else if (p.getType() == ParamType.COVAR) {
+                            double varA = semIm().getVariance(edge.getNode1(), implCovar);
+                            double varB = semIm().getVariance(edge.getNode2(), implCovar);
+                            double corr = val / TMath.sqrt(varA * varB);
+                            intensity = Double.isFinite(corr) ? Math.sqrt(Math.min(1.0, Math.abs(corr))) : 0.0;
+                        }
+
+                        if (Double.isFinite(val) && Double.isFinite(intensity)) {
+                            color = EdgeShading.signed(val, intensity);
+                        }
+                    }
+                }
+
+                displayEdge.setLineColor(color);
+                if (displayEdge instanceof Component c) c.repaint();
+            }
         }
 
         private void resetEdgeLabel(Edge edge, Matrix implCovar) {
