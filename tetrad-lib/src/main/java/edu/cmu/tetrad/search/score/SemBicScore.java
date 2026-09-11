@@ -88,9 +88,12 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     private final Map<Node, Integer> indexMap;
     /**
-     * The log of the sample size.
+     * The log of the effective sample size, kept in step with nEff by setEffectiveSampleSize. It was previously a
+     * final field set once in the constructors, so that a caller setting an effective sample size afterwards (as the
+     * algcomparison wrappers do from the effectiveSampleSize parameter) changed the likelihood term but not the BIC
+     * penalty. Fixed 2026-9-11.
      */
-    private final double logN;
+    private double logN;
     /**
      * True if row subsets should be calculated.
      */
@@ -162,7 +165,6 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         this.sampleSize = covariances.getSampleSize();
         setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
-        this.logN = log(nEff);
         penaltyDiscount = 1.0;
     }
 
@@ -186,7 +188,6 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         this.sampleSize = covariances.getSampleSize();
         setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
-        this.logN = log(nEff);
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -250,7 +251,6 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-            this.logN = log(nEff);
         } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
             EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
             estimator.setRidge(spec.getEmRidge());
@@ -263,14 +263,12 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             setEffectiveSampleSize(MissingDataUtils.effectiveSampleSize(dataSet, spec));
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-            this.logN = log(nEff);
         } else { // TESTWISE
             this.variables = dataSet.getVariables();
             this.sampleSize = dataSet.getNumRows();
             setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = true;
-            this.logN = log(nEff);
             this.penaltyDiscount = 1.0;
         }
     }
@@ -1291,6 +1289,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
+        this.logN = log(this.nEff);
     }
 
     /**
