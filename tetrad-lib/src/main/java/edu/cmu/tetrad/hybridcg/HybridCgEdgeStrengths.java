@@ -178,24 +178,42 @@ public final class HybridCgEdgeStrengths {
     }
 
     /**
-     * Maps a kind and an intensity in [0, 1] to a color. Blue for positive linear, red for negative linear, purple for
-     * mixed sign, orange for tabular. Higher intensity gives a darker, more saturated shade.
+     * Maps a kind and an intensity in [0, 1] to a color. Hues are taken from the Okabe-Ito palette, which is designed
+     * so that its colors remain distinguishable under the common forms of color-vision deficiency: blue for positive
+     * linear, vermillion for negative linear, reddish purple for mixed sign, and bluish green for tabular. Intensity
+     * runs from a light but clearly colored tint of the hue at 0 to a deepened version of it at 1.
      *
      * @param kind      the family
      * @param intensity a value in [0, 1]
      * @return the color
      */
     public static Color colorFor(Kind kind, double intensity) {
-        float hue = switch (kind) {
-            case LINEAR_POSITIVE -> 0.62f;   // blue
-            case LINEAR_NEGATIVE -> 0.00f;   // red
-            case LINEAR_MIXED -> 0.80f;      // purple
-            case TABULAR -> 0.08f;           // orange
+        Color base = switch (kind) {
+            case LINEAR_POSITIVE -> new Color(0x00, 0x72, 0xB2);  // Okabe-Ito blue
+            case LINEAR_NEGATIVE -> new Color(0xD5, 0x5E, 0x00);  // Okabe-Ito vermillion
+            case LINEAR_MIXED -> new Color(0xCC, 0x79, 0xA7);     // Okabe-Ito reddish purple
+            case TABULAR -> new Color(0x00, 0x9E, 0x73);          // Okabe-Ito bluish green
         };
-        float s = (float) (0.3 + 0.7 * Math.max(0.0, Math.min(1.0, intensity)));
-        float saturation = s;
-        float brightness = 0.95f - 0.35f * s;
-        return Color.getHSBColor(hue, saturation, brightness);
+        double t = Math.max(0.0, Math.min(1.0, intensity));
+        // Pale end: hue mixed 60% into white, so even zero-strength edges read as clearly colored.
+        // Deep end: hue darkened by 20%.
+        Color pale = mix(Color.WHITE, base, 0.60);
+        Color deep = mix(Color.BLACK, base, 0.80);
+        return mix(pale, deep, t);
+    }
+
+    /**
+     * Linear interpolation from {@code a} (t = 0) to {@code b} (t = 1) in sRGB.
+     */
+    private static Color mix(Color a, Color b, double t) {
+        int r = (int) Math.round(a.getRed() + t * (b.getRed() - a.getRed()));
+        int g = (int) Math.round(a.getGreen() + t * (b.getGreen() - a.getGreen()));
+        int bl = (int) Math.round(a.getBlue() + t * (b.getBlue() - a.getBlue()));
+        return new Color(clamp(r), clamp(g), clamp(bl));
+    }
+
+    private static int clamp(int v) {
+        return Math.max(0, Math.min(255, v));
     }
 
     // ---------------------------------------------------------------- strengths
