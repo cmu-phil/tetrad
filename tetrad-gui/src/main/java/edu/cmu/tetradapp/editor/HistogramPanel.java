@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.util.TMath;
 
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -366,19 +368,8 @@ public class HistogramPanel extends JPanel {
     }
 
     private static Color getDefaultPlotColor() {
-//        Color c = UIManager.getColor("Component.borderColor");
-//        if (c != null) return c;
-//
-//        Color c = UIManager.getColor("Label.foreground");
-//        if (c != null) return c;
-
-        if (true) {
-            return isDarkMode() ? new Color(180, 190, 205) : Color.RED.darker();
-        }
-
-        return isDarkMode()
-                ? new Color(180, 190, 205)
-                : new Color(26, 113, 169, 255);
+        // Light mode: Okabe-Ito blue, the same data blue as positive edges in the SEM views; 5.2:1 on white.
+        return isDarkMode() ? new Color(180, 190, 205) : WorkbenchStyle.OI_BLUE;
     }
 
     private String formatAxis(double v) {

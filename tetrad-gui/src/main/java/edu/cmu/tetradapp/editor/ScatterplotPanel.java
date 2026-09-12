@@ -2,6 +2,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.TMath;
 
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -110,10 +112,8 @@ class ScatterplotPanel extends JPanel {
     }
 
     private static Color getFitLineColor() {
-//        Color c = UIManager.getColor("Label.foreground");
-//        if (c != null) return blend(c, getPlotBackground(), 0.25);
-
-        return isDarkMode() ? Color.YELLOW : Color.BLACK;
+        // Light mode: Okabe-Ito vermilion, the blue/vermilion pair being distinguishable for every kind of vision.
+        return isDarkMode() ? Color.YELLOW : WorkbenchStyle.OI_VERMILION;
     }
 
     private void refreshTheme() {
@@ -257,19 +257,8 @@ class ScatterplotPanel extends JPanel {
     }
 
     private static Color getDefaultPlotColor() {
-//        Color c = UIManager.getColor("Component.borderColor");
-//        if (c != null) return c;
-//
-//        Color c = UIManager.getColor("Label.foreground");
-//        if (c != null) return c;
-
-        if (true) {
-            return isDarkMode() ? new Color(180, 190, 205) : Color.RED.darker();
-        }
-
-        return isDarkMode()
-                ? new Color(180, 190, 205)
-                : new Color(26, 113, 169, 255);
+        // Light mode: Okabe-Ito blue, the same data blue as positive edges in the SEM views; 5.2:1 on white.
+        return isDarkMode() ? new Color(180, 190, 205) : WorkbenchStyle.OI_BLUE;
     }
 
     private static Font uiFont(String key, Font fallback) {

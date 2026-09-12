@@ -148,6 +148,31 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         }
     }
 
+    /**
+     * Light mode: the Tol muted hue for the node type, and the weight at which it is tinted onto the white card.
+     * The weights differ by hue on purpose. Under deuteranopia and protanopia the red-green axis collapses and
+     * two bands can only be told apart by lightness and blue-yellow, so light hues (teal, sand) are tinted
+     * lightly and dark ones (indigo, wine, green) more heavily; with these weights every pair of bands is at
+     * least 11 Lab units apart for normal, deuteranopic, and protanopic vision.
+     */
+    private static Object[] lightBand(String type) {
+        if (type == null) return new Object[]{WorkbenchStyle.lafBorder(), 0.60};
+        return switch (type) {
+            case "Data" -> new Object[]{WorkbenchStyle.TOL_TEAL, 0.25};
+            case "Simulation" -> new Object[]{WorkbenchStyle.TOL_OLIVE, 0.45};
+            case "Knowledge" -> new Object[]{WorkbenchStyle.TOL_SAND, 0.35};
+            case "Graph" -> new Object[]{WorkbenchStyle.TOL_INDIGO, 0.55};
+            case "Search", "Latent_Clusters", "Latent_Structure", "Regression", "Updater" ->
+                    new Object[]{WorkbenchStyle.TOL_ROSE, 0.45};
+            case "Estimator" -> new Object[]{WorkbenchStyle.TOL_WINE, 0.55};
+            case "PM" -> new Object[]{WorkbenchStyle.TOL_PURPLE, 0.45};
+            case "IM" -> new Object[]{WorkbenchStyle.TOL_GREEN, 0.55};
+            case "Compare", "GridSearch" -> new Object[]{WorkbenchStyle.TOL_CYAN, 0.55};
+            case "Note" -> new Object[]{WorkbenchStyle.TOL_SAND, 0.35};
+            default -> new Object[]{WorkbenchStyle.lafBorder(), 0.60};
+        };
+    }
+
     private static String typeLabel(String type) {
         if (type == null || type.isEmpty()) return "";
         return type.replace('_', ' ').toUpperCase(Locale.ROOT);
@@ -174,23 +199,10 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * @return the card fill color.
      */
     public static Color cardFill() {
-        // Session cards sit a step lighter than graph nodes so the type band and text stand out. In light mode the
-        // card is a near-white with a faint warm cast; it lifts off the warm session canvas (see sessionCanvas())
-        // at about 1.26:1, where the old cream on FlatLaf's neutral grey was 1.08:1 and read as flat.
+        // Dark mode: a step lighter than graph nodes so the band and text stand out. Light mode: the Look and
+        // Feel's component white, separated from the panel by the border and shadow like any other component.
         Color base = WorkbenchStyle.cardFill();
-        return isDarkMode() ? blend(base, Color.WHITE, 0.08) : new Color(254, 252, 249);
-    }
-
-    /**
-     * The session canvas. In light mode this is a warm light grey rather than FlatLaf's neutral panel grey, so the
-     * cream-tinted cards sit on a background of the same temperature and stand out from it; in dark mode the
-     * panel background is used unchanged.
-     *
-     * @return the canvas color.
-     */
-    public static Color sessionCanvas() {
-        Color panel = panelBackground();
-        return isDarkMode() ? panel : blend(WorkbenchStyle.KHAKI, panel, 0.72);
+        return isDarkMode() ? blend(base, Color.WHITE, 0.08) : base;
     }
 
     /**
@@ -204,9 +216,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         if (isDarkMode()) {
             return blend(cardFill(), hue, 0.45);
         }
-        // Same weight as dark mode. At the old 0.26 the dusty hues collapsed to within a few Lab units of each
-        // other and the type bands stopped functioning as a code.
-        return blend(cardFill(), hue, 0.42);
+        Object[] band = lightBand(type);
+        return blend(cardFill(), (Color) band[0], (Double) band[1]);
     }
 
     /**
@@ -220,8 +231,30 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         if (isDarkMode()) {
             return blend(hue, Color.WHITE, 0.55);
         }
-        // Deep enough to clear 4.5:1 on the stronger band; not faded, since the small bold capitals need it.
-        return blend(hue, Color.BLACK, 0.45);
+        // The Tol hue darkened just enough to clear 4.5:1 on its own band.
+        Object[] band = lightBand(type);
+        Color fill = blend(cardFill(), (Color) band[0], (Double) band[1]);
+        for (double t = 0.45; t <= 0.80; t += 0.05) {
+            Color label = blend((Color) band[0], Color.BLACK, t);
+            if (contrast(label, fill) >= 4.5) return label;
+        }
+        return blend((Color) band[0], Color.BLACK, 0.80);
+    }
+
+    /** WCAG contrast ratio between two colors. */
+    private static double contrast(Color a, Color b) {
+        double la = luminance(a), lb = luminance(b);
+        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    }
+
+    private static double luminance(Color c) {
+        double r = channel(c.getRed()), g = channel(c.getGreen()), b = channel(c.getBlue());
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    private static double channel(int v) {
+        double u = v / 255.0;
+        return u <= 0.03928 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4);
     }
 
     /**
@@ -233,9 +266,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         Color c = UIManager.getColor("Component.borderColor");
         if (c == null) c = UIManager.getColor("Separator.foreground");
         if (c == null) c = isDarkMode() ? new Color(100, 104, 110) : new Color(190, 194, 200);
-        // Light mode: a khaki-brown in the palette's register, about 2.3:1 on the canvas; the neutral FlatLaf
-        // border was 1.6:1 and all but vanished.
-        return isDarkMode() ? c : blend(WorkbenchStyle.KHAKI, WorkbenchStyle.BROWN, 0.25);
+        return c;
     }
 
     private Color getSelectedBorderColor() {

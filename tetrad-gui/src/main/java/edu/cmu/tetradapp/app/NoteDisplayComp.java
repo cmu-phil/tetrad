@@ -22,6 +22,8 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
@@ -93,8 +95,8 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
             return blend(panel, base, 0.70);
         }
 
-        // A muted straw in the palette's register; the old (255, 252, 210) was the one saturated object on the canvas.
-        return new Color(244, 231, 202);
+        // Light mode: Tol sand on the component white, the same tint as the Knowledge band.
+        return blend(WorkbenchStyle.componentBackground(), WorkbenchStyle.TOL_SAND, 0.35);
     }
 
     private static Color getRuledLineColor() {

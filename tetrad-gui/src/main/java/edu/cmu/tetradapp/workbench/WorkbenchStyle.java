@@ -42,8 +42,8 @@ public final class WorkbenchStyle {
     // The "dusty" palette: cream F1E0C5, khaki C9B79C, sage 71816D, dark brown 342A21, dusty rose DA667B, extended
     // with a few more muted tones in the same register: dusty blue, plum, teal, mustard, terracotta. Roles: cream
     // is the card base, sage and plum tint the nodes, brown draws the edges, rose marks selection, and mustard is
-    // the highlight. The session cards use the wider set. Each role has a light and a dark value; light values are
-    // softened slightly by fade() when painted.
+    // the highlight. The session cards use the wider set. This palette now drives dark mode only; see the light
+    // mode section below.
 
     /** Cream F1E0C5. */
     public static final Color CREAM = new Color(0xF1, 0xE0, 0xC5);
@@ -68,32 +68,56 @@ public final class WorkbenchStyle {
     /** Indigo. Cooler and bluer than plum, so PM and IM read as distinct types. */
     public static final Color INDIGO = new Color(0x5A, 0x5F, 0xB5);
 
-    /** Card base, light: cream lifted toward white so it doesn't glare. */
-    private static final Color BASE_LIGHT = blend(CREAM, Color.WHITE, 0.55);
+    // ---------------------------------------------------------------- light mode
+    //
+    // Light mode is native to the Look and Feel: canvas, card, border, text, and selection all come from FlatLaf
+    // Light's own defaults (panel #F2F2F2, component white, border shade 20%, accent #2675BF or the OS accent), so
+    // Tetrad's graph and session views look like the rest of the application. The only colors added are
+    // categorical: Paul Tol's "muted" set for the nine session-node types, chosen for deuteranopia and
+    // protanopia, and Okabe-Ito blue, vermilion, and orange for data marks and the highlight. Dark mode keeps
+    // the dusty palette above.
+
+    /** Tol muted indigo 332288. */
+    public static final Color TOL_INDIGO = new Color(0x33, 0x22, 0x88);
+    /** Tol muted cyan 88CCEE. */
+    public static final Color TOL_CYAN = new Color(0x88, 0xCC, 0xEE);
+    /** Tol muted teal 44AA99. */
+    public static final Color TOL_TEAL = new Color(0x44, 0xAA, 0x99);
+    /** Tol muted green 117733. */
+    public static final Color TOL_GREEN = new Color(0x11, 0x77, 0x33);
+    /** Tol muted olive 999933. */
+    public static final Color TOL_OLIVE = new Color(0x99, 0x99, 0x33);
+    /** Tol muted sand DDCC77. */
+    public static final Color TOL_SAND = new Color(0xDD, 0xCC, 0x77);
+    /** Tol muted rose CC6677. */
+    public static final Color TOL_ROSE = new Color(0xCC, 0x66, 0x77);
+    /** Tol muted wine 882255. */
+    public static final Color TOL_WINE = new Color(0x88, 0x22, 0x55);
+    /** Tol muted purple AA4499. */
+    public static final Color TOL_PURPLE = new Color(0xAA, 0x44, 0x99);
+
+    /** Okabe-Ito blue 0072B2: plot points and histogram bars. */
+    public static final Color OI_BLUE = new Color(0x00, 0x72, 0xB2);
+    /** Okabe-Ito vermilion D55E00: regression and reference lines. */
+    public static final Color OI_VERMILION = new Color(0xD5, 0x5E, 0x00);
+    /** Okabe-Ito orange E69F00: the light-mode highlight, far from the blue accent for every kind of vision. */
+    public static final Color OI_ORANGE = new Color(0xE6, 0x9F, 0x00);
+
+    // Dark mode values, all from the dusty palette.
+
     /** Card base, dark: the brown, lifted a little. */
     private static final Color BASE_DARK = blend(BROWN, Color.WHITE, 0.18);
-
-    /** Measured node hue: sage. */
+    /** Measured node hue, dark: sage. */
     private static final Color MEASURED_HUE = SAGE;
-    /** Latent node hue: plum. */
+    /** Latent node hue, dark: plum. */
     private static final Color LATENT_HUE = PLUM;
-
-    /** Edge color: brown in light mode, khaki in dark mode. */
-    // Light-mode edges are pulled further toward khaki than they were (0.15): at 0.15 they were the darkest thing
-    // on the canvas, about 8:1, and outranked the nodes they connect. About 5.5:1 keeps them clear.
-    private static final Color EDGE_LIGHT = blend(BROWN, KHAKI, 0.32);
+    /** Edge color, dark: khaki. */
     private static final Color EDGE_DARK = KHAKI;
-
-    /** Node border tint: khaki. */
-    private static final Color BORDER_TINT_LIGHT = blend(KHAKI, BROWN, 0.30);
+    /** Node border tint, dark: khaki. */
     private static final Color BORDER_TINT_DARK = KHAKI;
-
-    /** Selection accent: dusty rose. */
-    private static final Color ACCENT_LIGHT = ROSE;
+    /** Selection accent, dark: rose. */
     private static final Color ACCENT_DARK = blend(ROSE, Color.WHITE, 0.15);
-
-    /** Highlight: mustard, readable against the brown edges and distinct from the rose selection. */
-    private static final Color HIGHLIGHT_LIGHT = blend(MUSTARD, BROWN, 0.10);
+    /** Highlight, dark: mustard. */
     private static final Color HIGHLIGHT_DARK = blend(MUSTARD, Color.WHITE, 0.15);
 
     private WorkbenchStyle() {
@@ -185,8 +209,39 @@ public final class WorkbenchStyle {
      * @return the accent color.
      */
     public static Color accent() {
-        // Sunlight on water: a warm gold that stands out against the ocean-tinted nodes in either mode.
-        return isDarkMode() ? ACCENT_DARK : fade(ACCENT_LIGHT);
+        return isDarkMode() ? ACCENT_DARK : lafAccent();
+    }
+
+    /**
+     * The Look and Feel's component background (white in FlatLaf Light): the light-mode card fill.
+     *
+     * @return the component background.
+     */
+    public static Color componentBackground() {
+        Color c = UIManager.getColor("TextField.background");
+        return c != null ? c : Color.WHITE;
+    }
+
+    /**
+     * The Look and Feel's component border color (a 20% shade of the panel in FlatLaf Light).
+     *
+     * @return the border color.
+     */
+    public static Color lafBorder() {
+        Color c = UIManager.getColor("Component.borderColor");
+        if (c == null) c = UIManager.getColor("Separator.foreground");
+        return c != null ? c : new Color(194, 194, 194);
+    }
+
+    /**
+     * The Look and Feel's accent color, which follows the OS accent when FlatLaf is configured to.
+     *
+     * @return the accent color.
+     */
+    public static Color lafAccent() {
+        Color c = UIManager.getColor("Component.accentColor");
+        if (c == null) c = UIManager.getColor("Component.focusColor");
+        return c != null ? c : new Color(0x26, 0x75, 0xBF);
     }
 
     /**
@@ -196,7 +251,7 @@ public final class WorkbenchStyle {
      * @return the highlight color.
      */
     public static Color highlight() {
-        return isDarkMode() ? HIGHLIGHT_DARK : fade(HIGHLIGHT_LIGHT);
+        return isDarkMode() ? HIGHLIGHT_DARK : OI_ORANGE;
     }
 
     /**
@@ -210,7 +265,7 @@ public final class WorkbenchStyle {
         if (isDarkMode()) {
             return blend(panel, BASE_DARK, 0.30);
         }
-        return blend(panel, BASE_LIGHT, 0.85);
+        return componentBackground();
     }
 
     // ---------------------------------------------------------------- nodes
@@ -233,7 +288,7 @@ public final class WorkbenchStyle {
      */
     public static Color nodeText() {
         Color fg = labelForeground();
-        return isDarkMode() ? fg : blend(fg, panelBackground(), 0.12);
+        return fg;
     }
 
     private static Color tintedFill(Color hue, double lightAmount, double darkAmount) {
@@ -246,7 +301,8 @@ public final class WorkbenchStyle {
      * @return the measured node fill.
      */
     public static Color measuredFill() {
-        return tintedFill(MEASURED_HUE, 0.30, 0.45);
+        // Light mode: plain card white, like any other component; the border and shape carry the node.
+        return isDarkMode() ? tintedFill(MEASURED_HUE, 0.30, 0.45) : cardFill();
     }
 
     /**
@@ -255,7 +311,9 @@ public final class WorkbenchStyle {
      * @return the latent node fill.
      */
     public static Color latentFill() {
-        return tintedFill(LATENT_HUE, 0.28, 0.45);
+        // Light mode: a faint indigo on white, about 13 Lab units from a measured node for every kind of vision;
+        // the ellipse shape does the rest.
+        return isDarkMode() ? tintedFill(LATENT_HUE, 0.28, 0.45) : blend(cardFill(), TOL_INDIGO, 0.14);
     }
 
     /**
@@ -265,7 +323,7 @@ public final class WorkbenchStyle {
      * @return the selected fill.
      */
     public static Color selectedFill(Color base) {
-        return blend(base, accent(), isDarkMode() ? 0.35 : 0.16);
+        return blend(base, accent(), isDarkMode() ? 0.35 : 0.12);
     }
 
     /**
@@ -274,12 +332,11 @@ public final class WorkbenchStyle {
      * @return the node border color.
      */
     public static Color nodeBorder() {
+        if (!isDarkMode()) return lafBorder();
         Color c = UIManager.getColor("Component.borderColor");
         if (c == null) c = UIManager.getColor("Separator.foreground");
-        if (c == null) c = isDarkMode() ? new Color(100, 104, 110) : new Color(190, 194, 200);
-        Color tint = isDarkMode() ? BORDER_TINT_DARK : BORDER_TINT_LIGHT;
-        Color border = blend(isDarkMode() ? blend(c, Color.WHITE, 0.10) : blend(c, Color.BLACK, 0.15), tint, 0.45);
-        return fade(border);
+        if (c == null) c = new Color(100, 104, 110);
+        return blend(blend(c, Color.WHITE, 0.10), BORDER_TINT_DARK, 0.45);
     }
 
     /**
@@ -299,7 +356,8 @@ public final class WorkbenchStyle {
      * @return the default edge color.
      */
     public static Color edge() {
-        return isDarkMode() ? EDGE_DARK : fade(EDGE_LIGHT);
+        // Light mode: a neutral grey, about 6:1 on the panel, so edges are clear but the white cards lead.
+        return isDarkMode() ? EDGE_DARK : blend(Color.BLACK, panelBackground(), 0.38);
     }
 
     /**
