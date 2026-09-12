@@ -65,6 +65,8 @@ public final class WorkbenchStyle {
     public static final Color MUSTARD = new Color(0xD6, 0xA8, 0x3C);
     /** Terracotta. */
     public static final Color TERRACOTTA = new Color(0xC8, 0x78, 0x58);
+    /** Indigo. Cooler and bluer than plum, so PM and IM read as distinct types. */
+    public static final Color INDIGO = new Color(0x5A, 0x5F, 0xB5);
 
     /** Card base, light: cream lifted toward white so it doesn't glare. */
     private static final Color BASE_LIGHT = blend(CREAM, Color.WHITE, 0.55);
@@ -77,7 +79,9 @@ public final class WorkbenchStyle {
     private static final Color LATENT_HUE = PLUM;
 
     /** Edge color: brown in light mode, khaki in dark mode. */
-    private static final Color EDGE_LIGHT = blend(BROWN, KHAKI, 0.15);
+    // Light-mode edges are pulled further toward khaki than they were (0.15): at 0.15 they were the darkest thing
+    // on the canvas, about 8:1, and outranked the nodes they connect. About 5.5:1 keeps them clear.
+    private static final Color EDGE_LIGHT = blend(BROWN, KHAKI, 0.32);
     private static final Color EDGE_DARK = KHAKI;
 
     /** Node border tint: khaki. */

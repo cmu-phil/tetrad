@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.IDisplayEdge;
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -81,7 +82,7 @@ final class SemGraphShading {
                     }
 
                     if (Double.isFinite(val) && Double.isFinite(intensity)) {
-                        color = EdgeShading.signed(val, intensity);
+                        color = EdgeShading.signed(val, intensity, WorkbenchStyle.isDarkMode());
                     }
                 }
             }

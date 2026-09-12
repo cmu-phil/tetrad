@@ -60,6 +60,7 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      */
     public SessionEditorWorkbench(SessionWrapper sessionWrapper) {
         super(sessionWrapper);
+        setOpaque(true);
 
         sessionWrapper.addPropertyChangeListener(e -> {
             String propertyName = e.getPropertyName();
@@ -344,5 +345,16 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
 
         throw new NullPointerException("Session node wrapper not in map.");
     }
-}
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Paints the session canvas (see {@link StdDisplayComp#sessionCanvas()}) before the nodes and edges.
+     */
+    @Override
+    public void paintComponent(Graphics g) {
+        g.setColor(StdDisplayComp.sessionCanvas());
+        g.fillRect(0, 0, getWidth(), getHeight());
+        super.paintComponent(g);
+    }
+}

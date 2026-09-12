@@ -6,6 +6,7 @@ import edu.cmu.tetrad.hybridcg.HybridCgEdgeStrengths;
 import edu.cmu.tetrad.hybridcg.HybridCgEdgeStrengths.Kind;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,7 +28,7 @@ public final class HybridCgGraphViewer {
      * @return the panel
      */
     public static JComponent panel(HybridCgIm im) {
-        Graph colored = HybridCgEdgeStrengths.coloredGraph(im);
+        Graph colored = HybridCgEdgeStrengths.coloredGraph(im, WorkbenchStyle.isDarkMode());
 
         GraphWorkbench workbench = new GraphWorkbench(colored);
         workbench.setEnableEditing(false);
@@ -65,9 +66,10 @@ public final class HybridCgGraphViewer {
 
     private static JComponent item(Kind kind, String text) {
         JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-        row.add(swatch(HybridCgEdgeStrengths.colorFor(kind, 0.15)));
-        row.add(swatch(HybridCgEdgeStrengths.colorFor(kind, 0.6)));
-        row.add(swatch(HybridCgEdgeStrengths.colorFor(kind, 1.0)));
+        boolean dark = WorkbenchStyle.isDarkMode();
+        row.add(swatch(HybridCgEdgeStrengths.colorFor(kind, 0.15, dark)));
+        row.add(swatch(HybridCgEdgeStrengths.colorFor(kind, 0.6, dark)));
+        row.add(swatch(HybridCgEdgeStrengths.colorFor(kind, 1.0, dark)));
         row.add(new JLabel(text));
         return row;
     }

@@ -151,6 +151,18 @@ public final class HybridCgEdgeStrengths {
      * @return a colored display copy of the graph
      */
     public static Graph coloredGraph(HybridCgIm im) {
+        return coloredGraph(im, false);
+    }
+
+    /**
+     * As {@link #coloredGraph(HybridCgIm)}, with the edge colors chosen for a light or a dark canvas; see
+     * {@link EdgeShading#color(EdgeShading.Hue, double, boolean)}.
+     *
+     * @param im   the instantiated model
+     * @param dark true for a dark canvas
+     * @return a copy of the model graph with line colors and annotations set
+     */
+    public static Graph coloredGraph(HybridCgIm im, boolean dark) {
         Map<Edge, Strength> strengths = compute(im);
 
         double maxAbsCoef = 0.0;
@@ -174,7 +186,7 @@ public final class HybridCgEdgeStrengths {
                     intensity = Math.max(0.0, Math.min(1.0, s.value()));
                 }
                 if (!Double.isFinite(intensity)) intensity = 0.0;
-                copy.setLineColor(colorFor(s.kind(), intensity));
+                copy.setLineColor(colorFor(s.kind(), intensity, dark));
                 copy.setAnnotation(s.description() + String.format(" Color intensity %.2f.", intensity));
             }
             g.addEdge(copy);
@@ -191,13 +203,25 @@ public final class HybridCgEdgeStrengths {
      * @return the color
      */
     public static Color colorFor(Kind kind, double intensity) {
+        return colorFor(kind, intensity, false);
+    }
+
+    /**
+     * As {@link #colorFor(Kind, double)}, for a light or a dark canvas.
+     *
+     * @param kind      the family
+     * @param intensity a value in [0, 1]
+     * @param dark      true for a dark canvas
+     * @return the color
+     */
+    public static Color colorFor(Kind kind, double intensity, boolean dark) {
         EdgeShading.Hue hue = switch (kind) {
             case LINEAR_POSITIVE -> EdgeShading.Hue.POSITIVE;
             case LINEAR_NEGATIVE -> EdgeShading.Hue.NEGATIVE;
             case LINEAR_MIXED -> EdgeShading.Hue.MIXED;
             case TABULAR -> EdgeShading.Hue.UNSIGNED;
         };
-        return EdgeShading.color(hue, intensity);
+        return EdgeShading.color(hue, intensity, dark);
     }
 
     // ---------------------------------------------------------------- strengths

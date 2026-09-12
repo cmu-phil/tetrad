@@ -120,11 +120,14 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
             case "Graph":
                 return WorkbenchStyle.DUSTY_BLUE;
             case "PM":
-            case "IM":
                 return WorkbenchStyle.PLUM;
+            case "IM":
+                return WorkbenchStyle.INDIGO;
             case "Data":
-            case "Simulation":
                 return WorkbenchStyle.SAGE;
+            case "Simulation":
+                // Kin to data (sage) but its own type: an olive gold.
+                return blend(WorkbenchStyle.MUSTARD, WorkbenchStyle.SAGE, 0.35);
             case "Estimator":
                 return WorkbenchStyle.TEAL;
             case "Search":
@@ -171,9 +174,23 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * @return the card fill color.
      */
     public static Color cardFill() {
-        // Session cards sit a step lighter than graph nodes so the type band and text stand out.
+        // Session cards sit a step lighter than graph nodes so the type band and text stand out. In light mode the
+        // card is a near-white with a faint warm cast; it lifts off the warm session canvas (see sessionCanvas())
+        // at about 1.26:1, where the old cream on FlatLaf's neutral grey was 1.08:1 and read as flat.
         Color base = WorkbenchStyle.cardFill();
-        return isDarkMode() ? blend(base, Color.WHITE, 0.08) : blend(base, Color.WHITE, 0.65);
+        return isDarkMode() ? blend(base, Color.WHITE, 0.08) : new Color(254, 252, 249);
+    }
+
+    /**
+     * The session canvas. In light mode this is a warm light grey rather than FlatLaf's neutral panel grey, so the
+     * cream-tinted cards sit on a background of the same temperature and stand out from it; in dark mode the
+     * panel background is used unchanged.
+     *
+     * @return the canvas color.
+     */
+    public static Color sessionCanvas() {
+        Color panel = panelBackground();
+        return isDarkMode() ? panel : blend(WorkbenchStyle.KHAKI, panel, 0.72);
     }
 
     /**
@@ -187,7 +204,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         if (isDarkMode()) {
             return blend(cardFill(), hue, 0.45);
         }
-        return blend(cardFill(), hue, 0.26);
+        // Same weight as dark mode. At the old 0.26 the dusty hues collapsed to within a few Lab units of each
+        // other and the type bands stopped functioning as a code.
+        return blend(cardFill(), hue, 0.42);
     }
 
     /**
@@ -201,7 +220,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         if (isDarkMode()) {
             return blend(hue, Color.WHITE, 0.55);
         }
-        return WorkbenchStyle.fade(blend(hue, Color.BLACK, 0.30));
+        // Deep enough to clear 4.5:1 on the stronger band; not faded, since the small bold capitals need it.
+        return blend(hue, Color.BLACK, 0.45);
     }
 
     /**
@@ -213,7 +233,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         Color c = UIManager.getColor("Component.borderColor");
         if (c == null) c = UIManager.getColor("Separator.foreground");
         if (c == null) c = isDarkMode() ? new Color(100, 104, 110) : new Color(190, 194, 200);
-        return c;
+        // Light mode: a khaki-brown in the palette's register, about 2.3:1 on the canvas; the neutral FlatLaf
+        // border was 1.6:1 and all but vanished.
+        return isDarkMode() ? c : blend(WorkbenchStyle.KHAKI, WorkbenchStyle.BROWN, 0.25);
     }
 
     private Color getSelectedBorderColor() {

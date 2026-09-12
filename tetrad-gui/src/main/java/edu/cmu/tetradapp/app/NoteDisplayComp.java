@@ -93,7 +93,8 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
             return blend(panel, base, 0.70);
         }
 
-        return new Color(255, 252, 210);
+        // A muted straw in the palette's register; the old (255, 252, 210) was the one saturated object on the canvas.
+        return new Color(244, 231, 202);
     }
 
     private static Color getRuledLineColor() {

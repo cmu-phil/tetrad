@@ -56,6 +56,22 @@ public final class EdgeShading {
      * @return the color
      */
     public static Color color(Hue hue, double intensity) {
+        return color(hue, intensity, false);
+    }
+
+    /**
+     * As {@link #color(Hue, double)}, for a light or a dark canvas. The hues are the same in both modes; only the
+     * intensity ramp changes. On a light canvas it runs from a pale tint toward a deep shade, so strong edges are
+     * dark. On a dark canvas that ramp runs backwards, deepening toward the canvas until the strongest edges are
+     * the least visible, so there it runs from a muted, greyed base toward a light tint instead. Both ramps put
+     * the weakest edges near 2:1 against their canvas and the strongest near 5:1 to 7:1.
+     *
+     * @param hue       the hue family
+     * @param intensity a value in [0, 1]
+     * @param dark      true for a dark canvas
+     * @return the color
+     */
+    public static Color color(Hue hue, double intensity, boolean dark) {
         Color base = switch (hue) {
             case POSITIVE -> new Color(0x00, 0x72, 0xB2);
             case NEGATIVE -> new Color(0xD5, 0x5E, 0x00);
@@ -63,8 +79,15 @@ public final class EdgeShading {
             case UNSIGNED -> new Color(0x00, 0x9E, 0x73);
         };
         double t = Math.max(0.0, Math.min(1.0, intensity));
-        Color pale = mix(Color.WHITE, base, 0.60);
-        Color deep = mix(Color.BLACK, base, 0.80);
+        Color pale;
+        Color deep;
+        if (dark) {
+            pale = mix(new Color(120, 120, 120), base, 0.45);
+            deep = mix(Color.WHITE, base, 0.45);
+        } else {
+            pale = mix(Color.WHITE, base, 0.60);
+            deep = mix(Color.BLACK, base, 0.80);
+        }
         return mix(pale, deep, t);
     }
 
@@ -76,7 +99,19 @@ public final class EdgeShading {
      * @return the color
      */
     public static Color signed(double value, double intensity) {
-        return color(value >= 0 ? Hue.POSITIVE : Hue.NEGATIVE, intensity);
+        return signed(value, intensity, false);
+    }
+
+    /**
+     * As {@link #signed(double, double)}, for a light or a dark canvas; see {@link #color(Hue, double, boolean)}.
+     *
+     * @param value     the signed value
+     * @param intensity a value in [0, 1]
+     * @param dark      true for a dark canvas
+     * @return the color
+     */
+    public static Color signed(double value, double intensity, boolean dark) {
+        return color(value >= 0 ? Hue.POSITIVE : Hue.NEGATIVE, intensity, dark);
     }
 
     private static Color mix(Color a, Color b, double t) {
