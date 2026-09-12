@@ -43,8 +43,9 @@ public final class WorkbenchStyle {
     // Feel (FlatLaf Light: panel #F2F2F2, component white, border a 20% shade, accent #2675BF; FlatLaf Dark:
     // panel #3C3F41, component a 5% tint, border a 19% tint, accent #4B6EAF), so graph and session views look like
     // the rest of the application in either mode. The only colors added are categorical and published: Paul Tol's
-    // "muted" set for the nine session-node types, chosen for deuteranopia and protanopia, and Okabe-Ito blue, sky
-    // blue, vermilion, and orange for data marks and the highlight. Light and dark differ only in how far a hue is
+    // "muted" set for the nine session-node types, chosen for deuteranopia and protanopia; Okabe-Ito blue, sky
+    // blue, vermilion, and orange for data marks and the highlight; and Tetrad's classic node blue and selection
+    // red for light-mode graph nodes and for selected edges. Light and dark differ only in how far a hue is
     // tinted onto the card and in which direction a label is pushed to read on its band.
 
     /** Tol muted indigo 332288. */
@@ -74,6 +75,12 @@ public final class WorkbenchStyle {
     public static final Color OI_VERMILION = new Color(0xD5, 0x5E, 0x00);
     /** Okabe-Ito orange E69F00: the highlight in both modes, and dark-mode regression and reference lines. */
     public static final Color OI_ORANGE = new Color(0xE6, 0x9F, 0x00);
+
+    /** Tetrad's classic node blue 94C6E2: the light-mode fill of measured and latent graph nodes. */
+    public static final Color CLASSIC_NODE_BLUE = new Color(0x94, 0xC6, 0xE2);
+
+    /** Tetrad's classic selection red F40014: selected edges, lightened in dark mode to read on the panel. */
+    public static final Color CLASSIC_SELECTION_RED = new Color(0xF4, 0x00, 0x14);
 
     private WorkbenchStyle() {
     }
@@ -277,23 +284,23 @@ public final class WorkbenchStyle {
     }
 
     /**
-     * Fill of a measured-variable node: the plain card fill; the border and shape carry the node.
+     * Fill of a measured-variable node: in light mode, Tetrad's classic node blue 94C6E2; in dark mode, the plain
+     * card fill, where the border and shape carry the node.
      *
      * @return the measured node fill.
      */
     public static Color measuredFill() {
-        return cardFill();
+        return isDarkMode() ? cardFill() : CLASSIC_NODE_BLUE;
     }
 
     /**
-     * Fill of a latent-variable node: a faint indigo on the card fill, at least 13 Lab units from a measured node
-     * for normal, deuteranopic, and protanopic vision, with the label foreground still above 5:1 on it; the ellipse
-     * shape does the rest.
+     * Fill of a latent-variable node: the same fill as a measured node in both modes, with the ellipse shape alone
+     * telling the two apart, as in classic Tetrad.
      *
      * @return the latent node fill.
      */
     public static Color latentFill() {
-        return blend(cardFill(), TOL_INDIGO, isDarkMode() ? 0.25 : 0.14);
+        return measuredFill();
     }
 
     /**
@@ -339,12 +346,14 @@ public final class WorkbenchStyle {
     }
 
     /**
-     * Color of a selected edge.
+     * Color of a selected edge: Tetrad's classic selection red, drawn as-is in light mode and pushed 40 percent
+     * toward white in dark mode, where the pure red is only about 2.5:1 against the panel; the lightened form is
+     * about 3.6:1, above the 3:1 floor for graphical objects, and stays clearly red rather than pink.
      *
      * @return the selected edge color.
      */
     public static Color edgeSelected() {
-        return accent();
+        return isDarkMode() ? blend(CLASSIC_SELECTION_RED, Color.WHITE, 0.40) : CLASSIC_SELECTION_RED;
     }
 
     /**
