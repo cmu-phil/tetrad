@@ -21,8 +21,6 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.cmu.tetradapp.Tetrad;
-import edu.cmu.tetradapp.ThemeUtils;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
@@ -32,7 +30,6 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.prefs.Preferences;
 
 import static java.awt.Desktop.getDesktop;
 
@@ -60,6 +57,7 @@ final class TetradMenuBar extends JMenuBar {
         setBorder(new EtchedBorder());
 
         // create the menus and add them to the menubar
+        JMenu tetradMenu = new JMenu("Tetrad");
         JMenu fileMenu = new JMenu("File");
         JMenu editMenu = new JMenu("Edit");
         JMenu loggingMenu = new JMenu("Logging");
@@ -67,6 +65,7 @@ final class TetradMenuBar extends JMenuBar {
         JMenu windowMenu = new JMenu("Window");
         JMenu helpMenu = new JMenu("Help");
 
+        add(tetradMenu);
         add(fileMenu);
         add(editMenu);
         add(loggingMenu);
@@ -74,19 +73,75 @@ final class TetradMenuBar extends JMenuBar {
         add(windowMenu);
         add(helpMenu);
 
-
+        buildTetradMenu(tetradMenu);
         buildFileMenu(fileMenu);
         buildEditMenu(editMenu);
         buildLoggingMenu(loggingMenu);
         buildTemplateMenu(templateMenu);
         buildWindowMenu(windowMenu);
         buildHelpMenu(helpMenu);
+
+        wireDesktopIntegration();
     }
 
-    private JMenuItem getSuggestionBoxItem(TetradDesktop desktop, JMenu helpMenu) {
-        JMenuItem suggestionBoxItem = new JMenuItem("Suggestion Box!");
+    /**
+     * Builds the application menu, following the convention that an application has a menu named after itself
+     * holding About, Settings, and Quit, along with the legal notices. On all platforms this menu appears first
+     * in the menu bar; on macOS, the native application menu's About and Settings items are additionally wired
+     * to the same dialogs (see wireDesktopIntegration).
+     */
+    private void buildTetradMenu(JMenu tetradMenu) {
+        tetradMenu.add(new AboutTetradAction());
+        tetradMenu.add(new WarrantyAction());
+        tetradMenu.add(new LicenseAction());
+        tetradMenu.add(new ContributorsAction());
+        tetradMenu.addSeparator();
 
-        helpMenu.add(suggestionBoxItem);
+        JMenuItem settings = new JMenuItem("Settings...");
+        settings.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        settings.addActionListener(e -> SettingsDialog.showDialog());
+        tetradMenu.add(settings);
+        tetradMenu.addSeparator();
+
+        // The menu shortcut mask gives Command-Q on macOS and Control-Q elsewhere. (On macOS the native
+        // Command-Q is also caught by the quit handler installed in Tetrad.launchFrame, which routes
+        // through the same exit path.)
+        JMenuItem quit = new JMenuItem(new ExitAction());
+        quit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        tetradMenu.add(quit);
+    }
+
+    /**
+     * On macOS, the About and Settings items in the native application menu do nothing unless handlers are
+     * installed for them. Point them at the same About dialog and Settings dialog the Tetrad menu uses. On
+     * platforms without a native application menu these actions are unsupported and nothing is installed.
+     */
+    private void wireDesktopIntegration() {
+        if (!Desktop.isDesktopSupported()) {
+            return;
+        }
+
+        Desktop awtDesktop = getDesktop();
+
+        try {
+            if (awtDesktop.isSupported(Desktop.Action.APP_ABOUT)) {
+                awtDesktop.setAboutHandler(e ->
+                        SwingUtilities.invokeLater(() -> new AboutTetradAction().actionPerformed(null)));
+            }
+
+            if (awtDesktop.isSupported(Desktop.Action.APP_PREFERENCES)) {
+                awtDesktop.setPreferencesHandler(e ->
+                        SwingUtilities.invokeLater(SettingsDialog::showDialog));
+            }
+        } catch (Exception e) {
+            TetradLogger.getInstance().log("Could not set About/Settings handlers on this platform.");
+        }
+    }
+
+    private JMenuItem getSuggestionBoxItem(TetradDesktop desktop) {
+        JMenuItem suggestionBoxItem = new JMenuItem("Suggestion Box!");
 
         suggestionBoxItem.addActionListener(new ActionListener() {
             @Override
@@ -115,8 +170,6 @@ final class TetradMenuBar extends JMenuBar {
 
         fileMenu.addSeparator();
         fileMenu.add(saveSession);
-        fileMenu.add(saveSession);
-        fileMenu.addSeparator();
         fileMenu.add(saveSessionAs);
         fileMenu.addSeparator();
 //      fileMenu.add(new SaveScreenshot(desktop, true, "Save Screenshot..."));
@@ -130,50 +183,10 @@ final class TetradMenuBar extends JMenuBar {
         });
 
         fileMenu.add(menuItem);
-        fileMenu.addSeparator();
 
-        JMenu settingsMenu = new JMenu("Settings");
+        // Settings and Exit moved to the Tetrad menu, 2026-9-12. Settings is now a proper dialog
+        // (see SettingsDialog); Exit is now Quit Tetrad.
 
-        JMenuItem loggingSettingMenuItem = new JMenuItem(new SetupLoggingAction());
-
-        // Changed 2026-8-24: a proper check-box menu item with a label that states its scope. This is the global
-        // default; the search box, Markov Checker, vertex check, independence-facts editor, and grid search each
-        // also have a local "Include experimental" switch that overrides it for that editor only.
-        JCheckBoxMenuItem showExperimentalBox = new JCheckBoxMenuItem("Show experimental algorithms everywhere");
-        boolean enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
-        Tetrad.enableExperimental = enableExperimental;
-        showExperimentalBox.setSelected(enableExperimental);
-        showExperimentalBox.setToolTipText("<html><div style='width:300px'>List algorithms, tests, and scores "
-                + "marked experimental in every editor by default. Editors opened after this is changed pick up the "
-                + "new default; each editor also has its own Include experimental switch.</div></html>");
-        showExperimentalBox.addActionListener(e -> {
-            Preferences.userRoot().putBoolean("enableExperimental", showExperimentalBox.isSelected());
-            Tetrad.enableExperimental = showExperimentalBox.isSelected();
-        });
-
-        JCheckBoxMenuItem darkModeItem = new JCheckBoxMenuItem("Dark Mode");
-
-        boolean darkMode = Preferences.userRoot().getBoolean("darkMode", false);
-        darkModeItem.setSelected(darkMode);
-
-        darkModeItem.addActionListener(e -> {
-            boolean dark = darkModeItem.isSelected();
-            Preferences.userRoot().putBoolean("darkMode", dark);
-            ThemeUtils.applyTheme(dark);
-        });
-
-        settingsMenu.add(loggingSettingMenuItem);
-        settingsMenu.add(new JMenuItem(new NumberFormatAction()));
-        settingsMenu.add(showExperimentalBox);
-        settingsMenu.add(darkModeItem);
-
-        fileMenu.add(settingsMenu);
-        fileMenu.addSeparator();
-
-        JMenuItem exit = new JMenuItem(new ExitAction());
-        fileMenu.add(exit);
-        exit.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK));
         newSession.setAccelerator(
                 KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
         loadSession.setAccelerator(
@@ -237,15 +250,12 @@ final class TetradMenuBar extends JMenuBar {
         // A reference to the help item is stored at class level so that
         // it can be "clicked" from other classes.
 
-        helpMenu.add(new AboutTetradAction());
-        helpMenu.add(new WarrantyAction());
-        helpMenu.add(new LicenseAction());
-        helpMenu.add(new ContributorsAction());
-        helpMenu.addSeparator();
+        // About, Warranty, License, and Contributors moved to the Tetrad menu, 2026-9-12;
+        // this menu now holds only items that actually help.
         helpMenu.add(new LaunchWebsiteAction());
         helpMenu.add(new LaunchManualAction());
         helpMenu.add(new AlgorithmFlowchartAction(desktop));
-        helpMenu.add(getSuggestionBoxItem(desktop, helpMenu));
+        helpMenu.add(getSuggestionBoxItem(desktop));
     }
 
     public static class SuggestionDialog extends JDialog {

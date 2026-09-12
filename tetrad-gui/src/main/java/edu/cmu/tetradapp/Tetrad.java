@@ -101,6 +101,11 @@ public final class Tetrad implements PropertyChangeListener {
         // Avoid updates to swing code that causes comparison-method-violates-its-general-contract warnings
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
+        // On macOS, the native application menu is named after this property; without it, when Tetrad is
+        // launched from a jar rather than from an app bundle, the menu is named after the main class. Must
+        // be set before any AWT class is initialized. Ignored on other platforms.
+        System.setProperty("apple.awt.application.name", "Tetrad");
+
         Tetrad.setLookAndFeel();
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.

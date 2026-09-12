@@ -67,6 +67,23 @@ final class NumberFormatAction extends AbstractAction
      * render real numbers throughout Tetrad.
      */
     public void actionPerformed(ActionEvent e) {
+        JComponent panel = buildNumberFormatComponent();
+
+        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                panel, "Formatting for All Real Numbers", JOptionPane.INFORMATION_MESSAGE);
+
+        commitFormat();
+    }
+
+    /**
+     * Builds the component allowing the user to change the number format used to render real numbers
+     * throughout Tetrad, with a basic and an advanced tab. Extracted from actionPerformed so that the
+     * component can also be embedded in the Settings dialog. The chosen format takes effect when
+     * commitFormat is called, which the caller should do when its dialog closes.
+     *
+     * @return the number format component.
+     */
+    JComponent buildNumberFormatComponent() {
 
         // Set up basic tab.
         final double sample = 23.5;
@@ -269,9 +286,15 @@ final class NumberFormatAction extends AbstractAction
         panel.setLayout(new BorderLayout());
         panel.add(tabbedPane, BorderLayout.CENTER);
 
-        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                panel, "Formatting for All Real Numbers", JOptionPane.INFORMATION_MESSAGE);
+        return panel;
+    }
 
+    /**
+     * Installs the chosen number format as the format used to render real numbers throughout Tetrad.
+     *
+     * @throws RuntimeException if the format string cannot be accepted by DecimalFormat.
+     */
+    void commitFormat() {
         NumberFormatUtil.getInstance().setNumberFormat(getNumberFormat());
     }
 
