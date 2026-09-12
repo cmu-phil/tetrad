@@ -368,8 +368,7 @@ public class HistogramPanel extends JPanel {
     }
 
     private static Color getDefaultPlotColor() {
-        // Light mode: Okabe-Ito blue, the same data blue as positive edges in the SEM views; 5.2:1 on white.
-        return isDarkMode() ? new Color(180, 190, 205) : WorkbenchStyle.OI_BLUE;
+        return WorkbenchStyle.plotMark();
     }
 
     private String formatAxis(double v) {

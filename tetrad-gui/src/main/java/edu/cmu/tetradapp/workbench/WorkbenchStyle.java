@@ -37,45 +37,15 @@ public final class WorkbenchStyle {
 
     private static final Font FALLBACK_FONT = new Font("Dialog", Font.BOLD, 12);
 
-    // ---------------------------------------------------------------- palette
+    // ---------------------------------------------------------------- colors
     //
-    // The "dusty" palette: cream F1E0C5, khaki C9B79C, sage 71816D, dark brown 342A21, dusty rose DA667B, extended
-    // with a few more muted tones in the same register: dusty blue, plum, teal, mustard, terracotta. Roles: cream
-    // is the card base, sage and plum tint the nodes, brown draws the edges, rose marks selection, and mustard is
-    // the highlight. The session cards use the wider set. This palette now drives dark mode only; see the light
-    // mode section below.
-
-    /** Cream F1E0C5. */
-    public static final Color CREAM = new Color(0xF1, 0xE0, 0xC5);
-    /** Khaki C9B79C. */
-    public static final Color KHAKI = new Color(0xC9, 0xB7, 0x9C);
-    /** Sage 71816D. */
-    public static final Color SAGE = new Color(0x71, 0x81, 0x6D);
-    /** Dark brown 342A21. */
-    public static final Color BROWN = new Color(0x34, 0x2A, 0x21);
-    /** Dusty rose DA667B. */
-    public static final Color ROSE = new Color(0xDA, 0x66, 0x7B);
-    /** Dusty blue. */
-    public static final Color DUSTY_BLUE = new Color(0x74, 0x96, 0xB4);
-    /** Dusty plum. */
-    public static final Color PLUM = new Color(0x9A, 0x74, 0x9E);
-    /** Dusty teal. */
-    public static final Color TEAL = new Color(0x5E, 0x9E, 0x98);
-    /** Mustard. */
-    public static final Color MUSTARD = new Color(0xD6, 0xA8, 0x3C);
-    /** Terracotta. */
-    public static final Color TERRACOTTA = new Color(0xC8, 0x78, 0x58);
-    /** Indigo. Cooler and bluer than plum, so PM and IM read as distinct types. */
-    public static final Color INDIGO = new Color(0x5A, 0x5F, 0xB5);
-
-    // ---------------------------------------------------------------- light mode
-    //
-    // Light mode is native to the Look and Feel: canvas, card, border, text, and selection all come from FlatLaf
-    // Light's own defaults (panel #F2F2F2, component white, border shade 20%, accent #2675BF or the OS accent), so
-    // Tetrad's graph and session views look like the rest of the application. The only colors added are
-    // categorical: Paul Tol's "muted" set for the nine session-node types, chosen for deuteranopia and
-    // protanopia, and Okabe-Ito blue, vermilion, and orange for data marks and the highlight. Dark mode keeps
-    // the dusty palette above.
+    // Tetrad has no palette of its own. Canvas, card, border, text, and selection come from the active Look and
+    // Feel (FlatLaf Light: panel #F2F2F2, component white, border a 20% shade, accent #2675BF; FlatLaf Dark:
+    // panel #3C3F41, component a 5% tint, border a 19% tint, accent #4B6EAF), so graph and session views look like
+    // the rest of the application in either mode. The only colors added are categorical and published: Paul Tol's
+    // "muted" set for the nine session-node types, chosen for deuteranopia and protanopia, and Okabe-Ito blue, sky
+    // blue, vermilion, and orange for data marks and the highlight. Light and dark differ only in how far a hue is
+    // tinted onto the card and in which direction a label is pushed to read on its band.
 
     /** Tol muted indigo 332288. */
     public static final Color TOL_INDIGO = new Color(0x33, 0x22, 0x88);
@@ -96,29 +66,14 @@ public final class WorkbenchStyle {
     /** Tol muted purple AA4499. */
     public static final Color TOL_PURPLE = new Color(0xAA, 0x44, 0x99);
 
-    /** Okabe-Ito blue 0072B2: plot points and histogram bars. */
+    /** Okabe-Ito blue 0072B2: light-mode plot points and histogram bars. */
     public static final Color OI_BLUE = new Color(0x00, 0x72, 0xB2);
-    /** Okabe-Ito vermilion D55E00: regression and reference lines. */
+    /** Okabe-Ito sky blue 56B4E9: dark-mode plot points and histogram bars. */
+    public static final Color OI_SKY = new Color(0x56, 0xB4, 0xE9);
+    /** Okabe-Ito vermilion D55E00: light-mode regression and reference lines. */
     public static final Color OI_VERMILION = new Color(0xD5, 0x5E, 0x00);
-    /** Okabe-Ito orange E69F00: the light-mode highlight, far from the blue accent for every kind of vision. */
+    /** Okabe-Ito orange E69F00: the highlight in both modes, and dark-mode regression and reference lines. */
     public static final Color OI_ORANGE = new Color(0xE6, 0x9F, 0x00);
-
-    // Dark mode values, all from the dusty palette.
-
-    /** Card base, dark: the brown, lifted a little. */
-    private static final Color BASE_DARK = blend(BROWN, Color.WHITE, 0.18);
-    /** Measured node hue, dark: sage. */
-    private static final Color MEASURED_HUE = SAGE;
-    /** Latent node hue, dark: plum. */
-    private static final Color LATENT_HUE = PLUM;
-    /** Edge color, dark: khaki. */
-    private static final Color EDGE_DARK = KHAKI;
-    /** Node border tint, dark: khaki. */
-    private static final Color BORDER_TINT_DARK = KHAKI;
-    /** Selection accent, dark: rose. */
-    private static final Color ACCENT_DARK = blend(ROSE, Color.WHITE, 0.15);
-    /** Highlight, dark: mustard. */
-    private static final Color HIGHLIGHT_DARK = blend(MUSTARD, Color.WHITE, 0.15);
 
     private WorkbenchStyle() {
     }
@@ -160,21 +115,52 @@ public final class WorkbenchStyle {
     }
 
     /**
-     * In light mode, softens a color by pulling it part way toward the panel background; in dark mode returns it
-     * unchanged. Used so that light mode reads as faded rather than saturated.
+     * WCAG 2 contrast ratio between two colors, from 1 (identical) to 21 (black on white).
      *
-     * @param c the color to soften.
-     * @return the softened color.
+     * @param a one color.
+     * @param b the other.
+     * @return the ratio.
      */
-    public static Color fade(Color c) {
-        return isDarkMode() ? c : blend(c, panelBackground(), 0.05);
+    public static double contrast(Color a, Color b) {
+        double la = luminance(a), lb = luminance(b);
+        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    }
+
+    private static double luminance(Color c) {
+        return 0.2126 * channel(c.getRed()) + 0.7152 * channel(c.getGreen()) + 0.0722 * channel(c.getBlue());
+    }
+
+    private static double channel(int v) {
+        double u = v / 255.0;
+        return u <= 0.03928 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4);
     }
 
     /**
-     * Turns on antialiasing for shapes and text. Applied once at the top of a workbench paint, it is inherited by
-     * every node and edge painted beneath it.
+     * A text color for the given hue that reads on the given background: the hue pushed toward white or toward
+     * black, whichever first clears a 4.5:1 contrast ratio (WCAG AA for small text). In dark mode the push toward
+     * white is tried first, in light mode the push toward black, so labels follow the mode's idiom where both would
+     * work.
      *
-     * @param g2 the graphics to configure.
+     * @param hue        the hue to derive the text color from.
+     * @param background the color the text will sit on.
+     * @return the text color.
+     */
+    public static Color readableOn(Color hue, Color background) {
+        Color first = isDarkMode() ? Color.WHITE : Color.BLACK;
+        Color second = isDarkMode() ? Color.BLACK : Color.WHITE;
+        for (double t = 0.45; t <= 0.90; t += 0.05) {
+            Color c = blend(hue, first, t);
+            if (contrast(c, background) >= 4.5) return c;
+            c = blend(hue, second, t);
+            if (contrast(c, background) >= 4.5) return c;
+        }
+        return isDarkMode() ? Color.WHITE : Color.BLACK;
+    }
+
+    /**
+     * Turns on antialiasing and quality rendering hints.
+     *
+     * @param g2 the graphics.
      */
     public static void applyHints(Graphics2D g2) {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -183,10 +169,10 @@ public final class WorkbenchStyle {
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
     }
 
-    // ---------------------------------------------------------------- base colors
+    // ---------------------------------------------------------------- Look and Feel colors
 
     /**
-     * The panel background of the current Look &amp; Feel.
+     * The Look and Feel's panel background: the canvas.
      *
      * @return the panel background.
      */
@@ -195,42 +181,36 @@ public final class WorkbenchStyle {
     }
 
     /**
-     * The primary label color of the current Look &amp; Feel.
+     * The Look and Feel's label foreground: the text color.
      *
-     * @return the label color.
+     * @return the label foreground.
      */
     public static Color labelForeground() {
-        return uiColor("Label.foreground", isDarkMode() ? new Color(230, 230, 230) : new Color(30, 30, 30));
+        return uiColor("Label.foreground", isDarkMode() ? new Color(187, 187, 187) : Color.BLACK);
     }
 
     /**
-     * The accent color used for selection and focus.
-     *
-     * @return the accent color.
-     */
-    public static Color accent() {
-        return isDarkMode() ? ACCENT_DARK : lafAccent();
-    }
-
-    /**
-     * The Look and Feel's component background (white in FlatLaf Light): the light-mode card fill.
+     * The Look and Feel's component background (white in FlatLaf Light, a 5% tint of the panel in FlatLaf Dark):
+     * the card fill.
      *
      * @return the component background.
      */
     public static Color componentBackground() {
         Color c = UIManager.getColor("TextField.background");
-        return c != null ? c : Color.WHITE;
+        if (c != null) return c;
+        return isDarkMode() ? new Color(70, 73, 74) : Color.WHITE;
     }
 
     /**
-     * The Look and Feel's component border color (a 20% shade of the panel in FlatLaf Light).
+     * The Look and Feel's component border color.
      *
      * @return the border color.
      */
     public static Color lafBorder() {
         Color c = UIManager.getColor("Component.borderColor");
         if (c == null) c = UIManager.getColor("Separator.foreground");
-        return c != null ? c : new Color(194, 194, 194);
+        if (c != null) return c;
+        return isDarkMode() ? new Color(97, 99, 101) : new Color(194, 194, 194);
     }
 
     /**
@@ -241,39 +221,45 @@ public final class WorkbenchStyle {
     public static Color lafAccent() {
         Color c = UIManager.getColor("Component.accentColor");
         if (c == null) c = UIManager.getColor("Component.focusColor");
-        return c != null ? c : new Color(0x26, 0x75, 0xBF);
+        if (c != null) return c;
+        return isDarkMode() ? new Color(0x4B, 0x6E, 0xAF) : new Color(0x26, 0x75, 0xBF);
     }
 
     /**
-     * A highlight color, used for edges carrying the model highlight flag: mustard, distinct from the rose used for
-     * selection.
+     * The selection color: the Look and Feel's accent, lightened in dark mode where FlatLaf Dark's accent is only
+     * about 1.8:1 against the card and too faint for a border.
      *
-     * @return the highlight color.
+     * @return the accent.
+     */
+    public static Color accent() {
+        return isDarkMode() ? blend(lafAccent(), Color.WHITE, 0.35) : lafAccent();
+    }
+
+    /**
+     * The highlight color, for edges carrying the model highlight flag: Okabe-Ito orange, far from the blue accent
+     * for every kind of vision, in both modes.
+     *
+     * @return the highlight.
      */
     public static Color highlight() {
-        return isDarkMode() ? HIGHLIGHT_DARK : OI_ORANGE;
+        return OI_ORANGE;
     }
 
     /**
-     * The fill of a node or card body: the panel background lifted toward the light base color in light mode, or
-     * toward the dark base color in dark mode.
+     * The fill of a node or card body: the Look and Feel's component background.
      *
      * @return the card fill.
      */
     public static Color cardFill() {
-        Color panel = panelBackground();
-        if (isDarkMode()) {
-            return blend(panel, BASE_DARK, 0.30);
-        }
         return componentBackground();
     }
 
     // ---------------------------------------------------------------- nodes
 
     /**
-     * The font for graph node names: the Look &amp; Feel label font in bold.
+     * The node label font: the Look and Feel's label font, bold.
      *
-     * @return the node font.
+     * @return the font.
      */
     public static Font nodeFont() {
         Font f = UIManager.getFont("Label.font");
@@ -282,42 +268,36 @@ public final class WorkbenchStyle {
     }
 
     /**
-     * The color of graph node names.
+     * The node text color: the Look and Feel's label foreground.
      *
      * @return the node text color.
      */
     public static Color nodeText() {
-        Color fg = labelForeground();
-        return fg;
-    }
-
-    private static Color tintedFill(Color hue, double lightAmount, double darkAmount) {
-        return blend(cardFill(), hue, isDarkMode() ? darkAmount : lightAmount);
+        return labelForeground();
     }
 
     /**
-     * Fill color of a measured-variable node: a sage tint on the card fill.
+     * Fill of a measured-variable node: the plain card fill; the border and shape carry the node.
      *
      * @return the measured node fill.
      */
     public static Color measuredFill() {
-        // Light mode: plain card white, like any other component; the border and shape carry the node.
-        return isDarkMode() ? tintedFill(MEASURED_HUE, 0.30, 0.45) : cardFill();
+        return cardFill();
     }
 
     /**
-     * Fill color of a latent-variable node: a plum tint on the card fill.
+     * Fill of a latent-variable node: a faint indigo on the card fill, at least 13 Lab units from a measured node
+     * for normal, deuteranopic, and protanopic vision, with the label foreground still above 5:1 on it; the ellipse
+     * shape does the rest.
      *
      * @return the latent node fill.
      */
     public static Color latentFill() {
-        // Light mode: a faint indigo on white, about 13 Lab units from a measured node for every kind of vision;
-        // the ellipse shape does the rest.
-        return isDarkMode() ? tintedFill(LATENT_HUE, 0.28, 0.45) : blend(cardFill(), TOL_INDIGO, 0.14);
+        return blend(cardFill(), TOL_INDIGO, isDarkMode() ? 0.25 : 0.14);
     }
 
     /**
-     * Fill color of a selected node, given its unselected fill.
+     * Fill of a selected node, given its unselected fill.
      *
      * @param base the unselected fill.
      * @return the selected fill.
@@ -327,22 +307,18 @@ public final class WorkbenchStyle {
     }
 
     /**
-     * Border color of an unselected node.
+     * Border of an unselected node: the Look and Feel's component border.
      *
      * @return the node border color.
      */
     public static Color nodeBorder() {
-        if (!isDarkMode()) return lafBorder();
-        Color c = UIManager.getColor("Component.borderColor");
-        if (c == null) c = UIManager.getColor("Separator.foreground");
-        if (c == null) c = new Color(100, 104, 110);
-        return blend(blend(c, Color.WHITE, 0.10), BORDER_TINT_DARK, 0.45);
+        return lafBorder();
     }
 
     /**
-     * Border color of a selected node.
+     * Border of a selected node.
      *
-     * @return the selected node border color.
+     * @return the selected border color.
      */
     public static Color selectedBorder() {
         return accent();
@@ -351,13 +327,15 @@ public final class WorkbenchStyle {
     // ---------------------------------------------------------------- edges
 
     /**
-     * Default color of an edge that has no color of its own: dark brown, which sits back behind the tinted nodes.
+     * Color of an ordinary edge: a neutral grey between the label foreground and the panel, about 6:1 on the panel
+     * in light mode and 4.5:1 in dark, so edges are clear but the cards lead.
      *
-     * @return the default edge color.
+     * @return the edge color.
      */
     public static Color edge() {
-        // Light mode: a neutral grey, about 6:1 on the panel, so edges are clear but the white cards lead.
-        return isDarkMode() ? EDGE_DARK : blend(Color.BLACK, panelBackground(), 0.38);
+        return isDarkMode()
+                ? blend(labelForeground(), panelBackground(), 0.15)
+                : blend(labelForeground(), panelBackground(), 0.38);
     }
 
     /**
@@ -385,5 +363,26 @@ public final class WorkbenchStyle {
      */
     public static Color circleInterior() {
         return panelBackground();
+    }
+
+    // ---------------------------------------------------------------- plots
+
+    /**
+     * Color of plot points and histogram bars: Okabe-Ito blue on a light plot, sky blue on a dark one.
+     *
+     * @return the mark color.
+     */
+    public static Color plotMark() {
+        return isDarkMode() ? OI_SKY : OI_BLUE;
+    }
+
+    /**
+     * Color of regression and reference lines: Okabe-Ito vermilion on a light plot, orange on a dark one. Either
+     * pair with the mark color is distinguishable for every kind of vision.
+     *
+     * @return the line color.
+     */
+    public static Color plotLine() {
+        return isDarkMode() ? OI_ORANGE : OI_VERMILION;
     }
 }

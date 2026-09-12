@@ -108,68 +108,34 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
     }
 
-    // ---------------------------------------------------------------- type hues
+    // ---------------------------------------------------------------- type bands
 
     /**
-     * A saturated hue for the node type. This is never painted directly; it is blended toward the panel background
-     * (dark mode) or toward white (light mode) for the band, and toward the label color for the band text.
+     * The Tol muted hue for the node type, and the weight at which it is tinted onto the card in light and in dark
+     * mode. The weights differ by hue on purpose. Under deuteranopia and protanopia the red-green axis collapses
+     * and two bands can only be told apart by lightness and blue-yellow, so the weights are chosen per hue (light
+     * hues tinted lightly onto a white card and heavily onto a dark one, dark hues the reverse); with these
+     * weights every pair of bands is at least 11 Lab units apart in light mode and 14 in dark, for normal,
+     * deuteranopic, and protanopic vision.
      */
-    private static Color typeHue(String type) {
-        if (type == null) return WorkbenchStyle.KHAKI;
-        switch (type) {
-            case "Graph":
-                return WorkbenchStyle.DUSTY_BLUE;
-            case "PM":
-                return WorkbenchStyle.PLUM;
-            case "IM":
-                return WorkbenchStyle.INDIGO;
-            case "Data":
-                return WorkbenchStyle.SAGE;
-            case "Simulation":
-                // Kin to data (sage) but its own type: an olive gold.
-                return blend(WorkbenchStyle.MUSTARD, WorkbenchStyle.SAGE, 0.35);
-            case "Estimator":
-                return WorkbenchStyle.TEAL;
-            case "Search":
-            case "Latent_Clusters":
-            case "Latent_Structure":
-            case "Regression":
-            case "Updater":
-                return WorkbenchStyle.ROSE;
-            case "Knowledge":
-                return blend(WorkbenchStyle.KHAKI, WorkbenchStyle.BROWN, 0.35);
-            case "Compare":
-            case "GridSearch":
-                return WorkbenchStyle.TERRACOTTA;
-            case "Note":
-                return WorkbenchStyle.MUSTARD;
-            default:
-                return WorkbenchStyle.KHAKI;
-        }
+    private record Band(Color hue, double lightTint, double darkTint) {
     }
 
-    /**
-     * Light mode: the Tol muted hue for the node type, and the weight at which it is tinted onto the white card.
-     * The weights differ by hue on purpose. Under deuteranopia and protanopia the red-green axis collapses and
-     * two bands can only be told apart by lightness and blue-yellow, so light hues (teal, sand) are tinted
-     * lightly and dark ones (indigo, wine, green) more heavily; with these weights every pair of bands is at
-     * least 11 Lab units apart for normal, deuteranopic, and protanopic vision.
-     */
-    private static Object[] lightBand(String type) {
-        if (type == null) return new Object[]{WorkbenchStyle.lafBorder(), 0.60};
+    private static Band band(String type) {
+        if (type == null) return new Band(WorkbenchStyle.lafBorder(), 0.60, 0.60);
         return switch (type) {
-            case "Data" -> new Object[]{WorkbenchStyle.TOL_TEAL, 0.25};
-            case "Simulation" -> new Object[]{WorkbenchStyle.TOL_OLIVE, 0.45};
-            case "Knowledge" -> new Object[]{WorkbenchStyle.TOL_SAND, 0.35};
-            case "Graph" -> new Object[]{WorkbenchStyle.TOL_INDIGO, 0.55};
+            case "Data" -> new Band(WorkbenchStyle.TOL_TEAL, 0.25, 0.80);
+            case "Simulation" -> new Band(WorkbenchStyle.TOL_OLIVE, 0.45, 0.80);
+            case "Knowledge" -> new Band(WorkbenchStyle.TOL_SAND, 0.35, 0.50);
+            case "Graph" -> new Band(WorkbenchStyle.TOL_INDIGO, 0.55, 0.70);
             case "Search", "Latent_Clusters", "Latent_Structure", "Regression", "Updater" ->
-                    new Object[]{WorkbenchStyle.TOL_ROSE, 0.45};
-            case "Estimator" -> new Object[]{WorkbenchStyle.TOL_WINE, 0.55};
-            case "PM" -> new Object[]{WorkbenchStyle.TOL_PURPLE, 0.45};
-            case "IM" -> new Object[]{WorkbenchStyle.TOL_GREEN, 0.55};
-            case "Compare", "GridSearch" -> new Object[]{WorkbenchStyle.TOL_CYAN, 0.55};
-            case "Note" -> new Object[]{WorkbenchStyle.TOL_SAND, 0.35};
-            default -> new Object[]{WorkbenchStyle.lafBorder(), 0.60};
+                    new Band(WorkbenchStyle.TOL_ROSE, 0.45, 0.50);
+            case "Estimator" -> new Band(WorkbenchStyle.TOL_WINE, 0.55, 0.40);
+            case "PM" -> new Band(WorkbenchStyle.TOL_PURPLE, 0.45, 0.80);
+            case "IM" -> new Band(WorkbenchStyle.TOL_GREEN, 0.55, 0.80);
+            case "Compare", "GridSearch" -> new Band(WorkbenchStyle.TOL_CYAN, 0.55, 0.60);
+            case "Note" -> new Band(WorkbenchStyle.TOL_SAND, 0.35, 0.50);
+            default -> new Band(WorkbenchStyle.lafBorder(), 0.60, 0.60);
         };
     }
 
@@ -194,15 +160,13 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     /**
-     * The fill color of a session node card body.
+     * The fill color of a session node card body: the Look and Feel's component background, separated from the
+     * panel by the border and shadow like any other component.
      *
      * @return the card fill color.
      */
     public static Color cardFill() {
-        // Dark mode: a step lighter than graph nodes so the band and text stand out. Light mode: the Look and
-        // Feel's component white, separated from the panel by the border and shadow like any other component.
-        Color base = WorkbenchStyle.cardFill();
-        return isDarkMode() ? blend(base, Color.WHITE, 0.08) : base;
+        return WorkbenchStyle.cardFill();
     }
 
     /**
@@ -212,61 +176,28 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * @return the band fill color.
      */
     public static Color bandFill(String type) {
-        Color hue = typeHue(type);
-        if (isDarkMode()) {
-            return blend(cardFill(), hue, 0.45);
-        }
-        Object[] band = lightBand(type);
-        return blend(cardFill(), (Color) band[0], (Double) band[1]);
+        Band b = band(type);
+        return blend(cardFill(), b.hue(), isDarkMode() ? b.darkTint() : b.lightTint());
     }
 
     /**
-     * The text color used on the type band for the given node type.
+     * The text color used on the type band for the given node type: the band's hue, pushed toward white or black
+     * until it clears 4.5:1 on the band.
      *
      * @param type the node's button type, e.g. "Search".
      * @return the band text color.
      */
     public static Color bandText(String type) {
-        Color hue = typeHue(type);
-        if (isDarkMode()) {
-            return blend(hue, Color.WHITE, 0.55);
-        }
-        // The Tol hue darkened just enough to clear 4.5:1 on its own band.
-        Object[] band = lightBand(type);
-        Color fill = blend(cardFill(), (Color) band[0], (Double) band[1]);
-        for (double t = 0.45; t <= 0.80; t += 0.05) {
-            Color label = blend((Color) band[0], Color.BLACK, t);
-            if (contrast(label, fill) >= 4.5) return label;
-        }
-        return blend((Color) band[0], Color.BLACK, 0.80);
-    }
-
-    /** WCAG contrast ratio between two colors. */
-    private static double contrast(Color a, Color b) {
-        double la = luminance(a), lb = luminance(b);
-        return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
-    }
-
-    private static double luminance(Color c) {
-        double r = channel(c.getRed()), g = channel(c.getGreen()), b = channel(c.getBlue());
-        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    }
-
-    private static double channel(int v) {
-        double u = v / 255.0;
-        return u <= 0.03928 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4);
+        return WorkbenchStyle.readableOn(band(type).hue(), bandFill(type));
     }
 
     /**
-     * The border color of an unselected session node card.
+     * The border color of an unselected session node card: the Look and Feel's component border.
      *
      * @return the border color.
      */
     public static Color cardBorder() {
-        Color c = UIManager.getColor("Component.borderColor");
-        if (c == null) c = UIManager.getColor("Separator.foreground");
-        if (c == null) c = isDarkMode() ? new Color(100, 104, 110) : new Color(190, 194, 200);
-        return c;
+        return WorkbenchStyle.lafBorder();
     }
 
     private Color getSelectedBorderColor() {

@@ -112,8 +112,7 @@ class ScatterplotPanel extends JPanel {
     }
 
     private static Color getFitLineColor() {
-        // Light mode: Okabe-Ito vermilion, the blue/vermilion pair being distinguishable for every kind of vision.
-        return isDarkMode() ? Color.YELLOW : WorkbenchStyle.OI_VERMILION;
+        return WorkbenchStyle.plotLine();
     }
 
     private void refreshTheme() {
@@ -257,8 +256,7 @@ class ScatterplotPanel extends JPanel {
     }
 
     private static Color getDefaultPlotColor() {
-        // Light mode: Okabe-Ito blue, the same data blue as positive edges in the SEM views; 5.2:1 on white.
-        return isDarkMode() ? new Color(180, 190, 205) : WorkbenchStyle.OI_BLUE;
+        return WorkbenchStyle.plotMark();
     }
 
     private static Font uiFont(String key, Font fallback) {

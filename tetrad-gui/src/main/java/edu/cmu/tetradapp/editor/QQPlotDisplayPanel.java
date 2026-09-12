@@ -52,9 +52,14 @@ class QQPlotDisplayPanel extends JPanel {
         return WorkbenchStyle.lafBorder();
     }
 
-    /** The reference line: Okabe-Ito vermilion in light mode, matching the scatter plot's fit line. */
-    private static Color referenceLineColor() {
-        return WorkbenchStyle.isDarkMode() ? Color.YELLOW : WorkbenchStyle.OI_VERMILION;
+    /** The data points, matching the scatter plot's marks. */
+    private static Color pointColor() {
+        return WorkbenchStyle.plotMark();
+    }
+
+    /** Axis numbers and the caption: the Look and Feel's text color. */
+    private static Color textColor() {
+        return WorkbenchStyle.labelForeground();
     }
 
 
@@ -147,22 +152,22 @@ class QQPlotDisplayPanel extends JPanel {
         // draw background/surrounding box.
         g2d.setColor(this.getBackground());
         g2d.fillRect(0, 0, QQPlotDisplayPanel.WIDTH + 2 * QQPlotDisplayPanel.SPACE, QQPlotDisplayPanel.HEIGHT);
-        g2d.setColor(Color.WHITE);
+        g2d.setColor(WorkbenchStyle.cardFill());
         g2d.fillRect(QQPlotDisplayPanel.PADDING, 0, (QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE) - QQPlotDisplayPanel.PADDING, height);
 
         //border
         g2d.setColor(lineColor());
         g2d.drawRect(QQPlotDisplayPanel.PADDING, 0, (QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE) - QQPlotDisplayPanel.PADDING, height);
         // graw the buttom line
-        g2d.setColor(lineColor());
+        g2d.setColor(textColor());
         g2d.drawString(this.format.format(TMath.floor(this.qqPlot.getMinSample())), QQPlotDisplayPanel.PADDING + 5, height + 15);
         g2d.drawLine(QQPlotDisplayPanel.PADDING, height + QQPlotDisplayPanel.DASH, QQPlotDisplayPanel.PADDING, height);
         String maxStr = this.format.format((int) TMath.ceil(this.qqPlot.getMaxSample()));
         g2d.drawString(maxStr, QQPlotDisplayPanel.WIDTH - fontMetrics.stringWidth(maxStr), height + 15);
         g2d.drawLine(QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE, height + QQPlotDisplayPanel.DASH, QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE, height);
 
-        // draw the side line
-        g2d.setColor(lineColor());
+        // draw the side ticks and numbers
+        g2d.setColor(textColor());
         final int topY = 0;
         String top = "" + TMath.ceil(this.qqPlot.getMaxSample());
         g2d.drawString(top, QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(top), topY + 10);
@@ -171,7 +176,7 @@ class QQPlotDisplayPanel extends JPanel {
         g2d.drawLine(QQPlotDisplayPanel.PADDING - QQPlotDisplayPanel.DASH, height, QQPlotDisplayPanel.PADDING, height);
 
         //draw the data points: the i'th sorted nonmissing sample value against the i'th comparison quantile
-        g2d.setColor(referenceLineColor());
+        g2d.setColor(pointColor());
 
         double[] sample = this.qqPlot.getSampleVariable();
         double[] comparison = this.qqPlot.getComparisonVariable();
@@ -189,7 +194,7 @@ class QQPlotDisplayPanel extends JPanel {
         }
 
         // draw the display string.
-        g2d.setColor(lineColor());
+        g2d.setColor(textColor());
         g2d.drawString(getDisplayString(), QQPlotDisplayPanel.PADDING, QQPlotDisplayPanel.HEIGHT - 5);
     }
 
