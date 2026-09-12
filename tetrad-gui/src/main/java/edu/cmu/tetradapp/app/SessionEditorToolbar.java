@@ -163,9 +163,14 @@ final class SessionEditorToolbar extends JPanel {
             buttonsPanel.add(Box.createVerticalStrut(5));
         }
 
+//        buttonsPanel.setPreferredSize(new Dimension(120, 800));
+        buttonsPanel.setPreferredSize(new Dimension(135, buttonsPanel.getPreferredSize().height));
+
         setLayout(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(buttonsPanel);
-        scroll.setPreferredSize(new Dimension(130, 1000));
+        JScrollPane scroll = new JScrollPane(buttonsPanel,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
         add(scroll, BorderLayout.CENTER);
 
         // After an action, reset selection or keep edge button selected as appropriate.
@@ -278,6 +283,9 @@ final class SessionEditorToolbar extends JPanel {
             button.setText("<html><center>" + buttonInfo.getDisplayName() + "</center></html>");
         }
 
+        // Fix the button size so every button is the same width and the panel's
+        // preferred width reflects that, rather than the unwrapped HTML text width.
+        button.setPreferredSize(new Dimension(110, 40));
         button.setMaximumSize(new Dimension(110, 40));
         button.setToolTipText(buttonInfo.getToolTipText());
         this.nodeTypes.put(button, nodeTypeName);
