@@ -89,7 +89,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
         // Split
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, settings, right);
-        split.setResizeWeight(0.30);
+//        split.setResizeWeight(0.30);
         split.setContinuousLayout(true);
         add(split, BorderLayout.CENTER);
 
