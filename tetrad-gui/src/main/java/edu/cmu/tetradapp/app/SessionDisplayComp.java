@@ -44,6 +44,14 @@ public interface SessionDisplayComp extends DisplayComp {
      */
     void setHasModel(boolean b);
 
+    /**
+     * Sets the session node type (the button type, e.g. "Search" or "Data") so the display can label or tint itself
+     * by type. The default does nothing, for display components that do not show the type.
+     *
+     * @param nodeType the node's button type.
+     */
+    default void setNodeType(String nodeType) {
+    }
 
 }
 

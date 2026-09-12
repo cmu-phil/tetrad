@@ -28,6 +28,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.LinkedHashMap;
@@ -280,13 +283,18 @@ final class SessionEditorToolbar extends JPanel {
             this.buttonImageNames.put(button, imageName);
         } else {
             button.setName(nodeTypeName);
-            button.setText("<html><center>" + buttonInfo.getDisplayName() + "</center></html>");
+            button.setText("<html>" + buttonInfo.getDisplayName() + "</html>");
+            button.setIcon(new NodeTypeIcon(nodeTypeName));
+            button.setHorizontalAlignment(SwingConstants.LEFT);
+            button.setIconTextGap(8);
         }
 
         // Fix the button size so every button is the same width and the panel's
         // preferred width reflects that, rather than the unwrapped HTML text width.
-        button.setPreferredSize(new Dimension(110, 40));
-        button.setMaximumSize(new Dimension(110, 40));
+        // The width leaves room for the type icon plus two lines of label text.
+        button.setMargin(new Insets(2, 8, 2, 6));
+        button.setPreferredSize(new Dimension(130, 40));
+        button.setMaximumSize(new Dimension(130, 40));
         button.setToolTipText(buttonInfo.getToolTipText());
         this.nodeTypes.put(button, nodeTypeName);
 
@@ -334,6 +342,65 @@ final class SessionEditorToolbar extends JPanel {
 
     private void setShiftDown(boolean shiftDown) {
         this.shiftDown = shiftDown;
+    }
+
+    // -------------------------------------------------------------------------
+    // NodeTypeIcon
+    // -------------------------------------------------------------------------
+
+    /**
+     * A small vector icon that echoes the session node card for a node type: a rounded rectangle in the card fill
+     * with a type-tinted band across the top. Colors come from {@link StdDisplayComp}, so the toolbar and the
+     * workbench nodes always agree, and they are read at paint time, so the icon follows light and dark mode
+     * without being rebuilt.
+     */
+    private static final class NodeTypeIcon implements Icon {
+
+        private static final int W = 18;
+        private static final int H = 16;
+        private static final int ARC = 5;
+        private static final int BAND = 6;
+
+        private final String nodeType;
+
+        private NodeTypeIcon(String nodeType) {
+            this.nodeType = nodeType;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return W;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return H;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+                Shape card = new RoundRectangle2D.Double(x + 0.5, y + 0.5, W - 1, H - 1, ARC, ARC);
+
+                g2.setColor(StdDisplayComp.cardFill());
+                g2.fill(card);
+
+                Area band = new Area(card);
+                band.intersect(new Area(new Rectangle2D.Double(x, y, W, BAND)));
+                g2.setColor(StdDisplayComp.bandFill(nodeType));
+                g2.fill(band);
+
+                g2.setStroke(new BasicStroke(1f));
+                g2.setColor(StdDisplayComp.cardBorder());
+                g2.draw(card);
+            } finally {
+                g2.dispose();
+            }
+        }
     }
 
     // -------------------------------------------------------------------------

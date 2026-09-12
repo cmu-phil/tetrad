@@ -106,6 +106,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         this.simulationStudy = simulationStudy;
         displayComp.setName(modelNode.getSessionName());
+        displayComp.setNodeType(modelNode.getButtonType());
 
         if (displayComp instanceof NoteDisplayComp) {
             createParamObjects(this);
