@@ -85,6 +85,13 @@ public final class HybridCgImEditor extends JPanel {
     // state
     private int currentY = -1;
 
+    /**
+     * True while {@link #selectVariable} is changing the list selection. The list's selection listener checks this to
+     * skip the IM-to-graph echo (re-centering the graph on a node the user just clicked there) and the
+     * "selectedVariable" event (the caller already knows).
+     */
+    private boolean externalSelection = false;
+
     // number formatting
     private static final DecimalFormat DF3 = new DecimalFormat("0.###");
 
@@ -129,7 +136,21 @@ public final class HybridCgImEditor extends JPanel {
             // Recolor on tab select so the graph reflects edits made in the IM tab. The workbench itself
             // persists, so menus and actions bound to it stay valid.
             this.tabs.addChangeListener(e -> {
-                if (this.tabs.getSelectedIndex() == 1) this.graphView.update(this.im);
+                if (this.tabs.getSelectedIndex() == 1) {
+                    this.graphView.update(this.im);
+                    // update() rebuilt the display nodes, wiping any selection; re-apply the
+                    // current variable so the graph opens centered on what the IM tab shows.
+                    syncGraphSelection(varList.getSelectedValue());
+                }
+            });
+            // Clicking a node in the Graph tab selects that variable in the IM tab, so its table is
+            // showing when the user switches back. The workbench persists across update() calls, so
+            // one listener suffices. Multi-node selections are ignored.
+            this.graphView.getWorkbench().addPropertyChangeListener("selectedNodes", e -> {
+                if (e.getNewValue() instanceof List<?> sel && sel.size() == 1
+                    && sel.getFirst() instanceof Node n) {
+                    selectVariable(n);
+                }
             });
             add(this.tabs, BorderLayout.CENTER);
         } else {
@@ -245,6 +266,46 @@ public final class HybridCgImEditor extends JPanel {
         repaint();
     }
 
+    /**
+     * Selects the variable with the given node's name in the variable list, clearing the name filter if it is hiding
+     * that variable, and scrolls the list to it. The right-hand table follows via the list's selection listener.
+     * Matching is by name, since callers (e.g. a graph view) may hold node objects from a copied graph. No-op if the
+     * model has no variable of that name.
+     *
+     * @param node a node whose name identifies the variable to select
+     */
+    public void selectVariable(Node node) {
+        if (node == null) return;
+
+        Node match = null;
+        for (Node n : this.nodes) {
+            if (n.getName().equals(node.getName())) { match = n; break; }
+        }
+        if (match == null) return;
+
+        this.externalSelection = true;
+        try {
+            if (!varListModel.contains(match)) { // hidden by the filter
+                filterField.setText("");
+                loadVariableList(null);
+            }
+            varList.setSelectedValue(match, true);
+        } finally {
+            this.externalSelection = false;
+        }
+    }
+
+    /**
+     * Selects and centers the given variable's node in the Graph tab's workbench, matching by name (the colored graph
+     * holds copied nodes). No-op when this editor has no graph tab (the embedded case) or the node isn't in the
+     * displayed graph.
+     */
+    private void syncGraphSelection(Node node) {
+        if (this.graphView == null || node == null) return;
+        Node wbNode = this.graphView.getWorkbench().getGraph().getNode(node.getName());
+        if (wbNode != null) this.graphView.getWorkbench().centerWorkbenchOnNode(wbNode);
+    }
+
     // ============================ LEFT ============================
 
     private JComponent buildLeft() {
@@ -261,7 +322,17 @@ public final class HybridCgImEditor extends JPanel {
                 return this;
             }
         });
-        varList.addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) onSelectChild(varList.getSelectedValue()); });
+        varList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return;
+            Node sel = varList.getSelectedValue();
+            onSelectChild(sel);
+            if (!externalSelection && sel != null) {
+                // User-originated selection: mirror it in the Graph tab (standalone case) and tell
+                // any container (the estimator syncs its own graph view off this event).
+                syncGraphSelection(sel);
+                firePropertyChange("selectedVariable", null, sel);
+            }
+        });
 
         filterField.setToolTipText("Filter by name (press Enter)");
         filterField.addActionListener(e -> loadVariableList(filterField.getText().trim()));

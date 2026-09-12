@@ -60,6 +60,8 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
     // ---------- IM display host on the right ----------
     private final JPanel imHost = new JPanel(new BorderLayout());
+    /** The embedded IM editor currently shown in imHost; null until the first showIm. */
+    private HybridCgImEditor imEditor;
     private final HybridCgGraphViewer graphView;
     private JTabbedPane tabs;
     private final JLabel bicLabel = new JLabel("BIC: n/a");
@@ -87,6 +89,16 @@ public final class HybridCgEstimatorEditor extends JPanel {
         tabs.addTab("Estimated IM", imHost);
         tabs.addTab("Graph", graphView.getComponent());
         tabs.setToolTipTextAt(1, "Model graph with edges shaded by estimated strength");
+
+        // Clicking a node in the Graph tab selects that variable in the Estimated IM tab, so its
+        // table is showing when the user switches back. The workbench persists across re-estimates,
+        // so one listener suffices; showIm keeps imEditor pointing at the current embedded editor.
+        graphView.getWorkbench().addPropertyChangeListener("selectedNodes", e -> {
+            if (this.imEditor != null && e.getNewValue() instanceof java.util.List<?> sel
+                && sel.size() == 1 && sel.getFirst() instanceof Node n) {
+                this.imEditor.selectVariable(n);
+            }
+        });
 
         statusBar.add(bicLabel);
 
@@ -249,8 +261,18 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
     private void showIm(HybridCgIm im) {
         HybridCgImEditor editor = new HybridCgImEditor(im);
+        this.imEditor = editor;
         editor.addPropertyChangeListener("modelChanged",
                 evt -> firePropertyChange("modelChanged", null, null));
+        // Selecting a variable in the Estimated IM tab selects and centers its node in the Graph
+        // tab. The embedded editor suppresses this event for selections that originated from a
+        // graph click, so this cannot echo.
+        editor.addPropertyChangeListener("selectedVariable", evt -> {
+            if (evt.getNewValue() instanceof Node n) {
+                Node wbNode = graphView.getWorkbench().getGraph().getNode(n.getName());
+                if (wbNode != null) graphView.getWorkbench().centerWorkbenchOnNode(wbNode);
+            }
+        });
 
         imHost.removeAll();
         imHost.add(editor, BorderLayout.CENTER);
