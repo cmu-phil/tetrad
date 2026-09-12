@@ -78,6 +78,7 @@ public class MeasuredDisplaySmallComp extends JComponent implements DisplayComp 
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
+        WorkbenchStyle.applyHints(g2);
         FontMetrics fm = getFontMetrics(new Font("Monospaced", Font.PLAIN, 3));
         String name = getName();
 

@@ -20,8 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
+import edu.cmu.tetradapp.workbench.WorkbenchIcons;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -199,14 +199,14 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
         super.updateUI();
         // Reload icons when the L&F changes
         if (this.move != null) {
-            this.move.setIcon(new ImageIcon(ImageUtils.getImage(this, "move3.gif")));
-            this.addObserved.setIcon(new ImageIcon(ImageUtils.getImage(this, "variable3.gif")));
-            this.addLatent.setIcon(new ImageIcon(ImageUtils.getImage(this, "latent3.gif")));
-            this.addDirectedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "directed3.gif")));
-            this.addNondirectedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "nondirected3.gif")));
-            this.addUndirectedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "undirected3.gif")));
-            this.addPartiallyOrientedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "partiallyoriented3.gif")));
-            this.addBidirectedEdge.setIcon(new ImageIcon(ImageUtils.getImage(this, "bidirected3.gif")));
+            this.move.setIcon(WorkbenchIcons.forTool("move"));
+            this.addObserved.setIcon(WorkbenchIcons.forTool("variable"));
+            this.addLatent.setIcon(WorkbenchIcons.forTool("latent"));
+            this.addDirectedEdge.setIcon(WorkbenchIcons.forTool("directed"));
+            this.addNondirectedEdge.setIcon(WorkbenchIcons.forTool("nondirected"));
+            this.addUndirectedEdge.setIcon(WorkbenchIcons.forTool("undirected"));
+            this.addPartiallyOrientedEdge.setIcon(WorkbenchIcons.forTool("partiallyoriented"));
+            this.addBidirectedEdge.setIcon(WorkbenchIcons.forTool("bidirected"));
         }
     }
 
@@ -239,7 +239,7 @@ public class GraphToolbar extends JPanel implements PropertyChangeListener {
      * Adds the various buttons to the toolbar, setting their properties appropriately.
      */
     private void addButton(JToggleButton button, String name) {
-        button.setIcon(new ImageIcon(ImageUtils.getImage(this, name + "3.gif")));
+        button.setIcon(WorkbenchIcons.forTool(name));
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
         this.buttonsPanel.add(button);

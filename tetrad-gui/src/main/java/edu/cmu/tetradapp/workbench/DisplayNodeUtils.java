@@ -23,90 +23,109 @@ package edu.cmu.tetradapp.workbench;
 import java.awt.*;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Apr 1, 2006 Time: 5:19:32 PM To change this template use File |
- * Settings | File Templates.
+ * Shared constants and painting for graph node display components. Colors and the font are delegated to
+ * {@link WorkbenchStyle} so they follow the active Look &amp; Feel; the getters are kept for existing callers.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class DisplayNodeUtils {
+
     // Note that this component must be a JComponent, since non-rectangular
-// shapes are used for some extensions.
-    private static final Color NODE_FILL_COLOR = new Color(148, 198, 226);
-    private static final Color NODE_EDGE_COLOR = new Color(146, 154, 166);
-    private static final Color NODE_SELECTED_FILL_COLOR = new Color(244, 219, 110);
-    private static final Color NODE_SELECTED_EDGE_COLOR = new Color(215, 193, 97);
-    private static final Color NODE_TEXT_COLOR = new Color(0, 1, 53);
+    // shapes are used for some extensions.
 
-
-    private static final Font FONT = new Font("Dialog", Font.BOLD, 12);
     private static final int PIXEL_GAP = 7;
 
     /**
-     * <p>getNodeFillColor.</p>
+     * The fill color of an unselected measured node.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the fill color.
      */
     public static Color getNodeFillColor() {
-        return DisplayNodeUtils.NODE_FILL_COLOR;
+        return WorkbenchStyle.measuredFill();
     }
 
     /**
-     * <p>getNodeEdgeColor.</p>
+     * The border color of an unselected node.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the border color.
      */
     public static Color getNodeEdgeColor() {
-        return DisplayNodeUtils.NODE_EDGE_COLOR;
+        return WorkbenchStyle.nodeBorder();
     }
 
     /**
-     * <p>getNodeSelectedFillColor.</p>
+     * The fill color of a selected measured node.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the fill color.
      */
     public static Color getNodeSelectedFillColor() {
-        return DisplayNodeUtils.NODE_SELECTED_FILL_COLOR;
+        return WorkbenchStyle.selectedFill(WorkbenchStyle.measuredFill());
     }
 
     /**
-     * <p>getNodeSelectedEdgeColor.</p>
+     * The border color of a selected node.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the border color.
      */
     public static Color getNodeSelectedEdgeColor() {
-        return DisplayNodeUtils.NODE_SELECTED_EDGE_COLOR;
+        return WorkbenchStyle.selectedBorder();
     }
 
     /**
-     * <p>getNodeTextColor.</p>
+     * The color of node name text.
      *
-     * @return a {@link java.awt.Color} object
+     * @return the text color.
      */
     public static Color getNodeTextColor() {
-        return DisplayNodeUtils.NODE_TEXT_COLOR;
+        return WorkbenchStyle.nodeText();
     }
 
     /**
-     * <p>getFont.</p>
+     * The font for node names.
      *
-     * @return a {@link java.awt.Font} object
+     * @return the font.
      */
     public static Font getFont() {
-        return DisplayNodeUtils.FONT;
+        return WorkbenchStyle.nodeFont();
     }
 
     /**
-     * <p>getPixelGap.</p>
+     * The vertical padding above and below node text.
      *
-     * @return a int
+     * @return the gap in pixels.
      */
     public static int getPixelGap() {
         return DisplayNodeUtils.PIXEL_GAP;
     }
+
+    /**
+     * Paints a node: fills the shape, draws its border (accented and heavier when selected), and centers the name
+     * in it. The caller is responsible for rendering hints.
+     *
+     * @param g2       the graphics to paint on.
+     * @param shape    the node outline, in component coordinates.
+     * @param name     the node name; may be null.
+     * @param size     the node size.
+     * @param fill     the unselected fill color.
+     * @param selected whether the node is selected.
+     */
+    static void paintNode(Graphics2D g2, Shape shape, String name, Dimension size, Color fill, boolean selected) {
+        if (name == null) name = "";
+
+        g2.setColor(selected ? WorkbenchStyle.selectedFill(fill) : fill);
+        g2.fill(shape);
+
+        g2.setStroke(new BasicStroke(selected ? 2f : 1f));
+        g2.setColor(selected ? WorkbenchStyle.selectedBorder() : WorkbenchStyle.nodeBorder());
+        g2.draw(shape);
+
+        Font font = WorkbenchStyle.nodeFont();
+        FontMetrics fm = g2.getFontMetrics(font);
+        int x = (size.width - fm.stringWidth(name)) / 2;
+        int y = (size.height - fm.getHeight()) / 2 + fm.getAscent();
+        g2.setFont(font);
+        g2.setColor(WorkbenchStyle.nodeText());
+        g2.drawString(name, x, y);
+    }
 }
-
-
-
-
-

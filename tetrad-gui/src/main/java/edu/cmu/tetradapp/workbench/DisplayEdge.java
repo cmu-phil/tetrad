@@ -6,6 +6,8 @@ import edu.cmu.tetrad.util.TMath;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
@@ -185,59 +187,24 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     //============================THEME HELPERS========================//
 
-    private static Color uiColor(String key, Color fallback) {
-        Color c = UIManager.getColor(key);
-        return c != null ? c : fallback;
-    }
-
     private static boolean isDarkMode() {
         return com.formdev.flatlaf.FlatLaf.isLafDark();
     }
 
     private static Color getDefaultLineColor() {
-//        Color c = UIManager.getColor("Component.borderColor");
-//        if (c != null) return c;
-//
-//        Color c = UIManager.getColor("Label.foreground");
-//        if (c != null) return c;
-
-        return isDarkMode()
-                ? new Color(180, 190, 205).darker()
-                : new Color(26, 113, 169, 255);
+        return WorkbenchStyle.edge();
     }
 
     private static Color getDefaultSelectedColor() {
-        Color c = UIManager.getColor("Component.focusColor");
-        if (c != null) return c;
-
-        c = UIManager.getColor("Table.selectionBackground");
-        if (c != null) return c;
-
-        return isDarkMode()
-                ? new Color(110, 170, 255)
-                : new Color(244, 0, 20);
+        return WorkbenchStyle.edgeSelected();
     }
 
     private static Color getDefaultHighlightedColor() {
-        Color c = UIManager.getColor("Actions.Yellow");
-        if (c != null) return c;
-
-        c = UIManager.getColor("TextField.caretForeground");
-        if (c != null) return c;
-
-        return isDarkMode()
-                ? new Color(255, 210, 90)
-                : new Color(238, 180, 34);
+        return WorkbenchStyle.edgeHighlighted();
     }
 
     private static Color getCircleInteriorColor() {
-        Color c = UIManager.getColor("Panel.background");
-        if (c != null) return c;
-
-        c = UIManager.getColor("TextField.background");
-        if (c != null) return c;
-
-        return isDarkMode() ? new Color(43, 45, 48) : Color.white;
+        return WorkbenchStyle.circleInterior();
     }
 
     @Override
@@ -323,11 +290,14 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         int x2 = getConnectedPoints().getTo().x;
         int y2 = getConnectedPoints().getTo().y;
 
-        Stroke s;
-        float width = thick ? 3f : 1.1f;
+        WorkbenchStyle.applyHints(g2d);
 
-        Stroke solidStroke = new BasicStroke(width);
-        Stroke dashedStroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
+        Stroke s;
+        float width = thick ? 3f : 1.5f;
+
+        Stroke solidStroke = new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+        Stroke dashedStroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 1f,
+                new float[]{7f, 5f}, 0f);
 
         s = this.solid ? solidStroke : dashedStroke;
         g2d.setStroke(s);
@@ -546,45 +516,82 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         }
     }
 
-    private void drawArrowEndpoint(Point from, Point to, Graphics g) {
-        double a = to.x - from.x;
-        double b = from.y - to.y;
-        double theta = TMath.atan2(b, a);
-        int itheta = (int) ((theta * 360.0) / (2.0 * TMath.PI) + 180);
+    private float endpointScale() {
+        return Math.max(1f, getStrokeWidth()) * (thick ? 1.35f : 1f);
+    }
 
-        g.fillArc(to.x - 17, to.y - 17, 34, 34,
-                itheta - 14 - 3 * (int) getStrokeWidth(), 29 + 6 * (int) getStrokeWidth());
+    private void drawArrowEndpoint(Point from, Point to, Graphics g) {
+        float scale = endpointScale();
+        fillArrowhead(from, to, 11f * scale, 4.5f * scale, g);
     }
 
     private void drawSessionArrowEndpoint(Point from, Point to, Graphics g) {
-        double a = to.x - from.x;
-        double b = from.y - to.y;
-        double theta = TMath.atan2(b, a);
-        int itheta = (int) ((theta * 360.0) / (2.0 * TMath.PI) + 180);
+        float scale = endpointScale();
+        fillArrowhead(from, to, 13f * scale, 6f * scale, g);
+    }
 
-        g.fillArc(to.x - 18, to.y - 18, 36, 36,
-                itheta - 33 * (int) getStrokeWidth(), 66 * (int) getStrokeWidth());
+    /**
+     * Fills a triangular arrowhead with its tip at {@code to}, pointing away from {@code from}.
+     *
+     * @param from      the point the edge comes from.
+     * @param to        the tip of the arrowhead.
+     * @param length    the length of the arrowhead along the edge.
+     * @param halfWidth half the width of the arrowhead base.
+     * @param g         the graphics to draw on.
+     */
+    private void fillArrowhead(Point from, Point to, float length, float halfWidth, Graphics g) {
+        double dx = to.x - from.x;
+        double dy = to.y - from.y;
+        double len = TMath.sqrt(dx * dx + dy * dy);
+        if (len < 1e-6) return;
+
+        double ux = dx / len;
+        double uy = dy / len;
+        double bx = to.x - ux * length;
+        double by = to.y - uy * length;
+
+        Path2D.Double head = new Path2D.Double();
+        head.moveTo(to.x, to.y);
+        head.lineTo(bx - uy * halfWidth, by + ux * halfWidth);
+        head.lineTo(bx + uy * halfWidth, by - ux * halfWidth);
+        head.closePath();
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            WorkbenchStyle.applyHints(g2);
+            g2.fill(head);
+            g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.draw(head);
+        } finally {
+            g2.dispose();
+        }
     }
 
     private void drawCircleEndpoint(Point from, Point to, Graphics g) {
-        int diameter = 12 + (int) getStrokeWidth();
-        double a = to.x - from.x;
-        double b = from.y - to.y;
-        double theta = TMath.atan2(b, a);
-        int xminus = (int) (TMath.cos(theta) * diameter / 2);
-        int yplus = (int) (TMath.sin(theta) * diameter / 2);
+        double diameter = 11.0 * endpointScale();
+        double dx = to.x - from.x;
+        double dy = to.y - from.y;
+        double len = TMath.sqrt(dx * dx + dy * dy);
+        if (len < 1e-6) return;
 
-        g.fillOval(to.x - xminus - diameter / 2, to.y + yplus - diameter / 2, diameter, diameter);
+        // Center the circle so it is tangent to the node boundary at 'to'.
+        double cx = to.x - dx / len * diameter / 2.0;
+        double cy = to.y - dy / len * diameter / 2.0;
 
-        Color c = g.getColor();
-        g.setColor(getCircleInteriorColor());
-        g.fillOval(
-                to.x - xminus - diameter / 4 - 1,
-                to.y + yplus - diameter / 4 - 1,
-                (int) (diameter / 1.4),
-                (int) (diameter / 1.4)
-        );
-        g.setColor(c);
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            WorkbenchStyle.applyHints(g2);
+            Ellipse2D.Double circle = new Ellipse2D.Double(cx - diameter / 2.0, cy - diameter / 2.0,
+                    diameter, diameter);
+            Color ring = g2.getColor();
+            g2.setColor(getCircleInteriorColor());
+            g2.fill(circle);
+            g2.setColor(ring);
+            g2.setStroke(new BasicStroke(thick ? 2.5f : 1.6f));
+            g2.draw(circle);
+        } finally {
+            g2.dispose();
+        }
     }
 
     private Point getBoundaryIntersection(DisplayNode comp, Point pIn, Point pOut) {
@@ -700,15 +707,16 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public Color getLineColor() {
-        Color color = this.highlighted ? getHighlightedColor() : (this.lineColor != null ? this.lineColor : getDefaultLineColor());
-
-        if (isDarkMode()) {
-            color = color.brighter();
-        } else {
-//            color = color.darker();
+        if (this.highlighted) {
+            return getHighlightedColor();
         }
 
-        return color;
+        if (this.lineColor == null) {
+            return getDefaultLineColor();
+        }
+
+        // A color set explicitly on the edge is usually chosen for light backgrounds; lift it a little in dark mode.
+        return isDarkMode() ? this.lineColor.brighter() : this.lineColor;
     }
 
     @Override
@@ -731,7 +739,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public Color getSelectedColor() {
-        return this.selectedColor != null ? this.selectedColor : getDefaultHighlightedColor();
+        return this.selectedColor != null ? this.selectedColor : getDefaultSelectedColor();
     }
 
     @Override
@@ -740,15 +748,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     public Color getHighlightedColor() {
-        Color color = this.highlightedColor != null ? this.highlightedColor : getDefaultHighlightedColor();
-
-        if (isDarkMode()) {
-            color = color.brighter();
-        } else {
-            color = color.darker();
-        }
-
-        return color;
+        return this.highlightedColor != null ? this.highlightedColor : getDefaultHighlightedColor();
     }
 
     @Override

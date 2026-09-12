@@ -24,73 +24,84 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
+/**
+ * The display component for a selection-variable node in a graph workbench: an ellipse with a heavy ring inside the
+ * outline, so it is told apart from a latent at a glance. Colors and font come from {@link WorkbenchStyle}.
+ *
+ * @author josephramsey
+ * @version $Id: $Id
+ */
 public class SelectionDisplayComp extends JComponent implements DisplayComp {
 
     private boolean selected;
 
+    /**
+     * Constructs a selection node display with the given name.
+     *
+     * @param name the node name.
+     */
     public SelectionDisplayComp(String name) {
-        setBackground(DisplayNodeUtils.getNodeFillColor());
-        setFont(DisplayNodeUtils.getFont());
+        setOpaque(false);
+        setFont(WorkbenchStyle.nodeFont());
         setName(name);
-        this.setSize(getPreferredSize());
+        setSize(getPreferredSize());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
     private Shape getShape() {
-        return new Ellipse2D.Double(0, 0, getPreferredSize().width - 1,
-                getPreferredSize().height - 1);
+        Dimension d = getPreferredSize();
+        return new Ellipse2D.Double(0.5, 0.5, d.width - 1, d.height - 1);
     }
 
     private Shape getInnerShape() {
-        return new Ellipse2D.Double(3, 3, getPreferredSize().width - 7,
-                getPreferredSize().height - 7);
+        Dimension d = getPreferredSize();
+        return new Ellipse2D.Double(3.5, 3.5, d.width - 7, d.height - 7);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void paint(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        int width = getPreferredSize().width;
-        int stringWidth = fm.stringWidth(getName());
-        int stringX = (width - stringWidth) / 2;
-        int stringY = fm.getAscent() + DisplayNodeUtils.getPixelGap();
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            WorkbenchStyle.applyHints(g2);
+            Color fill = WorkbenchStyle.latentFill();
+            DisplayNodeUtils.paintNode(g2, getShape(), getName(), getPreferredSize(), fill, isSelected());
 
-        // Fill outer shape
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() : DisplayNodeUtils.getNodeFillColor());
-        g2.fill(getShape());
-
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() :
-                DisplayNodeUtils.getNodeEdgeColor());
-        g2.setStroke(new BasicStroke(5)); // Adjust thickness here
-        g2.draw(getInnerShape());
-
-        // Draw the text inside the shape
-        g2.setColor(DisplayNodeUtils.getNodeTextColor());
-        g2.setFont(DisplayNodeUtils.getFont());
-        g2.drawString(getName(), stringX, stringY);
+            // The ring that marks a selection variable.
+            g2.setStroke(new BasicStroke(3f));
+            g2.setColor(isSelected() ? WorkbenchStyle.selectedBorder() : WorkbenchStyle.nodeBorder());
+            g2.draw(getInnerShape());
+        } finally {
+            g2.dispose();
+        }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        String name1 = getName();
-        int textWidth = fm.stringWidth(name1);
-        int textHeight = fm.getAscent();
-        int width = textWidth + fm.getMaxAdvance() + 5;
-        int height = 2 * DisplayNodeUtils.getPixelGap() + textHeight + 5;
-
-        width = width;// (width < 60) ? 60 : width;
-
+        FontMetrics fm = getFontMetrics(WorkbenchStyle.nodeFont());
+        int width = fm.stringWidth(getName()) + fm.getMaxAdvance() + 5;
+        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 5;
         return new Dimension(width, height);
     }
 
@@ -98,14 +109,11 @@ public class SelectionDisplayComp extends JComponent implements DisplayComp {
         return this.selected;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
 }
-
-
-
-
-
-

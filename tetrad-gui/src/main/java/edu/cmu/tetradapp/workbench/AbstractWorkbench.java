@@ -937,6 +937,21 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * Turns on antialiasing before painting, so every node and edge painted beneath inherits it. Individual
+     * components also set the hints themselves, since they can be painted outside the workbench (for example
+     * when exporting an image).
+     */
+    @Override
+    public void paint(Graphics g) {
+        if (g instanceof Graphics2D g2) {
+            WorkbenchStyle.applyHints(g2);
+        }
+        super.paint(g);
+    }
+
+    /**
      * Scrolls the workbench image so that the given node is in view, then selects that node.
      *
      * @param modelNode the model node to show.

@@ -1,6 +1,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -114,33 +115,33 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * (dark mode) or toward white (light mode) for the band, and toward the label color for the band text.
      */
     private static Color typeHue(String type) {
-        if (type == null) return new Color(120, 130, 140);
+        if (type == null) return WorkbenchStyle.KHAKI;
         switch (type) {
             case "Graph":
-                return new Color(52, 120, 214);   // blue
+                return WorkbenchStyle.DUSTY_BLUE;
             case "PM":
             case "IM":
-                return new Color(132, 84, 200);   // violet
+                return WorkbenchStyle.PLUM;
             case "Data":
             case "Simulation":
-                return new Color(46, 150, 92);    // green
+                return WorkbenchStyle.SAGE;
             case "Estimator":
-                return new Color(24, 150, 160);   // teal
+                return WorkbenchStyle.TEAL;
             case "Search":
             case "Latent_Clusters":
             case "Latent_Structure":
             case "Regression":
             case "Updater":
-                return new Color(224, 128, 24);   // amber
+                return WorkbenchStyle.ROSE;
             case "Knowledge":
-                return new Color(98, 114, 140);   // slate
+                return blend(WorkbenchStyle.KHAKI, WorkbenchStyle.BROWN, 0.35);
             case "Compare":
             case "GridSearch":
-                return new Color(200, 72, 100);   // rose
+                return WorkbenchStyle.TERRACOTTA;
             case "Note":
-                return new Color(214, 178, 36);   // yellow, matching the note node
+                return WorkbenchStyle.MUSTARD;
             default:
-                return new Color(120, 130, 140);
+                return WorkbenchStyle.KHAKI;
         }
     }
 
@@ -161,7 +162,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * @return the panel background color.
      */
     public static Color panelBackground() {
-        return uiColor("Panel.background", isDarkMode() ? new Color(60, 63, 65) : new Color(242, 242, 242));
+        return WorkbenchStyle.panelBackground();
     }
 
     /**
@@ -170,11 +171,9 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
      * @return the card fill color.
      */
     public static Color cardFill() {
-        Color panel = panelBackground();
-        if (isDarkMode()) {
-            return blend(panel, Color.WHITE, 0.06);
-        }
-        return blend(panel, Color.WHITE, 0.80);
+        // Session cards sit a step lighter than graph nodes so the type band and text stand out.
+        Color base = WorkbenchStyle.cardFill();
+        return isDarkMode() ? blend(base, Color.WHITE, 0.08) : blend(base, Color.WHITE, 0.65);
     }
 
     /**
@@ -188,7 +187,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         if (isDarkMode()) {
             return blend(cardFill(), hue, 0.45);
         }
-        return blend(Color.WHITE, hue, 0.22);
+        return blend(cardFill(), hue, 0.26);
     }
 
     /**
@@ -202,7 +201,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         if (isDarkMode()) {
             return blend(hue, Color.WHITE, 0.55);
         }
-        return blend(hue, Color.BLACK, 0.30);
+        return WorkbenchStyle.fade(blend(hue, Color.BLACK, 0.30));
     }
 
     /**
@@ -218,15 +217,11 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     private Color getSelectedBorderColor() {
-        Color c = UIManager.getColor("Component.focusColor");
-        if (c == null) c = UIManager.getColor("Focus.color");
-        if (c == null) c = UIManager.getColor("Table.selectionBackground");
-        if (c == null) c = DisplayNodeUtils.getNodeSelectedEdgeColor();
-        return c;
+        return WorkbenchStyle.accent();
     }
 
     private Color getPrimaryText() {
-        return uiColor("Label.foreground", isDarkMode() ? new Color(230, 230, 230) : Color.BLACK);
+        return WorkbenchStyle.nodeText();
     }
 
     private Color getSecondaryText() {
