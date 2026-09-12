@@ -80,6 +80,11 @@ final class SessionEditorToolbar extends JPanel {
     private boolean shiftDown;
 
     /**
+     * Sentinel entry in the button list marking a visual gap between groups of buttons.
+     */
+    private static final ButtonInfo GROUP_GAP = null;
+
+    /**
      * Constructs a new session toolbar.
      *
      * @param workbench the workbench this toolbar controls; must not be null
@@ -104,6 +109,7 @@ final class SessionEditorToolbar extends JPanel {
                                 + "<br>to construct the object in the second node."
                                 + "<br>As a shortcut, hold down the Control key."
                                 + "</html>"),
+                GROUP_GAP,
                 // --- Real-data pipeline: load data, add knowledge, search. ---
                 new ButtonInfo("Data",           "Data",              "data",        "<html>Add a node for a data object.</html>"),
                 new ButtonInfo("Knowledge",      "Knowledge",         "knowledge",   "<html>Add a knowledge box node.</html>"),
@@ -112,27 +118,32 @@ final class SessionEditorToolbar extends JPanel {
                 new ButtonInfo("Latent_Structure","Latent Structure", "clustersearch","<html>Add a node for a block search.</html>"),
                 new ButtonInfo("Graph",          "Graph",             "graph",       "<html>Add a graph node.</html>"),
                 new ButtonInfo("Compare",        "Compare",           "compare",     "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                GROUP_GAP,
                 // --- Modeling and inference on a graph. ---
                 new ButtonInfo("PM",             "Parametric Model",  "pm",          "<html>Add a node for a parametric model.</html>"),
                 new ButtonInfo("Estimator",      "Estimator",         "estimator",   "<html>Add a node for an estimator.</html>"),
-                new ButtonInfo("IM",             "Instantiated Model","semIm",       "<html>Add a node for an instantiated model.</html>"),
                 new ButtonInfo("Updater",        "Updater",           "updater",     "<html>Add a node for an updater.</html>"),
                 new ButtonInfo("Regression",     "Regression",        "regression",  "<html>Add a node for a regression.</html>"),
+                new ButtonInfo("IM",             "Instantiated Model","semIm",       "<html>Add a node for an instantiated model.</html>"),
+                GROUP_GAP,
                 // --- Simulation and benchmarking. ---
                 new ButtonInfo("Simulation",     "Simulation",        "simulation",  "<html>Add a node for a simulation object.</html>"),
                 new ButtonInfo("GridSearch",     "Grid Search",       "search",      "<html>Add a node to do a grid search.</html>"),
+                GROUP_GAP,
                 // --- Annotation. ---
                 new ButtonInfo("Note",           "Note",              "note",        "<html>Add a note to the session.</html>")
         };
 
         JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
         for (int i = 0; i < buttonInfos.length; i++) {
-            buttons[i] = constructButton(buttonInfos[i]);
+            buttons[i] = buttonInfos[i] == GROUP_GAP ? null : constructButton(buttonInfos[i]);
         }
 
         ButtonGroup buttonGroup = new ButtonGroup();
         for (JToggleButton button : buttons) {
-            buttonGroup.add(button);
+            if (button != null) {
+                buttonGroup.add(button);
+            }
         }
 
         ChangeListener changeListener = e -> {
@@ -143,6 +154,10 @@ final class SessionEditorToolbar extends JPanel {
         };
 
         for (JToggleButton button : buttons) {
+            if (button == null) {
+                buttonsPanel.add(Box.createVerticalStrut(15));
+                continue;
+            }
             button.addChangeListener(changeListener);
             buttonsPanel.add(button);
             buttonsPanel.add(Box.createVerticalStrut(5));
