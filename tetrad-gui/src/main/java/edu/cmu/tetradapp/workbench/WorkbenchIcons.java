@@ -125,7 +125,70 @@ public final class WorkbenchIcons {
     // ---------------------------------------------------------------- move
 
     /**
-     * Four short arrows radiating from a center: select and move.
+     * Paints a straight edge from (x1, y1) to (x2, y2) with a filled arrowhead at the far end, in the current
+     * color. Shared with the session editor toolbar so its edge icon matches.
+     *
+     * @param g2 the graphics to draw on.
+     * @param x1 the start x.
+     * @param y1 the start y.
+     * @param x2 the tip x.
+     * @param y2 the tip y.
+     */
+    public static void paintArrow(Graphics2D g2, double x1, double y1, double x2, double y2) {
+        g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.draw(new Line2D.Double(x1, y1, x2, y2));
+        arrowhead(g2, x1, y1, x2, y2, 8, 3.5);
+    }
+
+    /**
+     * Paints a small open hand, outlined in the edge color and filled with the card color, with its bounding box
+     * at (x, y) and the given height. The width is about 0.9 of the height.
+     *
+     * @param g2 the graphics to draw on.
+     * @param x  the left of the hand.
+     * @param y  the top of the hand.
+     * @param h  the height of the hand.
+     */
+    public static void paintHand(Graphics2D g2, double x, double y, double h) {
+        double s = h / 20.0; // design units: the hand is drawn on a 18 by 20 grid
+        Path2D.Double hand = new Path2D.Double();
+
+        // Start at the bottom of the palm and go up the little-finger side, over four fingers, down to the thumb.
+        hand.moveTo(x + 4 * s, y + 20 * s);
+        hand.lineTo(x + 2 * s, y + 13 * s);
+        // little finger
+        hand.lineTo(x + 2 * s, y + 8 * s);
+        hand.quadTo(x + 2 * s, y + 6 * s, x + 4 * s, y + 6 * s);
+        hand.quadTo(x + 6 * s, y + 6 * s, x + 6 * s, y + 8 * s);
+        hand.lineTo(x + 6 * s, y + 10 * s);
+        // ring finger
+        hand.lineTo(x + 6 * s, y + 4 * s);
+        hand.quadTo(x + 6 * s, y + 2 * s, x + 8 * s, y + 2 * s);
+        hand.quadTo(x + 10 * s, y + 2 * s, x + 10 * s, y + 4 * s);
+        hand.lineTo(x + 10 * s, y + 9 * s);
+        // middle finger
+        hand.lineTo(x + 10 * s, y + 2 * s);
+        hand.quadTo(x + 10 * s, y + 0, x + 12 * s, y + 0);
+        hand.quadTo(x + 14 * s, y + 0, x + 14 * s, y + 2 * s);
+        hand.lineTo(x + 14 * s, y + 9 * s);
+        // index finger
+        hand.lineTo(x + 14 * s, y + 4 * s);
+        hand.quadTo(x + 14 * s, y + 2 * s, x + 16 * s, y + 2 * s);
+        hand.quadTo(x + 18 * s, y + 2 * s, x + 18 * s, y + 4 * s);
+        hand.lineTo(x + 18 * s, y + 13 * s);
+        // thumb side and wrist
+        hand.quadTo(x + 18 * s, y + 17 * s, x + 14 * s, y + 20 * s);
+        hand.closePath();
+
+        g2.setColor(WorkbenchStyle.cardFill());
+        g2.fill(hand);
+        g2.setColor(WorkbenchStyle.edge());
+        g2.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2.draw(hand);
+    }
+
+    /**
+     * Four short arrows radiating from a center, with an open hand beside them: select and move.
      */
     private static final class MoveIcon implements Icon {
         @Override
@@ -142,7 +205,7 @@ public final class WorkbenchIcons {
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = prepare(g);
             try {
-                double cx = x + W / 2.0;
+                double cx = x + 16;
                 double cy = y + H / 2.0;
                 double r = 10;
                 g2.setColor(WorkbenchStyle.edge());
@@ -155,6 +218,7 @@ public final class WorkbenchIcons {
                     double ty = cy + r * Math.sin(ang);
                     arrowhead(g2, tx - 6 * Math.cos(ang), ty - 6 * Math.sin(ang), tx, ty, 6, 3);
                 }
+                paintHand(g2, x + 36, y + 3, H - 6);
             } finally {
                 g2.dispose();
             }

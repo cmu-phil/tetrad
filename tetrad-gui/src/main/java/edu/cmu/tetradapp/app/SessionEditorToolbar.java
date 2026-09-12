@@ -20,8 +20,9 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
+import edu.cmu.tetradapp.workbench.WorkbenchIcons;
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -60,11 +61,6 @@ final class SessionEditorToolbar extends JPanel {
      * Maps each JToggleButton to its node-type string.
      */
     private final Map<JToggleButton, String> nodeTypes = new LinkedHashMap<>();
-
-    /**
-     * Maps icon-bearing buttons to their image resource names, for L&F refresh.
-     */
-    private final Map<JToggleButton, String> buttonImageNames = new LinkedHashMap<>();
 
     /**
      * The workbench this toolbar controls.
@@ -234,10 +230,7 @@ final class SessionEditorToolbar extends JPanel {
     @Override
     public void updateUI() {
         super.updateUI();
-        if (this.buttonImageNames != null) {
-            this.buttonImageNames.forEach((button, imageName) ->
-                    button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName))));
-        }
+        // Icons read their colors from WorkbenchStyle at paint time, so nothing needs reloading.
         revalidate();
         repaint();
     }
@@ -277,10 +270,10 @@ final class SessionEditorToolbar extends JPanel {
         });
 
         String nodeTypeName = buttonInfo.getNodeTypeName();
-        if (SELECT_TYPE.equals(nodeTypeName) || EDGE_TYPE.equals(nodeTypeName)) {
-            String imageName = imagePrefix + ".gif";
-            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName)));
-            this.buttonImageNames.put(button, imageName);
+        if (SELECT_TYPE.equals(nodeTypeName)) {
+            button.setIcon(WorkbenchIcons.forTool("move"));
+        } else if (EDGE_TYPE.equals(nodeTypeName)) {
+            button.setIcon(new SessionEdgeIcon());
         } else {
             button.setName(nodeTypeName);
             button.setText("<html>" + buttonInfo.getDisplayName() + "</html>");
@@ -400,6 +393,64 @@ final class SessionEditorToolbar extends JPanel {
             } finally {
                 g2.dispose();
             }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // SessionEdgeIcon
+    // -------------------------------------------------------------------------
+
+    /**
+     * Two miniature session cards joined by an arrow: the draw-edge tool. The cards are drawn the same way as
+     * {@link NodeTypeIcon}, and the arrow the same way as the graph toolbar's edge icons.
+     */
+    private static final class SessionEdgeIcon implements Icon {
+
+        private static final int W = 64;
+        private static final int H = 26;
+
+        @Override
+        public int getIconWidth() {
+            return W;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return H;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+                int cw = 18, ch = 16, arc = 5, band = 6;
+                int cy = y + (H - ch) / 2;
+                int lx = x + 2, rx = x + W - 2 - cw;
+
+                miniCard(g2, lx, cy, cw, ch, arc, band, "Data");
+                miniCard(g2, rx, cy, cw, ch, arc, band, "Search");
+
+                g2.setColor(WorkbenchStyle.edge());
+                WorkbenchIcons.paintArrow(g2, lx + cw + 1, y + H / 2.0, rx - 1, y + H / 2.0);
+            } finally {
+                g2.dispose();
+            }
+        }
+
+        private static void miniCard(Graphics2D g2, int x, int y, int w, int h, int arc, int band, String type) {
+            Shape card = new RoundRectangle2D.Double(x + 0.5, y + 0.5, w - 1, h - 1, arc, arc);
+            g2.setColor(StdDisplayComp.cardFill());
+            g2.fill(card);
+            Area top = new Area(card);
+            top.intersect(new Area(new Rectangle2D.Double(x, y, w, band)));
+            g2.setColor(StdDisplayComp.bandFill(type));
+            g2.fill(top);
+            g2.setStroke(new BasicStroke(1f));
+            g2.setColor(StdDisplayComp.cardBorder());
+            g2.draw(card);
         }
     }
 
