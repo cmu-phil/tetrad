@@ -76,16 +76,46 @@ public final class HybridCgImEditor extends JPanel {
     private javax.swing.table.TableModel discModel;
     private javax.swing.table.TableModel contModel;
 
-    public HybridCgImEditor(HybridCgImWrapper wrapper) { this(wrapper.getHybridCgIm()); }
+    /** Standalone editor (session box): IM tables plus a Graph tab. */
+    public HybridCgImEditor(HybridCgImWrapper wrapper) { this(wrapper.getHybridCgIm(), true); }
 
-    public HybridCgImEditor(HybridCgIm im) {
+    /** Embedded editor (e.g. inside the estimator, which supplies its own Graph tab): IM tables only. */
+    public HybridCgImEditor(HybridCgIm im) { this(im, false); }
+
+    /**
+     * @param im           the model to edit
+     * @param withGraphTab if true, wrap the tables in an "IM" tab and add a "Graph" tab showing the model graph with
+     *                     edges shaded by strength (see {@link HybridCgGraphViewer}); the graph is rebuilt each time
+     *                     its tab is selected so it reflects edits made in the IM tab
+     */
+    public HybridCgImEditor(HybridCgIm im, boolean withGraphTab) {
         this.im = Objects.requireNonNull(im, "im");
         this.pm = im.getPm();
         this.nodes = pm.getNodes();
 
-        setLayout(new BorderLayout(10,10));
-        add(buildLeft(), BorderLayout.WEST);
-        add(buildRight(), BorderLayout.CENTER);
+        JPanel tables = new JPanel(new BorderLayout(10,10));
+        tables.add(buildLeft(), BorderLayout.WEST);
+        tables.add(buildRight(), BorderLayout.CENTER);
+
+        setLayout(new BorderLayout());
+        if (withGraphTab) {
+            JPanel graphHost = new JPanel(new BorderLayout());
+            JTabbedPane tabs = new JTabbedPane();
+            tabs.addTab("IM", tables);
+            tabs.addTab("Graph", graphHost);
+            tabs.setToolTipTextAt(1, "Model graph with edges shaded by strength");
+            tabs.addChangeListener(e -> {
+                if (tabs.getSelectedComponent() == graphHost) {
+                    graphHost.removeAll();
+                    graphHost.add(HybridCgGraphViewer.panel(this.im), BorderLayout.CENTER);
+                    graphHost.revalidate();
+                    graphHost.repaint();
+                }
+            });
+            add(tabs, BorderLayout.CENTER);
+        } else {
+            add(tables, BorderLayout.CENTER);
+        }
 
         loadVariableList(null);
         if (!varListModel.isEmpty()) varList.setSelectedIndex(0);
