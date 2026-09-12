@@ -1489,6 +1489,29 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
+         * Sets or clears the edge tooltip. The workbench only builds edge tooltips on mouse-enter when editing is
+         * enabled, and this workbench has editing disabled, so the tooltip is set directly here. The annotation is
+         * also set on the workbench's copy of the model edge so that the standard tooltip path, if it ever runs,
+         * shows the same information.
+         */
+        private void setEdgeAnnotation(Edge edge, String text) {
+            Object o = workbench().getModelEdgesToDisplay().get(edge);
+            if (!(o instanceof IDisplayEdge displayEdge)) return;
+
+            if (displayEdge.getModelEdge() != null) {
+                displayEdge.getModelEdge().setAnnotation(text);
+            }
+
+            if (text == null) {
+                workbench().setEdgeToolTip(edge, null);
+            } else {
+                workbench().setEdgeToolTip(edge, "<html>" + edge.getNode1().getName() + " "
+                        + (Edges.isBidirectedEdge(edge) ? "&lt;-&gt;" : "--&gt;") + " " + edge.getNode2().getName()
+                        + "<br>" + text.replace("<", "&lt;").replace(">", "&gt;") + "</html>");
+            }
+        }
+
+        /**
          * Turns edge shading on or off and refreshes the display.
          *
          * @param shade true to shade edges by coefficient
@@ -1614,9 +1637,22 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                             + asString(tValue) + ", P=" + asString(pValue));
                 }
 
-                workbench().setEdgeLabel(edge, label);
+                if (this.shadeEdges) {
+                    // Shaded view: no label; the value goes into the edge tooltip instead.
+                    String info = parameter.getName() + " = " + asString(val);
+                    if (!Double.isNaN(standardError) && semIm().isEstimated()) {
+                        info += "  (SE=" + asString(standardError) + ", T=" + asString(tValue)
+                                + ", P=" + asString(pValue) + ")";
+                    }
+                    workbench().setEdgeLabel(edge, null);
+                    setEdgeAnnotation(edge, info);
+                } else {
+                    workbench().setEdgeLabel(edge, label);
+                    setEdgeAnnotation(edge, null);
+                }
             } else {
                 workbench().setEdgeLabel(edge, null);
+                setEdgeAnnotation(edge, null);
             }
         }
 
@@ -1691,6 +1727,50 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
 
             label.setToolTipText(tooltip);
+
+            if (this.shadeEdges) {
+                // Shaded view: no node label; the value goes into the node tooltip instead.
+                String info;
+                if (!Double.isNaN(meanOrIntercept)) {
+                    info = (this.editor.isEditIntercepts() ? "B0_" + node.getName() : "Mean(" + node.getName() + ")")
+                            + " = " + asString(meanOrIntercept);
+                } else if (!Double.isNaN(stdDev)) {
+                    info = this.editor.isEditCovariancesAsCorrelations()
+                            ? "SD(" + node.getName() + ") = 1 (shown as correlations)"
+                            : node.getName() + " ~ N(0, " + asString(stdDev) + ")";
+                } else {
+                    info = node.getName();
+                }
+                if (nodeType != NodeType.ERROR && parameter != null) {
+                    // Error variance of this node's error term (the variance parameter is keyed on the node itself).
+                    double errVar = semIm().getParamValue(parameter);
+                    String errLine = this.editor.isEditCovariancesAsCorrelations()
+                            ? "SD(" + errorTermName(node) + ") = " + asString(TMath.sqrt(errVar)) + " (unstandardized)"
+                            : errorTermName(node) + " ~ N(0, " + asString(TMath.sqrt(errVar)) + "), Var = " + asString(errVar);
+                    errLine += "  (SE=" + asString(semIm().getStandardError(parameter, this.maxFreeParamsForStatistics))
+                            + ", T=" + asString(semIm().getTValue(parameter, this.maxFreeParamsForStatistics))
+                            + ", P=" + asString(semIm().getPValue(parameter, this.maxFreeParamsForStatistics)) + ")";
+                    info += "<br>" + errLine;
+                } else if (parameter != null) {
+                    info += "  (SE=" + asString(semIm().getStandardError(parameter, this.maxFreeParamsForStatistics))
+                            + ", T=" + asString(semIm().getTValue(parameter, this.maxFreeParamsForStatistics))
+                            + ", P=" + asString(semIm().getPValue(parameter, this.maxFreeParamsForStatistics)) + ")";
+                }
+                boolean measured = workbench().getModelNodesToDisplay().get(node) instanceof GraphNodeMeasured;
+                StringBuilder tip = new StringBuilder();
+                if (info != null) tip.append(info);
+                if (measured) {
+                    if (!tip.isEmpty()) tip.append("<br>");
+                    tip.append(getEquationOfNode(node));
+                }
+                workbench().setNodeLabel(node, null, 0, 0);
+                workbench().setNodeToolTip(node, tip.isEmpty() ? null : "<html>" + tip + "</html>");
+                return;
+            } else {
+                // Restore the equation tooltip the editor installs on measured nodes.
+                boolean measured = workbench().getModelNodesToDisplay().get(node) instanceof GraphNodeMeasured;
+                workbench().setNodeToolTip(node, measured ? getEquationOfNode(node) : null);
+            }
 
             // Offset the nodes slightly differently depending on whether
             // they're error nodes or not.
@@ -1856,9 +1936,19 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             }
 
-            eqn.append(" + ").append(semIm().getSemPm().getGraph().getExogenous(node));
+            eqn.append(" + ").append(errorTermName(node));
 
             return eqn.toString();
+        }
+
+        /**
+         * The name of the node's error term. When error terms are hidden the SemGraph drops error nodes from its map,
+         * so fall back to the naming convention the graph uses when it creates them.
+         */
+        private String errorTermName(Node node) {
+            Node exo = semIm().getSemPm().getGraph().getExogenous(node);
+            if (exo != null && exo != node) return exo.getName();
+            return "E_" + node.getName();
         }
 
         public GraphWorkbench getWorkbench() {
