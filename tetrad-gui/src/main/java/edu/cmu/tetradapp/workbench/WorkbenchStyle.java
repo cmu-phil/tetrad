@@ -44,8 +44,9 @@ public final class WorkbenchStyle {
     // panel #3C3F41, component a 5% tint, border a 19% tint, accent #4B6EAF), so graph and session views look like
     // the rest of the application in either mode. The only colors added are categorical and published: Paul Tol's
     // "muted" set for the nine session-node types, chosen for deuteranopia and protanopia; Okabe-Ito blue, sky
-    // blue, vermilion, and orange for data marks and the highlight; and Tetrad's classic node blue and selection
-    // red for light-mode graph nodes and for selected edges. Light and dark differ only in how far a hue is
+    // blue, vermilion, and orange for data marks and the highlight; and Tetrad's classic node blue, selection
+    // red, and selection yellow for light-mode graph nodes, selected edges, and selected nodes. Light and dark
+    // differ only in how far a hue is
     // tinted onto the card and in which direction a label is pushed to read on its band.
 
     /** Tol muted indigo 332288. */
@@ -81,6 +82,12 @@ public final class WorkbenchStyle {
 
     /** Tetrad's classic selection red F40014: selected edges, lightened in dark mode to read on the panel. */
     public static final Color CLASSIC_SELECTION_RED = new Color(0xF4, 0x00, 0x14);
+
+    /** Tetrad's classic selected-node yellow F4DB6E: light-mode fill of a selected graph node. */
+    public static final Color CLASSIC_SELECTED_YELLOW = new Color(0xF4, 0xDB, 0x6E);
+
+    /** Tetrad's classic selected-node border D7C161: light-mode border of a selected graph node. */
+    public static final Color CLASSIC_SELECTED_BORDER = new Color(0xD7, 0xC1, 0x61);
 
     private WorkbenchStyle() {
     }
@@ -304,13 +311,15 @@ public final class WorkbenchStyle {
     }
 
     /**
-     * Fill of a selected node, given its unselected fill.
+     * Fill of a selected node: in light mode, Tetrad's classic selected-node yellow, regardless of the base fill;
+     * in dark mode, the base pushed toward the accent, since the classic yellow would leave the light label
+     * foreground at about 1.5:1, unreadable.
      *
      * @param base the unselected fill.
      * @return the selected fill.
      */
     public static Color selectedFill(Color base) {
-        return blend(base, accent(), isDarkMode() ? 0.35 : 0.12);
+        return isDarkMode() ? blend(base, accent(), 0.35) : CLASSIC_SELECTED_YELLOW;
     }
 
     /**
@@ -323,12 +332,13 @@ public final class WorkbenchStyle {
     }
 
     /**
-     * Border of a selected node.
+     * Border of a selected node: in light mode, Tetrad's classic selected-node border, a darker tone of the
+     * selection yellow; in dark mode, the accent.
      *
      * @return the selected border color.
      */
     public static Color selectedBorder() {
-        return accent();
+        return isDarkMode() ? accent() : CLASSIC_SELECTED_BORDER;
     }
 
     // ---------------------------------------------------------------- edges
