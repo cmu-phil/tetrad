@@ -1,11 +1,15 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.hybridcg.HybridCgIo;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.HybridCgImWrapper;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -13,9 +17,13 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 /**
@@ -35,14 +43,24 @@ import java.util.stream.Collectors;
  */
 public final class HybridCgImEditor extends JPanel {
 
-    private final HybridCgIm im;
-    private final HybridCgPm pm;
-    private final Node[] nodes;
+    private HybridCgIm im;
+    private HybridCgPm pm;
+    private Node[] nodes;
+
+    /** The session wrapper, when constructed standalone; null when embedded. */
+    private HybridCgImWrapper wrapper;
+
+    /** Persistent shaded-graph view, when constructed with a graph tab; null otherwise. */
+    private HybridCgGraphViewer graphView;
+    private JTabbedPane tabs;
 
     // LEFT
     private final DefaultListModel<Node> varListModel = new DefaultListModel<>();
     private final JList<Node> varList = new JList<>(varListModel);
     private final JTextField filterField = new JTextField();
+
+    /** Shown on the blank card; explains what to do when the model is empty. */
+    private final JLabel blankHint = new JLabel();
 
     // RIGHT
     private final CardLayout cards = new CardLayout();
@@ -76,8 +94,12 @@ public final class HybridCgImEditor extends JPanel {
     private javax.swing.table.TableModel discModel;
     private javax.swing.table.TableModel contModel;
 
-    /** Standalone editor (session box): IM tables plus a Graph tab. */
-    public HybridCgImEditor(HybridCgImWrapper wrapper) { this(wrapper.getHybridCgIm(), true); }
+    /** Standalone editor (session box): IM tables plus a Graph tab, with File and Graph menus. */
+    public HybridCgImEditor(HybridCgImWrapper wrapper) {
+        this(wrapper.getHybridCgIm(), true);
+        this.wrapper = wrapper;
+        add(buildMenuBar(), BorderLayout.NORTH);
+    }
 
     /** Embedded editor (e.g. inside the estimator, which supplies its own Graph tab): IM tables only. */
     public HybridCgImEditor(HybridCgIm im) { this(im, false); }
@@ -99,26 +121,128 @@ public final class HybridCgImEditor extends JPanel {
 
         setLayout(new BorderLayout());
         if (withGraphTab) {
-            JPanel graphHost = new JPanel(new BorderLayout());
-            JTabbedPane tabs = new JTabbedPane();
-            tabs.addTab("IM", tables);
-            tabs.addTab("Graph", graphHost);
-            tabs.setToolTipTextAt(1, "Model graph with edges shaded by strength");
-            tabs.addChangeListener(e -> {
-                if (tabs.getSelectedComponent() == graphHost) {
-                    graphHost.removeAll();
-                    graphHost.add(HybridCgGraphViewer.panel(this.im), BorderLayout.CENTER);
-                    graphHost.revalidate();
-                    graphHost.repaint();
-                }
+            this.graphView = new HybridCgGraphViewer(im);
+            this.tabs = new JTabbedPane();
+            this.tabs.addTab("IM", tables);
+            this.tabs.addTab("Graph", this.graphView.getComponent());
+            this.tabs.setToolTipTextAt(1, "Model graph with edges shaded by strength");
+            // Recolor on tab select so the graph reflects edits made in the IM tab. The workbench itself
+            // persists, so menus and actions bound to it stay valid.
+            this.tabs.addChangeListener(e -> {
+                if (this.tabs.getSelectedIndex() == 1) this.graphView.update(this.im);
             });
-            add(tabs, BorderLayout.CENTER);
+            add(this.tabs, BorderLayout.CENTER);
         } else {
             add(tables, BorderLayout.CENTER);
         }
 
         loadVariableList(null);
         if (!varListModel.isEmpty()) varList.setSelectedIndex(0);
+        updateBlankHint();
+    }
+
+    /** Sets the blank-card text: an empty model gets a pointer to File > Load; otherwise the card is silent. */
+    private void updateBlankHint() {
+        boolean empty = this.nodes.length == 0;
+        blankHint.setForeground(new Color(0x777777));
+        blankHint.setText(empty
+                ? "Empty model. Use File > Load Model From JSON... to load a saved Hybrid CG IM."
+                : "");
+    }
+
+    // ============================ Menus ============================
+
+    private JMenuBar buildMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu file = new JMenu("File");
+
+        JMenuItem saveJson = new JMenuItem("Save Model As JSON...");
+        saveJson.addActionListener(e -> saveModelAsJson());
+        file.add(saveJson);
+
+        JMenuItem loadJson = new JMenuItem("Load Model From JSON...");
+        loadJson.addActionListener(e -> loadModelFromJson());
+        file.add(loadJson);
+
+        file.addSeparator();
+        file.add(onGraphTab(new SaveComponentImage(graphView.getWorkbench(), "Save Graph Image...")));
+
+        menuBar.add(file);
+        menuBar.add(graphView.graphMenu(this::showGraphTab, new Parameters()));
+        menuBar.add(new LayoutMenu(graphView.getWorkbench()));
+        return menuBar;
+    }
+
+    /** Wraps an action so the Graph tab is shown first (some actions need a laid-out workbench). */
+    private JMenuItem onGraphTab(Action delegate) {
+        JMenuItem item = new JMenuItem(new AbstractAction((String) delegate.getValue(Action.NAME)) {
+            @Override public void actionPerformed(ActionEvent e) {
+                showGraphTab();
+                delegate.actionPerformed(e);
+            }
+        });
+        return item;
+    }
+
+    private void showGraphTab() {
+        if (this.tabs != null) this.tabs.setSelectedIndex(1);
+    }
+
+    private void saveModelAsJson() {
+        File outfile = EditorUtils.getSaveFile("hybridcg_im", "json", this, false, "Save Model As JSON...");
+        if (outfile == null) return;
+        try {
+            HybridCgIo.save(this.im, outfile);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Save failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void loadModelFromJson() {
+        JFileChooser chooser = new JFileChooser();
+        String dir = Preferences.userRoot().get("fileSaveLocation", Preferences.userRoot().absolutePath());
+        chooser.setCurrentDirectory(new File(dir));
+        chooser.setDialogTitle("Load Model From JSON...");
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+
+        File file = chooser.getSelectedFile();
+        if (file == null) return;
+        Preferences.userRoot().put("fileSaveLocation", file.getParent());
+
+        try {
+            HybridCgIm loaded = HybridCgIo.load(file);
+            if (this.wrapper != null) this.wrapper.setIm(loaded);
+            setModel(loaded);
+            firePropertyChange("modelChanged", null, null);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Load failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Replaces the displayed model in place, rebuilding the variable list, tables, and graph view.
+     *
+     * @param newIm the model to display
+     */
+    public void setModel(HybridCgIm newIm) {
+        this.im = Objects.requireNonNull(newIm, "im");
+        this.pm = newIm.getPm();
+        this.nodes = this.pm.getNodes();
+        this.currentY = -1;
+
+        filterField.setText("");
+        varList.clearSelection();
+        loadVariableList(null);
+        if (!varListModel.isEmpty()) varList.setSelectedIndex(0);
+        else cards.show(right, "blank");
+        updateBlankHint();
+
+        if (this.graphView != null) this.graphView.update(newIm);
+        revalidate();
+        repaint();
     }
 
     // ============================ LEFT ============================
@@ -186,7 +310,9 @@ public final class HybridCgImEditor extends JPanel {
         contRandomizeAll.addActionListener(e -> { randomizeContinuousTable(currentY); refreshActiveTable(); });
 
         right.setLayout(cards);
-        right.add(new JPanel(), "blank");
+        JPanel blank = new JPanel(new GridBagLayout());
+        blank.add(blankHint);
+        right.add(blank, "blank");
         right.add(discCard, "disc");
         right.add(contCard, "cont");
         return right;

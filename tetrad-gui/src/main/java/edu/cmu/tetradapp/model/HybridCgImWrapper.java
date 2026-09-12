@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.hybridcg.HybridCgEstimator;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
@@ -58,6 +59,20 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
      */
     public HybridCgImWrapper(HybridCgIm im) {
         this.im = Objects.requireNonNull(im, "im");
+    }
+
+    /**
+     * Constructs a wrapper holding an empty model, for a session IM node with no parents. This is what makes
+     * "Hybrid CG Instantiated Model" appear in the model chooser when an IM node is created without a PM parent.
+     * The intended use is to fill the model afterward with File &gt; Load Model From JSON in the editor.
+     *
+     * @param parameters the parameters (required by the session framework; not otherwise used)
+     */
+    public HybridCgImWrapper(Parameters parameters) {
+        Objects.requireNonNull(parameters, "parameters");
+        HybridCgPm pm = new HybridCgPm(new EdgeListGraph(), new java.util.ArrayList<>(),
+                new java.util.HashMap<>(), new java.util.HashMap<>());
+        this.im = new HybridCgIm(pm);
     }
 
     /**

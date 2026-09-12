@@ -5,15 +5,21 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.HybridCgEstimatorWrapper;
 import edu.cmu.tetradapp.model.HybridCgPmWrapper;
+import edu.cmu.tetrad.hybridcg.HybridCgIo;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -54,7 +60,8 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
     // ---------- IM display host on the right ----------
     private final JPanel imHost = new JPanel(new BorderLayout());
-    private final JPanel graphHost = new JPanel(new BorderLayout());
+    private final HybridCgGraphViewer graphView;
+    private JTabbedPane tabs;
     private final JLabel bicLabel = new JLabel("BIC: n/a");
     private final JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
 
@@ -72,10 +79,13 @@ public final class HybridCgEstimatorEditor extends JPanel {
         // Left: settings panel
         JPanel settings = buildSettingsPanel();
 
+        // Persistent shaded-graph view; updated in place on each estimate so menus stay bound.
+        this.graphView = new HybridCgGraphViewer(wrapper.getEstimatedHybridCgIm());
+
         // Right: tabs for the estimated IM and its shaded graph, with the BIC line below.
-        JTabbedPane tabs = new JTabbedPane();
+        this.tabs = new JTabbedPane();
         tabs.addTab("Estimated IM", imHost);
-        tabs.addTab("Graph", graphHost);
+        tabs.addTab("Graph", graphView.getComponent());
         tabs.setToolTipTextAt(1, "Model graph with edges shaded by estimated strength");
 
         statusBar.add(bicLabel);
@@ -92,6 +102,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
 //        split.setResizeWeight(0.30);
         split.setContinuousLayout(true);
         add(split, BorderLayout.CENTER);
+        add(buildMenuBar(), BorderLayout.NORTH);
 
         loadFromParams();
         wireBindings();
@@ -103,7 +114,57 @@ public final class HybridCgEstimatorEditor extends JPanel {
             updateBic();
         } else {
             imHost.add(makeEmptyImPanel(), BorderLayout.CENTER);
-            graphHost.add(makeEmptyImPanel(), BorderLayout.CENTER);
+        }
+    }
+
+    // ---------- Menus ----------
+
+    private JMenuBar buildMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu file = new JMenu("File");
+
+        JMenuItem saveJson = new JMenuItem("Save Model As JSON...");
+        saveJson.addActionListener(e -> saveModelAsJson());
+        file.add(saveJson);
+
+        file.addSeparator();
+        file.add(onGraphTab(new SaveComponentImage(graphView.getWorkbench(), "Save Graph Image...")));
+
+        menuBar.add(file);
+        menuBar.add(graphView.graphMenu(this::showGraphTab, this.params));
+        menuBar.add(new LayoutMenu(graphView.getWorkbench()));
+        return menuBar;
+    }
+
+    /** Wraps an action so the Graph tab is shown first (some actions need a laid-out workbench). */
+    private JMenuItem onGraphTab(Action delegate) {
+        return new JMenuItem(new AbstractAction((String) delegate.getValue(Action.NAME)) {
+            @Override public void actionPerformed(ActionEvent e) {
+                showGraphTab();
+                delegate.actionPerformed(e);
+            }
+        });
+    }
+
+    private void showGraphTab() {
+        this.tabs.setSelectedIndex(1);
+    }
+
+    private void saveModelAsJson() {
+        HybridCgIm im = wrapper.getEstimatedHybridCgIm();
+        if (im == null) {
+            JOptionPane.showMessageDialog(this, "No estimated model yet — press Estimate first.",
+                    "Nothing To Save", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        File outfile = EditorUtils.getSaveFile("hybridcg_im", "json", this, false, "Save Model As JSON...");
+        if (outfile == null) return;
+        try {
+            HybridCgIo.save(im, outfile);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Save failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -196,10 +257,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
         imHost.revalidate();
         imHost.repaint();
 
-        graphHost.removeAll();
-        graphHost.add(HybridCgGraphViewer.panel(im), BorderLayout.CENTER);
-        graphHost.revalidate();
-        graphHost.repaint();
+        graphView.update(im);
     }
 
     private void updateBic() {

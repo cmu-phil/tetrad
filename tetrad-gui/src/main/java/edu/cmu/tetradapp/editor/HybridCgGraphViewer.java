@@ -1,24 +1,80 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.hybridcg.HybridCgEdgeStrengths;
 import edu.cmu.tetrad.hybridcg.HybridCgEdgeStrengths.Kind;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 /**
- * Builds a read-only view of the graph of a {@link HybridCgIm} with edges colored by strength (see
- * {@link HybridCgEdgeStrengths}), shown in a scrollable workbench with a legend. Hovering an edge shows the underlying
- * coefficient or effect size in the tooltip.
+ * A persistent, read-only view of the graph of a {@link HybridCgIm} with edges colored by strength (see
+ * {@link HybridCgEdgeStrengths}), shown in a scrollable workbench with a legend. Hovering an edge shows the
+ * underlying coefficient or effect size in the tooltip.
+ *
+ * <p>The workbench is created once and updated in place via {@link #update(HybridCgIm)}, so menus and actions bound
+ * to it (Find Variable, Graph Properties, Paths, Layout) remain valid across re-estimates and tab switches.</p>
  */
 public final class HybridCgGraphViewer {
 
-    private HybridCgGraphViewer() {
+    private final GraphWorkbench workbench;
+    private final JPanel component;
+
+    /**
+     * Builds the view. If the model is null, an empty graph is shown until {@link #update(HybridCgIm)} is called.
+     *
+     * @param imOrNull the instantiated model, or null for an initially empty view
+     */
+    public HybridCgGraphViewer(HybridCgIm imOrNull) {
+        Graph initial = imOrNull == null
+                ? new EdgeListGraph()
+                : HybridCgEdgeStrengths.coloredGraph(imOrNull, WorkbenchStyle.isDarkMode());
+
+        this.workbench = new GraphWorkbench(initial);
+        this.workbench.setEnableEditing(false);
+        this.workbench.setAllowDoubleClickActions(false);
+        this.workbench.setAllowEdgeReorientations(false);
+
+        setTooltips();
+
+        this.component = new JPanel(new BorderLayout());
+        this.component.add(new JScrollPane(this.workbench), BorderLayout.CENTER);
+        this.component.add(legend(), BorderLayout.SOUTH);
+    }
+
+    /**
+     * Recolors the view for the given model, keeping the same workbench instance.
+     *
+     * @param im the instantiated model
+     */
+    public void update(HybridCgIm im) {
+        Graph colored = HybridCgEdgeStrengths.coloredGraph(im, WorkbenchStyle.isDarkMode());
+        this.workbench.setGraph(colored);
+        setTooltips();
+        this.component.revalidate();
+        this.component.repaint();
+    }
+
+    /**
+     * @return the panel holding the workbench and legend
+     */
+    public JComponent getComponent() {
+        return this.component;
+    }
+
+    /**
+     * @return the workbench, for binding menus and actions
+     */
+    public GraphWorkbench getWorkbench() {
+        return this.workbench;
     }
 
     /**
@@ -28,27 +84,60 @@ public final class HybridCgGraphViewer {
      * @return the panel
      */
     public static JComponent panel(HybridCgIm im) {
-        Graph colored = HybridCgEdgeStrengths.coloredGraph(im, WorkbenchStyle.isDarkMode());
+        return new HybridCgGraphViewer(im).getComponent();
+    }
 
-        GraphWorkbench workbench = new GraphWorkbench(colored);
-        workbench.setEnableEditing(false);
-        workbench.setAllowDoubleClickActions(false);
-        workbench.setAllowEdgeReorientations(false);
+    /**
+     * Builds the standard Graph menu (Graph Properties, Paths, Find Variable) bound to this view's workbench. Each
+     * item first runs the given callback — typically one that selects the Graph tab — so the action always operates
+     * on a visible graph.
+     *
+     * @param beforeShow run before each action; may be null
+     * @param parameters parameters for the Paths dialog
+     * @return the menu
+     */
+    public JMenu graphMenu(Runnable beforeShow, Parameters parameters) {
+        JMenu graph = new JMenu("Graph");
 
-        // Editing is off, so the workbench will not build edge tooltips on hover; set them directly from the
-        // annotations that coloredGraph put on the edges (they survive the workbench's copy of the graph).
-        for (Edge edge : workbench.getGraph().getEdges()) {
+        Action props = new GraphPropertiesAction(this.workbench);
+        Action paths = new PathsAction(this.workbench, parameters);
+        Action find = new FindVariableAction(this.workbench);
+
+        graph.add(wrap(props, beforeShow,
+                KeyStroke.getKeyStroke(KeyEvent.VK_G, java.awt.event.InputEvent.ALT_DOWN_MASK)));
+        graph.add(wrap(paths, beforeShow,
+                KeyStroke.getKeyStroke(KeyEvent.VK_T, java.awt.event.InputEvent.ALT_DOWN_MASK)));
+        graph.add(wrap(find, beforeShow,
+                KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())));
+
+        return graph;
+    }
+
+    private static JMenuItem wrap(Action delegate, Runnable beforeShow, KeyStroke accelerator) {
+        JMenuItem item = new JMenuItem(new AbstractAction((String) delegate.getValue(Action.NAME)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (beforeShow != null) beforeShow.run();
+                delegate.actionPerformed(e);
+            }
+        });
+        if (accelerator != null) item.setAccelerator(accelerator);
+        return item;
+    }
+
+    /**
+     * Editing is off, so the workbench will not build edge tooltips on hover; set them directly from the annotations
+     * that coloredGraph put on the edges (they survive the workbench's copy of the graph).
+     */
+    private void setTooltips() {
+        for (Edge edge : this.workbench.getGraph().getEdges()) {
             String a = edge.getAnnotation();
             if (a == null) continue;
             a = a.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-            workbench.setEdgeToolTip(edge, "<html>" + edge.getNode1().getName() + " → " + edge.getNode2().getName()
-                    + "<br><div style='width:320px'>" + a + "</div></html>");
+            this.workbench.setEdgeToolTip(edge, "<html>" + edge.getNode1().getName() + " → "
+                                                + edge.getNode2().getName()
+                                                + "<br><div style='width:320px'>" + a + "</div></html>");
         }
-
-        JPanel content = new JPanel(new BorderLayout());
-        content.add(new JScrollPane(workbench), BorderLayout.CENTER);
-        content.add(legend(), BorderLayout.SOUTH);
-        return content;
     }
 
     private static JComponent legend() {
