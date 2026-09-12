@@ -844,11 +844,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 if ("Hide Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Show Error Terms");
                     getSemGraph().setShowErrorTerms(false);
-                    graphicalEditor().resetLabels();
+                    graphicalEditor().resetGraph();
                 } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
                     getSemGraph().setShowErrorTerms(true);
-                    graphicalEditor().resetLabels();
+                    graphicalEditor().resetGraph();
                 }
             });
 
@@ -925,22 +925,24 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         @Override
         public void layoutByGraph(Graph graph) {
-            SemGraph _graph = (SemGraph) this.semImGraphicalEditor.getWorkbench().getGraph();
-            _graph.setShowErrorTerms(false);
+            // The workbench displays a plain copy of the model graph, so work on the model graph itself: hide error
+            // terms there, push the graph to the workbench, then lay out. Node positions live on the shared Node
+            // objects, so the layout is reflected in the model graph, and error nodes are placed relative to their
+            // variables when they are next shown.
+            hideErrorTermsForLayout();
             this.semImGraphicalEditor.getWorkbench().layoutByGraph(graph);
-            _graph.resetErrorPositions();
-//        semImGraphicalEditor.getWorkbench().setGraph(_graph);
-            this.errorTerms.setText("Show Error Terms");
         }
 
         @Override
         public void layoutByKnowledge() {
-            SemGraph _graph = (SemGraph) this.semImGraphicalEditor.getWorkbench().getGraph();
-            _graph.setShowErrorTerms(false);
+            hideErrorTermsForLayout();
             this.semImGraphicalEditor.getWorkbench().layoutByKnowledge();
-            _graph.resetErrorPositions();
-//        semImGraphicalEditor.getWorkbench().setGraph(_graph);
+        }
+
+        private void hideErrorTermsForLayout() {
+            getSemGraph().setShowErrorTerms(false);
             this.errorTerms.setText("Show Error Terms");
+            this.semImGraphicalEditor.resetGraph();
         }
 
         private SemGraph getSemGraph() {
@@ -1512,6 +1514,15 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
+         * Re-syncs the workbench with the model graph and redraws labels. The workbench displays a copy of the graph,
+         * so structural changes to the model graph (showing or hiding error terms) do not reach it on their own.
+         */
+        public void resetGraph() {
+            workbench().setGraph(graph());
+            resetLabels();
+        }
+
+        /**
          * Turns edge shading on or off and refreshes the display.
          *
          * @param shade true to shade edges by coefficient
@@ -1727,6 +1738,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
 
             label.setToolTipText(tooltip);
+
+            if (!workbench().getModelNodesToDisplay().containsKey(node)) {
+                return; // e.g. an error node while error terms are hidden
+            }
 
             if (this.shadeEdges) {
                 // Shaded view: no node label; the value goes into the node tooltip instead.
