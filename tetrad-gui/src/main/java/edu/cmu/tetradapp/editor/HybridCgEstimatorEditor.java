@@ -54,6 +54,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
     // ---------- IM display host on the right ----------
     private final JPanel imHost = new JPanel(new BorderLayout());
+    private final JPanel graphHost = new JPanel(new BorderLayout());
     private final JLabel bicLabel = new JLabel("BIC: n/a");
     private final JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
 
@@ -71,18 +72,23 @@ public final class HybridCgEstimatorEditor extends JPanel {
         // Left: settings panel
         JPanel settings = buildSettingsPanel();
 
-        // Right: IM display host
-        imHost.setBorder(new TitledBorder("Estimated IM"));
+        // Right: tabs for the estimated IM and its shaded graph, with the BIC line below.
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Estimated IM", imHost);
+        tabs.addTab("Graph", graphHost);
+        tabs.setToolTipTextAt(1, "Model graph with edges shaded by estimated strength");
 
-        // status bar (left-aligned)
         statusBar.add(bicLabel);
-        imHost.add(statusBar, BorderLayout.SOUTH);
+
+        JPanel right = new JPanel(new BorderLayout());
+        right.add(tabs, BorderLayout.CENTER);
+        right.add(statusBar, BorderLayout.SOUTH);
 
         settings.setPreferredSize(new Dimension(320, 400));
-        imHost.setPreferredSize(new Dimension(600, 400));
+        right.setPreferredSize(new Dimension(600, 400));
 
         // Split
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, settings, imHost);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, settings, right);
         split.setResizeWeight(0.30);
         split.setContinuousLayout(true);
         add(split, BorderLayout.CENTER);
@@ -97,6 +103,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
             updateBic();
         } else {
             imHost.add(makeEmptyImPanel(), BorderLayout.CENTER);
+            graphHost.add(makeEmptyImPanel(), BorderLayout.CENTER);
         }
     }
 
@@ -186,9 +193,13 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
         imHost.removeAll();
         imHost.add(editor, BorderLayout.CENTER);
-        imHost.add(statusBar, BorderLayout.SOUTH); // keep the BIC line
         imHost.revalidate();
         imHost.repaint();
+
+        graphHost.removeAll();
+        graphHost.add(HybridCgGraphViewer.panel(im), BorderLayout.CENTER);
+        graphHost.revalidate();
+        graphHost.repaint();
     }
 
     private void updateBic() {

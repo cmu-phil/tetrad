@@ -1,18 +1,19 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.hybridcg.HybridCgEdgeStrengths;
 import edu.cmu.tetrad.hybridcg.HybridCgEdgeStrengths.Kind;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
-import edu.cmu.tetradapp.model.GraphWrapper;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
- * Pops up a window showing the graph of a {@link HybridCgIm} with edges colored by strength (see
- * {@link HybridCgEdgeStrengths}). The graph is shown in a full {@link GraphEditor}, so the usual Graph menu operations
- * are available. Hovering an edge shows the underlying coefficient or effect size in the tooltip.
+ * Builds a read-only view of the graph of a {@link HybridCgIm} with edges colored by strength (see
+ * {@link HybridCgEdgeStrengths}), shown in a scrollable workbench with a legend. Hovering an edge shows the underlying
+ * coefficient or effect size in the tooltip.
  */
 public final class HybridCgGraphViewer {
 
@@ -20,26 +21,33 @@ public final class HybridCgGraphViewer {
     }
 
     /**
-     * Opens a non-modal window showing the colored graph for the given IM.
+     * Builds a panel showing the colored graph for the given IM in a scroll pane, with a legend below.
      *
-     * @param im     the instantiated model
-     * @param parent a component used to position the window; may be null
-     * @param title  window title; may be null
+     * @param im the instantiated model
+     * @return the panel
      */
-    public static void show(HybridCgIm im, Component parent, String title) {
+    public static JComponent panel(HybridCgIm im) {
         Graph colored = HybridCgEdgeStrengths.coloredGraph(im);
-        GraphEditor editor = new GraphEditor(new GraphWrapper(colored));
+
+        GraphWorkbench workbench = new GraphWorkbench(colored);
+        workbench.setEnableEditing(false);
+        workbench.setAllowDoubleClickActions(false);
+        workbench.setAllowEdgeReorientations(false);
+
+        // Editing is off, so the workbench will not build edge tooltips on hover; set them directly from the
+        // annotations that coloredGraph put on the edges (they survive the workbench's copy of the graph).
+        for (Edge edge : workbench.getGraph().getEdges()) {
+            String a = edge.getAnnotation();
+            if (a == null) continue;
+            a = a.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+            workbench.setEdgeToolTip(edge, "<html>" + edge.getNode1().getName() + " → " + edge.getNode2().getName()
+                    + "<br><div style='width:320px'>" + a + "</div></html>");
+        }
 
         JPanel content = new JPanel(new BorderLayout());
-        content.add(editor, BorderLayout.CENTER);
+        content.add(new JScrollPane(workbench), BorderLayout.CENTER);
         content.add(legend(), BorderLayout.SOUTH);
-
-        JFrame frame = new JFrame(title == null ? "Hybrid CG Graph" : title);
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.setContentPane(content);
-        frame.pack();
-        frame.setLocationRelativeTo(parent);
-        frame.setVisible(true);
+        return content;
     }
 
     private static JComponent legend() {
