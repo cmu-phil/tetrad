@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.SplashScreen;
 import org.jetbrains.annotations.NotNull;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
@@ -39,7 +40,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.io.Serial;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.prefs.Preferences;
 
@@ -230,9 +235,31 @@ public final class Tetrad implements PropertyChangeListener {
         getFrame().setContentPane(getDesktop());
         getFrame().pack();
 
-        // This doesn't let the user resize the main window.
-        Image image = ImageUtils.getImage(this, "tyler16.png");
-        getFrame().setIconImage(image);
+        // Multi-resolution application icon; the windowing system picks the best
+        // size for title bars, task bars, Alt-Tab switchers, and the like.
+        List<Image> icons = new ArrayList<>();
+        for (int size : new int[]{16, 32, 128, 512}) {
+            icons.add(ImageUtils.getImage(this, "tyler" + size + ".png"));
+        }
+        getFrame().setIconImages(icons);
+
+        // On macOS, frame icons are ignored; the Dock icon must be set through the
+        // Taskbar API, or the generic Java icon is shown. The light-mode icon is
+        // used regardless of look and feel, since the Dock background is the
+        // user's desktop, not the application theme.
+        if (Taskbar.isTaskbarSupported()) {
+            Taskbar taskbar = Taskbar.getTaskbar();
+            if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                try {
+                    URL dockIconUrl = Tetrad.class.getResource("/docs/images/tyler512.png");
+                    if (dockIconUrl != null) {
+                        taskbar.setIconImage(ImageIO.read(dockIconUrl));
+                    }
+                } catch (IOException | UnsupportedOperationException | SecurityException e) {
+                    // Not fatal; the default icon is kept.
+                }
+            }
+        }
 
         // Add an initial session editor to the desktop. Must be done
         // from here, not in the constructor of TetradDesktop.
