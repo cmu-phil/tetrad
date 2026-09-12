@@ -110,7 +110,18 @@ public final class HybridCgEdgeStrengths {
             try {
                 rows = pm.getNumRows(y);
             } catch (IllegalStateException ex) {
-                continue; // discrete child with continuous parents but no cutpoints yet; nothing to summarize
+                // Discrete child with continuous parents but no cutpoints (e.g. a model deserialized from an
+                // older session). Silence here loses both shading and tooltips with no explanation, so give
+                // each incoming edge a zero-strength annotation saying why instead.
+                for (int p : dps) {
+                    Edge e = g.getEdge(nodes[p], nodes[y]);
+                    if (e != null) out.put(e, unavailable(nodes[y].getName()));
+                }
+                for (int p : cps) {
+                    Edge e = g.getEdge(nodes[p], nodes[y]);
+                    if (e != null) out.put(e, unavailable(nodes[y].getName()));
+                }
+                continue;
             }
             int[] dims = pm.getRowDims(y);
             if (rows == 0) continue;
@@ -225,6 +236,16 @@ public final class HybridCgEdgeStrengths {
     }
 
     // ---------------------------------------------------------------- strengths
+
+    /**
+     * Zero-strength placeholder for edges into a child whose row structure can't be computed, so the display can say
+     * why rather than silently dropping the edge's shading and tooltip.
+     */
+    private static Strength unavailable(String childName) {
+        return new Strength(Kind.TABULAR, 0.0,
+                "Strength unavailable: cutpoints are not set for the continuous parents of " + childName
+                + ". Re-estimate the model to set them.");
+    }
 
     private static Strength linearStrength(HybridCgIm im, int y, int t, int rows, String parentName) {
         double maxAbs = 0.0, min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
