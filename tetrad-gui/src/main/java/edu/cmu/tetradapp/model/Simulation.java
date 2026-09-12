@@ -256,6 +256,19 @@ public class Simulation extends DataWrapper implements
     }
 
     /**
+     * Constructs a Simulation object using the estimated model of the given Hybrid CG estimator, in parallel with
+     * the Bayes and SEM estimator constructors above.
+     *
+     * @param wrapper    the HybridCgEstimatorWrapper holding the estimated model
+     * @param parameters the Parameters object used to configure the simulation
+     */
+    public Simulation(HybridCgEstimatorWrapper wrapper, Parameters parameters) throws ParseException {
+        this.simulation = new HybridCgSimulation(wrapper.getEstimatedHybridCgIm());
+        this.parameters = parameters;
+        createSimulation();
+    }
+
+    /**
      * Constructs a Simulation object using the specified SemImWrapper and Parameters.
      *
      * @param wrapper    the SemImWrapper object used to initialize the simulation
