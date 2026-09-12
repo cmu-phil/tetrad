@@ -82,6 +82,14 @@ import java.util.Map;
 class DataAuditAction extends AbstractAction {
 
     /**
+     * The label of the no-grouping entry in the serial-dependence grouping combo box. The grouped-audit cache maps
+     * this label to the pooled (ungrouped) audit of the dataset as it currently stands; every recomputation after an
+     * in-place edit re-seeds the entry, so reading the cache at this key always yields the pooled audit matching
+     * the data.
+     */
+    private static final String NO_GROUP = "None";
+
+    /**
      * The data editor that action is attached to.
      */
     private final ISelectedModel dataEditor;
@@ -284,7 +292,7 @@ class DataAuditAction extends AbstractAction {
         north.add(bar, BorderLayout.NORTH);
         north.add(summary, BorderLayout.CENTER);
 
-        JComponent groupControl = createGroupControl(dataSet, pooledAudit, missingAudit,
+        JComponent groupControl = createGroupControl(dataSet, pooledAudit, missingRef,
                 findingsTable, variablesTable, summary, groupCache);
 
         JComponent recodeControl = createRecodeControl(dataSet, findingsTable, variablesTable, summary,
@@ -421,7 +429,7 @@ class DataAuditAction extends AbstractAction {
      * group by.
      */
     private static JComponent createGroupControl(DataSet dataSet, DataAudit pooledAudit,
-                                                 MissingDataAudit missingAudit, DataAuditJTable findingsTable,
+                                                 MissingDataAudit[] missingRef, DataAuditJTable findingsTable,
                                                  DataAuditJTable variablesTable, JLabel summary,
                                                  java.util.Map<String, DataAudit> cache) {
         java.util.List<String> discreteNames = dataSet.getVariables().stream()
@@ -430,7 +438,7 @@ class DataAuditAction extends AbstractAction {
 
         if (discreteNames.isEmpty()) return null;
 
-        final String none = "None";
+        final String none = NO_GROUP;
         JComboBox<String> combo = new JComboBox<>();
         combo.addItem(none);
         discreteNames.forEach(combo::addItem);
@@ -444,8 +452,15 @@ class DataAuditAction extends AbstractAction {
             String selected = (String) combo.getSelectedItem();
             DataAudit cached = cache.get(selected);
 
+            // The pooled audit and missingness audit are read at fire time, not from the values captured when the
+            // dialog was built: the recode and removal controls edit the dataset in place and recompute both, and
+            // an audit computed on the pre-edit data lists variables the edit removed and facts the edit changed.
+            // The cache's NO_GROUP entry is re-seeded on every recomputation, so it is the pooled audit of the
+            // data as it currently stands.
+            DataAudit pooled = cache.getOrDefault(none, pooledAudit);
+
             if (cached != null) {
-                applyGroupedAudit(dataSet, pooledAudit, cached, selected, none, missingAudit, findingsTable,
+                applyGroupedAudit(dataSet, pooled, cached, selected, none, missingRef[0], findingsTable,
                         variablesTable, summary);
                 return;
             }
@@ -471,8 +486,8 @@ class DataAuditAction extends AbstractAction {
 
                     SwingUtilities.invokeLater(() -> {
                         cache.put(selected, current);
-                        applyGroupedAudit(dataSet, pooledAudit, current, selected, none, missingAudit,
-                                findingsTable, variablesTable, summary);
+                        applyGroupedAudit(dataSet, cache.getOrDefault(none, pooledAudit), current, selected, none,
+                                missingRef[0], findingsTable, variablesTable, summary);
                     });
                 }
             };
@@ -613,6 +628,7 @@ class DataAuditAction extends AbstractAction {
                 SwingUtilities.invokeLater(() -> {
                     missingRef[0] = missing;
                     groupCache.clear();
+                    groupCache.put(NO_GROUP, current);
 
                     findingsTable.setAuditModel(new DataAuditFindingsModel(current.getFindings()));
                     sizeFindingsColumns(findingsTable);
