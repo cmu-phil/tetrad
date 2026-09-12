@@ -104,20 +104,24 @@ final class SessionEditorToolbar extends JPanel {
                                 + "<br>to construct the object in the second node."
                                 + "<br>As a shortcut, hold down the Control key."
                                 + "</html>"),
-                new ButtonInfo("Graph",          "Graph",             "graph",       "<html>Add a graph node.</html>"),
-                new ButtonInfo("Compare",        "Compare",           "compare",     "<html>Add a node to compare graphs or SEM IM's.</html>"),
-                new ButtonInfo("GridSearch",     "Grid Search",       "search",      "<html>Add a node to do a grid search.</html>"),
-                new ButtonInfo("PM",             "Parametric Model",  "pm",          "<html>Add a node for a parametric model.</html>"),
-                new ButtonInfo("IM",             "Instantiated Model","semIm",       "<html>Add a node for an instantiated model.</html>"),
-                new ButtonInfo("Estimator",      "Estimator",         "estimator",   "<html>Add a node for an estimator.</html>"),
+                // --- Real-data pipeline: load data, add knowledge, search. ---
                 new ButtonInfo("Data",           "Data",              "data",        "<html>Add a node for a data object.</html>"),
-                new ButtonInfo("Simulation",     "Simulation",        "simulation",  "<html>Add a node for a simulation object.</html>"),
+                new ButtonInfo("Knowledge",      "Knowledge",         "knowledge",   "<html>Add a knowledge box node.</html>"),
                 new ButtonInfo("Search",         "Search",            "search",      "<html>Add a node for a search algorithm.</html>"),
                 new ButtonInfo("Latent_Clusters","Latent Clusters",   "cluster",     "<html>Add a node for a clustering algorithm.</html>"),
                 new ButtonInfo("Latent_Structure","Latent Structure", "clustersearch","<html>Add a node for a block search.</html>"),
-                new ButtonInfo("Knowledge",      "Knowledge",         "knowledge",   "<html>Add a knowledge box node.</html>"),
+                new ButtonInfo("Graph",          "Graph",             "graph",       "<html>Add a graph node.</html>"),
+                new ButtonInfo("Compare",        "Compare",           "compare",     "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                // --- Modeling and inference on a graph. ---
+                new ButtonInfo("PM",             "Parametric Model",  "pm",          "<html>Add a node for a parametric model.</html>"),
+                new ButtonInfo("Estimator",      "Estimator",         "estimator",   "<html>Add a node for an estimator.</html>"),
+                new ButtonInfo("IM",             "Instantiated Model","semIm",       "<html>Add a node for an instantiated model.</html>"),
                 new ButtonInfo("Updater",        "Updater",           "updater",     "<html>Add a node for an updater.</html>"),
                 new ButtonInfo("Regression",     "Regression",        "regression",  "<html>Add a node for a regression.</html>"),
+                // --- Simulation and benchmarking. ---
+                new ButtonInfo("Simulation",     "Simulation",        "simulation",  "<html>Add a node for a simulation object.</html>"),
+                new ButtonInfo("GridSearch",     "Grid Search",       "search",      "<html>Add a node to do a grid search.</html>"),
+                // --- Annotation. ---
                 new ButtonInfo("Note",           "Note",              "note",        "<html>Add a note to the session.</html>")
         };
 
