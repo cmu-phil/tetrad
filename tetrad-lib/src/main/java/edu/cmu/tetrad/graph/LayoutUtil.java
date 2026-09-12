@@ -39,9 +39,58 @@ import static java.util.Collections.sort;
 public class LayoutUtil {
 
     // ---- Circle layout constants ----
-    private static final int CIRCLE_BASE_OFFSET = 120;
-    private static final int CIRCLE_NODE_FACTOR = 7;
-    private static final int CIRCLE_MARGIN = 50;
+    // Gap kept between the boxes of any two nodes, in pixels. Mirrors the
+    // workbench's overlap margin so lib and GUI agree on what "not touching" means.
+    private static final double NODE_GAP = 10.0;
+    // Margin between the canvas edge and the nearest node box.
+    private static final double LAYOUT_MARGIN = 20.0;
+
+    // ---- Latent placement constants ----
+    // Ring search steps outward from the anchor by RING_STEP until it finds a
+    // spot whose box clears every other box by NODE_GAP, giving up after MAX_RINGS.
+    private static final double LATENT_RING_STEP = 15.0;
+    private static final int LATENT_MAX_RINGS = 30;
+    private static final int LATENT_RING_SECTORS = 16;
+
+    /**
+     * Supplies the rendered box size of each node, so a layout can space nodes
+     * by what they actually take up on screen. The GUI supplies display-node
+     * sizes; headless callers use {@link #estimatedNodeSize()}.
+     */
+    public interface NodeSize {
+        /**
+         * @param node a node
+         * @return the width of the node's box, in pixels
+         */
+        double width(Node node);
+
+        /**
+         * @param node a node
+         * @return the height of the node's box, in pixels
+         */
+        double height(Node node);
+    }
+
+    /**
+     * A size estimate for use when no display sizes are available: about 8 px
+     * per character of the name plus padding, with the same 60 px floor and
+     * ~30 px height the workbench's measured node boxes use.
+     *
+     * @return the estimate
+     */
+    public static NodeSize estimatedNodeSize() {
+        return new NodeSize() {
+            @Override
+            public double width(Node node) {
+                return Math.max(60.0, 8.0 * node.getName().length() + 14.0);
+            }
+
+            @Override
+            public double height(Node node) {
+                return 30.0;
+            }
+        };
+    }
 
     /**
      * Constructor.
@@ -382,36 +431,156 @@ public class LayoutUtil {
     }
 
     /**
-     * Arranges the nodes in the graph in a circle.
+     * Arranges the nodes in the graph in a circle, using an estimate of each
+     * node's rendered size. See {@link #circleLayout(Graph, NodeSize)}.
      *
      * @param graph the graph to be arranged.
      */
     public static void circleLayout(Graph graph) {
+        circleLayout(graph, estimatedNodeSize());
+    }
+
+    /**
+     * Arranges the non-latent nodes in a circle just large enough that no two
+     * node boxes overlap, places each latent near its adjacent nodes without
+     * overlapping anything, and shifts the result so the bounding box of all
+     * node boxes sits at ({@code LAYOUT_MARGIN}, {@code LAYOUT_MARGIN}) — i.e.
+     * comfortably in the top-left of the canvas.
+     *
+     * <p>The radius is chosen from the node boxes: two boxes at angles a and b
+     * on a circle of radius r are separated by r|cos a − cos b| horizontally
+     * and r|sin a − sin b| vertically, and are apart if either separation
+     * exceeds the corresponding box extent plus the gap. The smallest such r is
+     * computed for every pair (not only neighbors — with wide labels and few
+     * nodes, the node across the circle is the binding one), and the radius is
+     * the largest of those.
+     *
+     * @param graph the graph to be arranged.
+     * @param size  supplies each node's rendered box size.
+     */
+    public static void circleLayout(Graph graph, NodeSize size) {
         if (graph == null) {
             return;
         }
 
-        int centerx = CIRCLE_BASE_OFFSET + CIRCLE_NODE_FACTOR * graph.getNumNodes();
-        int centery = CIRCLE_BASE_OFFSET + CIRCLE_NODE_FACTOR * graph.getNumNodes();
-        int radius = centerx - CIRCLE_MARGIN;
+        List<Node> ring = new ArrayList<>();
 
-        List<Node> nodes = graph.getNodes();
-        nodes.sort(NaturalSort.naturalComparator());
-
-        double rad = 2.0 * Math.PI / nodes.size();
-        double phi = 1.5 * Math.PI; // start from 12 o'clock
-
-        for (Node node : nodes) {
-            int centerX = centerx + (int) (radius * TMath.cos(phi));
-            int centerY = centery + (int) (radius * TMath.sin(phi));
-
-            node.setCenterX(centerX);
-            node.setCenterY(centerY);
-
-            phi += rad;
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() != NodeType.LATENT) {
+                ring.add(node);
+            }
         }
 
-        repositionLatents(graph);
+        ring.sort(NaturalSort.naturalComparator());
+        int n = ring.size();
+
+        if (n > 0) {
+            double[] angle = new double[n];
+            double step = 2.0 * Math.PI / n;
+
+            for (int i = 0; i < n; i++) {
+                angle[i] = 1.5 * Math.PI + i * step; // start from 12 o'clock
+            }
+
+            double radius = 0.0;
+
+            for (int i = 0; i < n; i++) {
+                for (int j = i + 1; j < n; j++) {
+                    double wNeed = (size.width(ring.get(i)) + size.width(ring.get(j))) / 2.0 + NODE_GAP;
+                    double hNeed = (size.height(ring.get(i)) + size.height(ring.get(j))) / 2.0 + NODE_GAP;
+
+                    double dcos = Math.abs(Math.cos(angle[i]) - Math.cos(angle[j]));
+                    double dsin = Math.abs(Math.sin(angle[i]) - Math.sin(angle[j]));
+
+                    double byWidth = dcos > 1e-9 ? wNeed / dcos : Double.POSITIVE_INFINITY;
+                    double byHeight = dsin > 1e-9 ? hNeed / dsin : Double.POSITIVE_INFINITY;
+                    double pairRadius = Math.min(byWidth, byHeight);
+
+                    if (Double.isFinite(pairRadius)) {
+                        radius = Math.max(radius, pairRadius);
+                    }
+                }
+            }
+
+            // Provisional center; the whole layout is shifted to the margin below.
+            // Positions are rounded to integers, which can shave a pixel off the
+            // binding pair's separation, so verify the box constraint on the rounded
+            // positions and grow the radius by a pixel at a time until it holds.
+            double cx = radius, cy = radius;
+
+            for (int attempt = 0; attempt < 100; attempt++) {
+                for (int i = 0; i < n; i++) {
+                    ring.get(i).setCenter((int) Math.round(cx + radius * Math.cos(angle[i])),
+                            (int) Math.round(cy + radius * Math.sin(angle[i])));
+                }
+
+                if (ringClears(ring, size)) {
+                    break;
+                }
+
+                radius += 1.0;
+                cx = radius;
+                cy = radius;
+            }
+        }
+
+        repositionLatents(graph, size);
+        shiftToMargin(graph, size);
+    }
+
+    /**
+     * @return true if every pair of ring nodes' boxes, at their current integer
+     * centers, is separated by at least {@code NODE_GAP} on some axis.
+     */
+    private static boolean ringClears(List<Node> ring, NodeSize size) {
+        for (int i = 0; i < ring.size(); i++) {
+            Node a = ring.get(i);
+
+            for (int j = i + 1; j < ring.size(); j++) {
+                Node b = ring.get(j);
+                double needX = (size.width(a) + size.width(b)) / 2.0 + NODE_GAP;
+                double needY = (size.height(a) + size.height(b)) / 2.0 + NODE_GAP;
+
+                if (Math.abs(a.getCenterX() - b.getCenterX()) < needX
+                    && Math.abs(a.getCenterY() - b.getCenterY()) < needY) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Translates every node so that the bounding box of all node boxes has its
+     * top-left corner at ({@code LAYOUT_MARGIN}, {@code LAYOUT_MARGIN}).
+     *
+     * @param graph the graph
+     * @param size  supplies each node's rendered box size
+     */
+    private static void shiftToMargin(Graph graph, NodeSize size) {
+        double minLeft = Double.POSITIVE_INFINITY;
+        double minTop = Double.POSITIVE_INFINITY;
+
+        for (Node node : graph.getNodes()) {
+            minLeft = Math.min(minLeft, node.getCenterX() - size.width(node) / 2.0);
+            minTop = Math.min(minTop, node.getCenterY() - size.height(node) / 2.0);
+        }
+
+        if (!Double.isFinite(minLeft) || !Double.isFinite(minTop)) {
+            return;
+        }
+
+        int dx = (int) Math.round(LAYOUT_MARGIN - minLeft);
+        int dy = (int) Math.round(LAYOUT_MARGIN - minTop);
+
+        if (dx == 0 && dy == 0) {
+            return;
+        }
+
+        for (Node node : graph.getNodes()) {
+            node.setCenter(node.getCenterX() + dx, node.getCenterY() + dy);
+        }
     }
 
     /**
@@ -601,47 +770,144 @@ public class LayoutUtil {
      * @param graph the graph containing the nodes to be repositioned.
      */
     public static void repositionLatents(Graph graph) {
-        for (Node latent : graph.getNodes()) {
-            if (latent.getNodeType() == NodeType.LATENT) {
-                Set<Node> neighbors = new HashSet<>(graph.getAdjacentNodes(latent));
-
-                for (Node neighbor : new HashSet<>(neighbors)) {
-                    if (neighbor.getNodeType() == NodeType.LATENT) {
-                        neighbors.remove(neighbor);
-                    }
-                }
-
-                positionLatentNode(latent, neighbors);
-            }
-        }
+        repositionLatents(graph, estimatedNodeSize());
     }
 
     /**
-     * Positions a latent node based on the average position of its measured
-     * neighbors.
+     * Places each latent near its adjacent nodes without overlapping any other
+     * node's box. A latent is anchored at the centroid of its measured
+     * neighbors (falling back to all neighbors, then the graph center), and a
+     * ring search then finds the nearest point whose box clears every
+     * already-placed box by {@code NODE_GAP}. Ties are broken toward the
+     * outside of the graph so the latent floats just off its cluster rather
+     * than into the crowded interior. Latents with more measured neighbors are
+     * placed first, and each placed latent becomes an obstacle for the rest.
      *
-     * @param latent    the latent node to be positioned
-     * @param neighbors the set of neighboring nodes
+     * @param graph the graph containing the nodes to be repositioned.
+     * @param size  supplies each node's rendered box size.
      */
-    public static void positionLatentNode(Node latent, Set<Node> neighbors) {
-        if (neighbors.isEmpty()) return;
+    public static void repositionLatents(Graph graph, NodeSize size) {
+        List<Node> latents = new ArrayList<>();
+        List<Node> obstacles = new ArrayList<>();
 
-        float avgX = 0f;
-        float avgY = 0f;
+        double gx = 0.0, gy = 0.0;
+        int gc = 0;
+
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                latents.add(node);
+            } else {
+                obstacles.add(node);
+                gx += node.getCenterX();
+                gy += node.getCenterY();
+                gc++;
+            }
+        }
+
+        if (gc > 0) {
+            gx /= gc;
+            gy /= gc;
+        }
+
+        latents.sort(Comparator.comparingInt((Node l) -> countMeasuredNeighbors(graph, l))
+                .reversed().thenComparing(Node::getName));
+
+        for (Node latent : latents) {
+            positionLatentNode(graph, latent, obstacles, size, gx, gy);
+            obstacles.add(latent);
+        }
+    }
+
+    private static void positionLatentNode(Graph graph, Node latent, List<Node> obstacles,
+                                           NodeSize size, double gx, double gy) {
+        double ax = 0.0, ay = 0.0;
+        int ac = 0;
+
+        for (Node nb : graph.getAdjacentNodes(latent)) {
+            if (nb.getNodeType() == NodeType.MEASURED) {
+                ax += nb.getCenterX();
+                ay += nb.getCenterY();
+                ac++;
+            }
+        }
+
+        if (ac == 0) {
+            for (Node nb : graph.getAdjacentNodes(latent)) {
+                ax += nb.getCenterX();
+                ay += nb.getCenterY();
+                ac++;
+            }
+        }
+
+        if (ac == 0) {
+            ax = gx;
+            ay = gy;
+            ac = 1;
+        }
+
+        ax /= ac;
+        ay /= ac;
+
+        // Sweep order starts at the outward direction; straight up if the anchor
+        // is at the graph center.
+        double ox = ax - gx, oy = ay - gy;
+        double baseAngle = (Math.hypot(ox, oy) < 1e-6) ? -Math.PI / 2.0 : Math.atan2(oy, ox);
+
+        double w = size.width(latent);
+        double h = size.height(latent);
+        double sector = 2.0 * Math.PI / LATENT_RING_SECTORS;
+
+        for (int ring = 0; ring <= LATENT_MAX_RINGS; ring++) {
+            double r = ring * LATENT_RING_STEP;
+            int steps = (ring == 0) ? 1 : LATENT_RING_SECTORS;
+
+            for (int s = 0; s < steps; s++) {
+                // 0, +1, -1, +2, -2, ... sectors from the base angle.
+                double offset = (s == 0) ? 0.0
+                        : ((s % 2 == 1 ? 1 : -1) * ((s + 1) / 2)) * sector;
+                double angle = baseAngle + offset;
+
+                int cx = (int) Math.round(ax + r * Math.cos(angle));
+                int cy = (int) Math.round(ay + r * Math.sin(angle));
+
+                if (boxClearsAll(cx, cy, w, h, obstacles, size)) {
+                    latent.setCenter(cx, cy);
+                    return;
+                }
+            }
+        }
+
+        latent.setCenter((int) Math.round(ax), (int) Math.round(ay));
+    }
+
+    private static int countMeasuredNeighbors(Graph graph, Node node) {
         int count = 0;
 
-        for (Node neighbor : neighbors) {
-            if (neighbor.getNodeType() == NodeType.MEASURED) {
-                avgX += neighbor.getCenterX();
-                avgY += neighbor.getCenterY();
+        for (Node nb : graph.getAdjacentNodes(node)) {
+            if (nb.getNodeType() == NodeType.MEASURED) {
                 count++;
             }
         }
 
-        avgX /= count;
-        avgY /= count;
+        return count;
+    }
 
-        latent.setCenter((int) avgX, (int) avgY);
+    /**
+     * Returns true if a box of the given size centered at (x, y) is separated
+     * from every obstacle's box by at least {@code NODE_GAP} on some axis.
+     */
+    private static boolean boxClearsAll(double x, double y, double w, double h,
+                                        List<Node> obstacles, NodeSize size) {
+        for (Node o : obstacles) {
+            double needX = (w + size.width(o)) / 2.0 + NODE_GAP;
+            double needY = (h + size.height(o)) / 2.0 + NODE_GAP;
+
+            if (Math.abs(x - o.getCenterX()) < needX && Math.abs(y - o.getCenterY()) < needY) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // ========================================================================

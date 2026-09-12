@@ -249,7 +249,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private void widenDefaultLayout() {
         if (this.graph.getNumNodes() <= 20) {
-            LayoutUtils.widenCircleForLabels(this.graph, this);
+            // Re-run the circle with the display nodes' real box sizes; the default layout above only had the
+            // lib's name-length estimate.
+            LayoutUtil.circleLayout(this.graph, LayoutUtils.displayNodeSizes(this));
         } else {
             LayoutUtils.respaceSquareForLabels(this.graph, this);
         }
@@ -1055,12 +1057,55 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * nodes on rows or columns (knowledge tiers, lag rows, layered drawings, causal order, the square) are
      * respaced within those rows and columns, so a tier stays a tier and a lag stays a row; layouts with no such
      * structure (Fruchterman-Reingold, Kamada-Kawai) get the pairwise push-apart of {@link #resolveNodeOverlaps()}.
-     * The circle layout is widened by {@link LayoutUtils} before it reaches here and needs neither.
+     * A layout with no overlapping boxes is left exactly as it was: the circle layout is sized from the display
+     * nodes' boxes and arrives overlap-free, and the row/column respacing would otherwise read its many
+     * coincident coordinates (mirror pairs at the same y, top and bottom at the same x) as a grid and pull nodes
+     * off the circle.
      */
     private void separateNodes() {
+        if (!hasOverlaps()) {
+            return;
+        }
+
         if (!spreadStructuredLayout()) {
             resolveNodeOverlaps();
         }
+    }
+
+    /**
+     * @return True if some pair of display node boxes, each padded by {@link #NODE_OVERLAP_MARGIN}, overlap.
+     */
+    private boolean hasOverlaps() {
+        List<DisplayNode> nodes = new ArrayList<>();
+
+        for (Node modelNode : this.graph.getNodes()) {
+            DisplayNode displayNode = (DisplayNode) getModelNodesToDisplay().get(modelNode);
+            if (displayNode != null) nodes.add(displayNode);
+        }
+
+        int n = nodes.size();
+        double[] cx = new double[n], cy = new double[n], w = new double[n], h = new double[n];
+
+        for (int i = 0; i < n; i++) {
+            DisplayNode d = nodes.get(i);
+            Dimension dim = d.getSize();
+            if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
+            cx[i] = d.getX() + dim.width / 2.0;
+            cy[i] = d.getY() + dim.height / 2.0;
+            w[i] = dim.width + NODE_OVERLAP_MARGIN;
+            h[i] = dim.height + NODE_OVERLAP_MARGIN;
+        }
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (Math.abs(cx[i] - cx[j]) < (w[i] + w[j]) / 2.0
+                    && Math.abs(cy[i] - cy[j]) < (h[i] + h[j]) / 2.0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1585,7 +1630,16 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private void adjustPreferredSize() {
         Component[] components = getComponents();
+
+        // The canvas is never smaller than the scroll window it sits in (so a small layout still fills the
+        // viewport and nothing looks clipped), nor than a 400 x 400 fallback when there is no viewport yet.
         Rectangle r = new Rectangle(0, 0, 400, 400);
+        if (getParent() instanceof JViewport viewport) {
+            Dimension extent = viewport.getExtentSize();
+            if (extent.width > 0 && extent.height > 0) {
+                r = new Rectangle(0, 0, extent.width, extent.height);
+            }
+        }
 
         for (Component component1 : components) {
             r = r.union(component1.getBounds());

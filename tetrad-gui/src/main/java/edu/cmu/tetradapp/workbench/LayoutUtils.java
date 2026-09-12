@@ -585,7 +585,41 @@ public class LayoutUtils {
     }
 
     /**
-     * <p>circleLayout.</p>
+     * A {@link LayoutUtil.NodeSize} backed by the editable's display nodes, so layouts space nodes by their real
+     * rendered boxes. Nodes with no display node fall back to the lib's estimate.
+     *
+     * @param layoutEditable The editable whose display nodes supply the sizes.
+     * @return The size provider.
+     */
+    public static LayoutUtil.NodeSize displayNodeSizes(LayoutEditable layoutEditable) {
+        LayoutUtil.NodeSize fallback = LayoutUtil.estimatedNodeSize();
+
+        return new LayoutUtil.NodeSize() {
+            private Dimension dim(Node node) {
+                Object o = layoutEditable.getModelNodesToDisplay().get(node);
+                if (!(o instanceof DisplayNode d)) return null;
+                Dimension dim = d.getSize();
+                if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
+                return dim;
+            }
+
+            @Override
+            public double width(Node node) {
+                Dimension d = dim(node);
+                return d == null ? fallback.width(node) : d.width;
+            }
+
+            @Override
+            public double height(Node node) {
+                Dimension d = dim(node);
+                return d == null ? fallback.height(node) : d.height;
+            }
+        };
+    }
+
+    /**
+     * Lays the graph out in a circle sized from the display nodes' real boxes; see
+     * {@link LayoutUtil#circleLayout(Graph, LayoutUtil.NodeSize)}.
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
@@ -598,95 +632,9 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.circleLayout(graph);
-        widenCircleForLabels(graph, layoutEditable);
+        LayoutUtil.circleLayout(graph, displayNodeSizes(layoutEditable));
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
-    }
-
-    /**
-     * Enlarges a circle layout so that adjacent nodes do not overlap: the lib's circle radius grows with the
-     * number of nodes but not with their label widths, so long names (e.g., from a long-to-wide reshaping) were
-     * drawn on top of one another. The chord between neighbors is made at least the widest node box plus the
-     * workbench's overlap margin; a circle already wide enough is left as is. Positions are scaled about the
-     * circle's center, then shifted so no node leaves the top-left of the canvas.
-     *
-     * @param graph          The graph, already laid out in a circle.
-     * @param layoutEditable The editable, for the display node sizes.
-     */
-    static void widenCircleForLabels(Graph graph, LayoutEditable layoutEditable) {
-        List<Node> nodes = new ArrayList<>();
-        double maxWidth = 0;
-        double maxHeight = 0;
-
-        for (Node node : graph.getNodes()) {
-            Object o = layoutEditable.getModelNodesToDisplay().get(node);
-            if (!(o instanceof DisplayNode d)) continue;
-            nodes.add(node);
-            Dimension dim = d.getPreferredSize();
-            maxWidth = Math.max(maxWidth, dim.width);
-            maxHeight = Math.max(maxHeight, dim.height);
-        }
-
-        int n = nodes.size();
-        if (n < 3) return;
-
-        double cx = 0, cy = 0;
-        for (Node node : nodes) {
-            cx += node.getCenterX();
-            cy += node.getCenterY();
-        }
-        cx /= n;
-        cy /= n;
-
-        double radius = 0;
-        for (Node node : nodes) radius += Math.hypot(node.getCenterX() - cx, node.getCenterY() - cy);
-        radius /= n;
-        if (radius <= 0) return;
-
-        final double fcx = cx, fcy = cy;
-        nodes.sort(Comparator.comparingDouble(node -> Math.atan2(node.getCenterY() - fcy, node.getCenterX() - fcx)));
-
-        // For each pair of neighbors, the smallest radius at which their boxes are apart: boxes on a circle of
-        // radius r at angles a and b are separated horizontally by r |cos a - cos b| and vertically by
-        // r |sin a - sin b|, and they are apart if either separation exceeds the corresponding box extent (plus
-        // margin). Neighbors at the top and bottom of the circle need the horizontal separation (wide labels
-        // make it large); neighbors at the sides need only the vertical one. The required radius is the largest
-        // of the per-pair minima.
-        double margin = AbstractWorkbench.NODE_OVERLAP_MARGIN;
-        double requiredRadius = 0;
-
-        for (int i = 0; i < n; i++) {
-            Node p = nodes.get(i);
-            Node q = nodes.get((i + 1) % n);
-            DisplayNode dp = (DisplayNode) layoutEditable.getModelNodesToDisplay().get(p);
-            DisplayNode dq = (DisplayNode) layoutEditable.getModelNodesToDisplay().get(q);
-            double wNeed = (dp.getPreferredSize().width + dq.getPreferredSize().width) / 2.0 + margin;
-            double hNeed = (dp.getPreferredSize().height + dq.getPreferredSize().height) / 2.0 + margin;
-
-            double a = Math.atan2(p.getCenterY() - cy, p.getCenterX() - cx);
-            double b = Math.atan2(q.getCenterY() - cy, q.getCenterX() - cx);
-            double dcos = Math.abs(Math.cos(a) - Math.cos(b));
-            double dsin = Math.abs(Math.sin(a) - Math.sin(b));
-
-            double byWidth = dcos > 1e-9 ? wNeed / dcos : Double.POSITIVE_INFINITY;
-            double byHeight = dsin > 1e-9 ? hNeed / dsin : Double.POSITIVE_INFINITY;
-            double pairRadius = Math.min(byWidth, byHeight);
-            if (Double.isFinite(pairRadius)) requiredRadius = Math.max(requiredRadius, pairRadius);
-        }
-
-        if (requiredRadius <= radius) return;
-
-        double scale = requiredRadius / radius;
-        double left = maxWidth / 2.0 + AbstractWorkbench.NODE_OVERLAP_MARGIN;
-        double top = maxHeight / 2.0 + AbstractWorkbench.NODE_OVERLAP_MARGIN;
-
-        for (Node node : nodes) {
-            double x = cx + (node.getCenterX() - cx) * scale;
-            double y = cy + (node.getCenterY() - cy) * scale;
-            node.setCenter((int) Math.round(x - cx + requiredRadius + left),
-                    (int) Math.round(y - cy + requiredRadius + top));
-        }
     }
 
     /**
