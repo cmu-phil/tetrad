@@ -31,7 +31,6 @@ import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphNodeMeasured;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
-import edu.cmu.tetradapp.workbench.IDisplayEdge;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -2059,32 +2058,14 @@ public final class SemEstimatorEditor extends JPanel {
                 resetNodeLabel((Node) node, implCovar);
             }
 
-            resetEdgeShading(implCovar);
+            SemGraphShading.applyEdgeShading(workbench(), graph(), semIm(), implCovar, this.shadeEdges,
+                    this::getEdgeParameter);
 
             workbench().repaint();
         }
 
-        /**
-         * Sets or clears the edge tooltip. The workbench only builds edge tooltips on mouse-enter when editing is
-         * enabled, and this workbench has editing disabled, so the tooltip is set directly here. The annotation is
-         * also set on the workbench's copy of the model edge so that the standard tooltip path, if it ever runs,
-         * shows the same information.
-         */
         private void setEdgeAnnotation(Edge edge, String text) {
-            Object o = workbench().getModelEdgesToDisplay().get(edge);
-            if (!(o instanceof IDisplayEdge displayEdge)) return;
-
-            if (displayEdge.getModelEdge() != null) {
-                displayEdge.getModelEdge().setAnnotation(text);
-            }
-
-            if (text == null) {
-                workbench().setEdgeToolTip(edge, null);
-            } else {
-                workbench().setEdgeToolTip(edge, "<html>" + edge.getNode1().getName() + " "
-                        + (Edges.isBidirectedEdge(edge) ? "&lt;-&gt;" : "--&gt;") + " " + edge.getNode2().getName()
-                        + "<br>" + text.replace("<", "&lt;").replace(">", "&gt;") + "</html>");
-            }
+            SemGraphShading.setEdgeAnnotation(workbench(), edge, text);
         }
 
         /**
@@ -2104,59 +2085,6 @@ public final class SemEstimatorEditor extends JPanel {
         public void setShadeEdges(boolean shade) {
             this.shadeEdges = shade;
             resetLabels();
-        }
-
-        /**
-         * Applies or clears per-edge line colors on the display edges. Coefficient edges are shaded by sign, with
-         * intensity the square root of |coef| relative to the largest |coef| in the model; error covariance edges are
-         * shaded by the sign of the covariance with intensity the square root of the implied |correlation|. Edges
-         * without a parameter (e.g. edges to error nodes) get the default color. Display edges are recreated whenever
-         * the workbench graph changes, so this runs from resetLabels rather than once.
-         */
-        private void resetEdgeShading(Matrix implCovar) {
-            Map<Edge, Object> display = workbench().getModelEdgesToDisplay();
-
-            double maxAbsCoef = 0.0;
-            if (this.shadeEdges) {
-                for (Edge edge : graph().getEdges()) {
-                    Parameter p = getEdgeParameter(edge);
-                    if (p != null && p.getType() == ParamType.COEF) {
-                        double v = semIm().getParamValue(p);
-                        if (Double.isFinite(v)) maxAbsCoef = Math.max(maxAbsCoef, Math.abs(v));
-                    }
-                }
-            }
-
-            for (Edge edge : graph().getEdges()) {
-                Object o = display.get(edge);
-                if (!(o instanceof IDisplayEdge displayEdge)) continue;
-
-                Color color = null;
-
-                if (this.shadeEdges) {
-                    Parameter p = getEdgeParameter(edge);
-                    if (p != null) {
-                        double val = semIm().getParamValue(p);
-                        double intensity = 0.0;
-
-                        if (p.getType() == ParamType.COEF) {
-                            intensity = maxAbsCoef > 0 ? Math.sqrt(Math.abs(val) / maxAbsCoef) : 0.0;
-                        } else if (p.getType() == ParamType.COVAR) {
-                            double varA = semIm().getVariance(edge.getNode1(), implCovar);
-                            double varB = semIm().getVariance(edge.getNode2(), implCovar);
-                            double corr = val / TMath.sqrt(varA * varB);
-                            intensity = Double.isFinite(corr) ? Math.sqrt(Math.min(1.0, Math.abs(corr))) : 0.0;
-                        }
-
-                        if (Double.isFinite(val) && Double.isFinite(intensity)) {
-                            color = EdgeShading.signed(val, intensity);
-                        }
-                    }
-                }
-
-                displayEdge.setLineColor(color);
-                if (displayEdge instanceof Component c) c.repaint();
-            }
         }
 
         private void resetEdgeLabel(Edge edge, Matrix implCovar) {
@@ -2227,8 +2155,7 @@ public final class SemEstimatorEditor extends JPanel {
                     // Shaded view: no label; the value goes into the edge tooltip instead.
                     String info = parameter.getName() + " = " + asString(val);
                     if (!Double.isNaN(standardError) && semIm().isEstimated()) {
-                        info += "  (SE=" + asString(standardError) + ", T=" + asString(tValue)
-                                + ", P=" + asString(pValue) + ")";
+                        info += SemGraphShading.stats(semIm(), parameter, this.maxFreeParamsForStatistics, this::asString);
                     }
                     workbench().setEdgeLabel(edge, null);
                     setEdgeAnnotation(edge, info);
@@ -2335,18 +2262,11 @@ public final class SemEstimatorEditor extends JPanel {
                 }
                 if (nodeType != NodeType.ERROR && parameter != null) {
                     // Error variance of this node's error term (the variance parameter is keyed on the node itself).
-                    double errVar = semIm().getParamValue(parameter);
-                    String errLine = this.editor.isEditCovariancesAsCorrelations()
-                            ? "SD(" + errorTermName(node) + ") = " + asString(TMath.sqrt(errVar)) + " (unstandardized)"
-                            : errorTermName(node) + " ~ N(0, " + asString(TMath.sqrt(errVar)) + "), Var = " + asString(errVar);
-                    errLine += "  (SE=" + asString(semIm().getStandardError(parameter, this.maxFreeParamsForStatistics))
-                            + ", T=" + asString(semIm().getTValue(parameter, this.maxFreeParamsForStatistics))
-                            + ", P=" + asString(semIm().getPValue(parameter, this.maxFreeParamsForStatistics)) + ")";
+                    String errLine = SemGraphShading.errorVarianceLine(semIm(), node, parameter,
+                            this.editor.isEditCovariancesAsCorrelations(), this.maxFreeParamsForStatistics, this::asString);
                     info = (info == null) ? errLine : info + "<br>" + errLine;
                 } else if (info != null && parameter != null) {
-                    info += "  (SE=" + asString(semIm().getStandardError(parameter, this.maxFreeParamsForStatistics))
-                            + ", T=" + asString(semIm().getTValue(parameter, this.maxFreeParamsForStatistics))
-                            + ", P=" + asString(semIm().getPValue(parameter, this.maxFreeParamsForStatistics)) + ")";
+                    info += SemGraphShading.stats(semIm(), parameter, this.maxFreeParamsForStatistics, this::asString);
                 }
                 boolean measured = workbench().getModelNodesToDisplay().get(node) instanceof GraphNodeMeasured;
                 StringBuilder tip = new StringBuilder();
@@ -2534,14 +2454,8 @@ public final class SemEstimatorEditor extends JPanel {
             return eqn;
         }
 
-        /**
-         * The name of the node's error term. When error terms are hidden the SemGraph drops error nodes from its map,
-         * so fall back to the naming convention the graph uses when it creates them.
-         */
         private String errorTermName(Node node) {
-            Node exo = semIm().getSemPm().getGraph().getExogenous(node);
-            if (exo != null && exo != node) return exo.getName();
-            return "E_" + node.getName();
+            return SemGraphShading.errorTermName(semIm().getSemPm().getGraph(), node);
         }
 
         public GraphWorkbench getWorkbench() {

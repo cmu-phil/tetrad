@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.workbench;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
+import edu.cmu.tetradapp.editor.FindVariableAction;
 import edu.cmu.tetradapp.editor.GraphFileMenu;
 import edu.cmu.tetradapp.editor.GraphPropertiesAction;
 import edu.cmu.tetradapp.editor.PathsAction;
@@ -3081,6 +3082,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         graph.add(graphProperties);
         graph.add(pathsAction);
         graph.add(new UnderliningsAction(((GraphWorkbench) this)));
+        graph.add(new FindVariableAction((GraphWorkbench) this));
         graph.addSeparator();
 
         graph.add(edu.cmu.tetradapp.util.GraphUtils.getHighlightMenu(((GraphWorkbench) this)));
