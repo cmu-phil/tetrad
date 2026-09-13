@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.MixedDataBox;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -1100,6 +1101,254 @@ public final class NNEstimator implements TetradSerializable {
                     parentName, childName, true,
                     Double.NaN, Double.NaN, improvement, k);
         }
+    }
+
+    // == prediction-based pruning ==
+
+    /**
+     * Backward elimination of parents whose held-out predictive contribution
+     * is not distinguishable from zero, per child, on the same k folds as
+     * {@link #crossValidate(int)}.
+     *
+     * <p>For each parent X of a child Y, the current fold mechanisms (trained
+     * on Y's current working parent set) and reduced fold mechanisms
+     * (retrained without X) predict the same held-out rows, giving one paired
+     * improvement per fold: delta R^2 for a continuous Y, delta cross-entropy
+     * in nats for a discrete Y. X is kept when the fold-mean improvement
+     * exceeds {@code threshold} fold standard errors. While any parent fails,
+     * the one with the smallest t-statistic is removed and the survivors
+     * re-tested, so a redundant pair loses at most one member. Children are
+     * independent because the estimator factorizes per node, so elimination
+     * runs per child and never re-tests edges into other children.
+     *
+     * <p>When the reduced parent set is empty, the reduced predictor is the
+     * training fold's marginal mean (continuous) or Laplace-smoothed marginal
+     * class frequencies (discrete) rather than a retrained network.
+     *
+     * <p>The returned graph is a copy of the DAG with the proposed deletions
+     * removed; this estimator is not modified. Deletion means predictive
+     * redundancy given the survivors, not causal absence.
+     *
+     * <p>Requires {@link #fit()} to have been called first.
+     *
+     * @param k         number of CV folds
+     * @param threshold keep a parent when its fold-mean improvement exceeds
+     *                  this many fold standard errors; 0 keeps any positive
+     *                  mean, 1 is a reasonable default
+     * @return a {@link PredictionPruneReport}
+     * @throws IllegalStateException if {@link #fit()} has not been called
+     */
+    public PredictionPruneReport pruneByPredictiveContribution(int k, double threshold) {
+        checkFitted();
+        FoldModels fm = getFoldModels(k);
+
+        List<Node> variables = observedData.getVariables();
+        Map<String, Integer> indexByName = new HashMap<>();
+        for (int j = 0; j < variables.size(); j++) {
+            indexByName.put(variables.get(j).getName(), j);
+        }
+        double[] baseVar = computeBaselineMse(variables);
+
+        List<PredictionPruneReport.Deletion> deletions =
+                Collections.synchronizedList(new ArrayList<>());
+
+        List<Node> children = dag.getNodes().stream()
+                .filter(nd -> !dag.getParents(nd).isEmpty())
+                .filter(nd -> indexByName.containsKey(nd.getName()))
+                .toList();
+
+        children.parallelStream().forEach(childNode -> {
+            int childIdx = indexByName.get(childNode.getName());
+            boolean isDisc = (childNode instanceof DiscreteVariable);
+
+            List<Integer> working = new ArrayList<>();
+            for (Node q : dag.getParents(childNode)) {
+                Integer qi = indexByName.get(q.getName());
+                if (qi != null) working.add(qi);
+            }
+            if (working.isEmpty()) return;
+
+            // Per-fold mechanisms for the current working parent set. The
+            // cached fold models already hold the full-parent mechanisms.
+            TrainedDagSimulatorGNM[] cur = new TrainedDagSimulatorGNM[k];
+            System.arraycopy(fm.sims, 0, cur, 0, k);
+
+            int step = 0;
+            while (!working.isEmpty()) {
+                int[] curArr = working.stream().mapToInt(Integer::intValue).toArray();
+
+                int worstPos = -1;
+                double worstT = Double.POSITIVE_INFINITY;
+                double worstMean = Double.NaN, worstSe = Double.NaN;
+
+                for (int ci = 0; ci < working.size(); ci++) {
+                    int x = working.get(ci);
+                    int[] red = working.stream()
+                            .filter(q -> q != x)
+                            .mapToInt(Integer::intValue).toArray();
+
+                    long salt = mixEdgeSeed(x, childIdx)
+                            ^ (long) step * 0x9E3779B97F4A7C15L;
+                    double[] d = foldImprovements(fm, cur, childIdx, isDisc,
+                            curArr, red, baseVar[childIdx], salt);
+
+                    double m = mean(d);
+                    int nf = 0;
+                    for (double v : d) if (Double.isFinite(v)) nf++;
+                    double se = (nf >= 2) ? sd(d) / TMath.sqrt(nf) : Double.NaN;
+
+                    boolean pass = (Double.isFinite(se) && se > 0)
+                            ? m > threshold * se
+                            : m > 0;
+                    double tStat = (Double.isFinite(se) && se > 0)
+                            ? m / se
+                            : (m > 0 ? Double.POSITIVE_INFINITY
+                                     : Double.NEGATIVE_INFINITY);
+
+                    if (!pass && tStat < worstT) {
+                        worstT = tStat;
+                        worstPos = ci;
+                        worstMean = m;
+                        worstSe = se;
+                    }
+                }
+
+                if (worstPos < 0) break;   // every survivor passes
+
+                int removed = working.remove(worstPos);
+                deletions.add(new PredictionPruneReport.Deletion(
+                        variables.get(removed).getName(),
+                        childNode.getName(), isDisc,
+                        worstMean, worstSe,
+                        Double.isFinite(worstT) ? worstT : Double.NaN,
+                        step));
+
+                if (!working.isEmpty()) {
+                    int[] newArr = working.stream()
+                            .mapToInt(Integer::intValue).toArray();
+                    for (int f = 0; f < k; f++) {
+                        long foldSeed = params.seed
+                                ^ (long) f * 0x9E3779B97F4A7C15L
+                                ^ mixEdgeSeed(removed, childIdx)
+                                ^ (long) step;
+                        cur[f] = cur[f].withReducedParents(childIdx, newArr, foldSeed);
+                    }
+                }
+                step++;
+            }
+        });
+
+        Graph pruned = new EdgeListGraph(dag);
+        for (PredictionPruneReport.Deletion d : deletions) {
+            Node pn = pruned.getNode(d.parentName);
+            Node cn = pruned.getNode(d.childName);
+            if (pn != null && cn != null && pruned.getEdge(pn, cn) != null) {
+                pruned.removeEdge(pruned.getEdge(pn, cn));
+            }
+        }
+
+        List<PredictionPruneReport.Deletion> sorted = new ArrayList<>(deletions);
+        sorted.sort(Comparator
+                .comparing((PredictionPruneReport.Deletion d) -> d.childName)
+                .thenComparingInt(d -> d.step));
+
+        return new PredictionPruneReport(sorted, pruned, k, threshold);
+    }
+
+    /**
+     * Per-fold paired improvement of the current model over the reduced one
+     * for a single candidate parent, on rows complete in the child plus the
+     * current parent set. Continuous child: delta R^2 via the marginal-variance
+     * denominator. Discrete child: delta mean cross-entropy in nats. When
+     * {@code reducedParents} is empty, the reduced predictor is the training
+     * fold's marginal (mean or smoothed class frequencies). A fold with no
+     * scorable rows contributes NaN.
+     */
+    private double[] foldImprovements(FoldModels fm, TrainedDagSimulatorGNM[] cur,
+                                      int childIdx, boolean isDisc,
+                                      int[] curParents, int[] reducedParents,
+                                      double baseVar, long seedSalt) {
+        int k = fm.k;
+        double[] d = new double[k];
+
+        for (int f = 0; f < k; f++) {
+            long foldSeed = params.seed
+                    ^ (long) f * 0x9E3779B97F4A7C15L ^ seedSalt;
+
+            TrainedDagSimulatorGNM reduced = (reducedParents.length > 0)
+                    ? cur[f].withReducedParents(childIdx, reducedParents, foldSeed)
+                    : null;
+
+            // Marginal fallbacks from the training fold, for empty reductions.
+            double trainMean = 0.0;
+            double[] trainProbs = null;
+            if (reduced == null) {
+                DataSet train = fm.train[f];
+                if (!isDisc) {
+                    double sum = 0; int n = 0;
+                    for (int r = 0; r < train.getNumRows(); r++) {
+                        double v = train.getDouble(r, childIdx);
+                        if (Double.isFinite(v)) { sum += v; n++; }
+                    }
+                    trainMean = n > 0 ? sum / n : 0.0;
+                } else {
+                    int L = ((DiscreteVariable) observedData.getVariable(childIdx))
+                            .getNumCategories();
+                    int[] counts = new int[L];
+                    int n = 0;
+                    for (int r = 0; r < train.getNumRows(); r++) {
+                        int v = TrainedDagSimulatorGNM.safeGetInt(train, r, childIdx);
+                        if (v >= 0 && v < L) { counts[v]++; n++; }
+                    }
+                    trainProbs = new double[L];
+                    for (int c = 0; c < L; c++) {
+                        trainProbs[c] = (counts[c] + 1.0) / (n + L);   // Laplace
+                    }
+                }
+            }
+
+            DataSet testSet = fm.test[f];
+            double sseCur = 0, sseRed = 0, xentCur = 0, xentRed = 0;
+            int n = 0;
+
+            for (int i = 0; i < testSet.getNumRows(); i++) {
+                if (rowIncomplete(testSet, i, childIdx, curParents)) continue;
+
+                if (!isDisc) {
+                    double yObs = testSet.getDouble(i, childIdx);
+                    double yCur = cur[f].predictNode(childIdx, testSet, i);
+                    double yRed = (reduced != null)
+                            ? reduced.predictNode(childIdx, testSet, i)
+                            : trainMean;
+                    if (!Double.isFinite(yCur) || !Double.isFinite(yRed)) continue;
+                    sseCur += (yObs - yCur) * (yObs - yCur);
+                    sseRed += (yObs - yRed) * (yObs - yRed);
+                    n++;
+                } else {
+                    int obs = TrainedDagSimulatorGNM.safeGetInt(testSet, i, childIdx);
+                    double[] pCur = cur[f].predictNodeProbs(childIdx, testSet, i);
+                    double[] pRed = (reduced != null)
+                            ? reduced.predictNodeProbs(childIdx, testSet, i)
+                            : trainProbs;
+                    if (pCur == null || pRed == null) continue;
+                    if (obs < 0 || obs >= pCur.length || obs >= pRed.length) continue;
+                    xentCur += -TMath.log(TMath.max(pCur[obs], 1e-300));
+                    xentRed += -TMath.log(TMath.max(pRed[obs], 1e-300));
+                    n++;
+                }
+            }
+
+            if (n == 0) {
+                d[f] = Double.NaN;
+            } else if (!isDisc) {
+                d[f] = (Double.isFinite(baseVar) && baseVar > 0)
+                        ? ((sseRed / n) - (sseCur / n)) / baseVar
+                        : Double.NaN;
+            } else {
+                d[f] = (xentRed / n) - (xentCur / n);
+            }
+        }
+        return d;
     }
 
     // ── private helpers ───────────────────────────────────────────────────────

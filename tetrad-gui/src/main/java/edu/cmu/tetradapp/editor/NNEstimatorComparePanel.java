@@ -10,6 +10,7 @@ import edu.cmu.tetrad.sem.CVReport;
 import edu.cmu.tetrad.sem.EdgeStrengthResult;
 import edu.cmu.tetrad.sem.NodeCVSummary;
 import edu.cmu.tetrad.sem.PartialEdgeStrengthResult;
+import edu.cmu.tetrad.sem.PredictionPruneReport;
 import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.model.NNEstimatorModel;
@@ -53,7 +54,7 @@ public final class NNEstimatorComparePanel extends JPanel {
 
     private final NNEstimatorModel model;
     private final DataSet observed;
-    private final Graph dag;
+    private Graph dag;
 
     // ── tab 1: cross-validation ───────────────────────────────────────────────
 
@@ -90,6 +91,18 @@ public final class NNEstimatorComparePanel extends JPanel {
     private DataSet simulated;
     private DualPlotMatrix dual;
 
+    // ── tab 4: prune ──────────────────────────────────────────────────────────
+
+    private final JSpinner pruneTSpinner =
+            new JSpinner(new SpinnerNumberModel(1.0, 0.0, 10.0, 0.25));
+    private final JSpinner pruneKSpinner;
+    private final JButton proposePruneButton = new JButton("Propose Pruning");
+    private final JButton applyPruneButton   = new JButton("Apply && Re-estimate");
+    private final JLabel pruneProgressLabel  = new JLabel(" ");
+    private final PruneTableModel pruneTableModel = new PruneTableModel();
+    private final JTable pruneTable = new JTable(pruneTableModel);
+    private PredictionPruneReport pruneReport;
+
     // ── shared status ─────────────────────────────────────────────────────────
 
     private final JLabel status = new JLabel(" ");
@@ -107,6 +120,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         this.nSpinner = new JSpinner(new SpinnerNumberModel(n0, 1, 10_000_000, 50));
         this.kSpinner = new JSpinner(new SpinnerNumberModel(5, 2, TMath.min(20, n0), 1));
         this.edgeKSpinner = new JSpinner(kSpinner.getModel());
+        this.pruneKSpinner = new JSpinner(kSpinner.getModel());
 
         // Fallback to observed data if no simulation exists yet (e.g. after reload).
         this.simulated = model.getSimulatedData() != null
@@ -123,6 +137,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Cross-Validation",         buildCvTab());
         tabs.addTab("Edge Strength",            buildEdgeStrengthTab());
+        tabs.addTab("Prune",                    buildPruneTab());
         tabs.addTab("Observed vs. Resimulated", buildPlotTab());
         tabs.addTab("Explanation",              NNEstimatorExplanationPanel.create());
 
@@ -154,10 +169,27 @@ public final class NNEstimatorComparePanel extends JPanel {
                     + "before running CV or computing edge strengths.");
         }
 
+        // ── Restore persisted prune report ────────────────────────────────────
+        PredictionPruneReport savedPrune = model.getPruneReport();
+        if (savedPrune != null) {
+            this.pruneReport = savedPrune;
+            pruneTableModel.setReport(savedPrune);
+            applyPruneButton.setEnabled(model.getPrunedGraph() == null
+                    && !savedPrune.getDeletions().isEmpty());
+            if (model.getPrunedGraph() != null) {
+                this.dag = model.getWorkingGraph();
+                pruneProgressLabel.setText(
+                        "Pruned graph applied; model was re-estimated on it.");
+            }
+        } else {
+            applyPruneButton.setEnabled(false);
+        }
+
         wireResimulate();
         wireCv();
         wireEdgeStrength();
         wireComputeAll();
+        wirePrune();
 
         setPreferredSize(new Dimension(1200, 820));
     }
@@ -830,6 +862,180 @@ public final class NNEstimatorComparePanel extends JPanel {
                 return c;
             }
         });
+    }
+
+    // ── prune tab ─────────────────────────────────────────────────────────────
+
+    private JPanel buildPruneTab() {
+        JPanel tab = new JPanel(new BorderLayout(8, 8));
+        tab.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        controls.add(new JLabel("Number of folds (k):"));
+        controls.add(pruneKSpinner);
+        controls.add(new JLabel("Keep threshold (t, in fold SEs):"));
+        controls.add(pruneTSpinner);
+        controls.add(proposePruneButton);
+        controls.add(applyPruneButton);
+
+        JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        labelPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
+        labelPanel.add(pruneProgressLabel);
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.add(controls,   BorderLayout.NORTH);
+        top.add(labelPanel, BorderLayout.SOUTH);
+
+        pruneTable.setFillsViewportHeight(true);
+        pruneTable.setRowHeight(22);
+        pruneTable.setAutoCreateRowSorter(true);
+        JScrollPane scroll = new JScrollPane(pruneTable);
+        scroll.setBorder(new TitledBorder("Proposed deletions (review before applying)"));
+
+        JLabel note = new JLabel(
+                "<html><i>"
+                        + "Backward elimination per child on the CV folds: a parent is kept when its "
+                        + "fold-mean held-out improvement (ΔR², or Δ cross-entropy in nats for a "
+                        + "discrete child) exceeds t fold standard errors; while any parent fails, the "
+                        + "weakest is removed and the survivors re-tested, so a redundant pair loses at "
+                        + "most one member. Deletion means the parent adds no unique predictive "
+                        + "information given the survivors — not that the edge is causally absent. "
+                        + "After applying, metrics computed on these same folds are optimistic; confirm "
+                        + "important conclusions on a fresh split."
+                        + "</i></html>");
+        note.setFont(note.getFont().deriveFont(Font.PLAIN, 11f));
+        note.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+
+        tab.add(top,    BorderLayout.NORTH);
+        tab.add(scroll, BorderLayout.CENTER);
+        tab.add(note,   BorderLayout.SOUTH);
+        return tab;
+    }
+
+    private void wirePrune() {
+        proposePruneButton.addActionListener(e -> {
+            if (model.getEstimator() == null) {
+                pruneProgressLabel.setText(
+                        "Fit the estimator first (Resimulate on the plot tab).");
+                return;
+            }
+            int k = (Integer) pruneKSpinner.getValue();
+            double t = ((Number) pruneTSpinner.getValue()).doubleValue();
+
+            proposePruneButton.setEnabled(false);
+            applyPruneButton.setEnabled(false);
+            pruneProgressLabel.setText(
+                    "Running backward elimination (k=" + k + ", t=" + t + ") …");
+
+            new SwingWorker<PredictionPruneReport, Void>() {
+                @Override
+                protected PredictionPruneReport doInBackground() {
+                    return model.getEstimator()
+                            .pruneByPredictiveContribution(k, t);
+                }
+
+                @Override
+                protected void done() {
+                    proposePruneButton.setEnabled(true);
+                    try {
+                        pruneReport = get();
+                        model.setPruneReport(pruneReport);
+                        pruneTableModel.setReport(pruneReport);
+                        int nDel = pruneReport.getDeletions().size();
+                        if (nDel == 0) {
+                            pruneProgressLabel.setText(
+                                    "No deletions proposed: every parent clears the threshold.");
+                            applyPruneButton.setEnabled(false);
+                        } else {
+                            pruneProgressLabel.setText(nDel
+                                    + " deletion(s) proposed. Review, then Apply && Re-estimate.");
+                            applyPruneButton.setEnabled(true);
+                        }
+                    } catch (Exception ex) {
+                        pruneProgressLabel.setText("Pruning failed: " + ex.getMessage());
+                    }
+                }
+            }.execute();
+        });
+
+        applyPruneButton.addActionListener(e -> {
+            if (pruneReport == null) return;
+            int sampleSize = (Integer) nSpinner.getValue();
+
+            proposePruneButton.setEnabled(false);
+            applyPruneButton.setEnabled(false);
+            pruneProgressLabel.setText("Re-estimating on the pruned graph …");
+
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    model.setPrunedGraph(pruneReport.getPrunedGraph());
+                    model.resimulate(sampleSize);
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    proposePruneButton.setEnabled(true);
+                    try {
+                        get();
+                        dag = model.getWorkingGraph();
+                        populateChildCombo();
+                        simulated = model.getSimulatedData() != null
+                                ? model.getSimulatedData() : observed;
+                        refreshAdequacyStatus(model);
+                        pruneProgressLabel.setText(
+                                "Applied: model re-estimated on the pruned graph. "
+                                + "Rerun CV and edge strengths; note both use the "
+                                + "selection folds and are optimistic.");
+                        status.setText("Model is fitted to the pruned graph "
+                                + "(" + pruneReport.getDeletions().size()
+                                + " edge(s) removed).");
+                    } catch (Exception ex) {
+                        applyPruneButton.setEnabled(true);
+                        pruneProgressLabel.setText("Apply failed: " + ex.getMessage());
+                    }
+                }
+            }.execute();
+        });
+    }
+
+    // =========================================================================
+    // PruneTableModel
+    // =========================================================================
+
+    private static final class PruneTableModel extends AbstractTableModel {
+
+        private static final String[] COLUMNS =
+                {"Edge", "Δ (fold mean)", "SE", "t", "Type", "Step"};
+
+        private final List<PredictionPruneReport.Deletion> rows = new ArrayList<>();
+
+        void setReport(PredictionPruneReport report) {
+            rows.clear();
+            rows.addAll(report.getDeletions());
+            fireTableDataChanged();
+        }
+
+        @Override public int getRowCount()    { return rows.size(); }
+        @Override public int getColumnCount() { return COLUMNS.length; }
+        @Override public String getColumnName(int col) { return COLUMNS[col]; }
+
+        @Override
+        public Object getValueAt(int row, int col) {
+            PredictionPruneReport.Deletion d = rows.get(row);
+            return switch (col) {
+                case 0 -> d.parentName + " → " + d.childName;
+                case 1 -> String.format("%.4f", d.meanImprovement);
+                case 2 -> Double.isFinite(d.seImprovement)
+                        ? String.format("%.4f", d.seImprovement) : "—";
+                case 3 -> Double.isFinite(d.tStat)
+                        ? String.format("%.2f", d.tStat) : "—";
+                case 4 -> d.discreteChild ? "Xent (nats)" : "ΔR²";
+                case 5 -> d.step;
+                default -> "";
+            };
+        }
     }
 
     // =========================================================================

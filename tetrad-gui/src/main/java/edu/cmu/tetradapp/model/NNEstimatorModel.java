@@ -71,6 +71,16 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
 
     private List<EdgeStrengthPair> persistedEdgeStrengthResults = new ArrayList<>();
 
+    /**
+     * When non-null, the DAG the estimator is fitted to instead of the
+     * session's input graph — set by "apply pruning" in the compare panel.
+     * Persisted so a saved session reopens on the pruned model.
+     */
+    private Graph prunedGraph;
+
+    /** The most recent prune proposal; persisted like the CV report. */
+    private edu.cmu.tetrad.sem.PredictionPruneReport persistedPruneReport;
+
     // ── constructor ───────────────────────────────────────────────────────────
 
     public NNEstimatorModel(DataWrapper dataWrapper,
@@ -110,7 +120,7 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
         this.sampleSize = TMath.max(1, sampleSize);
 
         NNEstimatorParams params = buildParams();
-        estimator = new NNEstimator(inputData, inputGraph, params);
+        estimator = new NNEstimator(inputData, getWorkingGraph(), params);
         DataSet simulated = estimator.fitAndSimulate(this.sampleSize);
 
         // Make both datasets available to downstream session nodes.
@@ -248,6 +258,44 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
     // ── GraphSource ───────────────────────────────────────────────────────────
 
     public Graph getGraph() { return inputGraph; }
+
+    /**
+     * The graph the estimator is (or will be) fitted to: the pruned graph
+     * when one has been applied, otherwise the session's input graph.
+     * @return the working graph
+     */
+    public Graph getWorkingGraph() {
+        return prunedGraph != null ? prunedGraph : inputGraph;
+    }
+
+    /**
+     * Applies a pruned graph; the next {@link #resimulate} fits to it.
+     * Pass null to revert to the session's input graph.
+     * @param g the pruned graph, or null to revert
+     */
+    public void setPrunedGraph(Graph g) { this.prunedGraph = g; }
+
+    /**
+     * The applied pruned graph, or null if none.
+     * @return the pruned graph or null
+     */
+    public Graph getPrunedGraph() { return prunedGraph; }
+
+    /**
+     * Stores the most recent prune proposal for session persistence.
+     * @param r the report
+     */
+    public void setPruneReport(edu.cmu.tetrad.sem.PredictionPruneReport r) {
+        this.persistedPruneReport = r;
+    }
+
+    /**
+     * The persisted prune proposal, or null if none.
+     * @return the report or null
+     */
+    public edu.cmu.tetrad.sem.PredictionPruneReport getPruneReport() {
+        return persistedPruneReport;
+    }
 
     // ── serialization ─────────────────────────────────────────────────────────
 
