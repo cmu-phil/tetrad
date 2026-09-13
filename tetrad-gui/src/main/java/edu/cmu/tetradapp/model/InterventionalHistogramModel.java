@@ -175,8 +175,30 @@ public final class InterventionalHistogramModel implements SessionModel {
                         statusMessage = "No sample produced.";
                     } else {
                         ySample = sample;
-                        ySampleDataSet = oneColumnContinuous("Y*", sample);
-                        statusMessage = "OK (n=" + sample.length + ")  [sampler=" + sampler.getClass().getSimpleName() + "]";
+
+                        Node yData = data.getVariable(y.getName());
+                        if (yData instanceof DiscreteVariable dy) {
+                            ySampleDataSet = oneColumnDiscrete("Y*", dy, sample);
+                        } else {
+                            ySampleDataSet = oneColumnContinuous("Y*", sample);
+                        }
+
+                        StringBuilder msg = new StringBuilder("OK (n=" + sample.length + ")  [sampler="
+                                + sampler.getClass().getSimpleName() + "]");
+
+                        if (sampler instanceof ParentAdjustmentResampleSampler p) {
+                            int fb = p.getLastFallbackCount();
+                            if (fb > 0) {
+                                msg.append(String.format("  fallback to X-only: %d/%d (%.1f%%)",
+                                        fb, sample.length, 100.0 * fb / sample.length));
+                            }
+                            List<String> ignored = p.getLastIgnoredContinuousZ();
+                            if (!ignored.isEmpty()) {
+                                msg.append("  dropped continuous Z: ").append(String.join(", ", ignored));
+                            }
+                        }
+
+                        statusMessage = msg.toString();
                     }
                 } catch (Exception ex) {
                     statusMessage = ex.getMessage();
@@ -283,6 +305,12 @@ public final class InterventionalHistogramModel implements SessionModel {
         /** Max attempts to find a matching row for each draw before falling back. */
         private final int maxAttemptsPerDraw;
 
+        /** Number of draws in the most recent sampleY call that fell back to X-only matching. Not serialized. */
+        private transient int lastFallbackCount;
+
+        /** Continuous adjustment variables dropped in the most recent sampleY call. Not serialized. */
+        private transient List<String> lastIgnoredContinuousZ = new ArrayList<>();
+
         public ParentAdjustmentResampleSampler() {
             this(true, 100);
         }
@@ -299,6 +327,9 @@ public final class InterventionalHistogramModel implements SessionModel {
                                 Map<Node, Integer> doSpec,
                                 int n,
                                 Random rng) {
+
+            this.lastFallbackCount = 0;
+            this.lastIgnoredContinuousZ = new ArrayList<>();
 
             if (doSpec == null || doSpec.isEmpty()) {
                 // No intervention specified -> just bootstrap Y observationally.
@@ -332,6 +363,7 @@ public final class InterventionalHistogramModel implements SessionModel {
                     zVars.add(dz);
                     zCols.add(data.getColumnIndex(dz));
                 } else {
+                    lastIgnoredContinuousZ.add(zn);
                     TetradLogger.getInstance().log(
                             "InterventionalHistogram: ignoring continuous Z (prototype exact-matching sampler): " + zn);
                 }
@@ -391,6 +423,8 @@ public final class InterventionalHistogramModel implements SessionModel {
                 int r = findRowMatchingXZ(data, xCols, xWant, zCols, zWant, rng, maxAttemptsPerDraw);
 
                 if (r < 0) {
+                    lastFallbackCount++;
+
                     if (fallbackIgnoreZ) {
                         // fall back to X-only
                         r = xOnlyCandidates[rng.nextInt(xOnlyCandidates.length)];
@@ -404,6 +438,23 @@ public final class InterventionalHistogramModel implements SessionModel {
             }
 
             return out;
+        }
+
+        /**
+         * Number of draws in the most recent {@link #sampleY} call that fell back to X-only matching
+         * because no row matched the (X, Z) stratum within the attempt limit.
+         */
+        public int getLastFallbackCount() {
+            return lastFallbackCount;
+        }
+
+        /**
+         * Continuous adjustment variables dropped in the most recent {@link #sampleY} call. This
+         * sampler matches Z exactly and so cannot use continuous Z; dropping a genuine confounder
+         * biases the result toward the observational conditional.
+         */
+        public List<String> getLastIgnoredContinuousZ() {
+            return lastIgnoredContinuousZ == null ? Collections.emptyList() : lastIgnoredContinuousZ;
         }
 
         private static Node requireDataVar(DataSet data, String name) {
@@ -504,6 +555,22 @@ public final class InterventionalHistogramModel implements SessionModel {
         DoubleDataBox box = new DoubleDataBox(values.length, 1);
         for (int i = 0; i < values.length; i++) {
             box.set(i, 0, values[i]);
+        }
+
+        return new BoxDataSet(box, vars);
+    }
+
+    /**
+     * Build a one-column discrete dataset whose variable copies the prototype's categories, so the
+     * histogram shows category names rather than integer codes.
+     */
+    public static DataSet oneColumnDiscrete(String name, DiscreteVariable prototype, double[] values) {
+        DiscreteVariable v = new DiscreteVariable(name, prototype.getCategories());
+        List<Node> vars = Collections.singletonList(v);
+
+        VerticalIntDataBox box = new VerticalIntDataBox(values.length, 1);
+        for (int i = 0; i < values.length; i++) {
+            box.set(i, 0, (int) values[i]);
         }
 
         return new BoxDataSet(box, vars);
