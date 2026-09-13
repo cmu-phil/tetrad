@@ -312,4 +312,72 @@ public final class TestHybridCgEdgeSignificance {
             }
         }
     }
+
+    // ---------------------------------------------------------------- model fit / BIC
+
+    /**
+     * With no missing data every family's available-case count is N, so the per-family BIC must collapse to the
+     * ordinary 2 ll - k ln N; verified from the ModelFit record's own components.
+     */
+    @Test
+    public void testBicFormulaNoMissing() {
+        RandomUtil.getInstance().setSeed(884430L);
+        ContFixture f = contFixture(1.0, 0.5, new double[]{0, 1, 2});
+        int n = 400;
+        DataSet ds = sample(f.im, n);
+        HybridCgEdgeSignificance.ModelFit fit = HybridCgEdgeSignificance.modelFit(f.im, ds, false);
+        double expected = 2.0 * fit.logLikelihood() - fit.parameters() * Math.log(n);
+        assertEquals(expected, fit.bic(), 1e-9);
+        assertTrue(Double.isFinite(fit.bic()));
+    }
+
+    /**
+     * Identifiable-parameter counts on fully populated data, hand-computed. Continuous fixture: Y has 3 strata of
+     * (1 mean + 2 coefficients) plus 3 variances = 12; roots X and Z contribute mean + variance = 2 each; root D
+     * contributes K - 1 = 2; total 18. With shared variance Y's 3 variances collapse to 1: total 16. Discrete
+     * fixture: C has 9 populated rows of K - 1 = 1 each = 9; root D1 contributes 2; root Xc contributes 2;
+     * total 13.
+     */
+    @Test
+    public void testBicParameterCounts() {
+        RandomUtil.getInstance().setSeed(884431L);
+        ContFixture f = contFixture(1.0, 0.5, new double[]{0, 1, 2});
+        DataSet ds = sample(f.im, 2000);
+        assertEquals(18, HybridCgEdgeSignificance.modelFit(f.im, ds, false).parameters());
+        assertEquals(16, HybridCgEdgeSignificance.modelFit(f.im, ds, true).parameters());
+
+        DiscFixture fd = discFixture(true, true);
+        DataSet ds2 = sample(fd.im, 5000);
+        assertEquals(13, HybridCgEdgeSignificance.modelFit(fd.im, ds2, false).parameters());
+    }
+
+    /**
+     * On data simulated with a zero coefficient for Z -> Y, the BIC of the graph without that edge should exceed
+     * the BIC of the graph with it, and removing the real edge X -> Y should cost far more than it saves.
+     */
+    @Test
+    public void testBicPrefersTrueStructure() {
+        RandomUtil.getInstance().setSeed(884432L);
+        int wins = 0, reps = 20;
+        for (int rep = 0; rep < reps; rep++) {
+            ContFixture f = contFixture(1.0, 0.0, new double[]{0, 1, 2});
+            DataSet ds = sample(f.im, 500);
+
+            double with = HybridCgEdgeSignificance.modelFit(f.im, ds, false).bic();
+
+            Graph withoutZ = new EdgeListGraph(f.pm.getGraph());
+            withoutZ.removeEdge(withoutZ.getEdge(withoutZ.getNode("Z"), withoutZ.getNode("Y")));
+            double withoutZBic = HybridCgEdgeSignificance.modelFit(
+                    HybridCgEdgeSignificance.pmForGraph(f.pm, withoutZ), ds, false).bic();
+
+            Graph withoutX = new EdgeListGraph(f.pm.getGraph());
+            withoutX.removeEdge(withoutX.getEdge(withoutX.getNode("X"), withoutX.getNode("Y")));
+            double withoutXBic = HybridCgEdgeSignificance.modelFit(
+                    HybridCgEdgeSignificance.pmForGraph(f.pm, withoutX), ds, false).bic();
+
+            if (withoutZBic > with) wins++;
+            assertTrue("removing the real edge must hurt BIC", withoutXBic < with);
+        }
+        assertTrue("dropping the null edge improved BIC in " + wins + "/" + reps, wins >= 18);
+    }
 }

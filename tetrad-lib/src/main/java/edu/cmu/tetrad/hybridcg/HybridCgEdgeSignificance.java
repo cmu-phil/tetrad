@@ -546,17 +546,7 @@ public final class HybridCgEdgeSignificance {
         int K = pm.getCardinality(y);
         int[] dims = pm.getRowDims(y);
 
-        double[][] counts = new double[rows][K];
-        for (int r : cases) {
-            int yVal = data.getInt(r, colIndex[y]);
-            int[] discVals = new int[dps.length];
-            for (int i = 0; i < dps.length; i++) discVals[i] = data.getInt(r, colIndex[dps[i]]);
-            int[] contBins = new int[cps.length];
-            for (int t = 0; t < cps.length; t++) {
-                contBins[t] = binFromCutpoints(cuts[t], data.getDouble(r, colIndex[cps[t]]));
-            }
-            counts[pm.getRowIndex(y, discVals, contBins)][yVal] += 1.0;
-        }
+        double[][] counts = countTable(pm, data, y, dps, cps, cuts, colIndex, cases, rows, K);
 
         double llFull = multinomialLl(counts, K);
 
@@ -614,6 +604,135 @@ public final class HybridCgEdgeSignificance {
             }
         }
         return ll;
+    }
+
+    /** Builds the [row][category] count table of a discrete child over the given cases. */
+    private static double[][] countTable(HybridCgPm pm, DataSet data, int y, int[] dps, int[] cps,
+                                         double[][] cuts, int[] colIndex, List<Integer> cases, int rows, int K) {
+        double[][] counts = new double[rows][K];
+        for (int r : cases) {
+            int yVal = data.getInt(r, colIndex[y]);
+            int[] discVals = new int[dps.length];
+            for (int i = 0; i < dps.length; i++) discVals[i] = data.getInt(r, colIndex[dps[i]]);
+            int[] contBins = new int[cps.length];
+            for (int t = 0; t < cps.length; t++) {
+                contBins[t] = binFromCutpoints(cuts[t], data.getDouble(r, colIndex[cps[t]]));
+            }
+            counts[pm.getRowIndex(y, discVals, contBins)][yVal] += 1.0;
+        }
+        return counts;
+    }
+
+    // ---------------------------------------------------------------- model fit / BIC
+
+    /**
+     * Model-level fit summary for a Hybrid CG structure against a dataset.
+     *
+     * @param bic           the BIC, computed per family as 2&#8467;<sub>f</sub> &minus; k<sub>f</sub> ln
+     *                      n<sub>f</sub> and summed over families; higher is better. With no missing data this is
+     *                      the ordinary 2&#8467; &minus; k ln N.
+     * @param logLikelihood the total maximized log-likelihood over families
+     * @param parameters    the total identifiable-parameter count over families
+     * @param description   a short human-readable account of the computation
+     */
+    public record ModelFit(double bic, double logLikelihood, int parameters, String description) {
+    }
+
+    /**
+     * Convenience overload of {@link #modelFit(HybridCgPm, DataSet, boolean)} from an IM.
+     *
+     * @param im            the instantiated model; only its PM (structure, typing, cutpoints) is used
+     * @param data          the dataset; variables are matched to PM nodes by name
+     * @param shareVariance if true, continuous children are fit with a single shared residual variance
+     * @return the fit summary
+     */
+    public static ModelFit modelFit(HybridCgIm im, DataSet data, boolean shareVariance) {
+        Objects.requireNonNull(im, "im");
+        return modelFit(im.getPm(), data, shareVariance);
+    }
+
+    /**
+     * The BIC of the Hybrid CG model family over the PM's structure against the data, at the maximum-likelihood
+     * fit — the same MLE, available-case, and identifiable-parameter conventions as the per-edge tests in this
+     * class, extended to whole families and to parentless nodes (which contribute their marginal fit).
+     * <p>
+     * Per family f (a child with its parents), the contribution is 2&#8467;<sub>f</sub> &minus; k<sub>f</sub> ln
+     * n<sub>f</sub>, where n<sub>f</sub> is the family's available-case count; the total is the sum over families.
+     * With no missing data this reduces to the ordinary 2&#8467; &minus; k ln N. Families with no available cases
+     * contribute nothing. Conventions, stated rather than hidden: the fit is the MLE, not the displayed IM's
+     * parameters, so Dirichlet smoothing, shareVariance's rss/df-vs-rss/n difference, and any hand edits to the IM
+     * do not move this number; k caps each stratum's mean-parameter count at its case count and each nonempty CPT
+     * row at min(K &minus; 1, its count), a proxy for identifiability, not a rank computation; and cutpoints are
+     * taken as given although they were chosen from the data. Comparable across graphs scored by this method on the
+     * same data with the same options; not comparable to scores from other model families (e.g. the Conditional
+     * Gaussian score), whose likelihood formulations differ.
+     *
+     * @param pm            the parametric model; must carry cutpoints for any discrete child with continuous parents
+     * @param data          the dataset; variables are matched to PM nodes by name
+     * @param shareVariance if true, continuous children are fit with a single shared residual variance
+     * @return the fit summary; bic and logLikelihood are NaN when a discrete child with continuous parents has no
+     *         cutpoints (re-estimate to set them)
+     */
+    public static ModelFit modelFit(HybridCgPm pm, DataSet data, boolean shareVariance) {
+        Objects.requireNonNull(pm, "pm");
+        Objects.requireNonNull(data, "data");
+
+        Node[] nodes = pm.getNodes();
+        int[] colIndex = resolveColumns(pm, data);
+
+        double bic = 0.0;
+        double ll = 0.0;
+        int k = 0;
+
+        for (int y = 0; y < nodes.length; y++) {
+            int[] dps = pm.getDiscreteParents(y);
+            int[] cps = pm.getContinuousParents(y);
+            List<Integer> cases = availableCases(pm, data, y, dps, cps, colIndex);
+            int n = cases.size();
+            if (n == 0) continue;
+
+            double llF;
+            int kF;
+
+            if (pm.isDiscrete(y)) {
+                double[][] cuts;
+                if (cps.length > 0) {
+                    var opt = pm.getContParentCutpointsForDiscreteChild(y);
+                    if (opt.isEmpty()) {
+                        return new ModelFit(Double.NaN, Double.NaN, 0,
+                                "BIC unavailable: cutpoints are not set for the continuous parents of "
+                                + nodes[y].getName() + ". Re-estimate the model to set them.");
+                    }
+                    cuts = opt.get();
+                } else {
+                    cuts = new double[0][];
+                }
+                int rows = pm.getNumRows(y);
+                int K = pm.getCardinality(y);
+                double[][] counts = countTable(pm, data, y, dps, cps, cuts, colIndex, cases, rows, K);
+                llF = multinomialLl(counts, K);
+                kF = 0;
+                for (double[] row : counts) {
+                    double total = 0.0;
+                    for (double c : row) total += c;
+                    if (total > 0) kF += Math.min(K - 1, (int) total);
+                }
+            } else {
+                Map<Integer, List<Integer>> strata = stratify(pm, data, y, dps, colIndex, cases);
+                GaussFit fit = gaussFit(data, colIndex, y, cps, strata, shareVariance,
+                        varianceFloor(data, colIndex[y], cases));
+                llF = fit.ll();
+                kF = fit.params();
+            }
+
+            bic += 2.0 * llF - kF * Math.log(n);
+            ll += llF;
+            k += kF;
+        }
+
+        return new ModelFit(bic, ll, k, String.format(
+                "Hybrid CG BIC = sum over families of (2 ll_f - k_f ln n_f) at the MLE, available-case per family"
+                + "%s: BIC = %.4g, ll = %.4g, k = %d.", shareVariance ? ", shared variance" : "", bic, ll, k));
     }
 
     // ---------------------------------------------------------------- shared helpers

@@ -71,7 +71,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
     private HybridCgImEditor imEditor;
     private final HybridCgGraphViewer graphView;
     private JTabbedPane tabs;
-    private final JLabel bicLabel = new JLabel("BIC: n/a");
+    private final JLabel bicLabel = new JLabel("CG BIC: n/a | Hybrid CG BIC: n/a");
     private final JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
 
     // ---------- Constructors ----------
@@ -261,7 +261,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
     // ---------- Estimation ----------
 
     private void runEstimate() {
-        bicLabel.setText("BIC: …");
+        bicLabel.setText("CG BIC: … | Hybrid CG BIC: …");
 
         try {
             // Re-estimate in place with the current settings, on the graph currently in force —
@@ -274,7 +274,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
             updateBic();
             firePropertyChange("modelChanged", null, null);
         } catch (Exception ex) {
-            bicLabel.setText("BIC: n/a");
+            bicLabel.setText("CG BIC: n/a | Hybrid CG BIC: n/a");
             JOptionPane.showMessageDialog(
                     this,
                     "Estimation failed:\n" + ex.getMessage(),
@@ -390,16 +390,37 @@ public final class HybridCgEstimatorEditor extends JPanel {
     }
 
     private void updateBic() {
+        String cg;
         try {
             double bic = computeCgBicScore(
                     dataWrapper.getSelectedDataModel(),
                     wrapper.getGraph(),      // the graph in force: pruned if applied, else the input graph
                     params
             );
-            bicLabel.setText(String.format("BIC: %.3f (higher is better)", bic));
+            cg = String.format("%.3f", bic);
         } catch (Exception ex) {
-            bicLabel.setText("BIC: n/a");
+            cg = "n/a";
         }
+
+        // The displayed model's own BIC: Hybrid CG family at the MLE, same structure and cutpoints; see
+        // HybridCgEdgeSignificance.modelFit for the conventions. Distinct from the CG score's model family,
+        // so the two numbers can disagree; each is comparable across graphs within its own family.
+        String hcg;
+        try {
+            var fit = edu.cmu.tetrad.hybridcg.HybridCgEdgeSignificance.modelFit(
+                    wrapper.getEstimatedHybridCgIm(),
+                    wrapper.getDataSet(),
+                    params.getBoolean("hybridcg.shareVariance", false));
+            hcg = Double.isNaN(fit.bic()) ? "n/a" : String.format("%.3f", fit.bic());
+            bicLabel.setToolTipText("<html>CG BIC: Conditional Gaussian score summed over the graph in force."
+                    + "<br>Hybrid CG BIC: " + fit.description().replace("&", "&amp;").replace("<", "&lt;")
+                    + "<br>Each is comparable across graphs within its own model family; the two are not"
+                    + " comparable to each other.</html>");
+        } catch (Exception ex) {
+            hcg = "n/a";
+        }
+
+        bicLabel.setText(String.format("CG BIC: %s | Hybrid CG BIC: %s (higher is better)", cg, hcg));
     }
 
     // ---------- Parameter IO ----------
