@@ -936,6 +936,7 @@ public final class NNEstimator implements TetradSerializable {
                     "No edge " + parentName + " → " + childName + " in the DAG.");
         }
         boolean isDisc = (childNode instanceof DiscreteVariable);
+        boolean contParent = !(parentNode instanceof DiscreteVariable);
 
         List<Node> variables = observedData.getVariables();
         Map<String, Integer> indexByName = new HashMap<>();
@@ -943,6 +944,16 @@ public final class NNEstimator implements TetradSerializable {
             indexByName.put(variables.get(j).getName(), j);
         }
         int childIdx = indexByName.get(childName);
+        int parentIdx = indexByName.get(parentName);
+
+        // Finite-difference step for the average marginal effect: a fixed
+        // fraction of the parent's observed SD. Only used for a continuous
+        // parent of a continuous child.
+        boolean doAme = !isDisc && contParent;
+        double sdX = doAme ? TMath.sqrt(columnVariance(observedData, parentIdx)) : Double.NaN;
+        double sdY = doAme ? TMath.sqrt(columnVariance(observedData, childIdx)) : Double.NaN;
+        double ameStep = doAme && Double.isFinite(sdX) && sdX > 0 ? 0.05 * sdX : Double.NaN;
+        boolean ameOk = doAme && Double.isFinite(ameStep) && Double.isFinite(sdY) && sdY > 0;
 
         int[] reducedParentIndices = dag.getParents(childNode).stream()
                 .filter(q -> !q.getName().equals(parentName))
@@ -957,6 +968,10 @@ public final class NNEstimator implements TetradSerializable {
         double[] sseFullF = new double[k], sseRedF = new double[k];
         double[] xentFullF = new double[k], xentRedF = new double[k];
         int[] nContF = new int[k], nDiscF = new int[k];
+        double[] derivSumF = new double[k];
+        int[] nDerivF = new int[k], nPosF = new int[k];
+        final boolean ameEnabled = ameOk;
+        final double h = ameStep;
 
         IntStream.range(0, k).parallel().forEach(fold -> {
             TrainedDagSimulatorGNM full = fm.sims[fold];
@@ -988,6 +1003,29 @@ public final class NNEstimator implements TetradSerializable {
                     nDiscF[fold]++;
                 }
             }
+
+            // ── OOS average marginal effect (continuous parent & child) ──────
+            // Central finite difference of the fold's full mechanism with
+            // respect to the parent, other parents at observed values,
+            // evaluated on the held-out rows. A mutable copy of the test set
+            // lets us perturb the one parent cell per row and restore it.
+            if (ameEnabled) {
+                DataSet perturbed = testSet.copy();
+                for (int i = 0; i < testN; i++) {
+                    double x = perturbed.getDouble(i, parentIdx);
+                    if (!Double.isFinite(x)) continue;
+                    perturbed.setDouble(i, parentIdx, x + h);
+                    double fPlus = full.predictNode(childIdx, perturbed, i);
+                    perturbed.setDouble(i, parentIdx, x - h);
+                    double fMinus = full.predictNode(childIdx, perturbed, i);
+                    perturbed.setDouble(i, parentIdx, x);
+                    if (!Double.isFinite(fPlus) || !Double.isFinite(fMinus)) continue;
+                    double deriv = (fPlus - fMinus) / (2.0 * h);
+                    derivSumF[fold] += deriv;
+                    nDerivF[fold]++;
+                    if (deriv > 0.0) nPosF[fold]++;
+                }
+            }
         });
 
         double sseFull = 0.0, sseRed = 0.0, xentFull = 0.0, xentRed = 0.0;
@@ -1004,9 +1042,22 @@ public final class NNEstimator implements TetradSerializable {
             double partialR2 = (Double.isFinite(mseFull) && Double.isFinite(mseRed)
                     && Double.isFinite(baseVar) && baseVar > 0)
                     ? (mseRed - mseFull) / baseVar : Double.NaN;
+
+            double derivSum = 0.0;
+            int nDeriv = 0, nPos = 0;
+            for (int fold = 0; fold < k; fold++) {
+                derivSum += derivSumF[fold];
+                nDeriv += nDerivF[fold];
+                nPos += nPosF[fold];
+            }
+            double ame = (ameOk && nDeriv > 0) ? derivSum / nDeriv : Double.NaN;
+            double ameStd = Double.isFinite(ame) ? ame * sdX / sdY : Double.NaN;
+            double fracPos = (ameOk && nDeriv > 0) ? (double) nPos / nDeriv : Double.NaN;
+
             return new PartialEdgeStrengthResult(
                     parentName, childName, false,
-                    partialR2, mseRed, Double.NaN, k);
+                    partialR2, mseRed, Double.NaN, k,
+                    ame, ameStd, fracPos);
         } else {
             double xf = nDisc > 0 ? xentFull / nDisc : Double.NaN;
             double xr = nDisc > 0 ? xentRed  / nDisc : Double.NaN;

@@ -238,7 +238,15 @@ public final class NNEstimatorComparePanel extends JPanel {
         edgeTable.setFillsViewportHeight(true);
         edgeTable.setRowHeight(22);
         edgeTable.setAutoCreateRowSorter(true);
-        styleEdgeTable();
+        // With the AME columns the table is wider than the panel; turn off
+        // auto-resize so the enclosing scrollpane scrolls horizontally
+        // instead of crushing every column.
+        edgeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        int[] widths = {160, 70, 60, 100, 130, 130, 80, 80, 80, 95};
+        for (int c = 0; c < widths.length
+                && c < edgeTable.getColumnModel().getColumnCount(); c++) {
+            edgeTable.getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
+        }
         JScrollPane scroll = new JScrollPane(edgeTable);
         scroll.setBorder(new TitledBorder(
                 "Parent strength results (history — sortable by MMD²)"));
@@ -253,7 +261,13 @@ public final class NNEstimatorComparePanel extends JPanel {
                         + "Partial: held-out R² (or cross-entropy) gain from the parent after controlling for the "
                         + "other parents, on the same folds as the Cross-Validation tab — "
                         + "positive (green/bold) = the parent adds information beyond them. "
-                        + "A redundant parent scores high on the first and near zero on the second."
+                        + "A redundant parent scores high on the first and near zero on the second. "
+                        + "AME: signed average marginal effect of the parent on a continuous child "
+                        + "(held-out central finite differences, other parents at observed values); "
+                        + "AME (std) multiplies by SD(parent)/SD(child) for comparability. "
+                        + "An asterisk marks a non-monotone fitted effect, where the sign varies "
+                        + "over the data range. AME cells are grayed when the partial ΔR² is near "
+                        + "zero, since a redundant parent's share of the fitted effect is arbitrary."
                         + "</i></html>");
         note.setFont(note.getFont().deriveFont(Font.PLAIN, 11f));
         note.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
@@ -754,6 +768,42 @@ public final class NNEstimatorComparePanel extends JPanel {
                     setFont(getFont().deriveFont(Font.ITALIC));
                     setToolTipText("MMD² is within the refit-noise band for this child: "
                             + "not distinguishable from training randomness.");
+                } else if ((modelCol == EdgeStrengthTableModel.COL_AME
+                            || modelCol == EdgeStrengthTableModel.COL_AME_STD)
+                        && value instanceof String s && !s.equals("—")) {
+                    boolean nonMono = s.endsWith("*");
+                    boolean weak = edgeTableModel.isPartialWeak(modelRow);
+                    if (weak) {
+                        // Parent is largely redundant given the other parents:
+                        // the fitted mechanism's credit split is arbitrary, so
+                        // the AME describes one of many equally good fits.
+                        setForeground(Color.GRAY);
+                        setFont(getFont().deriveFont(Font.ITALIC));
+                        setToolTipText("Partial ΔR² is near zero: this parent is "
+                                + "largely redundant given the child's other parents, "
+                                + "so the model's credit assignment — and this AME — "
+                                + "is not identified by the data."
+                                + (nonMono ? " Also non-monotone over the data range."
+                                           : ""));
+                    } else {
+                        try {
+                            double v = Double.parseDouble(
+                                    nonMono ? s.substring(0, s.length() - 1).trim() : s);
+                            setForeground(v > 0 ? new Color(0, 130, 0)
+                                    : v < 0 ? Color.RED : table.getForeground());
+                            setFont(getFont().deriveFont(nonMono ? Font.ITALIC : Font.PLAIN));
+                        } catch (NumberFormatException ignored) {
+                            setForeground(isSelected
+                                    ? table.getSelectionForeground()
+                                    : table.getForeground());
+                            setFont(getFont().deriveFont(Font.PLAIN));
+                        }
+                        if (nonMono) {
+                            setToolTipText("Fitted effect changes sign over the data range "
+                                    + "(non-monotone); this average mixes regions of "
+                                    + "opposite sign.");
+                        }
+                    }
                 } else if (modelCol == EdgeStrengthTableModel.COL_PARTIAL
                         && value instanceof String s && !s.equals("—")) {
                     try {
@@ -843,7 +893,8 @@ public final class NNEstimatorComparePanel extends JPanel {
 
         private static final String[] COLUMNS =
                 {"Edge", "MMD²", "± SD", "Null MMD²", "ΔVar/Var(Y) / KL (bits)",
-                        "Partial ΔR² / Xent Improv.", "Type", "Configs × reps"};
+                        "Partial ΔR² / Xent Improv.", "AME", "AME (std)",
+                        "Type", "Configs × reps"};
 
         static final int COL_EDGE    = 0;
         static final int COL_MMD2    = 1;
@@ -851,12 +902,30 @@ public final class NNEstimatorComparePanel extends JPanel {
         static final int COL_NULL    = 3;
         static final int COL_DELTA   = 4;
         static final int COL_PARTIAL = 5;
-        static final int COL_TYPE    = 6;
-        static final int COL_N       = 7;
+        static final int COL_AME     = 6;
+        static final int COL_AME_STD = 7;
+        static final int COL_TYPE    = 8;
+        static final int COL_N       = 9;
 
         /** Whether the row's MMD² clears its refit-noise band; used by the renderer. */
         boolean isAboveNoise(int row) {
             return rows.get(row).edge().isAboveNoise();
+        }
+
+        /**
+         * Whether the row's partial ΔR² is finite but below this threshold,
+         * meaning the parent is largely redundant given the child's other
+         * parents. When true, the fitted mechanism's credit assignment among
+         * the parents is not identified by the data, so the AME columns are
+         * shown grayed out; used by the renderer.
+         */
+        static final double PARTIAL_WEAK_THRESHOLD = 0.01;
+
+        boolean isPartialWeak(int row) {
+            PartialEdgeStrengthResult p = rows.get(row).partial();
+            return p != null && !p.discreteChild
+                    && Double.isFinite(p.partialR2)
+                    && p.partialR2 < PARTIAL_WEAK_THRESHOLD;
         }
 
         private record EdgeRow(EdgeStrengthResult edge,
@@ -896,6 +965,14 @@ public final class NNEstimatorComparePanel extends JPanel {
                                ? fmt(p.partialXentImprovement) : "—")
                             : (Double.isFinite(p.partialR2)
                                ? fmt(p.partialR2) : "—");
+                }
+                case COL_AME -> {
+                    if (p == null || !Double.isFinite(p.avgMarginalEffect)) yield "—";
+                    yield fmt(p.avgMarginalEffect) + (p.isNonMonotone() ? " *" : "");
+                }
+                case COL_AME_STD -> {
+                    if (p == null || !Double.isFinite(p.avgMarginalEffectStd)) yield "—";
+                    yield fmt(p.avgMarginalEffectStd) + (p.isNonMonotone() ? " *" : "");
                 }
                 case COL_TYPE -> e.discreteChild ? "Discrete" : "Continuous";
                 case COL_N    -> e.simulatedN + " × " + e.numRepeats;
