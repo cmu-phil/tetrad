@@ -47,7 +47,7 @@ import java.util.Objects;
  *       is repopulated on editor reopen without re-running the computation.</li>
  * </ul>
  */
-public final class NNEstimatorModel extends DataWrapper implements SessionModel {
+public final class NNEstimatorModel extends DataWrapper implements SessionModel, GraphSource {
 
     @Serial
     private static final long serialVersionUID = 24L;
@@ -257,7 +257,15 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
 
     // ── GraphSource ───────────────────────────────────────────────────────────
 
-    public Graph getGraph() { return inputGraph; }
+    /**
+     * The graph of the edges currently in the model: the pruned graph when
+     * pruning has been applied, otherwise the session's input graph. This is
+     * what a downstream Graph box receives. The original input graph remains
+     * available via {@link #getInputGraph()}.
+     * @return the current model graph
+     */
+    public Graph getGraph() { return getWorkingGraph(); }
+
 
     /**
      * The graph the estimator is (or will be) fitted to: the pruned graph
