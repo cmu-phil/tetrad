@@ -33,6 +33,7 @@ import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -222,17 +223,15 @@ final class ConstructTemplateAction extends AbstractAction {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        int leftX = getLeftX();
-
         switch (this.templateName) {
-            case LOAD_DATA_AND_SEARCH -> searchFromLoadedOrSimulatedData(leftX);
-            case LOAD_DATA_KNOWLEDGE_SEARCH -> searchWithKnowledgeFromLoadedData(leftX);
-            case LOAD_DATA_SEARCH_MARKOV_CHECK -> searchThenMarkovCheck(leftX);
-            case SEARCH_THEN_ESTIMATE -> estimateFromSimulatedData(leftX);
-            case SEARCH_ESTIMATE_UPDATE -> estimateThenUpdateUsingSearchResult(leftX);
-            case LATENT_CLUSTER_SEARCH -> latentClusterThenSearch(leftX);
-            case SIMULATE_FIXED_IM_SEARCH -> simulateDataFixedIM(leftX);
-            case SIMULATE_SEARCH_COMPARE -> searchFromSimulatedDataWithCompare(leftX);
+            case LOAD_DATA_AND_SEARCH -> searchFromLoadedOrSimulatedData();
+            case LOAD_DATA_KNOWLEDGE_SEARCH -> searchWithKnowledgeFromLoadedData();
+            case LOAD_DATA_SEARCH_MARKOV_CHECK -> searchThenMarkovCheck();
+            case SEARCH_THEN_ESTIMATE -> estimateFromSimulatedData();
+            case SEARCH_ESTIMATE_UPDATE -> estimateThenUpdateUsingSearchResult();
+            case LATENT_CLUSTER_SEARCH -> latentClusterThenSearch();
+            case SIMULATE_FIXED_IM_SEARCH -> simulateDataFixedIM();
+            case SIMULATE_SEARCH_COMPARE -> searchFromSimulatedDataWithCompare();
             default -> throw new IllegalStateException("Unrecognized pipeline name: " + this.templateName);
         }
     }
@@ -249,15 +248,86 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(name, thisNode.getName());
     }
 
-    private int getLeftX() {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
+    /**
+     * Conservative estimate of a session node card's width, used to compute pipeline footprints
+     * before the cards exist. Cards are at least 96 pixels wide (StdDisplayComp.MIN_WIDTH) and
+     * grow with long names.
+     */
+    private static final int NODE_W = 110;
 
-        Component[] components = sessionWorkbench.getComponents();
+    /**
+     * Conservative estimate of a session node card's height; see NODE_W.
+     */
+    private static final int NODE_H = 90;
+
+    /**
+     * Clearance kept between a newly placed pipeline and anything already on the workbench.
+     */
+    private static final int CLEARANCE = 25;
+
+    /**
+     * Grid resolution for the free-space scan.
+     */
+    private static final int GRID_STEP = 25;
+
+    /**
+     * Finds a center point for the top-left node of a new pipeline whose node centers span spanX
+     * horizontally and spanY vertically. Free space within the currently visible part of the
+     * workbench is preferred, scanned in reading order (top to bottom, then left to right), so
+     * pipelines fill the visible area downward before marching off to the right. If no visible
+     * spot is free, or the workbench is not yet showing, this falls back to the previous
+     * behavior: just to the right of the rightmost existing component, level with the top. The
+     * workbench scrolls there, so nothing is lost.
+     *
+     * @param spanX the horizontal distance between the leftmost and rightmost node centers.
+     * @param spanY the vertical distance between the topmost and bottommost node centers.
+     * @return the center point for the pipeline's top-left node.
+     */
+    private Point findPipelineOrigin(int spanX, int spanY) {
+        SessionEditorWorkbench workbench = getSessionWorkbench();
+        workbench.deselectAll();
+
+        Component[] components = workbench.getComponents();
+
+        // Footprint of the new pipeline if its top-left node is centered at (cx, cy).
+        int footW = spanX + NODE_W;
+        int footH = spanY + NODE_H;
+
+        Rectangle visible = workbench.getVisibleRect();
+
+        if (!visible.isEmpty()) {
+
+            // Obstacles: bounds of everything already on the workbench, inflated by the clearance.
+            List<Rectangle> obstacles = new ArrayList<>();
+            for (Component component : components) {
+                Rectangle bounds = component.getBounds();
+                bounds.grow(CLEARANCE, CLEARANCE);
+                obstacles.add(bounds);
+            }
+
+            int minCx = visible.x + CLEARANCE + NODE_W / 2;
+            int minCy = visible.y + CLEARANCE + NODE_H / 2;
+            int maxCx = visible.x + visible.width - footW + NODE_W / 2;
+            int maxCy = visible.y + visible.height - footH + NODE_H / 2;
+
+            for (int cy = minCy; cy <= maxCy; cy += GRID_STEP) {
+                candidates:
+                for (int cx = minCx; cx <= maxCx; cx += GRID_STEP) {
+                    Rectangle candidate
+                            = new Rectangle(cx - NODE_W / 2, cy - NODE_H / 2, footW, footH);
+
+                    for (Rectangle obstacle : obstacles) {
+                        if (candidate.intersects(obstacle)) {
+                            continue candidates;
+                        }
+                    }
+
+                    return new Point(cx, cy);
+                }
+            }
+        }
+
+        // No free visible space: place to the right of everything, as before.
         int leftX = 0;
 
         for (Component component : components) {
@@ -268,25 +338,19 @@ final class ConstructTemplateAction extends AbstractAction {
             }
         }
 
-        leftX += 100;
-        return leftX;
+        return new Point(leftX + 100, 100);
     }
 
-    private void searchFromLoadedOrSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
+    private void searchFromLoadedOrSimulatedData() {
+        Point origin = findPipelineOrigin(125, 0);
 
         List<Node> nodes = new LinkedList<>();
 
         String data = ConstructTemplateAction.nextName("Data");
         String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, 125 + leftX, 100));
+        nodes.add(addNode("Data", data, origin.x, origin.y));
+        nodes.add(addNode("Search", search, origin.x + 125, origin.y));
 
         addEdge(data, search);
 
@@ -298,8 +362,8 @@ final class ConstructTemplateAction extends AbstractAction {
      * edges), then search subject to that knowledge. The Data box feeds the Knowledge box its
      * variable list and feeds the Search box its data; the Knowledge box constrains the search.
      */
-    private void searchWithKnowledgeFromLoadedData(int leftX) {
-        getSessionWorkbench().deselectAll();
+    private void searchWithKnowledgeFromLoadedData() {
+        Point origin = findPipelineOrigin(170, 125);
 
         List<Node> nodes = new LinkedList<>();
 
@@ -307,9 +371,9 @@ final class ConstructTemplateAction extends AbstractAction {
         String knowledge = ConstructTemplateAction.nextName("Knowledge");
         String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Knowledge", knowledge, leftX, 225));
-        nodes.add(addNode("Search", search, leftX + 170, 225));
+        nodes.add(addNode("Data", data, origin.x, origin.y));
+        nodes.add(addNode("Knowledge", knowledge, origin.x, origin.y + 125));
+        nodes.add(addNode("Search", search, origin.x + 170, origin.y + 125));
 
         addEdge(data, knowledge);
         addEdge(data, search);
@@ -323,8 +387,8 @@ final class ConstructTemplateAction extends AbstractAction {
      * box takes the Data and Search boxes as parents; choosing "Markov Check" in that box tests
      * whether the independencies implied by the estimated graph hold in the data.
      */
-    private void searchThenMarkovCheck(int leftX) {
-        getSessionWorkbench().deselectAll();
+    private void searchThenMarkovCheck() {
+        Point origin = findPipelineOrigin(150, 100);
 
         List<Node> nodes = new LinkedList<>();
 
@@ -332,9 +396,9 @@ final class ConstructTemplateAction extends AbstractAction {
         String search = ConstructTemplateAction.nextName("Search");
         String compare = ConstructTemplateAction.nextName("Compare");
 
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, 150 + leftX, 100));
-        nodes.add(addNode("Compare", compare, 80 + leftX, 200));
+        nodes.add(addNode("Data", data, origin.x, origin.y));
+        nodes.add(addNode("Search", search, origin.x + 150, origin.y));
+        nodes.add(addNode("Compare", compare, origin.x + 80, origin.y + 100));
 
         addEdge(data, search);
         addEdge(data, compare);
@@ -343,13 +407,8 @@ final class ConstructTemplateAction extends AbstractAction {
         ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void latentClusterThenSearch(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
+    private void latentClusterThenSearch() {
+        Point origin = findPipelineOrigin(170, 125);
 
         List<Node> nodes = new LinkedList<>();
 
@@ -357,9 +416,9 @@ final class ConstructTemplateAction extends AbstractAction {
         String cluster = ConstructTemplateAction.nextName("Latent Clusters");
         String search = ConstructTemplateAction.nextName("Latent Structure");
 
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Latent_Clusters", cluster, leftX, 225));
-        nodes.add(addNode("Latent_Structure", search, leftX + 170, 225));
+        nodes.add(addNode("Data", data, origin.x, origin.y));
+        nodes.add(addNode("Latent_Clusters", cluster, origin.x, origin.y + 125));
+        nodes.add(addNode("Latent_Structure", search, origin.x + 170, origin.y + 125));
 
         addEdge(data, cluster);
         addEdge(cluster, search);
@@ -368,8 +427,8 @@ final class ConstructTemplateAction extends AbstractAction {
         ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void simulateDataFixedIM(int leftX) {
-        getSessionWorkbench().deselectAll();
+    private void simulateDataFixedIM() {
+        Point origin = findPipelineOrigin(125, 300);
 
         List<Node> nodes = new LinkedList<>();
 
@@ -379,11 +438,11 @@ final class ConstructTemplateAction extends AbstractAction {
         String data = ConstructTemplateAction.nextName("Simulation");
         String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(addNode("Graph", graph, leftX, 100));
-        nodes.add(addNode("PM", pm, leftX, 200));
-        nodes.add(addNode("IM", im, leftX, 300));
-        nodes.add(addNode("Simulation", data, leftX, 400));
-        nodes.add(addNode("Search", search, 125 + leftX, 400));
+        nodes.add(addNode("Graph", graph, origin.x, origin.y));
+        nodes.add(addNode("PM", pm, origin.x, origin.y + 100));
+        nodes.add(addNode("IM", im, origin.x, origin.y + 200));
+        nodes.add(addNode("Simulation", data, origin.x, origin.y + 300));
+        nodes.add(addNode("Search", search, origin.x + 125, origin.y + 300));
 
         addEdge(graph, pm);
         addEdge(pm, im);
@@ -393,13 +452,8 @@ final class ConstructTemplateAction extends AbstractAction {
         ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void searchFromSimulatedDataWithCompare(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
+    private void searchFromSimulatedDataWithCompare() {
+        Point origin = findPipelineOrigin(150, 100);
 
         List<Node> nodes = new LinkedList<>();
 
@@ -407,9 +461,9 @@ final class ConstructTemplateAction extends AbstractAction {
         String search = ConstructTemplateAction.nextName("Search");
         String compare = ConstructTemplateAction.nextName("Compare");
 
-        nodes.add(addNode("Simulation", data, leftX, 100));
-        nodes.add(addNode("Search", search, 150 + leftX, 100));
-        nodes.add(addNode("Compare", compare, 80 + leftX, 200));
+        nodes.add(addNode("Simulation", data, origin.x, origin.y));
+        nodes.add(addNode("Search", search, origin.x + 150, origin.y));
+        nodes.add(addNode("Compare", compare, origin.x + 80, origin.y + 100));
 
         addEdge(data, search);
         addEdge(data, compare);
@@ -418,30 +472,25 @@ final class ConstructTemplateAction extends AbstractAction {
         ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void estimateFromSimulatedData(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
+    private void estimateFromSimulatedData() {
+        Point origin = findPipelineOrigin(150, 200);
 
         List<Node> nodes = new LinkedList<>();
 
         String data = ConstructTemplateAction.nextName("Data");
         String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, leftX + 150, 100));
+        nodes.add(addNode("Data", data, origin.x, origin.y));
+        nodes.add(addNode("Search", search, origin.x + 150, origin.y));
 
         String graph = ConstructTemplateAction.nextName("Graph");
-        nodes.add(addNode("Graph", graph, leftX + 150, 200));
+        nodes.add(addNode("Graph", graph, origin.x + 150, origin.y + 100));
 
         String pm = ConstructTemplateAction.nextName("PM");
-        nodes.add(addNode("PM", pm, leftX + 150, 300));
+        nodes.add(addNode("PM", pm, origin.x + 150, origin.y + 200));
 
         String estimator = ConstructTemplateAction.nextName("Estimator");
-        nodes.add(addNode("Estimator", estimator, leftX, 300));
+        nodes.add(addNode("Estimator", estimator, origin.x, origin.y + 200));
 
         addEdge(data, search);
         addEdge(search, graph);
@@ -453,33 +502,28 @@ final class ConstructTemplateAction extends AbstractAction {
         ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private void estimateThenUpdateUsingSearchResult(int leftX) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        sessionWorkbench.deselectAll();
+    private void estimateThenUpdateUsingSearchResult() {
+        Point origin = findPipelineOrigin(150, 300);
 
         List<Node> nodes = new LinkedList<>();
 
         String data = ConstructTemplateAction.nextName("Data");
         String search = ConstructTemplateAction.nextName("Search");
 
-        nodes.add(addNode("Data", data, leftX, 100));
-        nodes.add(addNode("Search", search, leftX + 150, 100));
+        nodes.add(addNode("Data", data, origin.x, origin.y));
+        nodes.add(addNode("Search", search, origin.x + 150, origin.y));
 
         String graph = ConstructTemplateAction.nextName("Graph");
-        nodes.add(addNode("Graph", graph, leftX + 150, 200));
+        nodes.add(addNode("Graph", graph, origin.x + 150, origin.y + 100));
 
         String pm = ConstructTemplateAction.nextName("PM");
-        nodes.add(addNode("PM", pm, leftX + 150, 300));
+        nodes.add(addNode("PM", pm, origin.x + 150, origin.y + 200));
 
         String estimator = ConstructTemplateAction.nextName("Estimator");
-        nodes.add(addNode("Estimator", estimator, leftX, 300));
+        nodes.add(addNode("Estimator", estimator, origin.x, origin.y + 200));
 
         String updater = ConstructTemplateAction.nextName("Updater");
-        nodes.add(addNode("Updater", updater, leftX, 400));
+        nodes.add(addNode("Updater", updater, origin.x, origin.y + 300));
 
         addEdge(data, search);
         addEdge(search, graph);
