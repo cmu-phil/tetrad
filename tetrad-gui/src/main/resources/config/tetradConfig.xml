@@ -1335,7 +1335,7 @@
             <!--                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>-->
             <!--            </model>-->
             <model name="Linear Adjustment Effects" acronym="Linear Adjustment Effects"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="linear_adjustment_effects" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
@@ -1345,7 +1345,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentTotalEffectsEditor</editor-class>
             </model>
             <model name="G-Regression Effects" acronym="G-Regression Effects"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="g_regression_effects" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
@@ -1355,7 +1355,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.GRegressionEditor</editor-class>
             </model>
             <model name="Doubly Robust ATE" acronym="Doubly Robust ATE"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="doubly_robust_ate" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
@@ -1365,7 +1365,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.DoublyRobustEstEditorV2</editor-class>
             </model>
             <model name="Interventional Histogram" acronym="Interventional Histogram"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="interventional_histogram" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
@@ -1375,7 +1375,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.InterventionalHistogramEditor</editor-class>
             </model>
             <model name="Linear IDA Check" acronym="IDA Check"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="ida_check" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>

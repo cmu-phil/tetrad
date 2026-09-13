@@ -174,15 +174,24 @@ public final class NNEstimator implements TetradSerializable {
                                                    double[] mu, double[] sd) {
         int n = data.getNumRows();
         int p = variables.size();
-        double[][] out = new double[n][p];
+        // Complete cases only: a missing continuous cell would put NaN into
+        // the MMD computation (poisoning the whole fold's MMD²), and a
+        // missing discrete cell would insert the raw −99 code as a finite
+        // feature value, silently distorting the comparison. Simulated data
+        // is always complete, so this only affects observed rows.
+        List<double[]> rows = new ArrayList<>(n);
+        outer:
         for (int i = 0; i < n; i++) {
+            double[] r = new double[p];
             for (int j = 0; j < p; j++) {
-                out[i][j] = (variables.get(j) instanceof DiscreteVariable)
+                if (TrainedDagSimulatorGNM.isMissingCell(data, i, j)) continue outer;
+                r[j] = (variables.get(j) instanceof DiscreteVariable)
                         ? TrainedDagSimulatorGNM.safeGetInt(data, i, j)
                         : (data.getDouble(i, j) - mu[j]) / sd[j];
             }
+            rows.add(r);
         }
-        return out;
+        return rows.toArray(new double[0][]);
     }
 
     /**
@@ -268,6 +277,19 @@ public final class NNEstimator implements TetradSerializable {
         List<Node> variables = observedData.getVariables();
         int p = variables.size();
 
+        // Parent column indices per variable, for the completeness filter.
+        Map<String, Integer> idxByName = new HashMap<>();
+        for (int j = 0; j < p; j++) idxByName.put(variables.get(j).getName(), j);
+        int[][] parentIdxByCol = new int[p][];
+        for (int j = 0; j < p; j++) {
+            Node g = dag.getNode(variables.get(j).getName());
+            parentIdxByCol[j] = (g == null) ? new int[0]
+                    : dag.getParents(g).stream()
+                        .map(q -> idxByName.get(q.getName()))
+                        .filter(Objects::nonNull)
+                        .mapToInt(Integer::intValue).toArray();
+        }
+
         // Thread-safe per-variable OOS accumulators.
         DoubleAdder[]        sseCont  = new DoubleAdder[p];
         AtomicInteger[]      nCont    = new AtomicInteger[p];
@@ -297,6 +319,7 @@ public final class NNEstimator implements TetradSerializable {
                 boolean isDisc = (var instanceof DiscreteVariable);
 
                 for (int ti2 = 0; ti2 < testN; ti2++) {
+                    if (rowIncomplete(testSet, ti2, j, parentIdxByCol[j])) continue;
                     double pred = sim.predictNode(j, testSet, ti2);
                     // NaN signals a root node — no conditional prediction available.
                     if (!Double.isFinite(pred)) continue;
@@ -955,6 +978,10 @@ public final class NNEstimator implements TetradSerializable {
         double ameStep = doAme && Double.isFinite(sdX) && sdX > 0 ? 0.05 * sdX : Double.NaN;
         boolean ameOk = doAme && Double.isFinite(ameStep) && Double.isFinite(sdY) && sdY > 0;
 
+        int[] fullParentIndices = dag.getParents(childNode).stream()
+                .mapToInt(q -> indexByName.get(q.getName()))
+                .toArray();
+
         int[] reducedParentIndices = dag.getParents(childNode).stream()
                 .filter(q -> !q.getName().equals(parentName))
                 .mapToInt(q -> indexByName.get(q.getName()))
@@ -983,6 +1010,9 @@ public final class NNEstimator implements TetradSerializable {
             int testN = testSet.getNumRows();
 
             for (int i = 0; i < testN; i++) {
+                // Both models are scored only on rows complete in
+                // {Y} ∪ Pa(Y); see rowIncomplete.
+                if (rowIncomplete(testSet, i, childIdx, fullParentIndices)) continue;
                 if (!isDisc) {
                     double yObs = testSet.getDouble(i, childIdx);
                     if (!Double.isFinite(yObs)) continue;
@@ -1012,6 +1042,9 @@ public final class NNEstimator implements TetradSerializable {
             if (ameEnabled) {
                 DataSet perturbed = testSet.copy();
                 for (int i = 0; i < testN; i++) {
+                    // Same rows as the scoring above: complete in {Y} ∪ Pa(Y),
+                    // so derivatives are never taken at imputed inputs.
+                    if (rowIncomplete(perturbed, i, childIdx, fullParentIndices)) continue;
                     double x = perturbed.getDouble(i, parentIdx);
                     if (!Double.isFinite(x)) continue;
                     perturbed.setDouble(i, parentIdx, x + h);
@@ -1070,6 +1103,21 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     // ── private helpers ───────────────────────────────────────────────────────
+
+    /**
+     * True if the row is missing the child or any of the given parents.
+     * Scoring is restricted to rows complete in {Y} ∪ Pa(Y), matching the
+     * training-side listwise-deletion contract; otherwise the encoder would
+     * silently impute missing parents at prediction time, which in the
+     * full-vs-reduced comparison handicaps only the full model.
+     */
+    private static boolean rowIncomplete(DataSet data, int row, int child, int[] parents) {
+        if (TrainedDagSimulatorGNM.isMissingCell(data, row, child)) return true;
+        for (int q : parents) {
+            if (TrainedDagSimulatorGNM.isMissingCell(data, row, q)) return true;
+        }
+        return false;
+    }
 
     private Node findVariable(String name) {
         for (Node n : observedData.getVariables()) {

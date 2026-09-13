@@ -309,6 +309,33 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
      * @param col  The column index of the value to retrieve. Must be a valid index within the dataset.
      * @return The integer value at the specified cell, or {@code -1} if the cell contains a non-finite value.
      */
+    /**
+     * True if the cell holds a missing value: NaN or an infinity for a
+     * continuous variable, or a negative category code for a discrete
+     * variable. Tetrad encodes discrete missing values as
+     * {@link DiscreteVariable#MISSING_VALUE} (−99); since valid category
+     * codes are non-negative, any negative code is treated as missing.
+     *
+     * @param data the dataset
+     * @param row  the row index
+     * @param col  the column index
+     * @return whether the cell is missing
+     */
+    public static boolean isMissingCell(DataSet data, int row, int col) {
+        Node v = data.getVariable(col);
+        if (v instanceof DiscreteVariable) {
+            try {
+                return data.getInt(row, col) < 0;
+            } catch (Throwable t) {
+                double x = data.getDouble(row, col);
+                return !Double.isFinite(x) || x < 0;
+            }
+        } else {
+            double x = data.getDouble(row, col);
+            return !Double.isFinite(x);
+        }
+    }
+
     public static int safeGetInt(DataSet data, int row, int col) {
         try {
             return data.getInt(row, col);
@@ -1265,19 +1292,7 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         }
 
         private static boolean isMissing(DataSet data, int row, int col) {
-            Node v = data.getVariable(col);
-            if (v instanceof DiscreteVariable) {
-                try {
-                    int x = data.getInt(row, col);
-                    return x == Integer.MIN_VALUE;
-                } catch (Throwable t) {
-                    double x = data.getDouble(row, col);
-                    return !Double.isFinite(x);
-                }
-            } else {
-                double x = data.getDouble(row, col);
-                return !Double.isFinite(x);
-            }
+            return isMissingCell(data, row, col);
         }
 
         void shuffle(Random rng) {
