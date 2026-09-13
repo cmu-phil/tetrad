@@ -56,7 +56,29 @@ public final class HybridCgGraphViewer {
      * @param im the instantiated model
      */
     public void update(HybridCgIm im) {
+        update(im, null);
+    }
+
+    /**
+     * As {@link #update(HybridCgIm)}, additionally appending each edge's significance result (see
+     * {@link edu.cmu.tetrad.hybridcg.HybridCgEdgeSignificance}) to its annotation, so the tooltip shows the LRT
+     * verdict alongside the strength.
+     *
+     * @param im  the instantiated model
+     * @param sig per-edge significance results keyed by the edges of the model's graph, or null for strengths only
+     */
+    public void update(HybridCgIm im, java.util.Map<Edge, edu.cmu.tetrad.hybridcg.HybridCgEdgeSignificance.Result> sig) {
         Graph colored = HybridCgEdgeStrengths.coloredGraph(im, WorkbenchStyle.isDarkMode());
+        if (sig != null) {
+            Graph src = im.getPm().getGraph();
+            for (Edge e : colored.getEdges()) {
+                Edge key = src.getEdge(e.getNode1(), e.getNode2());
+                var r = key == null ? null : sig.get(key);
+                if (r == null) continue;
+                String a = e.getAnnotation();
+                e.setAnnotation(a == null ? r.description() : a + " " + r.description());
+            }
+        }
         this.workbench.setGraph(colored);
         setTooltips();
         this.component.revalidate();

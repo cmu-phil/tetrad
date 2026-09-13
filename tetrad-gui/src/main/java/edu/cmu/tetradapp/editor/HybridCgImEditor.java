@@ -1,6 +1,9 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.hybridcg.HybridCgEdgeSignificance;
 import edu.cmu.tetrad.hybridcg.HybridCgIo;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
@@ -84,6 +87,17 @@ public final class HybridCgImEditor extends JPanel {
 
     // state
     private int currentY = -1;
+
+    // ---- Optional significance overlay, supplied by the estimator editor; null when not shown. ----
+
+    /** Per-edge LRT results keyed by the edges of the model's graph, or null. */
+    private java.util.Map<Edge, HybridCgEdgeSignificance.Result> edgeSig;
+
+    /** Coefficient t-test p-values, indexed [node][stratum row][cont-parent order index], or null. */
+    private double[][][] coefPValues;
+
+    /** The level the overlay marks against. */
+    private double sigAlpha = 0.05;
 
     /**
      * True while {@link #selectVariable} is changing the list selection. The list's selection listener checks this to
@@ -426,6 +440,61 @@ public final class HybridCgImEditor extends JPanel {
         });
     }
 
+    // =========================== Significance overlay ===========================
+
+    /**
+     * Sets or clears the significance overlay: per-edge LRT results shown as a summary line above each child's
+     * table, and per-stratum coefficient t-test p-values greying non-significant coefficient cells in regression
+     * tables (see {@link HybridCgRegEditingTable#setSignificance}). Pass nulls to clear. The current selection is
+     * rebuilt so the overlay takes effect immediately.
+     *
+     * @param edgeSig     per-edge LRT results keyed by the edges of the model's graph, or null
+     * @param coefPValues p-values indexed [node][stratum row][cont-parent order index], or null
+     * @param alpha       the level to mark against
+     */
+    public void setSignificance(java.util.Map<Edge, HybridCgEdgeSignificance.Result> edgeSig,
+                                double[][][] coefPValues, double alpha) {
+        this.edgeSig = edgeSig;
+        this.coefPValues = coefPValues;
+        this.sigAlpha = alpha;
+        if (this.currentY >= 0) onSelectChild(this.nodes[this.currentY]);
+    }
+
+    /**
+     * An html fragment summarizing the LRT verdict for each edge into the given child, for the info line above its
+     * table; empty when no overlay is set or no edge into the child has a result.
+     */
+    private String edgeSigSummary(Node child) {
+        if (this.edgeSig == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (java.util.Map.Entry<Edge, HybridCgEdgeSignificance.Result> e : this.edgeSig.entrySet()) {
+            Edge edge = e.getKey();
+            Node head;
+            try {
+                head = Edges.getDirectedEdgeHead(edge);
+            } catch (Exception notDirected) {
+                continue;
+            }
+            if (!head.getName().equals(child.getName())) continue;
+            Node parent = edge.getNode1().equals(head) ? edge.getNode2() : edge.getNode1();
+            HybridCgEdgeSignificance.Result r = e.getValue();
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(escape(parent.getName())).append(": ");
+            if (!r.testable()) {
+                sb.append("n/a");
+            } else {
+                sb.append(String.format("%.3g", r.pValue()));
+                if (r.pValue() > this.sigAlpha) sb.append("&nbsp;(ns)");
+            }
+        }
+        if (sb.length() == 0) return "";
+        return "<br>Edge LRT p-values: " + sb + String.format(" &nbsp;[alpha = %.3g]", this.sigAlpha);
+    }
+
+    private static String escape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
     // =========================== Selection ===========================
 
     private void onSelectChild(Node child) {
@@ -450,16 +519,21 @@ public final class HybridCgImEditor extends JPanel {
             // Update instructions
             int[] dps = pm.getDiscreteParents(currentY);
             if (dps.length == 0) {
-                discInfo.setText("No discrete parents — single row with probabilities for the child’s categories.");
+                discInfo.setText("<html>No discrete parents — single row with probabilities for the child’s categories."
+                                 + edgeSigSummary(child) + "</html>");
             } else {
                 List<String> names = Arrays.stream(dps).mapToObj(i -> pm.getNodes()[i].getName()).collect(Collectors.toList());
-                discInfo.setText("Rows are strata of " + names + "; columns are categories of " + child.getName() + ".");
+                discInfo.setText("<html>Rows are strata of " + escape(names.toString()) + "; columns are categories of "
+                                 + escape(child.getName()) + "." + edgeSigSummary(child) + "</html>");
             }
 
             cards.show(right, "disc");
         } else {
             // Full regression table
             HybridCgRegEditingTable table = new HybridCgRegEditingTable(im, pm, currentY);
+            if (this.coefPValues != null && this.coefPValues[currentY] != null) {
+                table.setSignificance(this.coefPValues[currentY], this.sigAlpha);
+            }
             installDoubleFormatting(table); // ensure 0.### in-place
 //            contScroll = new JScrollPane(table);
 
@@ -474,10 +548,12 @@ public final class HybridCgImEditor extends JPanel {
             // Update instructions
             int[] dps = pm.getDiscreteParents(currentY);
             if (dps.length == 0) {
-                contInfo.setText("No discrete parents — single stratum (one row). Columns: Intercept, parents, Variance.");
+                contInfo.setText("<html>No discrete parents — single stratum (one row). Columns: Intercept, parents, Variance."
+                                 + edgeSigSummary(child) + "</html>");
             } else {
                 List<String> names = Arrays.stream(dps).mapToObj(i -> pm.getNodes()[i].getName()).collect(Collectors.toList());
-                contInfo.setText("Rows are strata of " + names + ". Columns: Intercept, parents, Variance.");
+                contInfo.setText("<html>Rows are strata of " + escape(names.toString())
+                                 + ". Columns: Intercept, parents, Variance." + edgeSigSummary(child) + "</html>");
             }
 
             cards.show(right, "cont");

@@ -9,6 +9,7 @@ import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.HybridCgEstimatorWrapper;
 import edu.cmu.tetradapp.model.HybridCgPmWrapper;
 import edu.cmu.tetrad.hybridcg.HybridCgIo;
+import edu.cmu.tetrad.hybridcg.HybridCgPruneReport;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TMath;
@@ -51,7 +52,13 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
     private final JSpinner defBins    = new JSpinner(new SpinnerNumberModel(3, 2, 50, 1));
     private final JSpinner defLo      = new JSpinner(new SpinnerNumberModel(-1.0, -1e6, 1e6, 0.1));
-    private final JSpinner defHi      = new JSpinner(new SpinnerNumberModel( 1.0, -1e6, 1e6, 0.1));
+    private final JSpinner defHi     = new JSpinner(new SpinnerNumberModel( 1.0, -1e6, 1e6, 0.1));
+
+    // ---------- Significance and pruning UI ----------
+    private final JCheckBox markSig   = new JCheckBox("Grey non-significant entries", false);
+    private final JSpinner testAlpha  = new JSpinner(new SpinnerNumberModel(0.05, 1e-4, 0.5, 0.01));
+    private final JButton proposePrune = new JButton("Propose Prune…");
+    private final JButton revertPrune  = new JButton("Revert Prune");
 
     // ---------- The session wrapper whose IM we show and update ----------
     private final HybridCgEstimatorWrapper wrapper;
@@ -214,6 +221,24 @@ public final class HybridCgEstimatorEditor extends JPanel {
         c.gridx=0; c.gridy=r; p.add(new JLabel("Default range high:"), c);
         c.gridx=1; p.add(defHi, c); r++;
 
+        p.add(new JSeparator(), grid(c,0,++r,2)); r++;
+
+        c.gridx=0; c.gridy=r; p.add(new JLabel("Test alpha (LRT / t-tests):"), c);
+        c.gridx=1; p.add(testAlpha, c); r++;
+
+        c.gridx=0; c.gridy=r; c.gridwidth=2; p.add(markSig, c); r++; c.gridwidth=1;
+
+        JPanel pruneRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        pruneRow.add(proposePrune);
+        pruneRow.add(revertPrune);
+        c.gridx=0; c.gridy=r; c.gridwidth=2; p.add(pruneRow, c); r++; c.gridwidth=1;
+
+        proposePrune.setToolTipText("Backward elimination by per-edge LRT at the test alpha; shows the proposal for review before anything is changed.");
+        revertPrune.setToolTipText("Re-estimate on the input graph, discarding the applied prune.");
+        proposePrune.addActionListener(ev -> runProposePrune());
+        revertPrune.addActionListener(ev -> runRevertPrune());
+        revertPrune.setEnabled(wrapper.getPrunedGraph() != null);
+
         root.add(p, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -239,12 +264,11 @@ public final class HybridCgEstimatorEditor extends JPanel {
         bicLabel.setText("BIC: …");
 
         try {
-            HybridCgEstimatorWrapper fresh =
-                    new HybridCgEstimatorWrapper(dataWrapper, pmWrapper, params);
-            HybridCgIm im = fresh.getEstimatedHybridCgIm();
-
-            // Store the new estimate in the session wrapper so downstream boxes see it.
-            wrapper.setHybridCgIm(im);
+            // Re-estimate in place with the current settings, on the graph currently in force —
+            // the applied pruned graph if there is one, else the input graph — so Estimate does
+            // not silently discard an applied prune.
+            wrapper.reestimate();
+            HybridCgIm im = wrapper.getEstimatedHybridCgIm();
 
             showIm(im);
             updateBic();
@@ -279,14 +303,97 @@ public final class HybridCgEstimatorEditor extends JPanel {
         imHost.revalidate();
         imHost.repaint();
 
+        pushSignificance();
+    }
+
+    /**
+     * Recomputes and applies (or clears) the significance overlay for the wrapper's current model: greyed
+     * coefficient cells and per-child LRT lines in the IM editor, LRT verdicts in the graph tooltips. Cleared when
+     * the checkbox is off or the computation fails (e.g., no data); failures are not fatal to the display.
+     */
+    private void pushSignificance() {
+        HybridCgIm im = wrapper.getEstimatedHybridCgIm();
+        if (im == null) return;
+        double a = ((Number) testAlpha.getValue()).doubleValue();
+        if (markSig.isSelected()) {
+            try {
+                var sig = wrapper.edgeSignificance();
+                double[][][] coefP = wrapper.coefficientPValues();
+                if (imEditor != null) imEditor.setSignificance(sig, coefP, a);
+                graphView.update(im, sig);
+                return;
+            } catch (Exception ex) {
+                // fall through to the plain display
+            }
+        }
+        if (imEditor != null) imEditor.setSignificance(null, null, a);
         graphView.update(im);
+    }
+
+    // ---------- Pruning ----------
+
+    private void runProposePrune() {
+        HybridCgIm im = wrapper.getEstimatedHybridCgIm();
+        if (im == null) {
+            JOptionPane.showMessageDialog(this, "No estimated model yet — press Estimate first.",
+                    "Nothing To Prune", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        double a = ((Number) testAlpha.getValue()).doubleValue();
+        HybridCgPruneReport report;
+        try {
+            report = wrapper.proposePrune(a);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Prune proposal failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JTextArea text = new JTextArea(report.toString(), 20, 80);
+        text.setEditable(false);
+        text.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        text.setCaretPosition(0);
+        Object[] options = report.getDeletions().isEmpty()
+                ? new Object[]{"Close"}
+                : new Object[]{"Apply", "Cancel"};
+        int choice = JOptionPane.showOptionDialog(this, new JScrollPane(text),
+                "Prune Proposal (review before applying)", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE, null, options, options[options.length - 1]);
+
+        if (!report.getDeletions().isEmpty() && choice == 0) {
+            try {
+                wrapper.applyPrune();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Applying the prune failed:\n" + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            revertPrune.setEnabled(true);
+            showIm(wrapper.getEstimatedHybridCgIm());
+            updateBic();
+            firePropertyChange("modelChanged", null, null);
+        }
+    }
+
+    private void runRevertPrune() {
+        try {
+            wrapper.revertPrune();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Revert failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        revertPrune.setEnabled(false);
+        showIm(wrapper.getEstimatedHybridCgIm());
+        updateBic();
+        firePropertyChange("modelChanged", null, null);
     }
 
     private void updateBic() {
         try {
             double bic = computeCgBicScore(
                     dataWrapper.getSelectedDataModel(),
-                    pmWrapper.getGraph(),
+                    wrapper.getGraph(),      // the graph in force: pruned if applied, else the input graph
                     params
             );
             bicLabel.setText(String.format("BIC: %.3f (higher is better)", bic));
@@ -305,6 +412,8 @@ public final class HybridCgEstimatorEditor extends JPanel {
         defBins.setValue(TMath.max(2, params.getInt("hybridcg.defaultBins", 3)));
         defLo.setValue(params.getDouble("hybridcg.defaultRangeLow", -1.0));
         defHi.setValue(params.getDouble("hybridcg.defaultRangeHigh", 1.0));
+        testAlpha.setValue(params.getDouble("hybridcg.testAlpha", 0.05));
+        markSig.setSelected(params.getBoolean("hybridcg.markSignificance", false));
     }
 
     private void wireBindings() {
@@ -316,6 +425,14 @@ public final class HybridCgEstimatorEditor extends JPanel {
         defBins.addChangeListener(e -> params.set("hybridcg.defaultBins", ((Number)defBins.getValue()).intValue()));
         defLo.addChangeListener(e -> params.set("hybridcg.defaultRangeLow", ((Number)defLo.getValue()).doubleValue()));
         defHi.addChangeListener(e -> params.set("hybridcg.defaultRangeHigh", ((Number)defHi.getValue()).doubleValue()));
+        testAlpha.addChangeListener(e -> {
+            params.set("hybridcg.testAlpha", ((Number)testAlpha.getValue()).doubleValue());
+            pushSignificance();
+        });
+        markSig.addActionListener(e -> {
+            params.set("hybridcg.markSignificance", markSig.isSelected());
+            pushSignificance();
+        });
     }
 
     private static GridBagConstraints grid(GridBagConstraints c, int x, int y, int w) {

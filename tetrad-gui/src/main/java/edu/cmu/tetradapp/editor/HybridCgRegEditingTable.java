@@ -25,6 +25,18 @@ final class HybridCgRegEditingTable extends JTable {
 
     private static final DecimalFormat DF3 = new DecimalFormat("0.###");
 
+    /** Foreground for coefficient cells whose per-stratum t-test misses the level. */
+    private static final Color NOT_SIGNIFICANT = new Color(0x9E9E9E);
+
+    /**
+     * Per-stratum t-test p-values for the coefficient columns, indexed [stratum row][continuous-parent order index]
+     * as returned by {@code HybridCgEdgeSignificance.coefficientPValues} for this child; null for no overlay.
+     */
+    private double[][] coefPValues;
+
+    /** The level the overlay greys against. */
+    private double sigAlpha = 0.05;
+
     HybridCgRegEditingTable(HybridCgIm im, HybridCgPm pm, int yIndex) {
         setModel(new Model(im, pm, yIndex));
 
@@ -67,6 +79,64 @@ final class HybridCgRegEditingTable extends JTable {
                 getColumnModel().getColumn(c).setPreferredWidth(w);
             }
         });
+    }
+
+    /**
+     * Sets or clears the significance overlay. When set, coefficient cells whose per-stratum t-test p-value exceeds
+     * {@code alpha} are drawn grey, and hovering any coefficient cell shows its p-value; cells whose test is
+     * unavailable (NaN) are drawn normally with a tooltip saying so. The mean and variance columns are not edges and
+     * are never greyed.
+     *
+     * @param coefPValues p-values indexed [stratum row][continuous-parent order index], or null to clear
+     * @param alpha       the level to grey against
+     */
+    void setSignificance(double[][] coefPValues, double alpha) {
+        this.coefPValues = coefPValues;
+        this.sigAlpha = alpha;
+        repaint();
+    }
+
+    /** True if the column holds a coefficient for a continuous parent. */
+    private boolean isCoefficientColumn(int col) {
+        Model m = (Model) getModel();
+        int d = m.discParents.size();
+        return col > d && col < d + 1 + m.contParents.size();
+    }
+
+    /** The p-value for a coefficient cell, or NaN if none is available. */
+    private double pValueAt(int row, int col) {
+        if (this.coefPValues == null || !isCoefficientColumn(col)) return Double.NaN;
+        Model m = (Model) getModel();
+        int j = col - (m.discParents.size() + 1);
+        if (row < 0 || row >= this.coefPValues.length) return Double.NaN;
+        double[] rowP = this.coefPValues[row];
+        return (rowP == null || j >= rowP.length) ? Double.NaN : rowP[j];
+    }
+
+    @Override
+    public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+        Component c = super.prepareRenderer(renderer, row, col);
+        if (!isCellSelected(row, col)) {
+            double p = pValueAt(row, col);
+            c.setForeground(this.coefPValues != null && !Double.isNaN(p) && p > this.sigAlpha
+                    ? NOT_SIGNIFICANT : getForeground());
+        }
+        return c;
+    }
+
+    @Override
+    public String getToolTipText(java.awt.event.MouseEvent event) {
+        int row = rowAtPoint(event.getPoint());
+        int col = columnAtPoint(event.getPoint());
+        if (this.coefPValues != null && row >= 0 && isCoefficientColumn(convertColumnIndexToModel(col))) {
+            double p = pValueAt(convertRowIndexToModel(row), convertColumnIndexToModel(col));
+            if (Double.isNaN(p)) {
+                return "No t-test for this stratum (insufficient cases or singular design).";
+            }
+            return String.format("Per-stratum t-test p = %.4g%s", p,
+                    p > this.sigAlpha ? String.format(" (not significant at %.3g)", this.sigAlpha) : "");
+        }
+        return super.getToolTipText(event);
     }
 
     // ---------------- Table Model ----------------

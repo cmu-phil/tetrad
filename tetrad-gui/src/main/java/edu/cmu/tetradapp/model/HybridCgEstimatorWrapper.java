@@ -381,6 +381,15 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
         return this.prunedGraph;
     }
 
+    /**
+     * Re-estimates every dataset's IM with the current parameters on the graph currently in force: the applied
+     * pruned graph if there is one, else the input graph. This is what the estimator editor's Estimate button runs,
+     * so re-estimating does not silently discard an applied prune.
+     */
+    public void reestimate() {
+        reestimateOn(this.prunedGraph != null ? this.prunedGraph : getInputGraph());
+    }
+
     /** Re-estimates one IM per dataset over the given graph, preserving model index and selection. */
     private void reestimateOn(Graph graph) {
         DataModelList dml = this.dataWrapper.getDataModelList();
