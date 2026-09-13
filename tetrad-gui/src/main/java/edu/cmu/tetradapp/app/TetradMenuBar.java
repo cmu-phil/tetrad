@@ -229,8 +229,13 @@ final class TetradMenuBar extends JMenuBar {
     private void buildTemplateMenu(JMenu templateMenu) {
         String[] templateNames = ConstructTemplateAction.getTemplateNames();
         for (String templateName : templateNames) {
-            if ("--separator--".equals(templateName)) {
+            if (ConstructTemplateAction.SEPARATOR.equals(templateName)) {
                 templateMenu.addSeparator();
+            } else if (templateName.startsWith(ConstructTemplateAction.LABEL_PREFIX)) {
+                JMenuItem label = new JMenuItem(
+                        templateName.substring(ConstructTemplateAction.LABEL_PREFIX.length()));
+                label.setEnabled(false);
+                templateMenu.add(label);
             } else {
                 ConstructTemplateAction action =
                         new ConstructTemplateAction(templateName);

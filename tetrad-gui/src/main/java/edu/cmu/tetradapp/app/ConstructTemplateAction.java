@@ -38,22 +38,51 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adds a new template session subgraph to the frontmost session editor. of one of three types.
+ * Adds a new pipeline session subgraph to the frontmost session editor.
  *
  * @author josephramsey
  */
 final class ConstructTemplateAction extends AbstractAction {
 
     /**
-     * The names of the templates supported by this action.
+     * Marker entry rendered as a menu separator rather than a pipeline item.
+     */
+    static final String SEPARATOR = "--separator--";
+
+    /**
+     * Prefix for entries rendered as disabled section labels rather than pipeline items.
+     */
+    static final String LABEL_PREFIX = "--label--";
+
+    // Pipeline names. Each name appears once in TEMPLATE_NAMES (which fixes the menu order)
+    // and once in actionPerformed (which dispatches on the name), so they are given as
+    // constants to keep the two in sync.
+    private static final String LOAD_DATA_AND_SEARCH = "Load data and search";
+    private static final String LOAD_DATA_KNOWLEDGE_SEARCH = "Load data, add knowledge, then search";
+    private static final String LOAD_DATA_SEARCH_MARKOV_CHECK = "Load data, search, then run a Markov check";
+    private static final String SEARCH_THEN_ESTIMATE = "Search then estimate";
+    private static final String SEARCH_ESTIMATE_UPDATE = "Search, estimate, then update";
+    private static final String LATENT_CLUSTER_SEARCH = "Latent Clustering and Structure Search";
+    private static final String SIMULATE_FIXED_IM_SEARCH = "Simulate from a given graph, then search";
+    private static final String SIMULATE_SEARCH_COMPARE = "Simulate, search, then compare";
+
+    /**
+     * The names of the pipelines supported by this action, in menu order: real-data analysis
+     * pipelines first, simulation-study pipelines below. Entries equal to SEPARATOR render as
+     * menu separators; entries starting with LABEL_PREFIX render as disabled section labels.
      */
     private static final String[] TEMPLATE_NAMES = {
-            "Simulate from a given graph, then search",
-            "Simulate, search, then compare",
-            "Load data and search",
-            "Search then estimate",
-            "Search, estimate, then update",
-            "Latent Clustering and Structure Search"
+            LABEL_PREFIX + "Analyze a real dataset",
+            LOAD_DATA_AND_SEARCH,
+            LOAD_DATA_KNOWLEDGE_SEARCH,
+            LOAD_DATA_SEARCH_MARKOV_CHECK,
+            SEARCH_THEN_ESTIMATE,
+            SEARCH_ESTIMATE_UPDATE,
+            LATENT_CLUSTER_SEARCH,
+            SEPARATOR,
+            LABEL_PREFIX + "Simulation studies",
+            SIMULATE_FIXED_IM_SEARCH,
+            SIMULATE_SEARCH_COMPARE
     };
 
     /**
@@ -195,20 +224,16 @@ final class ConstructTemplateAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         int leftX = getLeftX();
 
-        if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[0])) {
-            simulateDataFixedIM(leftX);
-        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[1])) {
-            searchFromSimulatedDataWithCompare(leftX);
-        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[2])) {
-            searchFromLoadedOrSimulatedData(leftX);
-        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[3])) {
-            estimateFromSimulatedData(leftX);
-        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[4])) {
-            estimateThenUpdateUsingSearchResult(leftX);
-        } else if (this.templateName.equals(ConstructTemplateAction.getTemplateNames()[5])) {
-            latentClusterThenSearch(leftX);
-        } else {
-            throw new IllegalStateException("Unrecognized template name: " + this.templateName);
+        switch (this.templateName) {
+            case LOAD_DATA_AND_SEARCH -> searchFromLoadedOrSimulatedData(leftX);
+            case LOAD_DATA_KNOWLEDGE_SEARCH -> searchWithKnowledgeFromLoadedData(leftX);
+            case LOAD_DATA_SEARCH_MARKOV_CHECK -> searchThenMarkovCheck(leftX);
+            case SEARCH_THEN_ESTIMATE -> estimateFromSimulatedData(leftX);
+            case SEARCH_ESTIMATE_UPDATE -> estimateThenUpdateUsingSearchResult(leftX);
+            case LATENT_CLUSTER_SEARCH -> latentClusterThenSearch(leftX);
+            case SIMULATE_FIXED_IM_SEARCH -> simulateDataFixedIM(leftX);
+            case SIMULATE_SEARCH_COMPARE -> searchFromSimulatedDataWithCompare(leftX);
+            default -> throw new IllegalStateException("Unrecognized pipeline name: " + this.templateName);
         }
     }
 
@@ -264,6 +289,56 @@ final class ConstructTemplateAction extends AbstractAction {
         nodes.add(addNode("Search", search, 125 + leftX, 100));
 
         addEdge(data, search);
+
+        ConstructTemplateAction.selectSubgraph(nodes);
+    }
+
+    /**
+     * Real-data pipeline: load data, specify background knowledge (tiers, forbidden and required
+     * edges), then search subject to that knowledge. The Data box feeds the Knowledge box its
+     * variable list and feeds the Search box its data; the Knowledge box constrains the search.
+     */
+    private void searchWithKnowledgeFromLoadedData(int leftX) {
+        getSessionWorkbench().deselectAll();
+
+        List<Node> nodes = new LinkedList<>();
+
+        String data = ConstructTemplateAction.nextName("Data");
+        String knowledge = ConstructTemplateAction.nextName("Knowledge");
+        String search = ConstructTemplateAction.nextName("Search");
+
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("Knowledge", knowledge, leftX, 225));
+        nodes.add(addNode("Search", search, leftX + 170, 225));
+
+        addEdge(data, knowledge);
+        addEdge(data, search);
+        addEdge(knowledge, search);
+
+        ConstructTemplateAction.selectSubgraph(nodes);
+    }
+
+    /**
+     * Real-data pipeline: load data, search, then check the result against the data. The Compare
+     * box takes the Data and Search boxes as parents; choosing "Markov Check" in that box tests
+     * whether the independencies implied by the estimated graph hold in the data.
+     */
+    private void searchThenMarkovCheck(int leftX) {
+        getSessionWorkbench().deselectAll();
+
+        List<Node> nodes = new LinkedList<>();
+
+        String data = ConstructTemplateAction.nextName("Data");
+        String search = ConstructTemplateAction.nextName("Search");
+        String compare = ConstructTemplateAction.nextName("Compare");
+
+        nodes.add(addNode("Data", data, leftX, 100));
+        nodes.add(addNode("Search", search, 150 + leftX, 100));
+        nodes.add(addNode("Compare", compare, 80 + leftX, 200));
+
+        addEdge(data, search);
+        addEdge(data, compare);
+        addEdge(search, compare);
 
         ConstructTemplateAction.selectSubgraph(nodes);
     }
