@@ -187,8 +187,6 @@ public class HybridCgSimulation implements Simulation {
 
             DataSet dataSet = im.toDataSet(sample);
 
-            System.out.println(dataSet);
-
             dataSet = postProcess(parameters, dataSet);
             dataSet.setName("Run" + (i + 1));
 
