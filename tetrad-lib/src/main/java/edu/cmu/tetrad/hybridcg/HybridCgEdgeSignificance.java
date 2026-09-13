@@ -24,6 +24,7 @@ package edu.cmu.tetrad.hybridcg;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
@@ -149,39 +150,192 @@ public final class HybridCgEdgeSignificance {
      */
     public static Map<Edge, Result> compute(HybridCgIm im, DataSet data, boolean shareVariance) {
         Objects.requireNonNull(im, "im");
+        return compute(im.getPm(), data, shareVariance);
+    }
+
+    /**
+     * As {@link #compute(HybridCgIm, DataSet, boolean)}, from the parametric model alone. The tests depend only on
+     * the structure, typing, and cutpoints, never on fitted parameter values, so a PM suffices; the IM overloads are
+     * conveniences.
+     *
+     * @param pm            the parametric model
+     * @param data          the dataset; variables are matched to PM nodes by name
+     * @param shareVariance if true, continuous children are fit with a single shared residual variance
+     * @return map from each edge of {@code pm.getGraph()} to its Result, in graph order
+     */
+    public static Map<Edge, Result> compute(HybridCgPm pm, DataSet data, boolean shareVariance) {
+        Objects.requireNonNull(pm, "pm");
         Objects.requireNonNull(data, "data");
 
-        HybridCgPm pm = im.getPm();
-        Graph g = pm.getGraph();
         Node[] nodes = pm.getNodes();
         int[] colIndex = resolveColumns(pm, data);
 
         Map<Edge, Result> out = new LinkedHashMap<>();
-
         for (int y = 0; y < nodes.length; y++) {
-            int[] dps = pm.getDiscreteParents(y);
-            int[] cps = pm.getContinuousParents(y);
-            if (dps.length + cps.length == 0) continue;
+            childTests(out, pm, data, y, shareVariance, colIndex);
+        }
+        return out;
+    }
 
-            List<Integer> cases = availableCases(pm, data, y, dps, cps, colIndex);
+    /**
+     * Runs the per-edge tests for the family of one child, adding a Result for each edge into it.
+     */
+    private static void childTests(Map<Edge, Result> out, HybridCgPm pm, DataSet data, int y,
+                                   boolean shareVariance, int[] colIndex) {
+        Graph g = pm.getGraph();
+        Node[] nodes = pm.getNodes();
+        int[] dps = pm.getDiscreteParents(y);
+        int[] cps = pm.getContinuousParents(y);
+        if (dps.length + cps.length == 0) return;
 
-            if (pm.isDiscrete(y)) {
-                double[][] cuts;
-                if (cps.length > 0) {
-                    var opt = pm.getContParentCutpointsForDiscreteChild(y);
-                    if (opt.isEmpty()) {
-                        for (int p : dps) putIfEdge(out, g, nodes[p], nodes[y], unavailable(nodes[y].getName(), cases.size()));
-                        for (int p : cps) putIfEdge(out, g, nodes[p], nodes[y], unavailable(nodes[y].getName(), cases.size()));
-                        continue;
-                    }
-                    cuts = opt.get();
-                } else {
-                    cuts = new double[0][];
+        List<Integer> cases = availableCases(pm, data, y, dps, cps, colIndex);
+
+        if (pm.isDiscrete(y)) {
+            double[][] cuts;
+            if (cps.length > 0) {
+                var opt = pm.getContParentCutpointsForDiscreteChild(y);
+                if (opt.isEmpty()) {
+                    for (int p : dps) putIfEdge(out, g, nodes[p], nodes[y], unavailable(nodes[y].getName(), cases.size()));
+                    for (int p : cps) putIfEdge(out, g, nodes[p], nodes[y], unavailable(nodes[y].getName(), cases.size()));
+                    return;
                 }
-                discreteChildTests(out, im, pm, data, y, dps, cps, cuts, colIndex, cases, g, nodes);
+                cuts = opt.get();
             } else {
-                continuousChildTests(out, pm, data, y, dps, cps, colIndex, cases, shareVariance, g, nodes);
+                cuts = new double[0][];
             }
+            discreteChildTests(out, pm, data, y, dps, cps, cuts, colIndex, cases, g, nodes);
+        } else {
+            continuousChildTests(out, pm, data, y, dps, cps, colIndex, cases, shareVariance, g, nodes);
+        }
+    }
+
+    // ---------------------------------------------------------------- pruning
+
+    /**
+     * Per-child backward elimination of edges by the per-edge LRT: for each child, while any parent's test on the
+     * child's <i>current</i> family is testable with p &gt; alpha, the parent with the largest such p is removed, the
+     * family is refit without it, and the survivors are re-tested — so drop-one p-values are recomputed after every
+     * removal and a redundant pair loses at most one member. Children's families are parameterized separately in a
+     * DAG model, so children are pruned independently; only edge removals are performed, so acyclicity is preserved.
+     * <p>
+     * Edges that are never testable on this data (0 identifiable df at every round they were examined) are KEPT and
+     * listed in the report as untested: absence of a testable difference is not evidence of absence. Cutpoints for
+     * binned continuous parents of discrete children are carried over from {@code pm} for the surviving parents.
+     * <p>
+     * The proposal does not modify {@code pm}. The report's p-values are the values at the time of each removal;
+     * after data-dependent selection they are not valid p-values, and the proposed graph is for review, not silent
+     * adoption — see {@link HybridCgPruneReport}.
+     *
+     * @param pm            the parametric model whose graph is to be pruned; must carry cutpoints for any discrete
+     *                      child with continuous parents (i.e., estimation has run at least once)
+     * @param data          the dataset; variables are matched to PM nodes by name
+     * @param alpha         the significance level for the per-edge LRT (this is a test level, unrelated to the
+     *                      estimator's Dirichlet pseudocount of the same name)
+     * @param shareVariance if true, continuous children are fit with a single shared residual variance
+     * @return the prune proposal
+     */
+    public static HybridCgPruneReport backwardPrune(HybridCgPm pm, DataSet data, double alpha,
+                                                    boolean shareVariance) {
+        Objects.requireNonNull(pm, "pm");
+        Objects.requireNonNull(data, "data");
+        if (!(alpha > 0.0 && alpha < 1.0)) throw new IllegalArgumentException("alpha must be in (0, 1): " + alpha);
+
+        Graph working = new EdgeListGraph(pm.getGraph());
+        Node[] nodes = pm.getNodes();
+
+        List<HybridCgPruneReport.Deletion> deletions = new ArrayList<>();
+        List<String> untested = new ArrayList<>();
+
+        for (Node child : nodes) {
+            int step = 0;
+            while (true) {
+                HybridCgPm workingPm = pmForGraph(pm, working);
+                int y = workingPm.indexOf(child);
+                if (workingPm.getDiscreteParents(y).length + workingPm.getContinuousParents(y).length == 0) break;
+
+                Map<Edge, Result> res = new LinkedHashMap<>();
+                childTests(res, workingPm, data, y, shareVariance, resolveColumns(workingPm, data));
+
+                Edge worst = null;
+                Result worstResult = null;
+                for (Map.Entry<Edge, Result> e : res.entrySet()) {
+                    Result r = e.getValue();
+                    if (!r.testable() || r.pValue() <= alpha) continue;
+                    if (worstResult == null || r.pValue() > worstResult.pValue()) {
+                        worst = e.getKey();
+                        worstResult = r;
+                    }
+                }
+
+                if (worst == null) {
+                    for (Map.Entry<Edge, Result> e : res.entrySet()) {
+                        if (!e.getValue().testable()) untested.add(e.getValue().description());
+                    }
+                    break;
+                }
+
+                Node parent = worst.getNode1().equals(child) ? worst.getNode2() : worst.getNode1();
+                working.removeEdge(working.getEdge(parent, child));
+                deletions.add(new HybridCgPruneReport.Deletion(parent.getName(), child.getName(),
+                        worstResult.pValue(), worstResult.statistic(), worstResult.df(), worstResult.n(), step++));
+            }
+        }
+
+        return new HybridCgPruneReport(deletions, untested, working, alpha, shareVariance);
+    }
+
+    /**
+     * Builds a PM over the given graph with the typing, categories, and node order of {@code src}, carrying over
+     * cutpoints for whichever continuous parents each discrete child retains. The graph's edge set may differ from
+     * the source's; its node set must not.
+     *
+     * @param src the source PM supplying typing, categories, and cutpoints
+     * @param g   the graph for the new PM
+     * @return the new PM
+     */
+    public static HybridCgPm pmForGraph(HybridCgPm src, Graph g) {
+        List<Node> order = List.of(src.getNodes());
+
+        Map<Node, Boolean> isDisc = new LinkedHashMap<>();
+        Map<Node, List<String>> cats = new LinkedHashMap<>();
+        for (Node v : order) {
+            int idx = src.indexOf(v);
+            boolean d = src.isDiscrete(idx);
+            isDisc.put(v, d);
+            cats.put(v, d ? new ArrayList<>(src.getCategories(idx)) : null);
+        }
+
+        HybridCgPm out = new HybridCgPm(g, order, isDisc, cats);
+
+        for (Node child : order) {
+            int ySrc = src.indexOf(child);
+            if (!src.isDiscrete(ySrc)) continue;
+            int yOut = out.indexOf(child);
+            int[] cpsOut = out.getContinuousParents(yOut);
+            if (cpsOut.length == 0) continue;
+
+            int[] cpsSrc = src.getContinuousParents(ySrc);
+            var optCuts = src.getContParentCutpointsForDiscreteChild(ySrc);
+            if (optCuts.isEmpty()) continue;
+            double[][] srcCuts = optCuts.get();
+
+            Map<Node, double[]> cpMap = new LinkedHashMap<>();
+            for (int t = 0; t < cpsSrc.length; t++) {
+                cpMap.put(src.getNodes()[cpsSrc[t]], srcCuts[t].clone());
+            }
+
+            Map<Node, double[]> keep = new LinkedHashMap<>();
+            boolean complete = true;
+            for (int t = 0; t < cpsOut.length; t++) {
+                Node p = out.getNodes()[cpsOut[t]];
+                double[] cuts = cpMap.get(p);
+                if (cuts == null) {
+                    complete = false;
+                    break;
+                }
+                keep.put(p, cuts);
+            }
+            if (complete) out.setContParentCutpointsForDiscreteChild(child, keep);
         }
         return out;
     }
@@ -385,7 +539,7 @@ public final class HybridCgEdgeSignificance {
 
     // ---------------------------------------------------------------- discrete child
 
-    private static void discreteChildTests(Map<Edge, Result> out, HybridCgIm im, HybridCgPm pm, DataSet data, int y,
+    private static void discreteChildTests(Map<Edge, Result> out, HybridCgPm pm, DataSet data, int y,
                                            int[] dps, int[] cps, double[][] cuts, int[] colIndex,
                                            List<Integer> cases, Graph g, Node[] nodes) {
         int rows = pm.getNumRows(y);
