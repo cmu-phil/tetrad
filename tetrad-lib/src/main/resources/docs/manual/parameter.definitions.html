@@ -4718,14 +4718,21 @@ Source:
     === missingEssMode ===
     <h3 class="parameter_description" id="missingEssMode">missingEssMode</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="missingEssMode_short_desc">Effective sample size mode under the EM policy: "fullN", "minPairwise", or "meanPairwise"</span></li>
+        <li>Short Description: <span id="missingEssMode_short_desc">Effective sample size mode under the EM and test-wise policies: "fullN", "minPairwise", or "meanPairwise"</span></li>
         <li>Long Description: <span id="missingEssMode_long_desc">
         How the effective sample size used by penalized scores (the n in BIC) is determined when
         the analysis runs on a covariance matrix estimated from incomplete data. "fullN" uses the
         nominal number of rows (anti-conservative when much data is missing). "minPairwise" uses
         the minimum, over variable pairs, of the number of rows on which both variables are
         observed (most conservative). "meanPairwise" uses the mean of those pairwise counts.
-        Values are case-insensitive. Used only when missingDataPolicy is "em".</span></li>
+        Values are case-insensitive. Used when missingDataPolicy is "em", and, for the embedded
+        scores (degenerate Gaussian and basis-function BIC), when it is "testwise". Under test-wise
+        deletion the BIC penalty already scales with each family's own row count, but the likelihood
+        term is multiplied by the effective sample size; leaving that at "fullN" credits the fit with
+        every row while charging the penalty for the family's actual rows, which biases the search
+        toward denser graphs. For the embedded scores the mode is computed on the raw variables rather
+        than the embedded columns, so that "meanPairwise" does not weight a variable by the width of
+        its embedding block.</span></li>
         <li>Default Value: <span id="missingEssMode_default_value">fullN</span></li>
         <li>Lower Bound: <span id="missingEssMode_lower_bound"></span></li>
         <li>Upper Bound: <span id="missingEssMode_upper_bound"></span></li>

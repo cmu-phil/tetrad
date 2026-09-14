@@ -98,6 +98,14 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
 
         boolean testwise = false;
 
+        // Held before any deletion or embedding: the effective sample size is a fact about the raw variables.
+        // Computing it after embedding would be wrong for MEAN_PAIRWISE, which averages over pairs and so would
+        // weight each variable by the width of its embedding block -- a five-category discrete variable counting
+        // twenty-five times a continuous one. MIN_PAIRWISE is invariant under embedding, since a missing source
+        // entry becomes NaN in every derived column of that variable, so the minimum over embedded pairs equals
+        // the minimum over variable pairs; but it costs nothing to compute both on the raw data.
+        DataSet rawData = dataSet;
+
         if (dataSet.existsMissingValue()) {
             MissingDataPolicy policy = spec == null ? MissingDataPolicy.FAIL : spec.getPolicy();
 
@@ -136,7 +144,13 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
         this.bic.setLambda(lambda);
         this.bic.setStructurePrior(0);
 
-        setEffectiveSampleSize(-1);
+        // Under test-wise deletion the penalty already scales with each family's own row count, but the
+        // likelihood term is multiplied by nEff, which defaults to the full row count. Crediting the fit with N
+        // rows' worth of information while charging the penalty for the family's actual rows biases every score
+        // in the direction of more edges. An ESS mode other than FULL_N discounts the likelihood to match.
+        // Applied only under TESTWISE: LISTWISE has already reduced the data to complete cases, whose row count
+        // is the honest sample size for every family.
+        setEffectiveSampleSize(testwise ? MissingDataUtils.effectiveSampleSize(rawData, spec) : -1);
     }
 
     /**

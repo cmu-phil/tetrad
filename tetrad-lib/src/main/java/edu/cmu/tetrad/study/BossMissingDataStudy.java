@@ -1,7 +1,9 @@
 package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
+import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.missing.*;
@@ -67,6 +69,15 @@ public final class BossMissingDataStudy {
     /** BIC penalty discount for every arm, so the comparison is of missing-data handling only. */
     private static final double PENALTY_DISCOUNT = 2.0;
 
+    /** Percent of variables made discrete in the mixed arm. */
+    private static final double PERCENT_DISCRETE = 50.0;
+
+    /** Categories per discrete variable in the mixed arm. */
+    private static final int NUM_CATEGORIES = 3;
+
+    /** Truncation limit for the basis-function embedding. */
+    private static final int TRUNCATION_LIMIT = 3;
+
     /**
      * Chem-shaped missingness profile interpolated to NUM_VARS, capped at 0.6, in a non-monotone order so that a
      * variable's rate is not predictable from its position. Mean rate about 0.22, matching the chem dataset.
@@ -120,6 +131,40 @@ public final class BossMissingDataStudy {
         return arms;
     }
 
+    /**
+     * Arms for mixed data. The embedded scores (degenerate Gaussian, basis-function BIC) take LISTWISE and
+     * TESTWISE only -- EM covariance of indicator columns has no interpretation -- so the sweep here is over the
+     * effective-sample-size mode under TESTWISE, which is the thing the ESS patch newly exposes.
+     */
+    private static Map<String, Arm> mixedArms() {
+        Map<String, Arm> arms = new LinkedHashMap<>();
+
+        arms.put("DG ORACLE", (complete, missing) ->
+                boss(new edu.cmu.tetrad.search.score.DegenerateGaussianScore(complete, true, 0.0)));
+        arms.put("BF ORACLE", (complete, missing) ->
+                boss(new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+                        complete, TRUNCATION_LIMIT, 0.0, false, false, null)));
+
+        arms.put("DG LISTWISE", (complete, missing) ->
+                boss(new edu.cmu.tetrad.search.score.DegenerateGaussianScore(
+                        missing, true, 0.0, MissingDataSpec.listwise())));
+        arms.put("BF LISTWISE", (complete, missing) ->
+                boss(new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+                        missing, TRUNCATION_LIMIT, 0.0, false, false, MissingDataSpec.listwise())));
+
+        for (MissingDataSpec.EffectiveSampleSizeMode mode : MissingDataSpec.EffectiveSampleSizeMode.values()) {
+            MissingDataSpec spec = MissingDataSpec.testwise().withEssMode(mode);
+
+            arms.put("DG TESTWISE (" + mode + ")", (complete, missing) ->
+                    boss(new edu.cmu.tetrad.search.score.DegenerateGaussianScore(missing, true, 0.0, spec)));
+            arms.put("BF TESTWISE (" + mode + ")", (complete, missing) ->
+                    boss(new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+                            missing, TRUNCATION_LIMIT, 0.0, false, false, spec)));
+        }
+
+        return arms;
+    }
+
     // ---------------------------------------------------------------- main
 
     public static void main(String[] args) throws Exception {
@@ -129,7 +174,14 @@ public final class BossMissingDataStudy {
         System.out.println("consistent here; these numbers compare efficiency, not bias.");
         System.out.println();
 
-        Map<String, Arm> arms = arms();
+        runPhase("CONTINUOUS", arms(), false);
+        runPhase("MIXED (" + (int) PERCENT_DISCRETE + "% discrete, " + NUM_CATEGORIES + " categories)",
+                mixedArms(), true);
+    }
+
+    private static void runPhase(String label, Map<String, Arm> arms, boolean mixed) throws Exception {
+        System.out.println("################ " + label + " ################");
+        System.out.println();
 
         for (double lambda : ROW_PROPENSITIES) {
             System.out.printf("=== row propensity lambda = %.1f ===%n", lambda);
@@ -144,11 +196,31 @@ public final class BossMissingDataStudy {
             for (int rep = 0; rep < NUM_REPS; rep++) {
                 RandomUtil.getInstance().setSeed(1000L + rep);
 
-                Graph dag = RandomGraph.randomGraph(NUM_VARS, 0, NUM_EDGES, 100, 100, 100, false);
-                Graph trueCpdag = GraphTransforms.dagToCpdag(dag);
+                Graph dag;
+                DataSet complete;
 
-                SemIm im = new SemIm(new SemPm(dag));
-                DataSet complete = im.simulateData(SAMPLE_SIZE, false);
+                if (mixed) {
+                    Parameters simParams = new Parameters();
+                    simParams.set(Params.NUM_MEASURES, NUM_VARS);
+                    simParams.set(Params.AVG_DEGREE, 2.0 * NUM_EDGES / (double) NUM_VARS);
+                    simParams.set(Params.SAMPLE_SIZE, SAMPLE_SIZE);
+                    simParams.set(Params.NUM_RUNS, 1);
+                    simParams.set(Params.PERCENT_DISCRETE, PERCENT_DISCRETE);
+                    simParams.set(Params.NUM_CATEGORIES, NUM_CATEGORIES);
+                    simParams.set(Params.DIFFERENT_GRAPHS, false);
+
+                    LeeHastieSimulation sim = new LeeHastieSimulation(new RandomForward());
+                    sim.createData(simParams, true);
+
+                    dag = sim.getTrueGraph(0);
+                    complete = (DataSet) sim.getDataModel(0);
+                } else {
+                    dag = RandomGraph.randomGraph(NUM_VARS, 0, NUM_EDGES, 100, 100, 100, false);
+                    SemIm im = new SemIm(new SemPm(dag));
+                    complete = im.simulateData(SAMPLE_SIZE, false);
+                }
+
+                Graph trueCpdag = GraphTransforms.dagToCpdag(dag);
 
                 MissingnessInjector.Result injected = MissingnessInjector.inject(
                         complete, new MissingnessInjector.Spec(RATE_PROFILE, lambda));
@@ -223,7 +295,7 @@ public final class BossMissingDataStudy {
         return score;
     }
 
-    private static Graph boss(edu.cmu.tetrad.search.score.SemBicScore score) throws InterruptedException {
+    private static Graph boss(edu.cmu.tetrad.search.score.Score score) throws InterruptedException {
         edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
         boss.setUseBes(false);
         boss.setNumStarts(1);

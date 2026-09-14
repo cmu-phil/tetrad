@@ -158,6 +158,13 @@ public class BasisFunctionBicScore implements Score {
      */
     public BasisFunctionBicScore(DataSet dataSet, int truncationLimit, double lambda, boolean adaptiveBasisSelection,
                                  boolean rankTransform, MissingDataSpec spec) {
+        // Held before deletion and embedding: the effective sample size is a fact about the raw variables.
+        // MIN_PAIRWISE is invariant under embedding -- a missing source entry becomes NaN in every derived column
+        // of that variable, so the minimum over embedded-column pairs equals the minimum over variable pairs --
+        // but MEAN_PAIRWISE is not, since averaging over embedded pairs would weight each variable by the width
+        // of its embedding block. Computing both on the raw data keeps the two modes meaning what they say.
+        DataSet rawData = dataSet;
+
         dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "BasisFunctionBicScore");
 
         this.variables = dataSet.getVariables();
@@ -197,6 +204,14 @@ public class BasisFunctionBicScore implements Score {
         // We will be modifying the penalty term in the BIC score calculation, so we set the structure prior to 0.
         this.bic.setStructurePrior(0);
 
+        // Under test-wise deletion the penalty already scales with each family's own row count, but the
+        // likelihood term is multiplied by nEff, which defaults to the full row count. Crediting the fit with N
+        // rows' worth of information while charging the penalty for the family's actual rows biases every score
+        // toward more edges. An ESS mode other than FULL_N discounts the likelihood to match. Only under
+        // TESTWISE: LISTWISE has already reduced the data to complete cases.
+        if (testwise) {
+            this.bic.setEffectiveSampleSize(MissingDataUtils.effectiveSampleSize(rawData, spec));
+        }
     }
 
     /**

@@ -203,6 +203,7 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.DO_ONE_EQUATION_ONLY);
         parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_ESS_MODE);
         return parameters;
     }
 
