@@ -29,11 +29,13 @@ import edu.cmu.tetrad.data.audit.DeterminismRemovalSuggester;
 import edu.cmu.tetrad.data.audit.FindingCode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingnessThreshold;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ErrorDialogs;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -587,6 +589,8 @@ class DataAuditAction extends AbstractAction {
         controls.add(recode);
         controls.add(createRemoveDeterminismControl(dataSet, findingsTable, variablesTable, summary, missingText,
                 missingRef, groupCache));
+        controls.add(createRemoveByMissingnessControl(dataSet, findingsTable, variablesTable, summary, missingText,
+                missingRef, groupCache));
         return controls;
     }
 
@@ -641,6 +645,160 @@ class DataAuditAction extends AbstractAction {
                 });
             }
         };
+    }
+
+    /**
+     * Builds the missingness-removal control: a button opening a dialog that previews, for a threshold the user
+     * moves, which variables would be dropped and what the retained data would look like -- complete cases and the
+     * worst pairwise count -- before anything is dropped.
+     * <p>
+     * Preview rather than apply-a-rule, for two reasons. The useful threshold is wherever the complete-case count
+     * turns, which is a fact about the dataset and not about the number 0.20; and dropping a variable that is a
+     * common cause of two retained variables manufactures latent confounding that no subsequent search can detect.
+     * The dialog therefore reports each candidate's strongest association with a retained variable and marks the
+     * strong ones, so the second cost is visible at the moment of the decision rather than inferred later from a
+     * surprising PAG.
+     *
+     * @see MissingnessThreshold
+     */
+    private static JComponent createRemoveByMissingnessControl(DataSet dataSet, DataAuditJTable findingsTable,
+                                                               DataAuditJTable variablesTable, JLabel summary,
+                                                               JTextArea missingText, MissingDataAudit[] missingRef,
+                                                               Map<String, DataAudit> groupCache) {
+        JButton remove = new JButton("Remove Variables by Missingness...");
+        remove.setToolTipText("Preview and apply a missingness-rate cutoff on the variables. "
+                + "Modifies the dataset in place; not undoable.");
+
+        remove.addActionListener(e -> {
+            MissingDataAudit audit = missingRef[0];
+
+            if (audit == null || !audit.anyMissing()) {
+                JOptionPane.showMessageDialog(remove, "This dataset has no missing values.",
+                        "Remove Variables by Missingness", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            List<String> chosen = showMissingnessRemovalDialog(remove, dataSet, audit);
+            if (chosen == null || chosen.isEmpty()) return;
+
+            int choice = JOptionPane.showConfirmDialog(remove, "Remove " + chosen.size() + " variable(s) from "
+                            + "the dataset?\n\n    " + String.join("\n    ", chosen) + "\n\nThis modifies the "
+                            + "dataset in place, for every box downstream of it in the session, and cannot be "
+                            + "undone. An open data editor shows the change after it is closed and reopened.",
+                    "Remove Variables", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+            if (choice != JOptionPane.OK_OPTION) return;
+
+            int removedCount = 0;
+
+            try {
+                for (Node variable : MissingnessThreshold.resolve(dataSet, chosen)) {
+                    dataSet.removeColumn(variable);
+                    removedCount++;
+                }
+            } catch (RuntimeException ex) {
+                JOptionPane.showMessageDialog(remove, "Could not remove: " + ex.getMessage(), "Error",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            recomputeAudit(dataSet, remove, "The variables were removed", removedCount + " variable(s) removed.",
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, null);
+        });
+
+        return remove;
+    }
+
+    /**
+     * Shows the threshold dialog: a spinner over the distinct missingness rates present (nothing between them
+     * changes the dropped set), a live summary of what the retained data would be, and a table of the variables
+     * that would go with their rates and their strongest association with a retained variable. Returns the names
+     * to remove, or null if cancelled.
+     */
+    private static List<String> showMissingnessRemovalDialog(JComponent parent, DataSet dataSet,
+                                                             MissingDataAudit audit) {
+        double[] candidates = MissingnessThreshold.candidateThresholds(audit, dataSet.getNumColumns());
+
+        JSpinner spinner = new JSpinner(new SpinnerNumberModel(
+                Math.min(0.20, candidates[candidates.length - 1]), 0.0, 1.0, 0.01));
+        ((JSpinner.NumberEditor) spinner.getEditor()).getFormat().setMaximumFractionDigits(3);
+
+        JLabel effectLabel = new JLabel(" ");
+        JLabel warningLabel = new JLabel(" ");
+        warningLabel.setForeground(new Color(0x99, 0x33, 0x00));
+
+        String[] columns = {"Variable", "Missing", "Max |r| with a kept variable", "Strongest with", "Pairs"};
+        DefaultTableModel tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        JTable table = new JTable(tableModel);
+        table.setAutoCreateRowSorter(true);
+
+        List<String> current = new ArrayList<>();
+
+        Runnable refresh = () -> {
+            double t = ((Number) spinner.getValue()).doubleValue();
+            MissingnessThreshold.Effect effect = MissingnessThreshold.effectOf(dataSet, audit, t);
+
+            tableModel.setRowCount(0);
+            int risky = 0;
+
+            for (MissingnessThreshold.Candidate c : effect.dropped()) {
+                boolean flag = MissingnessThreshold.isConfoundingRisk(c);
+                if (flag) risky++;
+
+                tableModel.addRow(new Object[]{
+                        (flag ? "\u26a0 " : "") + c.name(),
+                        String.format("%.3f", c.missingRate()),
+                        Double.isNaN(c.maxAbsCorrelation()) ? "-" : String.format("%.2f", c.maxAbsCorrelation()),
+                        c.maxCorrelatedWith() == null ? "-" : c.maxCorrelatedWith(),
+                        c.pairwiseN() == 0 ? "-" : String.valueOf(c.pairwiseN())
+                });
+            }
+
+            effectLabel.setText(String.format(
+                    "Drop %d, keep %d.  Complete cases: %d of %d.  Worst retained pair: %d.",
+                    effect.dropped().size(), effect.retained(), effect.completeRows(), dataSet.getNumRows(),
+                    effect.minPairwiseCount()));
+
+            warningLabel.setText(risky == 0 ? " " : String.format(
+                    "\u26a0 %d of these correlate at 0.50 or above with a variable you are keeping. Dropping a "
+                    + "common cause of retained variables creates latent confounding a search cannot detect.",
+                    risky));
+
+            current.clear();
+            current.addAll(MissingnessThreshold.droppedNames(effect));
+        };
+
+        spinner.addChangeListener(ev -> refresh.run());
+        refresh.run();
+
+        JPanel north = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        north.add(new JLabel("Drop variables with a missingness rate above:"));
+        north.add(spinner);
+
+        JPanel head = new JPanel();
+        head.setLayout(new BoxLayout(head, BoxLayout.Y_AXIS));
+        head.add(north);
+        head.add(effectLabel);
+        head.add(Box.createVerticalStrut(4));
+        head.add(warningLabel);
+        head.add(Box.createVerticalStrut(6));
+
+        JPanel panel = new JPanel(new BorderLayout(0, 6));
+        panel.add(head, BorderLayout.NORTH);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        panel.setPreferredSize(new Dimension(760, 420));
+
+        int choice = JOptionPane.showConfirmDialog(parent, panel, "Remove Variables by Missingness",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (choice != JOptionPane.OK_OPTION) return null;
+        return new ArrayList<>(current);
     }
 
     /**
