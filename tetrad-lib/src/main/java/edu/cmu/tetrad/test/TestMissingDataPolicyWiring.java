@@ -75,6 +75,13 @@ public class TestMissingDataPolicyWiring {
     private static final double MISSING_RATE = 0.10;
 
     /**
+     * Default constructor for the TestMissingDataPolicyWiring class.
+     */
+    public TestMissingDataPolicyWiring() {
+
+    }
+
+    /**
      * Policies each wrapper is expected to accept on mixed data with missing values. Update when a score gains or
      * loses support.
      */

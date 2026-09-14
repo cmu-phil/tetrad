@@ -84,7 +84,13 @@ public final class HybridCgEdgeStrengths {
      */
     public record Strength(Kind kind, double value, String description) {
         /**
-         * True if this is one of the linear kinds.
+         * Determines if the strength kind is linear.
+         *
+         * Linear kinds include those with coefficients that are positive, negative,
+         * or mixed across strata. This method checks whether the kind is not
+         * {@code Kind.TABULAR}, indicating a linear relationship.
+         *
+         * @return {@code true} if the kind is linear; {@code false} otherwise.
          */
         public boolean isLinear() {
             return kind != Kind.TABULAR;

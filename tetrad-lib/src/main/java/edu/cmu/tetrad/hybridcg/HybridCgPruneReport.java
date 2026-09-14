@@ -167,10 +167,30 @@ public final class HybridCgPruneReport implements TetradSerializable {
         }
     }
 
+    /**
+     * The list of edges that were deleted.
+     */
     private final List<Deletion> deletions;
+    /**
+     * The list of edges that were not tested.
+     */
     private final List<String> untested;
+    /**
+     * The pruned graph.
+     */
     private final Graph prunedGraph;
+    /**
+     * The significance level the elimination used.
+     */
     private final double alpha;
+    /**
+     * Indicates whether continuous-child fits shared a single residual variance
+     * across strata in the context of graph pruning and statistical testing.
+     *
+     * This value is determined during the construction of a Prune Report and
+     * reflects if the shared variance assumption was used when fitting continuous
+     * child variables in the model.
+     */
     private final boolean shareVariance;
 
     /**

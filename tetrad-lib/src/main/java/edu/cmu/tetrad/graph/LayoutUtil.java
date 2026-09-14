@@ -59,14 +59,18 @@ public class LayoutUtil {
      */
     public interface NodeSize {
         /**
-         * @param node a node
-         * @return the width of the node's box, in pixels
+         * Returns the width of the rendered box of the specified node in pixels.
+         *
+         * @param node the node for which the box width is to be determined
+         * @return the width of the node's box in pixels
          */
         double width(Node node);
 
         /**
-         * @param node a node
-         * @return the height of the node's box, in pixels
+         * Returns the height of the rendered box of the given node in pixels.
+         *
+         * @param node the node whose box height is to be determined
+         * @return the height of the node's box in pixels
          */
         double height(Node node);
     }

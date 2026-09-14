@@ -336,6 +336,16 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         }
     }
 
+    /**
+     * Safely retrieves an integer value from the specified row and column of a DataSet.
+     * Attempts to retrieve the value as an integer, falling back to processing it as
+     * a double if an exception occurs. If the value is not finite, it returns -1.
+     *
+     * @param data the DataSet from which the value is to be retrieved
+     * @param row the row index from which the value is to be extracted
+     * @param col the column index from which the value is to be extracted
+     * @return the integer value at the specified row and column, or -1 if the value is non-finite or an error occurs
+     */
     public static int safeGetInt(DataSet data, int row, int col) {
         try {
             return data.getInt(row, col);

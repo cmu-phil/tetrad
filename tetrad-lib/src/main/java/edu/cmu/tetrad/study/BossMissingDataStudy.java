@@ -50,6 +50,13 @@ import java.util.Set;
  */
 public final class BossMissingDataStudy {
 
+    /**
+     * Default constructor for the BossMissingDataStudy class.
+     */
+    public BossMissingDataStudy() {
+
+    }
+
     // ---------------------------------------------------------------- configuration
 
     /** Variables in the simulated graph. */
@@ -216,6 +223,18 @@ public final class BossMissingDataStudy {
 
     // ---------------------------------------------------------------- main
 
+    /**
+     * The entry point for the BossMissingDataStudy program, coordinating the execution of
+     * the missing data study under various conditions and configurations.
+     *
+     * This method performs two phases of data evaluation: one for continuous data and
+     * one for mixed data. Results are printed to the console to compare statistical efficiency
+     * across different methods used in the study.
+     *
+     * @param args Command-line arguments passed to the application. They are not used
+     *             within this method but may be required for external execution.
+     * @throws Exception If any error occurs during the execution of the phases or data processing.
+     */
     public static void main(String[] args) throws Exception {
         System.out.printf("BOSS missing-data study: p=%d, edges=%d, n=%d, reps=%d, penalty=%.1f%n",
                 NUM_VARS, NUM_EDGES, SAMPLE_SIZE, NUM_REPS, PENALTY_DISCOUNT);

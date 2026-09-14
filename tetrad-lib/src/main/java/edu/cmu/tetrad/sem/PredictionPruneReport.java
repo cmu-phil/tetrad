@@ -82,9 +82,21 @@ public final class PredictionPruneReport implements TetradSerializable {
         }
     }
 
+    /**
+     * The deletions.
+     */
     private final List<Deletion> deletions;
+    /**
+     * The pruned graph.
+     */
     private final Graph prunedGraph;
+    /**
+     * The number of folds used in the cross-validation.
+     */
     private final int numFolds;
+    /**
+     * The threshold used to determine whether an edge should be deleted.
+     */
     private final double threshold;
 
     PredictionPruneReport(List<Deletion> deletions, Graph prunedGraph,
