@@ -63,6 +63,69 @@ public class LayoutUtils {
     }
 
     /**
+     * Applies a laid-out graph to the workbench, first shifting it so that nothing sits off the left or top edge
+     * of the coordinate space. Every layout in this class goes through here rather than calling
+     * {@link LayoutEditable#layoutByGraph(Graph)} directly.
+     *
+     * @param layoutEditable the editable to lay out
+     * @param graph          the graph carrying the new node centers
+     */
+    private static void layoutByGraph(LayoutEditable layoutEditable, Graph graph) {
+        shiftIntoVisibleSpace(graph, layoutEditable);
+        layoutEditable.layoutByGraph(graph);
+    }
+
+    /**
+     * Translates every node of the graph by a single offset, if needed, so that no node's box extends past the left
+     * or top edge of the coordinate space. Node centers are the anchor the layouts set, but what the user sees is
+     * the box around the center, so a node whose center is comfortably positive can still have its left half or its
+     * label clipped; the box is what this checks. The offset is the same for every node, so the layout's shape,
+     * spacing and relative positions are untouched — the whole drawing simply moves right and/or down. A drawing
+     * already clear of both edges is left exactly as it is.
+     *
+     * <p>Sizes come from {@link #displayNodeSizes(LayoutEditable)}, so they are the real display boxes where a
+     * display node exists and the library's estimate otherwise. The gap left at the edges is
+     * {@link AbstractWorkbench#NODE_OVERLAP_MARGIN}, the same gap the workbench keeps between nodes.</p>
+     *
+     * @param graph          the graph whose node centers are to be shifted
+     * @param layoutEditable the editable, for the display node sizes
+     */
+    static void shiftIntoVisibleSpace(Graph graph, LayoutEditable layoutEditable) {
+        if (graph == null) return;
+
+        List<Node> nodes = graph.getNodes();
+        if (nodes.isEmpty()) return;
+
+        LayoutUtil.NodeSize sizes = displayNodeSizes(layoutEditable);
+        final int margin = AbstractWorkbench.NODE_OVERLAP_MARGIN;
+
+        double minLeft = Double.POSITIVE_INFINITY;
+        double minTop = Double.POSITIVE_INFINITY;
+
+        for (Node node : nodes) {
+            double w = sizes.width(node);
+            double h = sizes.height(node);
+            if (!Double.isFinite(w) || w < 0) w = 0;
+            if (!Double.isFinite(h) || h < 0) h = 0;
+
+            minLeft = TMath.min(minLeft, node.getCenterX() - w / 2.0);
+            minTop = TMath.min(minTop, node.getCenterY() - h / 2.0);
+        }
+
+        if (!Double.isFinite(minLeft) || !Double.isFinite(minTop)) return;
+
+        int dx = (minLeft < margin) ? (int) TMath.ceil(margin - minLeft) : 0;
+        int dy = (minTop < margin) ? (int) TMath.ceil(margin - minTop) : 0;
+
+        if (dx == 0 && dy == 0) return;
+
+        for (Node node : nodes) {
+            node.setCenterX(node.getCenterX() + dx);
+            node.setCenterY(node.getCenterY() + dy);
+        }
+    }
+
+    /**
      * <p>setAllSizes.</p>
      *
      * @param comp a {@link java.awt.Component} object
@@ -146,7 +209,7 @@ public class LayoutUtils {
         }
 
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.lag0TopToBottom;
     }
 
@@ -208,7 +271,7 @@ public class LayoutUtils {
         }
 
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.lag0BottomToTop;
     }
 
@@ -270,7 +333,7 @@ public class LayoutUtils {
         }
 
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.lag0LeftToRight;
     }
 
@@ -332,7 +395,7 @@ public class LayoutUtils {
         }
 
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.lag0RightToLeft;
     }
 
@@ -373,7 +436,7 @@ public class LayoutUtils {
             }
         }
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.topToBottom;
     }
 
@@ -414,7 +477,7 @@ public class LayoutUtils {
             }
         }
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.leftToRight;
     }
 
@@ -455,7 +518,7 @@ public class LayoutUtils {
             }
         }
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         layout = Layout.bottomToTop;
     }
 
@@ -496,7 +559,7 @@ public class LayoutUtils {
             }
         }
 
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.rightToLeft;
     }
 
@@ -515,7 +578,7 @@ public class LayoutUtils {
         }
 
         LayoutUtil.defaultLayout(graph);
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.layered;
     }
 
@@ -530,7 +593,7 @@ public class LayoutUtils {
 
         Graph sourceGraph = layoutEditable.getSourceGraph();
         LayoutUtil.arrangeBySourceGraph(graph, sourceGraph);
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.source;
     }
 
@@ -551,7 +614,7 @@ public class LayoutUtils {
             }
 
             LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
-            layoutEditable.layoutByGraph(graph);
+            layoutByGraph(layoutEditable, graph);
         } catch (Exception e1) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     e1.getMessage());
@@ -576,7 +639,7 @@ public class LayoutUtils {
             }
 
             LayoutUtil.layoutByKnowledgeIndices(graph);
-            layoutEditable.layoutByGraph(graph);
+            layoutByGraph(layoutEditable, graph);
         } catch (Exception e1) {
             JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                     e1.getMessage());
@@ -633,7 +696,7 @@ public class LayoutUtils {
         }
 
         LayoutUtil.circleLayout(graph, displayNodeSizes(layoutEditable));
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.circle;
     }
 
@@ -653,7 +716,7 @@ public class LayoutUtils {
 
         LayoutUtil.squareLayout(graph);
         respaceSquareForLabels(graph, layoutEditable);
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.circle;
     }
 
@@ -763,7 +826,7 @@ public class LayoutUtils {
 
             LayoutUtil.kamadaKawaiLayout(graph, initializeRandomly,
                     naturalEdgeLength, springConstant, stopEnergy);
-            layoutEditable.layoutByGraph(graph);
+            layoutByGraph(layoutEditable, graph);
             LayoutUtils.layout = Layout.kamadaKawai;
         };
 
@@ -786,7 +849,7 @@ public class LayoutUtils {
         }
 
         LayoutUtil.fruchtermanReingoldLayout(graph);
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.fruchtermReingold;
     }
 
@@ -806,7 +869,7 @@ public class LayoutUtils {
 
         DistanceFromSelected layout1 = new DistanceFromSelected(layoutEditable);
         layout1.doLayout();
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.distanceFromSelected;
     }
 
@@ -878,7 +941,7 @@ public class LayoutUtils {
         }
 
         LayoutUtil.layoutByCausalOrder(graph);
-        layoutEditable.layoutByGraph(graph);
+        layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.layered;
     }
 

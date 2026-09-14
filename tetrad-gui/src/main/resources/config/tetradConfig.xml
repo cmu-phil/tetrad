@@ -832,6 +832,9 @@
                 <model-class>edu.cmu.tetradapp.model.AddMissingnessIndicatorsWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.AddMissingnessIndicatorsParamsEditor
+                </params-editor-class>
             </model>
             <model name="Standardize Data" acronym="Standardized"
                    help="data" category="Conversion of Data">

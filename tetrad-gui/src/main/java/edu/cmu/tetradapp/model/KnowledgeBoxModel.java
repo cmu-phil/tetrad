@@ -169,14 +169,11 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
                     .equals(new HashSet<>(variableNames))) {
             this.knowledge = (Knowledge) myKnowledge;
         } else {
-            this.knowledge = new Knowledge();
-
-            for (String var : variableNames) {
-                this.knowledge.addVariable(var);
-            }
-
+            this.knowledge = seedKnowledge(inputs, variableNames);
             params.set("__myKnowledge", this.knowledge);
         }
+
+        this.numTiers = Math.max(this.numTiers, this.knowledge.getNumTiers());
 
         if (inputs.length == 1 && inputs[0] instanceof DataWrapper dataWrapper) {
             DataModel first = dataWrapper.getDataModelList().getFirst();
@@ -197,6 +194,52 @@ public class KnowledgeBoxModel implements SessionModel, ParamsResettable, Knowle
      */
     public static KnowledgeBoxModel serializableInstance() {
         return new KnowledgeBoxModel(new KnowledgeBoxInput[]{GraphWrapper.serializableInstance()}, new Parameters());
+    }
+
+    /**
+     * Returns the knowledge a freshly created box should start from, given its inputs.
+     *
+     * <p>If there is a single input that already carries knowledge - a data box whose dataset has knowledge attached,
+     * for instance, as produced by the Add Missingness Indicators box - the box starts from a copy of that knowledge
+     * rather than from an empty one, so that constraints implied by how the data were built are not silently
+     * discarded. Only variables the box actually has are kept, so a copy cannot introduce names that are not in the
+     * data. Otherwise an empty knowledge over the box's variables is returned, which is the previous behavior.</p>
+     *
+     * <p>This applies only when the box has no knowledge of its own stored in the parameters. Once the user edits the
+     * box, those edits win on every later construction.</p>
+     *
+     * @param inputs       the box's inputs.
+     * @param variableNames the names of the variables the box covers.
+     * @return the starting knowledge.
+     */
+    private Knowledge seedKnowledge(KnowledgeBoxInput[] inputs, Collection<String> variableNames) {
+        Knowledge seeded = new Knowledge();
+
+        for (String var : variableNames) {
+            seeded.addVariable(var);
+        }
+
+        if (inputs.length != 1 || !(inputs[0] instanceof KnowledgeEditable editable)) {
+            return seeded;
+        }
+
+        Knowledge inherited = editable.getKnowledge();
+
+        if (inherited == null || inherited.isEmpty()) {
+            return seeded;
+        }
+
+        if (!new HashSet<>(variableNames).containsAll(inherited.getVariables())) {
+            return seeded;
+        }
+
+        Knowledge copy = inherited.copy();
+
+        for (String var : variableNames) {
+            copy.addVariable(var);
+        }
+
+        return copy;
     }
 
     private void freshenKnowledgeIfEmpty(List<String> varNames) {

@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
 import edu.cmu.tetrad.search.utils.MissingnessIndicatorAdder;
+import edu.cmu.tetrad.search.utils.MissingnessIndicatorAdder.Spec;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -48,6 +49,13 @@ public class AddMissingnessIndicatorsWrapper extends DataWrapper {
      */
     private final DataSet outputDataSet;
 
+    /**
+     * A record of which indicators were added and which variables were skipped, for display and logging.
+     *
+     * @serial Can be null in sessions saved before this field existed.
+     */
+    private final String summary;
+
     //============================CONSTRUCTORS=============================//
 
     /**
@@ -59,12 +67,25 @@ public class AddMissingnessIndicatorsWrapper extends DataWrapper {
     public AddMissingnessIndicatorsWrapper(DataWrapper wrapper,
                                            Parameters params) {
         DataSet dataSet = (DataSet) wrapper.getSelectedDataModel();
-        this.outputDataSet = MissingnessIndicatorAdder.addMissingnessIndicators(dataSet);
+
+        Spec spec = new Spec(
+                params.getDouble("missingnessIndicatorMinRate", 0.02),
+                params.getDouble("missingnessIndicatorMaxRate", 0.98),
+                params.getBoolean("missingnessIndicatorDiscrete", true),
+                params.getBoolean("missingnessIndicatorKnowledge", true),
+                params.getBoolean("missingnessIndicatorForbidSelfMasking", true),
+                "_missing");
+
+        MissingnessIndicatorAdder.Result result = MissingnessIndicatorAdder.add(dataSet, spec);
+
+        this.outputDataSet = result.data();
+        this.summary = result.summary();
+
         setDataModel(this.outputDataSet);
         setSourceGraph(wrapper.getSourceGraph());
 
+        TetradLogger.getInstance().log(this.summary);
         LogDataUtils.logDataModelList("Parent data with missingness indicators added.", getDataModelList());
-
     }
 
     /**
@@ -86,6 +107,16 @@ public class AddMissingnessIndicatorsWrapper extends DataWrapper {
      */
     public DataSet getOutputDataset() {
         return this.outputDataSet;
+    }
+
+    /**
+     * <p>getSummary.</p>
+     *
+     * @return a description of which indicators were added and which variables were skipped, or null for sessions
+     * saved before this field existed.
+     */
+    public String getSummary() {
+        return this.summary;
     }
 
     /**
