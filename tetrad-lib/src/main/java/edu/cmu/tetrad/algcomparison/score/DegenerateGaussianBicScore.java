@@ -70,7 +70,11 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "DG-BIC (Degenerate Gaussian BIC Score)");
+        // "em" is native here as well as "testwise": DegenerateGaussianScore estimates the EM covariance of the
+        // embedded matrix, under the same jointly-Gaussian working model it already assumes for the indicator
+        // columns. Without "em" in this set the gate rejects the policy before the score is ever constructed.
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"),
+                "DG-BIC (Degenerate Gaussian BIC Score)");
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
         DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,

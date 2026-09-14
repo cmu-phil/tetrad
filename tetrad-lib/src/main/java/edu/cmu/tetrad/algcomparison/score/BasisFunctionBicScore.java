@@ -71,7 +71,10 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "BF-BIC (Basis Function BIC)");
+        // "em" is native here as well as "testwise"; see BasisFunctionBicScore's EM branch. Without it in this
+        // set the gate rejects the policy before the score is ever constructed.
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"),
+                "BF-BIC (Basis Function BIC)");
         this.dataSet = dataSet;
 
         // Changes from the pre-2026-8 implementation: the singularity lambda was previously read
@@ -125,7 +128,8 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
         // data the scores will see.
         java.util.List<DataSet> gated = new java.util.ArrayList<>();
         for (DataModel dataModel : dataModels) {
-            DataModel gatedModel = MissingDataUtils.gate(dataModel, parameters, false, "BF-BIC (Basis Function BIC)");
+            DataModel gatedModel = MissingDataUtils.gate(dataModel, parameters,
+                    java.util.Set.of("testwise", "em"), "BF-BIC (Basis Function BIC)");
             gated.add(SimpleDataLoader.getMixedDataSet(gatedModel));
         }
 
