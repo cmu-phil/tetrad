@@ -2,6 +2,8 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
+import edu.cmu.tetrad.algcomparison.score.BasisFunctionBicScore;
+import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -20,7 +22,9 @@ import edu.cmu.tetrad.util.RandomUtil;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Compares the ways Tetrad currently has of running BOSS on data with missing values, on simulated data whose
@@ -79,6 +83,19 @@ public final class BossMissingDataStudy {
     private static final int TRUNCATION_LIMIT = 3;
 
     /**
+     * Basis-function BIC is superlinear in the variable count, and at this size its arms dominate the wall clock --
+     * on the order of minutes each where the degenerate-Gaussian arms take seconds. Set false to skip them and get
+     * the DG comparison quickly; the skipped arms are named in the output so their absence is not silent.
+     */
+    private static final boolean RUN_BASIS_FUNCTION_ARMS = false;
+
+    /**
+     * Seconds any single arm may take before it is abandoned and reported as timed out. One slow or pathological
+     * arm should not stall a sweep; 0 disables the limit.
+     */
+    private static final int ARM_TIMEOUT_SECONDS = 120;
+
+    /**
      * Chem-shaped missingness profile interpolated to NUM_VARS, capped at 0.6, in a non-monotone order so that a
      * variable's rate is not predictable from its position. Mean rate about 0.22, matching the chem dataset.
      */
@@ -120,7 +137,9 @@ public final class BossMissingDataStudy {
             ImputationSearch.Result result = ImputationSearch.search(
                     missing, new Boss(new SemBicScore()), params, null,
                     MissingDataSpec.multipleImputation(NUM_IMPUTATIONS));
-            return result.pooledGraph;
+            // Copied into a plain graph so the comparison statistics see no sampling annotations. This does not
+            // make the structural Hamming distance defined for it -- see shd below.
+            return plainCopy(result.pooledGraph);
         });
 
         // Naive baseline, included because it is what people reach for. Conditional-mean filling shrinks residual
@@ -172,6 +191,24 @@ public final class BossMissingDataStudy {
             arms.put("BF EM_COV (" + mode + ")", (complete, missing) ->
                     boss(new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
                             missing, TRUNCATION_LIMIT, 0.0, false, false, em)));
+
+            // The arms above construct the score class directly, which is what let an interface-level blocker go
+            // unnoticed while these numbers looked fine: the wrapper's gate rejected "em" before the score was
+            // built, so the study measured a configuration no user could select. These two take the wrapper path
+            // instead, with the parameters an interface would set. They should track their direct counterparts;
+            // if one throws or diverges, the wiring has drifted rather than the statistics.
+            // TestMissingDataPolicyWiring checks the same agreement in under two seconds.
+            arms.put("DG EM_COV via wrapper (" + mode + ")", (complete, missing) ->
+                    boss(new DegenerateGaussianBicScore().getScore(missing, wrapperParams("em", mode))));
+            arms.put("BF EM_COV via wrapper (" + mode + ")", (complete, missing) ->
+                    boss(new BasisFunctionBicScore().getScore(missing, wrapperParams("em", mode))));
+        }
+
+        if (!RUN_BASIS_FUNCTION_ARMS) {
+            int before = arms.size();
+            arms.keySet().removeIf(name -> name.startsWith("BF "));
+            System.out.printf("(skipping %d basis-function arm(s); set RUN_BASIS_FUNCTION_ARMS to include them)%n",
+                    before - arms.size());
         }
 
         return arms;
@@ -197,11 +234,14 @@ public final class BossMissingDataStudy {
 
         for (double lambda : ROW_PROPENSITIES) {
             System.out.printf("=== row propensity lambda = %.1f ===%n", lambda);
-            System.out.printf("%-26s %8s %8s %8s %8s %8s %9s%n",
+            System.out.printf("%-34s %8s %8s %8s %8s %8s %9s%n",
                     "method", "adjPrec", "adjRec", "arrPrec", "arrRec", "SHD", "seconds");
 
             Map<String, double[]> totals = new LinkedHashMap<>();
             for (String name : arms.keySet()) totals.put(name, new double[6]);
+
+            // Arms whose graphs are not legal PDAGs, so that SHD is undefined rather than zero.
+            Set<String> shdUndefined = new LinkedHashSet<>();
 
             int[] completeCases = new int[NUM_REPS];
 
@@ -244,13 +284,18 @@ public final class BossMissingDataStudy {
                     Graph est;
 
                     try {
-                        est = entry.getValue().search(complete, missing);
+                        est = runWithTimeout(entry.getValue(), complete, missing);
+                    } catch (java.util.concurrent.TimeoutException e) {
+                        System.out.printf("  [%s] rep %d timed out after %ds; arm abandoned for this rep%n",
+                                entry.getKey(), rep, ARM_TIMEOUT_SECONDS);
+                        continue;
                     } catch (Exception e) {
                         System.out.printf("  [%s] rep %d failed: %s%n", entry.getKey(), rep, e.getMessage());
                         continue;
                     }
 
                     double seconds = (System.currentTimeMillis() - t0) / 1000.0;
+//                    System.out.printf("  rep %d  %-34s %6.1fs%n", rep, entry.getKey(), seconds);
 
                     // The searched graph carries the dataset's variable objects and the true graph carries the
                     // simulator's; the confusion matrices compare node identity, so without this every statistic
@@ -263,11 +308,10 @@ public final class BossMissingDataStudy {
                     t[1] += new AdjacencyRecall().getValue(trueCpdag, est, missing);
                     t[2] += new ArrowheadPrecision().getValue(trueCpdag, est, missing);
                     t[3] += new ArrowheadRecall().getValue(trueCpdag, est, missing);
-                    t[4] += new StructuralHammingDistance().getValue(trueCpdag, est, missing);
+                    t[4] += shd(trueCpdag, est, missing, entry.getKey(), shdUndefined);
                     t[5] += seconds;
                 }
 
-                System.out.print(".");
                 System.out.flush();
             }
 
@@ -279,9 +323,17 @@ public final class BossMissingDataStudy {
 
             for (Map.Entry<String, double[]> entry : totals.entrySet()) {
                 double[] t = entry.getValue();
-                System.out.printf("%-26s %8.3f %8.3f %8.3f %8.3f %8.1f %9.1f%n",
-                        entry.getKey(), t[0] / NUM_REPS, t[1] / NUM_REPS, t[2] / NUM_REPS,
-                        t[3] / NUM_REPS, t[4] / NUM_REPS, t[5] / NUM_REPS);
+                boolean undefined = shdUndefined.contains(entry.getKey());
+
+                System.out.printf("%-34s %8.3f %8.3f %8.3f %8.3f %8s %9.1f%n",
+                        entry.getKey(), t[0] / NUM_REPS, t[1] / NUM_REPS, t[2] / NUM_REPS, t[3] / NUM_REPS,
+                        undefined ? "n/a" : String.format("%.1f", t[4] / NUM_REPS), t[5] / NUM_REPS);
+            }
+
+            if (!shdUndefined.isEmpty()) {
+                System.out.println("(SHD is n/a for " + String.join(", ", shdUndefined)
+                                   + ": the graph is not a legal PDAG, so the measure is undefined for it. The"
+                                   + " adjacency and arrowhead columns are still comparable.)");
             }
 
             System.out.printf("(mean complete cases available to LISTWISE: %.1f of %d)%n%n",
@@ -290,6 +342,93 @@ public final class BossMissingDataStudy {
     }
 
     // ---------------------------------------------------------------- helpers
+
+    /**
+     * Structural Hamming distance, or 0 with the arm recorded as undefined.
+     *
+     * <p>The measure is defined only between legal PDAGs, and returns a -99 sentinel otherwise -- for a bidirected
+     * or partially oriented edge, or a cycle. Pooling graphs by edge frequency across imputations readily produces
+     * such edges, since separate searches can orient the same adjacency both ways. Averaging the sentinel in would
+     * have quietly reported an SHD of -99 as though it were a distance, which is worse than reporting nothing.</p>
+     */
+    private static double shd(Graph trueCpdag, Graph est, DataSet data, String armName, Set<String> undefined) {
+        double value = new StructuralHammingDistance().getValue(trueCpdag, est, data);
+
+        if (value < 0) {
+            undefined.add(armName);
+            return 0.0;
+        }
+
+        return value;
+    }
+
+    /**
+     * A plain copy of a graph: same nodes, same endpoints, no edge properties or attributes. Graphs built by
+     * sampling carry annotations that the comparison statistics do not accept.
+     */
+    private static Graph plainCopy(Graph graph) {
+        Graph out = new edu.cmu.tetrad.graph.EdgeListGraph(graph.getNodes());
+
+        for (edu.cmu.tetrad.graph.Edge edge : graph.getEdges()) {
+            out.addEdge(new edu.cmu.tetrad.graph.Edge(edge.getNode1(), edge.getNode2(),
+                    edge.getEndpoint1(), edge.getEndpoint2()));
+        }
+
+        return out;
+    }
+
+    /**
+     * The parameters an interface would set for a given missing-data policy and effective-sample-size mode.
+     */
+    private static Parameters wrapperParams(String policy, MissingDataSpec.EffectiveSampleSizeMode mode) {
+        Parameters params = bossParams();
+        params.set(Params.MISSING_DATA_POLICY, policy);
+        params.set(Params.MISSING_ESS_MODE, essModeToken(mode));
+        params.set(Params.TRUNCATION_LIMIT, TRUNCATION_LIMIT);
+        params.set(Params.SINGULARITY_LAMBDA, 0.0);
+        params.set(Params.PRECOMPUTE_COVARIANCES, true);
+        return params;
+    }
+
+    /** The parameter token for an ESS mode: FULL_N is written "fullN", and so on. */
+    private static String essModeToken(MissingDataSpec.EffectiveSampleSizeMode mode) {
+        return switch (mode) {
+            case FULL_N -> "fullN";
+            case MIN_PAIRWISE -> "minPairwise";
+            case MEAN_PAIRWISE -> "meanPairwise";
+        };
+    }
+
+    /**
+     * Runs one arm, abandoning it after {@link #ARM_TIMEOUT_SECONDS}. The thread is interrupted and left to unwind;
+     * a search that ignores interruption will keep a core busy until it finishes, so a timeout bounds the reported
+     * wait rather than the actual work.
+     */
+    private static Graph runWithTimeout(Arm arm, DataSet complete, DataSet missing) throws Exception {
+        if (ARM_TIMEOUT_SECONDS <= 0) return arm.search(complete, missing);
+
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "study-arm");
+            t.setDaemon(true);
+            return t;
+        });
+
+        try {
+            java.util.concurrent.Future<Graph> future = executor.submit(() -> arm.search(complete, missing));
+
+            try {
+                return future.get(ARM_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (java.util.concurrent.ExecutionException e) {
+                Throwable cause = e.getCause();
+                throw cause instanceof Exception ex ? ex : new RuntimeException(cause);
+            } catch (java.util.concurrent.TimeoutException e) {
+                future.cancel(true);
+                throw e;
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+    }
 
     private static Parameters bossParams() {
         Parameters params = new Parameters();
@@ -307,7 +446,25 @@ public final class BossMissingDataStudy {
         return score;
     }
 
+    /**
+     * Applies the study's penalty discount to a directly-constructed score. The embedded score constructors do not
+     * take one, so without this the direct arms ran at their class default while the wrapper arms ran at
+     * PENALTY_DISCOUNT, and the two sets were not comparable -- a harness bug the wrapper arms exposed on their
+     * first run.
+     */
+    private static edu.cmu.tetrad.search.score.Score penalized(edu.cmu.tetrad.search.score.Score score) {
+        if (score instanceof edu.cmu.tetrad.search.score.DegenerateGaussianScore dg) {
+            dg.setPenaltyDiscount(PENALTY_DISCOUNT);
+        } else if (score instanceof edu.cmu.tetrad.search.score.BasisFunctionBicScore bf) {
+            bf.setPenaltyDiscount(PENALTY_DISCOUNT);
+        }
+
+        return score;
+    }
+
     private static Graph boss(edu.cmu.tetrad.search.score.Score score) throws InterruptedException {
+        score = penalized(score);
+
         edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
         boss.setUseBes(false);
         boss.setNumStarts(1);

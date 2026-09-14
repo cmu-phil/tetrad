@@ -81,7 +81,12 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
                 parameters.getDouble(Params.SINGULARITY_LAMBDA),
                 MissingDataUtils.fromParameters(parameters));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        degenerateGaussianScore.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        // Applied only when the user actually set it. This line previously ran unconditionally, and since the
+        // parameter defaults to -1 it overwrote the effective sample size the constructor had just derived from
+        // the missing-data spec -- so missingEssMode had no effect through this wrapper, whatever it was set to,
+        // while working correctly when the score was constructed directly. Changed 2026-9-14.
+        int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
+        if (ess > 0) degenerateGaussianScore.setEffectiveSampleSize(ess);
         return degenerateGaussianScore;
     }
 
