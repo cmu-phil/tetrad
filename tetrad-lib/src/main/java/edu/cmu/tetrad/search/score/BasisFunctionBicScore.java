@@ -23,6 +23,8 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
@@ -165,7 +167,14 @@ public class BasisFunctionBicScore implements Score {
         // of its embedding block. Computing both on the raw data keeps the two modes meaning what they say.
         DataSet rawData = dataSet;
 
-        dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "BasisFunctionBicScore");
+        // Decided before the deletion gate, which rejects EM_COVARIANCE outright: under EM no rows are deleted,
+        // so the gate is bypassed with a null spec and the estimate is taken of the embedded matrix below.
+        boolean emCovariance = spec != null && spec.getPolicy() == MissingDataPolicy.EM_COVARIANCE
+                               && dataSet.existsMissingValue();
+
+        if (!emCovariance) {
+            dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "BasisFunctionBicScore");
+        }
 
         this.variables = dataSet.getVariables();
         this.truncationLimit = truncationLimit;
@@ -176,7 +185,7 @@ public class BasisFunctionBicScore implements Score {
                 rankTransform ? Embedding.RANK_TRANSFORM : 1);
         DataSet embeddedData = result.embeddedData();
 
-        boolean testwise = embeddedData.existsMissingValue();
+        boolean testwise = embeddedData.existsMissingValue() && !emCovariance;
 
         // We will zero out the correlations that are very close to zero. Under test-wise deletion the
         // pairwise-deletion correlation matrix is used for screening only.
@@ -192,9 +201,25 @@ public class BasisFunctionBicScore implements Score {
                 ? Embedding.pruneUninformativeBasisColumns(dataSet, result.embedding(), correlationMatrix)
                 : result.embedding();
 
-        this.bic = testwise
-                ? new SemBicScore(embeddedData, true, MissingDataSpec.testwise())
-                : new SemBicScore(correlationMatrix);
+        // EM_COVARIANCE estimates the covariance of the *embedded* matrix under the same jointly-Gaussian working
+        // model this score already assumes for its basis columns, and so uses every row for every family rather
+        // than each family's complete rows. Unlike the degenerate-Gaussian one-hot case, the basis columns of a
+        // continuous variable satisfy exact deterministic relations -- the quadratic column is the square of the
+        // linear one -- and EM filling them in as jointly Gaussian produces second moments that need not be
+        // consistent with any univariate distribution. Impute-then-embed avoids that violation exactly, at the
+        // cost of needing multiple imputation to avoid understating uncertainty, which makes it a search wrapper
+        // rather than a score; see ImputationSearch. This path is offered for comparison, not as the default.
+        if (emCovariance) {
+            EmCovarianceEstimator estimator = new EmCovarianceEstimator(embeddedData);
+            estimator.setRidge(spec.getEmRidge());
+            estimator.setTolerance(spec.getEmTolerance());
+            estimator.setMaxIterations(spec.getEmMaxIterations());
+            this.bic = new SemBicScore(estimator.estimate());
+        } else if (testwise) {
+            this.bic = new SemBicScore(embeddedData, true, MissingDataSpec.testwise());
+        } else {
+            this.bic = new SemBicScore(correlationMatrix);
+        }
         this.bic.setPenaltyDiscount(penaltyDiscount);
         this.bic.setLambda(lambda);
 
@@ -209,7 +234,7 @@ public class BasisFunctionBicScore implements Score {
         // rows' worth of information while charging the penalty for the family's actual rows biases every score
         // toward more edges. An ESS mode other than FULL_N discounts the likelihood to match. Only under
         // TESTWISE: LISTWISE has already reduced the data to complete cases.
-        if (testwise) {
+        if (testwise || emCovariance) {
             this.bic.setEffectiveSampleSize(MissingDataUtils.effectiveSampleSize(rawData, spec));
         }
     }

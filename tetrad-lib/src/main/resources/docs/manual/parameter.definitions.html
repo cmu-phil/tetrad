@@ -4725,8 +4725,8 @@ Source:
         nominal number of rows (anti-conservative when much data is missing). "minPairwise" uses
         the minimum, over variable pairs, of the number of rows on which both variables are
         observed (most conservative). "meanPairwise" uses the mean of those pairwise counts.
-        Values are case-insensitive. Used when missingDataPolicy is "em", and, for the embedded
-        scores (degenerate Gaussian and basis-function BIC), when it is "testwise". Under test-wise
+        Values are case-insensitive. Used when missingDataPolicy is "em" or, for the embedded
+        scores (degenerate Gaussian and basis-function BIC), "testwise". Under test-wise
         deletion the BIC penalty already scales with each family's own row count, but the likelihood
         term is multiplied by the effective sample size; leaving that at "fullN" credits the fit with
         every row while charging the penalty for the family's actual rows, which biases the search

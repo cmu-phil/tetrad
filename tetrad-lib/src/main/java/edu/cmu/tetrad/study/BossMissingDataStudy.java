@@ -153,13 +153,25 @@ public final class BossMissingDataStudy {
                         missing, TRUNCATION_LIMIT, 0.0, false, false, MissingDataSpec.listwise())));
 
         for (MissingDataSpec.EffectiveSampleSizeMode mode : MissingDataSpec.EffectiveSampleSizeMode.values()) {
-            MissingDataSpec spec = MissingDataSpec.testwise().withEssMode(mode);
+            MissingDataSpec testwise = MissingDataSpec.testwise().withEssMode(mode);
 
             arms.put("DG TESTWISE (" + mode + ")", (complete, missing) ->
-                    boss(new edu.cmu.tetrad.search.score.DegenerateGaussianScore(missing, true, 0.0, spec)));
+                    boss(new edu.cmu.tetrad.search.score.DegenerateGaussianScore(missing, true, 0.0, testwise)));
             arms.put("BF TESTWISE (" + mode + ")", (complete, missing) ->
                     boss(new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
-                            missing, TRUNCATION_LIMIT, 0.0, false, false, spec)));
+                            missing, TRUNCATION_LIMIT, 0.0, false, false, testwise)));
+
+            // EM on the embedded matrix: every row informs every family, rather than each family seeing only its
+            // own complete rows. For DG this is the score's existing Gaussian working model carried through to
+            // incomplete data; for BF it additionally breaks the deterministic relations among basis columns,
+            // which is why the two are reported separately rather than pooled.
+            MissingDataSpec em = MissingDataSpec.emCovariance().withEssMode(mode);
+
+            arms.put("DG EM_COV (" + mode + ")", (complete, missing) ->
+                    boss(new edu.cmu.tetrad.search.score.DegenerateGaussianScore(missing, true, 0.0, em)));
+            arms.put("BF EM_COV (" + mode + ")", (complete, missing) ->
+                    boss(new edu.cmu.tetrad.search.score.BasisFunctionBicScore(
+                            missing, TRUNCATION_LIMIT, 0.0, false, false, em)));
         }
 
         return arms;
