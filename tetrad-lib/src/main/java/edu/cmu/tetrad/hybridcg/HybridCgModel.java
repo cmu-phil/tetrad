@@ -633,6 +633,12 @@ public final class HybridCgModel {
          * Discrete child: probs[y] is rows x card(y)
          */
         private final double[][][] discProbs;   // null for continuous children
+        /**
+         * Number of complete cases behind each local-table row, indexed [node][row]. A value of -1 means the count is
+         * unknown, which is the case for any IM that was built by hand rather than estimated from data. Estimation
+         * fills this in for every node and row, including rows with a count of zero.
+         */
+        private final int[][] rowCaseCounts;
 
         /**
          * Constructs a HybridCgIm instance from a HybridCgPm.
@@ -644,8 +650,11 @@ public final class HybridCgModel {
             int n = pm.nodes.length;
             this.contParams = new double[n][][];
             this.discProbs = new double[n][][];
+            this.rowCaseCounts = new int[n][];
             for (int y = 0; y < n; y++) {
                 int rows = pm.getNumRows(y);
+                this.rowCaseCounts[y] = new int[rows];
+                Arrays.fill(this.rowCaseCounts[y], -1); // unknown until estimated
                 if (pm.isDiscrete[y]) {
                     this.discProbs[y] = new double[rows][pm.getCardinality(y)];
                 } else {
@@ -850,6 +859,33 @@ public final class HybridCgModel {
         public void setVariance(int nodeIndex, int rowIndex, double v) {
             int m = pm.getContinuousParents(nodeIndex).length;
             contParams[nodeIndex][rowIndex][1 + m] = v;
+        }
+
+        /**
+         * Returns the number of complete cases behind a local-table row, or -1 if the count is unknown. It is unknown
+         * for any IM that was built by hand rather than estimated from data. A count of zero means the row's discrete
+         * parent configuration was never observed with a complete family, so its parameters are not estimated.
+         *
+         * @param nodeIndex the index of the child node
+         * @param rowIndex  the row index in the local table
+         * @return the complete-case count, or -1 if unknown
+         */
+        public int getRowCaseCount(int nodeIndex, int rowIndex) {
+            int[] counts = (rowCaseCounts == null) ? null : rowCaseCounts[nodeIndex];
+            return (counts == null || rowIndex < 0 || rowIndex >= counts.length) ? -1 : counts[rowIndex];
+        }
+
+        /**
+         * Records the number of complete cases behind a local-table row.
+         *
+         * @param nodeIndex the index of the child node
+         * @param rowIndex  the row index in the local table
+         * @param count     the complete-case count
+         */
+        public void setRowCaseCount(int nodeIndex, int rowIndex, int count) {
+            if (rowCaseCounts != null && rowCaseCounts[nodeIndex] != null) {
+                rowCaseCounts[nodeIndex][rowIndex] = count;
+            }
         }
 
         /**
@@ -1187,7 +1223,12 @@ public final class HybridCgModel {
                 // Convert to probabilities with Dirichlet(alpha)
                 for (int row = 0; row < rows; row++) {
                     double s = 0.0;
-                    for (int k = 0; k < K; k++) s += counts[row][k] + alpha;
+                    double n = 0.0;
+                    for (int k = 0; k < K; k++) {
+                        s += counts[row][k] + alpha;
+                        n += counts[row][k];
+                    }
+                    im.setRowCaseCount(y, row, (int) TMath.round(n));
                     for (int k = 0; k < K; k++) im.setProbability(y, row, k, (counts[row][k] + alpha) / s);
                 }
             }
@@ -1197,6 +1238,16 @@ public final class HybridCgModel {
                 int[] cps = pm.getContinuousParents(y);
                 int rows = pm.getNumRows(y); // product over discrete-parents only
                 int m = cps.length;
+
+                // Seed every row as unestimated. Rows whose discrete-parent configuration has no
+                // complete cases are never visited below, and must not be left reading as an
+                // estimated mean/coefficient of zero.
+                for (int row = 0; row < rows; row++) {
+                    im.setMean(y, row, Double.NaN);
+                    for (int t = 0; t < m; t++) im.setCoefficient(y, row, t, Double.NaN);
+                    im.setVariance(y, row, Double.NaN);
+                    im.setRowCaseCount(y, row, 0);
+                }
 
                 // Group rows by discrete-parent configuration
                 Map<IntVector, List<Integer>> groups = new HashMap<>();
@@ -1212,8 +1263,7 @@ public final class HybridCgModel {
                 // For each group, OLS Y ~ [1, continuous parents]; variance from residuals. Optionally share variance.
                 double pooledSS = 0.0;
                 int pooledDF = 0;
-                double[] sigma2Row = new double[rows];
-                Arrays.fill(sigma2Row, Double.NaN);
+                boolean[] rowFitted = new boolean[rows];
 
                 for (Map.Entry<IntVector, List<Integer>> e : groups.entrySet()) {
                     int row = pm.getRowIndex(y, e.getKey().values, null);
@@ -1256,21 +1306,34 @@ public final class HybridCgModel {
                         im.setCoefficient(y, row, t, beta.get(1 + t));  // <-- deterministic
                     }
 
-                    // Residual variance
+                    rowFitted[row] = true;
+                    im.setRowCaseCount(y, row, n);
+
+                    // Residual variance. With n <= m + 1 the fit is saturated: the residuals are
+                    // zero by construction and there are no residual degrees of freedom, so there
+                    // is no variance estimate to report. Leave it NaN rather than reporting a
+                    // confident-looking zero, and keep the empty residuals out of the pool.
+                    int df = n - (m + 1);
+                    if (df <= 0) continue;
+
                     SimpleMatrix resid = ym.minus(Xm.mult(beta));
                     double rss = resid.elementPower(2.0).elementSum();
-                    int df = TMath.max(1, n - (m + 1));
                     double s2 = rss / df;
                     im.setVariance(y, row, s2);
 
                     pooledSS += rss;
                     pooledDF += df;
-                    sigma2Row[row] = s2;
                 }
 
                 if (shareVarianceAcrossRows) {
+                    // Broadcast only to rows that actually have a fitted mean and coefficients.
+                    // A discrete-parent configuration with no complete cases stays unestimated
+                    // throughout; lending it a pooled variance would pair a real number with an
+                    // undefined mean.
                     double s2 = pooledDF > 0 ? (pooledSS / pooledDF) : 1.0;
-                    for (int row = 0; row < rows; row++) im.setVariance(y, row, s2);
+                    for (int row = 0; row < rows; row++) {
+                        if (rowFitted[row]) im.setVariance(y, row, s2);
+                    }
                 }
             }
         }

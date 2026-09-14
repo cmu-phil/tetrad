@@ -28,6 +28,9 @@ final class HybridCgRegEditingTable extends JTable {
     /** Foreground for coefficient cells whose per-stratum t-test misses the level. */
     private static final Color NOT_SIGNIFICANT = new Color(0x9E9E9E);
 
+    /** Text shown in place of a NaN parameter, which means the row was never fitted. */
+    private static final String UNESTIMATED = "not estimated";
+
     /**
      * Per-stratum t-test p-values for the coefficient columns, indexed [stratum row][continuous-parent order index]
      * as returned by {@code HybridCgEdgeSignificance.coefficientPValues} for this child; null for no overlay.
@@ -40,10 +43,12 @@ final class HybridCgRegEditingTable extends JTable {
     HybridCgRegEditingTable(HybridCgIm im, HybridCgPm pm, int yIndex) {
         setModel(new Model(im, pm, yIndex));
 
-        // Renderers/editors for doubles
+        // Renderers/editors for doubles. A NaN parameter is not a number the user should read as an
+        // estimate; it means the row was never fitted, so say so rather than printing "NaN".
         setDefaultRenderer(Double.class, new DefaultTableCellRenderer() {
             @Override protected void setValue(Object value) {
-                if (value instanceof Number n) setText(DF3.format(n.doubleValue()));
+                if (value instanceof Number n && Double.isNaN(n.doubleValue())) setText(UNESTIMATED);
+                else if (value instanceof Number n) setText(DF3.format(n.doubleValue()));
                 else super.setValue(value);
             }
         });
@@ -69,12 +74,13 @@ final class HybridCgRegEditingTable extends JTable {
                     String maxLabel = m.maxParentLabelWidthSample(c);
                     w = TMath.max(80, fm.stringWidth(maxLabel) + pad);
                 } else if (c == d) {
-                    w = fm.stringWidth("mean") + pad;
+                    w = TMath.max(fm.stringWidth("mean"), fm.stringWidth(UNESTIMATED)) + pad;
                 } else if (c == d + 1 + mcoeff) {
-                    w = fm.stringWidth("Variance") + pad;
+                    w = TMath.max(fm.stringWidth("Variance"), fm.stringWidth(UNESTIMATED)) + pad;
                 } else {
                     // coefficient columns
-                    w = TMath.max(100, fm.stringWidth(getColumnName(c)) + pad);
+                    w = TMath.max(100, TMath.max(fm.stringWidth(getColumnName(c)),
+                            fm.stringWidth(UNESTIMATED)) + pad);
                 }
                 getColumnModel().getColumn(c).setPreferredWidth(w);
             }
@@ -113,13 +119,28 @@ final class HybridCgRegEditingTable extends JTable {
         return (rowP == null || j >= rowP.length) ? Double.NaN : rowP[j];
     }
 
+    /** True if the column holds a fitted parameter: mean, a coefficient, or the variance. */
+    private boolean isParameterColumn(int col) {
+        return col >= ((Model) getModel()).discParents.size();
+    }
+
+    /** True if the parameter cell holds NaN, meaning the row was never fitted. */
+    private boolean isUnestimated(int row, int col) {
+        if (row < 0 || col < 0 || !isParameterColumn(col)) return false;
+        Object v = getModel().getValueAt(row, col);
+        return v instanceof Number n && Double.isNaN(n.doubleValue());
+    }
+
     @Override
     public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
         Component c = super.prepareRenderer(renderer, row, col);
         if (!isCellSelected(row, col)) {
-            double p = pValueAt(row, col);
-            c.setForeground(this.coefPValues != null && !Double.isNaN(p) && p > this.sigAlpha
-                    ? NOT_SIGNIFICANT : getForeground());
+            int mRow = convertRowIndexToModel(row);
+            int mCol = convertColumnIndexToModel(col);
+            double p = pValueAt(mRow, mCol);
+            boolean grey = isUnestimated(mRow, mCol)
+                           || (this.coefPValues != null && !Double.isNaN(p) && p > this.sigAlpha);
+            c.setForeground(grey ? NOT_SIGNIFICANT : getForeground());
         }
         return c;
     }
@@ -128,8 +149,29 @@ final class HybridCgRegEditingTable extends JTable {
     public String getToolTipText(java.awt.event.MouseEvent event) {
         int row = rowAtPoint(event.getPoint());
         int col = columnAtPoint(event.getPoint());
-        if (this.coefPValues != null && row >= 0 && isCoefficientColumn(convertColumnIndexToModel(col))) {
-            double p = pValueAt(convertRowIndexToModel(row), convertColumnIndexToModel(col));
+        if (row < 0 || col < 0) return super.getToolTipText(event);
+
+        int mRow = convertRowIndexToModel(row);
+        int mCol = convertColumnIndexToModel(col);
+
+        if (isUnestimated(mRow, mCol)) {
+            Model m = (Model) getModel();
+            int n = m.im.getRowCaseCount(m.y, mRow);
+            if (n == 0) {
+                return "Not estimated: no complete cases for this combination of discrete parents. "
+                       + "A case counts only if the child and all of its parents are observed.";
+            }
+            if (n > 0) {
+                int needed = m.contParents.size() + 2;
+                return "Not estimated: " + n + (n == 1 ? " complete case" : " complete cases")
+                       + " for this combination of discrete parents, and " + needed
+                       + " are needed before a residual variance can be estimated.";
+            }
+            return "Not estimated for this combination of discrete parents.";
+        }
+
+        if (this.coefPValues != null && isCoefficientColumn(mCol)) {
+            double p = pValueAt(mRow, mCol);
             if (Double.isNaN(p)) {
                 return "No t-test for this stratum (insufficient cases or singular design).";
             }

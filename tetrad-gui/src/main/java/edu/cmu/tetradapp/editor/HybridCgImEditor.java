@@ -704,7 +704,10 @@ public final class HybridCgImEditor extends JPanel {
             try { return Double.valueOf(s); } catch (Exception ex) { return Double.NaN; }
         }
         @Override public Component getTableCellEditorComponent(JTable t, Object v, boolean sel, int r, int c) {
-            ((JTextField)getComponent()).setText((v instanceof Number) ? fmt.format(((Number) v).doubleValue()) : "");
+            // A NaN cell is unestimated, not a number to edit down from; start blank.
+            boolean nan = (v instanceof Number n) && Double.isNaN(n.doubleValue());
+            ((JTextField)getComponent()).setText((v instanceof Number && !nan)
+                    ? fmt.format(((Number) v).doubleValue()) : "");
             return getComponent();
         }
     }
