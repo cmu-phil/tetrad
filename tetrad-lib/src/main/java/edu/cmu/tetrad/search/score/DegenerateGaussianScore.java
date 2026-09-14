@@ -74,20 +74,23 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
 
     /**
      * Constructs the score from a dataset with an explicit missing-data specification. Supported policies on a
-     * dataset with missing values are LISTWISE (complete cases only) and TESTWISE: the embedding propagates a
-     * missing source entry to NaN in every derived column of that variable, and the underlying
-     * {@link SemBicScore} then computes each family's covariance over the rows complete on that family's embedded
-     * columns. EM_COVARIANCE is not offered, because the indicator columns of the embedding are not Gaussian and
-     * an EM-estimated covariance of them has no interpretation. A null spec on missing data is treated as FAIL,
-     * matching the behavior since the Phase 1 refactor (before which missing data silently produced statistically
+     * dataset with missing values are LISTWISE (complete cases only), TESTWISE and EM_COVARIANCE. Under TESTWISE
+     * the embedding propagates a missing source entry to NaN in every derived column of that variable, and the
+     * underlying {@link SemBicScore} then computes each family's covariance over the rows complete on that
+     * family's embedded columns. Under EM_COVARIANCE the EM estimate is taken of the embedded matrix, not of the
+     * raw mixed data: this score's founding assumption is already that the indicator columns may be treated as
+     * jointly Gaussian for scoring, nothing downstream inspects a filled-in indicator, and the reference category
+     * is dropped, so an indicator block is full rank. The caveat is that the implied category probabilities need
+     * not be coherent, and the size of that looseness grows with the missingness rate; compare against TESTWISE
+     * on real data rather than assuming either dominates. A null spec on missing data is treated as FAIL, matching
+     * the behavior since the Phase 1 refactor (before which missing data silently produced statistically
      * undefined scores).
      *
      * @param dataSet               The dataset.
      * @param precomputeCovariances True if covariances should be precomputed.
      * @param lambda                Singularity lambda
      * @param spec                  The missing-data specification, or null (equivalent to FAIL on missing data).
-     * @throws IllegalArgumentException      If the dataset has missing values and the policy is FAIL or
-     *                                       EM_COVARIANCE.
+     * @throws IllegalArgumentException      If the dataset has missing values and the policy is FAIL.
      * @throws UnsupportedOperationException If the policy is MULTIPLE_IMPUTATION (handled by a search wrapper, not
      *                                       by a single score; see Phase 3).
      */
