@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -378,54 +379,58 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             return covarianceMatrix.getSelection(rows, cols);
         }
 
-        // The set of valid rows (complete on every column in 'rows' and 'cols') is the same for every cell of the
-        // covariance matrix, so it is computed once per call--and cached per column set across calls; see
-        // TestwiseRows--rather than recomputed inside every cell as before. The numerics are unchanged. (Note: this
-        // path divides by n - 1 while calcCovWithTestwiseDeletion divides by n; that preexisting inconsistency is
-        // preserved here for backward compatibility and flagged for later resolution.)
-        int[] filterColumns = new int[cols.length + rows.length];
-        System.arraycopy(cols, 0, filterColumns, 0, cols.length);
-        System.arraycopy(rows, 0, filterColumns, cols.length, rows.length);
-        List<Integer> validRows = TestwiseRows.forMatrix(data).validRows(filterColumns, rowsInData);
+        // Under test-wise deletion the family covariance is taken from TestwiseCovariance, which computes each
+        // column set once (means hoisted out of the cell loop, one pass for the cross products) and, when the
+        // candidate rows are the whole dataset, memoizes it by column set across calls. Previously every call
+        // rebuilt the matrix from the raw data and recomputed both column means inside every cell, so a single
+        // local score cost O(k^2 m) row visits with no reuse between calls; with a basis-function embedding
+        // multiplying k, this dominated BOSS on modest data. The numerics are unchanged: both paths divide by
+        // n - 1 over the rows complete on every column in 'rows' and 'cols'. (calcCovWithTestwiseDeletion still
+        // divides by n; that preexisting inconsistency is untouched here.)
+        int[] union = unionPreservingOrder(cols, rows);
+        TestwiseCovariance.Family family = TestwiseCovariance.forMatrix(data).family(union, rowsInData);
 
         // With no more complete rows than variables, the sample covariance is undefined (0 or 1 rows gives NaN) or
         // rank deficient, and chooseInverse would fail on NaN with an IllegalArgumentException that no caller
         // catches. Report it as a singularity instead, so that localScore returns NaN and the search treats the
         // parent set as unscorable rather than dying. This arises with test-wise deletion on sparse data, e.g. a
         // wide table in which few units are observed on every one of several assessments. Added 2026-9-10.
-        if (validRows.size() <= cols.length) {
+        if (family.n() <= cols.length) {
             throw new SingularMatrixException();
+        }
+
+        if (Arrays.equals(rows, cols) && Arrays.equals(union, cols)) {
+            return family.cov();
         }
 
         Matrix cov = new Matrix(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
+            int a = indexOf(union, rows[i]);
             for (int j = 0; j < cols.length; j++) {
-                double mui = 0.0;
-                double muj = 0.0;
-                double sampleSize = validRows.size();
-
-                for (int k : validRows) {
-                    mui += data.get(k, cols[i]);
-                    muj += data.get(k, cols[j]);
-                }
-
-                mui /= sampleSize;
-                muj /= sampleSize;
-
-                double _cov = 0.0;
-
-                for (int k : validRows) {
-                    _cov += (data.get(k, cols[i]) - mui) * (data.get(k, cols[j]) - muj);
-                }
-
-                double mean = _cov / (sampleSize - 1);
-                cov.set(i, j, mean);
-                cov.set(j, i, mean);
+                cov.set(i, j, family.cov().get(a, indexOf(union, cols[j])));
             }
         }
 
         return cov;
+    }
+
+    /**
+     * The distinct entries of the two arrays, first array's order first, then any new entries of the second.
+     */
+    private static int[] unionPreservingOrder(int[] first, int[] second) {
+        LinkedHashSet<Integer> set = new LinkedHashSet<>();
+        for (int c : first) set.add(c);
+        for (int c : second) set.add(c);
+        int[] out = new int[set.size()];
+        int k = 0;
+        for (int c : set) out[k++] = c;
+        return out;
+    }
+
+    private static int indexOf(int[] array, int value) {
+        for (int i = 0; i < array.length; i++) if (array[i] == value) return i;
+        throw new IllegalStateException("Column " + value + " not in family.");
     }
 
     private static List<Integer> getRows(Matrix data, boolean calculateRowSubsets) {
@@ -738,27 +743,14 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      * @return The factor.
      */
     private double testwiseVarianceCorrection(int i, int[] parents) {
-        TestwiseRows testwiseRows = TestwiseRows.forMatrix(this.data);
-        double ownVariance = variance(i, testwiseRows.validRows(new int[]{i}));
-        double localVariance = variance(i, testwiseRows.validRows(concat(i, parents)));
+        // Both variances are read from the shared family cache: the family over concat(i, parents) is exactly the
+        // one getCov just built for this call, and i's own family is a single column. Both divide by n - 1 over
+        // the same row sets the previous inline passes used, so the value is unchanged; the two extra passes over
+        // boxed row lists per local score are gone.
+        TestwiseCovariance testwise = TestwiseCovariance.forMatrix(this.data);
+        double ownVariance = testwise.column(i).cov().get(0, 0);
+        double localVariance = testwise.family(concat(i, parents)).cov().get(0, 0);
         return ownVariance / localVariance;
-    }
-
-    /**
-     * The sample variance of the given column over the given rows (at least two).
-     */
-    private double variance(int col, List<Integer> rows) {
-        double mu = 0.0;
-        for (int k : rows) mu += this.data.get(k, col);
-        mu /= rows.size();
-
-        double v = 0.0;
-        for (int k : rows) {
-            double d = this.data.get(k, col) - mu;
-            v += d * d;
-        }
-
-        return v / (rows.size() - 1);
     }
 
     /**

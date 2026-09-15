@@ -26,8 +26,10 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -52,6 +54,13 @@ public final class TestwiseCovariance {
     /**
      * The data, rows by columns; NaN marks a missing entry.
      */
+    /**
+     * The per-matrix registry, so that several scores or tests over the same raw data matrix share one family
+     * cache (mirrors TestwiseRows.MATRIX_REGISTRY). Weak identity keys: Matrix does not override equals/hashCode.
+     */
+    private static final Map<Matrix, TestwiseCovariance> MATRIX_REGISTRY
+            = Collections.synchronizedMap(new WeakHashMap<>());
+
     private final Matrix data;
 
     /**
@@ -77,6 +86,27 @@ public final class TestwiseCovariance {
      *
      * @return This number.
      */
+    /**
+     * The shared instance for the given raw data matrix, created on first request. The matrix must not be mutated
+     * after analysis begins; if it is, discard the instance with {@link #invalidate(Matrix)}.
+     *
+     * @param matrix The matrix.
+     * @return This instance.
+     */
+    public static TestwiseCovariance forMatrix(Matrix matrix) {
+        return MATRIX_REGISTRY.computeIfAbsent(matrix, TestwiseCovariance::new);
+    }
+
+    /**
+     * Discards any shared instance for the given matrix.
+     *
+     * @param matrix The matrix.
+     */
+    public static void invalidate(Matrix matrix) {
+        TestwiseCovariance removed = MATRIX_REGISTRY.remove(matrix);
+        if (removed != null) removed.cache.clear();
+    }
+
     public int getNumRows() {
         return this.data.getNumRows();
     }
