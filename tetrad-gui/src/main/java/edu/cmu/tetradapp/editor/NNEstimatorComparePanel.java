@@ -29,7 +29,7 @@ import java.util.concurrent.*;
 /**
  * Side-by-side visual comparison panel for {@link NNEstimatorModel}.
  *
- * <p>The panel has four tabs:
+ * <p>The panel's tabs:
  * <ol>
  *   <li><b>Cross-Validation</b> — k-fold OOS metrics per node plus whole-graph
  *       MMD². Results are restored from the model on relaunch.</li>
@@ -39,6 +39,11 @@ import java.util.concurrent.*;
  *       progressively as each parent is computed, are accumulated across
  *       multiple child selections, and are restored from the model on
  *       relaunch.</li>
+ *   <li><b>Graph</b> — the working DAG with edges shaded by a statistic
+ *       chosen from a dropdown (see {@link NNEstimatorGraphPanel}); reads
+ *       results already computed on the other tabs.</li>
+ *   <li><b>Prune</b> — propose and apply edge deletions whose removal does
+ *       not degrade held-out prediction.</li>
  *   <li><b>Observed vs. Resimulated</b> — side-by-side plot matrix.</li>
  *   <li><b>Explanation</b> — static plain-language account of what the
  *       estimator fits, what each tab computes, and how to read the numbers
@@ -103,6 +108,10 @@ public final class NNEstimatorComparePanel extends JPanel {
     private final JTable pruneTable = new JTable(pruneTableModel);
     private PredictionPruneReport pruneReport;
 
+    // ── graph tab ─────────────────────────────────────────────────────────────
+
+    private final NNEstimatorGraphPanel graphPanel;
+
     // ── shared status ─────────────────────────────────────────────────────────
 
     private final JLabel status = new JLabel(" ");
@@ -134,12 +143,21 @@ public final class NNEstimatorComparePanel extends JPanel {
         edgeConfigSpinner.setValue(TMath.max(10, TMath.min(300, observed.getNumRows())));
 
         // Build tabs.
+        this.graphPanel = new NNEstimatorGraphPanel(model);
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Cross-Validation",         buildCvTab());
         tabs.addTab("Edge Strength",            buildEdgeStrengthTab());
+        tabs.addTab("Graph",                    graphPanel);
         tabs.addTab("Prune",                    buildPruneTab());
         tabs.addTab("Observed vs. Resimulated", buildPlotTab());
         tabs.addTab("Explanation",              NNEstimatorExplanationPanel.create());
+
+        // Recolor from the latest persisted results whenever the Graph tab is
+        // shown, so values computed on other tabs appear without a manual
+        // refresh.
+        tabs.addChangeListener(e -> {
+            if (tabs.getSelectedComponent() == graphPanel) graphPanel.refresh();
+        });
 
         add(tabs,          BorderLayout.CENTER);
         add(buildFooter(), BorderLayout.SOUTH);
