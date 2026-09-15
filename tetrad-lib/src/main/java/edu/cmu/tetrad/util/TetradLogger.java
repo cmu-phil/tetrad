@@ -70,9 +70,11 @@ public class TetradLogger {
     private final transient List<TetradLoggerListener> listeners = new ArrayList<>();
     /**
      * States whether events should be logged; this allows one to turn off all loggers at once. (Note, a field is used,
-     * since fast lookups are important)
+     * since fast lookups are important.) On by default and process-local: it was previously persisted in
+     * java.util.prefs, so a headless script (py-tetrad, causal-cmd) that turned logging off silently turned it off
+     * for the next GUI launch under the same OS user, and vice versa.
      */
-    private transient boolean logging = Preferences.userRoot().getBoolean("loggingActivated", true);
+    private transient boolean logging = true;
     /**
      * The configuration to use to determine which events to log.
      */
@@ -206,7 +208,6 @@ public class TetradLogger {
      * @param logging a boolean
      */
     public void setLogging(boolean logging) {
-        Preferences.userRoot().putBoolean("loggingActivated", logging);
         this.logging = logging;
     }
 
