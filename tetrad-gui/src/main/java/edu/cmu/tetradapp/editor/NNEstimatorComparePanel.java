@@ -103,6 +103,7 @@ public final class NNEstimatorComparePanel extends JPanel {
     private final JSpinner pruneKSpinner;
     private final JButton proposePruneButton = new JButton("Propose Pruning");
     private final JButton applyPruneButton   = new JButton("Apply && Re-estimate");
+    private final JButton revertPruneButton  = new JButton("Revert Prune");
     private final JLabel pruneProgressLabel  = new JLabel(" ");
     private final PruneTableModel pruneTableModel = new PruneTableModel();
     private final JTable pruneTable = new JTable(pruneTableModel);
@@ -202,6 +203,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         } else {
             applyPruneButton.setEnabled(false);
         }
+        revertPruneButton.setEnabled(model.getPrunedGraph() != null);
 
         wireResimulate();
         wireCv();
@@ -895,6 +897,9 @@ public final class NNEstimatorComparePanel extends JPanel {
         controls.add(pruneTSpinner);
         controls.add(proposePruneButton);
         controls.add(applyPruneButton);
+        controls.add(revertPruneButton);
+        revertPruneButton.setToolTipText(
+                "Re-estimate on the input graph, discarding the applied prune.");
 
         JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         labelPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
@@ -982,6 +987,7 @@ public final class NNEstimatorComparePanel extends JPanel {
 
             proposePruneButton.setEnabled(false);
             applyPruneButton.setEnabled(false);
+            revertPruneButton.setEnabled(false);
             pruneProgressLabel.setText("Re-estimating on the pruned graph …");
 
             new SwingWorker<Void, Void>() {
@@ -1009,9 +1015,56 @@ public final class NNEstimatorComparePanel extends JPanel {
                         status.setText("Model is fitted to the pruned graph "
                                 + "(" + pruneReport.getDeletions().size()
                                 + " edge(s) removed).");
+                        revertPruneButton.setEnabled(true);
+                        firePropertyChange("modelChanged", null, null);
                     } catch (Exception ex) {
                         applyPruneButton.setEnabled(true);
+                        revertPruneButton.setEnabled(model.getPrunedGraph() != null);
                         pruneProgressLabel.setText("Apply failed: " + ex.getMessage());
+                    }
+                }
+            }.execute();
+        });
+
+        revertPruneButton.addActionListener(e -> {
+            if (model.getPrunedGraph() == null) return;
+            int sampleSize = (Integer) nSpinner.getValue();
+
+            proposePruneButton.setEnabled(false);
+            applyPruneButton.setEnabled(false);
+            revertPruneButton.setEnabled(false);
+            pruneProgressLabel.setText("Re-estimating on the input graph …");
+
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    model.setPrunedGraph(null);
+                    model.resimulate(sampleSize);
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    proposePruneButton.setEnabled(true);
+                    try {
+                        get();
+                        dag = model.getWorkingGraph();
+                        populateChildCombo();
+                        simulated = model.getSimulatedData() != null
+                                ? model.getSimulatedData() : observed;
+                        refreshAdequacyStatus(model);
+                        // The proposal is kept, so it can be applied again.
+                        applyPruneButton.setEnabled(pruneReport != null
+                                && !pruneReport.getDeletions().isEmpty());
+                        pruneProgressLabel.setText(
+                                "Reverted: model re-estimated on the input graph. "
+                                + "Rerun CV and edge strengths; earlier results "
+                                + "were computed on the pruned model.");
+                        status.setText("Model is fitted to the input graph.");
+                        firePropertyChange("modelChanged", null, null);
+                    } catch (Exception ex) {
+                        revertPruneButton.setEnabled(model.getPrunedGraph() != null);
+                        pruneProgressLabel.setText("Revert failed: " + ex.getMessage());
                     }
                 }
             }.execute();
