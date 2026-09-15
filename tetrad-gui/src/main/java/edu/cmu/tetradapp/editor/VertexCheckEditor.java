@@ -878,7 +878,7 @@ public class VertexCheckEditor extends JPanel {
                         get();
                     } catch (java.util.concurrent.ExecutionException e) {
                         Throwable cause = (e.getCause() != null) ? e.getCause() : e;
-                        TetradLogger.getInstance().log("Vertex check failed: " + cause);
+                        TetradLogger.getInstance().warn("Vertex check failed: " + cause);
                         java.io.StringWriter sw = new java.io.StringWriter();
                         cause.printStackTrace(new java.io.PrintWriter(sw));
                         TetradLogger.getInstance().log(sw.toString());
@@ -981,7 +981,7 @@ public class VertexCheckEditor extends JPanel {
                     get();
                 } catch (java.util.concurrent.ExecutionException e) {
                     Throwable cause = (e.getCause() != null) ? e.getCause() : e;
-                    TetradLogger.getInstance().log("Vertex check failed: " + cause);
+                    TetradLogger.getInstance().warn("Vertex check failed: " + cause);
                     cause.printStackTrace();
                     JOptionPane.showMessageDialog(VertexCheckEditor.this,
                             "Vertex check failed: " + cause,
@@ -1034,7 +1034,7 @@ public class VertexCheckEditor extends JPanel {
             repaint();
         } catch (InstantiationException | IllegalAccessException
                  | InvocationTargetException | NoSuchMethodException e) {
-            TetradLogger.getInstance().log("Error: " + e.getMessage());
+            TetradLogger.getInstance().warn("Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }

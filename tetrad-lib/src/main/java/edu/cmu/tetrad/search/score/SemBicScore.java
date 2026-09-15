@@ -819,11 +819,11 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         int n = this.numSingularities.incrementAndGet();
 
         if (n <= MAX_SINGULARITIES_LOGGED) {
-            TetradLogger.getInstance().log("Singularity encountered when scoring "
+            TetradLogger.getInstance().warn("Singularity encountered when scoring "
                     + LogUtilsSearch.getScoreFact(i, parents, variables));
 
             if (n == MAX_SINGULARITIES_LOGGED) {
-                TetradLogger.getInstance().log("Further singularities will be counted but not logged; see "
+                TetradLogger.getInstance().warn("Further singularities will be counted but not logged; see "
                         + "SemBicScore.getNumSingularities().");
             }
         }

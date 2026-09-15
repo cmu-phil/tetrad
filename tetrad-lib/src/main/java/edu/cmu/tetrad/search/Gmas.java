@@ -194,7 +194,7 @@ public final class Gmas implements IGraphSearch {
         Double currentBic = magBic(mag);
 
         if (currentBic == null) {
-            TetradLogger.getInstance().log("GMAS: the seed MAG could not be scored (no covariance, a selection "
+            TetradLogger.getInstance().warn("GMAS: the seed MAG could not be scored (no covariance, a selection "
                                            + "edge, or a singular fit); returning the seed PAG unchanged.");
             return GraphUtils.replaceNodes(seedPag, nodes);
         }

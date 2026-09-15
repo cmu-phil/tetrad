@@ -704,7 +704,7 @@ public class Ion {
                                                + minViolations + ").");
             } else {
                 outputSet = best;
-                TetradLogger.getInstance().log("ION: no graph satisfied every recorded association and oriented "
+                TetradLogger.getInstance().warn("ION: no graph satisfied every recorded association and oriented "
                                                + "path claim; returning graphs with the minimum number of "
                                                + "association violations (" + minViolations + "), ignoring "
                                                + "oriented path claims.");

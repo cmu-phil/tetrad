@@ -938,7 +938,7 @@ public class MarkovCheckEditor extends JPanel {
                 repaint();
             } catch (InstantiationException | IllegalAccessException
                      | InvocationTargetException | NoSuchMethodException e1) {
-                TetradLogger.getInstance().log("Error: " + e1.getMessage());
+                TetradLogger.getInstance().warn("Error: " + e1.getMessage());
                 throw new RuntimeException(e1);
             }
         }

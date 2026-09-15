@@ -96,6 +96,12 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
      */
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) throws InterruptedException {
+        // Single choke point for every algcomparison search: if the user asked for verbose output, make sure the
+        // logger is on, so that a verbose run cannot be silently swallowed by a logger some other part of the
+        // process (a py-tetrad script, causal-cmd, an earlier GUI action) had switched off. One-way by design; see
+        // TetradLogger.ensureLoggingForVerbose.
+        TetradLogger.getInstance().ensureLoggingForVerbose(parameters.getBoolean(Params.VERBOSE));
+
         // A DataModelList is the request to POOL its data sets (IMaGES-style) into one search; see searchPooled.
         if (dataModel instanceof DataModelList list) {
             if (list.size() == 1) return search(list.getFirst(), parameters);

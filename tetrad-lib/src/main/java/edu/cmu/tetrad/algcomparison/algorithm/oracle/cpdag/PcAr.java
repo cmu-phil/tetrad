@@ -287,7 +287,7 @@ public class PcAr extends AbstractBootstrapAlgorithm implements Algorithm, Accep
                                 + ", sepset " + cd.sepset() + ", recovered=" + cd.recovered() + ")");
             }
             for (edu.cmu.tetrad.search.PcAR.MarkovAuditFailure maf : search.getMarkovAuditFailures()) {
-                TetradLogger.getInstance().log(
+                TetradLogger.getInstance().warn(
                         "[PcAR markov-audit] " + maf.x().getName() + " _||_ " + maf.y().getName()
                                 + " | " + maf.conditioningSet() + " failed (p=" + maf.pValue() + ")");
             }

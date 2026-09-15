@@ -496,7 +496,7 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
         try {
             out.defaultWriteObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to serialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
+            TetradLogger.getInstance().warn("Failed to serialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }
@@ -508,7 +508,7 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
         try {
             in.defaultReadObject();
         } catch (IOException e) {
-            TetradLogger.getInstance().log("Failed to deserialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
+            TetradLogger.getInstance().warn("Failed to deserialize: " + getClass().getCanonicalName() + ", " + e.getMessage());
             throw e;
         }
     }

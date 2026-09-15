@@ -750,7 +750,7 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
         if (finalScan.edge() != null) {
             TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
         } else if (finalScan.indeterminate()) {
-            TetradLogger.getInstance().log(
+            TetradLogger.getInstance().warn(
                     "\nR4: Detection inconclusive: a blocking search timed out before a verdict. "
                             + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {

@@ -136,7 +136,7 @@ final class TetradMenuBar extends JMenuBar {
                         SwingUtilities.invokeLater(SettingsDialog::showDialog));
             }
         } catch (Exception e) {
-            TetradLogger.getInstance().log("Could not set About/Settings handlers on this platform.");
+            TetradLogger.getInstance().warn("Could not set About/Settings handlers on this platform.");
         }
     }
 

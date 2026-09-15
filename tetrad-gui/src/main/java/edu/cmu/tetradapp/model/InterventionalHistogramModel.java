@@ -364,7 +364,7 @@ public final class InterventionalHistogramModel implements SessionModel {
                     zCols.add(data.getColumnIndex(dz));
                 } else {
                     lastIgnoredContinuousZ.add(zn);
-                    TetradLogger.getInstance().log(
+                    TetradLogger.getInstance().warn(
                             "InterventionalHistogram: ignoring continuous Z (prototype exact-matching sampler): " + zn);
                 }
             }

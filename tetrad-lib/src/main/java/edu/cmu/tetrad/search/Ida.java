@@ -282,7 +282,7 @@ public class Ida {
             }
         } catch (Exception e) {
             // If O-set computation fails, treat this orientation as yielding no effect
-            TetradLogger.getInstance().log("O-set computation failed for " + x + " ~~> " + y + ": " + e);
+            TetradLogger.getInstance().warn("O-set computation failed for " + x + " ~~> " + y + ": " + e);
             return 0.0;
         }
 
@@ -411,7 +411,7 @@ public class Ida {
             try {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
-                TetradLogger.getInstance().log("Singularity encountered when regressing "
+                TetradLogger.getInstance().warn("Singularity encountered when regressing "
                         + LogUtilsSearch.getScoreFact(child, regressors));
                 return 0.0;
             }

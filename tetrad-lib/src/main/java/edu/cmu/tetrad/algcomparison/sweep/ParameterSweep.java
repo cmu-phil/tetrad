@@ -616,7 +616,7 @@ public final class ParameterSweep {
                     mc.getFractionDependent(true), mc.getFractionDependent(false),
                     mc.getNumTests(true), mc.getNumTests(false));
         } catch (Exception e) {
-            TetradLogger.getInstance().log("ParameterSweep: Markov check failed: " + e.getMessage());
+            TetradLogger.getInstance().warn("ParameterSweep: Markov check failed: " + e.getMessage());
             return new SweepResult.MarkovStats(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
                     Double.NaN, Double.NaN, Double.NaN, 0, 0);
         }

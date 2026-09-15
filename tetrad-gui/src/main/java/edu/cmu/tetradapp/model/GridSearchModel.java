@@ -1024,7 +1024,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
                 }
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
-                TetradLogger.getInstance().log("Error creating statistic: " + e.getMessage());
+                TetradLogger.getInstance().warn("Error creating statistic: " + e.getMessage());
                 // Skip.
             }
         }
@@ -1135,7 +1135,7 @@ public class GridSearchModel implements SessionModel, GraphSource {
                 }
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                      IllegalAccessException e) {
-                TetradLogger.getInstance().log("Error creating statistic: " + e.getMessage());
+                TetradLogger.getInstance().warn("Error creating statistic: " + e.getMessage());
                 e.printStackTrace();
             }
         }

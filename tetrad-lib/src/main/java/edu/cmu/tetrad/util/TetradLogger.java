@@ -70,9 +70,10 @@ public class TetradLogger {
     private final transient List<TetradLoggerListener> listeners = new ArrayList<>();
     /**
      * States whether events should be logged; this allows one to turn off all loggers at once. (Note, a field is used,
-     * since fast lookups are important.) On by default and process-local: it was previously persisted in
-     * java.util.prefs, so a headless script (py-tetrad, causal-cmd) that turned logging off silently turned it off
-     * for the next GUI launch under the same OS user, and vice versa.
+     * since fast lookups are important.) On by default, so that warnings a caller did not ask for are still seen,
+     * and process-local: it was previously persisted in java.util.prefs, so a headless script (py-tetrad,
+     * causal-cmd) that turned logging off silently turned it off for the next GUI launch under the same OS user,
+     * and vice versa. Each process now starts logging and setLogging affects only that process.
      */
     private transient boolean logging = true;
     /**
@@ -275,6 +276,37 @@ public class TetradLogger {
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Logs a warning: a condition the caller did not ask about and would want to know, such as a search hitting an
+     * iteration cap, a local score that could not be computed, or a resource that could not be read.
+     * <p>
+     * Warnings ride only the logger's own on/off switch, never a caller's verbose flag. A per-search verbose flag
+     * says whether that search narrates its progress; it does not say whether the user wants to be told that
+     * something went wrong. Calls to this method must therefore <b>not</b> be wrapped in {@code if (verbose)}.
+     * <p>
+     * The message is prefixed with "WARNING: " and otherwise routed exactly as {@link #log(String)}.
+     *
+     * @param message The warning text, without a prefix.
+     */
+    public void warn(String message) {
+        log("WARNING: " + message);
+    }
+
+    /**
+     * Ensures logging is on when a caller has asked for verbose output, so that a verbose search cannot be
+     * silently swallowed by a logger that some other part of the process turned off. Deliberately one-way:
+     * {@code false} leaves the logger alone. The logger is a process-wide singleton while verbose flags are
+     * per-object, so letting {@code false} turn logging off would let one quiet search silence a concurrently
+     * running verbose one, and would suppress warnings for every caller that never set verbose at all.
+     *
+     * @param verbose Whether the caller asked for verbose output.
+     */
+    public void ensureLoggingForVerbose(boolean verbose) {
+        if (verbose) {
+            setLogging(true);
         }
     }
 

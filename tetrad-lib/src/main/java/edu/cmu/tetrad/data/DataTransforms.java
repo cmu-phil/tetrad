@@ -1047,7 +1047,7 @@ public class DataTransforms {
                                                + "Covariance Audit on the result for the full diagnosis.");
             }
         } catch (Exception e) {
-            TetradLogger.getInstance().log("Gaussian copula correlation: the eigenvalues could not be computed, "
+            TetradLogger.getInstance().warn("Gaussian copula correlation: the eigenvalues could not be computed, "
                                            + "so positive semidefiniteness was not checked.");
         }
     }
