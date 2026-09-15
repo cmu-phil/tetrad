@@ -316,6 +316,12 @@ public final class Cdnod implements IGraphSearch {
         nodes.sort(Comparator.comparing(Node::getName));
 
         for (Node z : nodes) {
+            // Contexts are exogenous by assumption and were forced C -> X above, so a context can
+            // never be the collider of an unshielded triple. Skipping here avoids enumerating
+            // sepsets for every pair of a context's (typically many) neighbors only to have
+            // canOrientCollider reject the result.
+            if (contextNodes.contains(z)) continue;
+
             List<Node> adj = new ArrayList<>(g.getAdjacentNodes(z));
             adj.sort(Comparator.comparing(Node::getName));
 
@@ -325,6 +331,10 @@ public final class Cdnod implements IGraphSearch {
                     Node y = adj.get(j);
                     if (g.isAdjacentTo(x, y)) continue; // only unshielded
 
+                    // The judges below do not mutate g, so the (cheap) orientability check can be
+                    // made before the (expensive) sepset enumeration with identical outcome.
+                    if (!canOrientCollider(g, x, z, y)) continue;
+
                     checkTimeout();
 
                     // adj is name-sorted and i < j, so x < y by name already; no swap needed.
@@ -332,7 +342,7 @@ public final class Cdnod implements IGraphSearch {
                     switch (colliderStyle) {
                         case SEPSETS -> {
                             Set<Node> s = admissibleSepset(g, x, y, sepsets);
-                            if (s != null && !s.contains(z) && canOrientCollider(g, x, z, y)) {
+                            if (s != null && !s.contains(z)) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose)
                                     TetradLogger.getInstance().log("[SEPSETS] " + x + "->" + z + "<-" + y + " (S=" + labelSet(s) + ")");
@@ -340,14 +350,14 @@ public final class Cdnod implements IGraphSearch {
                         }
                         case CONSERVATIVE -> {
                             ColliderOutcome out = judgeConservative(g, x, z, y);
-                            if (out == ColliderOutcome.INDEPENDENT && canOrientCollider(g, x, z, y)) {
+                            if (out == ColliderOutcome.INDEPENDENT) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose) TetradLogger.getInstance().log("[CPC] " + x + "->" + z + "<-" + y);
                             }
                         }
                         case MAX_P -> {
                             MaxPDecision d = decideMaxP(g, x, z, y);
-                            if (d.outcome == ColliderOutcome.INDEPENDENT && canOrientCollider(g, x, z, y)) {
+                            if (d.outcome == ColliderOutcome.INDEPENDENT) {
                                 GraphUtils.orientCollider(g, x, z, y);
                                 if (verbose)
                                     TetradLogger.getInstance().log("[MAX-P] " + x + "->" + z + "<-" + y + " (p=" + d.bestP + ", S=" + labelSet(d.bestS) + ")");
