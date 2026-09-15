@@ -399,7 +399,29 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         int idx = tabbedPane.getSelectedIndex();
         if (idx < 0) return null;
         if (idx >= displayedModels.size()) return null;
+
+        // For a tabular tab, return the dataset the table displays. dataDisplay() shows a copy of the wrapper's
+        // model, and syncDisplayedModelsToWrapper() writes that copy back into the wrapper on every table event,
+        // so the displayed copy is the live object. The entry in displayedModels is the pre-copy original: it is
+        // superseded in the wrapper by the first sync, and an in-place edit made to it (e.g. by the Data Audit's
+        // removal controls) is neither shown in the table nor seen downstream.
+        JTable table = getSelectedJTable();
+        if (table instanceof TabularDataJTable tabular) return tabular.getDataSet();
+
         return displayedModels.get(idx);
+    }
+
+    /**
+     * Refreshes the selected tab after its dataset (as returned by {@link #getSelectedDataModel()}) was edited in
+     * place by another component, such as the Data Audit's recode and removal controls. Fires a structure change on
+     * the table model, which rebuilds the columns and, through the model listener installed in dataDisplay(),
+     * writes the displayed dataset back to the wrapper and fires modelChanged. No-op for non-tabular tabs.
+     */
+    public void refreshSelectedDisplay() {
+        JTable table = getSelectedJTable();
+        if (table instanceof TabularDataJTable tabular) {
+            ((javax.swing.table.AbstractTableModel) tabular.getModel()).fireTableStructureChanged();
+        }
     }
 
     /**

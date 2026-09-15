@@ -1,8 +1,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -23,17 +21,25 @@ import java.util.*;
 /**
  * Implements a variant of the CD-NOD (Causal Discovery from Non-stationary/
  * heterogeneous Data) algorithm that uses BOSS (Best Order Score Search) for
- * the backbone rather than FAS, combining a score-based CPDAG with
- * constraint-based collider orientation for the triples BOSS leaves
- * unresolved.
+ * the backbone rather than FAS. The output is BOSS's knowledge-restricted CPDAG
+ * with context edges forced; an optional constraint-based audit reports where
+ * the supplied independence test disagrees with the score, without altering
+ * the graph.
  *
- * <p><b>Division of labor.</b> BOSS's orientations are treated as
- * authoritative: the constraint-based collider step is applied only to
- * unshielded triples x --- z --- y in which <i>both</i> edges at z are
- * undirected in the BOSS CPDAG (after context forcing). Triples that BOSS has
- * already resolved, in whole or in part, are never revisited or overridden by
- * CI tests. The CI step is thus a supplement that can only add information
- * where the score-based search was agnostic.
+ * <p><b>Why the CI step is a diagnostic, not an orienter.</b> The BOSS backbone
+ * returns a CPDAG (via {@link PermutationSearch}), in which every unshielded
+ * triple is definite: x → z ← y is a collider in every DAG of the class, and an
+ * unshielded triple with an undirected edge at z is a non-collider in every DAG
+ * of the class. There are therefore no triples on which the score is agnostic,
+ * and a CI-based collider decision can only either agree with the CPDAG (and
+ * change nothing) or disagree with it (and, if committed, move the graph outside
+ * BOSS's equivalence class, possibly to a non-extendable PDAG). Committing such
+ * disagreements is not a supplement to the score; it is a second, inconsistent
+ * search. Instead, each unshielded triple is audited and disagreements in
+ * either direction are logged and made available via {@link #getDisagreements()}.
+ * A high disagreement count is evidence that the score's model (e.g. linear
+ * Gaussian) and the test's model are not describing the data the same way, which
+ * is worth knowing before interpreting the output.
  *
  * <p>Context variables are identified as all Tier-0 variables in the supplied
  * {@link Knowledge} object. Any variable in Tier-0 that is also present in the
@@ -51,30 +57,35 @@ import java.util.*;
  *   <li><b>Context forcing.</b> For each context variable C and each adjacent
  *       non-context variable X, the edge C --- X is replaced by the directed
  *       edge C → X, subject to any background knowledge constraints.</li>
- *   <li><b>Collider orientation on unresolved triples.</b> Unshielded triples
- *       whose two edges at the collider candidate are both undirected are
- *       oriented as colliders or non-colliders using one of three strategies,
- *       selectable via {@link ColliderOrientationStyle}:
+ *   <li><b>Meek closure.</b> Meek's orientation rules are applied to propagate
+ *       any orientations introduced by context forcing.</li>
+ *   <li><b>Collider audit (diagnostic only).</b> If enabled (the default; see
+ *       {@link Builder#colliderDiagnostic(boolean)}), every unshielded triple
+ *       x *-* z *-* y with z a non-context is classified by the CPDAG (collider
+ *       iff x → z ← y) and independently by the CI test using one of three
+ *       strategies, selectable via {@link ColliderOrientationStyle}:
  *       <ul>
- *         <li><b>SEPSETS</b>: orients x → z ← y if z is not in the sepset of
- *             x and y (standard PC rule). Sepsets are derived on demand: a
+ *         <li><b>SEPSETS</b>: collider iff z is not in the sepset of x and y
+ *             (standard PC rule). Sepsets are derived on demand: a
  *             RecursiveBlocking hint is tried first and validated by an actual
  *             CI test, with enumeration over adjacency subsets as fallback.</li>
- *         <li><b>CONSERVATIVE</b>: orients a collider only if every sepset
- *             excludes z and no sepset includes z (Conservative PC rule).</li>
- *         <li><b>MAX_P</b>: selects the sepset with the highest p-value and
- *             uses it to decide orientation, with an optional tie-guard margin.</li>
+ *         <li><b>CONSERVATIVE</b>: collider only if every sepset excludes z and
+ *             no sepset includes z; non-collider only if every sepset includes
+ *             z (Conservative PC rule); otherwise ambiguous.</li>
+ *         <li><b>MAX_P</b>: compares the best p-value among sepsets including z
+ *             with the best among those excluding z, with an optional
+ *             tie-guard margin.</li>
  *       </ul>
- *       All sepset computations (RB hints and enumeration pools) are performed
- *       against a frozen copy of the post-forcing BOSS graph, so results do not
- *       depend on the order in which triples are visited or on orientations
- *       added during this step. By default, context variables are admissible
- *       members of conditioning sets, consistent with Huang et al. (2020);
- *       setting {@link Builder#excludeContextsFromS(boolean)} to {@code true}
- *       excludes contexts uniformly from RB hints and enumeration pools
- *       (mirroring the CD-NOD-PAG runner).</li>
- *   <li><b>Meek closure.</b> Meek's orientation rules are applied to propagate
- *       implied orientations and complete the partially directed graph.</li>
+ *       A disagreement is recorded when the CPDAG says collider and the test
+ *       says non-collider, or vice versa. Ambiguous and no-sepset verdicts are
+ *       not disagreements. The graph is never modified by this step. All
+ *       sepset computations read a frozen copy of the post-forcing graph. By
+ *       default, context variables are admissible members of conditioning
+ *       sets, consistent with Huang et al. (2020), where conditioning on the
+ *       context removes pseudo-confounding between variables whose mechanisms
+ *       both change; setting {@link Builder#excludeContextsFromS(boolean)} to
+ *       {@code true} excludes them (which can only reduce the set of sepsets
+ *       found).</li>
  * </ol>
  *
  * <p>Instances are constructed via the nested {@link Builder}:
@@ -120,12 +131,22 @@ public final class CdnodBoss implements IGraphSearch {
 
     // --- behavior flags ---
     /**
-     * If true, context variables are excluded from conditioning sets in the collider-orientation
-     * step, uniformly across all collider styles (RB hints containing a context are rejected, and
+     * If true, context variables are excluded from conditioning sets in the collider audit,
+     * uniformly across all collider styles (RB hints containing a context are rejected, and
      * enumeration pools are filtered). If false (the default), contexts are admissible, per Huang
      * et al. (2020).
      */
     private final boolean excludeContextsFromS;
+
+    /**
+     * If true (the default), the collider audit in step 3 is run. It never changes the graph, so
+     * disabling it only saves the CI tests; with CONSERVATIVE or MAX_P those can dominate runtime.
+     */
+    private final boolean colliderDiagnostic;
+
+    // --- audit telemetry (populated per search()) ---
+    private int auditedTriples = 0;
+    private final List<Disagreement> disagreements = new ArrayList<>();
 
     // --- core config ---
     private IndependenceTest test;
@@ -154,6 +175,7 @@ public final class CdnodBoss implements IGraphSearch {
                       double maxPMargin,
                       int depth,
                       boolean excludeContextsFromS,
+                      boolean colliderDiagnostic,
                       boolean useBes,
                       int numStarts,
                       int numThreads,
@@ -170,6 +192,7 @@ public final class CdnodBoss implements IGraphSearch {
         this.maxPMargin = maxPMargin;
         this.depth = depth;
         this.excludeContextsFromS = excludeContextsFromS;
+        this.colliderDiagnostic = colliderDiagnostic;
         this.useBes = useBes;
         this.numStarts = numStarts;
         this.numThreads = numThreads;
@@ -319,22 +342,48 @@ public final class CdnodBoss implements IGraphSearch {
             }
         }
 
-        // Freeze the post-forcing graph. All sepset machinery (RB hints, enumeration pools)
-        // reads this snapshot, so sepsets are independent of triple visitation order and of
-        // orientations added during step 3.
-        this.sepsetGraph = new EdgeListGraph(g);
-
-        // 3) UC orientation per style, restricted to triples BOSS left unresolved
-        if (verbose) TetradLogger.getInstance().log("CD-NOD(BOSS): UC orientation on unresolved triples (" + colliderStyle + ")...");
-        orientUnresolvedTriples(g);
-
-        // 4) Meek closure
+        // 3) Meek closure (propagates any orientations introduced by context forcing; normally a
+        // no-op, since the backbone already ran Meek under knowledge forbidding edges into contexts)
         if (verbose) TetradLogger.getInstance().log("CD-NOD(BOSS): Meek closure...");
         MeekRules meek = new MeekRules();
         meek.setKnowledge(knowledge);
         meek.orientImplied(g);
 
+        // 4) Collider audit on the final graph (diagnostic only; g is not modified). Sepset machinery
+        // reads a frozen snapshot.
+        auditedTriples = 0;
+        disagreements.clear();
+        if (colliderDiagnostic) {
+            this.sepsetGraph = new EdgeListGraph(g);
+            if (verbose) TetradLogger.getInstance().log("CD-NOD(BOSS): collider audit (" + colliderStyle + ")...");
+            auditUnshieldedTriples(g);
+            if (verbose) {
+                TetradLogger.getInstance().log("CD-NOD(BOSS): audit: triples=" + auditedTriples
+                        + " disagreements=" + disagreements.size());
+            }
+        }
+
         return g;
+    }
+
+    /**
+     * Number of unshielded triples (with a non-context at the center) audited in the most recent
+     * {@link #search()}; zero if the audit was disabled.
+     *
+     * @return the audited-triple count.
+     */
+    public int getAuditedTriples() {
+        return auditedTriples;
+    }
+
+    /**
+     * Disagreements between the CPDAG's collider status and the CI test's verdict recorded in the
+     * most recent {@link #search()}. Empty if the audit was disabled or the two agreed everywhere.
+     *
+     * @return an unmodifiable list of disagreements.
+     */
+    public List<Disagreement> getDisagreements() {
+        return Collections.unmodifiableList(disagreements);
     }
 
     /**
@@ -387,18 +436,21 @@ public final class CdnodBoss implements IGraphSearch {
         return search.search();
     }
 
-    // ------------- collider orientation on unresolved triples --------------
+    // ------------- collider audit (diagnostic; reads g, never writes it) --------------
 
     /**
-     * Applies the selected collider-orientation style to unshielded triples x --- z --- y in which
-     * both edges at z are undirected in the current graph (i.e., triples BOSS left unresolved).
-     * BOSS's orientations are authoritative and are never revisited here.
+     * For every unshielded triple x *-* z *-* y with z a non-context, compares the CPDAG's verdict
+     * (collider iff x → z ← y) with the CI test's verdict under the selected style, and records a
+     * {@link Disagreement} when they conflict. Contexts are skipped in the z role: they are
+     * exogenous by assumption, so their non-collider status is a premise, not evidence.
      */
-    private void orientUnresolvedTriples(Graph g) throws InterruptedException {
+    private void auditUnshieldedTriples(Graph g) throws InterruptedException {
         List<Node> nodes = new ArrayList<>(g.getNodes());
         nodes.sort(Comparator.comparing(Node::getName));
 
         for (Node z : nodes) {
+            if (contextNodes.contains(z)) continue;
+
             List<Node> adj = new ArrayList<>(g.getAdjacentNodes(z));
             adj.sort(Comparator.comparing(Node::getName));
 
@@ -406,35 +458,41 @@ public final class CdnodBoss implements IGraphSearch {
                 Node x = adj.get(i);
                 for (int j = i + 1; j < adj.size(); j++) {
                     Node y = adj.get(j);
-                    if (g.isAdjacentTo(x, y)) continue;       // only unshielded
-                    if (!unresolvedAtZ(g, x, z, y)) continue; // trust BOSS: both edges at z must be undirected
+                    if (g.isAdjacentTo(x, y)) continue; // only unshielded
 
                     checkTimeout();
+                    auditedTriples++;
+
+                    boolean bossCollider = g.isParentOf(x, z) && g.isParentOf(y, z);
+
+                    ColliderOutcome outcome;
+                    Set<Node> S = null;
+                    double p = Double.NaN;
 
                     switch (colliderStyle) {
                         case SEPSETS -> {
-                            Set<Node> s = getOrComputeSepset(x, y);
-                            if (s != null && !s.contains(z) && canOrientCollider(g, x, z, y)) {
-                                GraphUtils.orientCollider(g, x, z, y);
-                                if (verbose)
-                                    TetradLogger.getInstance().log("[SEPSETS] " + x + "->" + z + "<-" + y + " (S=" + labelSet(s) + ")");
-                            }
+                            S = getOrComputeSepset(x, y);
+                            outcome = (S == null) ? ColliderOutcome.NO_SEPSET
+                                    : (S.contains(z) ? ColliderOutcome.DEPENDENT : ColliderOutcome.INDEPENDENT);
                         }
-                        case CONSERVATIVE -> {
-                            ColliderOutcome out = judgeConservative(x, z, y);
-                            if (out == ColliderOutcome.INDEPENDENT && canOrientCollider(g, x, z, y)) {
-                                GraphUtils.orientCollider(g, x, z, y);
-                                if (verbose) TetradLogger.getInstance().log("[CPC] " + x + "->" + z + "<-" + y);
-                            }
-                        }
+                        case CONSERVATIVE -> outcome = judgeConservative(x, z, y);
                         case MAX_P -> {
                             MaxPDecision d = decideMaxP(x, z, y);
-                            if (d.outcome == ColliderOutcome.INDEPENDENT && canOrientCollider(g, x, z, y)) {
-                                GraphUtils.orientCollider(g, x, z, y);
-                                if (verbose)
-                                    TetradLogger.getInstance().log("[MAX-P] " + x + "->" + z + "<-" + y + " (p=" + d.bestP + ", S=" + labelSet(d.bestS) + ")");
-                            }
+                            outcome = d.outcome;
+                            S = d.bestS;
+                            p = d.bestP;
                         }
+                        default -> throw new IllegalStateException("Unknown collider style: " + colliderStyle);
+                    }
+
+                    boolean testCollider = outcome == ColliderOutcome.INDEPENDENT;
+                    boolean testNonCollider = outcome == ColliderOutcome.DEPENDENT;
+
+                    if ((bossCollider && testNonCollider) || (!bossCollider && testCollider)) {
+                        Disagreement dis = new Disagreement(x, z, y, bossCollider, colliderStyle,
+                                S == null ? null : Collections.unmodifiableSet(new LinkedHashSet<>(S)), p);
+                        disagreements.add(dis);
+                        if (verbose) TetradLogger.getInstance().log("[AUDIT] " + dis);
                     }
                 }
             }
@@ -442,13 +500,35 @@ public final class CdnodBoss implements IGraphSearch {
     }
 
     /**
-     * True iff both edges x --- z and z --- y are undirected in g, i.e., BOSS (plus context forcing
-     * and any colliders committed earlier in this pass) has taken no position at z on this triple.
+     * One disagreement between the BOSS CPDAG and the CI test on an unshielded triple x *-* z *-* y.
+     *
+     * @param x            one endpoint of the triple.
+     * @param z            the center of the triple.
+     * @param y            the other endpoint of the triple.
+     * @param bossCollider true if the CPDAG has x → z ← y; false if it has z as a non-collider. The
+     *                     test's verdict is the opposite.
+     * @param style        the collider style that produced the test's verdict.
+     * @param sepset       the conditioning set that drove the test's verdict, when there is a single
+     *                     one (SEPSETS, MAX_P); null for CONSERVATIVE.
+     * @param pValue       the p-value attached to that set for MAX_P; NaN otherwise.
      */
-    private boolean unresolvedAtZ(Graph g, Node x, Node z, Node y) {
-        Edge xz = g.getEdge(x, z);
-        Edge zy = g.getEdge(z, y);
-        return xz != null && zy != null && Edges.isUndirectedEdge(xz) && Edges.isUndirectedEdge(zy);
+    public record Disagreement(Node x, Node z, Node y, boolean bossCollider,
+                               ColliderOrientationStyle style, Set<Node> sepset, double pValue) {
+        @Override
+        public String toString() {
+            String boss = bossCollider ? "collider" : "non-collider";
+            String tst = bossCollider ? "non-collider" : "collider";
+            StringBuilder sb = new StringBuilder();
+            sb.append(x.getName()).append(" *-* ").append(z.getName()).append(" *-* ").append(y.getName())
+                    .append(": BOSS=").append(boss).append(", test(").append(style).append(")=").append(tst);
+            if (sepset != null) {
+                List<String> names = new ArrayList<>(sepset.stream().map(Node::getName).toList());
+                names.sort(NaturalSort.naturalComparator());
+                sb.append(", S={").append(String.join(",", names)).append("}");
+            }
+            if (!Double.isNaN(pValue)) sb.append(", p=").append(pValue);
+            return sb.toString();
+        }
     }
 
     // ------------- sepset machinery (reads the frozen sepsetGraph) --------------
@@ -613,19 +693,6 @@ public final class CdnodBoss implements IGraphSearch {
 
     // ------------- utils -------------
 
-    private boolean canOrientCollider(Graph g, Node x, Node z, Node y) {
-        if (!g.isAdjacentTo(x, z) || !g.isAdjacentTo(z, y)) return false;
-
-        // Respect knowledge (forbids/requires + tiers)
-        if (knowledge != null && !knowledge.isEmpty()) {
-            if (knowledgeForbids(x.getName(), z.getName()) || knowledgeRequires(z.getName(), x.getName())) return false;
-            if (knowledgeForbids(y.getName(), z.getName()) || knowledgeRequires(z.getName(), y.getName())) return false;
-        }
-
-        // Don’t create z->x or z->y conflicts
-        return !g.isParentOf(z, x) && !g.isParentOf(z, y);
-    }
-
     private boolean knowledgeForbids(String from, String to) {
         if (knowledge == null || knowledge.isEmpty()) return false;
         if (knowledge.isForbidden(from, to)) return true;
@@ -659,7 +726,8 @@ public final class CdnodBoss implements IGraphSearch {
     }
 
     /**
-     * Enumeration representing different strategies for orienting colliders in causal discovery.
+     * Strategies for the CI test's collider verdict in the audit. The names are kept for parity with
+     * {@link Cdnod}; here no orientation is performed.
      */
     public enum ColliderOrientationStyle {
         /**
@@ -726,6 +794,7 @@ public final class CdnodBoss implements IGraphSearch {
         private double maxPMargin = 0.0;
         private int depth = -1;
         private boolean excludeContextsFromS = false;
+        private boolean colliderDiagnostic = true;
         private boolean useBes = false;
         private int numStarts = 1;
         private int numThreads = 1;
@@ -952,17 +1021,32 @@ public final class CdnodBoss implements IGraphSearch {
         }
 
         /**
-         * Configures whether context variables are excluded from conditioning sets during collider
-         * orientation. The default is {@code false} (contexts admissible), consistent with Huang et
-         * al. (2020), where conditioning on the context removes pseudo-confounding between variables
-         * whose mechanisms both change. Set to {@code true} to mirror the CD-NOD-PAG runner; the
-         * exclusion is then applied uniformly, including to RecursiveBlocking hints.
+         * Configures whether context variables are excluded from conditioning sets in the collider
+         * audit. The default is {@code false} (contexts admissible), consistent with Huang et al.
+         * (2020): in the augmented graph a context is an ordinary root, and when two modules both
+         * change, only conditioning sets containing the context separate them. Setting {@code true}
+         * removes contexts from RB hints and enumeration pools alike; it can only reduce the set of
+         * sepsets found, and is offered for comparison, not recommended.
          *
          * @param on true to exclude contexts from conditioning sets; false to admit them.
          * @return The current Builder instance for method chaining.
          */
         public Builder excludeContextsFromS(boolean on) {
             this.excludeContextsFromS = on;
+            return this;
+        }
+
+        /**
+         * Enables or disables the collider audit (step 3). The audit never modifies the graph; it
+         * only populates {@link CdnodBoss#getDisagreements()} and {@link CdnodBoss#getAuditedTriples()}.
+         * Default {@code true}. Disable to skip the CI tests entirely, which under CONSERVATIVE or
+         * MAX_P can be the dominant cost.
+         *
+         * @param on true to run the audit.
+         * @return The current Builder instance for method chaining.
+         */
+        public Builder colliderDiagnostic(boolean on) {
+            this.colliderDiagnostic = on;
             return this;
         }
 
@@ -993,7 +1077,8 @@ public final class CdnodBoss implements IGraphSearch {
                 working = appendChangeIndexAsLastColumn(dataX, cIndex, cName);
             }
             return new CdnodBoss(test, working, score, penaltyDiscount, alpha, colliderStyle, knowledge, verbose,
-                    maxPMargin, depth, excludeContextsFromS, useBes, numStarts, numThreads, useDataOrder, seed);
+                    maxPMargin, depth, excludeContextsFromS, colliderDiagnostic, useBes, numStarts, numThreads,
+                    useDataOrder, seed);
         }
     }
 

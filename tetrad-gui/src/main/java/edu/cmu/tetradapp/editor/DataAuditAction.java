@@ -59,10 +59,12 @@ import java.util.Map;
  * <li><b>Missingness &amp; Advice</b>: dataset-level missingness facts, Little's MCAR test where applicable, and
  * the missing-data handling advice from {@link MissingDataAudit#advice()}.</li>
  * </ul>
- * Below the tabs, when the audit produced any ({@link DataAudit#notes()}), sits a notes footer cross-referencing
- * other diagnostics bearing on the findings that fired - for instance, pointing a non-Gaussianity finding at
- * Tools &gt; Nonlinearity Checks..., since a non-Gaussian marginal is equally consistent with a non-Gaussian error
- * term and with a nonlinear or non-additive dependence on parents. The footer is absent when there are no notes.
+ * The audit's notes ({@link DataAudit#notes()}), which cross-reference other diagnostics bearing on the findings
+ * that fired - for instance, pointing a non-Gaussianity finding at Tools &gt; Nonlinearity Checks..., since a
+ * non-Gaussian marginal is equally consistent with a non-Gaussian error term and with a nonlinear or non-additive
+ * dependence on parents - are not shown in the panel itself. A "Notes..." button on the control row opens them in
+ * a separate modeless dialog, so they take no space from the tables. The button reads the notes of the audit as it
+ * currently stands, so after a recode or removal it shows the recomputed audit's notes.
  * All computation is done by the library classes, so this dialog reports exactly what causal-cmd and py-tetrad
  * report for the same dataset.
  * <p>
@@ -165,7 +167,10 @@ class DataAuditAction extends AbstractAction {
                 }
 
                 SwingUtilities.invokeLater(() -> {
-                    JComponent panel = createDataAuditPanel(dataSet, pooledAudit, missingAudit);
+                    Runnable refreshEditor = DataAuditAction.this.dataEditor instanceof DataEditor editor
+                            ? editor::refreshSelectedDisplay : () -> {
+                    };
+                    JComponent panel = createDataAuditPanel(dataSet, pooledAudit, missingAudit, refreshEditor);
                     EditorWindow window = new EditorWindow(panel,
                             DataWindowTitles.of("Data Audit", dataSet), null, false,
                             (JComponent) DataAuditAction.this.dataEditor);
@@ -241,6 +246,19 @@ class DataAuditAction extends AbstractAction {
      * thread.
      */
     static JComponent createDataAuditPanel(DataSet dataSet, DataAudit pooledAudit, MissingDataAudit missingAudit) {
+        return createDataAuditPanel(dataSet, pooledAudit, missingAudit, () -> {
+        });
+    }
+
+    /**
+     * As {@link #createDataAuditPanel(DataSet, DataAudit, MissingDataAudit)}, with a callback run on the event
+     * thread immediately after any control edits the dataset in place (sentinel recode, removal by missingness,
+     * removal for determinism), so that the hosting data editor can redraw the edited dataset at once.
+     *
+     * @param onDatasetEdited run after each in-place edit; never null.
+     */
+    static JComponent createDataAuditPanel(DataSet dataSet, DataAudit pooledAudit, MissingDataAudit missingAudit,
+                                           Runnable onDatasetEdited) {
         // The recode control edits the dataset, so the missingness audit and the grouped-audit cache below both go
         // stale when it fires. Both are held indirectly so that the recode handler can replace them.
         MissingDataAudit[] missingRef = {missingAudit};
@@ -298,22 +316,32 @@ class DataAuditAction extends AbstractAction {
                 findingsTable, variablesTable, summary, groupCache);
 
         JComponent recodeControl = createRecodeControl(dataSet, findingsTable, variablesTable, summary,
-                missingText, missingRef, groupCache);
+                missingText, missingRef, groupCache, onDatasetEdited);
+
+        // The notes button shares the recode control's row so that it costs no vertical space. It reads the notes
+        // at click time from the pooled audit as it currently stands (the cache's NO_GROUP entry is re-seeded on
+        // every recomputation), not from the audit captured when the panel was built.
+        JButton notesButton = new JButton("Notes...");
+        notesButton.setToolTipText("Show the audit's notes cross-referencing other diagnostics that bear on the "
+                + "findings.");
+        notesButton.addActionListener(e -> showNotesDialog(notesButton,
+                groupCache.getOrDefault(NO_GROUP, pooledAudit).notes()));
+
+        JPanel controlRow = new JPanel(new BorderLayout());
+        controlRow.add(recodeControl, BorderLayout.CENTER);
+        JPanel notesHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        notesHolder.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
+        notesHolder.add(notesButton);
+        controlRow.add(notesHolder, BorderLayout.EAST);
 
         Box southOfSummary = Box.createVerticalBox();
         if (groupControl != null) southOfSummary.add(groupControl);
-        southOfSummary.add(recodeControl);
+        southOfSummary.add(controlRow);
         north.add(southOfSummary, BorderLayout.SOUTH);
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(north, BorderLayout.NORTH);
         panel.add(tabs, BorderLayout.CENTER);
-
-        JComponent notes = createNotesFooter(pooledAudit.notes());
-
-        if (notes != null) {
-            panel.add(notes, BorderLayout.SOUTH);
-        }
 
         Box box = Box.createVerticalBox();
         box.add(panel);
@@ -322,28 +350,62 @@ class DataAuditAction extends AbstractAction {
     }
 
     /**
-     * Builds the footer holding the audit's cross-reference notes ({@link DataAudit#notes()}), or null when the audit
-     * produced none, in which case no footer is shown at all. The notes are displayed outside the Findings tab
-     * deliberately: they name further diagnostics bearing on a finding that fired, and the findings themselves are
-     * contracted to carry no such content. Package visible so that it can be exercised headlessly in tests.
+     * The text shown in the notes dialog: one bulleted line per note ({@link DataAudit#notes()}), or a sentence
+     * saying there are none. The notes are kept out of the Findings tab deliberately: they name further diagnostics
+     * bearing on a finding that fired, and the findings themselves are contracted to carry no such content. Package
+     * visible so that it can be exercised headlessly in tests.
      *
      * @param notes the notes to display.
-     * @return the footer component, or null if there are no notes.
+     * @return the dialog text.
      */
-    static JComponent createNotesFooter(List<String> notes) {
-        if (notes.isEmpty()) return null;
+    static String notesText(List<String> notes) {
+        if (notes.isEmpty()) return "The audit produced no notes.";
 
-        StringBuilder sb = new StringBuilder("Notes:");
-        for (String note : notes) sb.append("\n- ").append(note);
+        StringBuilder sb = new StringBuilder();
+        for (String note : notes) {
+            if (sb.length() > 0) sb.append("\n");
+            sb.append("- ").append(note);
+        }
+        return sb.toString();
+    }
 
-        JTextArea area = new JTextArea(sb.toString());
+    /**
+     * Opens the audit's notes in a modeless dialog with a read-only, word-wrapped text area, so that they can be
+     * read alongside the Findings table without occupying space in the audit panel. Each click opens a fresh dialog
+     * showing the notes as they stand; closing it disposes it.
+     *
+     * @param parent a component in the audit panel, used to find the owning window.
+     * @param notes  the notes to display.
+     */
+    private static void showNotesDialog(JComponent parent, List<String> notes) {
+        Window owner = SwingUtilities.getWindowAncestor(parent);
+        JDialog dialog = new JDialog(owner, "Data Audit Notes", Dialog.ModalityType.MODELESS);
+
+        JTextArea area = new JTextArea(notesText(notes));
         area.setEditable(false);
-        area.setOpaque(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
-        area.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
+        area.setMargin(new Insets(8, 8, 8, 8));
+        area.setCaretPosition(0);
 
-        return area;
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setPreferredSize(new Dimension(600, 280));
+
+        JButton close = new JButton("Close");
+        close.addActionListener(e -> dialog.dispose());
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 6));
+        buttons.add(close);
+
+        JPanel content = new JPanel(new BorderLayout());
+        content.add(scroll, BorderLayout.CENTER);
+        content.add(buttons, BorderLayout.SOUTH);
+
+        dialog.setContentPane(content);
+        dialog.getRootPane().setDefaultButton(close);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
     }
 
     /**
@@ -521,7 +583,7 @@ class DataAuditAction extends AbstractAction {
     private static JComponent createRecodeControl(DataSet dataSet, DataAuditJTable findingsTable,
                                                   DataAuditJTable variablesTable, JLabel summary,
                                                   JTextArea missingText, MissingDataAudit[] missingRef,
-                                                  Map<String, DataAudit> groupCache) {
+                                                  Map<String, DataAudit> groupCache, Runnable onDatasetEdited) {
         JButton recode = new JButton("Recode Selected Sentinel Values to Missing...");
         recode.setEnabled(false);
         recode.setToolTipText("Set to missing the cells holding the codes named by the SENTINEL_VALUE findings "
@@ -580,7 +642,7 @@ class DataAuditAction extends AbstractAction {
             }
 
             recomputeAudit(dataSet, recode, "The cells were recoded", changed + " cell(s) recoded to missing.",
-                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache,
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
                     () -> recode.setEnabled(false));
         });
 
@@ -588,9 +650,9 @@ class DataAuditAction extends AbstractAction {
         controls.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
         controls.add(recode);
         controls.add(createRemoveDeterminismControl(dataSet, findingsTable, variablesTable, summary, missingText,
-                missingRef, groupCache));
+                missingRef, groupCache, onDatasetEdited));
         controls.add(createRemoveByMissingnessControl(dataSet, findingsTable, variablesTable, summary, missingText,
-                missingRef, groupCache));
+                missingRef, groupCache, onDatasetEdited));
         return controls;
     }
 
@@ -604,12 +666,17 @@ class DataAuditAction extends AbstractAction {
      * @param editDone    a phrase describing the edit, for the error message if the audit fails ("The cells were
      *                    recoded").
      * @param summaryNote a note appended to the summary line ("3 cell(s) recoded to missing.").
+     * @param onDatasetEdited run on the event thread before the recomputation starts, so the hosting editor
+     *                        redraws the edited dataset without waiting for the audit.
      * @param afterSwap   run on the event thread after the new results are in place; may be null.
      */
     private static void recomputeAudit(DataSet dataSet, JComponent parent, String editDone, String summaryNote,
                                        DataAuditJTable findingsTable, DataAuditJTable variablesTable,
                                        JLabel summary, JTextArea missingText, MissingDataAudit[] missingRef,
-                                       Map<String, DataAudit> groupCache, Runnable afterSwap) {
+                                       Map<String, DataAudit> groupCache, Runnable onDatasetEdited,
+                                       Runnable afterSwap) {
+        onDatasetEdited.run();
+
         new WatchedProcess() {
             @Override
             public void watch() throws InterruptedException {
@@ -664,7 +731,8 @@ class DataAuditAction extends AbstractAction {
     private static JComponent createRemoveByMissingnessControl(DataSet dataSet, DataAuditJTable findingsTable,
                                                                DataAuditJTable variablesTable, JLabel summary,
                                                                JTextArea missingText, MissingDataAudit[] missingRef,
-                                                               Map<String, DataAudit> groupCache) {
+                                                               Map<String, DataAudit> groupCache,
+                                                               Runnable onDatasetEdited) {
         JButton remove = new JButton("Remove Variables by Missingness...");
         remove.setToolTipText("Preview and apply a missingness-rate cutoff on the variables. "
                 + "Modifies the dataset in place; not undoable.");
@@ -684,7 +752,7 @@ class DataAuditAction extends AbstractAction {
             int choice = JOptionPane.showConfirmDialog(remove, "Remove " + chosen.size() + " variable(s) from "
                             + "the dataset?\n\n    " + String.join("\n    ", chosen) + "\n\nThis modifies the "
                             + "dataset in place, for every box downstream of it in the session, and cannot be "
-                            + "undone. An open data editor shows the change after it is closed and reopened.",
+                            + "undone.",
                     "Remove Variables", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 
             if (choice != JOptionPane.OK_OPTION) return;
@@ -703,7 +771,8 @@ class DataAuditAction extends AbstractAction {
             }
 
             recomputeAudit(dataSet, remove, "The variables were removed", removedCount + " variable(s) removed.",
-                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, null);
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
+                    null);
         });
 
         return remove;
@@ -811,13 +880,13 @@ class DataAuditAction extends AbstractAction {
      * Like the sentinel recode, this is offered rather than performed. The suggester's convention (remove the
      * determined variable, the second of a duplicate pair, or the discrete coarsening) is a guess at which column
      * is derived; the codebook settles it, and the user may prefer to drop a determiner instead. Removal modifies
-     * the dataset every downstream box reads and cannot be undone; an open data editor shows the change after it
-     * is closed and reopened.
+     * the dataset every downstream box reads and cannot be undone; the hosting data editor is redrawn at once.
      */
     private static JComponent createRemoveDeterminismControl(DataSet dataSet, DataAuditJTable findingsTable,
                                                              DataAuditJTable variablesTable, JLabel summary,
                                                              JTextArea missingText, MissingDataAudit[] missingRef,
-                                                             Map<String, DataAudit> groupCache) {
+                                                             Map<String, DataAudit> groupCache,
+                                                             Runnable onDatasetEdited) {
         JButton remove = new JButton("Remove Variables Creating Determinism...");
         remove.setToolTipText("Choose variables to remove so that the determinism findings above are resolved. "
                 + "Modifies the dataset in place; not undoable.");
@@ -843,7 +912,7 @@ class DataAuditAction extends AbstractAction {
             int choice = JOptionPane.showConfirmDialog(remove, "Remove " + chosen.size() + " variable(s) from "
                             + "the dataset?\n\n    " + String.join("\n    ", chosen) + "\n\nThis modifies the "
                             + "dataset in place, for every box downstream of it in the session, and cannot be "
-                            + "undone. An open data editor shows the change after it is closed and reopened.",
+                            + "undone.",
                     "Remove Variables", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 
             if (choice != JOptionPane.OK_OPTION) return;
@@ -864,7 +933,8 @@ class DataAuditAction extends AbstractAction {
             }
 
             recomputeAudit(dataSet, remove, "The variables were removed", removedCount + " variable(s) removed.",
-                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, null);
+                    findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
+                    null);
         });
 
         return remove;
