@@ -165,7 +165,21 @@ public class LayoutUtil {
 
         List<List<Node>> rows = new ArrayList<>();
 
-        List<String> notInTier = knowledge.getVariablesNotInTiers();
+        // Every graph node not in some tier goes in the loose top row, including nodes the Knowledge object has
+        // never heard of. knowledge.getVariablesNotInTiers() reports only variables known to the knowledge, so a
+        // graph node missing from the knowledge altogether would otherwise appear in no row at all, keep its
+        // previous coordinates, and show up as a stray beside the tiers.
+        Set<String> tiered = new HashSet<>();
+        for (int i = 0; i < knowledge.getNumTiers(); i++) {
+            tiered.addAll(knowledge.getTier(i));
+        }
+
+        List<String> notInTier = new ArrayList<>();
+        for (Node node : graph.getNodes()) {
+            if (!tiered.contains(node.getName())) {
+                notInTier.add(node.getName());
+            }
+        }
         sort(notInTier);
         List<Node> looseRow = namesToNodes(graph, notInTier);
         if (!looseRow.isEmpty()) {
