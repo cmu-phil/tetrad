@@ -233,28 +233,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        // A graph that already carries positions may still need redoing: a search runner lays its result graphs out
-        // before any workbench exists, using the lib's name-length estimate of the node sizes, so the result overlaps
-        // until the user re-applies a layout by hand. Such a graph is marked with the kind of layout applied, which
-        // is what distinguishes it from a graph whose positions the user chose or a saved session restored.
-        Object provisional = graph.getAttribute(LayoutUtil.PROVISIONAL_LAYOUT);
-
         LayoutUtil.defaultLayout(graph);
 
-        // The display nodes were created by setGraph above, before any layout assigned positions. Redo the layout at
-        // the display nodes' real sizes and place them. A row layout (knowledge tiers or lag indices) is respaced in
-        // place, keeping each node in its row -- the rows are the tiers, which is the structure the user asked for by
-        // supplying knowledge. Anything else is redone as a circle or square. A graph that arrived with positions and
-        // no mark (e.g., from a saved session) is left as is.
-        if (LayoutUtil.LAYOUT_ROWS.equals(provisional)) {
-            LayoutUtils.respaceRowsForLabels(this.graph, this);
-            placeDisplayNodesAtCenters();
-        } else if (unpositioned || provisional != null) {
+        // The display nodes were created by setGraph above, before the default layout assigned positions. If the
+        // default layout ran (a circle up to 20 nodes, a square beyond), widen it for the display nodes' label
+        // sizes and place them; a graph that arrived with positions (e.g., from a saved session) is left as is.
+        if (unpositioned) {
             widenDefaultLayout();
-        }
-
-        if (provisional != null) {
-            graph.removeAttribute(LayoutUtil.PROVISIONAL_LAYOUT);
         }
     }
 
@@ -271,13 +256,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             LayoutUtils.respaceSquareForLabels(this.graph, this);
         }
 
-        placeDisplayNodesAtCenters();
-    }
-
-    /**
-     * Moves each display node so its box is centered on its model node's center, then fits the canvas around them.
-     */
-    private void placeDisplayNodesAtCenters() {
         for (Node node : this.graph.getNodes()) {
             DisplayNode d = (DisplayNode) getModelNodesToDisplay().get(node);
             if (d == null) continue;
@@ -1121,7 +1099,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
                 if (Math.abs(cx[i] - cx[j]) < (w[i] + w[j]) / 2.0
-                    && Math.abs(cy[i] - cy[j]) < (h[i] + h[j]) / 2.0) {
+                        && Math.abs(cy[i] - cy[j]) < (h[i] + h[j]) / 2.0) {
                     return true;
                 }
             }

@@ -317,7 +317,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
                                   Parameters parameters, KnowledgeBoxModel knowledgeBoxModel)
-    throws ParseException {
+            throws ParseException {
         this(null, null, parameters, knowledgeBoxModel, model);
     }
 
@@ -562,10 +562,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             // ----- 2B') Pooled search: several data sets, ONE search (IMaGES-style), when requested -----
             else if (dataModelList.size() > 1 && this.parameters.getBoolean(Params.POOL_DATA_SETS, false)) {
                 if (!(algo instanceof AbstractBootstrapAlgorithm)
-                    || !(algo instanceof TakesScoreWrapper || algo instanceof TakesIndependenceWrapper)) {
+                        || !(algo instanceof TakesScoreWrapper || algo instanceof TakesIndependenceWrapper)) {
                     throw new IllegalArgumentException("Pooling data sets (the 'poolDataSets' option) requires a "
-                                                       + "score- or test-based algorithm; this algorithm cannot pool. "
-                                                       + "Turn the option off to search each data set separately.");
+                            + "score- or test-based algorithm; this algorithm cannot pool. "
+                            + "Turn the option off to search each data set separately.");
                 }
 
                 if (knowledge == null) {
@@ -615,7 +615,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                                     (data.isMixed() && algDataType == DataType.Mixed);
                     if (!ok) {
                         throw new IllegalArgumentException("The algorithm was not expecting that type of data: "
-                                                           + data.getName());
+                                + data.getName());
                     }
                 }
 
@@ -720,19 +720,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         // the default layout hides the lag structure, which is the main thing a time-series graph is for. (This pass
         // previously overwrote the by-index layout the bootstrap base class had already applied.) Other graphs are
         // laid out by knowledge tiers if any, else by the default layout.
-        // Each graph is also marked with the kind of layout applied, so that a workbench displaying it can redo the
-        // layout at the real display-node sizes -- which only the GUI knows -- without losing the row structure of a
-        // tier or lag layout. The workbench removes the mark once it has used it.
         for (Graph graph : graphList) {
             if (LayoutUtil.isLaggedGraph(graph)) {
                 LayoutUtil.layoutByKnowledgeIndices(graph);
-                graph.addAttribute(LayoutUtil.PROVISIONAL_LAYOUT, LayoutUtil.LAYOUT_ROWS);
             } else if (knowledge != null && knowledge.getNumTiers() > 0) {
                 LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
-                graph.addAttribute(LayoutUtil.PROVISIONAL_LAYOUT, LayoutUtil.LAYOUT_ROWS);
             } else {
                 LayoutUtil.defaultLayout(graph);
-                graph.addAttribute(LayoutUtil.PROVISIONAL_LAYOUT, LayoutUtil.LAYOUT_RING);
             }
         }
 
