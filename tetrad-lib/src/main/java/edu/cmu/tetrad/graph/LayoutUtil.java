@@ -44,6 +44,33 @@ public class LayoutUtil {
     private static final double NODE_GAP = 10.0;
     // Margin between the canvas edge and the nearest node box.
     private static final double LAYOUT_MARGIN = 20.0;
+    // Vertical whitespace left between the boxes of one row and the next in a row layout (knowledge tiers, lag
+    // indices). Larger than NODE_GAP because the space between rows is where the between-row edges and their labels
+    // are drawn: the rows of a tier layout are joined by edges, so packing them to the same 10 pixels used between
+    // neighbors in a row leaves the graph legible only where it is empty. This matches the whitespace the old fixed
+    // 80-pixel row step left for a 30-pixel-tall node.
+    public static final double ROW_GAP = 50.0;
+
+    /**
+     * Graph attribute key marking a layout that was applied automatically (by a search runner, say) rather than
+     * chosen by the user or restored from a saved session. A workbench that finds this key may redo the layout with
+     * the real display-node sizes, which the lib cannot know; it should remove the key afterwards. The value is one
+     * of {@link #LAYOUT_ROWS} or {@link #LAYOUT_RING}.
+     */
+    public static final String PROVISIONAL_LAYOUT = "provisionalLayout";
+
+    /**
+     * Value of {@link #PROVISIONAL_LAYOUT} for a layout whose nodes sit in horizontal rows -- knowledge tiers or lag
+     * indices. A workbench redoing such a layout must keep the row assignment: the rows are the tiers, which is the
+     * information the user asked for by supplying knowledge.
+     */
+    public static final String LAYOUT_ROWS = "rows";
+
+    /**
+     * Value of {@link #PROVISIONAL_LAYOUT} for the default circle-or-square layout, which carries no structure worth
+     * preserving and may simply be redone at the right size.
+     */
+    public static final String LAYOUT_RING = "ring";
 
     // ---- Latent placement constants ----
     // Ring search steps outward from the anchor by RING_STEP until it finds a
@@ -114,45 +141,115 @@ public class LayoutUtil {
      *                  ungrouped variables for the graph nodes.
      */
     public static void layoutByKnowledgeTiers(Graph graph, Knowledge knowledge) {
+        layoutByKnowledgeTiers(graph, knowledge, estimatedNodeSize());
+    }
+
+    /**
+     * Arranges the nodes in the graph by knowledge tier, one tier per row, spacing each row by the rendered sizes of
+     * the nodes it holds so that no two boxes overlap. Variables not in any tier go in a row of their own above the
+     * tiers.
+     *
+     * <p>The previous version stepped x by a fixed 90 pixels and y by a fixed 80 regardless of the node names, so any
+     * graph whose labels are wider than 90 pixels came out overlapping. Here each node is placed far enough from the
+     * one to its left to clear both half-widths plus {@code NODE_GAP}, and each row far enough below the one above to
+     * clear both half-heights plus the same gap.</p>
+     *
+     * @param graph     the graph to be arranged
+     * @param knowledge the knowledge whose tiers give the rows
+     * @param size      supplies each node's rendered box size
+     */
+    public static void layoutByKnowledgeTiers(Graph graph, Knowledge knowledge, NodeSize size) {
         if (knowledge.getNumTiers() == 0) {
             throw new IllegalArgumentException("There are no Tiers to arrange.");
         }
-        int ySpace = 80;
+
+        List<List<Node>> rows = new ArrayList<>();
+
         List<String> notInTier = knowledge.getVariablesNotInTiers();
         sort(notInTier);
-        int x = 60;
-        int y = 60;
-
-        if (!notInTier.isEmpty()) {
-            for (String name : notInTier) {
-                Node node = graph.getNode(name);
-                if (node != null) {
-                    node.setCenterX(x);
-                    node.setCenterY(y);
-                    x += 90;
-                }
-            }
-            y += ySpace;
+        List<Node> looseRow = namesToNodes(graph, notInTier);
+        if (!looseRow.isEmpty()) {
+            rows.add(looseRow);
         }
 
         for (int i = 0; i < knowledge.getNumTiers(); i++) {
             List<String> tier = knowledge.getTier(i);
             tier.sort(NaturalSort.naturalComparator());
-
-            x = 60;
-            for (String name : tier) {
-                Node node = graph.getNode(name);
-                if (node != null) {
-                    node.setCenterX(x);
-                    node.setCenterY(y);
-                    x += 90;
-                }
+            List<Node> row = namesToNodes(graph, tier);
+            if (!row.isEmpty()) {
+                rows.add(row);
             }
-            y += ySpace;
         }
+
+        layoutRows(rows, size);
 
         GraphSearchUtils.repositionLatents(graph);
         repositionLatents(graph);
+    }
+
+    /**
+     * Resolves a list of variable names to the graph's nodes, skipping names the graph does not contain.
+     *
+     * @param graph the graph to look names up in
+     * @param names the variable names
+     * @return the nodes, in the order of the names given
+     */
+    private static List<Node> namesToNodes(Graph graph, List<String> names) {
+        List<Node> nodes = new ArrayList<>();
+        for (String name : names) {
+            Node node = graph.getNode(name);
+            if (node != null) {
+                nodes.add(node);
+            }
+        }
+        return nodes;
+    }
+
+    /**
+     * Places the given rows of nodes so that no two boxes overlap: within a row, left to right in the order given;
+     * between rows, top to bottom in the order given. The top-left of the whole arrangement sits at
+     * ({@code LAYOUT_MARGIN}, {@code LAYOUT_MARGIN}).
+     *
+     * @param rows the rows of nodes, in top-to-bottom order
+     * @param size supplies each node's rendered box size
+     */
+    private static void layoutRows(List<List<Node>> rows, NodeSize size) {
+        double y = LAYOUT_MARGIN;
+        double prevHalfHeight = 0.0;
+
+        for (int r = 0; r < rows.size(); r++) {
+            List<Node> row = rows.get(r);
+
+            double maxHeight = 0.0;
+            for (Node node : row) {
+                maxHeight = Math.max(maxHeight, size.height(node));
+            }
+
+            if (r == 0) {
+                y = LAYOUT_MARGIN + maxHeight / 2.0;
+            } else {
+                y += prevHalfHeight + ROW_GAP + maxHeight / 2.0;
+            }
+            prevHalfHeight = maxHeight / 2.0;
+
+            double x = LAYOUT_MARGIN;
+            double prevHalfWidth = 0.0;
+
+            for (int i = 0; i < row.size(); i++) {
+                Node node = row.get(i);
+                double halfWidth = size.width(node) / 2.0;
+
+                if (i == 0) {
+                    x = LAYOUT_MARGIN + halfWidth;
+                } else {
+                    x += prevHalfWidth + NODE_GAP + halfWidth;
+                }
+                prevHalfWidth = halfWidth;
+
+                node.setCenterX((int) Math.round(x));
+                node.setCenterY((int) Math.round(y));
+            }
+        }
     }
 
     /**
