@@ -9,6 +9,8 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.NumberFormat;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -24,6 +26,19 @@ class ScatterplotPanel extends JPanel {
     private final ScatterPlot scatterPlot;
     private boolean drawAxes = false;
     private int pointSize = 5;
+
+    /**
+     * The most a point's diameter may grow to show how many points share its pixel, as a multiple of
+     * {@link #pointSize}. Capped so that a dense spot cannot cover its neighbors: past this many ties, the count is
+     * carried by opacity alone.
+     */
+    private static final double DENSITY_MAX_GROWTH = 3.0;
+
+    /**
+     * The opacity, out of 255, at which a pixel holding a single point is drawn. Points holding more are drawn more
+     * opaque, up to full. A lone point must stay clearly visible, so this is not near zero.
+     */
+    private static final int DENSITY_MIN_ALPHA = 90;
 
     /**
      * <p>Constructor for ScatterplotPanel.</p>
@@ -187,7 +202,19 @@ class ScatterplotPanel extends JPanel {
             double _yRange = ymax - ymin;
             int x, y;
 
-            g.setColor(getPointColor());
+            // Points that land on the same pixel are counted rather than drawn one on top of another, so that a
+            // location holding many points can be told from one holding a single point. Ties are common in real
+            // data -- a bounded score with a mass of cases at its maximum puts hundreds of rows at one spot -- and
+            // drawn plainly they are indistinguishable from one row.
+            //
+            // The count is shown two ways, each over the range where it discriminates. The radius grows as the
+            // square root of the count, so the AREA of the dot is proportional to the count (area is what the eye
+            // judges), capped at DENSITY_MAX_GROWTH times the base size so that a dense cell cannot swallow its
+            // neighbors and misreport the neighborhood. Opacity then rises with the log of the count, which keeps
+            // separating counts after the size cap has been reached -- where opacity alone would have saturated.
+            Map<Long, Integer> counts = new LinkedHashMap<>();
+            int maxCount = 1;
+
             for (Point2D.Double _pt : pts) {
                 if (Double.isNaN(_pt.getX()) || Double.isNaN(_pt.getY())) continue;
 
@@ -197,8 +224,43 @@ class ScatterplotPanel extends JPanel {
 
                 x = (int) (((_pt.getX() - xmin) / _xRange) * xRange + xMin);
                 y = (int) (((ymax - _pt.getY()) / _yRange) * yRange + yMin);
-                g.fillOval(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);
+
+                long key = (((long) x) << 32) | (y & 0xffffffffL);
+                int c = counts.merge(key, 1, Integer::sum);
+                if (c > maxCount) maxCount = c;
             }
+
+            Color base = getPointColor();
+            double logMax = TMath.log(1.0 + maxCount);
+
+            Object oldAntialias = g.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            for (Map.Entry<Long, Integer> entry : counts.entrySet()) {
+                long key = entry.getKey();
+                int count = entry.getValue();
+
+                x = (int) (key >> 32);
+                y = (int) (key & 0xffffffffL);
+
+                // Area proportional to count, capped.
+                double growth = TMath.min(DENSITY_MAX_GROWTH, TMath.sqrt(count));
+                int size = (int) TMath.max(pointSize, TMath.round(pointSize * growth));
+
+                // Opacity on a log scale between the floor (a lone point) and full.
+                double t = (maxCount <= 1 || logMax <= 0.0) ? 1.0 : TMath.log(1.0 + count) / logMax;
+                int alpha = (int) TMath.round(DENSITY_MIN_ALPHA + (255 - DENSITY_MIN_ALPHA) * t);
+                alpha = (int) TMath.max(DENSITY_MIN_ALPHA, TMath.min(255, alpha));
+
+                g.setColor(new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha));
+                g.fillOval(x - size / 2, y - size / 2, size, size);
+            }
+
+            if (oldAntialias != null) {
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, oldAntialias);
+            }
+
+            g.setColor(base);
 
             // draws best-fit line
             if (this.scatterPlot.isIncludeLine()) {
