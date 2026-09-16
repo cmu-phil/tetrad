@@ -149,6 +149,20 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      * Singularity lambda.
      */
     private double lambda = 0.0;
+    /**
+     * Residual variance floor -- the xi adjustment of Li et al., "On Causal Discovery in the Presence of
+     * Deterministic Relations" (NeurIPS 2024), Eq. 3. When a variable is a deterministic function of a candidate
+     * parent set, the estimated residual variance is zero or a rounding-level number, so log(sigma^2) is infinite
+     * or numerically arbitrary: the likelihood term either forces localScore to NaN or swamps the BIC penalty
+     * with rounding noise, and rival determining parent sets are ranked by numerical accident. With a floor xi
+     * &gt; 0 the likelihood uses log(max(sigma^2, 0) + xi) instead, so every determining parent set gets the same
+     * large finite likelihood and the BIC penalty decides among them -- which selects the minimal determining
+     * set, as frugality requires. The default 0 preserves the previous behavior exactly. For deterministic data,
+     * use this together with a nonzero singularity lambda so that coefficient solves on singular parent
+     * submatrices do not throw. The floor applies to the likelihood path (the CHICKERING rule, hence localScore
+     * and localScoreDiff as used by BOSS, GRaSP, and FGES); the NANDY partial-correlation shortcut is unchanged.
+     */
+    private double residualVarianceFloor = 0.0;
     private int nEff;
 
     /**
@@ -576,6 +590,19 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
     }
 
     /**
+     * Sets the residual variance floor (the xi of Li et al. 2024); see the field Javadoc. 0 (the default)
+     * disables the floor and preserves the previous behavior exactly.
+     *
+     * @param residualVarianceFloor The floor; must be &gt;= 0.
+     */
+    public void setResidualVarianceFloor(double residualVarianceFloor) {
+        if (residualVarianceFloor < 0) {
+            throw new IllegalArgumentException("Residual variance floor must be >= 0: " + residualVarianceFloor);
+        }
+        this.residualVarianceFloor = residualVarianceFloor;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -804,6 +831,12 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
 
         if (this.calculateRowSubsets && parents.length > 0) {
             sigmaSquared *= testwiseVarianceCorrection(i, parents);
+        }
+
+        if (this.residualVarianceFloor > 0) {
+            // The xi adjustment for deterministic relations; see the residualVarianceFloor field Javadoc. The
+            // max clamps tiny negative estimates that regularized or pseudoinverse solves can produce.
+            sigmaSquared = Math.max(sigmaSquared, 0.0) + this.residualVarianceFloor;
         }
 
         return -0.5 * this.nEff * (TMath.log(2 * TMath.PI * sigmaSquared) + 1);
