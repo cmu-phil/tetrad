@@ -852,13 +852,7 @@ class DataAuditAction extends AbstractAction {
             List<String> chosen = showMissingnessRemovalDialog(remove, dataSet, audit);
             if (chosen == null || chosen.isEmpty()) return;
 
-            int choice = JOptionPane.showConfirmDialog(remove, "Remove " + chosen.size() + " variable(s) from "
-                            + "the dataset?\n\n    " + String.join("\n    ", chosen) + "\n\nThis modifies the "
-                            + "dataset in place, for every box downstream of it in the session, and cannot be "
-                            + "undone.",
-                    "Remove Variables", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-
-            if (choice != JOptionPane.OK_OPTION) return;
+            if (!confirmRemoval(remove, chosen)) return;
 
             int removedCount = 0;
 
@@ -1012,13 +1006,7 @@ class DataAuditAction extends AbstractAction {
             List<String> chosen = showRemovalDialog(remove, suggestions);
             if (chosen == null || chosen.isEmpty()) return;
 
-            int choice = JOptionPane.showConfirmDialog(remove, "Remove " + chosen.size() + " variable(s) from "
-                            + "the dataset?\n\n    " + String.join("\n    ", chosen) + "\n\nThis modifies the "
-                            + "dataset in place, for every box downstream of it in the session, and cannot be "
-                            + "undone.",
-                    "Remove Variables", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-
-            if (choice != JOptionPane.OK_OPTION) return;
+            if (!confirmRemoval(remove, chosen)) return;
 
             int removedCount = 0;
 
@@ -1041,6 +1029,39 @@ class DataAuditAction extends AbstractAction {
         });
 
         return remove;
+    }
+
+    /**
+     * Shows the final are-you-sure dialog for a variable removal, with the chosen names in a scroll pane so that
+     * a long list cannot push the OK and Cancel buttons off the bottom of the screen. Returns true if the user
+     * confirmed.
+     */
+    private static boolean confirmRemoval(Component parent, List<String> chosen) {
+        JLabel question = new JLabel("Remove " + chosen.size() + " variable(s) from the dataset?");
+
+        JTextArea names = new JTextArea(String.join("\n", chosen));
+        names.setEditable(false);
+        names.setFocusable(false);
+        names.setCaretPosition(0);
+
+        JLabel warning = new JLabel("<html>This modifies the dataset in place, for every box downstream of it "
+                + "in the session, and cannot be undone.</html>");
+
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        panel.add(question, BorderLayout.NORTH);
+        panel.add(new JScrollPane(names), BorderLayout.CENTER);
+        panel.add(warning, BorderLayout.SOUTH);
+
+        // Cap the list at 15 rows; beyond that the scroll pane scrolls. The fixed width keeps the HTML
+        // warning label wrapping instead of stretching the dialog.
+        int rowHeight = names.getFontMetrics(names.getFont()).getHeight();
+        int listHeight = Math.min(15, Math.max(3, chosen.size())) * rowHeight + 8;
+        panel.setPreferredSize(new Dimension(440, listHeight + 100));
+
+        int choice = JOptionPane.showConfirmDialog(parent, panel, "Remove Variables",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        return choice == JOptionPane.OK_OPTION;
     }
 
     /**
