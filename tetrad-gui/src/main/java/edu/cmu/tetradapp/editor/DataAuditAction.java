@@ -43,8 +43,10 @@ import java.awt.event.KeyEvent;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Displays a data audit for the selected dataset, combining the general data-quality audit
@@ -315,7 +317,7 @@ class DataAuditAction extends AbstractAction {
         JComponent groupControl = createGroupControl(dataSet, pooledAudit, missingRef,
                 findingsTable, variablesTable, summary, groupCache);
 
-        JComponent recodeControl = createRecodeControl(dataSet, findingsTable, variablesTable, summary,
+        JComponent recodeControl = createRecodeControl(dataSet, tabs, findingsTable, variablesTable, summary,
                 missingText, missingRef, groupCache, onDatasetEdited);
 
         // The notes button shares the recode control's row so that it costs no vertical space. It reads the notes
@@ -580,7 +582,8 @@ class DataAuditAction extends AbstractAction {
      * the recode is that the missingness numbers change, and the continuous checks that had been computed with the
      * code treated as data are recomputed without it. The grouped-audit cache is cleared for the same reason.
      */
-    private static JComponent createRecodeControl(DataSet dataSet, DataAuditJTable findingsTable,
+    private static JComponent createRecodeControl(DataSet dataSet, JTabbedPane tabs,
+                                                  DataAuditJTable findingsTable,
                                                   DataAuditJTable variablesTable, JLabel summary,
                                                   JTextArea missingText, MissingDataAudit[] missingRef,
                                                   Map<String, DataAudit> groupCache, Runnable onDatasetEdited) {
@@ -646,14 +649,114 @@ class DataAuditAction extends AbstractAction {
                     () -> recode.setEnabled(false));
         });
 
-        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        // Two rows rather than one: the four buttons no longer fit the dialog's width. The first row holds the
+        // controls that act on what is selected in the table above, the second the two that remove variables.
+        JPanel inspectRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        inspectRow.add(recode);
+        inspectRow.add(createPlotMatrixControl(dataSet, tabs, findingsTable, variablesTable));
+
+        JPanel removeRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        removeRow.add(createRemoveDeterminismControl(dataSet, findingsTable, variablesTable, summary, missingText,
+                missingRef, groupCache, onDatasetEdited));
+        removeRow.add(createRemoveByMissingnessControl(dataSet, findingsTable, variablesTable, summary, missingText,
+                missingRef, groupCache, onDatasetEdited));
+
+        JPanel controls = new JPanel(new GridLayout(2, 1, 0, 2));
         controls.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 0));
-        controls.add(recode);
-        controls.add(createRemoveDeterminismControl(dataSet, findingsTable, variablesTable, summary, missingText,
-                missingRef, groupCache, onDatasetEdited));
-        controls.add(createRemoveByMissingnessControl(dataSet, findingsTable, variablesTable, summary, missingText,
-                missingRef, groupCache, onDatasetEdited));
+        controls.add(inspectRow);
+        controls.add(removeRow);
         return controls;
+    }
+
+    /**
+     * Builds the plot-matrix control: a button opening a {@link PlotMatrix} over the variables named by the rows
+     * selected in the tab currently showing -- the variables of each selected finding in the Findings tab, the
+     * variables themselves in the Variables tab -- preselected on both axes, with the plot matrix's row and column
+     * selectors listing only those variables.
+     * <p>
+     * This is the counterpart of the plot-matrix button in the nonlinearity checks, and is here for the same
+     * reason. A finding states a property of the data as a number, and the number is usually ambiguous between
+     * explanations that the scatter separates at a glance: a low Anderson-Darling p is equally consistent with a
+     * skewed marginal, a mixture of two groups, and a pile of cells at a sentinel code, and a near-deterministic
+     * relation looks quite different when one variable is a rounding of another than when a few extreme points
+     * carry it. The plot decides nothing the audit reports; it shows what the reported number was computed from.
+     * <p>
+     * The button is disabled unless the current selection names at least one variable still in the dataset, so it
+     * never opens an empty plot. Dataset-level findings name no variable and leave it disabled.
+     *
+     * @see PlotMatrix
+     */
+    private static JComponent createPlotMatrixControl(DataSet dataSet, JTabbedPane tabs,
+                                                      DataAuditJTable findingsTable,
+                                                      DataAuditJTable variablesTable) {
+        JButton plot = new JButton("Plot Matrix for Selected Row(s)...");
+        plot.setEnabled(false);
+        plot.setToolTipText("Open a plot matrix over the variables named by the rows selected above. "
+                + "Does not modify the dataset.");
+
+        Runnable updateEnabled = () -> plot.setEnabled(
+                !selectedVariables(dataSet, tabs, findingsTable, variablesTable).isEmpty());
+
+        findingsTable.getSelectionModel().addListSelectionListener(e -> updateEnabled.run());
+        variablesTable.getSelectionModel().addListSelectionListener(e -> updateEnabled.run());
+        tabs.addChangeListener(e -> updateEnabled.run());
+
+        plot.addActionListener(e -> {
+            List<Node> variables = selectedVariables(dataSet, tabs, findingsTable, variablesTable);
+            if (variables.isEmpty()) return;
+
+            StringBuilder title = new StringBuilder("Plot Matrix: ");
+
+            for (int i = 0; i < variables.size() && i < 4; i++) {
+                if (i > 0) title.append(", ");
+                title.append(variables.get(i).getName());
+            }
+
+            if (variables.size() > 4) {
+                title.append(", ... (").append(variables.size()).append(" variables)");
+            }
+
+            PlotMatrix panel = new PlotMatrix(dataSet, variables, variables, variables);
+            EditorWindow window = new EditorWindow(panel, title.toString(), null, false, plot);
+            DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+            window.pack();
+            window.setVisible(true);
+        });
+
+        return plot;
+    }
+
+    /**
+     * The variables named by the rows selected in the tab currently showing, in selection order, with duplicates
+     * collapsed and names no longer in the dataset dropped. Names do go stale: a variable removed by one of the
+     * removal controls is still named by the findings of the audit that was showing when it was removed. Returns an
+     * empty list for the Missingness tab, which has no rows.
+     */
+    private static List<Node> selectedVariables(DataSet dataSet, JTabbedPane tabs, DataAuditJTable findingsTable,
+                                                DataAuditJTable variablesTable) {
+        Set<String> names = new LinkedHashSet<>();
+
+        if (tabs.getSelectedIndex() == 1) {
+            for (int viewRow : variablesTable.getSelectedRows()) {
+                Object name = variablesTable.getModel()
+                        .getValueAt(variablesTable.convertRowIndexToModel(viewRow), 0);
+                if (name != null) names.add(name.toString());
+            }
+        } else if (tabs.getSelectedIndex() == 0
+                   && findingsTable.getModel() instanceof DataAuditFindingsModel model) {
+            for (int viewRow : findingsTable.getSelectedRows()) {
+                names.addAll(model.getFinding(findingsTable.convertRowIndexToModel(viewRow)).getVariables());
+            }
+        }
+
+        List<Node> variables = new ArrayList<>();
+
+        for (String name : names) {
+            Node variable = dataSet.getVariable(name);
+            if (variable != null) variables.add(variable);
+        }
+
+        return variables;
     }
 
     /**
