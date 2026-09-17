@@ -88,7 +88,6 @@ public class SemBicScore implements ScoreWrapper {
         semBicScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         semBicScore.setStructurePrior(parameters.getDouble(Params.SEM_BIC_STRUCTURE_PRIOR));
         semBicScore.setLambda(parameters.getDouble(Params.SINGULARITY_LAMBDA));
-        semBicScore.setResidualVarianceFloor(parameters.getDouble(Params.RESIDUAL_VARIANCE_FLOOR));
         // Only override the effective sample size when explicitly given (>= 0), so that a MissingDataSpec ESS
         // mode (e.g., minPairwise under the EM policy) set in the constructor is not clobbered by the default -1.
         int effectiveSampleSize = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
@@ -141,7 +140,6 @@ public class SemBicScore implements ScoreWrapper {
         parameters.add(Params.SEM_BIC_RULE);
         parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.SINGULARITY_LAMBDA);
-        parameters.add(Params.RESIDUAL_VARIANCE_FLOOR);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
         parameters.add(Params.MISSING_EM_RIDGE);

@@ -6566,28 +6566,6 @@ Source:
         <li>Value Type: <span id="rescueAction_value_type">Integer</span></li>
     </ul>
 
-    === residualVarianceFloor ===
-    <h3 class="parameter_description" id="residualVarianceFloor">residualVarianceFloor</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description: <span id="residualVarianceFloor_short_desc">Deterministic relations: floor added
-        to the residual variance in the SEM BIC likelihood (0 = off)</span></li>
-        <li>Long Description: <span id="residualVarianceFloor_long_desc">
-        The xi adjustment of Li et al., "On Causal Discovery in the Presence of Deterministic Relations"
-        (NeurIPS 2024), Eq. 3. When a variable is a deterministic function of a candidate parent set, its
-        estimated residual variance is zero or a rounding-level number, so the log-variance term of the
-        likelihood is infinite or numerically arbitrary: the local score becomes undefined or is dominated by
-        rounding noise, and rival determining parent sets are ranked by numerical accident. With a floor xi
-        &gt; 0 the likelihood uses log(sigma^2 + xi) in place of log(sigma^2), so all determining parent sets
-        receive the same large finite likelihood and the BIC penalty decides among them, selecting the minimal
-        determining set. A small value such as 1e-8 is suggested for standardized data. Use together with a
-        nonzero singularity lambda so that coefficient solves on singular parent submatrices do not throw. The
-        default 0 disables the floor and preserves the standard score exactly.</span></li>
-        <li>Default Value: <span id="residualVarianceFloor_default_value">0.0</span></li>
-        <li>Lower Bound: <span id="residualVarianceFloor_lower_bound">0.0</span></li>
-        <li>Upper Bound: <span id="residualVarianceFloor_upper_bound">Infinity</span></li>
-        <li>Value Type: <span id="residualVarianceFloor_value_type">Double</span></li>
-    </ul>
-
     === resolveAlmostCyclicPaths ===
     <h3 class="parameter_description" id="resolveAlmostCyclicPaths">resolveAlmostCyclicPaths</h3>
     <ul class="parameter_description_list">

@@ -1582,10 +1582,6 @@ public final class Params {
      */
     public static final String RESCUE_ACTION = "rescueAction";
     /**
-     * Constant <code>RESIDUAL_VARIANCE_FLOOR="residualVarianceFloor"</code>
-     */
-    public static final String RESIDUAL_VARIANCE_FLOOR = "residualVarianceFloor";
-    /**
      * Constant <code>SAMPLE_SIZE="sampleSize"</code>
      */
     public static final String SAMPLE_SIZE = "sampleSize";

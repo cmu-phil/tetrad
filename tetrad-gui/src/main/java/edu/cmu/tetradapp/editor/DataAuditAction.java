@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.audit.AuditFinding;
 import edu.cmu.tetrad.data.audit.CovarianceAudit;
 import edu.cmu.tetrad.data.audit.DataAudit;
+import edu.cmu.tetrad.data.audit.DeterministicClusters;
 import edu.cmu.tetrad.data.audit.DeterminismRemovalSuggester;
 import edu.cmu.tetrad.data.audit.FindingCode;
 import edu.cmu.tetrad.graph.Node;
@@ -37,6 +38,7 @@ import edu.cmu.tetradapp.util.WatchedProcess;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -1003,10 +1005,21 @@ class DataAuditAction extends AbstractAction {
                 return;
             }
 
-            List<String> chosen = showRemovalDialog(remove, suggestions);
+            Map<String, String> equations = new LinkedHashMap<>();
+            for (DeterminismRemovalSuggester.Suggestion s : suggestions) {
+                equations.computeIfAbsent(s.variable(), name -> previewEquation(dataSet, name));
+            }
+
+            List<String> chosen = showRemovalDialog(remove, suggestions, equations);
             if (chosen == null || chosen.isEmpty()) return;
 
             if (!confirmRemoval(remove, chosen)) return;
+
+            // The equations for the report are fitted BEFORE removal, each removed variable regressed on the
+            // RETAINED variables only, so the reported equations remain usable (the removed variables are
+            // reconstructible from the data that is left) even when several members of overlapping clusters go
+            // at once.
+            List<String> equationLines = retainedFormEquations(dataSet, chosen);
 
             int removedCount = 0;
 
@@ -1026,9 +1039,104 @@ class DataAuditAction extends AbstractAction {
             recomputeAudit(dataSet, remove, "The variables were removed", removedCount + " variable(s) removed.",
                     findingsTable, variablesTable, summary, missingText, missingRef, groupCache, onDatasetEdited,
                     null);
+
+            showEquationsReport(remove, equationLines);
         });
 
         return remove;
+    }
+
+    /**
+     * The residual-fraction level at or below which a fitted equation is labeled exact rather than approximate:
+     * residual variance / marginal variance below this is rounding, not noise.
+     */
+    private static final double EXACT_EQUATION_THRESHOLD = 1e-8;
+
+    /**
+     * Fits the equation writing the named variable in terms of the other variables of the dataset, for display in
+     * the removal dialog's Equation column. Returns a placeholder for discrete variables, which have no linear
+     * equation.
+     */
+    private static String previewEquation(DataSet dataSet, String name) {
+        DeterministicClusters.Constraint c =
+                DeterministicClusters.constraintFor(dataSet, name, EXACT_EQUATION_THRESHOLD);
+        if (c == null) return "(discrete; no linear equation)";
+        return c.equation() + exactnessTag(c);
+    }
+
+    /**
+     * Fits, for each chosen variable, its equation in terms of the RETAINED variables (all variables minus the
+     * other chosen ones), before any column is removed. One line per variable, copyable as text.
+     */
+    private static List<String> retainedFormEquations(DataSet dataSet, List<String> chosen) {
+        List<String> lines = new ArrayList<>();
+        for (String name : chosen) {
+            List<Node> keepPlusThis = new ArrayList<>();
+            for (Node node : dataSet.getVariables()) {
+                if (node.getName().equals(name) || !chosen.contains(node.getName())) {
+                    keepPlusThis.add(node);
+                }
+            }
+            DeterministicClusters.Constraint c = keepPlusThis.size() >= 2
+                    ? DeterministicClusters.constraintFor(dataSet.subsetColumns(keepPlusThis), name,
+                    EXACT_EQUATION_THRESHOLD)
+                    : null;
+            if (c == null) {
+                lines.add(name + " : (discrete; no linear equation)");
+            } else {
+                lines.add(c.equation() + exactnessTag(c));
+            }
+        }
+        return lines;
+    }
+
+    private static String exactnessTag(DeterministicClusters.Constraint c) {
+        if (c.fractionResidual() < EXACT_EQUATION_THRESHOLD) {
+            return "    [exact]";
+        }
+        return String.format("    [approximate; R^2 = %.4f]", 1.0 - c.fractionResidual());
+    }
+
+    /**
+     * Shows the fitted equations for the removed variables in a selectable, monospaced text area with a
+     * copy-to-clipboard button, and writes them to the log, so the deterministic relations travel with the analysis
+     * after the columns are gone.
+     */
+    private static void showEquationsReport(Component parent, List<String> equationLines) {
+        if (equationLines.isEmpty()) return;
+
+        String text = String.join("\n", equationLines);
+        edu.cmu.tetrad.util.TetradLogger.getInstance().log("Removed-variable equations:\n" + text);
+
+        JTextArea area = new JTextArea(text);
+        area.setEditable(false);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setCaretPosition(0);
+
+        JButton copy = new JButton("Copy to Clipboard");
+        copy.addActionListener(ev -> Toolkit.getDefaultToolkit().getSystemClipboard()
+                .setContents(new StringSelection(text), null));
+
+        JLabel note = new JLabel("<html>Equations for the removed variables, in terms of the retained variables. "
+                + "Which member of a deterministic cluster counts as derived is a judgment the data cannot make; "
+                + "these equations record the representation you chose. Include them in reports: within-cluster "
+                + "structure is not identified, and edges at the determining variables are relative to this "
+                + "representation.</html>");
+
+        JPanel south = new JPanel(new BorderLayout());
+        south.add(copy, BorderLayout.EAST);
+
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        panel.add(note, BorderLayout.NORTH);
+        panel.add(new JScrollPane(area), BorderLayout.CENTER);
+        panel.add(south, BorderLayout.SOUTH);
+
+        int rowHeight = area.getFontMetrics(area.getFont()).getHeight();
+        int listHeight = Math.min(20, Math.max(3, equationLines.size())) * rowHeight + 12;
+        panel.setPreferredSize(new Dimension(760, listHeight + 110));
+
+        JOptionPane.showMessageDialog(parent, panel, "Removed Variable Equations",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -1069,16 +1177,18 @@ class DataAuditAction extends AbstractAction {
      * finding code, and the reason. Returns the names the user checked, or null if the dialog was cancelled.
      */
     private static List<String> showRemovalDialog(JComponent parent,
-                                                  List<DeterminismRemovalSuggester.Suggestion> suggestions) {
-        String[] columns = {"Remove", "Variable", "Finding", "Reason"};
-        Object[][] rows = new Object[suggestions.size()][4];
+                                                  List<DeterminismRemovalSuggester.Suggestion> suggestions,
+                                                  Map<String, String> equations) {
+        String[] columns = {"Remove", "Variable", "Finding", "Equation", "Reason"};
+        Object[][] rows = new Object[suggestions.size()][5];
 
         for (int i = 0; i < suggestions.size(); i++) {
             DeterminismRemovalSuggester.Suggestion s = suggestions.get(i);
             rows[i][0] = s.recommended();
             rows[i][1] = s.variable();
             rows[i][2] = s.code().name();
-            rows[i][3] = s.reason();
+            rows[i][3] = equations.getOrDefault(s.variable(), "");
+            rows[i][4] = s.reason();
         }
 
         javax.swing.table.DefaultTableModel tableModel = new javax.swing.table.DefaultTableModel(rows, columns) {
@@ -1121,13 +1231,14 @@ class DataAuditAction extends AbstractAction {
         });
         table.getColumnModel().getColumn(0).setPreferredWidth(60);
         table.getColumnModel().getColumn(0).setMaxWidth(70);
-        table.getColumnModel().getColumn(1).setPreferredWidth(200);
-        table.getColumnModel().getColumn(2).setPreferredWidth(230);
-        table.getColumnModel().getColumn(3).setPreferredWidth(520);
+        table.getColumnModel().getColumn(1).setPreferredWidth(150);
+        table.getColumnModel().getColumn(2).setPreferredWidth(200);
+        table.getColumnModel().getColumn(3).setPreferredWidth(330);
+        table.getColumnModel().getColumn(4).setPreferredWidth(400);
         table.setRowHeight(table.getRowHeight() + 2);
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setPreferredSize(new Dimension(1000, Math.min(500, 60 + 22 * suggestions.size())));
+        scroll.setPreferredSize(new Dimension(1150, Math.min(500, 60 + 22 * suggestions.size())));
 
         JTextArea note = new JTextArea("Checked rows are recommended: for each determinism finding, the variable "
                 + "the audit judged to be determined (or the second of a duplicate pair, or the discrete coarsening "
