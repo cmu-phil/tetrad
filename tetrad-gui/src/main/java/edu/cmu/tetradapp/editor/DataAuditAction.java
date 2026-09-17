@@ -1006,8 +1006,10 @@ class DataAuditAction extends AbstractAction {
             }
 
             Map<String, String> equations = new LinkedHashMap<>();
-            for (DeterminismRemovalSuggester.Suggestion s : suggestions) {
-                equations.computeIfAbsent(s.variable(), name -> previewEquation(dataSet, name));
+            if (COMPUTE_EQUATIONS) {
+                for (DeterminismRemovalSuggester.Suggestion s : suggestions) {
+                    equations.computeIfAbsent(s.variable(), name -> previewEquation(dataSet, name));
+                }
             }
 
             List<String> chosen = showRemovalDialog(remove, suggestions, equations);
@@ -1019,7 +1021,9 @@ class DataAuditAction extends AbstractAction {
             // RETAINED variables only, so the reported equations remain usable (the removed variables are
             // reconstructible from the data that is left) even when several members of overlapping clusters go
             // at once.
-            List<String> equationLines = retainedFormEquations(dataSet, chosen);
+            List<String> equationLines = COMPUTE_EQUATIONS
+                    ? retainedFormEquations(dataSet, chosen)
+                    : new ArrayList<>();
 
             int removedCount = 0;
 
@@ -1051,6 +1055,15 @@ class DataAuditAction extends AbstractAction {
      * residual variance / marginal variance below this is rounding, not noise.
      */
     private static final double EXACT_EQUATION_THRESHOLD = 1e-8;
+
+    /**
+     * TEMPORARY kill switch for equation fitting in the determinism-removal flow. The current fitter recomputes the
+     * covariance per call and prunes supports by greedy backward elimination (O(p^5) worst case per variable), which
+     * is unusable on wide datasets with many deterministic relations. Until the fitter shares one covariance across
+     * calls and prunes by coefficient screening, false here skips the Equation column and the post-removal equations
+     * report; everything else in the flow is unchanged.
+     */
+    private static final boolean COMPUTE_EQUATIONS = false;
 
     /**
      * Fits the equation writing the named variable in terms of the other variables of the dataset, for display in
