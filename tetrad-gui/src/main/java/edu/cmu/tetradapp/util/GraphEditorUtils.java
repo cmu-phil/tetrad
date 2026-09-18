@@ -37,8 +37,12 @@ public class GraphEditorUtils {
 
     /**
      * <p>editkamadaKawaiLayoutParams.</p>
+     *
+     * @return true if the user clicked OK, false if the dialog was
+     * cancelled or closed, in which case the previous parameter values are
+     * restored and the caller should skip the layout.
      */
-    public static void editkamadaKawaiLayoutParams() {
+    public static boolean editkamadaKawaiLayoutParams() {
         boolean initializeRandomly = Preferences.userRoot().getBoolean(
                 "kamadaKawaiLayoutInitializeRandomly", false);
         double naturalEdgeLength = Preferences.userRoot().getDouble(
@@ -131,16 +135,38 @@ public class GraphEditorUtils {
         panel.setLayout(new BorderLayout());
         panel.add(b, BorderLayout.CENTER);
 
-        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), panel,
-                "Spring Layout Parameters", JOptionPane.PLAIN_MESSAGE);
+        int choice = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                panel, "Spring Layout Parameters",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (choice != JOptionPane.OK_OPTION) {
+
+            // The fields write through to the preferences as they are
+            // edited, so cancelling restores the values from dialog entry.
+            Preferences.userRoot().putBoolean(
+                    "kamadaKawaiLayoutInitializeRandomly", initializeRandomly);
+            Preferences.userRoot().putDouble(
+                    "kamadaKawaiLayoutNaturalEdgeLength", naturalEdgeLength);
+            Preferences.userRoot().putDouble(
+                    "kamadaKawaiLayoutSpringConstant", springConstant);
+            Preferences.userRoot().putDouble(
+                    "kamadaKawaiLayoutStopEnergy", stopEnergy);
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Pops up a modal editor for the parameters of Richard's layout. The
      * values persist in the user's preferences, keyed "richardsLayoutXGap",
      * "richardsLayoutYGap", and "richardsLayoutShearPerLayer".
+     *
+     * @return true if the user clicked OK, false if the dialog was
+     * cancelled or closed, in which case the previous parameter values are
+     * restored and the caller should skip the layout.
      */
-    public static void editRichardsLayoutParams() {
+    public static boolean editRichardsLayoutParams() {
         double xGap = Preferences.userRoot().getDouble(
                 "richardsLayoutXGap", 30.0);
         double yGap = Preferences.userRoot().getDouble(
@@ -209,8 +235,22 @@ public class GraphEditorUtils {
         panel.setLayout(new BorderLayout());
         panel.add(b, BorderLayout.CENTER);
 
-        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), panel,
-                "Richard's Layout Parameters", JOptionPane.PLAIN_MESSAGE);
+        int choice = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
+                panel, "Richard's Layout Parameters",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (choice != JOptionPane.OK_OPTION) {
+
+            // The fields write through to the preferences as they are
+            // edited, so cancelling restores the values from dialog entry.
+            Preferences.userRoot().putDouble("richardsLayoutXGap", xGap);
+            Preferences.userRoot().putDouble("richardsLayoutYGap", yGap);
+            Preferences.userRoot().putDouble(
+                    "richardsLayoutShearPerLayer", shearPerLayer);
+            return false;
+        }
+
+        return true;
     }
 
 }

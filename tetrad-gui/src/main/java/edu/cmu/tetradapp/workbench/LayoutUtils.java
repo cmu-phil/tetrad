@@ -809,7 +809,9 @@ public class LayoutUtils {
                 }
             }
 
-            GraphEditorUtils.editkamadaKawaiLayoutParams();
+            if (!GraphEditorUtils.editkamadaKawaiLayoutParams()) {
+                return;
+            }
 
             boolean initializeRandomly = Preferences.userRoot()
                     .getBoolean(
@@ -961,7 +963,9 @@ public class LayoutUtils {
             }
         }
 
-        GraphEditorUtils.editRichardsLayoutParams();
+        if (!GraphEditorUtils.editRichardsLayoutParams()) {
+            return;
+        }
 
         double xGap = Preferences.userRoot().getDouble(
                 "richardsLayoutXGap", 30.0);

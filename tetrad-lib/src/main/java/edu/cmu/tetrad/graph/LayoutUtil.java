@@ -427,11 +427,14 @@ public class LayoutUtil {
             return;
         }
 
-        if (graph.getNumNodes() <= 20) {
-            circleLayout(graph);
-        } else {
-            squareLayout(graph);
-        }
+        // The previous defaults, kept for reference:
+//        if (graph.getNumNodes() <= 20) {
+//            circleLayout(graph);
+//        } else {
+//            squareLayout(graph);
+//        }
+
+        richardsLayout(graph);
     }
 
     /**
@@ -835,7 +838,14 @@ public class LayoutUtil {
         }
 
         // Barycenter sweeps; keep the ordering with the fewest crossings.
-        int bestCrossings = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
+        // Crossing counting is O(E^2), so above this many cross-tier edges
+        // the sweeps still run but the keep-best bookkeeping is skipped.
+        final int maxEdgesForCrossingCounts = 2000;
+        boolean trackCrossings = crossEdges.size() <= maxEdgesForCrossingCounts;
+
+        int bestCrossings = trackCrossings
+                ? countCrossings(crossEdges, tierOf, normalizedPositions(tiers))
+                : Integer.MAX_VALUE;
         List<List<Node>> bestTiers = copyTiers(tiers);
 
         for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
@@ -869,15 +879,19 @@ public class LayoutUtil {
                 tier.sort(Comparator.comparingDouble(key::get));
             }
 
-            int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
+            if (trackCrossings) {
+                int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
 
-            if (c < bestCrossings) {
-                bestCrossings = c;
-                bestTiers = copyTiers(tiers);
+                if (c < bestCrossings) {
+                    bestCrossings = c;
+                    bestTiers = copyTiers(tiers);
+                }
             }
         }
 
-        tiers = bestTiers;
+        if (trackCrossings) {
+            tiers = bestTiers;
+        }
 
         // Coordinate assignment: pack each tier by real widths, then pull
         // nodes toward the mean x of their neighbors, preserving order and
