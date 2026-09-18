@@ -973,9 +973,11 @@ public class LayoutUtils {
                 "richardsLayoutYGap", 90.0);
         double shearPerLayer = Preferences.userRoot().getDouble(
                 "richardsLayoutShearPerLayer", 50.0);
+        boolean nudge = Preferences.userRoot().getBoolean(
+                "richardsLayoutNudge", true);
 
         LayoutUtil.richardsLayout(graph, displayNodeSizes(layoutEditable),
-                xGap, yGap, shearPerLayer);
+                xGap, yGap, shearPerLayer, nudge);
         layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.richards;
     }

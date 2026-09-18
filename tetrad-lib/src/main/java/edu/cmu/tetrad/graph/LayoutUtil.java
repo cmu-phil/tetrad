@@ -757,7 +757,7 @@ public class LayoutUtil {
      * @param size  supplies the rendered box size of each node.
      */
     public static void richardsLayout(Graph graph, NodeSize size) {
-        richardsLayout(graph, size, 30.0, 90.0, 50.0);
+        richardsLayout(graph, size, 30.0, 90.0, 50.0, true);
     }
 
     /**
@@ -795,17 +795,63 @@ public class LayoutUtil {
      */
     public static void richardsLayout(Graph graph, NodeSize size, double xGap,
                                       double yGap, double shearPerLayer) {
+        richardsLayout(graph, size, xGap, yGap, shearPerLayer, true);
+    }
+
+    /**
+     * Richard's layout, with the nudge pass switchable. When {@code nudge}
+     * is false, the post-processing step that moves nodes sideways off the
+     * straight lines of long edges is skipped.
+     *
+     * @param graph         the graph to be arranged.
+     * @param size          supplies the rendered box size of each node.
+     * @param xGap          horizontal gap kept between node boxes in a layer.
+     * @param yGap          vertical distance between layer centerlines.
+     * @param shearPerLayer rightward shift added per layer of depth.
+     * @param nudge         whether to nudge nodes off long edge lines.
+     */
+    public static void richardsLayout(Graph graph, NodeSize size, double xGap,
+                                      double yGap, double shearPerLayer, boolean nudge) {
         if (graph == null) return;
 
-        List<List<Node>> tiers = getTiers(graph);
-        tiers.removeIf(List::isEmpty);
-        if (tiers.isEmpty()) return;
-
-        // Deterministic start: order each tier by the graph's node order.
         List<Node> allNodes = graph.getNodes();
         Map<Node, Integer> nodeIndex = new HashMap<>();
         for (int i = 0; i < allNodes.size(); i++) nodeIndex.put(allNodes.get(i), i);
+
+        // Unattached variables are set aside and placed in a block at the
+        // top right, so the main layout can hug the upper left.
+        Set<Node> attached = new HashSet<>();
+
+        for (Edge e : graph.getEdges()) {
+            if (e.getNode1() != e.getNode2()) {
+                attached.add(e.getNode1());
+                attached.add(e.getNode2());
+            }
+        }
+
+        List<Node> isolated = new ArrayList<>();
+
+        for (Node n : allNodes) {
+            if (!attached.contains(n)) isolated.add(n);
+        }
+
+        List<List<Node>> tiers = getTiers(graph);
+        for (List<Node> tier : tiers) tier.removeAll(isolated);
+        tiers.removeIf(List::isEmpty);
+
+        if (tiers.isEmpty()) {
+            placeIsolatedGrid(isolated, size, LAYOUT_MARGIN, xGap);
+            return;
+        }
+
+        // Deterministic start: order each tier by the graph's node order.
         for (List<Node> tier : tiers) tier.sort(Comparator.comparingInt(nodeIndex::get));
+
+        // Nodes joined within a tier by edges that do not determine depth
+        // (o-o, ---, <->, and any cyclic remainder) would otherwise sit in
+        // one row with those edges drawn along it. Split each such tier
+        // into sub-rows so that no edge joins two nodes in the same row.
+        tiers = splitTiersForSameTierEdges(graph, tiers, nodeIndex);
 
         Map<Node, Integer> tierOf = new HashMap<>();
         for (int t = 0; t < tiers.size(); t++) {
@@ -965,15 +1011,24 @@ public class LayoutUtil {
             }
         }
 
-        // Shear and place, then shift so the top-left node box sits at the
-        // layout margin.
+        // Shear, then nudge nodes sideways so that no long edge's straight
+        // line passes through a node box, then shift so the top-left node
+        // box sits at the layout margin.
+        for (int t = 0; t < tiers.size(); t++) {
+            for (Node n : tiers.get(t)) {
+                x.put(n, x.get(n) + t * shearPerLayer);
+            }
+        }
+
+        if (nudge) {
+            nudgeOffEdgeLines(tiers, tierOf, crossEdges, x, size, xGap);
+        }
+
         double minLeft = Double.POSITIVE_INFINITY;
 
         for (int t = 0; t < tiers.size(); t++) {
             for (Node n : tiers.get(t)) {
-                double cx = x.get(n) + t * shearPerLayer;
-                x.put(n, cx);
-                minLeft = Math.min(minLeft, cx - size.width(n) / 2.0);
+                minLeft = Math.min(minLeft, x.get(n) - size.width(n) / 2.0);
             }
         }
 
@@ -988,6 +1043,252 @@ public class LayoutUtil {
                 n.setCenterY((int) Math.round(y));
             }
         }
+
+        if (!isolated.isEmpty()) {
+            double maxRight = 0.0;
+
+            for (Map.Entry<Node, Double> entry : x.entrySet()) {
+                maxRight = Math.max(maxRight, entry.getValue() - minLeft
+                        + LAYOUT_MARGIN + size.width(entry.getKey()) / 2.0);
+            }
+
+            placeIsolatedGrid(isolated, size, maxRight + 2 * xGap, xGap);
+        }
+    }
+
+    /**
+     * Places unattached variables in a top-aligned grid, roughly square,
+     * in reading order, starting at the given left edge.
+     */
+    private static void placeIsolatedGrid(List<Node> isolated, NodeSize size,
+                                          double startX, double xGap) {
+        if (isolated.isEmpty()) return;
+
+        int cols = (int) Math.ceil(Math.sqrt(isolated.size()));
+        double y = LAYOUT_MARGIN;
+        int i = 0;
+
+        while (i < isolated.size()) {
+            double cx = startX;
+            double rowHeight = 0.0;
+
+            for (int c = 0; c < cols && i < isolated.size(); c++, i++) {
+                Node n = isolated.get(i);
+                double half = size.width(n) / 2.0;
+                cx += half;
+                n.setCenterX((int) Math.round(cx));
+                n.setCenterY((int) Math.round(y + size.height(n) / 2.0));
+                cx += half + xGap;
+                rowHeight = Math.max(rowHeight, size.height(n));
+            }
+
+            y += rowHeight + 20.0;
+        }
+    }
+
+    /**
+     * Post-processing: where a straight edge spanning two or more layers
+     * would pass through (or too close to) the box of a node in an
+     * intermediate layer, the node is pushed sideways until the line
+     * clears its box. For each node, the forbidden horizontal intervals
+     * from all such edge lines crossing its row are merged, and the node
+     * moves to the nearest point outside their union; a tie between sides
+     * is broken by the parity of the layer, which staggers chains whose
+     * skip edges would otherwise be drawn on top of them. After each round
+     * of moves, within-layer order and minimum separation are re-imposed,
+     * and the process repeats until there are no violations or the round
+     * limit is reached, so clearance is best effort in crowded regions.
+     */
+    private static void nudgeOffEdgeLines(List<List<Node>> tiers, Map<Node, Integer> tierOf,
+                                          List<Node[]> crossEdges, Map<Node, Double> x,
+                                          NodeSize size, double xGap) {
+        for (int round = 0; round < 12; round++) {
+            Map<Node, List<double[]>> forbidden = new HashMap<>();
+
+            for (Node[] e : crossEdges) {
+                Node hi = e[0];
+                Node lo = e[1];
+                int tHi = tierOf.get(hi);
+                int tLo = tierOf.get(lo);
+                if (tLo - tHi < 2) continue;
+
+                double xHi = x.get(hi);
+                double xLo = x.get(lo);
+
+                for (int t = tHi + 1; t < tLo; t++) {
+                    // Where the straight edge crosses this layer's centerline.
+                    double segX = xHi + (xLo - xHi) * (t - tHi) / (double) (tLo - tHi);
+
+                    for (Node v : tiers.get(t)) {
+                        if (v == hi || v == lo) continue;
+                        double clearance = size.width(v) / 2.0 + xGap / 2.0;
+                        forbidden.computeIfAbsent(v, k -> new ArrayList<>())
+                                .add(new double[]{segX - clearance, segX + clearance});
+                    }
+                }
+            }
+
+            boolean moved = false;
+
+            for (int t = 0; t < tiers.size(); t++) {
+                for (Node v : tiers.get(t)) {
+                    List<double[]> intervals = forbidden.get(v);
+                    if (intervals == null) continue;
+
+                    // Merge overlapping intervals, then find the component
+                    // containing the node, if any.
+                    intervals.sort(Comparator.comparingDouble(a -> a[0]));
+                    double xv = x.get(v);
+                    double left = Double.NaN;
+                    double right = Double.NaN;
+                    double curLo = intervals.get(0)[0];
+                    double curHi = intervals.get(0)[1];
+
+                    for (int i = 1; i <= intervals.size(); i++) {
+                        if (i < intervals.size() && intervals.get(i)[0] <= curHi) {
+                            curHi = Math.max(curHi, intervals.get(i)[1]);
+                        } else {
+                            if (xv > curLo && xv < curHi) {
+                                left = curLo;
+                                right = curHi;
+                                break;
+                            }
+
+                            if (i < intervals.size()) {
+                                curLo = intervals.get(i)[0];
+                                curHi = intervals.get(i)[1];
+                            }
+                        }
+                    }
+
+                    if (Double.isNaN(left)) continue;
+
+                    double moveLeft = xv - left;
+                    double moveRight = right - xv;
+                    double target;
+
+                    if (Math.abs(moveLeft - moveRight) < 1e-9) {
+                        target = (t % 2 == 0) ? right : left;
+                    } else {
+                        target = moveLeft < moveRight ? left : right;
+                    }
+
+                    x.put(v, target);
+                    moved = true;
+                }
+            }
+
+            if (!moved) return;
+
+            // Re-impose within-layer order and minimum separation, biased
+            // as little as possible around the moved positions.
+            for (List<Node> tier : tiers) {
+                int m = tier.size();
+                if (m < 2) continue;
+
+                double[] desired = new double[m];
+                for (int i = 0; i < m; i++) desired[i] = x.get(tier.get(i));
+
+                double[] right = new double[m];
+                double[] left = new double[m];
+
+                for (int i = 0; i < m; i++) {
+                    double minX = (i == 0) ? Double.NEGATIVE_INFINITY
+                            : right[i - 1] + size.width(tier.get(i - 1)) / 2.0
+                              + xGap + size.width(tier.get(i)) / 2.0;
+                    right[i] = Math.max(desired[i], minX);
+                }
+
+                for (int i = m - 1; i >= 0; i--) {
+                    double maxX = (i == m - 1) ? Double.POSITIVE_INFINITY
+                            : left[i + 1] - size.width(tier.get(i + 1)) / 2.0
+                              - xGap - size.width(tier.get(i)) / 2.0;
+                    left[i] = Math.min(desired[i], maxX);
+                }
+
+                for (int i = 0; i < m; i++) {
+                    x.put(tier.get(i), (right[i] + left[i]) / 2.0);
+                }
+            }
+        }
+    }
+
+    /**
+     * Splits any tier containing edges between its own members into
+     * sub-rows via greedy (Welsh-Powell) coloring, so that no edge joins
+     * two nodes in the same row. In CPDAGs and PAGs, variables connected
+     * only by edges that do not determine causal depth (o-o, ---, &lt;-&gt;)
+     * share a tier, and without this step those edges would all be drawn
+     * along the row, overlapping one another and the node boxes. The
+     * sub-rows then take part in crossing minimization and coordinate
+     * assignment like any other layer.
+     */
+    private static List<List<Node>> splitTiersForSameTierEdges(
+            Graph graph, List<List<Node>> tiers, Map<Node, Integer> nodeIndex) {
+        List<List<Node>> expanded = new ArrayList<>();
+
+        for (List<Node> tier : tiers) {
+            if (tier.size() < 2) {
+                expanded.add(tier);
+                continue;
+            }
+
+            Set<Node> members = new HashSet<>(tier);
+            Map<Node, Set<Node>> adj = new HashMap<>();
+            for (Node n : tier) adj.put(n, new HashSet<>());
+            boolean anyEdges = false;
+
+            for (Edge e : graph.getEdges()) {
+                Node a = e.getNode1();
+                Node b = e.getNode2();
+
+                if (a != b && members.contains(a) && members.contains(b)) {
+                    adj.get(a).add(b);
+                    adj.get(b).add(a);
+                    anyEdges = true;
+                }
+            }
+
+            if (!anyEdges) {
+                expanded.add(tier);
+                continue;
+            }
+
+            // Highest degree first, ties by the graph's node order, so the
+            // split is deterministic.
+            List<Node> order = new ArrayList<>(tier);
+            order.sort(Comparator.comparingInt((Node n) -> -adj.get(n).size())
+                    .thenComparingInt(nodeIndex::get));
+
+            Map<Node, Integer> color = new HashMap<>();
+            int numColors = 0;
+
+            for (Node n : order) {
+                Set<Integer> used = new HashSet<>();
+
+                for (Node m : adj.get(n)) {
+                    Integer c = color.get(m);
+                    if (c != null) used.add(c);
+                }
+
+                int c = 0;
+                while (used.contains(c)) c++;
+                color.put(n, c);
+                numColors = Math.max(numColors, c + 1);
+            }
+
+            for (int c = 0; c < numColors; c++) {
+                List<Node> subRow = new ArrayList<>();
+
+                for (Node n : tier) {
+                    if (color.get(n) == c) subRow.add(n);
+                }
+
+                expanded.add(subRow);
+            }
+        }
+
+        return expanded;
     }
 
     /**

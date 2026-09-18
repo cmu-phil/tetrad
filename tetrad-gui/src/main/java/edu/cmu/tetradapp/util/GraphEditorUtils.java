@@ -173,6 +173,22 @@ public class GraphEditorUtils {
                 "richardsLayoutYGap", 90.0);
         double shearPerLayer = Preferences.userRoot().getDouble(
                 "richardsLayoutShearPerLayer", 50.0);
+        boolean nudge = Preferences.userRoot().getBoolean(
+                "richardsLayoutNudge", true);
+
+        JComboBox nudgeCombo = new JComboBox(new String[]{"Yes", "No"});
+        nudgeCombo.setMaximumSize(nudgeCombo.getPreferredSize());
+
+        if (!nudge) {
+            nudgeCombo.setSelectedItem("No");
+        }
+
+        nudgeCombo.addActionListener(e -> {
+            JComboBox combo = (JComboBox) e.getSource();
+            String selection = (String) combo.getSelectedItem();
+            Preferences.userRoot().putBoolean(
+                    "richardsLayoutNudge", "Yes".equals(selection));
+        });
 
         DoubleTextField xGapField = new DoubleTextField(
                 xGap, 4, NumberFormatUtil.getInstance().getNumberFormat());
@@ -231,6 +247,12 @@ public class GraphEditorUtils {
         b3.add(shearField);
         b.add(b3);
 
+        Box b4 = Box.createHorizontalBox();
+        b4.add(new JLabel("Nudge nodes off long edge lines? "));
+        b4.add(Box.createHorizontalGlue());
+        b4.add(nudgeCombo);
+        b.add(b4);
+
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b, BorderLayout.CENTER);
@@ -247,6 +269,7 @@ public class GraphEditorUtils {
             Preferences.userRoot().putDouble("richardsLayoutYGap", yGap);
             Preferences.userRoot().putDouble(
                     "richardsLayoutShearPerLayer", shearPerLayer);
+            Preferences.userRoot().putBoolean("richardsLayoutNudge", nudge);
             return false;
         }
 
