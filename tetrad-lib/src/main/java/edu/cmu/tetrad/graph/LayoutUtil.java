@@ -729,6 +729,317 @@ public class LayoutUtil {
         return tiers;
     }
 
+    //==================== Richard's layout ==============================//
+
+    /**
+     * Arranges the graph the way Richard lays out a graph for presentation:
+     * layered by causal depth, with each layer shifted a bit further right
+     * than the one above it, so that the flow reads down and to the right,
+     * and with within-layer orderings chosen by barycenter sweeps to reduce
+     * edge crossings. Node sizes are estimated; see
+     * {@link #richardsLayout(Graph, NodeSize)} to supply real display sizes.
+     *
+     * @param graph the graph to be arranged.
+     */
+    public static void richardsLayout(Graph graph) {
+        richardsLayout(graph, estimatedNodeSize());
+    }
+
+    /**
+     * Richard's layout with the given node sizes and default spacing: a
+     * 30 px horizontal gap between node boxes, 90 px between layer
+     * centerlines, and a 50 px rightward shear per layer.
+     *
+     * @param graph the graph to be arranged.
+     * @param size  supplies the rendered box size of each node.
+     */
+    public static void richardsLayout(Graph graph, NodeSize size) {
+        richardsLayout(graph, size, 30.0, 90.0, 50.0);
+    }
+
+    /**
+     * Richard's layout, fully parameterized.
+     *
+     * <p>The method is deterministic: the same graph in the same node order
+     * gives the same layout every time. It proceeds in four steps:</p>
+     *
+     * <ol>
+     * <li><b>Layering.</b> Nodes are assigned to layers by causal depth
+     * using the directed structure only (each node goes in the first layer
+     * where all of the nodes with arrows into it are already placed; a
+     * cyclic remainder, if any, becomes a final layer). For PAGs this means
+     * an edge like x o-&gt; y places y below x, which matches the
+     * "y is not an ancestor of x" reading of the arrowhead.</li>
+     * <li><b>Crossing reduction.</b> Alternating down and up barycenter
+     * sweeps reorder each layer by the mean position of its neighbors in the
+     * sweep direction; all edge types vote here, including edges that span
+     * more than one layer. The ordering with the fewest straight-line
+     * crossings seen over all sweeps is kept.</li>
+     * <li><b>Coordinate assignment.</b> Within each layer, nodes are packed
+     * by their actual box widths, then pulled toward the mean x of their
+     * neighbors over several relaxation passes, preserving the layer order
+     * and minimum separation, so children line up under their parents.</li>
+     * <li><b>Shear.</b> Each layer is shifted right by
+     * {@code shearPerLayer * layerIndex}, so exogenous variables sit at the
+     * upper left and downstream variables render down and to the right.</li>
+     * </ol>
+     *
+     * @param graph         the graph to be arranged.
+     * @param size          supplies the rendered box size of each node.
+     * @param xGap          horizontal gap kept between node boxes in a layer.
+     * @param yGap          vertical distance between layer centerlines.
+     * @param shearPerLayer rightward shift added per layer of depth.
+     */
+    public static void richardsLayout(Graph graph, NodeSize size, double xGap,
+                                      double yGap, double shearPerLayer) {
+        if (graph == null) return;
+
+        List<List<Node>> tiers = getTiers(graph);
+        tiers.removeIf(List::isEmpty);
+        if (tiers.isEmpty()) return;
+
+        // Deterministic start: order each tier by the graph's node order.
+        List<Node> allNodes = graph.getNodes();
+        Map<Node, Integer> nodeIndex = new HashMap<>();
+        for (int i = 0; i < allNodes.size(); i++) nodeIndex.put(allNodes.get(i), i);
+        for (List<Node> tier : tiers) tier.sort(Comparator.comparingInt(nodeIndex::get));
+
+        Map<Node, Integer> tierOf = new HashMap<>();
+        for (int t = 0; t < tiers.size(); t++) {
+            for (Node n : tiers.get(t)) tierOf.put(n, t);
+        }
+
+        // Neighbor lists over all edges that connect different tiers. Every
+        // edge type votes in the ordering; only the tier assignment above is
+        // restricted to the directed structure.
+        Map<Node, List<Node>> upNbrs = new HashMap<>();
+        Map<Node, List<Node>> downNbrs = new HashMap<>();
+        for (Node n : allNodes) {
+            upNbrs.put(n, new ArrayList<>());
+            downNbrs.put(n, new ArrayList<>());
+        }
+
+        List<Node[]> crossEdges = new ArrayList<>();
+
+        for (Edge e : graph.getEdges()) {
+            Node a = e.getNode1();
+            Node b = e.getNode2();
+            Integer ta = tierOf.get(a);
+            Integer tb = tierOf.get(b);
+            if (ta == null || tb == null || ta.intValue() == tb.intValue()) continue;
+            Node hi = ta < tb ? a : b;
+            Node lo = ta < tb ? b : a;
+            downNbrs.get(hi).add(lo);
+            upNbrs.get(lo).add(hi);
+            crossEdges.add(new Node[]{hi, lo});
+        }
+
+        // Barycenter sweeps; keep the ordering with the fewest crossings.
+        int bestCrossings = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
+        List<List<Node>> bestTiers = copyTiers(tiers);
+
+        for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
+            boolean downSweep = sweep % 2 == 0;
+
+            for (int ti = 0; ti < tiers.size(); ti++) {
+                int t = downSweep ? ti : tiers.size() - 1 - ti;
+                List<Node> tier = tiers.get(t);
+                if (tier.size() < 2) continue;
+
+                Map<Node, Double> pos = normalizedPositions(tiers);
+                Map<Node, Double> key = new HashMap<>();
+
+                for (Node n : tier) {
+                    List<Node> nbrs = downSweep ? upNbrs.get(n) : downNbrs.get(n);
+
+                    if (nbrs.isEmpty()) {
+                        nbrs = new ArrayList<>(upNbrs.get(n));
+                        nbrs.addAll(downNbrs.get(n));
+                    }
+
+                    if (nbrs.isEmpty()) {
+                        key.put(n, pos.get(n));
+                    } else {
+                        double s = 0.0;
+                        for (Node m : nbrs) s += pos.get(m);
+                        key.put(n, s / nbrs.size());
+                    }
+                }
+
+                tier.sort(Comparator.comparingDouble(key::get));
+            }
+
+            int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
+
+            if (c < bestCrossings) {
+                bestCrossings = c;
+                bestTiers = copyTiers(tiers);
+            }
+        }
+
+        tiers = bestTiers;
+
+        // Coordinate assignment: pack each tier by real widths, then pull
+        // nodes toward the mean x of their neighbors, preserving order and
+        // separation, so children line up under their parents.
+        Map<Node, Double> x = new HashMap<>();
+
+        for (List<Node> tier : tiers) {
+            double cx = 0.0;
+
+            for (int i = 0; i < tier.size(); i++) {
+                Node n = tier.get(i);
+                double half = size.width(n) / 2.0;
+                cx += half;
+                x.put(n, cx);
+                cx += half + xGap;
+            }
+        }
+
+        for (int pass = 0; pass < 6; pass++) {
+            boolean downPass = pass % 2 == 0;
+
+            for (int ti = 0; ti < tiers.size(); ti++) {
+                int t = downPass ? ti : tiers.size() - 1 - ti;
+                List<Node> tier = tiers.get(t);
+                int m = tier.size();
+
+                double[] desired = new double[m];
+
+                for (int i = 0; i < m; i++) {
+                    Node n = tier.get(i);
+                    List<Node> nbrs = downPass ? upNbrs.get(n) : downNbrs.get(n);
+
+                    if (nbrs.isEmpty()) {
+                        nbrs = new ArrayList<>(upNbrs.get(n));
+                        nbrs.addAll(downNbrs.get(n));
+                    }
+
+                    if (nbrs.isEmpty()) {
+                        desired[i] = x.get(n);
+                    } else {
+                        double s = 0.0;
+                        for (Node q : nbrs) s += x.get(q);
+                        desired[i] = s / nbrs.size();
+                    }
+                }
+
+                // Two feasible placements -- one biased right, one biased
+                // left -- averaged. Both satisfy every separation
+                // constraint, and the constraints are linear, so the
+                // average does too.
+                double[] right = new double[m];
+                double[] left = new double[m];
+
+                for (int i = 0; i < m; i++) {
+                    double minX = (i == 0) ? Double.NEGATIVE_INFINITY
+                            : right[i - 1] + size.width(tier.get(i - 1)) / 2.0
+                              + xGap + size.width(tier.get(i)) / 2.0;
+                    right[i] = Math.max(desired[i], minX);
+                }
+
+                for (int i = m - 1; i >= 0; i--) {
+                    double maxX = (i == m - 1) ? Double.POSITIVE_INFINITY
+                            : left[i + 1] - size.width(tier.get(i + 1)) / 2.0
+                              - xGap - size.width(tier.get(i)) / 2.0;
+                    left[i] = Math.min(desired[i], maxX);
+                }
+
+                for (int i = 0; i < m; i++) {
+                    x.put(tier.get(i), (right[i] + left[i]) / 2.0);
+                }
+            }
+        }
+
+        // Shear and place, then shift so the top-left node box sits at the
+        // layout margin.
+        double minLeft = Double.POSITIVE_INFINITY;
+
+        for (int t = 0; t < tiers.size(); t++) {
+            for (Node n : tiers.get(t)) {
+                double cx = x.get(n) + t * shearPerLayer;
+                x.put(n, cx);
+                minLeft = Math.min(minLeft, cx - size.width(n) / 2.0);
+            }
+        }
+
+        double topHalf = 0.0;
+        for (Node n : tiers.get(0)) topHalf = Math.max(topHalf, size.height(n) / 2.0);
+
+        for (int t = 0; t < tiers.size(); t++) {
+            double y = LAYOUT_MARGIN + topHalf + t * yGap;
+
+            for (Node n : tiers.get(t)) {
+                n.setCenterX((int) Math.round(x.get(n) - minLeft + LAYOUT_MARGIN));
+                n.setCenterY((int) Math.round(y));
+            }
+        }
+    }
+
+    /**
+     * The position of each node within its tier, normalized to (0, 1) so
+     * that tiers of different sizes are comparable.
+     */
+    private static Map<Node, Double> normalizedPositions(List<List<Node>> tiers) {
+        Map<Node, Double> pos = new HashMap<>();
+
+        for (List<Node> tier : tiers) {
+            for (int i = 0; i < tier.size(); i++) {
+                pos.put(tier.get(i), (i + 0.5) / tier.size());
+            }
+        }
+
+        return pos;
+    }
+
+    /**
+     * Counts proper crossings between straight-line edges drawn in
+     * (normalized position, tier) space. Edges sharing an endpoint do not
+     * cross. O(E^2), fine at presentation scale.
+     */
+    private static int countCrossings(List<Node[]> crossEdges, Map<Node, Integer> tierOf,
+                                      Map<Node, Double> pos) {
+        int count = 0;
+
+        for (int i = 0; i < crossEdges.size(); i++) {
+            Node[] e1 = crossEdges.get(i);
+
+            for (int j = i + 1; j < crossEdges.size(); j++) {
+                Node[] e2 = crossEdges.get(j);
+
+                if (e1[0] == e2[0] || e1[0] == e2[1] || e1[1] == e2[0] || e1[1] == e2[1]) {
+                    continue;
+                }
+
+                if (segmentsCross(pos.get(e1[0]), tierOf.get(e1[0]), pos.get(e1[1]), tierOf.get(e1[1]),
+                        pos.get(e2[0]), tierOf.get(e2[0]), pos.get(e2[1]), tierOf.get(e2[1]))) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private static boolean segmentsCross(double ax, double ay, double bx, double by,
+                                         double cx, double cy, double dx, double dy) {
+        double d1 = cross(cx - ax, cy - ay, bx - ax, by - ay);
+        double d2 = cross(dx - ax, dy - ay, bx - ax, by - ay);
+        double d3 = cross(ax - cx, ay - cy, dx - cx, dy - cy);
+        double d4 = cross(bx - cx, by - cy, dx - cx, dy - cy);
+        return d1 * d2 < 0 && d3 * d4 < 0;
+    }
+
+    private static double cross(double ux, double uy, double vx, double vy) {
+        return ux * vy - uy * vx;
+    }
+
+    private static List<List<Node>> copyTiers(List<List<Node>> tiers) {
+        List<List<Node>> copy = new ArrayList<>();
+        for (List<Node> tier : tiers) copy.add(new ArrayList<>(tier));
+        return copy;
+    }
+
     /**
      * Arranges the nodes in the result graph according to their positions in
      * the source graph.

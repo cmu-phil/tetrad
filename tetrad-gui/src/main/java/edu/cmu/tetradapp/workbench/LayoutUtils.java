@@ -945,6 +945,37 @@ public class LayoutUtils {
         LayoutUtils.layout = Layout.layered;
     }
 
+    /**
+     * Richard's layout: layered by causal depth with barycenter crossing
+     * reduction and a rightward shear per layer, so the flow reads down and
+     * to the right. Uses the real display node sizes.
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
+    public static void richardsLayout(LayoutEditable layoutEditable) {
+        Graph graph = layoutEditable.getGraph();
+
+        for (Node node : new ArrayList<>(graph.getNodes())) {
+            if (node.getNodeType() == NodeType.ERROR) {
+                graph.removeNode(node);
+            }
+        }
+
+        GraphEditorUtils.editRichardsLayoutParams();
+
+        double xGap = Preferences.userRoot().getDouble(
+                "richardsLayoutXGap", 30.0);
+        double yGap = Preferences.userRoot().getDouble(
+                "richardsLayoutYGap", 90.0);
+        double shearPerLayer = Preferences.userRoot().getDouble(
+                "richardsLayoutShearPerLayer", 50.0);
+
+        LayoutUtil.richardsLayout(graph, displayNodeSizes(layoutEditable),
+                xGap, yGap, shearPerLayer);
+        layoutByGraph(layoutEditable, graph);
+        LayoutUtils.layout = Layout.richards;
+    }
+
 
     /**
      * An anum of layout options
@@ -1029,7 +1060,12 @@ public class LayoutUtils {
         /**
          * square
          */
-        sqaure
+        sqaure,
+
+        /**
+         * richards
+         */
+        richards
     }
 }
 

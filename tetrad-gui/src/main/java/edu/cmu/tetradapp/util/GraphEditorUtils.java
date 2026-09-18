@@ -135,6 +135,84 @@ public class GraphEditorUtils {
                 "Spring Layout Parameters", JOptionPane.PLAIN_MESSAGE);
     }
 
+    /**
+     * Pops up a modal editor for the parameters of Richard's layout. The
+     * values persist in the user's preferences, keyed "richardsLayoutXGap",
+     * "richardsLayoutYGap", and "richardsLayoutShearPerLayer".
+     */
+    public static void editRichardsLayoutParams() {
+        double xGap = Preferences.userRoot().getDouble(
+                "richardsLayoutXGap", 30.0);
+        double yGap = Preferences.userRoot().getDouble(
+                "richardsLayoutYGap", 90.0);
+        double shearPerLayer = Preferences.userRoot().getDouble(
+                "richardsLayoutShearPerLayer", 50.0);
+
+        DoubleTextField xGapField = new DoubleTextField(
+                xGap, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        xGapField.setFilter(
+                (value, oldValue) -> {
+                    if (value < 0.0) {
+                        return oldValue;
+                    }
+
+                    Preferences.userRoot().putDouble(
+                            "richardsLayoutXGap", value);
+                    return value;
+                });
+
+        DoubleTextField yGapField = new DoubleTextField(
+                yGap, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        yGapField.setFilter(
+                (value, oldValue) -> {
+                    if (value <= 0.0) {
+                        return oldValue;
+                    }
+
+                    Preferences.userRoot().putDouble(
+                            "richardsLayoutYGap", value);
+                    return value;
+                });
+
+        DoubleTextField shearField = new DoubleTextField(
+                shearPerLayer, 4, NumberFormatUtil.getInstance().getNumberFormat());
+        shearField.setFilter(
+                (value, oldValue) -> {
+
+                    // Negative shear (a leftward flow) is allowed.
+                    Preferences.userRoot().putDouble(
+                            "richardsLayoutShearPerLayer", value);
+                    return value;
+                });
+
+        Box b = Box.createVerticalBox();
+
+        Box b1 = Box.createHorizontalBox();
+        b1.add(new JLabel("Horizontal gap between nodes: "));
+        b1.add(Box.createHorizontalGlue());
+        b1.add(xGapField);
+        b.add(b1);
+
+        Box b2 = Box.createHorizontalBox();
+        b2.add(new JLabel("Vertical gap between layers: "));
+        b2.add(Box.createHorizontalGlue());
+        b2.add(yGapField);
+        b.add(b2);
+
+        Box b3 = Box.createHorizontalBox();
+        b3.add(new JLabel("Rightward shift per layer: "));
+        b3.add(Box.createHorizontalGlue());
+        b3.add(shearField);
+        b.add(b3);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.add(b, BorderLayout.CENTER);
+
+        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), panel,
+                "Richard's Layout Parameters", JOptionPane.PLAIN_MESSAGE);
+    }
+
 }
 
 
