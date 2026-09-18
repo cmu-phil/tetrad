@@ -185,6 +185,42 @@ public class TestGuidedAlgorithmCard {
         }
     }
 
+    /**
+     * A fresh search box (no session state) opens on the cross-launch default answer to the latent question: the
+     * Preferences value when set, NO when not. The developer's real preference is saved and restored around the test.
+     */
+    @Test
+    public void freshBoxOpensOnTheLatentDefaultFromPreferences() {
+        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userRoot();
+        String savedPref = prefs.get("guidedLatentDefault", null);
+        try {
+            // Never set: the default is NO, so only causal-sufficiency algorithms are listed, and the normalized
+            // per-session key written back on construction records that answer.
+            prefs.remove("guidedLatentDefault");
+            GeneralAlgorithmRunner fresh = runner();
+            GuidedAlgorithmCard card = new GuidedAlgorithmCard(fresh, null);
+            assertTrue(has(card.getListedAlgorithms(), "BOSS"));
+            assertFalse(has(card.getListedAlgorithms(), "FCI"));
+            assertEquals("NO", fresh.getUserAlgoSelections().get("guided.latent"));
+
+            // Set to YES: a fresh box opens on the latent-tolerant family.
+            prefs.put("guidedLatentDefault", LatentChoice.YES.name());
+            GuidedAlgorithmCard again = new GuidedAlgorithmCard(runner(), null);
+            assertTrue(has(again.getListedAlgorithms(), "FCI"));
+            assertFalse(has(again.getListedAlgorithms(), "BOSS"));
+
+            // But saved session state wins over the preference.
+            GeneralAlgorithmRunner runner = runner();
+            runner.getUserAlgoSelections().put("guided.latent", "NO");
+            GuidedAlgorithmCard fromSession = new GuidedAlgorithmCard(runner, null);
+            assertTrue(has(fromSession.getListedAlgorithms(), "BOSS"));
+            assertFalse(has(fromSession.getListedAlgorithms(), "FCI"));
+        } finally {
+            if (savedPref == null) prefs.remove("guidedLatentDefault");
+            else prefs.put("guidedLatentDefault", savedPref);
+        }
+    }
+
     @Test
     public void restoresASessionSavedByTheClassicCard() {
         GeneralAlgorithmRunner runner = runner();
