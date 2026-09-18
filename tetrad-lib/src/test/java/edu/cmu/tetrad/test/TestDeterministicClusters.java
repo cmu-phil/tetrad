@@ -73,6 +73,72 @@ public class TestDeterministicClusters {
     }
 
     @Test
+    public void testWideDataWithManyDeterminismsIsFastAndExact() {
+        // Rat-brain-shaped stress case: 100 base variables plus 24 aggregate variables, each an exact
+        // positive-weight sum over a disjoint triple of base variables. The previous fitter (per-call covariance
+        // rebuild, greedy backward elimination) took minutes here; the shared-precision fitter must do all 24
+        // leave-one-out equations, the retained-form batch, and find() well under the bound.
+        int n = 300, pBase = 100, k = 24;
+        Random rng = new Random(11);
+        double[][] d = new double[n][pBase + k];
+        for (int r = 0; r < n; r++) {
+            for (int j = 0; j < pBase; j++) d[r][j] = rng.nextGaussian();
+        }
+        int[][] triples = new int[k][3];
+        double[][] weights = new double[k][3];
+        for (int t = 0; t < k; t++) {
+            for (int m = 0; m < 3; m++) {
+                triples[t][m] = 3 * t + m;                       // disjoint triples
+                weights[t][m] = 1.0 + 2.0 * rng.nextDouble();
+            }
+            for (int r = 0; r < n; r++) {
+                double s = 0.0;
+                for (int m = 0; m < 3; m++) s += weights[t][m] * d[r][triples[t][m]];
+                d[r][pBase + t] = s;
+            }
+        }
+        List<Node> vars = new ArrayList<>();
+        for (int j = 0; j < pBase + k; j++) vars.add(new ContinuousVariable("X" + j));
+        DataSet wide = new BoxDataSet(new DoubleDataBox(d), vars);
+
+        long start = System.currentTimeMillis();
+
+        DeterministicClusters.Fitter fitter = new DeterministicClusters.Fitter(wide, 1e-8);
+        for (int t = 0; t < k; t++) {
+            DeterministicClusters.Constraint c = fitter.leaveOneOut("X" + (pBase + t));
+            assertNotNull(c);
+            assertTrue("Aggregate " + t + " should be exact, frac " + c.fractionResidual(),
+                    c.fractionResidual() < 1e-8);
+            assertEquals("Aggregate " + t + " should keep exactly its three bases, got " + c.support(),
+                    3, c.support().size());
+            for (int m = 0; m < 3; m++) {
+                int pos = c.support().indexOf("X" + triples[t][m]);
+                assertTrue(pos >= 0);
+                assertEquals(weights[t][m], c.coefficients()[pos], 1e-6);
+            }
+        }
+
+        // Retained-form batch: all aggregates removed at once, written in terms of the base variables.
+        List<String> targets = new ArrayList<>();
+        for (int t = 0; t < k; t++) targets.add("X" + (pBase + t));
+        List<String> retainedNames = new ArrayList<>();
+        for (int j = 0; j < pBase; j++) retainedNames.add("X" + j);
+        List<DeterministicClusters.Constraint> batch = fitter.onCommonSupport(targets, retainedNames);
+        for (int t = 0; t < k; t++) {
+            assertNotNull(batch.get(t));
+            assertTrue(batch.get(t).fractionResidual() < 1e-8);
+            assertEquals(3, batch.get(t).support().size());
+        }
+
+        // find() reports one constraint per independent deterministic relation.
+        assertEquals(k, DeterministicClusters.find(wide, 1e-8).size());
+
+        long elapsed = System.currentTimeMillis() - start;
+        assertTrue("Wide case took " + elapsed + " ms; the shared-precision fitter should finish in seconds",
+                elapsed < 20_000);
+    }
+
+    @Test
     public void testRetainedFormEquationWhenAnotherClusterMemberIsAlsoRemoved() {
         // Regressing X2 on a dataset from which X1 has been removed: the fit can no longer be exact, and the
         // equation must be labeled by its residual fraction rather than claimed exact. This is the

@@ -1005,11 +1005,13 @@ class DataAuditAction extends AbstractAction {
                 return;
             }
 
+            // One Fitter per dialog opening: the correlation and precision matrices are computed once and every
+            // equation is a few small solves, so this stays fast on wide datasets with many deterministic relations.
+            DeterministicClusters.Fitter fitter =
+                    new DeterministicClusters.Fitter(dataSet, EXACT_EQUATION_THRESHOLD);
             Map<String, String> equations = new LinkedHashMap<>();
-            if (COMPUTE_EQUATIONS) {
-                for (DeterminismRemovalSuggester.Suggestion s : suggestions) {
-                    equations.computeIfAbsent(s.variable(), name -> previewEquation(dataSet, name));
-                }
+            for (DeterminismRemovalSuggester.Suggestion s : suggestions) {
+                equations.computeIfAbsent(s.variable(), name -> previewEquation(fitter, name));
             }
 
             List<String> chosen = showRemovalDialog(remove, suggestions, equations);
@@ -1021,9 +1023,7 @@ class DataAuditAction extends AbstractAction {
             // RETAINED variables only, so the reported equations remain usable (the removed variables are
             // reconstructible from the data that is left) even when several members of overlapping clusters go
             // at once.
-            List<String> equationLines = COMPUTE_EQUATIONS
-                    ? retainedFormEquations(dataSet, chosen)
-                    : new ArrayList<>();
+            List<String> equationLines = retainedFormEquations(fitter, dataSet, chosen);
 
             int removedCount = 0;
 
@@ -1057,45 +1057,35 @@ class DataAuditAction extends AbstractAction {
     private static final double EXACT_EQUATION_THRESHOLD = 1e-8;
 
     /**
-     * TEMPORARY kill switch for equation fitting in the determinism-removal flow. The current fitter recomputes the
-     * covariance per call and prunes supports by greedy backward elimination (O(p^5) worst case per variable), which
-     * is unusable on wide datasets with many deterministic relations. Until the fitter shares one covariance across
-     * calls and prunes by coefficient screening, false here skips the Equation column and the post-removal equations
-     * report; everything else in the flow is unchanged.
-     */
-    private static final boolean COMPUTE_EQUATIONS = false;
-
-    /**
      * Fits the equation writing the named variable in terms of the other variables of the dataset, for display in
-     * the removal dialog's Equation column. Returns a placeholder for discrete variables, which have no linear
-     * equation.
+     * the removal dialog's Equation column. Returns a placeholder for variables with no linear equation (discrete
+     * variables; constants are reported as their value).
      */
-    private static String previewEquation(DataSet dataSet, String name) {
-        DeterministicClusters.Constraint c =
-                DeterministicClusters.constraintFor(dataSet, name, EXACT_EQUATION_THRESHOLD);
+    private static String previewEquation(DeterministicClusters.Fitter fitter, String name) {
+        DeterministicClusters.Constraint c = fitter.leaveOneOut(name);
         if (c == null) return "(discrete; no linear equation)";
         return c.equation() + exactnessTag(c);
     }
 
     /**
      * Fits, for each chosen variable, its equation in terms of the RETAINED variables (all variables minus the
-     * other chosen ones), before any column is removed. One line per variable, copyable as text.
+     * chosen ones), before any column is removed. All targets share the retained support universe, so one solve of
+     * the retained submatrix serves every equation. One line per variable, copyable as text.
      */
-    private static List<String> retainedFormEquations(DataSet dataSet, List<String> chosen) {
-        List<String> lines = new ArrayList<>();
-        for (String name : chosen) {
-            List<Node> keepPlusThis = new ArrayList<>();
-            for (Node node : dataSet.getVariables()) {
-                if (node.getName().equals(name) || !chosen.contains(node.getName())) {
-                    keepPlusThis.add(node);
-                }
+    private static List<String> retainedFormEquations(DeterministicClusters.Fitter fitter, DataSet dataSet,
+                                                      List<String> chosen) {
+        List<String> retained = new ArrayList<>();
+        for (Node node : dataSet.getVariables()) {
+            if (!chosen.contains(node.getName())) {
+                retained.add(node.getName());
             }
-            DeterministicClusters.Constraint c = keepPlusThis.size() >= 2
-                    ? DeterministicClusters.constraintFor(dataSet.subsetColumns(keepPlusThis), name,
-                    EXACT_EQUATION_THRESHOLD)
-                    : null;
+        }
+        List<DeterministicClusters.Constraint> constraints = fitter.onCommonSupport(chosen, retained);
+        List<String> lines = new ArrayList<>();
+        for (int k = 0; k < chosen.size(); k++) {
+            DeterministicClusters.Constraint c = constraints.get(k);
             if (c == null) {
-                lines.add(name + " : (discrete; no linear equation)");
+                lines.add(chosen.get(k) + " : (no linear equation: discrete or constant)");
             } else {
                 lines.add(c.equation() + exactnessTag(c));
             }

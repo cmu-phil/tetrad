@@ -27,6 +27,8 @@ import edu.cmu.tetrad.util.Matrix;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -41,6 +43,14 @@ import java.util.List;
  * criterion. Which member of a deterministic cluster is written on the left-hand side is a representation choice, not
  * a discovery -- every member is an exact function of the rest -- so callers presenting equations should invite the
  * user to identify the DERIVED (definitional) variable where one exists.
+ * <p>
+ * Fitting many equations on a wide dataset goes through {@link Fitter}, which computes the correlation matrix ONCE and
+ * gets every leave-one-out regression at once from a single ridge-regularized precision matrix (the identity b_j =
+ * -&Omega;_ij / &Omega;_ii, residual fraction 1 / (&Omega;_ii r_ii)), then screens each support down to the few
+ * variables with non-negligible coefficients and refines exactly on that small set. One O(p^3) inversion serves all
+ * variables; the per-variable work is a handful of small solves. The previous implementation recomputed the covariance
+ * per call and pruned supports by greedy backward elimination (O(p^5) worst case per variable), which was unusable on
+ * wide data with many deterministic relations.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -49,10 +59,27 @@ import java.util.List;
 public final class DeterministicClusters {
 
     /**
-     * The ridge used to keep support-submatrix solves finite; detection decisions are made on the threshold, not on
-     * this constant.
+     * The ridge used to keep submatrix solves finite on degenerate correlation matrices; detection decisions are made
+     * on the threshold, not on this constant.
      */
     private static final double SOLVE_RIDGE = 1e-10;
+
+    /**
+     * Screening keeps a candidate support variable when its standardized coefficient exceeds this fraction of the
+     * largest standardized coefficient for the target . . . (relative floor).
+     */
+    private static final double SCREEN_RELATIVE = 1e-3;
+
+    /**
+     * . . . and this absolute floor.
+     */
+    private static final double SCREEN_ABSOLUTE = 1e-8;
+
+    /**
+     * The most support variables screening passes to the exact refinement stage. Definitional relations in practice
+     * have small supports; the cap bounds the refinement cost on pathological inputs.
+     */
+    private static final int SCREEN_CAP = 25;
 
     private DeterministicClusters() {
     }
@@ -61,7 +88,7 @@ public final class DeterministicClusters {
      * One fitted constraint: determined = sum(coefficients * support) + intercept.
      *
      * @param determined       The name of the variable written on the left-hand side (a representation choice).
-     * @param support          The names of the variables in the (greedily minimized) determining set.
+     * @param support          The names of the variables in the (screened and pruned) determining set.
      * @param coefficients     Raw-scale regression coefficients, aligned with support.
      * @param intercept        Raw-scale intercept.
      * @param fractionResidual Residual variance of the determined variable given the support, as a fraction of its
@@ -110,8 +137,8 @@ public final class DeterministicClusters {
 
     /**
      * Finds deterministic constraints among the continuous variables of the dataset: while some continuous variable
-     * has residual fraction below the threshold given the other active continuous variables, its support is pruned
-     * greedily to a minimal set still meeting the threshold, the constraint is recorded, and the variable is removed
+     * has residual fraction below the threshold given the other active continuous variables, its (screened) support
+     * is pruned to a minimal set still meeting the threshold, the constraint is recorded, and the variable is removed
      * from the active set -- so multiple and overlapping constraints are each reported once. Discrete variables are
      * ignored.
      *
@@ -120,51 +147,15 @@ public final class DeterministicClusters {
      * @return The detected constraints, one per independent deterministic relation; empty if none.
      */
     public static List<Constraint> find(DataSet data, double threshold) {
-        Cov cov = Cov.of(data);
-        if (cov == null) return new ArrayList<>();
-
-        List<Constraint> constraints = new ArrayList<>();
-        List<Integer> active = new ArrayList<>();
-        for (int k = 0; k < cov.p; k++) active.add(k);
-
-        boolean found = true;
-        while (found && active.size() >= 2) {
-            found = false;
-            for (int pos = 0; pos < active.size(); pos++) {
-                int i = active.get(pos);
-                List<Integer> support = new ArrayList<>(active);
-                support.remove(pos);
-                if (cov.residualFraction(i, support) < threshold) {
-                    boolean pruned = true;
-                    while (pruned) {
-                        pruned = false;
-                        for (int q = 0; q < support.size(); q++) {
-                            List<Integer> smaller = new ArrayList<>(support);
-                            smaller.remove(q);
-                            if (cov.residualFraction(i, smaller) < threshold) {
-                                support = smaller;
-                                pruned = true;
-                                break;
-                            }
-                        }
-                    }
-                    constraints.add(cov.constraint(i, support));
-                    active.remove(pos);
-                    found = true;
-                    break;
-                }
-            }
-        }
-
-        return constraints;
+        Fitter fitter = new Fitter(data, threshold);
+        return fitter.findAll();
     }
 
     /**
      * Fits the equation writing the given variable as a function of the other continuous variables of the dataset.
-     * The support is pruned greedily: a variable is dropped when the residual fraction stays below
-     * max(threshold, twice the full-support residual fraction), so an exact relation keeps only the variables needed
-     * to stay exact, and a near-deterministic relation keeps only the variables that matter to the fit. The caller
-     * should check fractionResidual against its own threshold to label the equation exact or approximate.
+     * The caller should check fractionResidual against its own threshold to label the equation exact or approximate.
+     * For fitting MANY equations on one dataset, construct a {@link Fitter} once instead: this convenience method
+     * rebuilds the shared matrices on every call.
      *
      * @param data      The dataset.
      * @param varName   The name of the variable to write on the left-hand side.
@@ -173,127 +164,326 @@ public final class DeterministicClusters {
      * than two continuous variables exist.
      */
     public static Constraint constraintFor(DataSet data, String varName, double threshold) {
-        Cov cov = Cov.of(data);
-        if (cov == null) return null;
-        int target = cov.indexOf(varName);
-        if (target < 0) return null;
-
-        List<Integer> support = new ArrayList<>();
-        for (int k = 0; k < cov.p; k++) if (k != target) support.add(k);
-
-        double pruneThreshold = Math.max(threshold, 2.0 * cov.residualFraction(target, support));
-
-        boolean pruned = true;
-        while (pruned) {
-            pruned = false;
-            for (int q = 0; q < support.size(); q++) {
-                List<Integer> smaller = new ArrayList<>(support);
-                smaller.remove(q);
-                if (cov.residualFraction(target, smaller) <= pruneThreshold) {
-                    support = smaller;
-                    pruned = true;
-                    break;
-                }
-            }
-        }
-
-        return cov.constraint(target, support);
+        return new Fitter(data, threshold).leaveOneOut(varName);
     }
 
     /**
-     * The covariance matrix and means of the continuous variables of a dataset, with the regression arithmetic used
-     * above.
+     * A reusable equation fitter for one dataset: the correlation matrix and its ridge-regularized inverse are
+     * computed once, and each equation costs a few small solves. See the class Javadoc for the method.
      */
-    private static final class Cov {
-        final int p;
+    public static final class Fitter {
+
+        private final double threshold;
         private final DataSet data;
-        private final List<Integer> cols;
-        private final double[] means;
-        private final Matrix cov;
+        /**
+         * Analyzed columns: continuous with positive variance. Constant continuous columns are excluded from every
+         * support and reported, as targets, as determined by the empty set.
+         */
+        private final List<Integer> cols = new ArrayList<>();
+        private final List<Integer> constants = new ArrayList<>();
+        private double[] means;
+        private double[] sds;
+        /**
+         * Correlation matrix of the analyzed columns.
+         */
+        private Matrix corr;
+        /**
+         * Ridge-regularized inverse of corr, computed lazily on the first leave-one-out fit.
+         */
+        private Matrix precision;
 
-        private Cov(DataSet data, List<Integer> cols, double[] means, Matrix cov) {
+        /**
+         * Constructs the fitter, computing means, standard deviations, and the correlation matrix once.
+         *
+         * @param data      The dataset.
+         * @param threshold The exactness threshold; see {@link #find(DataSet, double)}.
+         */
+        public Fitter(DataSet data, double threshold) {
             this.data = data;
-            this.cols = cols;
-            this.means = means;
-            this.cov = cov;
-            this.p = cols.size();
-        }
+            this.threshold = threshold;
 
-        static Cov of(DataSet data) {
-            List<Integer> cols = new ArrayList<>();
+            List<Integer> continuous = new ArrayList<>();
             for (int j = 0; j < data.getNumColumns(); j++) {
                 if (data.getVariable(j) instanceof ContinuousVariable) {
-                    cols.add(j);
+                    continuous.add(j);
                 }
             }
             int n = data.getNumRows();
-            int p = cols.size();
-            if (p < 2 || n < 2) return null;
+            int pAll = continuous.size();
+            if (pAll < 2 || n < 2) {
+                return;   // No analyzed columns; every fit returns null.
+            }
 
-            double[] means = new double[p];
-            double[][] x = new double[n][p];
-            for (int k = 0; k < p; k++) {
-                int col = cols.get(k);
+            double[] meansAll = new double[pAll];
+            double[] sdsAll = new double[pAll];
+            double[][] x = new double[n][pAll];
+            for (int k = 0; k < pAll; k++) {
+                int col = continuous.get(k);
                 double s = 0.0;
                 for (int i = 0; i < n; i++) {
                     double v = data.getDouble(i, col);
                     x[i][k] = v;
                     s += v;
                 }
-                means[k] = s / n;
+                meansAll[k] = s / n;
+                double ss = 0.0;
+                for (int i = 0; i < n; i++) {
+                    double dvi = x[i][k] - meansAll[k];
+                    ss += dvi * dvi;
+                }
+                sdsAll[k] = Math.sqrt(ss / (n - 1));
             }
-            double[][] c = new double[p][p];
-            for (int a = 0; a < p; a++) {
-                for (int b = a; b < p; b++) {
-                    double s = 0.0;
-                    for (int i = 0; i < n; i++) {
-                        s += (x[i][a] - means[a]) * (x[i][b] - means[b]);
-                    }
-                    c[a][b] = s / (n - 1);
-                    c[b][a] = c[a][b];
+
+            List<Integer> keep = new ArrayList<>();
+            for (int k = 0; k < pAll; k++) {
+                if (sdsAll[k] > 0) {
+                    keep.add(k);
+                } else {
+                    this.constants.add(continuous.get(k));
                 }
             }
-            return new Cov(data, cols, means, new Matrix(c));
+            int p = keep.size();
+            this.means = new double[p];
+            this.sds = new double[p];
+            for (int k = 0; k < p; k++) {
+                this.cols.add(continuous.get(keep.get(k)));
+                this.means[k] = meansAll[keep.get(k)];
+                this.sds[k] = sdsAll[keep.get(k)];
+            }
+            if (p < 2) {
+                this.cols.clear();
+                return;
+            }
+
+            double[][] r = new double[p][p];
+            for (int a = 0; a < p; a++) {
+                r[a][a] = 1.0;
+                for (int b = a + 1; b < p; b++) {
+                    double s = 0.0;
+                    int ka = keep.get(a), kb = keep.get(b);
+                    for (int i = 0; i < n; i++) {
+                        s += (x[i][ka] - meansAll[ka]) * (x[i][kb] - meansAll[kb]);
+                    }
+                    double val = s / ((n - 1) * sdsAll[ka] * sdsAll[kb]);
+                    r[a][b] = val;
+                    r[b][a] = val;
+                }
+            }
+            this.corr = new Matrix(r);
         }
 
-        int indexOf(String name) {
-            for (int k = 0; k < p; k++) {
-                if (data.getVariable(cols.get(k)).getName().equals(name)) return k;
+        /**
+         * Fits the equation writing the named variable in terms of ALL other analyzed variables (screened to the ones
+         * that matter).
+         *
+         * @param varName The variable for the left-hand side.
+         * @return The fitted constraint; a constant variable comes back with empty support and residual fraction 0;
+         * null if the variable is not an analyzed or constant continuous variable of the dataset.
+         */
+        public Constraint leaveOneOut(String varName) {
+            for (int col : this.constants) {
+                if (this.data.getVariable(col).getName().equals(varName)) {
+                    return new Constraint(varName, new ArrayList<>(), new double[0],
+                            this.data.getDouble(0, col), 0.0);
+                }
+            }
+            int i = indexOf(varName);
+            if (i < 0) return null;
+            ensurePrecision();
+
+            int p = this.cols.size();
+            double[] bStd = new double[p];
+            double omII = this.precision.get(i, i);
+            for (int j = 0; j < p; j++) {
+                if (j != i) bStd[j] = -this.precision.get(i, j) / omII;
+            }
+            List<Integer> screened = screen(i, bStd);
+            return refine(i, screened, bStd);
+        }
+
+        /**
+         * Fits, for each target, its equation in terms of the SAME support universe -- the audit's retained-form
+         * report, where every removed variable is written in terms of the retained variables. One inverse of the
+         * support submatrix serves all targets.
+         *
+         * @param targetNames  The variables for the left-hand sides.
+         * @param supportNames The common support universe (the targets themselves are excluded automatically).
+         * @return One constraint per target, in order; null entries for targets that are not analyzed continuous
+         * variables or when fewer than one support variable is analyzed.
+         */
+        public List<Constraint> onCommonSupport(List<String> targetNames, Collection<String> supportNames) {
+            List<Constraint> out = new ArrayList<>();
+            List<Integer> universe = new ArrayList<>();
+            for (String name : supportNames) {
+                int k = indexOf(name);
+                if (k >= 0) universe.add(k);
+            }
+            if (universe.isEmpty()) {
+                for (String ignored : targetNames) out.add(null);
+                return out;
+            }
+            int[] u = universe.stream().mapToInt(Integer::intValue).toArray();
+            Matrix ruuInv = this.corr.view(u, u).mat().chooseInverse(SOLVE_RIDGE);
+
+            for (String targetName : targetNames) {
+                int i = indexOf(targetName);
+                if (i < 0 || universe.contains(i)) {
+                    out.add(null);
+                    continue;
+                }
+                Matrix rui = this.corr.view(u, new int[]{i}).mat();
+                Matrix b = ruuInv.times(rui);
+                double[] bStd = new double[this.cols.size()];
+                for (int k = 0; k < u.length; k++) {
+                    bStd[u[k]] = b.get(k, 0);
+                }
+                List<Integer> screened = new ArrayList<>();
+                for (int k : u) {
+                    screened.add(k);
+                }
+                screened = screenList(screened, bStd);
+                out.add(refine(i, screened, bStd));
+            }
+            return out;
+        }
+
+        /**
+         * The iterative detector behind {@link #find(DataSet, double)}: repeatedly finds an active variable whose
+         * residual fraction given the other active variables is below threshold (screened from a per-round precision
+         * matrix, verified exactly), records it, and deactivates it.
+         */
+        List<Constraint> findAll() {
+            List<Constraint> constraints = new ArrayList<>();
+            if (this.cols.size() < 2) return constraints;
+
+            List<Integer> active = new ArrayList<>();
+            for (int k = 0; k < this.cols.size(); k++) active.add(k);
+
+            boolean found = true;
+            while (found && active.size() >= 2) {
+                found = false;
+                int[] a = active.stream().mapToInt(Integer::intValue).toArray();
+                Matrix omA = this.corr.view(a, a).mat().chooseInverse(SOLVE_RIDGE);
+
+                for (int pos = 0; pos < a.length; pos++) {
+                    // Approximate residual fraction from the ridge precision; a factor-10 safety margin, then
+                    // exact verification on the screened support.
+                    double approx = 1.0 / omA.get(pos, pos);
+                    if (approx >= 10 * this.threshold) continue;
+
+                    int i = a[pos];
+                    double[] bStd = new double[this.cols.size()];
+                    for (int q = 0; q < a.length; q++) {
+                        if (q != pos) bStd[a[q]] = -omA.get(pos, q) / omA.get(pos, pos);
+                    }
+                    List<Integer> screened = new ArrayList<>();
+                    for (int q = 0; q < a.length; q++) {
+                        if (q != pos) screened.add(a[q]);
+                    }
+                    screened = screenList(screened, bStd);
+                    Constraint c = refine(i, screened, bStd);
+                    if (c.fractionResidual() < this.threshold) {
+                        constraints.add(c);
+                        active.remove((Integer) i);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            return constraints;
+        }
+
+        private void ensurePrecision() {
+            if (this.precision == null) {
+                this.precision = this.corr.chooseInverse(SOLVE_RIDGE);
+            }
+        }
+
+        private int indexOf(String name) {
+            for (int k = 0; k < this.cols.size(); k++) {
+                if (this.data.getVariable(this.cols.get(k)).getName().equals(name)) return k;
             }
             return -1;
         }
 
-        double residualFraction(int i, List<Integer> support) {
-            double vii = cov.get(i, i);
-            if (vii <= 0) return 0.0;      // A constant column is determined by the empty set.
+        private List<Integer> screen(int i, double[] bStd) {
+            List<Integer> all = new ArrayList<>();
+            for (int j = 0; j < bStd.length; j++) {
+                if (j != i) all.add(j);
+            }
+            return screenList(all, bStd);
+        }
+
+        /**
+         * Keeps the candidates whose standardized coefficients pass the relative and absolute floors, capped at
+         * SCREEN_CAP by magnitude.
+         */
+        private List<Integer> screenList(List<Integer> candidates, double[] bStd) {
+            double max = 0.0;
+            for (int j : candidates) max = Math.max(max, Math.abs(bStd[j]));
+            double floor = Math.max(SCREEN_RELATIVE * max, SCREEN_ABSOLUTE);
+            List<Integer> kept = new ArrayList<>();
+            for (int j : candidates) {
+                if (Math.abs(bStd[j]) > floor) kept.add(j);
+            }
+            kept.sort(Comparator.comparingDouble(j -> -Math.abs(bStd[(int) j])));
+            if (kept.size() > SCREEN_CAP) {
+                kept = new ArrayList<>(kept.subList(0, SCREEN_CAP));
+            }
+            return kept;
+        }
+
+        /**
+         * Exact residual fraction of analyzed variable i given the analyzed support, from the correlation matrix.
+         */
+        private double exactFraction(int i, List<Integer> support) {
             if (support.isEmpty()) return 1.0;
             int[] s = support.stream().mapToInt(Integer::intValue).toArray();
             int[] ii = {i};
-            Matrix css = cov.view(s, s). mat();
-            Matrix csi = cov.view(s, ii).mat();
-            Matrix b = css.chooseInverse(SOLVE_RIDGE).times(csi);
-            double explained = csi.transpose().times(b).get(0, 0);
-            return Math.max(vii - explained, 0.0) / vii;
+            Matrix rss = this.corr.view(s, s).mat();
+            Matrix rsi = this.corr.view(s, ii).mat();
+            Matrix b = rss.chooseInverse(SOLVE_RIDGE).times(rsi);
+            double explained = rsi.transpose().times(b).get(0, 0);
+            return Math.max(1.0 - explained, 0.0);
         }
 
-        Constraint constraint(int i, List<Integer> support) {
-            String name = data.getVariable(cols.get(i)).getName();
-            List<String> supportNames = new ArrayList<>();
-            double[] coefs = new double[support.size()];
-            double intercept = means[i];
-            if (!support.isEmpty()) {
-                int[] s = support.stream().mapToInt(Integer::intValue).toArray();
-                int[] ii = {i};
-                Matrix css = cov.view(s, s).mat();
-                Matrix csi = cov.view(s, ii).mat();
-                Matrix b = css.chooseInverse(SOLVE_RIDGE).times(csi);
-                for (int k = 0; k < s.length; k++) {
-                    supportNames.add(data.getVariable(cols.get(s[k])).getName());
-                    coefs[k] = b.get(k, 0);
-                    intercept -= coefs[k] * means[s[k]];
+        /**
+         * One backward sweep over the screened support in ascending coefficient magnitude: a variable is dropped when
+         * the exact residual fraction stays below max(threshold, twice the screened-support fraction), so an exact
+         * relation keeps only the variables needed to stay exact, and a near-deterministic relation keeps only the
+         * variables that matter to the fit. Then the constraint is assembled from an exact solve on what remains.
+         */
+        private Constraint refine(int i, List<Integer> screened, double[] bStd) {
+            List<Integer> keep = new ArrayList<>(screened);
+            keep.sort(Comparator.comparingDouble(j -> Math.abs(bStd[(int) j])));
+            double pruneThreshold = Math.max(this.threshold, 2.0 * exactFraction(i, keep));
+
+            for (int j : new ArrayList<>(keep)) {
+                List<Integer> trial = new ArrayList<>(keep);
+                trial.remove((Integer) j);
+                if (exactFraction(i, trial) <= pruneThreshold) {
+                    keep = trial;
                 }
             }
-            return new Constraint(name, supportNames, coefs, intercept, residualFraction(i, support));
+            keep.sort(Comparator.naturalOrder());
+
+            String name = this.data.getVariable(this.cols.get(i)).getName();
+            List<String> supportNames = new ArrayList<>();
+            double[] coefs = new double[keep.size()];
+            double intercept = this.means[i];
+            if (!keep.isEmpty()) {
+                int[] s = keep.stream().mapToInt(Integer::intValue).toArray();
+                int[] ii = {i};
+                Matrix rss = this.corr.view(s, s).mat();
+                Matrix rsi = this.corr.view(s, ii).mat();
+                Matrix b = rss.chooseInverse(SOLVE_RIDGE).times(rsi);
+                for (int k = 0; k < s.length; k++) {
+                    supportNames.add(this.data.getVariable(this.cols.get(s[k])).getName());
+                    coefs[k] = b.get(k, 0) * this.sds[i] / this.sds[s[k]];
+                    intercept -= coefs[k] * this.means[s[k]];
+                }
+            }
+            return new Constraint(name, supportNames, coefs, intercept, exactFraction(i, keep));
         }
     }
 }
