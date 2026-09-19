@@ -221,6 +221,11 @@ public class LayoutMenu extends JMenu {
 
         addSeparator();
 
+        add(new TieLayoutMenu(layoutEditable));
+        TieLayoutMenu.applyTieOnOpen(layoutEditable);
+
+        addSeparator();
+
         this.copyLayoutAction = new CopyLayoutAction(getLayoutEditable());
         add(getCopyLayoutAction());
         add(new PasteLayoutAction(getLayoutEditable()));
