@@ -907,8 +907,9 @@ public final class LoadDataSettings extends JPanel {
         quoteCharBtnGrp.add(this.doubleQuoteRadioButton);
         quoteCharBtnGrp.add(this.singleQuoteRadioButton);
 
-        // Select None by default
-        noneQuoteRadioButton.setSelected(true);
+        // Select double quotes by default: quoted CSV headers and values are common in
+        // exported data, and treating the quote as data is the more surprising failure.
+        this.doubleQuoteRadioButton.setSelected(true);
 
         // Add label into this label box to size
         Box quoteCharLabelBox = Box.createHorizontalBox();
