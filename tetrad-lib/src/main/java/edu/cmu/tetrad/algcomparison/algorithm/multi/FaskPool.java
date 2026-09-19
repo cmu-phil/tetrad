@@ -102,6 +102,18 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
 
         edu.cmu.tetrad.search.FaskPool search = new edu.cmu.tetrad.search.FaskPool(_dataSets, this.score);
 
+        // USE_BOSS_ADJACENCIES carries the same meaning as in single-dataset FASK: "Yes"
+        // means a global score-based search supplies the skeleton (here IMaGES, i.e., BOSS
+        // on the averaged score); "No" means FAS-Stable does (here a pooled FAS with a
+        // composite test combining per-dataset Fisher Z p-values by Fisher's method).
+        if (parameters.getBoolean(Params.USE_BOSS_ADJACENCIES)) {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.IMAGES);
+        } else {
+            search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.POOLED_FAS);
+            search.setFasAlpha(parameters.getDouble(Params.ALPHA));
+            search.setFasDepth(parameters.getInt(Params.DEPTH));
+        }
+
         search.setKnowledge(this.knowledge);
         return search.search(parameters);
     }
@@ -142,15 +154,24 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
      * {@inheritDoc}
      *
      * <p>Returns the IMaGES parameters, minus OUTPUT_CPDAG: FASK-Pool uses only the
-     * adjacencies of the IMaGES graph and re-orients every edge from the pooled
-     * left-right statistic, so whether BOSS outputs a CPDAG or a DAG is irrelevant.
-     * No FASK single-dataset parameters are listed because there is no FAS stage,
-     * no skew-adjacency stage, and no two-cycle detection in this setting.</p>
+     * adjacencies of the adjacency-stage graph and re-orients every edge from the
+     * pooled left-right statistic, so whether BOSS outputs a CPDAG or a DAG is
+     * irrelevant. USE_BOSS_ADJACENCIES chooses the adjacency search (IMaGES vs. pooled
+     * FAS), with ALPHA and DEPTH governing the pooled FAS stage. No other FASK
+     * single-dataset parameters are listed because there is no skew-adjacency stage
+     * and no two-cycle detection in this setting.</p>
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Images().getParameters();
         parameters.remove(Params.OUTPUT_CPDAG);
+
+        // Adjacency choice, as in single-dataset FASK: BOSS-based (IMaGES) vs. FAS-based
+        // (pooled FAS), with the FAS stage's alpha and depth.
+        parameters.add(Params.USE_BOSS_ADJACENCIES);
+        parameters.add(Params.ALPHA);
+        parameters.add(Params.DEPTH);
+
         return parameters;
     }
 

@@ -31,6 +31,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndTestFisherZFisherPValue;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
 
@@ -47,9 +49,11 @@ import java.util.Map;
  * <p>The procedure has two stages:</p>
  *
  * <ol>
- *   <li>Obtain a common adjacency graph, either from an external graph supplied by the
- *   caller or by running IMaGES across the supplied datasets (the same adjacency stage
- *   as FASK-Vote).</li>
+ *   <li>Obtain a common adjacency graph: from an external graph supplied by the caller;
+ *   or by running IMaGES across the supplied datasets (the same adjacency stage as
+ *   FASK-Vote; the default); or by a pooled FAS, a stable FAS run with a composite test
+ *   that combines per-dataset Fisher Z p-values by Fisher's method (see
+ *   {@link #setAdjacencyMethod(AdjacencyMethod)}).</li>
  *   <li>For each adjacency X&mdash;Y, compute the signed FASK left-right statistic
  *   lr_k separately within each dataset k (on standardized columns, with FASK's
  *   skew-sign correction applied within each dataset, as
@@ -132,6 +136,23 @@ public class FaskPool {
     private Weighting weighting = Weighting.N;
 
     /**
+     * How the common adjacency structure is obtained when no external graph is set.
+     */
+    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.IMAGES;
+
+    /**
+     * The alpha level for the pooled FAS adjacency search. Only used when the adjacency
+     * method is POOLED_FAS.
+     */
+    private double fasAlpha = 0.05;
+
+    /**
+     * The depth of the pooled FAS adjacency search (-1 for unlimited). Only used when
+     * the adjacency method is POOLED_FAS.
+     */
+    private int fasDepth = -1;
+
+    /**
      * Significance level for the orientation decision. Zero (the default) means every
      * adjacency is oriented by the sign of the pooled statistic; above zero, an edge is
      * left undirected unless the pooled statistic differs significantly from zero.
@@ -196,6 +217,17 @@ public class FaskPool {
         if (this.externalGraph != null) {
             adjacency = GraphUtils.undirectedGraph(this.externalGraph);
             adjacency = GraphUtils.replaceNodes(adjacency, this.dataSets.get(0).getVariables());
+        } else if (this.adjacencyMethod == AdjacencyMethod.POOLED_FAS) {
+            // Pooled FAS: stable FAS run once, over all datasets jointly, using a composite
+            // test that combines per-dataset Fisher Z p-values by Fisher's method. This is
+            // the test-side analog of the IMaGES averaged score.
+            IndependenceTest test = new IndTestFisherZFisherPValue(standardized, this.fasAlpha);
+            Fas fas = new Fas(test);
+            fas.setStable(true);
+            fas.setDepth(this.fasDepth);
+            fas.setVerbose(false);
+            fas.setKnowledge(this.knowledge);
+            adjacency = fas.search();
         } else {
             List<DataModel> models = new ArrayList<>(standardized);
             Images images = new Images(this.score);
@@ -410,6 +442,39 @@ public class FaskPool {
     }
 
     /**
+     * Sets how the common adjacency structure is obtained when no external graph is set.
+     * Default: IMAGES. Ignored when an external graph has been set.
+     *
+     * @param adjacencyMethod the adjacency method
+     */
+    public void setAdjacencyMethod(AdjacencyMethod adjacencyMethod) {
+        this.adjacencyMethod = adjacencyMethod;
+    }
+
+    /**
+     * Sets the alpha level for the pooled FAS adjacency search. Default: 0.05. Only used
+     * when the adjacency method is POOLED_FAS.
+     *
+     * @param fasAlpha the alpha level, in (0, 1)
+     */
+    public void setFasAlpha(double fasAlpha) {
+        if (fasAlpha <= 0.0 || fasAlpha >= 1.0) {
+            throw new IllegalArgumentException("Alpha out of range: " + fasAlpha);
+        }
+        this.fasAlpha = fasAlpha;
+    }
+
+    /**
+     * Sets the depth of the pooled FAS adjacency search (-1 for unlimited). Default: -1.
+     * Only used when the adjacency method is POOLED_FAS.
+     *
+     * @param fasDepth the depth
+     */
+    public void setFasDepth(int fasDepth) {
+        this.fasDepth = fasDepth;
+    }
+
+    /**
      * Sets the significance level for the orientation decision. Zero (the default)
      * orients every adjacency by the sign of the pooled statistic; above zero, an edge
      * is left undirected unless the pooled statistic differs significantly from zero at
@@ -446,6 +511,21 @@ public class FaskPool {
      */
     public Map<Edge, EdgeStat> getEdgeStats() {
         return java.util.Collections.unmodifiableMap(this.edgeStats);
+    }
+
+    /**
+     * How the common adjacency structure is obtained when no external graph is set.
+     */
+    public enum AdjacencyMethod {
+        /**
+         * IMaGES: BOSS on the score averaged across datasets.
+         */
+        IMAGES,
+        /**
+         * Pooled FAS: stable FAS with a composite test combining per-dataset Fisher Z
+         * p-values by Fisher's method.
+         */
+        POOLED_FAS
     }
 
     /**
