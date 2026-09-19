@@ -703,6 +703,16 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <model name="Linearize Un-Warp Transform" acronym="Linearize"
+                   help="nonpn" category="Conversion of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LinearizeTransform
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+            </model>
             <model name="Convert to residuals" acronym="Residuals"
                    help="data" category="Conversion of Data">
                 <logger>
