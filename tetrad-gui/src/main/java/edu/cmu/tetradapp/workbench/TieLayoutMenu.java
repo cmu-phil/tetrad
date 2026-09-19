@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.app.SessionEditor;
 import edu.cmu.tetradapp.app.TetradDesktop;
 import edu.cmu.tetradapp.model.GraphSource;
+import edu.cmu.tetradapp.model.MultipleGraphSource;
 import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.session.SessionModel;
@@ -240,8 +241,11 @@ public class TieLayoutMenu extends JMenu {
     }
 
     /**
-     * @return the graph of the given session node's model, if the model is a GraphSource with a nonempty graph, and
-     * null otherwise.
+     * @return a graph of the given session node's model for layout purposes, and null if the model supplies no
+     * nonempty graph. For a model with multiple graphs (e.g., a Simulation with one graph per run), the first graph
+     * is used; this is checked before GraphSource.getGraph(), since some models (Simulation among them) throw from
+     * getGraph() when they hold more than one distinct graph. Layout is matched by node name, so when the graphs
+     * share their node names, as simulation runs do, any of them gives the same layout.
      */
     private static Graph graphOf(SessionNodeWrapper wrapper) {
         SessionNode sessionNode = wrapper.getSessionNode();
@@ -252,13 +256,22 @@ public class TieLayoutMenu extends JMenu {
 
         SessionModel model = sessionNode.getModel();
 
-        if (!(model instanceof GraphSource source)) {
-            return null;
-        }
-
         try {
-            Graph graph = source.getGraph();
-            return graph == null || graph.getNumNodes() == 0 ? null : graph;
+            if (model instanceof MultipleGraphSource multi) {
+                List<Graph> graphs = multi.getGraphs();
+
+                if (graphs != null && !graphs.isEmpty()) {
+                    Graph graph = graphs.getFirst();
+                    return graph == null || graph.getNumNodes() == 0 ? null : graph;
+                }
+            }
+
+            if (model instanceof GraphSource source) {
+                Graph graph = source.getGraph();
+                return graph == null || graph.getNumNodes() == 0 ? null : graph;
+            }
+
+            return null;
         } catch (Exception e) {
             return null;
         }
