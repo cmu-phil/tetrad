@@ -33,8 +33,13 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestFisherZFisherPValue;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+
+import java.util.Arrays;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,8 +57,10 @@ import java.util.Map;
  *   <li>Obtain a common adjacency graph: from an external graph supplied by the caller;
  *   or by running IMaGES across the supplied datasets (the same adjacency stage as
  *   FASK-Vote; the default); or by a pooled FAS, a stable FAS run with a composite test
- *   that combines per-dataset Fisher Z p-values by Fisher's method (see
- *   {@link #setAdjacencyMethod(AdjacencyMethod)}).</li>
+ *   that combines per-dataset Fisher Z p-values by Fisher's method; or by one of the
+ *   moral-graph-based methods MG_FAS, MG_LING, and their intersection, which are
+ *   designed to remain correct when the true graph is cyclic (see
+ *   {@link AdjacencyMethod} and {@link #setAdjacencyMethod(AdjacencyMethod)}).</li>
  *   <li>For each adjacency X&mdash;Y, compute the signed FASK left-right statistic
  *   lr_k separately within each dataset k (on standardized columns, with FASK's
  *   skew-sign correction applied within each dataset, as
@@ -148,9 +155,32 @@ public class FaskPool {
 
     /**
      * The depth of the pooled FAS adjacency search (-1 for unlimited). Only used when
-     * the adjacency method is POOLED_FAS.
+     * the adjacency method is POOLED_FAS or MG_FAS (where -1 is capped at 4, since
+     * sepset candidates are restricted to moral neighborhoods).
      */
     private int fasDepth = -1;
+
+    /**
+     * Threshold on the pooled (median across datasets) absolute LiNG B-hat entries above
+     * which a pair is kept as an adjacency. Only used when the adjacency method involves
+     * MG_LING.
+     */
+    private double lingThreshold = 0.1;
+
+    /**
+     * FastICA maximum iterations for the LiNG stage.
+     */
+    private int fastIcaMaxIter = 10000;
+
+    /**
+     * FastICA convergence tolerance for the LiNG stage.
+     */
+    private double fastIcaTolerance = 1e-6;
+
+    /**
+     * FastICA tanh nonlinearity parameter for the LiNG stage.
+     */
+    private double fastIcaA = 1.1;
 
     /**
      * Significance level for the orientation decision. Zero (the default) means every
@@ -212,6 +242,19 @@ public class FaskPool {
             standardized.add(DataTransforms.standardizeData(dataSet));
         }
 
+        // Column arrays per dataset, keyed by variable name so datasets need only agree
+        // on names, not on Node identity or column order.
+        List<Map<String, double[]>> columns = new ArrayList<>();
+        for (DataSet dataSet : standardized) {
+            Map<String, double[]> map = new HashMap<>();
+            double[][] cols = dataSet.getDoubleData().transpose().toArray();
+            List<Node> vars = dataSet.getVariables();
+            for (int j = 0; j < vars.size(); j++) {
+                map.put(vars.get(j).getName(), cols[j]);
+            }
+            columns.add(map);
+        }
+
         Graph adjacency;
 
         if (this.externalGraph != null) {
@@ -228,6 +271,10 @@ public class FaskPool {
             fas.setVerbose(false);
             fas.setKnowledge(this.knowledge);
             adjacency = fas.search();
+        } else if (this.adjacencyMethod == AdjacencyMethod.MG_FAS
+                   || this.adjacencyMethod == AdjacencyMethod.MG_LING
+                   || this.adjacencyMethod == AdjacencyMethod.MG_FAS_INTERSECT_LING) {
+            adjacency = moralBasedAdjacency(standardized, columns);
         } else {
             List<DataModel> models = new ArrayList<>(standardized);
             Images images = new Images(this.score);
@@ -235,21 +282,7 @@ public class FaskPool {
             adjacency = images.search(models, parameters);
         }
 
-        List<Node> nodes = adjacency.getNodes();
         Graph result = new EdgeListGraph(this.dataSets.get(0).getVariables());
-
-        // Column arrays per dataset, keyed by variable name so datasets need only agree
-        // on names, not on Node identity or column order.
-        List<Map<String, double[]>> columns = new ArrayList<>();
-        for (DataSet dataSet : standardized) {
-            Map<String, double[]> map = new HashMap<>();
-            double[][] cols = dataSet.getDoubleData().transpose().toArray();
-            List<Node> vars = dataSet.getVariables();
-            for (int j = 0; j < vars.size(); j++) {
-                map.put(vars.get(j).getName(), cols[j]);
-            }
-            columns.add(map);
-        }
 
         int ruleIndex = this.leftRight.ordinal() + 1;
         boolean needVariances = this.weighting == Weighting.INVERSE_VARIANCE || this.orientationAlpha > 0;
@@ -394,6 +427,276 @@ public class FaskPool {
         return v / (this.numBootstraps - 1);
     }
 
+    // ------------ Moral-graph-based adjacency (MG_FAS / MG_LING / intersection) ------------
+
+    /**
+     * Computes the adjacency graph for the MG_* methods. First the pooled moral graph is
+     * estimated: for each pair, the full-order partial correlation (given all other
+     * variables) is computed within each dataset and the two-sided p-values are combined
+     * across datasets by Fisher's method, with a Bonferroni correction over pairs at the
+     * FAS alpha. For linear SEMs with independent errors -- cyclic or not -- the
+     * precision support is the moral graph, so this stage is cycle-safe and its recall
+     * guarantee requires only that the relevant cancellation not occur in every dataset
+     * at once. The moral graph is then de-moralized by MG_FAS, MG_LING, or their
+     * intersection. Background knowledge is not consulted at this stage; required and
+     * forbidden edges are enforced at orientation time as usual.
+     */
+    private Graph moralBasedAdjacency(List<DataSet> standardized, List<Map<String, double[]>> columns) {
+        List<Node> vars = this.dataSets.get(0).getVariables();
+        int p = vars.size();
+        int numData = standardized.size();
+
+        // Per-dataset correlation matrices in the common variable order.
+        List<double[][]> Rs = new ArrayList<>();
+        int[] ns = new int[numData];
+
+        for (int d = 0; d < numData; d++) {
+            double[][] cols = new double[p][];
+            for (int i = 0; i < p; i++) {
+                double[] c = columns.get(d).get(vars.get(i).getName());
+                if (c == null) {
+                    throw new IllegalArgumentException("Variable missing from dataset "
+                            + (d + 1) + ": " + vars.get(i).getName());
+                }
+                cols[i] = c;
+            }
+            ns[d] = cols[0].length;
+            Rs.add(correlationMatrix(cols));
+        }
+
+        // Pooled moral graph.
+        double bonferroni = this.fasAlpha / (p * (p - 1) / 2.0);
+        boolean[][] moral = new boolean[p][p];
+
+        for (int i = 0; i < p; i++) {
+            for (int j = i + 1; j < p; j++) {
+                int[] S = new int[p - 2];
+                int t = 0;
+                for (int k = 0; k < p; k++) if (k != i && k != j) S[t++] = k;
+                if (pooledIndepP(Rs, ns, i, j, S) <= bonferroni) {
+                    moral[i][j] = true;
+                    moral[j][i] = true;
+                }
+            }
+        }
+
+        boolean[][] adj;
+
+        if (this.adjacencyMethod == AdjacencyMethod.MG_FAS) {
+            adj = mgFasPrune(moral, Rs, ns, p);
+        } else if (this.adjacencyMethod == AdjacencyMethod.MG_LING) {
+            adj = mgLingSelect(moral, standardized, vars, p);
+        } else {
+            boolean[][] a = mgFasPrune(moral, Rs, ns, p);
+            boolean[][] b = mgLingSelect(moral, standardized, vars, p);
+            adj = new boolean[p][p];
+            for (int i = 0; i < p; i++)
+                for (int j = 0; j < p; j++) adj[i][j] = a[i][j] && b[i][j];
+        }
+
+        Graph g = new EdgeListGraph(vars);
+        for (int i = 0; i < p; i++) {
+            for (int j = i + 1; j < p; j++) {
+                if (adj[i][j]) g.addUndirectedEdge(vars.get(i), vars.get(j));
+            }
+        }
+        return g;
+    }
+
+    /**
+     * FAS-style pruning of the moral graph: for each moral edge, search conditioning
+     * sets among the moral neighborhoods of its endpoints (fixed at the moral graph, as
+     * FAS fixes candidates at the current graph); remove the edge when the pooled test
+     * accepts independence at the FAS alpha.
+     */
+    private boolean[][] mgFasPrune(boolean[][] moral, List<double[][]> Rs, int[] ns, int p) {
+        boolean[][] adj = new boolean[p][p];
+        for (int i = 0; i < p; i++) adj[i] = moral[i].clone();
+
+        int maxDepth = this.fasDepth < 0 ? 4 : this.fasDepth;
+
+        for (int depth = 0; depth <= maxDepth; depth++) {
+            boolean removed = true;
+            while (removed) {
+                removed = false;
+                outer:
+                for (int i = 0; i < p; i++) {
+                    for (int j = i + 1; j < p; j++) {
+                        if (!adj[i][j]) continue;
+
+                        List<Integer> pool = new ArrayList<>();
+                        for (int k = 0; k < p; k++) {
+                            if (k != i && k != j && (moral[i][k] || moral[j][k])) pool.add(k);
+                        }
+                        if (pool.size() < depth) continue;
+
+                        ChoiceGenerator gen = new ChoiceGenerator(pool.size(), depth);
+                        int[] choice;
+                        while ((choice = gen.next()) != null) {
+                            int[] S = new int[depth];
+                            for (int t = 0; t < depth; t++) S[t] = pool.get(choice[t]);
+                            if (pooledIndepP(Rs, ns, i, j, S) > this.fasAlpha) {
+                                adj[i][j] = false;
+                                adj[j][i] = false;
+                                removed = true;
+                                break outer;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return adj;
+    }
+
+    /**
+     * LiNG-style pooled adjacency selection inside the moral graph: per dataset,
+     * estimate B by LingD (FastICA, Hungarian diagonal maximization, unit-diagonal
+     * scaling); pool by the median across datasets of max(|B_ij|, |B_ji|); keep moral
+     * pairs whose pooled statistic reaches the LiNG threshold. A dataset whose ICA
+     * fails contributes zeros (the median is robust to a few failures).
+     */
+    private boolean[][] mgLingSelect(boolean[][] moral, List<DataSet> standardized,
+                                     List<Node> vars, int p) {
+        int numData = standardized.size();
+        double[][][] absB = new double[numData][p][p];
+
+        for (int d = 0; d < numData; d++) {
+            DataSet dataSet = standardized.get(d);
+            int[] idx = new int[p];
+            for (int i = 0; i < p; i++) {
+                idx[i] = dataSet.getColumnIndex(vars.get(i).getName());
+                if (idx[i] < 0) {
+                    throw new IllegalArgumentException("Variable missing from dataset "
+                            + (d + 1) + ": " + vars.get(i).getName());
+                }
+            }
+            try {
+                Matrix w = LingD.estimateW(dataSet, this.fastIcaMaxIter,
+                        this.fastIcaTolerance, this.fastIcaA);
+                Matrix bHat = LingD.getScaledBHat(LingD.maximizeDiagonal(w));
+                for (int i = 0; i < p; i++) {
+                    for (int j = 0; j < p; j++) {
+                        absB[d][i][j] = Math.abs(bHat.get(idx[i], idx[j]));
+                    }
+                }
+            } catch (Exception e) {
+                // Leave zeros for this dataset.
+            }
+        }
+
+        boolean[][] adj = new boolean[p][p];
+        double[] vals = new double[numData];
+
+        for (int i = 0; i < p; i++) {
+            for (int j = i + 1; j < p; j++) {
+                if (!moral[i][j]) continue;
+                for (int d = 0; d < numData; d++) {
+                    vals[d] = Math.max(absB[d][i][j], absB[d][j][i]);
+                }
+                double[] sorted = vals.clone();
+                Arrays.sort(sorted);
+                double median = numData % 2 == 1 ? sorted[numData / 2]
+                        : 0.5 * (sorted[numData / 2 - 1] + sorted[numData / 2]);
+                if (median >= this.lingThreshold) {
+                    adj[i][j] = true;
+                    adj[j][i] = true;
+                }
+            }
+        }
+        return adj;
+    }
+
+    /**
+     * Pearson correlation matrix of the given columns.
+     */
+    private static double[][] correlationMatrix(double[][] cols) {
+        int p = cols.length;
+        int n = cols[0].length;
+        double[] mean = new double[p];
+        double[] sd = new double[p];
+
+        for (int i = 0; i < p; i++) {
+            double m = 0.0;
+            for (double v : cols[i]) m += v;
+            m /= n;
+            mean[i] = m;
+            double s = 0.0;
+            for (double v : cols[i]) s += (v - m) * (v - m);
+            sd[i] = Math.sqrt(s / (n - 1));
+            if (sd[i] == 0) sd[i] = 1.0;
+        }
+
+        double[][] R = new double[p][p];
+        for (int i = 0; i < p; i++) {
+            R[i][i] = 1.0;
+            for (int j = i + 1; j < p; j++) {
+                double s = 0.0;
+                for (int t = 0; t < n; t++) {
+                    s += (cols[i][t] - mean[i]) * (cols[j][t] - mean[j]);
+                }
+                double r = s / ((n - 1) * sd[i] * sd[j]);
+                R[i][j] = r;
+                R[j][i] = r;
+            }
+        }
+        return R;
+    }
+
+    /**
+     * Partial correlation of i and j given S, from a correlation matrix, via inversion
+     * of the submatrix over {i, j} union S. Returns NaN if the submatrix is singular.
+     */
+    private static double partialCorrelation(double[][] R, int i, int j, int[] S) {
+        int m = 2 + S.length;
+        int[] idx = new int[m];
+        idx[0] = i;
+        idx[1] = j;
+        System.arraycopy(S, 0, idx, 2, S.length);
+
+        double[][] sub = new double[m][m];
+        for (int a = 0; a < m; a++) {
+            for (int b = 0; b < m; b++) sub[a][b] = R[idx[a]][idx[b]];
+        }
+
+        try {
+            Matrix inv = new Matrix(sub).inverse();
+            double d = inv.get(0, 0) * inv.get(1, 1);
+            if (d <= 0) return Double.NaN;
+            double r = -inv.get(0, 1) / Math.sqrt(d);
+            return Math.max(-0.9999999, Math.min(0.9999999, r));
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+    }
+
+    /**
+     * Combined two-sided p-value for independence of i and j given S across the
+     * datasets, by Fisher's method on per-dataset Fisher-Z p-values. Sign-agnostic by
+     * design: coefficients may differ in sign across datasets, so a signed combination
+     * would cancel genuine dependence. Returns 1 if no dataset contributes.
+     */
+    private double pooledIndepP(List<double[][]> Rs, int[] ns, int i, int j, int[] S) {
+        double sumLog = 0.0;
+        int m = 0;
+
+        for (int d = 0; d < Rs.size(); d++) {
+            int df = ns[d] - S.length - 3;
+            if (df <= 0) continue;
+            double r = partialCorrelation(Rs.get(d), i, j, S);
+            if (Double.isNaN(r)) continue;
+            double z = Math.abs(0.5 * Math.log((1 + r) / (1 - r))) * Math.sqrt(df);
+            double p2 = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, z));
+            if (p2 <= 0.0) return 0.0;  // underflow: overwhelming dependence
+            sumLog += Math.log(p2);
+            m++;
+        }
+
+        if (m == 0) return 1.0;
+        double t = -2.0 * sumLog;
+        return 1.0 - new ChiSquaredDistribution(2.0 * m).cumulativeProbability(t);
+    }
+
     private boolean knowledgeOrients(Node left, Node right) {
         return this.knowledge.isForbidden(right.getName(), left.getName())
                 || this.knowledge.isRequired(left.getName(), right.getName());
@@ -466,12 +769,54 @@ public class FaskPool {
 
     /**
      * Sets the depth of the pooled FAS adjacency search (-1 for unlimited). Default: -1.
-     * Only used when the adjacency method is POOLED_FAS.
+     * Only used when the adjacency method is POOLED_FAS or MG_FAS (where -1 is capped
+     * at 4).
      *
      * @param fasDepth the depth
      */
     public void setFasDepth(int fasDepth) {
         this.fasDepth = fasDepth;
+    }
+
+    /**
+     * Sets the threshold on the pooled absolute LiNG B-hat entries above which a moral
+     * pair is kept as an adjacency. Default: 0.1. Only used when the adjacency method
+     * involves MG_LING.
+     *
+     * @param lingThreshold the threshold, nonnegative
+     */
+    public void setLingThreshold(double lingThreshold) {
+        if (lingThreshold < 0.0) {
+            throw new IllegalArgumentException("Threshold must be nonnegative: " + lingThreshold);
+        }
+        this.lingThreshold = lingThreshold;
+    }
+
+    /**
+     * Sets the FastICA maximum iterations for the LiNG stage. Default: 10000.
+     *
+     * @param fastIcaMaxIter maximum iterations, positive
+     */
+    public void setFastIcaMaxIter(int fastIcaMaxIter) {
+        this.fastIcaMaxIter = fastIcaMaxIter;
+    }
+
+    /**
+     * Sets the FastICA convergence tolerance for the LiNG stage. Default: 1e-6.
+     *
+     * @param fastIcaTolerance the tolerance, positive
+     */
+    public void setFastIcaTolerance(double fastIcaTolerance) {
+        this.fastIcaTolerance = fastIcaTolerance;
+    }
+
+    /**
+     * Sets the FastICA tanh nonlinearity parameter for the LiNG stage. Default: 1.1.
+     *
+     * @param fastIcaA the parameter
+     */
+    public void setFastIcaA(double fastIcaA) {
+        this.fastIcaA = fastIcaA;
     }
 
     /**
@@ -525,7 +870,31 @@ public class FaskPool {
          * Pooled FAS: stable FAS with a composite test combining per-dataset Fisher Z
          * p-values by Fisher's method.
          */
-        POOLED_FAS
+        POOLED_FAS,
+        /**
+         * Pooled moral graph (full-order partial correlations, Fisher-pooled across
+         * datasets), then FAS-style sepset pruning restricted to moral neighborhoods.
+         * The moral graph is a proved superset of the skeleton for linear cyclic SEMs
+         * (precision support = adjacencies plus common-child pairs), so this method is
+         * cycle-safe. CI-based pruning cannot remove Richardson-style virtual
+         * adjacencies, which cap its precision around cycles.
+         */
+        MG_FAS,
+        /**
+         * Pooled moral graph, then LiNG-style de-moralization: per-dataset ICA estimate
+         * of B (LingD: FastICA, Hungarian diagonal maximization, unit-diagonal scaling),
+         * pooled by the median across datasets of max(|B_ij|, |B_ji|), thresholded.
+         * Requires non-Gaussian errors; with Gaussian errors ICA is unidentified and
+         * this degenerates toward the moral graph.
+         */
+        MG_LING,
+        /**
+         * The intersection of MG_FAS and MG_LING. Both tend to full recall inside the
+         * moral graph with different false positives, so the intersection trades little
+         * recall for precision. Best choice for skewed (FASK-appropriate) data; use
+         * MG_FAS when errors may be Gaussian.
+         */
+        MG_FAS_INTERSECT_LING
     }
 
     /**

@@ -545,6 +545,10 @@ public final class Params {
      */
     public static final String FASK_NONEMPIRICAL = "faskNonempirical";
     /**
+     * Constant <code>FASK_POOL_ADJACENCY="faskPoolAdjacency"</code>
+     */
+    public static final String FASK_POOL_ADJACENCY = "faskPoolAdjacency";
+    /**
      * Constant <code>FAST_ICA_A="fastIcaA"</code>
      */
     public static final String FAST_ICA_A = "fastIcaA";

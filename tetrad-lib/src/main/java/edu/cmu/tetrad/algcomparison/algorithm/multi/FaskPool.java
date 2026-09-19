@@ -102,17 +102,23 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
 
         edu.cmu.tetrad.search.FaskPool search = new edu.cmu.tetrad.search.FaskPool(_dataSets, this.score);
 
-        // USE_BOSS_ADJACENCIES carries the same meaning as in single-dataset FASK: "Yes"
-        // means a global score-based search supplies the skeleton (here IMaGES, i.e., BOSS
-        // on the averaged score); "No" means FAS-Stable does (here a pooled FAS with a
-        // composite test combining per-dataset Fisher Z p-values by Fisher's method).
-        if (parameters.getBoolean(Params.USE_BOSS_ADJACENCIES)) {
-            search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.IMAGES);
-        } else {
-            search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.POOLED_FAS);
-            search.setFasAlpha(parameters.getDouble(Params.ALPHA));
-            search.setFasDepth(parameters.getInt(Params.DEPTH));
+        int adjacency = parameters.getInt(Params.FASK_POOL_ADJACENCY);
+
+        switch (adjacency) {
+            case 1 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.IMAGES);
+            case 2 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.POOLED_FAS);
+            case 3 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.MG_FAS);
+            case 4 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.MG_LING);
+            case 5 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.MG_FAS_INTERSECT_LING);
+            default -> throw new IllegalStateException("Unconfigured adjacency method (1-5): " + adjacency);
         }
+
+        search.setFasAlpha(parameters.getDouble(Params.ALPHA));
+        search.setFasDepth(parameters.getInt(Params.DEPTH));
+        search.setLingThreshold(parameters.getDouble(Params.THRESHOLD_B));
+        search.setFastIcaMaxIter(parameters.getInt(Params.FAST_ICA_MAX_ITER));
+        search.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
+        search.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
 
         search.setKnowledge(this.knowledge);
         return search.search(parameters);
@@ -156,21 +162,25 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
      * <p>Returns the IMaGES parameters, minus OUTPUT_CPDAG: FASK-Pool uses only the
      * adjacencies of the adjacency-stage graph and re-orients every edge from the
      * pooled left-right statistic, so whether BOSS outputs a CPDAG or a DAG is
-     * irrelevant. USE_BOSS_ADJACENCIES chooses the adjacency search (IMaGES vs. pooled
-     * FAS), with ALPHA and DEPTH governing the pooled FAS stage. No other FASK
-     * single-dataset parameters are listed because there is no skew-adjacency stage
-     * and no two-cycle detection in this setting.</p>
+     * irrelevant. FASK_POOL_ADJACENCY chooses the adjacency search (1 = IMaGES,
+     * 2 = pooled FAS, 3 = MG-FAS, 4 = MG-LiNG, 5 = intersection of 3 and 4); ALPHA and
+     * DEPTH govern the FAS-style tests, and THRESHOLD_B with the FastICA parameters
+     * governs the LiNG stage. No other FASK single-dataset parameters are listed
+     * because there is no skew-adjacency stage and no two-cycle detection in this
+     * setting.</p>
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Images().getParameters();
         parameters.remove(Params.OUTPUT_CPDAG);
 
-        // Adjacency choice, as in single-dataset FASK: BOSS-based (IMaGES) vs. FAS-based
-        // (pooled FAS), with the FAS stage's alpha and depth.
-        parameters.add(Params.USE_BOSS_ADJACENCIES);
+        parameters.add(Params.FASK_POOL_ADJACENCY);
         parameters.add(Params.ALPHA);
         parameters.add(Params.DEPTH);
+        parameters.add(Params.THRESHOLD_B);
+        parameters.add(Params.FAST_ICA_MAX_ITER);
+        parameters.add(Params.FAST_ICA_TOLERANCE);
+        parameters.add(Params.FAST_ICA_A);
 
         return parameters;
     }

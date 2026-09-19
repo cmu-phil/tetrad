@@ -2108,6 +2108,30 @@ Source:
             <span id="faskLeftRightRule_value_type">Integer</span></li>
     </ul>
 
+    === faskPoolAdjacency ===
+    <h3 class="parameter_description" id="faskPoolAdjacency">faskPoolAdjacency</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="faskPoolAdjacency_short_desc">FASK-Pool adjacency search: 1 = IMaGES,
+        2 = pooled FAS, 3 = MG-FAS, 4 = MG-LiNG, 5 = MG-FAS &amp; MG-LiNG intersection</span></li>
+        <li>Long Description: <span id="faskPoolAdjacency_long_desc"> Selects how the common adjacency
+        structure is estimated across the datasets before pooled FASK orientation. 1: IMaGES (BOSS on the
+        score averaged across datasets). 2: pooled FAS (FAS-Stable with per-dataset Fisher Z p-values
+        combined by Fisher's method). 3: MG-FAS: the pooled moral graph (full-order partial correlations,
+        Fisher-combined across datasets) pruned by FAS-style sepset tests restricted to moral neighborhoods;
+        cycle-safe, recommended when errors may be Gaussian. 4: MG-LiNG: the pooled moral graph filtered by
+        per-dataset ICA (LiNG) estimates of B, pooled by median; requires non-Gaussian errors. 5: the
+        intersection of 3 and 4; in simulations with skewed errors this gave the best adjacency precision at
+        full recall, and skewed errors are the FASK setting. Options 3-5 target the skeleton of a possibly
+        cyclic linear model; note that no method based only on conditional independence can remove
+        Richardson-style virtual adjacencies around cycles.</span></li>
+        <li>Default Value: <span id="faskPoolAdjacency_default_value">3</span></li>
+        <li>Lower
+            Bound: <span id="faskPoolAdjacency_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="faskPoolAdjacency_upper_bound">5</span></li>
+        <li>Value Type:
+            <span id="faskPoolAdjacency_value_type">Integer</span></li>
+    </ul>
+
     === faskNonempirical ===
     <h3 class="parameter_description" id="faskNonempirical">faskNonempirical</h3>
     <ul class="parameter_description_list">
