@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Fask;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -31,6 +30,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -103,6 +103,24 @@ public class FaskVote implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
 
         edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, this.score);
 
+        int adjacency = parameters.getInt(Params.FASK_POOL_ADJACENCY);
+
+        switch (adjacency) {
+            case 1 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.IMAGES);
+            case 2 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.POOLED_FAS);
+            case 3 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_FAS);
+            case 4 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_LING);
+            case 5 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_FAS_INTERSECT_LING);
+            default -> throw new IllegalStateException("Unconfigured adjacency method (1-5): " + adjacency);
+        }
+
+        search.setFasAlpha(parameters.getDouble(Params.ALPHA));
+        search.setFasDepth(parameters.getInt(Params.DEPTH));
+        search.setLingThreshold(parameters.getDouble(Params.THRESHOLD_B));
+        search.setFastIcaMaxIter(parameters.getInt(Params.FAST_ICA_MAX_ITER));
+        search.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
+        search.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
+
         search.setKnowledge(this.knowledge);
         return search.search(parameters);
     }
@@ -141,11 +159,26 @@ public class FaskVote implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
 
     /**
      * {@inheritDoc}
+     *
+     * <p>Returns the IMaGES parameters, minus OUTPUT_CPDAG (only adjacencies are used
+     * from the adjacency-stage graph), plus the adjacency-method parameters shared with
+     * FASK-Pool (FASK_POOL_ADJACENCY selects the adjacency search; ALPHA and DEPTH
+     * govern the FAS-style tests; THRESHOLD_B and the FastICA parameters govern the
+     * LiNG stage) and SKEW_EDGE_THRESHOLD, which the per-dataset FASK runs use.</p>
      */
     @Override
     public List<String> getParameters() {
         List<String> parameters = new Images().getParameters();
-        parameters.addAll(new Fask().getParameters());
+        parameters.remove(Params.OUTPUT_CPDAG);
+
+        parameters.add(Params.FASK_POOL_ADJACENCY);
+        parameters.add(Params.ALPHA);
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.THRESHOLD_B);
+        parameters.add(Params.FAST_ICA_MAX_ITER);
+        parameters.add(Params.FAST_ICA_TOLERANCE);
+        parameters.add(Params.FAST_ICA_A);
+        parameters.add(Params.SKEW_EDGE_THRESHOLD);
 
         return parameters;
     }

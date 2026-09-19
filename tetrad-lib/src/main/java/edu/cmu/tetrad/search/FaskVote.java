@@ -20,9 +20,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.algorithm.multi.Images;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
@@ -44,20 +42,23 @@ import java.util.List;
  * <p>The procedure has two stages:</p>
  *
  * <ol>
- *   <li>Run IMaGES across the supplied datasets to estimate a common adjacency graph.</li>
- *   <li>For each dataset, run FASK using the undirected version of that IMaGES graph as an
- *   external adjacency constraint, then orient each IMaGES adjacency by majority vote across
- *   the per-dataset FASK results.</li>
+ *   <li>Estimate a common adjacency graph across the supplied datasets with a
+ *   {@link PooledAdjacencySearch} (IMaGES by default; pooled FAS and the
+ *   moral-graph-based methods, which are designed to remain correct when the true
+ *   graph is cyclic, are also available; see {@link PooledAdjacencySearch.Method}).</li>
+ *   <li>For each dataset, run FASK using that adjacency graph as an external adjacency
+ *   constraint, then orient each adjacency by majority vote across the per-dataset
+ *   FASK results.</li>
  * </ol>
  *
- * <p>In this construction, IMaGES determines which adjacencies are considered, and FASK is
- * used only to vote on their orientations. A directed edge is added when more than half of
+ * <p>In this construction, the adjacency search determines which adjacencies are
+ * considered, and FASK is used only to vote on their orientations. A directed edge is added when more than half of
  * the counted per-dataset FASK graphs support that direction. If the two directions are tied
  * exactly at one half each, an undirected edge is added. If no per-dataset FASK graph supports
  * either direction for a given IMaGES adjacency, the adjacency is left undirected.</p>
  *
- * <p>The datasets are standardized for the IMaGES stage, but the original datasets are passed
- * to FASK. This follows the behavior of the original implementation.</p>
+ * <p>The datasets are standardized for the adjacency stage, but the original datasets are
+ * passed to FASK. This follows the behavior of the original implementation.</p>
  *
  * @author Madelyn Glymour
  * @author josephramsey
@@ -78,6 +79,11 @@ public class FaskVote {
      * Background knowledge containing forbidden and required edges.
      */
     private Knowledge knowledge = new Knowledge();
+
+    /**
+     * The adjacency-stage configuration; see {@link PooledAdjacencySearch}.
+     */
+    private final PooledAdjacencySearch adjacencySearch;
 
     /**
      * Constructs a FASK-voting search from the supplied datasets, score wrapper, and
@@ -103,15 +109,16 @@ public class FaskVote {
 
         this.dataSets = dataSets;
         this.score = score;
+        this.adjacencySearch = new PooledAdjacencySearch(score);
     }
 
     /**
      * Runs the search and returns the composite graph.
      *
-     * <p>The search first standardizes each dataset and runs IMaGES to obtain a common
-     * adjacency graph. It then runs FASK separately on each original dataset, constraining
-     * FASK to the undirected version of the IMaGES graph. Each IMaGES adjacency is then
-     * oriented by majority vote across the per-dataset FASK graphs.</p>
+     * <p>The search first standardizes each dataset and runs the configured adjacency
+     * search to obtain a common adjacency graph. It then runs FASK separately on each
+     * original dataset, constraining FASK to that graph's adjacencies. Each adjacency is
+     * then oriented by majority vote across the per-dataset FASK graphs.</p>
      *
      * <p>The voting denominator is the number of per-dataset FASK graphs that contain
      * at least one of the two candidate directions for the edge. If no such graph exists
@@ -122,12 +129,10 @@ public class FaskVote {
      * @throws InterruptedException if one of the underlying searches is interrupted
      */
     public Graph search(Parameters parameters) throws InterruptedException {
-        List<DataModel> standardizedDataModels = standardizeDataSets(this.dataSets);
+        List<DataSet> standardized = standardizeDataSets(this.dataSets);
 
-        Images images = new Images(this.score);
-        images.setKnowledge(this.knowledge);
-
-        Graph imagesGraph = images.search(standardizedDataModels, parameters);
+        this.adjacencySearch.setKnowledge(this.knowledge);
+        Graph imagesGraph = this.adjacencySearch.search(standardized, parameters);
         List<Node> imagesNodes = imagesGraph.getNodes();
 
         Graph result = new EdgeListGraph(this.dataSets.get(0).getVariables());
@@ -142,6 +147,73 @@ public class FaskVote {
         }
 
         return result;
+    }
+
+    /**
+     * Sets how the common adjacency structure is obtained. Default: IMAGES.
+     *
+     * @param method the adjacency method
+     */
+    public void setAdjacencyMethod(PooledAdjacencySearch.Method method) {
+        this.adjacencySearch.setMethod(method);
+    }
+
+    /**
+     * Sets the alpha level for the FAS-style adjacency tests. Default: 0.05.
+     *
+     * @param fasAlpha the alpha level, in (0, 1)
+     */
+    public void setFasAlpha(double fasAlpha) {
+        this.adjacencySearch.setFasAlpha(fasAlpha);
+    }
+
+    /**
+     * Sets the depth of the FAS-style adjacency searches (-1 for unlimited; capped at
+     * 4 in MG_FAS). Default: -1.
+     *
+     * @param fasDepth the depth
+     */
+    public void setFasDepth(int fasDepth) {
+        this.adjacencySearch.setFasDepth(fasDepth);
+    }
+
+    /**
+     * Sets the threshold on the pooled absolute LiNG B-hat entries above which a moral
+     * pair is kept as an adjacency. Default: 0.1.
+     *
+     * @param lingThreshold the threshold, nonnegative
+     */
+    public void setLingThreshold(double lingThreshold) {
+        this.adjacencySearch.setLingThreshold(lingThreshold);
+    }
+
+    /**
+     * Sets the FastICA maximum iterations for the LiNG adjacency stage. Default: 2000.
+     *
+     * @param fastIcaMaxIter maximum iterations, positive
+     */
+    public void setFastIcaMaxIter(int fastIcaMaxIter) {
+        this.adjacencySearch.setFastIcaMaxIter(fastIcaMaxIter);
+    }
+
+    /**
+     * Sets the FastICA convergence tolerance for the LiNG adjacency stage. Default:
+     * 1e-6.
+     *
+     * @param fastIcaTolerance the tolerance, positive
+     */
+    public void setFastIcaTolerance(double fastIcaTolerance) {
+        this.adjacencySearch.setFastIcaTolerance(fastIcaTolerance);
+    }
+
+    /**
+     * Sets the FastICA tanh nonlinearity parameter for the LiNG adjacency stage.
+     * Default: 1.1.
+     *
+     * @param fastIcaA the parameter
+     */
+    public void setFastIcaA(double fastIcaA) {
+        this.adjacencySearch.setFastIcaA(fastIcaA);
     }
 
     /**
@@ -162,13 +234,13 @@ public class FaskVote {
     }
 
     /**
-     * Standardizes the supplied datasets for the IMaGES stage.
+     * Standardizes the supplied datasets for the adjacency stage.
      *
      * @param dataSets the datasets to standardize
-     * @return the standardized datasets as data models
+     * @return the standardized datasets
      */
-    private List<DataModel> standardizeDataSets(List<DataSet> dataSets) {
-        List<DataModel> standardized = new ArrayList<>();
+    private List<DataSet> standardizeDataSets(List<DataSet> dataSets) {
+        List<DataSet> standardized = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
             standardized.add(DataTransforms.standardizeData(dataSet));

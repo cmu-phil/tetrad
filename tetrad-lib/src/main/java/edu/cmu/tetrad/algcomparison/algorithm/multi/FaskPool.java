@@ -105,11 +105,11 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
         int adjacency = parameters.getInt(Params.FASK_POOL_ADJACENCY);
 
         switch (adjacency) {
-            case 1 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.IMAGES);
-            case 2 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.POOLED_FAS);
-            case 3 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.MG_FAS);
-            case 4 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.MG_LING);
-            case 5 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.FaskPool.AdjacencyMethod.MG_FAS_INTERSECT_LING);
+            case 1 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.IMAGES);
+            case 2 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.POOLED_FAS);
+            case 3 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_FAS);
+            case 4 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_LING);
+            case 5 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_FAS_INTERSECT_LING);
             default -> throw new IllegalStateException("Unconfigured adjacency method (1-5): " + adjacency);
         }
 
