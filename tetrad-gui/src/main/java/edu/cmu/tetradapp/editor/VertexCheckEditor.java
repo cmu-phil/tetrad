@@ -1100,6 +1100,19 @@ public class VertexCheckEditor extends JPanel {
      */
     private void notifyUntestableFacts() {
         int[] counts = model.countUntestableFacts();
+
+        // Zero facts after a completed sweep means there was nothing to check at all -- most often an
+        // empty or near-empty graph was connected by mistake. Say so instead of leaving the tables blank.
+        if (counts[0] == 0) {
+            if ("nofacts".equals(this.lastUntestableNoticeKey)) return;
+            this.lastUntestableNoticeKey = "nofacts";
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(VertexCheckEditor.this,
+                    "This graph implies no independence facts to check under the chosen conditioning set"
+                    + " type, so there is nothing to test. (Is the graph empty, or nearly so?)",
+                    "No Implied Facts", JOptionPane.INFORMATION_MESSAGE));
+            return;
+        }
+
         if (counts[1] == 0) return;
 
         String key = counts[1] + "/" + counts[0];

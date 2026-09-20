@@ -921,6 +921,19 @@ public class MarkovCheckEditor extends JPanel {
                     throw new RuntimeException(e);
                 }
 
+                // An empty implied-fact set means there was nothing to check at all -- most often an empty
+                // or near-empty graph was connected by mistake. Without this notice the run just leaves the
+                // tables blank. Queued to the EDT, not shown from this WatchedProcess thread, for the
+                // modality reasons documented at the pending-test guard above.
+                if (model.getMarkovCheck().getImpliedFactCount() == 0) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "This graph implies no independence facts to check under the chosen conditioning"
+                            + " set type, so there is nothing to test. (Is the graph empty, or nearly so?)",
+                            "No Implied Facts", JOptionPane.INFORMATION_MESSAGE));
+                    // Fall through so the (empty) tables still refresh, clearing any rows from an earlier
+                    // run under a different conditioning set type.
+                }
+
                 // Facts whose test threw are skipped inside the check; without this notice, a run over data
                 // the chosen test cannot handle (e.g., too few usable rows after deletion of missing values)
                 // shows empty or thinned tables with no explanation. Queued to the EDT, not shown from this
