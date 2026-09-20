@@ -113,6 +113,11 @@ public class VertexCheckEditor extends JPanel {
     private AbstractTableModel overviewModel;
     private AbstractTableModel factsModel;
     private IndependenceWrapper independenceWrapper;
+    /**
+     * The message of the last "test could not be constructed" notice shown to the user, so the same notice is
+     * not shown repeatedly. Null if no such notice has been shown.
+     */
+    private String lastPendingTestMessage;
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false;
     //    private volatile boolean runningAll = false;
@@ -302,8 +307,17 @@ public class VertexCheckEditor extends JPanel {
         else if (dv instanceof Long) comp = getLongTextField(parameter, parameters, (Long) dv,
                 pd.getLowerBoundLong(), pd.getUpperBoundLong());
         else if (dv instanceof Boolean) comp = getBooleanSelectionBox(parameter, parameters, (Boolean) dv);
-        else if (dv instanceof String) comp = getStringField(parameter, parameters, (String) dv);
-        else throw new IllegalArgumentException("Unexpected type: " + dv.getClass());
+        else if (dv instanceof String) {
+            // A String parameter with a declared set of legal values (e.g., the missing-data policy) gets a
+            // dropdown, as in the search editor's parameter panel, rather than a free text field whose typed
+            // value only commits on Enter or focus change.
+            if (!pd.getAllowedValues().isEmpty()) {
+                comp = ParameterComponents.getStringSelectionBox(parameter, parameters, (String) dv,
+                        pd.getAllowedValues());
+            } else {
+                comp = getStringField(parameter, parameters, (String) dv);
+            }
+        } else throw new IllegalArgumentException("Unexpected type: " + dv.getClass());
 
         Box row = Box.createHorizontalBox();
         JLabel label = new JLabel(pd.getShortDescription());
@@ -848,6 +862,16 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void runAllAndRefresh(String preferredVertex, Runnable onDone) {
+        if (model.getIndependenceTest() instanceof PendingIndependenceTest) {
+            // The chosen test could not be constructed (e.g., missing values with no missing-data policy
+            // chosen), so there is nothing to run yet; setTestFromCombo() has already told the user why and
+            // where to fix it. The tables simply stay empty until the test can be constructed.
+            overviewModel.fireTableDataChanged();
+            refreshModelDiagnostics();
+            if (onDone != null) onDone.run();
+            return;
+        }
+
         if (activeWorker != null && !activeWorker.isDone()) {
             cancelRequested.set(true);          // stop the in-flight compute, not just interrupt
             activeWorker.cancel(true);
@@ -1026,7 +1050,22 @@ public class VertexCheckEditor extends JPanel {
         if (clazz == null) return;
         try {
             independenceWrapper = clazz.getDeclaredConstructor().newInstance();
-            IndependenceTest test = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
+
+            IndependenceTest test;
+
+            try {
+                test = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
+            } catch (IllegalArgumentException e) {
+                // The test could not be constructed for this data with the current parameters--typically
+                // because the data contain missing values and no missing-data policy has been chosen yet
+                // (see MissingDataUtils.gate). Just opening the editor should not throw, so install a
+                // placeholder test that lets the editor open, tell the user what needs to be set, and let
+                // them fix it in the Params dialog; setTestFromCombo() runs again when that dialog closes.
+                test = new PendingIndependenceTest(independenceWrapper.getDescription(),
+                        e.getMessage(), model.getDataModel());
+                notifyPendingTest(e.getMessage());
+            }
+
             model.setIndependenceTest(test);
             model.setSavedClassName(clazz.getName());
 //            PREFS.put(PREF_KEY_TEST, clazz.getName());
@@ -1037,6 +1076,27 @@ public class VertexCheckEditor extends JPanel {
             TetradLogger.getInstance().warn("Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Tells the user that the chosen test could not be constructed (a PendingIndependenceTest placeholder is in
+     * place instead) and where to fix it. Shown once per distinct message, so the notice appears when the editor
+     * opens or the situation changes, but not on every repeated setTestFromCombo() call for the same unresolved
+     * problem.
+     *
+     * @param message The construction error's message.
+     */
+    private void notifyPendingTest(String message) {
+        if (message != null && message.equals(this.lastPendingTestMessage)) {
+            return;
+        }
+
+        this.lastPendingTestMessage = message;
+
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                message + "\n\nThe vertex check cannot run until this is resolved; parameters for the "
+                + "chosen test (including the missing-data policy) can be set using the Params button.",
+                "Independence Test Not Configured", JOptionPane.WARNING_MESSAGE));
     }
 
     private void applySavedSetType() {

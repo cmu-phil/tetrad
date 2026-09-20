@@ -280,6 +280,68 @@ public final class ParameterComponents {
     }
 
     /**
+     * Returns a combo box for a String parameter whose ParamDescription declares a fixed set of allowed values
+     * (e.g., the missing-data policy). The current parameter value is preselected (case-insensitively); an
+     * unrecognized current value is replaced by the default, which is also written back to the Parameters so the
+     * display and the stored value cannot disagree. Selections are written to the Parameters immediately, so the
+     * choice takes effect even when the surrounding dialog is closed without further focus changes. This mirrors
+     * AlgorithmParameterPanel's rendering of such parameters, so parameter dialogs built on this utility (e.g.,
+     * the Markov and Vertex Check editors' Params dialogs) offer the same dropdown as the search editor.
+     *
+     * @param parameter     The parameter name.
+     * @param parameters    The parameters object to read from and write to.
+     * @param defaultValue  The default value.
+     * @param allowedValues The legal values, in display order.
+     * @return The combo box.
+     */
+    public static JComboBox<String> getStringSelectionBox(String parameter, Parameters parameters,
+                                                          String defaultValue, List<String> allowedValues) {
+        JComboBox<String> comboBox = new JComboBox<>(allowedValues.toArray(new String[0]));
+
+        String current = parameters.getString(parameter, defaultValue);
+        int index = -1;
+
+        for (int i = 0; i < allowedValues.size(); i++) {
+            if (allowedValues.get(i).equalsIgnoreCase(current)) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index >= 0) {
+            comboBox.setSelectedIndex(index);
+        } else {
+            comboBox.setSelectedItem(defaultValue);
+            parameters.set(parameter, defaultValue);
+        }
+
+        comboBox.addActionListener(e -> {
+            Object selected = comboBox.getSelectedItem();
+            if (selected != null) {
+                parameters.set(parameter, selected.toString());
+                ParameterFieldSync.valueChanged(parameters, parameter, comboBox);
+            }
+        });
+
+        ParameterFieldSync.register(parameters, parameter, comboBox, () -> {
+            String value = parameters.getString(parameter, defaultValue);
+            Object selected = comboBox.getSelectedItem();
+            if (selected == null || !selected.toString().equalsIgnoreCase(value)) {
+                for (int i = 0; i < comboBox.getItemCount(); i++) {
+                    if (comboBox.getItemAt(i).equalsIgnoreCase(value)) {
+                        comboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+        });
+
+        comboBox.setMaximumSize(comboBox.getPreferredSize());
+
+        return comboBox;
+    }
+
+    /**
      * <p>getStringField.</p>
      *
      * @param parameter    a {@link java.lang.String} object
@@ -329,7 +391,12 @@ public final class ParameterComponents {
         } else if (defaultValue instanceof Boolean) {
             component = ParameterComponents.getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
-            component = ParameterComponents.getStringField(parameter, parameters, (String) defaultValue);
+            if (!paramDesc.getAllowedValues().isEmpty()) {
+                component = ParameterComponents.getStringSelectionBox(parameter, parameters, (String) defaultValue,
+                        paramDesc.getAllowedValues());
+            } else {
+                component = ParameterComponents.getStringField(parameter, parameters, (String) defaultValue);
+            }
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
