@@ -921,6 +921,22 @@ public class MarkovCheckEditor extends JPanel {
                     throw new RuntimeException(e);
                 }
 
+                // Facts whose test threw are skipped inside the check; without this notice, a run over data
+                // the chosen test cannot handle (e.g., too few usable rows after deletion of missing values)
+                // shows empty or thinned tables with no explanation. Queued to the EDT, not shown from this
+                // WatchedProcess thread, for the modality reasons documented at the pending-test guard above.
+                int failures = model.getMarkovCheck().getTestFailureCount();
+
+                if (failures > 0) {
+                    boolean empty = model.getResults(true).isEmpty();
+                    String example = model.getMarkovCheck().getTestFailureExample();
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            failures + " implied fact(s) could not be tested with the chosen test and settings"
+                            + " and were skipped" + (empty ? ", so the tables are empty" : "") + "."
+                            + (example == null ? "" : "\n\nFirst error: " + example),
+                            "Some Facts Could Not Be Tested", JOptionPane.WARNING_MESSAGE));
+                }
+
 //                if (checkDependentDistribution.isSelected()) {
 //                    if (clear) {
 //                        model.getMarkovCheck().generateResults(true, true);

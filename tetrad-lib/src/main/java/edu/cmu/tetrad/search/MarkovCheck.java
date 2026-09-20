@@ -65,7 +65,18 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The graph.
      */
-    private final Graph graph;
+    private Graph graph;
+    /**
+     * The number of implied facts whose independence test threw an exception during the last result generation
+     * (each such fact is skipped, so it appears in no table). Written from the parallel per-fact tasks.
+     */
+    private final java.util.concurrent.atomic.AtomicInteger testFailureCount =
+            new java.util.concurrent.atomic.AtomicInteger();
+    /**
+     * The message of the first such exception, as an example for user-facing reporting. Null if none.
+     */
+    private final java.util.concurrent.atomic.AtomicReference<String> testFailureExample =
+            new java.util.concurrent.atomic.AtomicReference<>();
     /**
      * The results of the Markov check for the independent case.
      */
@@ -1529,6 +1540,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     public void generateResults(boolean indep, boolean clear) {
         if (clear) {
             clear();
+            testFailureCount.set(0);
+            testFailureExample.set(null);
         }
 
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
@@ -2026,6 +2039,27 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @param test the independence test to be set
      * @throws IllegalArgumentException if the test parameter is null
      */
+    /**
+     * Returns the number of implied facts whose independence test threw an exception during the last result
+     * generation. Each such fact was skipped and appears in no result table, so a nonzero count explains
+     * missing (possibly all) results. Reset when results are generated with clear == true.
+     *
+     * @return The number of skipped facts.
+     */
+    public int getTestFailureCount() {
+        return testFailureCount.get();
+    }
+
+    /**
+     * Returns the message of the first such test failure, as an example for user-facing reporting, or null if
+     * no failure has occurred since the last reset.
+     *
+     * @return The message, or null.
+     */
+    public String getTestFailureExample() {
+        return testFailureExample.get();
+    }
+
     public void setIndependenceTest(IndependenceTest test) {
         if (test == null) {
             throw new IllegalArgumentException("Independence test cannot be null.");
@@ -2034,6 +2068,35 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         this.independenceTest = test;
         this.cachedQueries = new CachingIndependenceTest(test);
 //        cachedQueries.setTest(test);  // clears caches, rebuilds mapping
+
+        // Re-align the graph and the independence/conditioning node lists to the new test's variable
+        // objects, by name. Some tests (e.g., DG-LRT) look their variables up by object identity, and a
+        // test set after construction can carry different Node objects with the same names than the test
+        // this check was constructed with (for example, a test built on an EM-estimated covariance matrix,
+        // or a real test replacing a placeholder installed when construction failed). Without this, every
+        // implied fact's test fails on such a swap.
+        this.graph = GraphUtils.replaceNodes(this.graph, test.getVariables());
+
+        if (this.independenceNodes != null) {
+            this.independenceNodes = replaceNodesByName(this.independenceNodes, test.getVariables());
+        }
+
+        if (this.conditioningNodes != null) {
+            this.conditioningNodes = replaceNodesByName(this.conditioningNodes, test.getVariables());
+        }
+    }
+
+    /**
+     * Returns a copy of the given node list in which each node is replaced by the same-named node from
+     * newVariables where one exists; nodes with no same-named replacement are kept as they are.
+     */
+    private static List<Node> replaceNodesByName(List<Node> nodes, List<Node> newVariables) {
+        Map<String, Node> byName = new HashMap<>();
+        for (Node v : newVariables) byName.put(v.getName(), v);
+
+        List<Node> out = new ArrayList<>(nodes.size());
+        for (Node n : nodes) out.add(byName.getOrDefault(n.getName(), n));
+        return out;
     }
 
     /**
@@ -2333,6 +2396,10 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                 } catch (Exception e) {
                     e.printStackTrace();
                     TetradLogger.getInstance().warn("Error in independence test; not adding result: " + e.getMessage());
+                    // Record the failure so interfaces can report how many facts were skipped and why,
+                    // rather than silently showing fewer (possibly zero) results.
+                    testFailureCount.incrementAndGet();
+                    testFailureExample.compareAndSet(null, e.getMessage() == null ? e.toString() : e.getMessage());
                     return;
                 }
 

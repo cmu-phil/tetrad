@@ -474,6 +474,39 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return resultsByVertex.getOrDefault(vertexName, List.of());
     }
 
+    /**
+     * Counts, over all computed vertices, the implied facts tested so far and how many of them came back with
+     * no p-value (NaN). Under the caching layer's TREAT_AS_INDEPENDENT error policy, a fact whose test throws
+     * is recorded as independent with a NaN p-value, so a large NaN count means the chosen test could not
+     * actually be run on those facts (e.g., too few usable rows after deletion of missing values) and the
+     * displayed judgments for them carry no evidence. Interfaces use this to warn instead of staying silent.
+     *
+     * @return An array {total facts, facts with NaN p-value}.
+     */
+    public int[] countUntestableFacts() {
+        int total = 0;
+        int untestable = 0;
+
+        for (List<IndependenceResult> rs : resultsByVertex.values()) {
+            for (IndependenceResult r : rs) {
+                total++;
+                if (Double.isNaN(r.getPValue())) untestable++;
+            }
+        }
+
+        return new int[]{total, untestable};
+    }
+
+    /**
+     * Returns the message of the most recent test error swallowed by the caching layer's error policy, as an
+     * example of why facts came back with no p-value, or null if none.
+     *
+     * @return The message, or null.
+     */
+    public String getUntestableExample() {
+        return cachedQueries.getLastErrorMessage();
+    }
+
     private void runVertex(Graph alignedGraph, Node x) {
         runVertex(alignedGraph, x, () -> false);
     }

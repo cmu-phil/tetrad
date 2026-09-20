@@ -118,6 +118,11 @@ public class VertexCheckEditor extends JPanel {
      * not shown repeatedly. Null if no such notice has been shown.
      */
     private String lastPendingTestMessage;
+    /**
+     * The "untestable/total" key of the last untestable-facts notice, so the same notice is not repeated on
+     * every sweep. Null if none shown.
+     */
+    private String lastUntestableNoticeKey;
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false;
     //    private volatile boolean runningAll = false;
@@ -915,6 +920,7 @@ public class VertexCheckEditor extends JPanel {
                     }
                     overviewModel.fireTableDataChanged();
                     refreshModelDiagnostics();
+                    notifyUntestableFacts();
                     String active;
                     if (preferredVertex != null) {
                         restoreOverviewSelection(preferredVertex);
@@ -1086,6 +1092,44 @@ public class VertexCheckEditor extends JPanel {
      *
      * @param message The construction error's message.
      */
+    /**
+     * Warns when a sweep produced facts with no p-value (NaN): under the caching layer's error policy those
+     * are facts the chosen test could not actually be run on (e.g., too few usable rows after deletion of
+     * missing values), silently recorded as independent. Shown once per distinct count, queued to the EDT so
+     * it appears after the progress dialog is gone.
+     */
+    private void notifyUntestableFacts() {
+        int[] counts = model.countUntestableFacts();
+        if (counts[1] == 0) return;
+
+        String key = counts[1] + "/" + counts[0];
+        if (key.equals(this.lastUntestableNoticeKey)) return;
+        this.lastUntestableNoticeKey = key;
+
+        String example = model.getUntestableExample();
+
+        // A NaN p-value has two causes: the test threw on that fact (example carries the most recent
+        // error), or a fact variable's NAME does not occur among the test's variables at all, in which
+        // case the caching layer's conservative default judges the fact independent without any test.
+        // Name the offending variables so the user can tell which situation they are in.
+        java.util.Set<String> testNames = new java.util.HashSet<>();
+        for (Node v : model.getIndependenceTest().getVariables()) testNames.add(v.getName());
+        List<String> notInData = new ArrayList<>();
+        for (Node g : model.getGraph().getNodes()) {
+            if (!testNames.contains(g.getName())) notInData.add(g.getName());
+        }
+
+        String message = counts[1] + " of " + counts[0] + " implied facts could not be tested with the"
+                + " chosen test and settings. Each such fact is shown with no p-value and counted as"
+                + " independent, so judgments for these facts carry no evidence."
+                + (example == null ? "" : "\n\nMost recent test error: " + example)
+                + (notInData.isEmpty() ? "" : "\n\nGraph variables not among the data variables (facts"
+                + " involving them cannot be tested): " + notInData);
+
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(VertexCheckEditor.this,
+                message, "Some Facts Could Not Be Tested", JOptionPane.WARNING_MESSAGE));
+    }
+
     private void notifyPendingTest(String message) {
         if (message != null && message.equals(this.lastPendingTestMessage)) {
             return;
