@@ -549,9 +549,17 @@ public final class Params {
      */
     public static final String FASK_POOL_ADJACENCY = "faskPoolAdjacency";
     /**
+     * Constant <code>FASK_POOL_ADJACENCY_ORIENTATIONS="faskPoolAdjacencyOrientations"</code>
+     */
+    public static final String FASK_POOL_ADJACENCY_ORIENTATIONS = "faskPoolAdjacencyOrientations";
+    /**
      * Constant <code>FASK_POOL_EXTERNAL_ORIENTATIONS="faskPoolExternalOrientations"</code>
      */
     public static final String FASK_POOL_EXTERNAL_ORIENTATIONS = "faskPoolExternalOrientations";
+    /**
+     * Constant <code>FASK_POOL_EXTERNAL_ADJACENCY_FRACTION="faskPoolExternalAdjacencyFraction"</code>
+     */
+    public static final String FASK_POOL_EXTERNAL_ADJACENCY_FRACTION = "faskPoolExternalAdjacencyFraction";
     /**
      * Constant <code>FAST_ICA_A="fastIcaA"</code>
      */

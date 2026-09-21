@@ -139,7 +139,8 @@ public class PooledAdjacencySearch {
     }
 
     /**
-     * Estimates the common adjacency structure over the given standardized datasets.
+     * Estimates the common adjacency structure over the given standardized datasets,
+     * discarding any orientations the method produces.
      *
      * @param standardized the standardized datasets, sharing variable names
      * @param parameters   search parameters (passed through to the IMaGES stage)
@@ -148,6 +149,24 @@ public class PooledAdjacencySearch {
      * @throws InterruptedException if an underlying search is interrupted
      */
     public Graph search(List<DataSet> standardized, Parameters parameters) throws InterruptedException {
+        return GraphUtils.undirectedGraph(searchWithOrientations(standardized, parameters));
+    }
+
+    /**
+     * Estimates the common adjacency structure over the given standardized datasets,
+     * retaining whatever orientations the method produces. Only {@link Method#IMAGES}
+     * produces any: the CPDAG of the BOSS search over the averaged score, whose
+     * compelled orientations are score-based evidence about direction. The other
+     * methods return undirected graphs, so for them this is the same as
+     * {@link #search(List, Parameters)}.
+     *
+     * @param standardized the standardized datasets, sharing variable names
+     * @param parameters   search parameters (passed through to the IMaGES stage)
+     * @return a graph over the first dataset's variables whose edges are the estimated
+     * adjacencies, directed where the method compels a direction
+     * @throws InterruptedException if an underlying search is interrupted
+     */
+    public Graph searchWithOrientations(List<DataSet> standardized, Parameters parameters) throws InterruptedException {
         if (standardized == null || standardized.isEmpty()) {
             throw new IllegalArgumentException("At least one dataset is required.");
         }
@@ -159,7 +178,7 @@ public class PooledAdjacencySearch {
             List<DataModel> models = new ArrayList<>(standardized);
             Images images = new Images(this.score);
             images.setKnowledge(this.knowledge);
-            return GraphUtils.undirectedGraph(images.search(models, parameters));
+            return images.search(models, parameters);
         }
 
         if (this.method == Method.POOLED_FAS) {

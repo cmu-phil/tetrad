@@ -2133,21 +2133,52 @@ Source:
             <span id="faskPoolAdjacency_value_type">Integer</span></li>
     </ul>
 
+    === faskPoolAdjacencyOrientations ===
+    <h3 class="parameter_description" id="faskPoolAdjacencyOrientations">faskPoolAdjacencyOrientations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="faskPoolAdjacencyOrientations_short_desc">Use the IMaGES CPDAG's
+        compelled orientations as defaults</span></li>
+        <li>Long Description: <span id="faskPoolAdjacencyOrientations_long_desc"> Only consulted when
+        FASK-Pool runs its own adjacency search (no external graph) and only the IMaGES option produces
+        orientations; the other adjacency options return undirected graphs. If true (default), the compelled
+        edges of the IMaGES CPDAG -- BOSS over the score averaged across the datasets, so already a
+        combination of all of them -- become default orientations, and the pooled left-right statistic can
+        overturn a default only when it opposes it, every dataset's statistic individually opposes it
+        (strict cross-dataset sign consensus), and, when the orientation alpha is above zero, the pooled
+        statistic is significant at that level. Reversible (undirected) edges of the CPDAG carry no
+        orientation information and are oriented from the pooled statistic as usual. If false, only the
+        adjacencies of the IMaGES graph are used and every edge is oriented from the pooled statistic. Note
+        that with a single dataset the sign consensus is vacuous, so a positive orientation alpha should be
+        used to gate the override.</span>
+        </li>
+        <li>Default Value: <span id="faskPoolAdjacencyOrientations_default_value">true</span></li>
+        <li>Lower
+            Bound: <span id="faskPoolAdjacencyOrientations_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="faskPoolAdjacencyOrientations_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="faskPoolAdjacencyOrientations_value_type">Boolean</span></li>
+    </ul>
+
     === faskPoolExternalOrientations ===
     <h3 class="parameter_description" id="faskPoolExternalOrientations">faskPoolExternalOrientations</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="faskPoolExternalOrientations_short_desc">Use the external graph's
+        <li>Short Description: <span id="faskPoolExternalOrientations_short_desc">Use the external graphs'
         compelled orientations as defaults</span></li>
-        <li>Long Description: <span id="faskPoolExternalOrientations_long_desc"> Only consulted when an
-        external graph (e.g., a BOSS CPDAG supplied as a source graph in the interface) is given to
-        FASK-Pool. If true (default), the external graph's compelled orientations become default
-        orientations, and the pooled left-right statistic can overturn a default only when it opposes it,
-        every dataset's statistic individually opposes it (strict cross-dataset sign consensus), and, when
-        the orientation alpha is above zero, the pooled statistic is significant at that level. Reversible
-        (undirected) edges of the CPDAG are oriented from the pooled statistic as usual; a supplied DAG is
-        converted to its CPDAG first so reversible edges do not act as compelled. If false, the external
-        graph contributes adjacencies only. Note that with a single dataset the sign consensus is vacuous,
-        so a positive orientation alpha should be used to gate the override.</span>
+        <li>Long Description: <span id="faskPoolExternalOrientations_long_desc"> Only consulted when
+        external graphs are given to FASK-Pool. The external-graph algorithm is run separately on each
+        dataset (unless it is itself a multi-dataset algorithm, which pools internally and is run once), and
+        the resulting graphs are combined. If true (default), the compelled orientations of those graphs are
+        tallied per pair and the majority direction, if there is one, becomes the default orientation; a tie
+        leaves the pair to the pooled statistic. The pooled left-right statistic can overturn a default only
+        when it opposes it and, when the orientation alpha is above zero, is significant at that level; if
+        the evidence is unanimous (no graph compels the other direction), every dataset's statistic must
+        individually oppose it as well (strict cross-dataset sign consensus). Reversible (undirected) edges
+        are oriented from the pooled statistic as usual; a supplied DAG is converted to its CPDAG first so
+        reversible edges do not act as compelled. If false, the external graphs contribute adjacencies only.
+        Note that a fixed source graph supplied in the interface is the same graph for every dataset and so
+        carries no cross-dataset evidence; with one graph, or one dataset, the sign consensus is vacuous, so
+        a positive orientation alpha should be used to gate the override.</span>
         </li>
         <li>Default Value: <span id="faskPoolExternalOrientations_default_value">true</span></li>
         <li>Lower
@@ -2156,6 +2187,26 @@ Source:
             Bound: <span id="faskPoolExternalOrientations_upper_bound"></span></li>
         <li>Value
             Type: <span id="faskPoolExternalOrientations_value_type">Boolean</span></li>
+    </ul>
+
+    === faskPoolExternalAdjacencyFraction ===
+    <h3 class="parameter_description" id="faskPoolExternalAdjacencyFraction">faskPoolExternalAdjacencyFraction</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="faskPoolExternalAdjacencyFraction_short_desc">Fraction of the
+        external graphs a pair must be adjacent in</span></li>
+        <li>Long Description: <span id="faskPoolExternalAdjacencyFraction_long_desc"> Only consulted when
+        more than one external graph is given to FASK-Pool (one per dataset). A pair enters the composite
+        skeleton when the number of graphs in which it is adjacent exceeds this fraction of the number of
+        graphs. Zero takes the union of the skeletons, 0.5 (the default) a strict majority, and 1.0 the
+        intersection.</span>
+        </li>
+        <li>Default Value: <span id="faskPoolExternalAdjacencyFraction_default_value">0.5</span></li>
+        <li>Lower
+            Bound: <span id="faskPoolExternalAdjacencyFraction_lower_bound">0.0</span></li>
+        <li>Upper
+            Bound: <span id="faskPoolExternalAdjacencyFraction_upper_bound">1.0</span></li>
+        <li>Value
+            Type: <span id="faskPoolExternalAdjacencyFraction_value_type">Double</span></li>
     </ul>
 
     === faskNonempirical ===

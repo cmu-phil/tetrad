@@ -49,10 +49,11 @@ import java.util.Set;
  * <p>The procedure has two stages:</p>
  *
  * <ol>
- *   <li>Obtain a common adjacency graph: from an external graph supplied by the caller,
- *   or from a {@link PooledAdjacencySearch} (IMaGES, pooled FAS, or one of the
- *   moral-graph-based methods designed to remain correct when the true graph is
- *   cyclic; see {@link PooledAdjacencySearch.Method}).</li>
+ *   <li>Obtain a common adjacency graph: by combining external graphs supplied by the
+ *   caller, one per dataset, or from a {@link PooledAdjacencySearch} (IMaGES, pooled
+ *   FAS, or one of the moral-graph-based methods designed to remain correct when the
+ *   true graph is cyclic; see {@link PooledAdjacencySearch.Method}). Where that stage
+ *   compels a direction, it is retained as orientation evidence; see below.</li>
  *   <li>For each adjacency X&mdash;Y, compute the signed FASK left-right statistic
  *   lr_k separately within each dataset k (on standardized columns, with FASK's
  *   skew-sign correction applied within each dataset, as
@@ -93,22 +94,50 @@ import java.util.Set;
  * left-right rules read as causal signal. Only the finished, within-dataset,
  * sign-corrected statistics are combined.</p>
  *
- * <p>When an external graph is supplied (e.g., a BOSS CPDAG) and
- * {@link #setUseExternalOrientations(boolean)} is left at its default of true, the
- * external graph contributes orientations as well as adjacencies. Only its compelled
- * orientations act: a directed edge X&rarr;Y in the external CPDAG (a supplied DAG is
- * first converted to its CPDAG, so reversible edges do not masquerade as compelled)
- * becomes the default orientation, and the pooled left-right statistic can overturn it
- * only when it opposes the default AND every dataset's statistic individually opposes
- * it (strict cross-dataset sign consensus) AND, when the orientation alpha is above
- * zero, the pooled statistic is significant at that level. Reversible (undirected)
- * edges of the CPDAG carry no orientation information and are oriented from the pooled
- * statistic exactly as without an external graph. This is a lexicographic override, not
- * additive pooling: the score-based orientation is the default, and the higher-moment
- * statistic overrules it only on strong, unanimous opposition. Note that with a single
- * dataset the sign consensus is vacuous, so a positive orientation alpha should be set
- * to give the override a meaningful gate. The provenance of each orientation is
- * recorded in {@link #getEdgeStats()}.</p>
+ * <p><b>Orientation evidence.</b> The graph-based stage does not only deliver
+ * adjacencies: where it compels a direction, that direction is evidence, and the pooled
+ * left-right statistic must beat it rather than simply replace it. Evidence comes from
+ * one of two sources, never both:</p>
+ *
+ * <ul>
+ *   <li><i>The adjacency stage.</i> With {@link PooledAdjacencySearch.Method#IMAGES}
+ *   and {@link #setUseAdjacencyOrientations(boolean)} left at its default of true, the
+ *   compelled edges of the IMaGES CPDAG&mdash;BOSS over the score averaged across the
+ *   datasets&mdash;are kept as default orientations. Because IMaGES pools the score
+ *   over all the datasets, its CPDAG is already a combination of them, and it counts as
+ *   one unanimous evidence graph. The other adjacency methods return undirected graphs
+ *   and so contribute no orientation evidence.</li>
+ *   <li><i>External graphs.</i> {@link #setExternalGraphs(List)} takes one graph per
+ *   dataset&mdash;each dataset's own search result&mdash;and combines them, which is
+ *   the point: a single external graph fitted to one dataset, or to the datasets
+ *   pooled, would impose one skeleton and one set of orientations on all of them and
+ *   defeat the cross-dataset construction. The composite skeleton keeps a pair when it
+ *   is adjacent in more than {@link #setExternalAdjacencyFraction(double)} of the
+ *   graphs (default: a strict majority), and the compelled orientations are tallied
+ *   per pair: the majority direction, if there is one, becomes the default, and a tie
+ *   leaves the pair to the pooled statistic. When the adjacency stage is thereby
+ *   skipped, {@link #setUseExternalOrientations(boolean)} set to false makes the graphs
+ *   contribute adjacencies only.</li>
+ * </ul>
+ *
+ * <p>Only compelled orientations act: a graph that is a legal DAG (e.g., BOSS run with
+ * CPDAG output off, or a graph drawn by hand) is converted to its CPDAG first, so that
+ * reversible edges do not masquerade as compelled, and reversible edges are oriented
+ * from the pooled statistic exactly as if no evidence graph had been supplied.</p>
+ *
+ * <p>What it takes to overturn a default scales with the strength of the evidence for
+ * it. In every case the pooled statistic must oppose the default and, when the
+ * orientation alpha is above zero, be significant at that level; beyond that, if the
+ * evidence is unanimous (no evidence graph compels the opposite direction), every
+ * dataset's statistic must individually oppose the default as well (strict
+ * cross-dataset sign consensus), whereas evidence that is itself divided yields to the
+ * pooled statistic alone. This is a lexicographic override, not additive pooling: the
+ * score-based orientation is the default, and the higher-moment statistic overrules it
+ * only on a counter-signal at least as strong as the evidence it is displacing. Note
+ * that with a single dataset the sign consensus is vacuous, so a positive orientation
+ * alpha should be set to give the override a meaningful gate. The provenance of each
+ * orientation, and the evidence counts behind it, are recorded in
+ * {@link #getEdgeStats()}.</p>
  *
  * <p>Background knowledge is respected: a required or forbidden edge orients the pair
  * regardless of the pooled statistic. Two-cycle detection is off by default, following
@@ -142,17 +171,35 @@ public class FaskPool {
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * Optional external adjacency graph. When set, the IMaGES stage is skipped and this
-     * graph's adjacencies (taken as undirected) are oriented instead.
+     * Optional external graphs, one per dataset (a single graph is accepted and applies
+     * to all datasets). When nonempty, the adjacency stage is skipped: the graphs are
+     * combined into a composite skeleton by the adjacency fraction rule, and their
+     * compelled orientations are tallied into orientation evidence.
      */
-    private Graph externalGraph = null;
+    private List<Graph> externalGraphs = new ArrayList<>();
 
     /**
-     * Whether the external graph's compelled orientations act as defaults that the
-     * pooled statistic can overturn only on strict cross-dataset sign consensus. Only
-     * consulted when an external graph has been set. Default: true.
+     * Whether the external graphs' compelled orientations act as defaults that the
+     * pooled statistic can overturn only on strong opposing evidence. Only consulted
+     * when external graphs have been set. Default: true.
      */
     private boolean useExternalOrientations = true;
+
+    /**
+     * Whether the adjacency stage's compelled orientations (IMaGES only; the other
+     * adjacency methods produce undirected graphs) act as defaults in the same way.
+     * Only consulted when no external graphs have been set. Default: true.
+     */
+    private boolean useAdjacencyOrientations = true;
+
+    /**
+     * The fraction of the external graphs in which a pair must be adjacent for it to be
+     * an adjacency of the composite skeleton: a pair is kept when its count exceeds
+     * this fraction of the number of graphs. Zero takes the union, 0.5 (the default) a
+     * strict majority, and 1.0 the intersection. Ignored when a single external graph,
+     * or none, is supplied.
+     */
+    private double externalAdjacencyFraction = 0.5;
 
     /**
      * Alpha for the per-dataset two-cycle test. Zero (the default) disables two-cycle
@@ -251,21 +298,38 @@ public class FaskPool {
         }
 
         Graph adjacency;
-        Graph oriented = null;
 
-        if (this.externalGraph != null) {
-            Graph ext = GraphUtils.replaceNodes(this.externalGraph, this.dataSets.get(0).getVariables());
-            adjacency = GraphUtils.undirectedGraph(ext);
+        // Orientation evidence, keyed by unordered variable-name pair: entry[0] counts
+        // the evidence graphs compelling first->second (in lexicographic name order),
+        // entry[1] those compelling second->first.
+        Map<NamePair, int[]> evidence = new HashMap<>();
+        int numEvidenceGraphs = 0;
+
+        if (!this.externalGraphs.isEmpty()) {
+            // Each dataset's own graph is reduced to its compelled orientations and the
+            // graphs are then combined; no single dataset's graph is imposed on the rest.
+            List<Graph> compelledGraphs = new ArrayList<>();
+            for (Graph g : this.externalGraphs) compelledGraphs.add(compelledGraph(g));
+
+            adjacency = combineAdjacencies(compelledGraphs);
 
             if (this.useExternalOrientations) {
-                // Only compelled orientations act as defaults. A DAG (e.g., BOSS run
-                // with CPDAG output off) is converted to its CPDAG first, so that
-                // reversible edges do not masquerade as compelled.
-                oriented = ext.paths().isLegalDag() ? GraphTransforms.dagToCpdag(ext) : ext;
+                numEvidenceGraphs = compelledGraphs.size();
+                tallyOrientations(compelledGraphs, evidence);
             }
         } else {
             this.adjacencySearch.setKnowledge(this.knowledge);
-            adjacency = this.adjacencySearch.search(standardized, parameters);
+            Graph stage = this.adjacencySearch.searchWithOrientations(standardized, parameters);
+            adjacency = GraphUtils.undirectedGraph(stage);
+
+            if (this.useAdjacencyOrientations) {
+                // IMaGES pools the score across the datasets, so its CPDAG is already a
+                // combination of all of them and counts as one unanimous evidence graph.
+                // The other adjacency methods return undirected graphs, which contribute
+                // no orientation evidence.
+                numEvidenceGraphs = 1;
+                tallyOrientations(java.util.Collections.singletonList(compelledGraph(stage)), evidence);
+            }
         }
 
         Graph result = new EdgeListGraph(this.dataSets.get(0).getVariables());
@@ -350,30 +414,45 @@ public class FaskPool {
                 }
             }
 
+            // Combined orientation evidence for this pair: how many evidence graphs
+            // compel x->y, and how many compel y->x. The majority direction, if there
+            // is one, is the default orientation; a tie (including none at all, or a
+            // pair reversible in every CPDAG) leaves the pair to the pooled statistic.
+            int forDefault = 0;
+            int againstDefault = 0;
+            int compelled = 0;
+
+            if (numEvidenceGraphs > 0) {
+                int[] tally = evidence.get(NamePair.of(x.getName(), y.getName()));
+
+                if (tally != null) {
+                    boolean xFirst = x.getName().compareTo(y.getName()) < 0;
+                    int forward = xFirst ? tally[0] : tally[1];
+                    int backward = xFirst ? tally[1] : tally[0];
+
+                    if (forward > backward) {
+                        compelled = +1;
+                        forDefault = forward;
+                        againstDefault = backward;
+                    } else if (backward > forward) {
+                        compelled = -1;
+                        forDefault = backward;
+                        againstDefault = forward;
+                    }
+                }
+            }
+
             // Two-cycle stage: only when enabled, and only on unanimity across datasets.
             if (this.twoCycleAlpha > 0 && isPooledTwoCycle(adjacency, columns, x, y, twoCycleCutoff)) {
                 Edge e1 = Edges.directedEdge(rx, ry);
                 Edge e2 = Edges.directedEdge(ry, rx);
                 result.addEdge(e1);
                 result.addEdge(e2);
-                EdgeStat stat = new EdgeStat(pooled, z, q, m, Origin.TWO_CYCLE);
+                EdgeStat stat = new EdgeStat(pooled, z, q, m, forDefault, againstDefault,
+                        Origin.TWO_CYCLE);
                 this.edgeStats.put(e1, stat);
                 this.edgeStats.put(e2, stat);
                 continue;
-            }
-
-            // External compelled orientation for this pair, if any: +1 for x->y,
-            // -1 for y->x, 0 for none (reversible in the CPDAG, or no external graph).
-            int compelled = 0;
-
-            if (oriented != null) {
-                Node ox = oriented.getNode(x.getName());
-                Node oy = oriented.getNode(y.getName());
-                Edge oe = (ox == null || oy == null) ? null : oriented.getEdge(ox, oy);
-
-                if (oe != null && Edges.isDirectedEdge(oe)) {
-                    compelled = oe.pointsTowards(oy) ? +1 : -1;
-                }
             }
 
             Edge added;
@@ -394,14 +473,21 @@ public class FaskPool {
 
                 boolean significant = this.orientationAlpha == 0 || Math.abs(z) >= zCutoff;
 
-                if (opposes && consensus && significant) {
+                // The counter-signal required scales with the strength of the evidence.
+                // Unanimous evidence (no evidence graph compels the other direction)
+                // yields only to unanimous per-dataset opposition; evidence that is
+                // itself divided yields to the pooled statistic alone.
+                boolean unanimousEvidence = againstDefault == 0;
+                boolean overturned = opposes && significant && (!unanimousEvidence || consensus);
+
+                if (overturned) {
                     if (compelled > 0) result.addDirectedEdge(ry, rx);
                     else result.addDirectedEdge(rx, ry);
                     origin = Origin.OVERRIDE;
                 } else {
                     if (compelled > 0) result.addDirectedEdge(rx, ry);
                     else result.addDirectedEdge(ry, rx);
-                    origin = Origin.EXTERNAL_DEFAULT;
+                    origin = Origin.EVIDENCE_DEFAULT;
                 }
 
                 added = result.getEdge(rx, ry);
@@ -419,10 +505,96 @@ public class FaskPool {
                 origin = Origin.POOLED;
             }
 
-            this.edgeStats.put(added, new EdgeStat(pooled, z, q, m, origin));
+            this.edgeStats.put(added, new EdgeStat(pooled, z, q, m, forDefault, againstDefault, origin));
         }
 
         return result;
+    }
+
+    /**
+     * Reduces a graph to the orientations it actually compels. A legal DAG (e.g., BOSS
+     * run with CPDAG output off, or a graph drawn by hand) is converted to its CPDAG
+     * first, so that reversible edges do not masquerade as compelled; anything else,
+     * including a CPDAG or a cyclic graph, is returned as is.
+     *
+     * @param graph the graph to reduce
+     * @return the graph whose directed edges are the compelled orientations
+     */
+    private Graph compelledGraph(Graph graph) {
+        return graph.paths().isLegalDag() ? GraphTransforms.dagToCpdag(graph) : graph;
+    }
+
+    /**
+     * Combines the skeletons of the per-dataset graphs into one composite skeleton: a
+     * pair is an adjacency when the number of graphs in which it is adjacent exceeds
+     * {@link #setExternalAdjacencyFraction(double)} times the number of graphs (or, at
+     * a fraction of 1.0, when it is adjacent in all of them). Pairs involving variables
+     * absent from the datasets are dropped.
+     *
+     * @param graphs the per-dataset graphs
+     * @return an undirected graph over the dataset variables
+     */
+    private Graph combineAdjacencies(List<Graph> graphs) {
+        List<Node> vars = this.dataSets.get(0).getVariables();
+        Graph out = new EdgeListGraph(vars);
+
+        Map<NamePair, Integer> counts = new HashMap<>();
+
+        for (Graph graph : graphs) {
+            Set<NamePair> seen = new HashSet<>();
+
+            for (Edge edge : graph.getEdges()) {
+                // A two-cycle contributes two edges between the same pair; count the
+                // pair once per graph.
+                NamePair pair = NamePair.of(edge.getNode1().getName(), edge.getNode2().getName());
+                if (seen.add(pair)) counts.merge(pair, 1, Integer::sum);
+            }
+        }
+
+        int m = graphs.size();
+
+        for (Map.Entry<NamePair, Integer> entry : counts.entrySet()) {
+            int count = entry.getValue();
+
+            boolean keep = this.externalAdjacencyFraction >= 1.0
+                    ? count == m : count > this.externalAdjacencyFraction * m;
+
+            if (!keep) continue;
+
+            Node a = out.getNode(entry.getKey().first());
+            Node b = out.getNode(entry.getKey().second());
+
+            if (a != null && b != null) out.addUndirectedEdge(a, b);
+        }
+
+        return out;
+    }
+
+    /**
+     * Tallies the compelled orientations of the given evidence graphs by unordered
+     * variable-name pair. Entry [0] counts the graphs compelling first&rarr;second in
+     * lexicographic name order, entry [1] those compelling second&rarr;first; a pair
+     * output as a two-cycle in a graph contributes to both, and so cancels.
+     *
+     * @param graphs   the evidence graphs, already reduced to compelled orientations
+     * @param evidence the tally to add to
+     */
+    private void tallyOrientations(List<Graph> graphs, Map<NamePair, int[]> evidence) {
+        for (Graph graph : graphs) {
+            for (Edge edge : graph.getEdges()) {
+                if (!Edges.isDirectedEdge(edge)) continue;
+
+                Node node1 = edge.getNode1();
+                Node node2 = edge.getNode2();
+                Node from = edge.pointsTowards(node2) ? node1 : node2;
+
+                NamePair pair = NamePair.of(node1.getName(), node2.getName());
+                int[] tally = evidence.computeIfAbsent(pair, k -> new int[2]);
+
+                if (from.getName().equals(pair.first())) tally[0]++;
+                else tally[1]++;
+            }
+        }
     }
 
     /**
@@ -533,26 +705,88 @@ public class FaskPool {
     }
 
     /**
-     * Sets an external adjacency graph. When set, the IMaGES stage is skipped and this
-     * graph's adjacencies (taken as undirected) are oriented instead.
+     * Sets a single external graph, applied to every dataset. Equivalent to
+     * {@link #setExternalGraphs(List)} with a one-element list; since one graph cannot
+     * disagree with itself, its compelled orientations count as unanimous evidence, so
+     * a positive orientation alpha should be set to give the override a meaningful
+     * gate. Prefer supplying one graph per dataset.
      *
-     * @param externalGraph the external graph, or null to use IMaGES
+     * @param externalGraph the external graph, or null to use the adjacency search
      */
     public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
+        this.externalGraphs = externalGraph == null
+                ? new ArrayList<>() : new ArrayList<>(java.util.Collections.singletonList(externalGraph));
     }
 
     /**
-     * Sets whether the external graph's compelled orientations act as defaults that
-     * the pooled statistic can overturn only on strict cross-dataset sign consensus
-     * (and, when the orientation alpha is above zero, significance of the pooled
-     * statistic). When false, the external graph contributes adjacencies only, as
-     * before. Only consulted when an external graph has been set. Default: true.
+     * Sets the external graphs, one per dataset, in the order of the datasets. When
+     * nonempty, the adjacency stage is skipped and these graphs are combined: a pair is
+     * an adjacency of the composite skeleton when it is adjacent in more than
+     * {@link #setExternalAdjacencyFraction(double)} of them, and their compelled
+     * orientations are tallied into orientation evidence, with the majority direction
+     * (if any) becoming the default orientation of that pair.
+     *
+     * <p>The list need not have one entry per dataset&mdash;any number of graphs over
+     * the same variables is combined the same way&mdash;but supplying each dataset's
+     * own graph is the point: it is what makes the evidence cross-dataset, so that
+     * unanimity among the graphs means something.</p>
+     *
+     * @param externalGraphs the external graphs, or null or empty to use the adjacency
+     *                       search
+     */
+    public void setExternalGraphs(List<Graph> externalGraphs) {
+        this.externalGraphs = externalGraphs == null ? new ArrayList<>() : new ArrayList<>(externalGraphs);
+
+        for (Graph graph : this.externalGraphs) {
+            if (graph == null) {
+                throw new NullPointerException("External graph list contains a null graph.");
+            }
+        }
+    }
+
+    /**
+     * Sets whether the external graphs' compelled orientations act as default
+     * orientations that the pooled statistic can overturn only on strong opposing
+     * evidence (see the class Javadoc). When false, the external graphs contribute
+     * adjacencies only. Only consulted when external graphs have been set.
+     * Default: true.
      *
      * @param useExternalOrientations true to use the external orientations as defaults
      */
     public void setUseExternalOrientations(boolean useExternalOrientations) {
         this.useExternalOrientations = useExternalOrientations;
+    }
+
+    /**
+     * Sets whether the adjacency stage's compelled orientations act as default
+     * orientations in the same way. Only {@link PooledAdjacencySearch.Method#IMAGES}
+     * produces any: the CPDAG of a BOSS search over the score averaged across the
+     * datasets, whose compelled orientations are score-based, cross-dataset evidence
+     * about direction. When false, only the adjacencies of that CPDAG are used and
+     * every edge is oriented from the pooled statistic. Only consulted when no external
+     * graphs have been set. Default: true.
+     *
+     * @param useAdjacencyOrientations true to use the adjacency stage's orientations as
+     *                                 defaults
+     */
+    public void setUseAdjacencyOrientations(boolean useAdjacencyOrientations) {
+        this.useAdjacencyOrientations = useAdjacencyOrientations;
+    }
+
+    /**
+     * Sets the fraction of the external graphs in which a pair must be adjacent for it
+     * to be an adjacency of the composite skeleton: the pair is kept when its count
+     * exceeds this fraction of the number of graphs. Zero takes the union of the
+     * skeletons, 0.5 (the default) a strict majority, and 1.0 the intersection.
+     * Ignored unless more than one external graph is supplied.
+     *
+     * @param externalAdjacencyFraction the fraction, in [0, 1]
+     */
+    public void setExternalAdjacencyFraction(double externalAdjacencyFraction) {
+        if (externalAdjacencyFraction < 0.0 || externalAdjacencyFraction > 1.0) {
+            throw new IllegalArgumentException("Fraction out of range: " + externalAdjacencyFraction);
+        }
+        this.externalAdjacencyFraction = externalAdjacencyFraction;
     }
 
     /**
@@ -696,6 +930,19 @@ public class FaskPool {
     }
 
     /**
+     * An unordered pair of variable names, in lexicographic order, used to key the
+     * orientation evidence so that graphs need only agree on variable names.
+     *
+     * @param first  the lexicographically earlier name
+     * @param second the lexicographically later name
+     */
+    private record NamePair(String first, String second) {
+        private static NamePair of(String name1, String name2) {
+            return name1.compareTo(name2) < 0 ? new NamePair(name1, name2) : new NamePair(name2, name1);
+        }
+    }
+
+    /**
      * The weighting scheme for pooling per-dataset left-right statistics.
      */
     public enum Weighting {
@@ -721,12 +968,13 @@ public class FaskPool {
          */
         POOLED,
         /**
-         * The external graph's compelled orientation was kept as the default.
+         * The majority compelled orientation of the evidence graphs was kept as the
+         * default.
          */
-        EXTERNAL_DEFAULT,
+        EVIDENCE_DEFAULT,
         /**
-         * The external graph's compelled orientation was overturned by the pooled
-         * statistic on strict cross-dataset sign consensus.
+         * The default orientation from the evidence graphs was overturned by the pooled
+         * left-right statistic.
          */
         OVERRIDE,
         /**
@@ -746,8 +994,15 @@ public class FaskPool {
      *                 variances were not computed; large values flag edges on which the
      *                 datasets genuinely disagree
      * @param numDataSets the number of datasets pooled
+     * @param evidenceFor     the number of evidence graphs compelling the default
+     *                        orientation of this pair, or zero if there was none
+     * @param evidenceAgainst the number of evidence graphs compelling the opposite
+     *                        orientation; zero means the evidence was unanimous, and
+     *                        the override then required unanimous per-dataset
+     *                        opposition
      * @param origin   the provenance of the orientation decision for this edge
      */
-    public record EdgeStat(double pooledLr, double z, double q, int numDataSets, Origin origin) {
+    public record EdgeStat(double pooledLr, double z, double q, int numDataSets, int evidenceFor,
+                           int evidenceAgainst, Origin origin) {
     }
 }
