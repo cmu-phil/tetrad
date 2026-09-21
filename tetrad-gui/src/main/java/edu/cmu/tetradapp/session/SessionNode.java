@@ -111,6 +111,16 @@ public class SessionNode implements Node {
     private Class[] modelParamTypes;
 
     /**
+     * The concrete classes of the parent models actually bound into the constructor of the current model, excluding
+     * Parameters and the resurrected old model. Recorded at construction for reassessModel: the declared constructor
+     * parameter types in modelParamTypes can be interfaces or supertypes (e.g., GraphSource, DataWrapper), which never
+     * compare equal to any parent model's concrete class (e.g., GraphWrapper, Simulation), so a validity check against
+     * modelParamTypes destroys every model built through such a slot. Null when no model has been constructed, or for
+     * sessions saved before this field existed (reassessment is then skipped). Added 2026-9-21.
+     */
+    private List<Class<?>> constructedParentClasses;
+
+    /**
      * The model itself. Once this is created, another model cannot be created until this one is explicitly destroyed.
      */
     private SessionModel model;
@@ -650,6 +660,7 @@ public class SessionNode implements Node {
         }
 
         this.modelParamTypes = null;
+        this.constructedParentClasses = null;
         getSessionSupport().fireModelDestroyed(this);
     }
 
@@ -1863,6 +1874,32 @@ public class SessionNode implements Node {
                 this.modelParamTypes = constructorTypes;
                 this.lastModelClass = modelClass;
 
+                // Record the concrete classes of the parent models actually bound into the
+                // constructor, excluding Parameters and the resurrected old model, for
+                // reassessModel. An array-form argument (C1[], Parameters) is unpacked to
+                // its elements.
+                List<Class<?>> parentClasses = new ArrayList<>();
+
+                for (Object argument : arguments) {
+                    if (argument == null || argument instanceof Parameters || argument == oldModelInPool) {
+                        continue;
+                    }
+
+                    if (argument.getClass().isArray()) {
+                        int len = Array.getLength(argument);
+                        for (int i = 0; i < len; i++) {
+                            Object element = Array.get(argument, i);
+                            if (element != null && !(element instanceof Parameters) && element != oldModelInPool) {
+                                parentClasses.add(element.getClass());
+                            }
+                        }
+                    } else {
+                        parentClasses.add(argument.getClass());
+                    }
+                }
+
+                this.constructedParentClasses = parentClasses;
+
                 getSessionSupport().fireModelCreated(this);
                 break;
             }
@@ -2013,23 +2050,27 @@ public class SessionNode implements Node {
     /**
      * Reassesses whether the current model is still valid given the current
      * parent models. Destroys the model if the multiset of current parent model
-     * types no longer matches the multiset of types that were used to construct
-     * it. Uses a frequency-count comparison so that duplicate types are handled
-     * correctly (e.g. two DataModel parents are distinct from one).
+     * classes no longer matches the multiset of parent model classes that were
+     * bound into its constructor. Uses a frequency-count comparison so that
+     * duplicate types are handled correctly (e.g. two DataModel parents are
+     * distinct from one).
+     *
+     * <p>The comparison is against the CONCRETE classes of the arguments bound
+     * at construction (constructedParentClasses), not the declared constructor
+     * parameter types (modelParamTypes): declared types can be interfaces or
+     * supertypes (e.g., GraphSource, DataWrapper), which never compare equal to
+     * a parent model's concrete class (e.g., GraphWrapper, Simulation), so
+     * comparing against them destroyed every model built through such a slot -
+     * in particular, any search box with a graph parent. The resurrected old
+     * model, which is a constructor argument but not a parent, is excluded from
+     * the recorded classes for the same reason. Fixed 2026-9-21.</p>
      */
     private void reassessModel() {
-        if (this.modelParamTypes == null) {
+        if (this.constructedParentClasses == null) {
             return;
         }
 
-        for (Class clazz : this.modelParamTypes) {
-            if (clazz == null) {
-                return;
-            }
-        }
-
-        // Collect the types of models currently present in parent nodes,
-        // excluding Parameters (which is not a parent model, it's a config object).
+        // Collect the classes of models currently present in parent nodes.
         List<Class<?>> currentTypes = new ArrayList<>();
         for (SessionNode node : this.parents) {
             Object model = node.getModel();
@@ -2038,17 +2079,9 @@ public class SessionNode implements Node {
             }
         }
 
-        // Collect the non-Parameters types that were used to construct the model.
-        List<Class<?>> constructedTypes = new ArrayList<>();
-        for (Class clazz : this.modelParamTypes) {
-            if (clazz != Parameters.class) {
-                constructedTypes.add(clazz);
-            }
-        }
-
         // Compare as multisets via frequency maps. If they differ, the model
         // was built from a parent configuration that no longer exists.
-        if (!sameMultiset(currentTypes, constructedTypes)) {
+        if (!sameMultiset(currentTypes, this.constructedParentClasses)) {
             destroyModel();
         }
     }
