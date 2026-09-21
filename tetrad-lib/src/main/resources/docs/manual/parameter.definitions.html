@@ -2133,6 +2133,31 @@ Source:
             <span id="faskPoolAdjacency_value_type">Integer</span></li>
     </ul>
 
+    === faskPoolExternalOrientations ===
+    <h3 class="parameter_description" id="faskPoolExternalOrientations">faskPoolExternalOrientations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="faskPoolExternalOrientations_short_desc">Use the external graph's
+        compelled orientations as defaults</span></li>
+        <li>Long Description: <span id="faskPoolExternalOrientations_long_desc"> Only consulted when an
+        external graph (e.g., a BOSS CPDAG supplied as a source graph in the interface) is given to
+        FASK-Pool. If true (default), the external graph's compelled orientations become default
+        orientations, and the pooled left-right statistic can overturn a default only when it opposes it,
+        every dataset's statistic individually opposes it (strict cross-dataset sign consensus), and, when
+        the orientation alpha is above zero, the pooled statistic is significant at that level. Reversible
+        (undirected) edges of the CPDAG are oriented from the pooled statistic as usual; a supplied DAG is
+        converted to its CPDAG first so reversible edges do not act as compelled. If false, the external
+        graph contributes adjacencies only. Note that with a single dataset the sign consensus is vacuous,
+        so a positive orientation alpha should be used to gate the override.</span>
+        </li>
+        <li>Default Value: <span id="faskPoolExternalOrientations_default_value">true</span></li>
+        <li>Lower
+            Bound: <span id="faskPoolExternalOrientations_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="faskPoolExternalOrientations_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="faskPoolExternalOrientations_value_type">Boolean</span></li>
+    </ul>
+
     === faskNonempirical ===
     <h3 class="parameter_description" id="faskNonempirical">faskNonempirical</h3>
     <ul class="parameter_description_list">

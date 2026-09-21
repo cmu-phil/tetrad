@@ -26,7 +26,9 @@ import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
@@ -34,8 +36,10 @@ import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Orients a common adjacency graph over multiple datasets by pooling the FASK left-right
@@ -89,9 +93,32 @@ import java.util.Map;
  * left-right rules read as causal signal. Only the finished, within-dataset,
  * sign-corrected statistics are combined.</p>
  *
+ * <p>When an external graph is supplied (e.g., a BOSS CPDAG) and
+ * {@link #setUseExternalOrientations(boolean)} is left at its default of true, the
+ * external graph contributes orientations as well as adjacencies. Only its compelled
+ * orientations act: a directed edge X&rarr;Y in the external CPDAG (a supplied DAG is
+ * first converted to its CPDAG, so reversible edges do not masquerade as compelled)
+ * becomes the default orientation, and the pooled left-right statistic can overturn it
+ * only when it opposes the default AND every dataset's statistic individually opposes
+ * it (strict cross-dataset sign consensus) AND, when the orientation alpha is above
+ * zero, the pooled statistic is significant at that level. Reversible (undirected)
+ * edges of the CPDAG carry no orientation information and are oriented from the pooled
+ * statistic exactly as without an external graph. This is a lexicographic override, not
+ * additive pooling: the score-based orientation is the default, and the higher-moment
+ * statistic overrules it only on strong, unanimous opposition. Note that with a single
+ * dataset the sign consensus is vacuous, so a positive orientation alpha should be set
+ * to give the override a meaningful gate. The provenance of each orientation is
+ * recorded in {@link #getEdgeStats()}.</p>
+ *
  * <p>Background knowledge is respected: a required or forbidden edge orients the pair
- * regardless of the pooled statistic. Two-cycle detection is not performed in this
- * multi-dataset setting, following FASK-Vote.</p>
+ * regardless of the pooled statistic. Two-cycle detection is off by default, following
+ * FASK-Vote. When the two-cycle alpha is set above zero, the single-dataset FASK
+ * two-cycle test is run separately within each dataset, and the pair is output as a
+ * two-cycle only when EVERY dataset passes the test (unanimity). Caution: in a
+ * resimulation-null calibration on real data, the two-cycle channel of the
+ * closely-related single-dataset override procedure reproduced its detections under an
+ * acyclic null, so detections from this channel should not be trusted without a
+ * calibration of that kind on the data at hand.</p>
  *
  * @author josephramsey
  * @see FaskVote
@@ -119,6 +146,20 @@ public class FaskPool {
      * graph's adjacencies (taken as undirected) are oriented instead.
      */
     private Graph externalGraph = null;
+
+    /**
+     * Whether the external graph's compelled orientations act as defaults that the
+     * pooled statistic can overturn only on strict cross-dataset sign consensus. Only
+     * consulted when an external graph has been set. Default: true.
+     */
+    private boolean useExternalOrientations = true;
+
+    /**
+     * Alpha for the per-dataset two-cycle test. Zero (the default) disables two-cycle
+     * detection; above zero, a pair is output as a two-cycle only when every dataset
+     * passes the single-dataset FASK two-cycle test at this level.
+     */
+    private double twoCycleAlpha = 0.0;
 
     /**
      * The left-right rule used within each dataset.
@@ -210,10 +251,18 @@ public class FaskPool {
         }
 
         Graph adjacency;
+        Graph oriented = null;
 
         if (this.externalGraph != null) {
-            adjacency = GraphUtils.undirectedGraph(this.externalGraph);
-            adjacency = GraphUtils.replaceNodes(adjacency, this.dataSets.get(0).getVariables());
+            Graph ext = GraphUtils.replaceNodes(this.externalGraph, this.dataSets.get(0).getVariables());
+            adjacency = GraphUtils.undirectedGraph(ext);
+
+            if (this.useExternalOrientations) {
+                // Only compelled orientations act as defaults. A DAG (e.g., BOSS run
+                // with CPDAG output off) is converted to its CPDAG first, so that
+                // reversible edges do not masquerade as compelled.
+                oriented = ext.paths().isLegalDag() ? GraphTransforms.dagToCpdag(ext) : ext;
+            }
         } else {
             this.adjacencySearch.setKnowledge(this.knowledge);
             adjacency = this.adjacencySearch.search(standardized, parameters);
@@ -225,6 +274,8 @@ public class FaskPool {
         boolean needVariances = this.weighting == Weighting.INVERSE_VARIANCE || this.orientationAlpha > 0;
         double zCutoff = this.orientationAlpha > 0
                 ? edu.cmu.tetrad.util.StatUtils.getZForAlpha(this.orientationAlpha) : 0.0;
+        double twoCycleCutoff = this.twoCycleAlpha > 0
+                ? edu.cmu.tetrad.util.StatUtils.getZForAlpha(this.twoCycleAlpha) : Double.POSITIVE_INFINITY;
 
         for (Edge edge : adjacency.getEdges()) {
             Node x = edge.getNode1();
@@ -299,20 +350,76 @@ public class FaskPool {
                 }
             }
 
-            Edge added;
+            // Two-cycle stage: only when enabled, and only on unanimity across datasets.
+            if (this.twoCycleAlpha > 0 && isPooledTwoCycle(adjacency, columns, x, y, twoCycleCutoff)) {
+                Edge e1 = Edges.directedEdge(rx, ry);
+                Edge e2 = Edges.directedEdge(ry, rx);
+                result.addEdge(e1);
+                result.addEdge(e2);
+                EdgeStat stat = new EdgeStat(pooled, z, q, m, Origin.TWO_CYCLE);
+                this.edgeStats.put(e1, stat);
+                this.edgeStats.put(e2, stat);
+                continue;
+            }
 
-            if (this.orientationAlpha > 0 && Math.abs(z) < zCutoff) {
+            // External compelled orientation for this pair, if any: +1 for x->y,
+            // -1 for y->x, 0 for none (reversible in the CPDAG, or no external graph).
+            int compelled = 0;
+
+            if (oriented != null) {
+                Node ox = oriented.getNode(x.getName());
+                Node oy = oriented.getNode(y.getName());
+                Edge oe = (ox == null || oy == null) ? null : oriented.getEdge(ox, oy);
+
+                if (oe != null && Edges.isDirectedEdge(oe)) {
+                    compelled = oe.pointsTowards(oy) ? +1 : -1;
+                }
+            }
+
+            Edge added;
+            Origin origin;
+
+            if (compelled != 0) {
+                boolean opposes = compelled > 0 ? pooled < 0 : pooled > 0;
+
+                // Strict cross-dataset sign consensus: every dataset's statistic must
+                // individually oppose the compelled orientation.
+                boolean consensus = true;
+                for (int k = 0; k < m; k++) {
+                    if (compelled > 0 ? lr[k] >= 0 : lr[k] <= 0) {
+                        consensus = false;
+                        break;
+                    }
+                }
+
+                boolean significant = this.orientationAlpha == 0 || Math.abs(z) >= zCutoff;
+
+                if (opposes && consensus && significant) {
+                    if (compelled > 0) result.addDirectedEdge(ry, rx);
+                    else result.addDirectedEdge(rx, ry);
+                    origin = Origin.OVERRIDE;
+                } else {
+                    if (compelled > 0) result.addDirectedEdge(rx, ry);
+                    else result.addDirectedEdge(ry, rx);
+                    origin = Origin.EXTERNAL_DEFAULT;
+                }
+
+                added = result.getEdge(rx, ry);
+            } else if (this.orientationAlpha > 0 && Math.abs(z) < zCutoff) {
                 result.addUndirectedEdge(rx, ry);
                 added = result.getEdge(rx, ry);
+                origin = Origin.POOLED;
             } else if (pooled > 0) {
                 result.addDirectedEdge(rx, ry);
                 added = result.getEdge(rx, ry);
+                origin = Origin.POOLED;
             } else {
                 result.addDirectedEdge(ry, rx);
                 added = result.getEdge(rx, ry);
+                origin = Origin.POOLED;
             }
 
-            this.edgeStats.put(added, new EdgeStat(pooled, z, q, m));
+            this.edgeStats.put(added, new EdgeStat(pooled, z, q, m, origin));
         }
 
         return result;
@@ -364,6 +471,48 @@ public class FaskPool {
         return v / (this.numBootstraps - 1);
     }
 
+    /**
+     * Runs the single-dataset FASK two-cycle test separately within each dataset and
+     * returns true only when every dataset passes it (unanimity). Conditioning
+     * candidates are the adjacents of X and Y in the common adjacency graph, other
+     * than X and Y themselves.
+     */
+    private boolean isPooledTwoCycle(Graph adjacency, List<Map<String, double[]>> columns,
+                                     Node x, Node y, double cutoff) {
+        Set<Node> pool = new HashSet<>(adjacency.getAdjacentNodes(x));
+        pool.addAll(adjacency.getAdjacentNodes(y));
+        pool.remove(x);
+        pool.remove(y);
+
+        if (pool.isEmpty()) return false;
+
+        List<String> candNames = new ArrayList<>();
+        for (Node node : pool) candNames.add(node.getName());
+
+        for (Map<String, double[]> cols : columns) {
+            double[] xk = cols.get(x.getName());
+            double[] yk = cols.get(y.getName());
+
+            double[][] candCols = new double[candNames.size()][];
+            for (int i = 0; i < candNames.size(); i++) {
+                double[] c = cols.get(candNames.get(i));
+
+                if (c == null) {
+                    throw new IllegalArgumentException("Variable missing from a dataset: "
+                            + candNames.get(i));
+                }
+
+                candCols[i] = c;
+            }
+
+            if (!Fask.twoCycleTest(xk, yk, candCols, cutoff)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private boolean knowledgeOrients(Node left, Node right) {
         return this.knowledge.isForbidden(right.getName(), left.getName())
                 || this.knowledge.isRequired(left.getName(), right.getName());
@@ -391,6 +540,34 @@ public class FaskPool {
      */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
+    }
+
+    /**
+     * Sets whether the external graph's compelled orientations act as defaults that
+     * the pooled statistic can overturn only on strict cross-dataset sign consensus
+     * (and, when the orientation alpha is above zero, significance of the pooled
+     * statistic). When false, the external graph contributes adjacencies only, as
+     * before. Only consulted when an external graph has been set. Default: true.
+     *
+     * @param useExternalOrientations true to use the external orientations as defaults
+     */
+    public void setUseExternalOrientations(boolean useExternalOrientations) {
+        this.useExternalOrientations = useExternalOrientations;
+    }
+
+    /**
+     * Sets the alpha for the per-dataset two-cycle test. Zero (the default) disables
+     * two-cycle detection; above zero, a pair is output as a two-cycle only when every
+     * dataset passes the single-dataset FASK two-cycle test at this level. See the
+     * class Javadoc for a caution about this channel.
+     *
+     * @param twoCycleAlpha the significance level, in [0, 1]
+     */
+    public void setTwoCycleAlpha(double twoCycleAlpha) {
+        if (twoCycleAlpha < 0.0 || twoCycleAlpha > 1.0) {
+            throw new IllegalArgumentException("Alpha out of range: " + twoCycleAlpha);
+        }
+        this.twoCycleAlpha = twoCycleAlpha;
     }
 
     /**
@@ -534,6 +711,31 @@ public class FaskPool {
     }
 
     /**
+     * The provenance of an orientation decision, recorded per edge in
+     * {@link #getEdgeStats()}.
+     */
+    public enum Origin {
+        /**
+         * Oriented (or left undirected by abstention) from the pooled left-right
+         * statistic alone.
+         */
+        POOLED,
+        /**
+         * The external graph's compelled orientation was kept as the default.
+         */
+        EXTERNAL_DEFAULT,
+        /**
+         * The external graph's compelled orientation was overturned by the pooled
+         * statistic on strict cross-dataset sign consensus.
+         */
+        OVERRIDE,
+        /**
+         * Output as a two-cycle on unanimous per-dataset two-cycle tests.
+         */
+        TWO_CYCLE
+    }
+
+    /**
      * Pooled statistics for one edge.
      *
      * @param pooledLr the pooled left-right statistic (positive favored node1 to node2
@@ -544,7 +746,8 @@ public class FaskPool {
      *                 variances were not computed; large values flag edges on which the
      *                 datasets genuinely disagree
      * @param numDataSets the number of datasets pooled
+     * @param origin   the provenance of the orientation decision for this edge
      */
-    public record EdgeStat(double pooledLr, double z, double q, int numDataSets) {
+    public record EdgeStat(double pooledLr, double z, double q, int numDataSets, Origin origin) {
     }
 }

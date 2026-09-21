@@ -749,9 +749,6 @@ public final class Fask {
 //    }
 
     private boolean isTwoCycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
-        x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));
-
         Set<Node> pool = new HashSet<>(G0.getAdjacentNodes(X));
         pool.addAll(G0.getAdjacentNodes(Y));
         List<Node> cand = new ArrayList<>(pool);
@@ -760,6 +757,37 @@ public final class Fask {
 
         if (cand.isEmpty()) return false;
 
+        double[][] candCols = new double[cand.size()][];
+        for (int i = 0; i < cand.size(); i++) {
+            candCols[i] = this.data[this.dataSet.getColumnIndex(cand.get(i))];
+        }
+
+        return twoCycleTest(x, y, candCols, this.cutoff);
+    }
+
+    /**
+     * The FASK two-cycle test, in static form so that multi-dataset algorithms (e.g.,
+     * {@link FaskPool}) can run it per dataset. The pair is judged a two-cycle when the
+     * two-cycle pattern (both conditional correlations shifting significantly from the
+     * unconditional correlation, in the same direction) holds unconditionally and
+     * persists under every conditioning subset of the candidate columns up to size 2.
+     * Skew-sign correction is applied internally, so pass uncorrected (standardized)
+     * columns.
+     *
+     * @param x        standardized series for X
+     * @param y        standardized series for Y
+     * @param candCols columns for the conditioning candidates (typically the adjacents
+     *                 of X and Y other than X and Y themselves); with no candidates the
+     *                 test returns false, matching single-dataset FASK
+     * @param cutoff   the z cutoff corresponding to the two-cycle alpha
+     * @return true just in case the pair passes the two-cycle test
+     */
+    public static boolean twoCycleTest(double[] x, double[] y, double[][] candCols, double cutoff) {
+        if (candCols == null || candCols.length == 0) return false;
+
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
+
         final int n = x.length;
         final int minPart = (int) TMath.ceil(0.15 * n);
         final double ridge = 1e-6;
@@ -767,16 +795,17 @@ public final class Fask {
         final int maxSize = 2;// (depth < 0) ? cand.size() : TMath.min(depth, cand.size());
 
         // Baseline: must show two-cycle pattern unconditionally
-        if (!showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps)) {
+        if (!showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps, cutoff)) {
             return false;
         }
 
         // Must persist under ALL conditioning sets
-        SublistGenerator gen = new SublistGenerator(cand.size(), maxSize);
+        SublistGenerator gen = new SublistGenerator(candCols.length, maxSize);
         int[] choice;
         while ((choice = gen.next()) != null) {
-            List<Node> zNodes = GraphUtils.asList(choice, cand);
-            if (!showsTwoCyclePattern(x, y, zNodes, minPart, ridge, clampEps)) {
+            double[][] Z = new double[choice.length][];
+            for (int i = 0; i < choice.length; i++) Z[i] = candCols[choice[i]];
+            if (!showsTwoCyclePattern(x, y, Z, minPart, ridge, clampEps, cutoff)) {
                 return false;
             }
         }
@@ -784,10 +813,11 @@ public final class Fask {
         return true;
     }
 
-    private boolean showsTwoCyclePattern(double[] x, double[] y, List<Node> zNodes,
-                                         int minPart, double ridge, double clampEps) {
+    private static boolean showsTwoCyclePattern(double[] x, double[] y, double[][] zCols,
+                                                int minPart, double ridge, double clampEps,
+                                                double cutoff) {
 
-        double[][] Z = (zNodes == null) ? new double[0][] : buildZ(zNodes);
+        double[][] Z = (zCols == null) ? new double[0][] : zCols;
 
         final double pc, pc1, pc2;
         try {
@@ -824,18 +854,8 @@ public final class Fask {
 
     // === Returns true if conditioning on Z BREAKS the cycle opposition pattern (i.e., destroys it) ===
 
-    // === Utility to build Z matrix ===
-    private double[][] buildZ(List<Node> zNodes) {
-        double[][] Z = new double[zNodes.size()][];
-        for (int i = 0; i < zNodes.size(); i++) {
-            int col = dataSet.getColumnIndex(zNodes.get(i));
-            Z[i] = data[col];
-        }
-        return Z;
-    }
-
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition,
-                                      double threshold, double direction, double lambda)
+    private static double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition,
+                                             double threshold, double direction, double lambda)
             throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
         Matrix m = new Matrix(cv).transpose();

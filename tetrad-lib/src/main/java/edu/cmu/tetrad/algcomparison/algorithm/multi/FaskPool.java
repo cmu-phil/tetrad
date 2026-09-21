@@ -20,9 +20,11 @@
 
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
+import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Experimental;
@@ -53,7 +55,8 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Experimental
-public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper {
+public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper,
+        TakesExternalGraph {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -67,6 +70,14 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
      * The score to use.
      */
     private ScoreWrapper score;
+
+    /**
+     * Optional algorithm supplying the external graph (in the GUI, the source graph of
+     * a parent graph box, wrapped in a SingleGraphAlg). Null when no source graph is
+     * supplied, in which case the adjacency search selected by FASK_POOL_ADJACENCY
+     * runs as before.
+     */
+    private Algorithm externalGraphAlgorithm = null;
 
     /**
      * <p>Constructor for FaskPool.</p>
@@ -120,6 +131,15 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
         search.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
         search.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
 
+        if (this.externalGraphAlgorithm != null) {
+            Graph external = this.externalGraphAlgorithm.search(dataSets.get(0), parameters);
+            search.setExternalGraph(external);
+            search.setUseExternalOrientations(parameters.getBoolean(Params.FASK_POOL_EXTERNAL_ORIENTATIONS));
+        }
+
+        search.setTwoCycleAlpha(parameters.getDouble(Params.TWO_CYCLE_ALPHA));
+        search.setOrientationAlpha(parameters.getDouble(Params.ORIENTATION_ALPHA));
+
         search.setKnowledge(this.knowledge);
         return search.search(parameters);
     }
@@ -165,9 +185,14 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
      * irrelevant. FASK_POOL_ADJACENCY chooses the adjacency search (1 = IMaGES,
      * 2 = pooled FAS, 3 = MG-FAS, 4 = MG-LiNG, 5 = intersection of 3 and 4); ALPHA and
      * DEPTH govern the FAS-style tests, and THRESHOLD_B with the FastICA parameters
-     * governs the LiNG stage. No other FASK single-dataset parameters are listed
-     * because there is no skew-adjacency stage and no two-cycle detection in this
-     * setting.</p>
+     * governs the LiNG stage. FASK_POOL_EXTERNAL_ORIENTATIONS (default true) makes a
+     * supplied external CPDAG's compelled orientations act as defaults, overturnable
+     * only on strict cross-dataset sign consensus of the left-right statistic;
+     * TWO_CYCLE_ALPHA (default 0 = off) enables per-dataset two-cycle tests requiring
+     * unanimity across datasets; ORIENTATION_ALPHA (default 0) sets the bootstrap
+     * significance gate on orientation decisions, which with a single dataset is the
+     * only meaningful gate on the override. No other FASK single-dataset parameters are listed
+     * because there is no skew-adjacency stage in this setting.</p>
      */
     @Override
     public List<String> getParameters() {
@@ -181,8 +206,24 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
         parameters.add(Params.FAST_ICA_MAX_ITER);
         parameters.add(Params.FAST_ICA_TOLERANCE);
         parameters.add(Params.FAST_ICA_A);
+        parameters.add(Params.FASK_POOL_EXTERNAL_ORIENTATIONS);
+        parameters.add(Params.TWO_CYCLE_ALPHA);
+        parameters.add(Params.ORIENTATION_ALPHA);
 
         return parameters;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Sets the algorithm supplying the external graph (in the GUI, the source graph
+     * of a parent graph box). Null is accepted: the external graph is optional for
+     * FASK-Pool, and without one the adjacency search selected by FASK_POOL_ADJACENCY
+     * runs as before.</p>
+     */
+    @Override
+    public void setExternalGraph(Algorithm algorithm) {
+        this.externalGraphAlgorithm = algorithm;
     }
 
     /**
