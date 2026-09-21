@@ -2112,7 +2112,8 @@ Source:
     <h3 class="parameter_description" id="faskPoolAdjacency">faskPoolAdjacency</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="faskPoolAdjacency_short_desc">FASK-Pool adjacency search: 1 = IMaGES,
-        2 = pooled FAS, 3 = MG-FAS, 4 = MG-LiNG, 5 = MG-FAS &amp; MG-LiNG intersection</span></li>
+        2 = pooled FAS, 3 = MG-FAS, 4 = MG-LiNG, 5 = MG-FAS &amp; MG-LiNG intersection, 6 = IMaGES restricted
+        to MG-FAS</span></li>
         <li>Long Description: <span id="faskPoolAdjacency_long_desc"> Selects how the common adjacency
         structure is estimated across the datasets before FASK orientation (used by both FASK-Pool and
         FASK-Vote). 1: IMaGES (BOSS on the
@@ -2124,11 +2125,17 @@ Source:
         intersection of 3 and 4; in simulations with skewed errors this gave the best adjacency precision at
         full recall, and skewed errors are the FASK setting. Options 3-5 target the skeleton of a possibly
         cyclic linear model; note that no method based only on conditional independence can remove
-        Richardson-style virtual adjacencies around cycles.</span></li>
+        Richardson-style virtual adjacencies around cycles. 6: IMaGES restricted to the MG-FAS skeleton:
+        MG-FAS is run first and its adjacencies are imposed on the IMaGES (BOSS) search as a superstructure,
+        by forbidding both directions of every pair outside it, so the score search can only remove
+        adjacencies from that skeleton and never add them. This addresses the fact that on cyclic data a
+        DAG-based score search adds adjacencies to compensate for cycles it cannot represent, many of them
+        moralized (married) pairs, which MG-FAS prunes by sepset tests. Because its output is a subset of
+        the MG-FAS adjacencies, its recall cannot exceed MG-FAS's.</span></li>
         <li>Default Value: <span id="faskPoolAdjacency_default_value">3</span></li>
         <li>Lower
             Bound: <span id="faskPoolAdjacency_lower_bound">1</span></li>
-        <li>Upper Bound: <span id="faskPoolAdjacency_upper_bound">5</span></li>
+        <li>Upper Bound: <span id="faskPoolAdjacency_upper_bound">6</span></li>
         <li>Value Type:
             <span id="faskPoolAdjacency_value_type">Integer</span></li>
     </ul>

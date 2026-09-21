@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -68,6 +69,14 @@ import java.util.List;
  *   Both tend to full recall inside the moral graph with different false positives, so
  *   the intersection trades little recall for precision. Best for skewed
  *   (FASK-appropriate) data; use MG_FAS when errors may be Gaussian.</li>
+ *   <li>{@link Method#IMAGES_RESTRICT_MG_FAS}: IMaGES restricted to the MG_FAS
+ *   skeleton, which is imposed as a superstructure by forbidding both directions of
+ *   every pair outside it. A DAG-based score search on cyclic data adds adjacencies to
+ *   compensate for the cycles it cannot represent, many of them moralized pairs, which
+ *   is exactly what MG_FAS prunes; restricting the search to that skeleton keeps the
+ *   moral-graph method's precision while letting the score decide which of its
+ *   adjacencies survive. Output adjacencies are a subset of MG_FAS's, so recall cannot
+ *   exceed MG_FAS's.</li>
  * </ul>
  *
  * <p>Background knowledge is passed to the IMaGES and pooled-FAS stages; the
@@ -191,7 +200,54 @@ public class PooledAdjacencySearch {
             return GraphUtils.undirectedGraph(fas.search());
         }
 
-        return moralBasedAdjacency(standardized);
+        if (this.method == Method.IMAGES_RESTRICT_MG_FAS) {
+            if (this.score == null) {
+                throw new IllegalStateException("The restricted-IMaGES adjacency method requires a score wrapper.");
+            }
+
+            // Stage 1: the MG-FAS skeleton, which is cycle-safe (it never leaves the
+            // pooled moral graph, and its sepset pruning removes the married pairs).
+            Graph superstructure = moralBasedAdjacency(standardized, Method.MG_FAS);
+
+            // Stage 2: IMaGES restricted to that skeleton. BOSS consults knowledge when
+            // collecting candidate parents (PermutationSearch.setKnowledge hands each
+            // node's forbidden parents to its grow-shrink tree), so forbidding BOTH
+            // directions of a pair keeps it non-adjacent in the result.
+            Knowledge restricted = new Knowledge(this.knowledge);
+            List<Node> vars = superstructure.getNodes();
+
+            for (int i = 0; i < vars.size(); i++) {
+                for (int j = i + 1; j < vars.size(); j++) {
+                    Node a = vars.get(i);
+                    Node b = vars.get(j);
+
+                    if (!superstructure.isAdjacentTo(a, b)) {
+                        restricted.setForbidden(a.getName(), b.getName());
+                        restricted.setForbidden(b.getName(), a.getName());
+                    }
+                }
+            }
+
+            List<DataModel> models = new ArrayList<>(standardized);
+            Images images = new Images(this.score);
+            images.setKnowledge(restricted);
+            Graph result = GraphUtils.undirectedGraph(images.search(models, parameters));
+
+            // Belt and braces: intersect with the superstructure, so the guarantee that
+            // no adjacency outside it can appear does not depend on knowledge being
+            // honored everywhere downstream.
+            result = GraphUtils.replaceNodes(result, vars);
+
+            for (Edge edge : new ArrayList<>(result.getEdges())) {
+                if (!superstructure.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
+                    result.removeEdge(edge);
+                }
+            }
+
+            return result;
+        }
+
+        return moralBasedAdjacency(standardized, this.method);
     }
 
     // ------------ Moral-graph-based methods ------------
@@ -201,7 +257,7 @@ public class PooledAdjacencySearch {
      * full-order partial correlations come from one inversion of the correlation matrix
      * per dataset (the precision matrix K: r_ij.rest = -K_ij / sqrt(K_ii K_jj)).
      */
-    private Graph moralBasedAdjacency(List<DataSet> standardized) {
+    private Graph moralBasedAdjacency(List<DataSet> standardized, Method effectiveMethod) {
         List<Node> vars = standardized.get(0).getVariables();
         int p = vars.size();
         int numData = standardized.size();
@@ -263,9 +319,9 @@ public class PooledAdjacencySearch {
 
         boolean[][] adj;
 
-        if (this.method == Method.MG_FAS) {
+        if (effectiveMethod == Method.MG_FAS) {
             adj = mgFasPrune(moral, Rs, ns, p);
-        } else if (this.method == Method.MG_LING) {
+        } else if (effectiveMethod == Method.MG_LING) {
             adj = mgLingSelect(moral, standardized, vars, p);
         } else {
             boolean[][] a = mgFasPrune(moral, Rs, ns, p);
@@ -613,6 +669,20 @@ public class PooledAdjacencySearch {
         /**
          * The intersection of MG_FAS and MG_LING.
          */
-        MG_FAS_INTERSECT_LING
+        MG_FAS_INTERSECT_LING,
+        /**
+         * IMaGES restricted to the MG_FAS skeleton: the MG-FAS adjacencies are computed
+         * first and supplied to the IMaGES (BOSS) search as a superstructure, by
+         * forbidding both directions of every pair outside it, so the score search can
+         * only remove adjacencies from that skeleton, never add them. Motivation: on
+         * cyclic data a DAG-based score search adds adjacencies to compensate for the
+         * cycles it cannot represent, many of them moralized (married) pairs, whereas
+         * MG_FAS never leaves the pooled moral graph and prunes the married pairs by
+         * sepset tests. Restricting the score search to that skeleton keeps MG-FAS's
+         * adjacency precision while letting the score decide which of those adjacencies
+         * survive. The result's adjacencies are a subset of the MG_FAS adjacencies, so
+         * its recall cannot exceed MG_FAS's.
+         */
+        IMAGES_RESTRICT_MG_FAS
     }
 }

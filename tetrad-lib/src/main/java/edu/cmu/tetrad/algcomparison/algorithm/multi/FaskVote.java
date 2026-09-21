@@ -111,7 +111,8 @@ public class FaskVote implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
             case 3 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_FAS);
             case 4 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_LING);
             case 5 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.MG_FAS_INTERSECT_LING);
-            default -> throw new IllegalStateException("Unconfigured adjacency method (1-5): " + adjacency);
+            case 6 -> search.setAdjacencyMethod(edu.cmu.tetrad.search.PooledAdjacencySearch.Method.IMAGES_RESTRICT_MG_FAS);
+            default -> throw new IllegalStateException("Unconfigured adjacency method (1-6): " + adjacency);
         }
 
         search.setFasAlpha(parameters.getDouble(Params.ALPHA));

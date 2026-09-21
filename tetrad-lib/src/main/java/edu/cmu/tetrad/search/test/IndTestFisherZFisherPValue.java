@@ -177,7 +177,13 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
                 n++;
             }
 
-            if (numZeros >= pValues.size() / 2)
+            // Bug fix: for a single dataset, pValues.size() / 2 is 0 by integer division,
+            // so numZeros >= 0 held for EVERY test and every pair was judged dependent
+            // whatever its p-value -- FAS could then remove nothing and returned the
+            // complete graph. Requiring numZeros > 0 makes the guard fire only when
+            // zero p-values are actually present; behavior for two or more datasets is
+            // unchanged.
+            if (numZeros > 0 && numZeros >= pValues.size() / 2)
                 return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
 
             if (tf == 0) throw new IllegalArgumentException(
