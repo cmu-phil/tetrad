@@ -31,6 +31,7 @@ import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
+import edu.cmu.tetradapp.workbench.TieLayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -262,6 +263,13 @@ public class GraphCard extends JPanel {
         graphWorkbench.markPagEdgeSpecializations(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
 
         this.workbench = graphWorkbench;
+
+        // Reapply any recorded layout tie to this newly created result workbench, so a
+        // finished search is laid out by its reference node without the user reselecting
+        // the "Tie Layout To" menu item. (The once-per-opening application in
+        // TieLayoutMenu fires only when the editor window opens; a search finishing in
+        // an already-open editor replaces the workbench without reopening the window.)
+        TieLayoutMenu.reapplyTie(graphWorkbench);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));

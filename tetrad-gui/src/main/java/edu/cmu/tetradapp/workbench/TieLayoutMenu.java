@@ -116,6 +116,24 @@ public class TieLayoutMenu extends JMenu {
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
     public static void applyTieOnOpen(LayoutEditable layoutEditable) {
+        TieLayoutMenu.applyTie(layoutEditable, false);
+    }
+
+    /**
+     * Applies any recorded layout tie to the given layout editable even if the tie has already been applied for this
+     * opening of the editor window. This is for a workbench newly created for a search result while the editor stays
+     * open (the once-per-opening guard has already fired for the window, but the workbench and its graph are new), so
+     * that a finished search is laid out by its reference node without the user reselecting the "Tie Layout To" item.
+     * The guard is set afterwards, so reconstructing a LayoutMenu later (e.g., for a right-click popup) still does not
+     * undo manual adjustments.
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     */
+    public static void reapplyTie(LayoutEditable layoutEditable) {
+        TieLayoutMenu.applyTie(layoutEditable, true);
+    }
+
+    private static void applyTie(LayoutEditable layoutEditable, boolean force) {
         SwingUtilities.invokeLater(() -> {
             if (!(layoutEditable instanceof Component comp)) {
                 return;
@@ -129,7 +147,7 @@ public class TieLayoutMenu extends JMenu {
 
             JRootPane root = frame.getRootPane();
 
-            if (Boolean.TRUE.equals(root.getClientProperty(TieLayoutMenu.TIE_APPLIED))) {
+            if (!force && Boolean.TRUE.equals(root.getClientProperty(TieLayoutMenu.TIE_APPLIED))) {
                 return;
             }
 
