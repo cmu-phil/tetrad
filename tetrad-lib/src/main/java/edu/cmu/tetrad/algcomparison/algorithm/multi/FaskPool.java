@@ -33,6 +33,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -131,10 +132,23 @@ public class FaskPool implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
         search.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
         search.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
 
-        if (this.externalGraphAlgorithm != null) {
-            Graph external = this.externalGraphAlgorithm.search(dataSets.get(0), parameters);
+        Graph external = this.externalGraphAlgorithm == null ? null
+                : this.externalGraphAlgorithm.search(dataSets.get(0), parameters);
+
+        if (external != null) {
             search.setExternalGraph(external);
-            search.setUseExternalOrientations(parameters.getBoolean(Params.FASK_POOL_EXTERNAL_ORIENTATIONS));
+            boolean useOrientations = parameters.getBoolean(Params.FASK_POOL_EXTERNAL_ORIENTATIONS);
+            search.setUseExternalOrientations(useOrientations);
+            TetradLogger.getInstance().log("FASK-Pool: external graph received ("
+                    + external.getNumNodes() + " nodes, " + external.getNumEdges()
+                    + " edges); its adjacencies will be used"
+                    + (useOrientations ? ", with its compelled orientations as defaults."
+                    : "; its orientations will be ignored."));
+        } else {
+            TetradLogger.getInstance().log("FASK-Pool: NO external graph supplied; adjacency search "
+                    + adjacency + " (1=IMaGES, 2=pooled FAS, 3=MG-FAS, 4=MG-LiNG, 5=intersection of 3 and 4)"
+                    + " will estimate the skeleton. If a source graph was connected in the interface,"
+                    + " it did not reach the algorithm.");
         }
 
         search.setTwoCycleAlpha(parameters.getDouble(Params.TWO_CYCLE_ALPHA));
