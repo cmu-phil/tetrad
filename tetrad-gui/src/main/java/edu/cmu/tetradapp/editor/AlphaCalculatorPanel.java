@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.search.score.BasisFunctionBicScore;
 import edu.cmu.tetrad.search.test.AlphaCalibration;
 import edu.cmu.tetrad.search.test.AlphaReport;
@@ -116,11 +117,18 @@ final class AlphaCalculatorPanel {
      */
     private static JComponent createPanel(ISelectedModel editor, DataModel model, int p, int rows) {
         boolean tabular = model instanceof DataSet;
+        boolean hasMissing = tabular && ((DataSet) model).existsMissingValue();
 
         JComboBox<String> family = new JComboBox<>(tabular
                 ? new String[]{FAMILY_FISHER_Z, FAMILY_CG_DG, FAMILY_BF}
                 : new String[]{FAMILY_FISHER_Z});
         family.setEnabled(tabular);
+
+        // Only the Basis Function family constructs a score on the data, so only it needs a missing-data policy
+        // here; the other families' block sizes do not depend on the rows.
+        JComboBox<String> missingPolicy = new JComboBox<>(new String[]{"Testwise deletion", "Listwise deletion"});
+        missingPolicy.setToolTipText(
+                "How the Basis Function score treats the missing values in this data set.");
 
         JSpinner truncation = new JSpinner(new SpinnerNumberModel(3, 1, 20, 1));
         JCheckBox rankTransform = new JCheckBox("Rank transform", false);
@@ -155,6 +163,7 @@ final class AlphaCalculatorPanel {
             truncation.setEnabled(bf);
             rankTransform.setEnabled(bf);
             adaptive.setEnabled(bf);
+            missingPolicy.setEnabled(bf && hasMissing);
         };
         family.addActionListener(e -> syncEnabled.run());
         syncEnabled.run();
@@ -187,6 +196,7 @@ final class AlphaCalculatorPanel {
 
             boolean bf = FAMILY_BF.equals(family.getSelectedItem());
             boolean cgDg = FAMILY_CG_DG.equals(family.getSelectedItem());
+            boolean listwise = hasMissing && missingPolicy.getSelectedIndex() == 1;
             int truncationLimit = (Integer) truncation.getValue();
             boolean rank = rankTransform.isSelected();
             boolean adapt = adaptive.isSelected();
@@ -200,7 +210,11 @@ final class AlphaCalculatorPanel {
 
                     try {
                         if (bf) {
-                            sizes = new BasisFunctionBicScore((DataSet) model, truncationLimit, 0.0, adapt, rank)
+                            DataSet dataSet = (DataSet) model;
+                            MissingDataSpec spec = dataSet.existsMissingValue()
+                                    ? (listwise ? MissingDataSpec.listwise() : MissingDataSpec.testwise())
+                                    : null;
+                            sizes = new BasisFunctionBicScore(dataSet, truncationLimit, 0.0, adapt, rank, spec)
                                     .embeddingBlockSizes();
                         } else if (cgDg) {
                             sizes = CalibrationBlockSizes.categoriesMinusOne((DataSet) model);
@@ -257,6 +271,16 @@ final class AlphaCalculatorPanel {
         gbc.gridx = 1;
         gbc.gridwidth = 3;
         inputs.add(family, gbc);
+
+        if (hasMissing) {
+            gbc.gridwidth = 1;
+            gbc.gridy++;
+            gbc.gridx = 0;
+            inputs.add(new JLabel("Missing values:"), gbc);
+            gbc.gridx = 1;
+            gbc.gridwidth = 3;
+            inputs.add(missingPolicy, gbc);
+        }
 
         gbc.gridwidth = 1;
         gbc.gridy++;

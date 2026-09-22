@@ -44,7 +44,7 @@ final class CalibrationExplanationPanel {
      * that it lays out the same on every platform.
      */
     private static final String HTML = """
-            <html><body style="font-family: sans-serif; font-size: 11pt; margin: 12px;">
+            <html><body style="font-family: sans-serif; font-size: 14pt; margin: 14px; line-height: 1.35;">
 
             <h2>What these calculators do</h2>
 

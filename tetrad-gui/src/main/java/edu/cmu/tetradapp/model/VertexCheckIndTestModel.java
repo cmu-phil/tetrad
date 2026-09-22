@@ -411,9 +411,26 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         List<Node> vars = new ArrayList<>(independenceTest.getVariables());
         vars.sort(Comparator.comparing(Node::getName));
 
+        // Data variables absent from the graph are skipped, not failed on (added
+        // 2026-9-9). The overview lists every data variable, but a graph learned on or
+        // edited to a subset of the data columns implies no facts about the missing
+        // ones; their rows stay blank. Before this, the first such variable killed the
+        // whole sweep (NPE deep in the ordered-local-Markov fact computation), leaving
+        // EVERY row blank -- e.g. a fire-weather data set containing BUI checked
+        // against a graph from which BUI was excluded for near-determinism.
+        List<String> notInGraph = new ArrayList<>();
         for (Node x : vars) {
             if (cancelled.getAsBoolean()) return;     // skip vertices not yet started
+            if (alignedGraph.getNode(x.getName()) == null) {
+                notInGraph.add(x.getName());
+                continue;
+            }
             runVertex(alignedGraph, x, cancelled);
+        }
+        if (!notInGraph.isEmpty()) {
+            TetradLogger.getInstance().log("Vertex check: " + notInGraph.size()
+                    + " data variable(s) not in the graph were skipped (no implied facts): "
+                    + String.join(", ", notInGraph));
         }
 
         // Compute the model-level summary HERE, on the worker thread, so the
@@ -455,6 +472,39 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public List<IndependenceResult> getResultsForVertex(String vertexName) {
         return resultsByVertex.getOrDefault(vertexName, List.of());
+    }
+
+    /**
+     * Counts, over all computed vertices, the implied facts tested so far and how many of them came back with
+     * no p-value (NaN). Under the caching layer's TREAT_AS_INDEPENDENT error policy, a fact whose test throws
+     * is recorded as independent with a NaN p-value, so a large NaN count means the chosen test could not
+     * actually be run on those facts (e.g., too few usable rows after deletion of missing values) and the
+     * displayed judgments for them carry no evidence. Interfaces use this to warn instead of staying silent.
+     *
+     * @return An array {total facts, facts with NaN p-value}.
+     */
+    public int[] countUntestableFacts() {
+        int total = 0;
+        int untestable = 0;
+
+        for (List<IndependenceResult> rs : resultsByVertex.values()) {
+            for (IndependenceResult r : rs) {
+                total++;
+                if (Double.isNaN(r.getPValue())) untestable++;
+            }
+        }
+
+        return new int[]{total, untestable};
+    }
+
+    /**
+     * Returns the message of the most recent test error swallowed by the caching layer's error policy, as an
+     * example of why facts came back with no p-value, or null if none.
+     *
+     * @return The message, or null.
+     */
+    public String getUntestableExample() {
+        return cachedQueries.getLastErrorMessage();
     }
 
     private void runVertex(Graph alignedGraph, Node x) {
@@ -646,7 +696,14 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
         Graph alignedGraph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         Node x = alignedGraph.getNode(vertexName);
-        if (x == null) throw new IllegalArgumentException("Vertex not found: " + vertexName);
+        // Lenient for the UI (changed 2026-9-9 from a throw): the overview lists every
+        // data variable, so clicking the row of one not in the graph is a legitimate
+        // action; there is simply nothing to compute for it, and its row stays blank.
+        if (x == null) {
+            TetradLogger.getInstance().log("Vertex check: '" + vertexName
+                    + "' is not in the graph; nothing to compute.");
+            return;
+        }
 
         runVertex(alignedGraph, x);
     }

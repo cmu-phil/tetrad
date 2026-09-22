@@ -103,6 +103,11 @@ public class OrderedLocalMarkovPropertySinkElimination {
      * @return the set of implied independence facts with sink {@code x}.
      */
     public static Set<IndependenceFact> getModelForNode(Graph mag, Node x) {
+        // Defense in depth (added 2026-9-9): a null or foreign node has no facts.
+        // MarkovCheck.computeImpliedFactsForVertex guards this at the contract level;
+        // this protects direct callers passing the result of a failed getNode lookup.
+        if (x == null || x.getName() == null) return new HashSet<>();
+
         // Compute full OLMP model on this MAG
         Set<IndependenceFact> all = getModel(mag);
 

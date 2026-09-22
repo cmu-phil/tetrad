@@ -66,7 +66,7 @@ public class Gcm implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "GCM (Generalized Covariance Measure)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "GCM (Generalized Covariance Measure)");
 
         edu.cmu.tetrad.search.test.Gcm gcm = new edu.cmu.tetrad.search.test.Gcm((DataSet) dataSet,
                 parameters.getDouble(Params.ALPHA));

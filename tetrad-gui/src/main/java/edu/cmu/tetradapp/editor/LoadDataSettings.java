@@ -560,8 +560,12 @@ public final class LoadDataSettings extends JPanel {
         dataTypeBtnGrp.add(this.discRadioButton);
         dataTypeBtnGrp.add(this.mixedRadioButton);
 
-        // Continuous radion button is selected by default
-        this.contRadioButton.setSelected(true);
+        // Mixed is selected by default (previously Continuous). With the max-categories threshold at its default
+        // of 0, a mixed load reads every numeric column as continuous and every column with a non-numeric value as
+        // discrete, so an all-numeric file comes out exactly as a continuous load would, while a file with string
+        // columns loads instead of failing. The cost is one extra pass over the file to determine column types.
+        // Changed 2026-9-11.
+        this.mixedRadioButton.setSelected(true);
 
         // Add label into this label box to size
         Box dataTypeLabelBox = Box.createHorizontalBox();
@@ -903,8 +907,9 @@ public final class LoadDataSettings extends JPanel {
         quoteCharBtnGrp.add(this.doubleQuoteRadioButton);
         quoteCharBtnGrp.add(this.singleQuoteRadioButton);
 
-        // Select None by default
-        noneQuoteRadioButton.setSelected(true);
+        // Select double quotes by default: quoted CSV headers and values are common in
+        // exported data, and treating the quote as data is the more surprising failure.
+        this.doubleQuoteRadioButton.setSelected(true);
 
         // Add label into this label box to size
         Box quoteCharLabelBox = Box.createHorizontalBox();

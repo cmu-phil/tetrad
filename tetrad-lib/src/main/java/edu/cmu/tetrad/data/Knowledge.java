@@ -188,7 +188,7 @@ public final class Knowledge implements TetradSerializable {
 
         if (spec.contains("*")) {
             split(spec).stream()
-                    .map(e -> e.replace("*", ".*"))
+                    .map(Knowledge::wildcardToRegex)
                     .forEach(e -> {
                         Pattern cpdag = Pattern.compile(e);
                         this.variables.stream()
@@ -202,6 +202,32 @@ public final class Knowledge implements TetradSerializable {
         }
 
         return vars;
+    }
+
+    /**
+     * Translates a wildcard expression into a regular expression in which '*' matches any string
+     * of characters and every other character, including regex metacharacters such as '.' and
+     * '(', is matched literally. This keeps variable names containing such characters from being
+     * misread as regex syntax, which formerly caused wildcard specs either to match the wrong
+     * variables (a spec like "X.*" also matching "Xa1") or to throw a PatternSyntaxException
+     * outright (a spec like "V(*"). This matches the semantics of the knowledge editor's own
+     * wildcard matching.
+     */
+    private static String wildcardToRegex(String glob) {
+        StringBuilder sb = new StringBuilder();
+        int start = 0;
+        int star;
+        while ((star = glob.indexOf('*', start)) >= 0) {
+            if (star > start) {
+                sb.append(Pattern.quote(glob.substring(start, star)));
+            }
+            sb.append(".*");
+            start = star + 1;
+        }
+        if (start < glob.length()) {
+            sb.append(Pattern.quote(glob.substring(start)));
+        }
+        return sb.toString();
     }
 
     private Set<String> split(String spec) {

@@ -3562,7 +3562,7 @@ public class GridSearchEditor extends JPanel {
             model.setMarkovCheckerIndependenceWrapper(independenceWrapper);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                  | NoSuchMethodException e1) {
-            TetradLogger.getInstance().log("Error: " + e1.getMessage());
+            TetradLogger.getInstance().warn("Error: " + e1.getMessage());
             throw new RuntimeException(e1);
         }
     }

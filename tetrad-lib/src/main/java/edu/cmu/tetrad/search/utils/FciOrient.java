@@ -1446,7 +1446,7 @@ public class FciOrient {
      */
     public void setMaxDiscriminatingPathLength(int maxDiscriminatingPathLength) {
         if (!(maxDiscriminatingPathLength == -1 || maxDiscriminatingPathLength >= 4)) {
-            TetradLogger.getInstance().log("WARNING: path length must be -1 (unlimited) or >= 4" +
+            TetradLogger.getInstance().warn("path length must be -1 (unlimited) or >= 4" +
                     "in order to find discriminating paths: " + maxDiscriminatingPathLength);
         }
 

@@ -91,9 +91,35 @@ public enum FindingCode {
 
     /**
      * A continuous variable is nearly a linear function of the other continuous variables (multiple R-squared above
-     * threshold), a near-faithfulness violation that destabilizes conditional independence judgments.
+     * threshold), a near-faithfulness violation that destabilizes conditional independence judgments. This is the
+     * linear member of the continuous-determiner pair; NEAR_DETERMINISM_NONLINEAR covers smooth nonlinear
+     * mechanisms and fires only where this check did not.
+     * <p>
+     * The determined variable is listed FIRST in the finding's variable list. When a small subset of the other
+     * variables accounts for most of the dependence, that subset follows it, as in the other determinism findings;
+     * when the dependence is diffuse the list holds the determined variable alone.
      */
-    NEAR_DETERMINISM_CONTINUOUS,
+    NEAR_DETERMINISM_LINEAR,
+
+    /**
+     * A continuous variable is nearly a smooth (generally nonlinear) function of a small set of other continuous
+     * variables: the leave-one-out cross-validated R-squared of a spline regression of the variable on the set is at
+     * or above threshold, while the linear check (NEAR_DETERMINISM_LINEAR) did not fire for the variable.
+     * Computed or derived columns whose defining formulas are nonlinear -- for example, the FWI fire-weather indices,
+     * which are exponential functions of their inputs -- are detected here and not by the linear check; the
+     * cell-inspection finding (DETERMINISTIC_RELATION) covers the complementary case where the determining variables
+     * take few distinct values, whereas the determiners here may be fully continuous.
+     * <p>
+     * Leave-one-out cross-validation is the overfitting guard: the reported R-squared is out-of-sample, so a high
+     * value cannot be produced by basis flexibility alone; on independent Gaussian data of comparable size the
+     * statistic stays near zero even after greedy subset selection. The determined variable is listed FIRST in the
+     * finding's variable list; the determining set follows. Subsets are grown greedily and reported at the first
+     * size reaching the threshold; supersets are not searched, and with correlated predictors the subset is not
+     * unique. The spline basis is linear beyond its boundary knots, so dependence carried mostly by extreme tails
+     * can be understated; the absence of this finding does not rule out such dependence. Near-determinism of any
+     * functional form is a near-faithfulness violation that destabilizes conditional independence judgments.
+     */
+    NEAR_DETERMINISM_NONLINEAR,
 
     /**
      * A continuous variable is nearly determined by a discrete variable (eta-squared above threshold): the discrete
@@ -184,10 +210,11 @@ public enum FindingCode {
      * minimal determining sets are reported: once a set is found for a variable, its supersets are not searched. A
      * pair already reported as DUPLICATE_COLUMNS is not re-reported here as a one-element determinism. The linear
      * whole-matrix analog is EXACT_LINEAR_DEPENDENCE; the regression- and eta-squared-based near-determinism
-     * findings (NEAR_DETERMINISM_CONTINUOUS, NEAR_DETERMINISM_DISCRETE_CONTINUOUS) cover linear and single-discrete
-     * mechanisms, while this finding is nonparametric and joint, so it detects nonlinear functions of variable
-     * combinations (e.g., a boundary-layer quantity computed from several experimental settings) that those checks
-     * miss.
+     * findings (NEAR_DETERMINISM_LINEAR, NEAR_DETERMINISM_DISCRETE_CONTINUOUS) cover linear and single-discrete
+     * mechanisms, NEAR_DETERMINISM_NONLINEAR covers smooth functions of many-valued continuous determiners, while
+     * this finding is nonparametric and joint over few-valued determiners, so it detects nonlinear functions of
+     * variable combinations (e.g., a boundary-layer quantity computed from several experimental settings) that the
+     * linear and single-discrete checks miss.
      * <p>
      * The check is bounded: determining sets up to a configured size, determiner variables up to a configured
      * distinct-value count, and a fixed work budget; single-row cells are vacuous and are excluded, with coverage
@@ -261,5 +288,17 @@ public enum FindingCode {
      * or the matrix was regularized, shrunk, or model-implied. The finding's message states which case holds. Emitted only
      * by {@link CovarianceAudit}; the dataset analog is COMPLETE_CASES_FORCE_SINGULARITY.
      */
-    SAMPLE_SIZE_FORCES_SINGULARITY
+    SAMPLE_SIZE_FORCES_SINGULARITY,
+
+    /**
+     * A variable name collides with a naming convention that Tetrad's own machinery gives special meaning. The
+     * cases reported are: a name of the form base:k with integer k, which the time-series machinery reads as
+     * base lagged k steps (INFO, since the data may genuinely be lagged); a name containing a colon whose suffix
+     * does not parse as a lag, which collides with the lag-suffix convention without being readable as a lag
+     * (WARNING); a name beginning with "E_", the prefix under which SEM graphs generate error-term nodes and
+     * which some graph utilities treat as marking an error term (WARNING); and a name containing '*' or ',',
+     * characters that knowledge specifications interpret as a wildcard and a list separator respectively
+     * (WARNING). The finding reports the property; it takes no position on whether the name should change.
+     */
+    RESERVED_VARIABLE_NAME
 }

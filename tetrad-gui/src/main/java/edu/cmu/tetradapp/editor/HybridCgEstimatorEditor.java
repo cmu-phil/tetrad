@@ -5,17 +5,22 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.model.DataWrapper;
+import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.HybridCgEstimatorWrapper;
-import edu.cmu.tetradapp.model.HybridCgImWrapper;
 import edu.cmu.tetradapp.model.HybridCgPmWrapper;
+import edu.cmu.tetrad.hybridcg.HybridCgIo;
+import edu.cmu.tetrad.hybridcg.HybridCgPruneReport;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.lang.reflect.Method;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -24,14 +29,15 @@ import java.util.Map;
  * Hybrid CG Estimator Editor
  *
  * <ul>
- *   <li><b>Left:</b> Estimation settings and “Estimate &amp; Preview” button.
- *   <li><b>Right:</b> Live preview of the estimated IM using {@link HybridCgImEditor}.
+ *   <li><b>Left:</b> Estimation settings and “Estimate” button.
+ *   <li><b>Right:</b> The wrapper's current estimated IM, shown in a {@link HybridCgImEditor}.
  * </ul>
  *
- * <p>Pressing <i>Estimate &amp; Preview</i> re-runs the estimator with the current settings
- * and replaces the preview on the right. The preview fires <code>modelChanged</code>
- * events, which this editor re-fires so upstream listeners only need to listen
- * to this container.</p>
+ * <p>On open, the IM already held by the wrapper is shown. Pressing <i>Estimate</i> re-runs the
+ * estimator with the current settings, stores the result back into the wrapper via
+ * {@link HybridCgEstimatorWrapper#setHybridCgIm}, and replaces the display on the right, so what
+ * is shown is what downstream boxes receive. The IM editor fires <code>modelChanged</code> events,
+ * which this editor re-fires so upstream listeners only need to listen to this container.</p>
  */
 public final class HybridCgEstimatorEditor extends JPanel {
 
@@ -46,34 +52,35 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
     private final JSpinner defBins    = new JSpinner(new SpinnerNumberModel(3, 2, 50, 1));
     private final JSpinner defLo      = new JSpinner(new SpinnerNumberModel(-1.0, -1e6, 1e6, 0.1));
-    private final JSpinner defHi      = new JSpinner(new SpinnerNumberModel( 1.0, -1e6, 1e6, 0.1));
+    private final JSpinner defHi     = new JSpinner(new SpinnerNumberModel( 1.0, -1e6, 1e6, 0.1));
 
-    // ---------- Dependencies we need to (re)run estimation ----------
+    // ---------- Significance and pruning UI ----------
+    private final JCheckBox markSig   = new JCheckBox("Grey non-significant entries", false);
+    private final JSpinner testAlpha  = new JSpinner(new SpinnerNumberModel(0.05, 1e-4, 0.5, 0.01));
+    private final JButton proposePrune = new JButton("Propose Prune…");
+    private final JButton revertPrune  = new JButton("Revert Prune");
+
+    // ---------- The session wrapper whose IM we show and update ----------
+    private final HybridCgEstimatorWrapper wrapper;
     private final DataWrapper dataWrapper;
     private final HybridCgPmWrapper pmWrapper;
 
-    // ---------- Preview host on the right ----------
-    private final JPanel previewHost = new JPanel(new BorderLayout());
-    private HybridCgImEditor currentPreview;   // recreated after each estimate
-    private final JLabel bicLabel = new JLabel("BIC: n/a");
+    // ---------- IM display host on the right ----------
+    private final JPanel imHost = new JPanel(new BorderLayout());
+    /** The embedded IM editor currently shown in imHost; null until the first showIm. */
+    private HybridCgImEditor imEditor;
+    private final HybridCgGraphViewer graphView;
+    private JTabbedPane tabs;
+    private final JLabel bicLabel = new JLabel("CG BIC: n/a | Hybrid CG BIC: n/a");
     private final JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
 
     // ---------- Constructors ----------
 
-    /** Convenience: build from an existing estimator wrapper. */
     public HybridCgEstimatorEditor(HybridCgEstimatorWrapper wrapper) {
-        this(
-                wrapper.getDataWrapper(),
-                wrapper.getPmWrapper(),
-                wrapper.getParameters()
-        );
-    }
-
-    public HybridCgEstimatorEditor(DataWrapper dataWrapper,
-                                   HybridCgPmWrapper pmWrapper,
-                                   Parameters params) {
-        this.dataWrapper = dataWrapper;
-        this.pmWrapper   = pmWrapper;
+        this.wrapper     = wrapper;
+        this.dataWrapper = wrapper.getDataWrapper();
+        this.pmWrapper   = wrapper.getPmWrapper();
+        Parameters params = wrapper.getParameters();
         this.params      = (params == null) ? new Parameters() : params;
 
         setLayout(new BorderLayout());
@@ -81,28 +88,103 @@ public final class HybridCgEstimatorEditor extends JPanel {
         // Left: settings panel
         JPanel settings = buildSettingsPanel();
 
-        // Right: preview host (placeholder)
-        previewHost.setBorder(new TitledBorder("Estimated IM Preview"));
-        previewHost.add(makeEmptyPreview(), BorderLayout.CENTER);
+        // Persistent shaded-graph view; updated in place on each estimate so menus stay bound.
+        this.graphView = new HybridCgGraphViewer(wrapper.getEstimatedHybridCgIm());
 
-        // status bar (left-aligned)
+        // Right: tabs for the estimated IM and its shaded graph, with the BIC line below.
+        this.tabs = new JTabbedPane();
+        tabs.addTab("Estimated IM", imHost);
+        tabs.addTab("Graph", graphView.getComponent());
+        tabs.setToolTipTextAt(1, "Model graph with edges shaded by estimated strength");
+
+        // Clicking a node in the Graph tab selects that variable in the Estimated IM tab, so its
+        // table is showing when the user switches back. The workbench persists across re-estimates,
+        // so one listener suffices; showIm keeps imEditor pointing at the current embedded editor.
+        graphView.getWorkbench().addPropertyChangeListener("selectedNodes", e -> {
+            if (this.imEditor != null && e.getNewValue() instanceof java.util.List<?> sel
+                && sel.size() == 1 && sel.getFirst() instanceof Node n) {
+                this.imEditor.selectVariable(n);
+            }
+        });
+
         statusBar.add(bicLabel);
-        previewHost.add(statusBar, BorderLayout.SOUTH);
+
+        JPanel right = new JPanel(new BorderLayout());
+        right.add(tabs, BorderLayout.CENTER);
+        right.add(statusBar, BorderLayout.SOUTH);
 
         settings.setPreferredSize(new Dimension(320, 400));
-        previewHost.setPreferredSize(new Dimension(600, 400));
-
-        settings.setPreferredSize(new Dimension(320, 400));
-        previewHost.setPreferredSize(new Dimension(600, 400));
+        right.setPreferredSize(new Dimension(600, 400));
 
         // Split
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, settings, previewHost);
-        split.setResizeWeight(0.30);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, settings, right);
+//        split.setResizeWeight(0.30);
         split.setContinuousLayout(true);
         add(split, BorderLayout.CENTER);
+        add(buildMenuBar(), BorderLayout.NORTH);
 
         loadFromParams();
         wireBindings();
+
+        // Show the IM the wrapper already holds.
+        HybridCgIm im = wrapper.getEstimatedHybridCgIm();
+        if (im != null) {
+            showIm(im);
+            updateBic();
+        } else {
+            imHost.add(makeEmptyImPanel(), BorderLayout.CENTER);
+        }
+    }
+
+    // ---------- Menus ----------
+
+    private JMenuBar buildMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu file = new JMenu("File");
+
+        JMenuItem saveJson = new JMenuItem("Save Model As JSON...");
+        saveJson.addActionListener(e -> saveModelAsJson());
+        file.add(saveJson);
+
+        file.addSeparator();
+        file.add(onGraphTab(new SaveComponentImage(graphView.getWorkbench(), "Save Graph Image...")));
+
+        menuBar.add(file);
+        menuBar.add(graphView.graphMenu(this::showGraphTab, this.params));
+        menuBar.add(new LayoutMenu(graphView.getWorkbench()));
+        return menuBar;
+    }
+
+    /** Wraps an action so the Graph tab is shown first (some actions need a laid-out workbench). */
+    private JMenuItem onGraphTab(Action delegate) {
+        return new JMenuItem(new AbstractAction((String) delegate.getValue(Action.NAME)) {
+            @Override public void actionPerformed(ActionEvent e) {
+                showGraphTab();
+                delegate.actionPerformed(e);
+            }
+        });
+    }
+
+    private void showGraphTab() {
+        this.tabs.setSelectedIndex(1);
+    }
+
+    private void saveModelAsJson() {
+        HybridCgIm im = wrapper.getEstimatedHybridCgIm();
+        if (im == null) {
+            JOptionPane.showMessageDialog(this, "No estimated model yet — press Estimate first.",
+                    "Nothing To Save", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        File outfile = EditorUtils.getSaveFile("hybridcg_im", "json", this, false, "Save Model As JSON...");
+        if (outfile == null) return;
+        try {
+            HybridCgIo.save(im, outfile);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Save failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     // ---------- UI building ----------
@@ -139,71 +221,60 @@ public final class HybridCgEstimatorEditor extends JPanel {
         c.gridx=0; c.gridy=r; p.add(new JLabel("Default range high:"), c);
         c.gridx=1; p.add(defHi, c); r++;
 
+        p.add(new JSeparator(), grid(c,0,++r,2)); r++;
+
+        c.gridx=0; c.gridy=r; p.add(new JLabel("Test alpha (LRT / t-tests):"), c);
+        c.gridx=1; p.add(testAlpha, c); r++;
+
+        c.gridx=0; c.gridy=r; c.gridwidth=2; p.add(markSig, c); r++; c.gridwidth=1;
+
+        JPanel pruneRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        pruneRow.add(proposePrune);
+        pruneRow.add(revertPrune);
+        c.gridx=0; c.gridy=r; c.gridwidth=2; p.add(pruneRow, c); r++; c.gridwidth=1;
+
+        proposePrune.setToolTipText("Backward elimination by per-edge LRT at the test alpha; shows the proposal for review before anything is changed.");
+        revertPrune.setToolTipText("Re-estimate on the input graph, discarding the applied prune.");
+        proposePrune.addActionListener(ev -> runProposePrune());
+        revertPrune.addActionListener(ev -> runRevertPrune());
+        revertPrune.setEnabled(wrapper.getPrunedGraph() != null);
+
         root.add(p, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton estimate = new JButton("Estimate & Preview");
-        estimate.addActionListener(ev -> runEstimateAndShowPreview());
+        JButton estimate = new JButton("Estimate");
+        estimate.addActionListener(ev -> runEstimate());
         buttons.add(estimate);
         root.add(buttons, BorderLayout.SOUTH);
 
         return root;
     }
 
-    private JComponent makeEmptyPreview() {
+    private JComponent makeEmptyImPanel() {
         JPanel empty = new JPanel(new GridBagLayout());
-        JLabel hint = new JLabel("Press “Estimate & Preview” to view the estimated IM.");
+        JLabel hint = new JLabel("Press “Estimate” to estimate the IM.");
         hint.setForeground(new Color(0x555555));
         empty.add(hint);
         return empty;
     }
 
-    // ---------- Estimation + preview ----------
+    // ---------- Estimation ----------
 
-    private void runEstimateAndShowPreview() {
-        bicLabel.setText("BIC: …"); // or "BIC: n/a"
+    private void runEstimate() {
+        bicLabel.setText("CG BIC: … | Hybrid CG BIC: …");
 
         try {
-            HybridCgEstimatorWrapper out =
-                    new HybridCgEstimatorWrapper(dataWrapper, pmWrapper, params);
+            // Re-estimate in place with the current settings, on the graph currently in force —
+            // the applied pruned graph if there is one, else the input graph — so Estimate does
+            // not silently discard an applied prune.
+            wrapper.reestimate();
+            HybridCgIm im = wrapper.getEstimatedHybridCgIm();
 
-            HybridCgIm im = resolveImFromWrapper(out);
-            if (im == null) {
-                HybridCgImWrapper imw = tryExtractImWrapper(out);
-                if (imw != null) im = imw.getHybridCgIm();
-            }
-
-            if (im == null) {
-                JOptionPane.showMessageDialog(this,
-                        "Estimation completed, but no IM was available for preview.",
-                        "Note", JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-
-            showPreview(im);
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Estimated Hybrid CG IM" +
-                    (out.getNumModels() > 1 ? "s" : "") +
-                    " for " + out.getNumModels() + " dataset(s).",
-                    "Done",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
-            // --- BIC score after preview ---
-            try {
-                double bic = computeCgBicScore(
-                        out.getDataWrapper().getSelectedDataModel(),
-                        pmWrapper.getGraph(),
-                        params
-                );
-                bicLabel.setText(String.format("BIC: %.3f (higher is better)", bic));
-            } catch (Exception ex) {
-                bicLabel.setText("BIC: n/a");
-            }
-
+            showIm(im);
+            updateBic();
+            firePropertyChange("modelChanged", null, null);
         } catch (Exception ex) {
+            bicLabel.setText("CG BIC: n/a | Hybrid CG BIC: n/a");
             JOptionPane.showMessageDialog(
                     this,
                     "Estimation failed:\n" + ex.getMessage(),
@@ -212,17 +283,144 @@ public final class HybridCgEstimatorEditor extends JPanel {
         }
     }
 
-    private void showPreview(HybridCgIm im) {
+    private void showIm(HybridCgIm im) {
         HybridCgImEditor editor = new HybridCgImEditor(im);
+        this.imEditor = editor;
         editor.addPropertyChangeListener("modelChanged",
                 evt -> firePropertyChange("modelChanged", null, null));
+        // Selecting a variable in the Estimated IM tab selects and centers its node in the Graph
+        // tab. The embedded editor suppresses this event for selections that originated from a
+        // graph click, so this cannot echo.
+        editor.addPropertyChangeListener("selectedVariable", evt -> {
+            if (evt.getNewValue() instanceof Node n) {
+                Node wbNode = graphView.getWorkbench().getGraph().getNode(n.getName());
+                if (wbNode != null) graphView.getWorkbench().centerWorkbenchOnNode(wbNode);
+            }
+        });
 
-        currentPreview = editor;
-        previewHost.removeAll();
-        previewHost.add(editor, BorderLayout.CENTER);
-        previewHost.add(statusBar, BorderLayout.SOUTH); // keep the BIC line
-        previewHost.revalidate();
-        previewHost.repaint();
+        imHost.removeAll();
+        imHost.add(editor, BorderLayout.CENTER);
+        imHost.revalidate();
+        imHost.repaint();
+
+        pushSignificance();
+    }
+
+    /**
+     * Recomputes and applies (or clears) the significance overlay for the wrapper's current model: greyed
+     * coefficient cells and per-child LRT lines in the IM editor, LRT verdicts in the graph tooltips. Cleared when
+     * the checkbox is off or the computation fails (e.g., no data); failures are not fatal to the display.
+     */
+    private void pushSignificance() {
+        HybridCgIm im = wrapper.getEstimatedHybridCgIm();
+        if (im == null) return;
+        double a = ((Number) testAlpha.getValue()).doubleValue();
+        if (markSig.isSelected()) {
+            try {
+                var sig = wrapper.edgeSignificance();
+                double[][][] coefP = wrapper.coefficientPValues();
+                if (imEditor != null) imEditor.setSignificance(sig, coefP, a);
+                graphView.update(im, sig);
+                return;
+            } catch (Exception ex) {
+                // fall through to the plain display
+            }
+        }
+        if (imEditor != null) imEditor.setSignificance(null, null, a);
+        graphView.update(im);
+    }
+
+    // ---------- Pruning ----------
+
+    private void runProposePrune() {
+        HybridCgIm im = wrapper.getEstimatedHybridCgIm();
+        if (im == null) {
+            JOptionPane.showMessageDialog(this, "No estimated model yet — press Estimate first.",
+                    "Nothing To Prune", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        double a = ((Number) testAlpha.getValue()).doubleValue();
+        HybridCgPruneReport report;
+        try {
+            report = wrapper.proposePrune(a);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Prune proposal failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JTextArea text = new JTextArea(report.toString(), 20, 80);
+        text.setEditable(false);
+        text.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        text.setCaretPosition(0);
+        Object[] options = report.getDeletions().isEmpty()
+                ? new Object[]{"Close"}
+                : new Object[]{"Apply", "Cancel"};
+        int choice = JOptionPane.showOptionDialog(this, new JScrollPane(text),
+                "Prune Proposal (review before applying)", JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE, null, options, options[options.length - 1]);
+
+        if (!report.getDeletions().isEmpty() && choice == 0) {
+            try {
+                wrapper.applyPrune();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Applying the prune failed:\n" + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            revertPrune.setEnabled(true);
+            showIm(wrapper.getEstimatedHybridCgIm());
+            updateBic();
+            firePropertyChange("modelChanged", null, null);
+        }
+    }
+
+    private void runRevertPrune() {
+        try {
+            wrapper.revertPrune();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Revert failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        revertPrune.setEnabled(false);
+        showIm(wrapper.getEstimatedHybridCgIm());
+        updateBic();
+        firePropertyChange("modelChanged", null, null);
+    }
+
+    private void updateBic() {
+        String cg;
+        try {
+            double bic = computeCgBicScore(
+                    dataWrapper.getSelectedDataModel(),
+                    wrapper.getGraph(),      // the graph in force: pruned if applied, else the input graph
+                    params
+            );
+            cg = String.format("%.3f", bic);
+        } catch (Exception ex) {
+            cg = "n/a";
+        }
+
+        // The displayed model's own BIC: Hybrid CG family at the MLE, same structure and cutpoints; see
+        // HybridCgEdgeSignificance.modelFit for the conventions. Distinct from the CG score's model family,
+        // so the two numbers can disagree; each is comparable across graphs within its own family.
+        String hcg;
+        try {
+            var fit = edu.cmu.tetrad.hybridcg.HybridCgEdgeSignificance.modelFit(
+                    wrapper.getEstimatedHybridCgIm(),
+                    wrapper.getDataSet(),
+                    params.getBoolean("hybridcg.shareVariance", false));
+            hcg = Double.isNaN(fit.bic()) ? "n/a" : String.format("%.3f", fit.bic());
+            bicLabel.setToolTipText("<html>CG BIC: Conditional Gaussian score summed over the graph in force."
+                    + "<br>Hybrid CG BIC: " + fit.description().replace("&", "&amp;").replace("<", "&lt;")
+                    + "<br>Each is comparable across graphs within its own model family; the two are not"
+                    + " comparable to each other.</html>");
+        } catch (Exception ex) {
+            hcg = "n/a";
+        }
+
+        bicLabel.setText(String.format("CG BIC: %s | Hybrid CG BIC: %s (higher is better)", cg, hcg));
     }
 
     // ---------- Parameter IO ----------
@@ -235,6 +433,8 @@ public final class HybridCgEstimatorEditor extends JPanel {
         defBins.setValue(TMath.max(2, params.getInt("hybridcg.defaultBins", 3)));
         defLo.setValue(params.getDouble("hybridcg.defaultRangeLow", -1.0));
         defHi.setValue(params.getDouble("hybridcg.defaultRangeHigh", 1.0));
+        testAlpha.setValue(params.getDouble("hybridcg.testAlpha", 0.05));
+        markSig.setSelected(params.getBoolean("hybridcg.markSignificance", false));
     }
 
     private void wireBindings() {
@@ -246,6 +446,14 @@ public final class HybridCgEstimatorEditor extends JPanel {
         defBins.addChangeListener(e -> params.set("hybridcg.defaultBins", ((Number)defBins.getValue()).intValue()));
         defLo.addChangeListener(e -> params.set("hybridcg.defaultRangeLow", ((Number)defLo.getValue()).doubleValue()));
         defHi.addChangeListener(e -> params.set("hybridcg.defaultRangeHigh", ((Number)defHi.getValue()).doubleValue()));
+        testAlpha.addChangeListener(e -> {
+            params.set("hybridcg.testAlpha", ((Number)testAlpha.getValue()).doubleValue());
+            pushSignificance();
+        });
+        markSig.addActionListener(e -> {
+            params.set("hybridcg.markSignificance", markSig.isSelected());
+            pushSignificance();
+        });
     }
 
     private static GridBagConstraints grid(GridBagConstraints c, int x, int y, int w) {
@@ -253,94 +461,6 @@ public final class HybridCgEstimatorEditor extends JPanel {
         cc.gridx = x; cc.gridy = y; cc.gridwidth = w;
         cc.fill = GridBagConstraints.HORIZONTAL; cc.weightx = 1;
         return cc;
-    }
-
-    // ---------- Helper: tolerant extraction of an IM from the estimator wrapper ----------
-
-//    private static HybridCgIm tryExtractIm(HybridCgEstimatorWrapper w) {
-//        try { return (HybridCgIm) w.getClass().getMethod("getHybridCgIm").invoke(w); }
-//        catch (Throwable ignore) { }
-//        try { return (HybridCgIm) w.getClass().getMethod("getIm").invoke(w); }
-//        catch (Throwable ignore) { }
-//        return null;
-//    }
-
-    // --- Call this instead of the old tryExtract methods ---
-    private HybridCgIm resolveImFromWrapper(HybridCgEstimatorWrapper w) {
-        // 1) If the wrapper needs an explicit kick, try to run it.
-        for (String m : new String[]{"estimate", "run", "execute"}) {
-            try {
-                Method mm = w.getClass().getMethod(m);
-                if (mm.getReturnType() == Void.TYPE) { mm.invoke(w); }
-                else { mm.invoke(w); } // ignore return; we're just ensuring it ran
-                break;
-            } catch (Throwable ignore) {}
-        }
-
-        // 2) Direct getters returning HybridCgIm
-        for (String m : new String[]{
-                "getHybridCgIm", "getIm", "getEstimatedIm", "getResultIm", "getOutputIm"}) {
-            try {
-                Method mm = w.getClass().getMethod(m);
-                Object res = mm.invoke(w);
-                if (res instanceof HybridCgIm im) return im;
-            } catch (Throwable ignore) {}
-        }
-
-        // 3) Getters returning HybridCgImWrapper
-        for (String m : new String[]{
-                "getHybridCgImWrapper", "getImWrapper", "getResult", "getOutput"}) {
-            try {
-                Method mm = w.getClass().getMethod(m);
-                Object res = mm.invoke(w);
-                if (res instanceof HybridCgImWrapper iw) return iw.getHybridCgIm();
-            } catch (Throwable ignore) {}
-        }
-
-        // 4) Lists of IMs or wrappers
-        for (String m : new String[]{
-                "getIms", "getEstimatedIms", "getImWrappers", "getHybridCgImWrappers", "getResults"}) {
-            try {
-                Method mm = w.getClass().getMethod(m);
-                Object res = mm.invoke(w);
-                if (res instanceof java.util.List<?> list && !list.isEmpty()) {
-                    Object first = list.get(0);
-                    if (first instanceof HybridCgIm im) return im;
-                    if (first instanceof HybridCgImWrapper iw) return iw.getHybridCgIm();
-                }
-            } catch (Throwable ignore) {}
-        }
-
-        // 5) Last resort: scan all zero-arg methods for anything that *is* an IM/IM wrapper.
-        for (Method m : w.getClass().getMethods()) {
-            if (m.getParameterCount() == 0) {
-                try {
-                    Object res = m.invoke(w);
-                    if (res instanceof HybridCgIm im) return im;
-                    if (res instanceof HybridCgImWrapper iw) return iw.getHybridCgIm();
-                    if (res instanceof java.util.List<?> list && !list.isEmpty()) {
-                        Object first = list.get(0);
-                        if (first instanceof HybridCgIm im2) return im2;
-                        if (first instanceof HybridCgImWrapper iw2) return iw2.getHybridCgIm();
-                    }
-                } catch (Throwable ignore) {}
-            }
-        }
-        return null; // not found
-    }
-
-    private static HybridCgImWrapper tryExtractImWrapper(HybridCgEstimatorWrapper w) {
-        try { return (HybridCgImWrapper) w.getClass().getMethod("getHybridCgImWrapper").invoke(w); }
-        catch (Throwable ignore) { }
-        try { return (HybridCgImWrapper) w.getClass().getMethod("getImWrapper").invoke(w); }
-        catch (Throwable ignore) { }
-        try {
-            Object list = w.getClass().getMethod("getImWrappers").invoke(w);
-            if (list instanceof java.util.List<?> l && !l.isEmpty() && l.get(0) instanceof HybridCgImWrapper iw) {
-                return iw;
-            }
-        } catch (Throwable ignore) { }
-        return null;
     }
 
     // --- Compute CG-BIC for the current graph on the given data ---

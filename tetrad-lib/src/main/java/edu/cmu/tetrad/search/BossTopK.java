@@ -399,7 +399,7 @@ public class BossTopK implements SuborderSearchTopK {
             }
 
             if (++iter >= maxIter) {
-                TetradLogger.getInstance().log("Warning: BOSS hit max iterations, terminating early.");
+                TetradLogger.getInstance().warn("BOSS hit max iterations, terminating early.");
                 break;
             }
         } while (improved);

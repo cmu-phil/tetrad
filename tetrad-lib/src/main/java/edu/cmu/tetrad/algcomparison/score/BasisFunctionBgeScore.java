@@ -66,7 +66,7 @@ public class BasisFunctionBgeScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BF-BGe (Basis Function BGe)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "BF-BGe (Basis Function BGe)");
         this.dataSet = dataSet;
 
         if (!(dataSet instanceof DataSet)) {
@@ -76,7 +76,8 @@ public class BasisFunctionBgeScore implements ScoreWrapper {
         edu.cmu.tetrad.search.score.BasisFunctionBgeScore score = new edu.cmu.tetrad.search.score.BasisFunctionBgeScore(
                 (DataSet) dataSet,
                 parameters.getInt(Params.TRUNCATION_LIMIT),
-                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION));
+                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION),
+                MissingDataUtils.fromParameters(parameters));
 
         score.setAlphaMu(parameters.getDouble(Params.BGE_ALPHA_MU));
         score.setAlphaWOffset(parameters.getDouble(Params.BGE_ALPHA_W_OFFSET));

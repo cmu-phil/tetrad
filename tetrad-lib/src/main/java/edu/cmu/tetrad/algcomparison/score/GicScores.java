@@ -66,7 +66,7 @@ public class GicScores implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("em"), "Generalized Information Criterion Scores");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"), "Generalized Information Criterion Scores");
         dataSet = MissingDataUtils.emCovarianceIfRequested(dataSet, parameters, "Generalized Information Criterion Scores");
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);

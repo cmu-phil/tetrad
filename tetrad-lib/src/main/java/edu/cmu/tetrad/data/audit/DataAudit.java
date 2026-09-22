@@ -59,7 +59,7 @@ import java.util.Set;
  * all subsequent checks in the same audit: constant columns contribute nothing to small-cell, correlation,
  * near-determinism, non-Gaussianity, or serial-dependence diagnostics, and a constant continuous column would
  * otherwise poison the pairwise-complete correlation matrix (its correlations are undefined), masking findings such
- * as NEAR_DETERMINISM_CONTINUOUS among the remaining variables. Each CONSTANT_COLUMN finding states this exclusion
+ * as NEAR_DETERMINISM_LINEAR among the remaining variables. Each CONSTANT_COLUMN finding states this exclusion
  * in its message. Consequently {@link #getContinuousNames()} and the correlation-based accessors cover only the
  * non-constant continuous variables, while whole-dataset summaries (distinct-value counts, the sample-size ratio,
  * and missingness statistics) continue to describe the dataset as given.
@@ -273,6 +273,7 @@ public final class DataAudit {
         MissingDataAudit mda = new MissingDataAudit(dataSet);
         this.missingDataAudit = mda.anyMissing() ? mda : null;
 
+        variableNameCheck();
         censusCheck();
         constancyChecks();
 
@@ -294,6 +295,7 @@ public final class DataAudit {
         duplicateColumnChecks();
         this.continuousCorrelation = correlationChecks();
         nearDeterminismDiscreteContinuousCheck();
+        nearDeterminismNonlinearCheck();
         cellDeterminismCheck();
         nonGaussianityCheck();
         serialDependenceCheck();
@@ -595,6 +597,114 @@ public final class DataAudit {
     }
 
     //==================================== CHECKS ====================================//
+
+    /**
+     * Flags variable names that collide with naming conventions Tetrad's own machinery gives special meaning,
+     * aggregated into one finding per collision category so that a fully lagged dataset (in which every name past
+     * lag zero carries a colon suffix by design) produces one INFO finding rather than one per column. The
+     * categories, in the order emitted, are: names of the form base:k with nonnegative integer k, which the
+     * time-series machinery reads as base lagged k steps (INFO, since lagged data carries such names on purpose);
+     * names containing a colon whose suffix does not parse as a lag (WARNING, since such names collide with the
+     * lag-suffix convention without being readable as lags); names beginning with "E_", the prefix under which SEM
+     * graphs generate error-term nodes -- with a note when the remainder after "E_" is itself the name of another
+     * variable in this dataset, so that a generated error node would collide with it outright (WARNING); and names
+     * containing '*' or ',', which knowledge specifications interpret as a wildcard and a list separator
+     * respectively (WARNING). Purely a property of the header; reads no data cells.
+     */
+    private void variableNameCheck() {
+        List<String> lagLike = new ArrayList<>();
+        List<String> colonNotLag = new ArrayList<>();
+        List<String> errorPrefixed = new ArrayList<>();
+        List<String> errorCollisions = new ArrayList<>();
+        List<String> specChars = new ArrayList<>();
+
+        Set<String> nameSet = new HashSet<>(Arrays.asList(this.names));
+
+        for (String name : this.names) {
+            int colon = name.indexOf(':');
+
+            if (colon >= 0) {
+                boolean validLag;
+
+                try {
+                    validLag = Integer.parseInt(name.substring(colon + 1)) >= 0;
+                } catch (NumberFormatException e) {
+                    validLag = false;
+                }
+
+                if (validLag) {
+                    lagLike.add(name);
+                } else {
+                    colonNotLag.add(name);
+                }
+            }
+
+            if (name.startsWith("E_")) {
+                errorPrefixed.add(name);
+
+                if (nameSet.contains(name.substring(2))) {
+                    errorCollisions.add(name);
+                }
+            }
+
+            if (name.indexOf('*') >= 0 || name.indexOf(',') >= 0) {
+                specChars.add(name);
+            }
+        }
+
+        if (!lagLike.isEmpty()) {
+            this.findings.add(new AuditFinding(FindingCode.RESERVED_VARIABLE_NAME,
+                    AuditFinding.Severity.INFO, lagLike,
+                    Map.of("count", (double) lagLike.size()),
+                    "Names of the form base:k, which Tetrad's time-series machinery reads as base lagged k steps ("
+                            + listSome(lagLike) + "). If this dataset is lagged data, that reading is the intended "
+                            + "one."));
+        }
+
+        if (!colonNotLag.isEmpty()) {
+            this.findings.add(new AuditFinding(FindingCode.RESERVED_VARIABLE_NAME,
+                    AuditFinding.Severity.WARNING, colonNotLag,
+                    Map.of("count", (double) colonNotLag.size()),
+                    "Names containing a colon whose suffix does not parse as a lag (" + listSome(colonNotLag)
+                            + "). The colon in variable names is reserved by Tetrad's time-series machinery for lag "
+                            + "suffixes, as in X:1 for X lagged once, and lagging data with such names is refused."));
+        }
+
+        if (!errorPrefixed.isEmpty()) {
+            String collisionText = errorCollisions.isEmpty() ? ""
+                    : " For " + listSome(errorCollisions) + ", the remainder after \"E_\" names another variable in "
+                      + "this dataset, so a generated error node for that variable would have exactly this name.";
+
+            this.findings.add(new AuditFinding(FindingCode.RESERVED_VARIABLE_NAME,
+                    AuditFinding.Severity.WARNING, errorPrefixed,
+                    Map.of("count", (double) errorPrefixed.size()),
+                    "Names beginning with \"E_\" (" + listSome(errorPrefixed) + "), the prefix under which SEM "
+                            + "graphs generate error-term nodes and which some graph utilities treat as marking an "
+                            + "error term." + collisionText));
+        }
+
+        if (!specChars.isEmpty()) {
+            this.findings.add(new AuditFinding(FindingCode.RESERVED_VARIABLE_NAME,
+                    AuditFinding.Severity.WARNING, specChars,
+                    Map.of("count", (double) specChars.size()),
+                    "Names containing '*' or ',' (" + listSome(specChars) + "); knowledge specifications interpret "
+                            + "'*' as a wildcard and ',' as a list separator."));
+        }
+    }
+
+    /**
+     * Renders up to eight of the given names as a comma-separated list, appending "and k more" past that, for use
+     * in finding messages whose full variable lists are carried by the finding itself.
+     */
+    private static String listSome(List<String> names) {
+        int limit = 8;
+
+        if (names.size() <= limit) {
+            return String.join(", ", names);
+        }
+
+        return String.join(", ", names.subList(0, limit)) + ", and " + (names.size() - limit) + " more";
+    }
 
     /**
      * Counts distinct observed values per column and flags continuous variables with few distinct values and discrete
@@ -1103,13 +1213,20 @@ public final class DataAudit {
                                 .append(fmt(subsetR2[0])).append(" on {")
                                 .append(String.join(", ", subsetNames))
                                 .append("}. With near-collinear predictors this subset choice is not unique.");
-                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
-                                AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
+                        // Determined variable first, then the explaining subset when it accounts for most of the
+                        // dependence, matching the convention of the other determinism findings; see
+                        // FindingCode.NEAR_DETERMINISM_LINEAR. Added 2026-9-12.
+                        List<String> vars = new ArrayList<>();
+                        vars.add(this.continuousNames.get(a));
+                        if (reached) vars.addAll(subsetNames);
+
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_LINEAR,
+                                AuditFinding.Severity.WARNING, vars,
                                 Map.of("rSquared", r2, "threshold", this.config.r2Determinism,
                                         "subsetRSquared", subsetR2[0], "subsetSize", (double) subset.size()),
                                 msg.toString()));
                     } else {
-                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS,
+                        this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_LINEAR,
                                 AuditFinding.Severity.WARNING, List.of(this.continuousNames.get(a)),
                                 Map.of("rSquared", r2, "threshold", this.config.r2Determinism),
                                 msg.toString()));
@@ -1180,6 +1297,457 @@ public final class DataAudit {
             }
         }
     }
+
+    /**
+     * Flags continuous variables that are nearly smooth (generally nonlinear) functions of small sets of other
+     * continuous variables, which the linear (multiple R-squared) check cannot see. For each continuous target not
+     * already flagged as NEAR_DETERMINISM_LINEAR, a determining subset is grown greedily, one variable at a
+     * time up to the configured maximum size, scoring each candidate set by the leave-one-out cross-validated
+     * R-squared of a natural-cubic-spline regression of the target on the set; the finding
+     * NEAR_DETERMINISM_NONLINEAR is emitted for the first (hence smallest) subset whose leave-one-out R-squared
+     * reaches the configured threshold. Leave-one-out cross-validation, computed exactly through the hat matrix, is
+     * the overfitting guard: the reported R-squared is out-of-sample, so it cannot be inflated by basis flexibility,
+     * and on independent data it sits near zero even after greedy selection.
+     * <p>
+     * The regression basis is a natural cubic spline per variable (truncated-power form, knots at the 10th, 30th,
+     * 50th, 70th, and 90th percentiles, up to four columns per variable), with all pairwise tensor products of the
+     * two variables' columns for two-variable sets and pairwise products of the linear columns only for larger sets.
+     * All columns are standardized on the evaluation rows. Each candidate set is evaluated on the rows where the
+     * target and the whole set are observed; a candidate is skipped when those rows number fewer than 40 or fewer
+     * than three times the basis size. Rows are subsampled deterministically (even stride) above {@code
+     * NONLINEAR_MAX_ROWS} rows, and when a target has more than {@code NONLINEAR_MAX_CANDIDATES} potential
+     * determiners, the pool is restricted to the candidates most correlated with the target. The spline is linear
+     * beyond its boundary knots, so dependence carried mostly by extreme tails can be understated; the absence of
+     * this finding does not rule such dependence out.
+     */
+    private void nearDeterminismNonlinearCheck() {
+        int maxSize = this.config.nonlinearDeterminismMaxSetSize;
+        if (maxSize <= 0) return;
+
+        int pc = this.continuousIndices.length;
+        if (pc < 2) return;
+
+        // Targets already flagged by the linear check are skipped: this finding is reserved for dependence the
+        // linear check cannot see, so the two findings partition rather than duplicate.
+        Set<String> linearFlagged = new HashSet<>();
+
+        for (AuditFinding f : this.findings) {
+            if (f.getCode() == FindingCode.NEAR_DETERMINISM_LINEAR && !f.getVariables().isEmpty()) {
+                linearFlagged.add(f.getVariables().get(0));
+            }
+        }
+
+        for (int a = 0; a < pc; a++) {
+            checkInterrupted();
+
+            String targetName = this.continuousNames.get(a);
+            if (linearFlagged.contains(targetName)) continue;
+
+            // Candidate pool: the other continuous variables, restricted on wide datasets to those most
+            // correlated with the target (absolute pairwise correlation, NaN treated as zero).
+            List<Integer> pool = new ArrayList<>();
+            for (int b = 0; b < pc; b++) if (b != a) pool.add(b);
+
+            if (pool.size() > NONLINEAR_MAX_CANDIDATES && this.continuousCorrelation != null) {
+                final int fa = a;
+                pool.sort((x, y) -> {
+                    double rx = this.continuousCorrelation.get(fa, x);
+                    double ry = this.continuousCorrelation.get(fa, y);
+                    if (Double.isNaN(rx)) rx = 0.0;
+                    if (Double.isNaN(ry)) ry = 0.0;
+                    return Double.compare(Math.abs(ry), Math.abs(rx));
+                });
+                pool = pool.subList(0, NONLINEAR_MAX_CANDIDATES);
+            }
+
+            // Forward selection: at each size the candidate with the largest leave-one-out R-squared is added even
+            // when it does not improve on the previous size, since a size-one dead end (all single variables
+            // uninformative, as for a pure product Y = X1 * X2) must not block the sizes where the dependence
+            // lives; the threshold, not monotone improvement, decides flagging. Backward pruning below restores
+            // minimality when an uninformative variable was picked up along the way.
+            List<Integer> chosen = new ArrayList<>();
+            double bestLoo = Double.NEGATIVE_INFINITY;
+
+            while (chosen.size() < maxSize) {
+                Integer bestCand = null;
+                double bestCandLoo = Double.NEGATIVE_INFINITY;
+
+                for (int cand : pool) {
+                    checkInterrupted();
+                    if (chosen.contains(cand)) continue;
+
+                    List<Integer> trial = new ArrayList<>(chosen);
+                    trial.add(cand);
+                    double loo = subsetLooRSquared(a, trial);
+
+                    if (!Double.isNaN(loo) && loo > bestCandLoo) {
+                        bestCandLoo = loo;
+                        bestCand = cand;
+                    }
+                }
+
+                if (bestCand == null) break;
+
+                chosen.add(bestCand);
+                bestLoo = bestCandLoo;
+
+                if (bestLoo >= this.config.nonlinearR2Determinism) break;
+            }
+
+            if (bestLoo >= this.config.nonlinearR2Determinism) {
+                // Backward pruning: any variable whose removal keeps the leave-one-out R-squared at or above
+                // threshold is dropped (removing the one that leaves the largest R-squared first), so the reported
+                // set is minimal with respect to the threshold.
+                boolean pruned = true;
+
+                while (pruned && chosen.size() > 1) {
+                    pruned = false;
+                    Integer dropVar = null;
+                    double dropLoo = Double.NEGATIVE_INFINITY;
+
+                    for (int candidateDrop : chosen) {
+                        checkInterrupted();
+                        List<Integer> trial = new ArrayList<>(chosen);
+                        trial.remove(Integer.valueOf(candidateDrop));
+                        double loo = subsetLooRSquared(a, trial);
+
+                        if (!Double.isNaN(loo) && loo >= this.config.nonlinearR2Determinism && loo > dropLoo) {
+                            dropLoo = loo;
+                            dropVar = candidateDrop;
+                        }
+                    }
+
+                    if (dropVar != null) {
+                        chosen.remove(dropVar);
+                        bestLoo = dropLoo;
+                        pruned = true;
+                    }
+                }
+            }
+
+            if (bestLoo >= this.config.nonlinearR2Determinism) {
+                double[][] cols = completeStandardizedColumns(a, chosen);
+                double linearLooAtBest = Double.NaN;
+                int rowsAtBest = 0;
+
+                if (cols != null) {
+                    double[] y = cols[0];
+                    double[][] predictors = new double[chosen.size()][];
+                    System.arraycopy(cols, 1, predictors, 0, chosen.size());
+                    linearLooAtBest = looRSquared(linearFeatures(predictors), y);
+                    rowsAtBest = y.length;
+                }
+
+                List<String> vars = new ArrayList<>();
+                vars.add(targetName);
+                List<String> subsetNames = new ArrayList<>();
+
+                for (int b : chosen) {
+                    vars.add(this.continuousNames.get(b));
+                    subsetNames.add(this.continuousNames.get(b));
+                }
+
+                this.findings.add(new AuditFinding(FindingCode.NEAR_DETERMINISM_NONLINEAR,
+                        AuditFinding.Severity.WARNING, vars,
+                        Map.of("looRSquared", bestLoo, "threshold", this.config.nonlinearR2Determinism,
+                                "linearLooRSquared", Double.isNaN(linearLooAtBest) ? -1.0 : linearLooAtBest,
+                                "subsetSize", (double) chosen.size(), "rowsUsed", (double) rowsAtBest),
+                        "Continuous variable " + targetName + " is nearly a smooth function of {"
+                                + String.join(", ", subsetNames) + "}: leave-one-out cross-validated R^2 = "
+                                + fmt(bestLoo) + " for a natural-cubic-spline regression on that set (leave-one-out "
+                                + "linear R^2 on the same set = " + fmt(linearLooAtBest) + "; the gap between the "
+                                + "two is dependence invisible to the linear near-determinism check). The R^2 is "
+                                + "out-of-sample, so it is not an artifact of basis flexibility. With correlated "
+                                + "predictors this subset is not unique, and supersets are not searched once the "
+                                + "threshold is reached."));
+            }
+        }
+    }
+
+    /**
+     * Returns the leave-one-out cross-validated spline-regression R-squared of the given target on the given
+     * predictor subset (indices into the continuous arrays), or NaN when the evaluation is unavailable: too few
+     * complete rows for the basis size (fewer than 40, or fewer than three times the number of basis columns), a
+     * constant target on those rows, or a degenerate basis.
+     */
+    private double subsetLooRSquared(int target, List<Integer> subset) {
+        double[][] cols = completeStandardizedColumns(target, subset);
+        if (cols == null) return Double.NaN;
+
+        double[] y = cols[0];
+        double[][] predictors = new double[subset.size()][];
+        System.arraycopy(cols, 1, predictors, 0, subset.size());
+
+        double[][] features = splineFeatures(predictors);
+        if (features == null) return Double.NaN;
+
+        int m = y.length;
+        int k = features[0].length;
+        if (m < Math.max(40, 3 * k)) return Double.NaN;
+
+        return looRSquared(features, y);
+    }
+
+    /**
+     * Returns, for the given target and predictor columns (indices into the continuous arrays), the columns
+     * restricted to the rows where all are observed, each standardized on those rows, with the target first;
+     * subsampled by even stride above NONLINEAR_MAX_ROWS rows. Returns null when fewer than two complete rows
+     * remain or the target is constant on them.
+     */
+    private double[][] completeStandardizedColumns(int target, List<Integer> predictors) {
+        int nAll = this.dataSet.getNumRows();
+        int[] datasetCols = new int[predictors.size() + 1];
+        datasetCols[0] = this.continuousIndices[target];
+        for (int i = 0; i < predictors.size(); i++) datasetCols[i + 1] = this.continuousIndices[predictors.get(i)];
+
+        List<Integer> rows = new ArrayList<>();
+
+        outer:
+        for (int i = 0; i < nAll; i++) {
+            for (int j : datasetCols) {
+                if (MissingDataAudit.isMissing(this.dataSet, i, j)) continue outer;
+            }
+            rows.add(i);
+        }
+
+        if (rows.size() > NONLINEAR_MAX_ROWS) {
+            List<Integer> sub = new ArrayList<>(NONLINEAR_MAX_ROWS);
+            double stride = rows.size() / (double) NONLINEAR_MAX_ROWS;
+            for (int t = 0; t < NONLINEAR_MAX_ROWS; t++) sub.add(rows.get((int) (t * stride)));
+            rows = sub;
+        }
+
+        int m = rows.size();
+        if (m < 2) return null;
+
+        double[][] cols = new double[datasetCols.length][m];
+
+        for (int c = 0; c < datasetCols.length; c++) {
+            for (int t = 0; t < m; t++) cols[c][t] = this.dataSet.getDouble(rows.get(t), datasetCols[c]);
+            if (!standardizeInPlace(cols[c]) && c == 0) return null;
+        }
+
+        return cols;
+    }
+
+    /**
+     * Standardizes the column in place (mean zero, population standard deviation one) and returns true, or returns
+     * false leaving the column centered when its standard deviation is zero.
+     */
+    private static boolean standardizeInPlace(double[] x) {
+        int m = x.length;
+        double mean = 0.0;
+        for (double v : x) mean += v;
+        mean /= m;
+
+        double var = 0.0;
+        for (int i = 0; i < m; i++) {
+            x[i] -= mean;
+            var += x[i] * x[i];
+        }
+        var /= m;
+
+        if (var <= 0.0) return false;
+
+        double sd = Math.sqrt(var);
+        for (int i = 0; i < m; i++) x[i] /= sd;
+        return true;
+    }
+
+    /**
+     * Returns the natural-cubic-spline basis of the (standardized) column in truncated-power form: the column
+     * itself, then up to three curvature columns from knots at the 10th, 30th, 50th, 70th, and 90th percentiles,
+     * each curvature column standardized; degenerate (tied-knot or constant) curvature columns are dropped, down to
+     * the linear column alone.
+     */
+    private static double[][] splineBasis(double[] x) {
+        int m = x.length;
+
+        double[] sorted = x.clone();
+        java.util.Arrays.sort(sorted);
+        double[] qs = {0.1, 0.3, 0.5, 0.7, 0.9};
+        List<Double> knotList = new ArrayList<>();
+
+        for (double q : qs) {
+            double knot = sorted[Math.min(m - 1, (int) Math.floor(q * m))];
+            if (knotList.isEmpty() || knot > knotList.get(knotList.size() - 1)) knotList.add(knot);
+        }
+
+        int numKnots = knotList.size();
+        List<double[]> columns = new ArrayList<>();
+        columns.add(x);
+
+        if (numKnots >= 3) {
+            double kLast = knotList.get(numKnots - 1);
+            double kPenult = knotList.get(numKnots - 2);
+            double[] dPenult = truncatedCubicDifference(x, kPenult, kLast);
+
+            for (int j = 0; j < numKnots - 2; j++) {
+                double[] dj = truncatedCubicDifference(x, knotList.get(j), kLast);
+                double[] col = new double[m];
+                for (int i = 0; i < m; i++) col[i] = dj[i] - dPenult[i];
+                if (standardizeInPlace(col)) columns.add(col);
+            }
+        }
+
+        return columns.toArray(new double[0][]);
+    }
+
+    /**
+     * Returns the truncated-power natural-spline building block ((x - knot)+^3 - (x - lastKnot)+^3) / (lastKnot -
+     * knot) for the given knot against the last knot.
+     */
+    private static double[] truncatedCubicDifference(double[] x, double knot, double lastKnot) {
+        int m = x.length;
+        double[] d = new double[m];
+        double denom = lastKnot - knot;
+
+        for (int i = 0; i < m; i++) {
+            double u = Math.max(x[i] - knot, 0.0);
+            double v = Math.max(x[i] - lastKnot, 0.0);
+            d[i] = (u * u * u - v * v * v) / denom;
+        }
+
+        return d;
+    }
+
+    /**
+     * Assembles the regression feature matrix for the given standardized predictor columns: an intercept, each
+     * predictor's spline basis, then all pairwise tensor products of the two bases for two predictors, or pairwise
+     * products of the linear columns only for three or more. Product columns are standardized; degenerate ones are
+     * dropped. Returns null if no predictor contributes a column.
+     */
+    private static double[][] splineFeatures(double[][] predictors) {
+        int s = predictors.length;
+        int m = predictors[0].length;
+
+        List<double[][]> bases = new ArrayList<>();
+        for (double[] p : predictors) bases.add(splineBasis(p));
+
+        List<double[]> feats = new ArrayList<>();
+        double[] intercept = new double[m];
+        java.util.Arrays.fill(intercept, 1.0);
+        feats.add(intercept);
+
+        for (double[][] basis : bases) feats.addAll(java.util.Arrays.asList(basis));
+
+        if (s == 2) {
+            for (double[] ca : bases.get(0)) {
+                for (double[] cb : bases.get(1)) {
+                    double[] prod = new double[m];
+                    for (int i = 0; i < m; i++) prod[i] = ca[i] * cb[i];
+                    if (standardizeInPlace(prod)) feats.add(prod);
+                }
+            }
+        } else if (s >= 3) {
+            for (int p1 = 0; p1 < s; p1++) {
+                for (int p2 = p1 + 1; p2 < s; p2++) {
+                    double[] prod = new double[m];
+                    for (int i = 0; i < m; i++) prod[i] = predictors[p1][i] * predictors[p2][i];
+                    if (standardizeInPlace(prod)) feats.add(prod);
+                }
+            }
+        }
+
+        if (feats.size() < 2) return null;
+
+        double[][] features = new double[m][feats.size()];
+        for (int j = 0; j < feats.size(); j++) {
+            double[] col = feats.get(j);
+            for (int i = 0; i < m; i++) features[i][j] = col[i];
+        }
+
+        return features;
+    }
+
+    /**
+     * Assembles the linear feature matrix (intercept plus the standardized predictors themselves) for the contrast
+     * value reported alongside the spline fit.
+     */
+    private static double[][] linearFeatures(double[][] predictors) {
+        int s = predictors.length;
+        int m = predictors[0].length;
+        double[][] features = new double[m][s + 1];
+
+        for (int i = 0; i < m; i++) {
+            features[i][0] = 1.0;
+            for (int j = 0; j < s; j++) features[i][j + 1] = predictors[j][i];
+        }
+
+        return features;
+    }
+
+    /**
+     * Returns the leave-one-out cross-validated R-squared of the ridge-stabilized (lambda = 1e-10 relative to the
+     * mean Gram diagonal) least-squares regression of y on the feature matrix, computed exactly through the hat
+     * matrix leverages: each leave-one-out residual is the in-sample residual divided by one minus the leverage.
+     * Returns NaN when y has no variance or the Gram matrix cannot be inverted.
+     */
+    private static double looRSquared(double[][] features, double[] y) {
+        int m = features.length;
+        int k = features[0].length;
+
+        org.ejml.simple.SimpleMatrix f = new org.ejml.simple.SimpleMatrix(features);
+        org.ejml.simple.SimpleMatrix gram = f.transpose().mult(f);
+
+        double trace = 0.0;
+        for (int j = 0; j < k; j++) trace += gram.get(j, j);
+        double lambda = 1e-10 * trace / k;
+        for (int j = 0; j < k; j++) gram.set(j, j, gram.get(j, j) + lambda);
+
+        org.ejml.simple.SimpleMatrix gramInv;
+        try {
+            gramInv = gram.invert();
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+
+        org.ejml.simple.SimpleMatrix yv = new org.ejml.simple.SimpleMatrix(m, 1);
+        for (int i = 0; i < m; i++) yv.set(i, 0, y[i]);
+
+        org.ejml.simple.SimpleMatrix beta = gramInv.mult(f.transpose()).mult(yv);
+        org.ejml.simple.SimpleMatrix fitted = f.mult(beta);
+
+        double meanY = 0.0;
+        for (double v : y) meanY += v;
+        meanY /= m;
+
+        double varY = 0.0;
+        for (double v : y) varY += (v - meanY) * (v - meanY);
+        varY /= m;
+        if (varY <= 0.0) return Double.NaN;
+
+        double looSse = 0.0;
+
+        for (int i = 0; i < m; i++) {
+            double leverage = 0.0;
+
+            for (int p = 0; p < k; p++) {
+                double gi = 0.0;
+                for (int q = 0; q < k; q++) gi += gramInv.get(p, q) * features[i][q];
+                leverage += features[i][p] * gi;
+            }
+
+            leverage = Math.min(Math.max(leverage, 0.0), 0.9999);
+            double resid = y[i] - fitted.get(i, 0);
+            double looResid = resid / (1.0 - leverage);
+            looSse += looResid * looResid;
+        }
+
+        return 1.0 - (looSse / m) / varY;
+    }
+
+    /**
+     * The largest number of rows used by the nonlinear near-determinism check; above this the complete rows are
+     * subsampled by even stride.
+     */
+    private static final int NONLINEAR_MAX_ROWS = 2000;
+
+    /**
+     * The largest candidate-determiner pool per target in the nonlinear near-determinism check; wider pools are
+     * restricted to the candidates most correlated with the target.
+     */
+    private static final int NONLINEAR_MAX_CANDIDATES = 20;
 
     /**
      * Flags variables that are (near-)deterministic functions of small sets of few-valued variables, by direct cell
@@ -1887,7 +2455,7 @@ public final class DataAudit {
 
     /**
      * Fraction of the full R^2 that a greedily chosen predictor subset must reach for the subset to be reported as
-     * accounting for the dependence in NEAR_DETERMINISM_CONTINUOUS messages.
+     * accounting for the dependence in NEAR_DETERMINISM_LINEAR messages.
      */
     public static final double EXPLAINING_SUBSET_FRACTION = 0.99;
 
@@ -1897,7 +2465,7 @@ public final class DataAudit {
     public static final int EXPLAINING_SUBSET_MAX_SIZE = 5;
 
     /**
-     * Greedy forward selection on a correlation matrix, used to localize a NEAR_DETERMINISM_CONTINUOUS finding: for
+     * Greedy forward selection on a correlation matrix, used to localize a NEAR_DETERMINISM_LINEAR finding: for
      * column a, predictors are added one at a time, each step choosing the column that most increases the R^2 of a
      * on the selected set, stopping when the subset R^2 reaches {@link #EXPLAINING_SUBSET_FRACTION} of fullR2 or the
      * set reaches {@link #EXPLAINING_SUBSET_MAX_SIZE} predictors. The achieved subset R^2 is written to
@@ -2141,6 +2709,21 @@ public final class DataAudit {
         private final double cellDeterminismTolerance;
 
         /**
+         * A continuous variable whose leave-one-out cross-validated spline-regression R-squared on a small set of
+         * other continuous variables is at or above this is flagged NEAR_DETERMINISM_NONLINEAR. Default 0.95. The
+         * threshold is deliberately below the linear r2Determinism default: the statistic is out-of-sample, and
+         * real derived columns (hand-entered fire-weather indices, for instance) carry entry noise that caps even a
+         * perfect regressor below the linear check's calibration.
+         */
+        private final double nonlinearR2Determinism;
+
+        /**
+         * The largest determining-set size searched by the nonlinear near-determinism check
+         * (NEAR_DETERMINISM_NONLINEAR); 0 disables the check. Default 3.
+         */
+        private final int nonlinearDeterminismMaxSetSize;
+
+        /**
          * The minimum number of cells at an extreme value for SENTINEL_VALUE to fire there. Default 3. An absolute
          * floor, so that a single extreme observation is never flagged however small the sample.
          */
@@ -2180,7 +2763,7 @@ public final class DataAudit {
          * @param smallCellCount          threshold for SMALL_MARGINAL_CELL.
          * @param minExpectedPairwiseCell threshold for SMALL_PAIRWISE_CELLS.
          * @param highCorrelation         threshold for HIGH_CORRELATION.
-         * @param r2Determinism           threshold for NEAR_DETERMINISM_CONTINUOUS.
+         * @param r2Determinism           threshold for NEAR_DETERMINISM_LINEAR.
          * @param etaSquaredDeterminism   threshold for NEAR_DETERMINISM_DISCRETE_CONTINUOUS.
          * @param adAlpha                 alpha for NON_GAUSSIAN.
          * @param minAdSampleSize         minimum column n for the Anderson-Darling test.
@@ -2206,7 +2789,7 @@ public final class DataAudit {
          * @param smallCellCount              threshold for SMALL_MARGINAL_CELL.
          * @param minExpectedPairwiseCell     threshold for SMALL_PAIRWISE_CELLS.
          * @param highCorrelation             threshold for HIGH_CORRELATION.
-         * @param r2Determinism               threshold for NEAR_DETERMINISM_CONTINUOUS.
+         * @param r2Determinism               threshold for NEAR_DETERMINISM_LINEAR.
          * @param etaSquaredDeterminism       threshold for NEAR_DETERMINISM_DISCRETE_CONTINUOUS.
          * @param adAlpha                     alpha for NON_GAUSSIAN.
          * @param minAdSampleSize             minimum column n for the Anderson-Darling test.
@@ -2230,7 +2813,7 @@ public final class DataAudit {
                     r2Determinism, etaSquaredDeterminism, adAlpha, minAdSampleSize, lowSampleRatio,
                     nearConstantFrequency, nearConstantVariance, serialMaxLag, serialAlpha,
                     serialMinAbsAutocorrelation, minSerialSampleSize, serialGroupVariable, 3, 30, 1e-9,
-                    3, 0.005, 3.0, 5);
+                    0.95, 3, 3, 0.005, 3.0, 5);
         }
 
         /**
@@ -2245,6 +2828,7 @@ public final class DataAudit {
                        int minSerialSampleSize, String serialGroupVariable,
                        int cellDeterminismMaxSetSize, int cellDeterminismMaxCardinality,
                        double cellDeterminismTolerance,
+                       double nonlinearR2Determinism, int nonlinearDeterminismMaxSetSize,
                        int sentinelMinCount, double sentinelMinMass,
                        double sentinelGapRatio, int sentinelMinDistinct) {
             this.fewContinuousValues = fewContinuousValues;
@@ -2267,6 +2851,8 @@ public final class DataAudit {
             this.cellDeterminismMaxSetSize = cellDeterminismMaxSetSize;
             this.cellDeterminismMaxCardinality = cellDeterminismMaxCardinality;
             this.cellDeterminismTolerance = cellDeterminismTolerance;
+            this.nonlinearR2Determinism = nonlinearR2Determinism;
+            this.nonlinearDeterminismMaxSetSize = nonlinearDeterminismMaxSetSize;
             this.sentinelMinCount = sentinelMinCount;
             this.sentinelMinMass = sentinelMinMass;
             this.sentinelGapRatio = sentinelGapRatio;
@@ -2283,6 +2869,7 @@ public final class DataAudit {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
                     this.sentinelMinDistinct);
         }
@@ -2297,6 +2884,7 @@ public final class DataAudit {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
                     this.sentinelMinDistinct);
         }
@@ -2311,6 +2899,7 @@ public final class DataAudit {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
                     this.sentinelMinDistinct);
         }
@@ -2325,6 +2914,7 @@ public final class DataAudit {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, serialGroupVariable,
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
                     this.sentinelMinDistinct);
         }
@@ -2349,6 +2939,7 @@ public final class DataAudit {
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
                     this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
                     cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
                     this.sentinelMinDistinct);
         }
@@ -2367,6 +2958,7 @@ public final class DataAudit {
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
                     this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
                     this.cellDeterminismMaxSetSize, cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
                     this.sentinelMinDistinct);
         }
@@ -2385,6 +2977,44 @@ public final class DataAudit {
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
                     this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given nonlinear near-determinism threshold.
+         *
+         * @param nonlinearR2Determinism the new threshold.
+         * @return the new config.
+         */
+        public Config withNonlinearR2Determinism(double nonlinearR2Determinism) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
+                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
+                    this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
+                    this.sentinelMinDistinct);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given nonlinear near-determinism maximum
+         * determining-set size (0 disables the check).
+         *
+         * @param nonlinearDeterminismMaxSetSize the new maximum set size.
+         * @return the new config.
+         */
+        public Config withNonlinearDeterminismMaxSetSize(int nonlinearDeterminismMaxSetSize) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount,
+                    this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism,
+                    this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha,
+                    this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
+                    this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
                     this.sentinelMinDistinct);
         }
@@ -2399,6 +3029,7 @@ public final class DataAudit {
             return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation, this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize,
                     this.lowSampleRatio, this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, serialAlpha, this.serialMinAbsAutocorrelation, this.minSerialSampleSize, this.serialGroupVariable,
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
                     this.sentinelMinDistinct);
         }
@@ -2414,6 +3045,7 @@ public final class DataAudit {
                     this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
                     this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct);
         }
 
@@ -2428,6 +3060,7 @@ public final class DataAudit {
                     this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
                     this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct);
         }
 
@@ -2442,6 +3075,7 @@ public final class DataAudit {
                     this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
                     this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, sentinelGapRatio, this.sentinelMinDistinct);
         }
 
@@ -2456,6 +3090,7 @@ public final class DataAudit {
                     this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
                     this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, sentinelMinDistinct);
         }
     }

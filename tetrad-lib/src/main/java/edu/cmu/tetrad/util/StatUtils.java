@@ -2403,7 +2403,7 @@ public final class StatUtils {
                 try {
                     subdata[c][i] = allData[c][rows.get(i)];
                 } catch (Exception e) {
-                    TetradLogger.getInstance().log("Error = " + e.getMessage());
+                    TetradLogger.getInstance().warn("Error = " + e.getMessage());
                     TetradLogger.getInstance().log("c = " + c + ", i = " + i + ", rows.size() = " + rows.size());
                 }
             }

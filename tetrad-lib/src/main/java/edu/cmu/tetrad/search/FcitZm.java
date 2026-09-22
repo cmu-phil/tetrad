@@ -707,7 +707,7 @@ public final class FcitZm implements IGraphSearch {
                         PagLegalityCheck.isLegalPagModuloKnowledge(finalPag,
                                 new LinkedHashSet<>(selection), knowledge, fciOrient, excludeSelectionBias);
                 if (!recheck.isLegalPag()) {
-                    TetradLogger.getInstance().log("\nWARNING: healed graph still fails the PAG certificate ("
+                    TetradLogger.getInstance().warn("\nhealed graph still fails the PAG certificate ("
                             + recheck.getReason() + "). Returning it anyway; please report this case.");
                 }
             }
@@ -721,7 +721,7 @@ public final class FcitZm implements IGraphSearch {
         if (finalScan.edge() != null) {
             TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
         } else if (finalScan.indeterminate()) {
-            TetradLogger.getInstance().log(
+            TetradLogger.getInstance().warn(
                     "\nR4: Detection inconclusive: a blocking search timed out before a verdict. "
                             + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {

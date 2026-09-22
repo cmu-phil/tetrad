@@ -307,7 +307,7 @@ public class SimpleDataLoader {
             String _token = st.nextToken();
 
             if ("".equals(_token)) {
-                TetradLogger.getInstance().log("Parsed an empty token for a variable name--ignoring.");
+                TetradLogger.getInstance().warn("Parsed an empty token for a variable name--ignoring.");
                 continue;
             }
 
@@ -338,7 +338,7 @@ public class SimpleDataLoader {
                 String literal = st.nextToken();
 
                 if ("".equals(literal)) {
-                    TetradLogger.getInstance().log("Parsed an empty token for a "
+                    TetradLogger.getInstance().warn("Parsed an empty token for a "
                                                    + "covariance value--ignoring.");
                     continue;
                 }

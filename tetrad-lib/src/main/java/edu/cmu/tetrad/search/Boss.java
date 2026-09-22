@@ -248,8 +248,8 @@ public class Boss implements SuborderSearch {
 
                     if (++iter >= maxIter) {
                         if (improved) {
-                            TetradLogger.getInstance().log(String.format(
-                                    "Warning: BOSS hit its iteration cap (%d sweeps over %d variables) while still "
+                            TetradLogger.getInstance().warn(String.format(
+                                    "BOSS hit its iteration cap (%d sweeps over %d variables) while still "
                                     + "finding score-improving moves; terminating this suborder search early. "
                                     + "Persistent non-convergence can indicate near-tied scores, e.g., under "
                                     + "near-deterministic relations among variables (see the Data Audit).",

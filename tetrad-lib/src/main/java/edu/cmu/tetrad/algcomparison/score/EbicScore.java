@@ -69,7 +69,7 @@ public class EbicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("em"), "EBIC Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"), "EBIC Score");
         dataSet = MissingDataUtils.emCovarianceIfRequested(dataSet, parameters, "EBIC Score");
         this.dataSet = dataSet;
 

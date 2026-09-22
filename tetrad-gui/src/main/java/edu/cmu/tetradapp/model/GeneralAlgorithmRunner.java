@@ -317,7 +317,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     public GeneralAlgorithmRunner(IndependenceFactsModel model,
                                   Parameters parameters, KnowledgeBoxModel knowledgeBoxModel)
-    throws ParseException {
+            throws ParseException {
         this(null, null, parameters, knowledgeBoxModel, model);
     }
 
@@ -562,10 +562,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             // ----- 2B') Pooled search: several data sets, ONE search (IMaGES-style), when requested -----
             else if (dataModelList.size() > 1 && this.parameters.getBoolean(Params.POOL_DATA_SETS, false)) {
                 if (!(algo instanceof AbstractBootstrapAlgorithm)
-                    || !(algo instanceof TakesScoreWrapper || algo instanceof TakesIndependenceWrapper)) {
+                        || !(algo instanceof TakesScoreWrapper || algo instanceof TakesIndependenceWrapper)) {
                     throw new IllegalArgumentException("Pooling data sets (the 'poolDataSets' option) requires a "
-                                                       + "score- or test-based algorithm; this algorithm cannot pool. "
-                                                       + "Turn the option off to search each data set separately.");
+                            + "score- or test-based algorithm; this algorithm cannot pool. "
+                            + "Turn the option off to search each data set separately.");
                 }
 
                 if (knowledge == null) {
@@ -615,7 +615,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                                     (data.isMixed() && algDataType == DataType.Mixed);
                     if (!ok) {
                         throw new IllegalArgumentException("The algorithm was not expecting that type of data: "
-                                                           + data.getName());
+                                + data.getName());
                     }
                 }
 

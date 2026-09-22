@@ -35,6 +35,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -138,7 +140,21 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         fask.setUseSkewAdjacencies(true);
 
         if (algorithm != null) {
-            fask.setExternalGraph(algorithm.search(dataSet, parameters));
+            Graph external = algorithm.search(dataSet, parameters);
+            fask.setExternalGraph(external);
+
+            boolean useOrientations = parameters.getBoolean(Params.FASK_POOL_EXTERNAL_ORIENTATIONS);
+            fask.setUseExternalOrientations(useOrientations);
+            fask.setOverrideBootstraps(parameters.getInt(Params.FASK_OVERRIDE_BOOTSTRAPS));
+            fask.setOverrideBlockLength(parameters.getInt(Params.FASK_OVERRIDE_BLOCK_LENGTH));
+
+            if (external != null) {
+                TetradLogger.getInstance().log("FASK: external graph received ("
+                        + external.getNumNodes() + " nodes, " + external.getNumEdges()
+                        + " edges); its adjacencies will be used"
+                        + (useOrientations ? ", with its compelled orientations as defaults."
+                        : "; its orientations will be ignored."));
+            }
         }
 
         fask.setKnowledge(this.knowledge);
@@ -196,6 +212,9 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(TWO_CYCLE_ALPHA);
         parameters.add(FASK_LEFT_RIGHT_RULE);
         parameters.add(USE_BOSS_ADJACENCIES);
+        parameters.add(FASK_POOL_EXTERNAL_ORIENTATIONS);
+        parameters.add(FASK_OVERRIDE_BOOTSTRAPS);
+        parameters.add(FASK_OVERRIDE_BLOCK_LENGTH);
 
         return parameters;
     }

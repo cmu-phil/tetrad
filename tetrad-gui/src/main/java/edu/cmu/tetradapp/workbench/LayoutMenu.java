@@ -186,6 +186,16 @@ public class LayoutMenu extends JMenu {
             getCopyLayoutAction().actionPerformed(null);
         });
 
+        JMenuItem richardsLayout = new JMenuItem("Richard's Layout");
+        this.add(richardsLayout);
+
+        richardsLayout.addActionListener(e -> {
+            LayoutUtils.richardsLayout(LayoutMenu.this.getLayoutEditable());
+
+            // Copy the laid out graph to the clipboard.
+            getCopyLayoutAction().actionPerformed(null);
+        });
+
         if (this.getLayoutEditable().getKnowledge() != null) {
             JMenuItem knowledgeTiersLayout = new JMenuItem("Layout by Knowledge");
             this.add(knowledgeTiersLayout);
@@ -208,6 +218,11 @@ public class LayoutMenu extends JMenu {
             // Copy the laid out graph to the clipboard.
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
+
+        addSeparator();
+
+        add(new TieLayoutMenu(layoutEditable));
+        TieLayoutMenu.applyTieOnOpen(layoutEditable);
 
         addSeparator();
 

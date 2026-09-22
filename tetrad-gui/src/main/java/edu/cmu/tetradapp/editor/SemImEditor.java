@@ -843,11 +843,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 if ("Hide Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Show Error Terms");
                     getSemGraph().setShowErrorTerms(false);
-                    graphicalEditor().resetLabels();
+                    graphicalEditor().resetGraph();
                 } else if ("Show Error Terms".equals(menuItem.getText())) {
                     menuItem.setText("Hide Error Terms");
                     getSemGraph().setShowErrorTerms(true);
-                    graphicalEditor().resetLabels();
+                    graphicalEditor().resetGraph();
                 }
             });
 
@@ -871,11 +871,18 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             });
 
+            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient");
+            shadeEdges.setToolTipText("Color edges blue (positive) or vermillion (negative), darker for larger "
+                    + "|coefficient| relative to the largest in the model; error covariances by their correlation.");
+            shadeEdges.addActionListener((e) -> graphicalEditor().setShadeEdges(shadeEdges.isSelected()));
+
             JMenu params = new JMenu("Parameters");
             params.add(this.errorTerms);
             params.addSeparator();
             params.add(covariances);
             params.add(correlations);
+            params.addSeparator();
+            params.add(shadeEdges);
             params.addSeparator();
 
             if (!SemImEditor.this.wrapper.getSemIm().isCyclic()) {
@@ -917,22 +924,24 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         @Override
         public void layoutByGraph(Graph graph) {
-            SemGraph _graph = (SemGraph) this.semImGraphicalEditor.getWorkbench().getGraph();
-            _graph.setShowErrorTerms(false);
+            // The workbench displays a plain copy of the model graph, so work on the model graph itself: hide error
+            // terms there, push the graph to the workbench, then lay out. Node positions live on the shared Node
+            // objects, so the layout is reflected in the model graph, and error nodes are placed relative to their
+            // variables when they are next shown.
+            hideErrorTermsForLayout();
             this.semImGraphicalEditor.getWorkbench().layoutByGraph(graph);
-            _graph.resetErrorPositions();
-//        semImGraphicalEditor.getWorkbench().setGraph(_graph);
-            this.errorTerms.setText("Show Error Terms");
         }
 
         @Override
         public void layoutByKnowledge() {
-            SemGraph _graph = (SemGraph) this.semImGraphicalEditor.getWorkbench().getGraph();
-            _graph.setShowErrorTerms(false);
+            hideErrorTermsForLayout();
             this.semImGraphicalEditor.getWorkbench().layoutByKnowledge();
-            _graph.resetErrorPositions();
-//        semImGraphicalEditor.getWorkbench().setGraph(_graph);
+        }
+
+        private void hideErrorTermsForLayout() {
+            getSemGraph().setShowErrorTerms(false);
             this.errorTerms.setText("Show Error Terms");
+            this.semImGraphicalEditor.resetGraph();
         }
 
         private SemGraph getSemGraph() {
@@ -1194,6 +1203,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          */
         private boolean editable = true;
         private Container dialog;
+        /**
+         * Whether display edges are shaded by coefficient sign and relative magnitude.
+         */
+        private boolean shadeEdges = false;
 
         /**
          * Constructs a SemIm graphical editor for the given SemIm.
@@ -1471,7 +1484,33 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 resetNodeLabel(node, implCovar);
             }
 
+            SemGraphShading.applyEdgeShading(workbench(), graph(), semIm(), implCovar, this.shadeEdges,
+                    this::getEdgeParameter);
+
             workbench().repaint();
+        }
+
+        private void setEdgeAnnotation(Edge edge, String text) {
+            SemGraphShading.setEdgeAnnotation(workbench(), edge, text);
+        }
+
+        /**
+         * Re-syncs the workbench with the model graph and redraws labels. The workbench displays a copy of the graph,
+         * so structural changes to the model graph (showing or hiding error terms) do not reach it on their own.
+         */
+        public void resetGraph() {
+            workbench().setGraph(graph());
+            resetLabels();
+        }
+
+        /**
+         * Turns edge shading on or off and refreshes the display.
+         *
+         * @param shade true to shade edges by coefficient
+         */
+        public void setShadeEdges(boolean shade) {
+            this.shadeEdges = shade;
+            resetLabels();
         }
 
         private void resetEdgeLabel(Edge edge, Matrix implCovar) {
@@ -1537,9 +1576,21 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                             + asString(tValue) + ", P=" + asString(pValue));
                 }
 
-                workbench().setEdgeLabel(edge, label);
+                if (this.shadeEdges) {
+                    // Shaded view: no label; the value goes into the edge tooltip instead.
+                    String info = parameter.getName() + " = " + asString(val);
+                    if (!Double.isNaN(standardError) && semIm().isEstimated()) {
+                        info += SemGraphShading.stats(semIm(), parameter, this.maxFreeParamsForStatistics, this::asString);
+                    }
+                    workbench().setEdgeLabel(edge, null);
+                    setEdgeAnnotation(edge, info);
+                } else {
+                    workbench().setEdgeLabel(edge, label);
+                    setEdgeAnnotation(edge, null);
+                }
             } else {
                 workbench().setEdgeLabel(edge, null);
+                setEdgeAnnotation(edge, null);
             }
         }
 
@@ -1614,6 +1665,46 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             }
 
             label.setToolTipText(tooltip);
+
+            if (!workbench().getModelNodesToDisplay().containsKey(node)) {
+                return; // e.g. an error node while error terms are hidden
+            }
+
+            if (this.shadeEdges) {
+                // Shaded view: no node label; the value goes into the node tooltip instead.
+                String info;
+                if (!Double.isNaN(meanOrIntercept)) {
+                    info = (this.editor.isEditIntercepts() ? "B0_" + node.getName() : "Mean(" + node.getName() + ")")
+                            + " = " + asString(meanOrIntercept);
+                } else if (!Double.isNaN(stdDev)) {
+                    info = this.editor.isEditCovariancesAsCorrelations()
+                            ? "SD(" + node.getName() + ") = 1 (shown as correlations)"
+                            : node.getName() + " ~ N(0, " + asString(stdDev) + ")";
+                } else {
+                    info = node.getName();
+                }
+                if (nodeType != NodeType.ERROR && parameter != null) {
+                    // Error variance of this node's error term (the variance parameter is keyed on the node itself).
+                    info += "<br>" + SemGraphShading.errorVarianceLine(semIm(), node, parameter,
+                            this.editor.isEditCovariancesAsCorrelations(), this.maxFreeParamsForStatistics, this::asString);
+                } else if (parameter != null) {
+                    info += SemGraphShading.stats(semIm(), parameter, this.maxFreeParamsForStatistics, this::asString);
+                }
+                boolean measured = workbench().getModelNodesToDisplay().get(node) instanceof GraphNodeMeasured;
+                StringBuilder tip = new StringBuilder();
+                if (info != null) tip.append(info);
+                if (measured) {
+                    if (!tip.isEmpty()) tip.append("<br>");
+                    tip.append(getEquationOfNode(node));
+                }
+                workbench().setNodeLabel(node, null, 0, 0);
+                workbench().setNodeToolTip(node, tip.isEmpty() ? null : "<html>" + tip + "</html>");
+                return;
+            } else {
+                // Restore the equation tooltip the editor installs on measured nodes.
+                boolean measured = workbench().getModelNodesToDisplay().get(node) instanceof GraphNodeMeasured;
+                workbench().setNodeToolTip(node, measured ? getEquationOfNode(node) : null);
+            }
 
             // Offset the nodes slightly differently depending on whether
             // they're error nodes or not.
@@ -1779,9 +1870,13 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             }
 
-            eqn.append(" + ").append(semIm().getSemPm().getGraph().getExogenous(node));
+            eqn.append(" + ").append(errorTermName(node));
 
             return eqn.toString();
+        }
+
+        private String errorTermName(Node node) {
+            return SemGraphShading.errorTermName(semIm().getSemPm().getGraph(), node);
         }
 
         public GraphWorkbench getWorkbench() {

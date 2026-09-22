@@ -21,6 +21,10 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
@@ -91,6 +95,11 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private final DataSet embeddedDataSetFull;
     private IndTestBlocksWilkes blocksTest;          // delegate
     private int sampleSize;
+
+    /**
+     * The missing-data specification, handed to every delegate rebuild (null: the data set is complete).
+     */
+    private final MissingDataSpec missingSpec;
     private final int basisType;
     /**
      * If true, uninformative higher-order basis columns were pruned from the blocks at construction; remembered so
@@ -142,9 +151,29 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      */
     public IndTestBasisFunctionBlocks(DataSet dataSet, int truncationLimit, int basisType,
                                       boolean adaptiveBasisSelection) {
+        this(dataSet, truncationLimit, basisType, adaptiveBasisSelection, null);
+    }
+
+    /**
+     * As the four-argument constructor, with an explicit missing-data specification. On a data set with missing
+     * values the supported policies are LISTWISE and TESTWISE. Under TESTWISE the embedding carries NaN in every
+     * derived column of a variable wherever that variable is missing, the adaptive screen (if any) uses
+     * pairwise-deletion correlations, and the delegate blocks test computes each test's correlation matrix over
+     * the rows complete on the columns it uses. A null spec on missing data throws.
+     *
+     * @param dataSet                the input dataset.
+     * @param truncationLimit        the degree of the basis function transformation.
+     * @param basisType              the type of basis functions.
+     * @param adaptiveBasisSelection see the four-argument constructor.
+     * @param spec                   the missing-data specification, or null.
+     */
+    public IndTestBasisFunctionBlocks(DataSet dataSet, int truncationLimit, int basisType,
+                                      boolean adaptiveBasisSelection, MissingDataSpec spec) {
         if (dataSet == null) throw new IllegalArgumentException("raw == null");
         if (truncationLimit < 0) throw new IllegalArgumentException("degree must be >= 0");
 
+        dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "IndTestBasisFunctionBlocks");
+        this.missingSpec = spec;
         this.dataSet = dataSet;
         this.truncationLimit = truncationLimit;
         this.basisType = basisType;
@@ -166,7 +195,10 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         // structure is identical across subsamples (as required by the class contract).
         Map<Integer, List<Integer>> embeddingMap = adaptiveBasisSelection
                 ? Embedding.pruneUninformativeBasisColumns(dataSet, embeddedData.embedding(),
-                new CorrelationMatrix(this.embeddedDataSetFull))
+                this.embeddedDataSetFull.existsMissingValue()
+                        ? new CorrelationMatrix(new TestwiseCovariance(this.embeddedDataSetFull.getDoubleData())
+                        .pairwiseCovarianceMatrix(this.embeddedDataSetFull.getVariables()))
+                        : new CorrelationMatrix(this.embeddedDataSetFull))
                 : embeddedData.embedding();
 
         // blocks: one per ORIGINAL variable, in the same order
@@ -181,7 +213,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         // Delegate CI testing to IndTestBlocks over the full embedded data
         this.blocksTest = new IndTestBlocksWilkes(
-                new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables));
+                new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables), this.missingSpec);
         applyEffectiveSampleSize();
     }
 
@@ -378,7 +410,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
             // Rebuild delegate on the full embedded data
             this.blocksTest = new IndTestBlocksWilkes(
-                    new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables));
+                    new BlockSpec(this.embeddedDataSetFull, this.blocks, this.variables), this.missingSpec);
             applyEffectiveSampleSize();
             return;
         }
@@ -403,7 +435,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         // Rebuild delegate on the subsampled embedded data
         this.blocksTest = new IndTestBlocksWilkes(
-                new BlockSpec(subEmbedded, this.blocks, this.variables));
+                new BlockSpec(subEmbedded, this.blocks, this.variables), this.missingSpec);
         applyEffectiveSampleSize();
     }
 
@@ -490,5 +522,16 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         if (this.blocksTest != null) {
             this.blocksTest.setEffectiveSampleSize(applied);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test uses the rows complete on the
+     * embedded columns of x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

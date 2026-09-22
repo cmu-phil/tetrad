@@ -21,6 +21,7 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.hybridcg.HybridCgEstimator;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
@@ -32,6 +33,7 @@ import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.rmi.MarshalledObject;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -58,6 +60,20 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
      */
     public HybridCgImWrapper(HybridCgIm im) {
         this.im = Objects.requireNonNull(im, "im");
+    }
+
+    /**
+     * Constructs a wrapper holding an empty model, for a session IM node with no parents. This is what makes
+     * "Hybrid CG Instantiated Model" appear in the model chooser when an IM node is created without a PM parent.
+     * The intended use is to fill the model afterward with File &gt; Load Model From JSON in the editor.
+     *
+     * @param parameters the parameters (required by the session framework; not otherwise used)
+     */
+    public HybridCgImWrapper(Parameters parameters) {
+        Objects.requireNonNull(parameters, "parameters");
+        HybridCgPm pm = new HybridCgPm(new EdgeListGraph(), new java.util.ArrayList<>(),
+                new java.util.HashMap<>(), new java.util.HashMap<>());
+        this.im = new HybridCgIm(pm);
     }
 
     /**
@@ -114,6 +130,30 @@ public class HybridCgImWrapper implements SessionModel, Cloneable, Serializable 
         HybridCgPm pm = pmWrapper.getHybridCgPm();
         // Estimation: sets cutpoints (per policy) and returns the fitted IM
         this.im = HybridCgEstimator.estimate(pm, data, params);
+    }
+
+    /**
+     * Constructs a HybridCgImWrapper holding a deep copy of the estimated model of the given Hybrid CG estimator.
+     * This is what makes an IM session node a legal child of a Hybrid CG estimator node. A copy is taken rather
+     * than a reference, since this wrapper's editor mutates parameters, and edits in the IM node must not silently
+     * change the model the estimator node displays.
+     *
+     * @param wrapper the estimator whose estimated model is to be copied; must not be null
+     * @param params  the parameters (required by the session framework; not otherwise used)
+     */
+    public HybridCgImWrapper(HybridCgEstimatorWrapper wrapper, Parameters params) {
+        Objects.requireNonNull(wrapper, "wrapper");
+        HybridCgIm estimated = wrapper.getEstimatedHybridCgIm();
+
+        if (estimated == null) {
+            throw new NullPointerException("The estimator does not contain an estimated model.");
+        }
+
+        try {
+            this.im = new MarshalledObject<>(estimated).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not copy the estimated model.", e);
+        }
     }
 
     // ---------- Utilities ----------

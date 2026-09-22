@@ -83,7 +83,7 @@ public class TestDataAudit {
     }
 
     /**
-     * A near-copy pair should fire HIGH_CORRELATION and NEAR_DETERMINISM_CONTINUOUS but not
+     * A near-copy pair should fire HIGH_CORRELATION and NEAR_DETERMINISM_LINEAR but not
      * EXACT_LINEAR_DEPENDENCE.
      */
     @Test
@@ -101,7 +101,7 @@ public class TestDataAudit {
         DataAudit audit = new DataAudit(continuousDataSet(data));
 
         assertTrue(audit.hasFinding(FindingCode.HIGH_CORRELATION));
-        assertTrue(audit.hasFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS));
+        assertTrue(audit.hasFinding(FindingCode.NEAR_DETERMINISM_LINEAR));
         assertFalse(audit.hasFinding(FindingCode.EXACT_LINEAR_DEPENDENCE));
     }
 
@@ -285,7 +285,7 @@ public class TestDataAudit {
 
     /**
      * A constant column must not mask downstream findings among the remaining variables: with a constant X1 present,
-     * a near-linear-dependence among X2, X3, X4 should still fire NEAR_DETERMINISM_CONTINUOUS, the continuous-name
+     * a near-linear-dependence among X2, X3, X4 should still fire NEAR_DETERMINISM_LINEAR, the continuous-name
      * accessors should exclude X1, and the correlation matrix should cover only the non-constant variables. (Before
      * constant columns were excluded, X1's undefined correlations aborted the whole correlation battery.)
      */
@@ -305,7 +305,7 @@ public class TestDataAudit {
         DataAudit audit = new DataAudit(continuousDataSet(data));
 
         assertTrue(audit.hasFinding(FindingCode.CONSTANT_COLUMN));
-        assertTrue(audit.hasFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS));
+        assertTrue(audit.hasFinding(FindingCode.NEAR_DETERMINISM_LINEAR));
         assertFalse(audit.getContinuousNames().contains("X1"));
         assertEquals(3, audit.getContinuousNames().size());
         assertEquals(3, audit.getContinuousCorrelationMatrix().getNumRows());

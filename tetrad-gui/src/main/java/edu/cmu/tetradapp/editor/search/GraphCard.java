@@ -30,6 +30,8 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
+import edu.cmu.tetradapp.workbench.TieLayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -222,6 +224,7 @@ public class GraphCard extends JPanel {
         graph.add(new GraphPropertiesAction(this.workbench));
         graph.add(new PathsAction(this.workbench, algorithmRunner.getParameters()));
         graph.add(new UnderliningsAction(this.workbench));
+        graph.add(new FindVariableAction(this.workbench));
         graph.addSeparator();
 
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
@@ -233,6 +236,10 @@ public class GraphCard extends JPanel {
         graph.add(GraphUtils.addPagEdgeSpecializationsItems(this.workbench));
 
         menuBar.add(graph);
+
+        // The same Layout menu the workbench offers on its right-click popup, where it was easy to miss; the
+        // workbench is itself the LayoutEditable, as in the popup. Added 2026-9-12.
+        menuBar.add(new LayoutMenu(this.workbench));
 
         return menuBar;
     }
@@ -256,6 +263,13 @@ public class GraphCard extends JPanel {
         graphWorkbench.markPagEdgeSpecializations(GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm()));
 
         this.workbench = graphWorkbench;
+
+        // Reapply any recorded layout tie to this newly created result workbench, so a
+        // finished search is laid out by its reference node without the user reselecting
+        // the "Tie Layout To" menu item. (The once-per-opening application in
+        // TieLayoutMenu fires only when the editor window opens; a search finishing in
+        // an already-open editor replaces the workbench without reopening the window.)
+        TieLayoutMenu.reapplyTie(graphWorkbench);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));

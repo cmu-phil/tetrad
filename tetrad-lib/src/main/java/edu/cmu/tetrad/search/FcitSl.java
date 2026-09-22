@@ -921,7 +921,7 @@ public final class FcitSl implements IGraphSearch {
         if (finalScan.edge() != null) {
             TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
         } else if (finalScan.indeterminate()) {
-            TetradLogger.getInstance().log(
+            TetradLogger.getInstance().warn(
                     "\nR4: Detection inconclusive: a blocking search timed out before a verdict. "
                             + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {
@@ -951,7 +951,7 @@ public final class FcitSl implements IGraphSearch {
                 + (allowClassEscape ? "" : "; escape disabled."));
 
         if (useClassWalk) {
-            TetradLogger.getInstance().log("Class walk (single mark changes): " + classWalkCommits
+            TetradLogger.getInstance().warn("Class walk (single mark changes): " + classWalkCommits
                     + " commit(s), " + classWalkVisited + " class member(s) visited, "
                     + classWalkTruncations + " truncation(s)"
                     + (classWalkBestFirst ? ", best-first on stamp deficit" : ", breadth-first")

@@ -240,9 +240,18 @@ public class ObservationalStudySimulation implements Simulation, ProvidesKnowled
         boolean[] isDiscrete = new boolean[total];
         boolean[] isHidden = new boolean[total];
 
-        for (int j = 0; j < numContext; j++) {
-            names[j] = "C" + (j + 1);
-            isDiscrete[j] = rand.nextDouble() < propContextDiscrete;
+        for (int j = 0; j < numContext; j++) names[j] = "C" + (j + 1);
+
+        // Discrete context variables: a fixed count round(osTypePropContextDiscrete * numContext),
+        // chosen at random, matching the discrete-system convention below, rather than an
+        // independent coin flip per variable. No random draws are made when the count is zero.
+        int numCtxDisc = (int) Math.round(propContextDiscrete * numContext);
+        if (numCtxDisc > 0) {
+            List<Integer> ctxPool = new ArrayList<>();
+            for (int j = 0; j < numContext; j++) ctxPool.add(j);
+            for (int k = 0; k < numCtxDisc && !ctxPool.isEmpty(); k++) {
+                isDiscrete[ctxPool.remove(rand.nextInt(ctxPool.size()))] = true;
+            }
         }
         for (int j = 0; j < numHidden; j++) {
             names[numContext + j] = "H" + (j + 1);

@@ -374,6 +374,21 @@ public class TsUtils {
      */
     public static DataSet createLagData(DataSet data, int numLags) {
         List<Node> variables = data.getVariables();
+
+        // Colons in the input variable names would collide with the lag suffix convention
+        // ("X:1" for X lagged once). Formerly such names either put variables in the wrong
+        // knowledge tiers or caused the lagging to be skipped silently; better to say so.
+        for (Node node : variables) {
+            if (node.getName().indexOf(':') >= 0) {
+                throw new IllegalArgumentException(
+                        "Cannot create lagged data: variable name \"" + node.getName()
+                        + "\" contains a colon. Tetrad reserves the colon in variable names"
+                        + " for lag suffixes, as in X:1 for X lagged once, so variables in"
+                        + " data to be lagged may not have colons in their names. Please"
+                        + " rename this variable.");
+            }
+        }
+
         int dataSize = variables.size();
         int laggedRows = data.getNumRows() - numLags;
         Knowledge knowledge = new Knowledge();
@@ -405,23 +420,10 @@ public class TsUtils {
             }
         }
 
-        try {
-            for (Node node : newVariables) {
-                String varName = node.getName();
-                String tmp;
-                int lag;
-                if (varName.indexOf(':') == -1) {
-                    lag = 0;
-                    //                laglist.add(lag);
-                } else {
-                    tmp = varName.substring(varName.indexOf(':') + 1);
-                    lag = Integer.parseInt(tmp);
-                    //                laglist.add(lag);
-                }
-                knowledge.addToTier(numLags - lag, node.getName());
-            }
-        } catch (NumberFormatException e) {
-            return data;
+        // The generated names are all of the form "base" or "base:lag", with colon-free
+        // bases guaranteed by the validation above, so getLag is exact here.
+        for (Node node : newVariables) {
+            knowledge.addToTier(numLags - getLag(node.getName()), node.getName());
         }
 
         DataSet laggedData = new BoxDataSet(new DoubleDataBox(laggedRows, newVariables.size()), newVariables);
@@ -708,10 +710,32 @@ public class TsUtils {
      */
     public static String getNameNoLag(Object obj) {
         String tempS = obj.toString();
-        if (tempS.indexOf(':') == -1) {
+        if (parseLagSuffix(tempS) < 0) {
             return tempS;
-        } else {
-            return tempS.substring(0, tempS.indexOf(':'));
+        }
+        return tempS.substring(0, tempS.indexOf(':'));
+    }
+
+    /**
+     * Parses the lag suffix of a possibly-lagged name of the form "name:lag". A name has a valid
+     * lag suffix only if it contains a colon and everything after the first colon parses as a
+     * nonnegative integer; this matches the definition used by NaturalSort, and in particular a
+     * name with two colons, such as "A:1:2", is not a valid lagged name. Returns the lag if the
+     * suffix is valid and -1 otherwise. Never throws.
+     *
+     * @param s the name to parse.
+     * @return the lag, or -1 if the name is not a valid lagged name.
+     */
+    private static int parseLagSuffix(String s) {
+        int colon = s.indexOf(':');
+        if (colon < 0) {
+            return -1;
+        }
+        try {
+            int lag = Integer.parseInt(s.substring(colon + 1));
+            return lag >= 0 ? lag : -1;
+        } catch (NumberFormatException e) {
+            return -1;
         }
     }
 
@@ -741,7 +765,11 @@ public class TsUtils {
                 return y;
             }
         }
-        throw new IllegalArgumentException("Not integer suffix.");
+
+        // The whole string parsed as an integer; that integer is the index. (This case
+        // formerly threw, so that names without an integer suffix returned 0 from the
+        // catch above while entirely numeric names crashed.)
+        return y;
     }
 
     /**
@@ -751,11 +779,8 @@ public class TsUtils {
      * @return a int
      */
     public static int getLag(String s) {
-        if (s.indexOf(':') == -1) {
-            return 0;
-        }
-        String tmp = s.substring(s.indexOf(':') + 1);
-        return (Integer.parseInt(tmp));
+        int lag = parseLagSuffix(s);
+        return lag < 0 ? 0 : lag;
     }
 
     /**
@@ -770,17 +795,8 @@ public class TsUtils {
         List<Node> variables = graph.getNodes();
         List<Integer> laglist = new ArrayList<>();
         Knowledge knowledge = new Knowledge();
-        int lag;
         for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-            }
-            laglist.add(lag);
+            laglist.add(getLag(node.getName()));
         }
         numLags = Collections.max(laglist);
 
@@ -810,15 +826,7 @@ public class TsUtils {
         });
 
         for (Node node : variables) {
-            String varName = node.getName();
-            String tmp;
-            if (varName.indexOf(':') == -1) {
-                lag = 0;
-            } else {
-                tmp = varName.substring(varName.indexOf(':') + 1);
-                lag = Integer.parseInt(tmp);
-            }
-            knowledge.addToTier(numLags - lag, node.getName());
+            knowledge.addToTier(numLags - getLag(node.getName()), node.getName());
         }
 
         return knowledge;

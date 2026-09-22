@@ -18,13 +18,15 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.    //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search.work_in_progress;
+package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.PossibleMConnectingPath;
+import edu.cmu.tetrad.search.work_in_progress.GraphChange;
+import edu.cmu.tetrad.search.work_in_progress.IonHittingSet;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -37,6 +39,14 @@ import java.util.*;
  * some variables in common and others not in common. The algorithm returns a complete set of PAGs over every variable
  * form an input PAG_of_the_true_DAG that are consistent (same d-separations and d-connections) with every input
  * PAG_of_the_true_DAG.
+ * <p>
+ * Reference: Danks, D., Glymour, C., &amp; Tillman, R. E. (2008). Integrating locally learned causal structures with
+ * overlapping variables. In Advances in Neural Information Processing Systems 21 (NIPS 2008), pp. 1665-1672.
+ * <p>
+ * Graphs that contain a directed cycle or that entail an independence known (from the input PAGs) not to hold are
+ * rejected and removed from the search, per step 3.c of the reference. Note that if the input PAGs are jointly
+ * inconsistent (which can happen when they are estimated from finite samples of different datasets), the output list
+ * may be empty.
  *
  * @author Robert Tillman
  * @author josephramsey
@@ -221,6 +231,13 @@ public class Ion {
         }
         Graph graph = new EdgeListGraph(varNodes);
 
+        // Compute the (majority-voted) separation and association facts first, since the
+        // nonadjacencies used in step 2 are derived from the voted separations. This only
+        // needs the nodes of the graph, not its edges.
+        List<Set<IonIndependenceFacts>> sepAndAssoc = findSepAndAssoc(graph);
+        this.separations = sepAndAssoc.get(0);
+        Set<IonIndependenceFacts> associations = sepAndAssoc.get(1);
+
         /*
          * Step 2 - Transfer local information from the PAGs (adjacencies
          * and edge orientations)
@@ -233,8 +250,7 @@ public class Ion {
         }
         String message3 = "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
         TetradLogger.getInstance().log(message3);
-        System.out.println("step2");
-        System.out.println(graph);
+        TetradLogger.getInstance().log("Graph after step 2: " + graph);
 
         /*
          * Step 3
@@ -245,20 +261,19 @@ public class Ion {
         Queue<Graph> searchPags = new LinkedList<>();
         // place graph constructed in step 2 into the queue
         searchPags.offer(graph);
-        // get d-separations and d-connections
-        List<Set<IonIndependenceFacts>> sepAndAssoc = findSepAndAssoc(graph);
-        this.separations = sepAndAssoc.get(0);
-        Set<IonIndependenceFacts> associations = sepAndAssoc.get(1);
         Map<Collection<Node>, List<PossibleMConnectingPath>> paths;
 //        Queue<Graph> step3PagsSet = new LinkedList<Graph>();
         HashSet<Graph> step3PagsSet = new HashSet<>();
         Set<Graph> reject = new HashSet<>();
-        // if no d-separations, nothing left to search
+        // if no d-separations, nothing left to search; still reject the graph if it is cyclic
+        // or predicts an independence known not to hold
         if (this.separations.isEmpty()) {
             // makes orientations preventing definite noncolliders from becoming colliders
             // do final orientations
 //            doFinalOrientation(graph);
-            step3PagsSet.add(graph);
+            if (!rejected(graph, associations, reject)) {
+                step3PagsSet.add(graph);
+            }
         }
         // sets length to iterate once if search over path lengths not enabled, otherwise set to 2
         int numNodes = graph.getNumNodes();
@@ -284,8 +299,20 @@ public class Ion {
                 searchPags.addAll(step3PagsSet);
                 this.recGraphs.add(searchPags.size());
                 step3PagsSet.clear();
+
+                // Saves the parents for this fact iteration so that, if every candidate for this
+                // separation fact is rejected, the fact can be skipped and the parents carried
+                // forward rather than emptying the search. For input PAGs that are all marginals
+                // of a single model this never triggers, since the true integrated structure
+                // survives every fact. For jointly inconsistent inputs (as arise when the input
+                // PAGs are estimated from finite samples of different datasets), it may be
+                // impossible to block a separation fact without predicting an independence known
+                // not to hold; in that case the fact is dropped and a note is logged. Cyclic
+                // parents are not restored.
+                List<Graph> factParents = new ArrayList<>(searchPags);
+
                 while (!searchPags.isEmpty()) {
-                    System.out.println("ION Step 3 size: " + searchPags.size());
+                    TetradLogger.getInstance().log("ION Step 3 size: " + searchPags.size());
                     double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
                     if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
                     // deques first PAG from searchPags
@@ -319,9 +346,13 @@ public class Ion {
                             }
                         }
                     }
-                    // accept PAG_of_the_true_DAG go to next PAG_of_the_true_DAG if no possibly d-connecting undirectedPaths
+                    // accept PAG_of_the_true_DAG go to next PAG_of_the_true_DAG if no possibly d-connecting undirectedPaths;
+                    // the graph must still pass the rejection test (no cycles, no independencies known not to hold),
+                    // since the seed graph from step 2 enters the queue without having been checked
                     if (mConnections.isEmpty()) {
-                        step3PagsSet.add(pag);
+                        if (!rejected(pag, associations, reject)) {
+                            step3PagsSet.add(pag);
+                        }
                         continue;
                     }
                     // maps conditioning sets to list of possibly d-connecting undirectedPaths
@@ -445,6 +476,10 @@ public class Ion {
                             continue;
                         }
                         Graph changed = gc.applyTo(pag);
+                        // reject if the change could not be applied
+                        if (changed == null) {
+                            continue;
+                        }
                         // if graph change has already been rejected move on to next graph
                         if (reject.contains(changed)) {
                             continue;
@@ -453,10 +488,10 @@ public class Ion {
                         if (step3PagsSet.contains(changed)) {
                             continue;
                         }
-                        // reject if null, predicts false independencies or has cycle
-                        if (predictsFalseIndependence(associations, changed)
-                            || changed.paths().existsDirectedCycle()) {
-                            reject.add(changed);
+                        // reject if it predicts false independencies or has a cycle; rejected graphs
+                        // are removed from the search (step 3.c of Danks, Glymour, and Tillman 2008)
+                        if (rejected(changed, associations, reject)) {
+                            continue;
                         }
                         // makes orientations preventing definite noncolliders from becoming colliders
                         // do final orientations
@@ -466,6 +501,25 @@ public class Ion {
                         step3PagsSet.add(changed);
                     }
                 }
+
+                // If this separation fact rejected every candidate from every parent, skip the
+                // fact and carry the (acyclic) parents forward. See the comment above at
+                // factParents.
+                if (step3PagsSet.isEmpty() && !factParents.isEmpty()) {
+                    for (Graph parent : factParents) {
+                        if (!parent.paths().existsDirectedCycle()) {
+                            step3PagsSet.add(parent);
+                        }
+                    }
+
+                    if (!step3PagsSet.isEmpty()) {
+                        TetradLogger.getInstance().log("ION: no candidate could block the possibly "
+                                                       + "connecting paths at this stage without contradicting "
+                                                       + "recorded associations; carrying the previous graphs "
+                                                       + "forward instead.");
+                    }
+                }
+
                 // exits loop if not looping over adjacencies
                 if (!this.doAdjacencySearch) {
                     break;
@@ -527,18 +581,36 @@ public class Ion {
             List<Graph> possRemovePags = possRemove(pag, necEdges);
             double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
+
+            // Finds the unconditionally associated pairs that actually have treks in the incoming
+            // graph. Only the elimination of one of *these* treks disqualifies a removal; a pair
+            // that was already trek-disconnected before any removal is not the removal's fault.
+            // Charging removals for inherited disconnections eliminated the entire powerset
+            // (including the no-removal graph) whenever the incoming graph carried a violation,
+            // which for jointly inconsistent inputs could empty the output entirely. For input
+            // PAGs that are all marginals of a single model every unconditionally associated
+            // pair has a trek in the incoming graph, so this is equivalent to the original rule
+            // in that case.
+            List<IonIndependenceFacts> baselineTrekFacts = new ArrayList<>();
+            for (IonIndependenceFacts fact : associations) {
+                for (Set<Node> nodes : fact.getZ()) {
+                    if (nodes.isEmpty()) {
+                        if (!Ion.treks(pag, fact.x, fact.y).isEmpty()) {
+                            baselineTrekFacts.add(fact);
+                        }
+                        // stop looping once the empty set is found
+                        break;
+                    }
+                }
+            }
+
             for (Graph newPag : possRemovePags) {
                 elimTreks = false;
-                // looks for unconditional associations
-                for (IonIndependenceFacts fact : associations) {
-                    for (Set<Node> nodes : fact.getZ()) {
-                        if (nodes.isEmpty()) {
-                            if (Ion.treks(newPag, fact.x, fact.y).isEmpty()) {
-                                elimTreks = true;
-                            }
-                            // stop looping once the empty set is found
-                            break;
-                        }
+                // looks for unconditional associations whose treks existed before the removals
+                for (IonIndependenceFacts fact : baselineTrekFacts) {
+                    if (Ion.treks(newPag, fact.x, fact.y).isEmpty()) {
+                        elimTreks = true;
+                        break;
                     }
                 }
                 // add new PAG to output unless a necessary trek has been eliminated
@@ -579,19 +651,74 @@ public class Ion {
 
                 doFinalOrientation(newGraph);
             }
-            for (Graph outputPag : this.finalResult) {
-                if (!predictsFalseIndependence(associations, outputPag)) {
-                    Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
-                    for (Triple triple : underlineTriples) {
-                        outputPag.removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
-                    }
-                    outputSet.add(outputPag);
+        }
+
+        // Acyclicity is a hard requirement at every tier; a graph with a directed cycle is
+        // never returned.
+        Map<Graph, Integer> violations = new HashMap<>();
+
+        for (Graph outputPag : this.finalResult) {
+            if (outputPag.paths().existsDirectedCycle()) {
+                continue;
+            }
+
+            violations.put(outputPag, countAssociationViolations(associations, outputPag));
+        }
+
+        // Tier 1: the original behavior. Keep only graphs that predict no independence known
+        // not to hold, then keep only those that account for the (uncontested) oriented paths
+        // of the input PAGs. For input PAGs that are all marginals of a single model this
+        // always succeeds, so the fallback tiers below never trigger in that case.
+        Set<Graph> tier1 = new HashSet<>();
+
+        for (Map.Entry<Graph, Integer> entry : violations.entrySet()) {
+            if (entry.getValue() == 0) {
+                tier1.add(entry.getKey());
+            }
+        }
+
+        outputSet = checkPaths(tier1);
+
+        // Tier 2: if no graph passes the hard filters, keep the graphs with the fewest
+        // association violations and apply checkPaths to those. Tier 3: if that is still
+        // empty, return the minimum-violation graphs without checkPaths. This makes ION a
+        // best-effort procedure on jointly inconsistent inputs instead of returning nothing.
+        if (outputSet.isEmpty() && !violations.isEmpty()) {
+            int minViolations = Integer.MAX_VALUE;
+            for (int v : violations.values()) {
+                minViolations = Math.min(minViolations, v);
+            }
+
+            Set<Graph> best = new HashSet<>();
+            for (Map.Entry<Graph, Integer> entry : violations.entrySet()) {
+                if (entry.getValue() == minViolations) {
+                    best.add(entry.getKey());
                 }
+            }
+
+            outputSet = checkPaths(best);
+
+            if (!outputSet.isEmpty()) {
+                TetradLogger.getInstance().log("ION: no graph satisfied every recorded association; returning "
+                                               + "graphs with the minimum number of association violations ("
+                                               + minViolations + ").");
+            } else {
+                outputSet = best;
+                TetradLogger.getInstance().warn("ION: no graph satisfied every recorded association and oriented "
+                                               + "path claim; returning graphs with the minimum number of "
+                                               + "association violations (" + minViolations + "), ignoring "
+                                               + "oriented path claims.");
+            }
+        }
+
+        for (Graph outputPag : outputSet) {
+            Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
+            for (Triple triple : underlineTriples) {
+                outputPag.removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
             }
         }
 
 //        outputSet = applyKnowledge(outputSet);
-        outputSet = checkPaths(outputSet);
 
         this.output.addAll(outputSet);
         String message = "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s";
@@ -601,6 +728,29 @@ public class Ion {
         double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
         return this.output;
+    }
+
+    /**
+     * Counts the number of recorded association facts that the given graph violates, that is, the number of (pair,
+     * conditioning set) association facts for which the graph predicts m-separation.
+     *
+     * @param associations The recorded association facts.
+     * @param pag          The graph to check.
+     * @return The number of violations.
+     */
+    private int countAssociationViolations(Set<IonIndependenceFacts> associations, Graph pag) {
+        int count = 0;
+
+        for (IonIndependenceFacts assocFact : associations) {
+            for (Set<Node> conditioningSet : assocFact.getZ()) {
+                if (pag.paths().isMSeparatedFrom(
+                        assocFact.getX(), assocFact.getY(), conditioningSet, false)) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     // return hitting set sizes
@@ -682,7 +832,9 @@ public class Ion {
                 largestit = i;
             }
         }
-        averageit /= this.recGraphs.size();
+        if (!this.recGraphs.isEmpty()) {
+            averageit /= this.recGraphs.size();
+        }
         double totalhit = 0;
         double longesthit = 0;
         double averagehit = 0;
@@ -733,16 +885,19 @@ public class Ion {
      */
 
     /**
-     * Finds all node pairs that are not adjacent in an input graph
+     * Finds all node pairs that should be nonadjacent in the integrated graph. A pair is nonadjacent exactly when
+     * there is a (majority-voted) separation fact for it, that is, when some conditioning set was judged to m-separate
+     * the pair. For input PAGs that are all marginals of a single model this is equivalent to the original rule
+     * (nonadjacent in some input), since a pair is nonadjacent in an input exactly when it is m-separated given some
+     * subset there, and such inputs never disagree about m-separations. For jointly inconsistent inputs, the original
+     * rule let a single input's false nonadjacency delete the edge for everyone, which frequently left the step 2
+     * graph predicting independencies known not to hold, so that every candidate was rejected.
      */
     private Set<NodePair> nonadjacencies(Graph graph) {
         Set<NodePair> nonadjacencies = new HashSet<>();
-        for (Graph inputPag : this.input) {
-            for (NodePair pair : allNodePairs(inputPag.getNodes())) {
-                if (!inputPag.isAdjacentTo(pair.getFirst(), pair.getSecond())) {
-                    nonadjacencies.add(new NodePair(graph.getNode(pair.getFirst().getName()), graph.getNode(pair.getSecond().getName())));
-                }
-            }
+        for (IonIndependenceFacts sepFact : this.separations) {
+            nonadjacencies.add(new NodePair(graph.getNode(sepFact.getX().getName()),
+                    graph.getNode(sepFact.getY().getName())));
         }
         return nonadjacencies;
     }
@@ -861,8 +1016,19 @@ public class Ion {
             boolean addIndep = false;
             boolean addAssoc = false;
 
-            for (Graph pag : this.input) {
-                for (Set<Node> subset : subsets) {
+            // For each conditioning set, poll every input PAG that contains all the relevant
+            // variables and record the majority opinion. For input PAGs that are all marginals
+            // of a single model this is exactly the original behavior, since such marginals
+            // can never disagree about whether x and y are m-separated given z. For jointly
+            // inconsistent inputs (as arise when the input PAGs are estimated from finite
+            // samples of different datasets), the original behavior recorded the same fact as
+            // both a separation and an association, which forced every candidate graph to be
+            // rejected; here the majority wins instead, and ties yield no constraint.
+            for (Set<Node> subset : subsets) {
+                int sepVotes = 0;
+                int connVotes = 0;
+
+                for (Graph pag : this.input) {
                     if (containsAll(pag, subset, pair)) {
                         Node pagX = pag.getNode(x.getName());
                         Node pagY = pag.getNode(y.getName());
@@ -872,16 +1038,23 @@ public class Ion {
                         }
                         if (pag.paths().isMSeparatedFrom(pagX, pagY, new HashSet<>(pagSubset), false)) {
                             if (!pag.isAdjacentTo(pagX, pagY)) {
-                                addIndep = true;
-                                indep.addMoreZ(new HashSet<>(subset));
+                                sepVotes++;
                             }
                         } else {
-                            addAssoc = true;
-                            assoc.addMoreZ(new HashSet<>(subset));
+                            connVotes++;
                         }
                     }
                 }
+
+                if (sepVotes > connVotes) {
+                    addIndep = true;
+                    indep.addMoreZ(new HashSet<>(subset));
+                } else if (connVotes > sepVotes) {
+                    addAssoc = true;
+                    assoc.addMoreZ(new HashSet<>(subset));
+                }
             }
+
             if (addIndep) separations.add(indep);
             if (addAssoc) associations.add(assoc);
 
@@ -919,6 +1092,29 @@ public class Ion {
                 if (pag.paths().isMSeparatedFrom(
                         assocFact.getX(), assocFact.getY(), conditioningSet, false))
                     return true;
+        return false;
+    }
+
+    /**
+     * Step 3.c rejection test: a graph is rejected if it contains a directed cycle or predicts an independence known
+     * (from the input PAGs) not to hold. Rejected graphs are recorded in the given reject set so that duplicates
+     * encountered later can be skipped without retesting.
+     *
+     * @param graph        The graph to test.
+     * @param associations The associations recorded from the input PAGs.
+     * @param reject       The set of graphs rejected so far; the graph is added to this set if it is rejected here.
+     * @return True if the graph is rejected.
+     */
+    private boolean rejected(Graph graph, Set<IonIndependenceFacts> associations, Set<Graph> reject) {
+        if (reject.contains(graph)) {
+            return true;
+        }
+
+        if (predictsFalseIndependence(associations, graph) || graph.paths().existsDirectedCycle()) {
+            reject.add(graph);
+            return true;
+        }
+
         return false;
     }
 
@@ -1298,9 +1494,6 @@ public class Ion {
             return false;
         }
 
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            graph.getEndpoint(x, y);
-        }
         return true;
     }
 
@@ -1553,6 +1746,7 @@ public class Ion {
     }
 
     private Set<Graph> checkPaths(Set<Graph> pags) {
+        Set<String> contested = contestedOrientationPairs();
         HashSet<Graph> pagsOut = new HashSet<>();
 
         for (Graph pag : pags) {
@@ -1561,6 +1755,15 @@ public class Ion {
             GRAPH:
             for (Graph inGraph : this.input) {
                 for (Edge edge : inGraph.getEdges()) {
+
+                    // If the input PAGs make conflicting arrow-versus-tail claims about this
+                    // pair, none of those claims can be trusted, so we do not enforce any of
+                    // them. For input PAGs that are all marginals of a single model such
+                    // conflicts cannot occur, so this changes nothing in that case.
+                    if (contested.contains(pairKey(edge.getNode1().getName(), edge.getNode2().getName()))) {
+                        continue;
+                    }
+
                     Node node1 = pag.getNode(edge.getNode1().getName());
                     Node node2 = pag.getNode(edge.getNode2().getName());
 
@@ -1585,6 +1788,60 @@ public class Ion {
         }
 
         return pagsOut;
+    }
+
+    /**
+     * Finds the variable pairs about which the input PAGs make conflicting endpoint claims, that is, pairs for which
+     * one input places an arrowhead at an endpoint and another places a tail at the same endpoint. Circles make no
+     * claim and so never conflict. Input PAGs that are all marginals of a single model can never produce such a
+     * conflict, since arrowheads and tails are claims about ancestral relations in that one model.
+     *
+     * @return The set of contested pairs, as keys produced by pairKey.
+     */
+    private Set<String> contestedOrientationPairs() {
+        Map<String, Set<Endpoint>> marks = new HashMap<>();
+
+        for (Graph pag : this.input) {
+            for (Edge edge : pag.getEdges()) {
+                String name1 = edge.getNode1().getName();
+                String name2 = edge.getNode2().getName();
+
+                // Record the endpoint mark at each node, keyed so that the same node of the
+                // same pair maps to the same key regardless of edge orientation in storage.
+                recordMark(marks, name1, name2, edge.getProximalEndpoint(edge.getNode1()));
+                recordMark(marks, name2, name1, edge.getProximalEndpoint(edge.getNode2()));
+            }
+        }
+
+        Set<String> contested = new HashSet<>();
+
+        for (Map.Entry<String, Set<Endpoint>> entry : marks.entrySet()) {
+            if (entry.getValue().contains(Endpoint.ARROW) && entry.getValue().contains(Endpoint.TAIL)) {
+                String key = entry.getKey();
+                contested.add(key.substring(0, key.lastIndexOf('@')));
+            }
+        }
+
+        return contested;
+    }
+
+    /**
+     * Records an endpoint mark at the given node of the given pair, ignoring circles, which make no claim.
+     */
+    private void recordMark(Map<String, Set<Endpoint>> marks, String atNode, String otherNode, Endpoint mark) {
+        if (mark == Endpoint.CIRCLE) {
+            return;
+        }
+
+        String key = pairKey(atNode, otherNode) + "@" + atNode;
+        marks.computeIfAbsent(key, k -> new HashSet<>()).add(mark);
+    }
+
+    /**
+     * A canonical, order-independent key for a variable pair.
+     */
+    private String pairKey(String name1, String name2) {
+        return name1.compareTo(name2) <= 0 ? name1 + "|" + name2 : name2 + "|" + name1;
     }
 
     private Graph screenForKnowledge(Graph pag) {

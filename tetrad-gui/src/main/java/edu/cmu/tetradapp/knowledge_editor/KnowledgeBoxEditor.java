@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
@@ -1435,23 +1436,10 @@ public class KnowledgeBoxEditor extends JPanel {
                 values[i] = (String) elements[i];
             }
 
-            Arrays.sort(values, (o1, o2) -> {
-                String[] tokens1 = o1.split(":");
-                String[] tokens2 = o2.split(":");
-
-                if (tokens1.length == 1) {
-                    tokens1 = new String[]{tokens1[0], "0"};
-                }
-
-                if (tokens2.length == 1) {
-                    tokens2 = new String[]{tokens2[0], "0"};
-                }
-
-                int i1 = tokens1[1].compareTo(tokens2[1]);
-                int i0 = tokens1[0].compareTo(tokens2[0]);
-
-                return i1 == 0 ? i0 : i1;
-            });
+            // Unlagged names first, then increasing lag, natural base-name order within a lag
+            // group; shared with DisplayNode.compareTo. The comparator this replaces compared
+            // lag suffixes as strings, which put "X:10" before "X:2".
+            Arrays.sort(values, NaturalSort.lagAscendingComparator());
 
             listModel.clear();
             Arrays.stream(values).forEach(listModel::addElement);

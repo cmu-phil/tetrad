@@ -67,7 +67,7 @@ public class PoissonBicTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("em"), "Poisson Prior Test");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"), "Poisson Prior Test");
         dataSet = MissingDataUtils.emCovarianceIfRequested(dataSet, parameters, "Poisson Prior Test");
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 

@@ -36,7 +36,7 @@ final class ExitAction extends AbstractAction {
      * Creates an exit action.
      */
     public ExitAction() {
-        super("Exit");
+        super("Quit Tetrad");
     }
 
     /**

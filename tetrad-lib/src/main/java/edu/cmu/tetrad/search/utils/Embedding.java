@@ -99,12 +99,19 @@ public class Embedding {
      */
     public static DataSet rankTransformToUnitInterval(DataSet dataSet) {
         DataSet out = dataSet.copy();
-        int n = dataSet.getNumRows();
+        int numRows = dataSet.getNumRows();
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             if (!(dataSet.getVariable(j) instanceof ContinuousVariable)) continue;
             final int col = j;
-            Integer[] order = new Integer[n];
-            for (int i = 0; i < n; i++) order[i] = i;
+
+            // Missing entries (NaN) are left missing and take no rank; the observed entries are ranked among
+            // themselves, so the grid is over the observed count n rather than the row count.
+            List<Integer> observed = new ArrayList<>();
+            for (int i = 0; i < numRows; i++) {
+                if (!Double.isNaN(dataSet.getDouble(i, col))) observed.add(i);
+            }
+            int n = observed.size();
+            Integer[] order = observed.toArray(new Integer[0]);
             java.util.Arrays.sort(order, (u, v) -> Double.compare(dataSet.getDouble(u, col), dataSet.getDouble(v, col)));
             int k = 0;
             while (k < n) {
@@ -188,7 +195,13 @@ public class Embedding {
                     B.add(new double[n]);
 
                     for (int j = 0; j < n; j++) {
-                        B.get(i)[j] = dataSet.getInt(j, i_) == c ? 1 : 0;
+                        int value = dataSet.getInt(j, i_);
+
+                        // A missing category has no indicator: every indicator column of this variable is NaN
+                        // in that row, so downstream test-wise row selection sees the row as missing whichever
+                        // of the variable's columns it inspects. (Previously all indicators were silently 0,
+                        // i.e., the missing value was read as the reference category.)
+                        B.get(i)[j] = value == DiscreteVariable.MISSING_VALUE ? Double.NaN : (value == c ? 1 : 0);
                     }
                 }
 
@@ -200,11 +213,21 @@ public class Embedding {
                 // basis function p.
                 double[][] raw = new double[truncationLimit][n];
 
+                // Rows on which this variable is observed. Basis functions of a missing value are NaN, and the
+                // orthonormalization below is carried out over the observed rows only, so that a missing entry
+                // in the source column yields NaN in every derived column of this variable and nowhere else.
+                List<Integer> observedRows = new ArrayList<>();
+
                 for (int p = 1; p <= truncationLimit; p++) {
                     for (int j = 0; j < n; j++) {
-                        raw[p - 1][j] = StatUtils.basisFunctionValue(basisType, p, dataSet.getDouble(j, i_));
+                        double value = dataSet.getDouble(j, i_);
+                        raw[p - 1][j] = Double.isNaN(value) ? Double.NaN : StatUtils.basisFunctionValue(basisType, p, value);
+                        if (p == 1 && !Double.isNaN(value)) observedRows.add(j);
                     }
                 }
+
+                final int nObs = observedRows.size();
+                final boolean anyMissingHere = nObs < n;
 
                 // Orthonormalize within this variable's block (only meaningful if >1 column),
                 // keeping the natural low-order-first ordering so that the first embedded
@@ -237,8 +260,8 @@ public class Embedding {
                     // exact (a second pass is applied for numerical hygiene only).
                     List<double[]> dropBasis = new ArrayList<>();
                     double[] ones = new double[n];
-                    double invSqrtN = 1.0 / TMath.sqrt(n);
-                    for (int j = 0; j < n; j++) ones[j] = invSqrtN;
+                    double invSqrtN = 1.0 / TMath.sqrt(nObs);
+                    for (int j : observedRows) ones[j] = invSqrtN;
                     dropBasis.add(ones);
 
                     // Kept columns as stored in the embedded data set: orthonormalized against
@@ -253,23 +276,23 @@ public class Embedding {
                         // Centered magnitude of the original column, for the relative drop
                         // test. A constant column has centered magnitude ~0.
                         double mean = 0.0;
-                        for (double val : col) mean += val;
-                        mean /= n;
+                        for (int j : observedRows) mean += col[j];
+                        mean /= nObs;
                         double centeredNormSq = 0.0;
-                        for (double val : col) centeredNormSq += (val - mean) * (val - mean);
+                        for (int j : observedRows) centeredNormSq += (col[j] - mean) * (col[j] - mean);
                         double centeredNorm = TMath.sqrt(centeredNormSq);
 
-                        // Residual after projecting onto span{intercept, kept columns}.
+                        // Residual after projecting onto span{intercept, kept columns}, over observed rows.
                         double[] resid = col.clone();
                         for (int pass = 0; pass < 2; pass++) {
                             for (double[] u : dropBasis) {
                                 double dot = 0.0;
-                                for (int j = 0; j < n; j++) dot += u[j] * resid[j];
-                                for (int j = 0; j < n; j++) resid[j] -= dot * u[j];
+                                for (int j : observedRows) dot += u[j] * resid[j];
+                                for (int j : observedRows) resid[j] -= dot * u[j];
                             }
                         }
                         double residNormSq = 0.0;
-                        for (double val : resid) residNormSq += val * val;
+                        for (int j : observedRows) residNormSq += resid[j] * resid[j];
                         double residNorm = TMath.sqrt(residNormSq);
 
                         boolean dependent = residNorm <= relTol * TMath.max(centeredNorm, 1e-12);
@@ -282,25 +305,27 @@ public class Embedding {
                         // Extend the drop-test basis with the new independent direction.
                         if (residNorm > 0.0) {
                             double[] u = resid; // resid is not reused below; safe to normalize in place
-                            for (int j = 0; j < n; j++) u[j] /= residNorm;
+                            for (int j : observedRows) u[j] /= residNorm;
+                            if (anyMissingHere) for (int j = 0; j < n; j++) if (Double.isNaN(u[j])) u[j] = 0.0;
                             dropBasis.add(u);
                         }
 
                         // Stored value: modified Gram-Schmidt against the previously kept
-                        // (orthonormal) stored columns, then normalize.
+                        // (orthonormal) stored columns, then normalize, all over observed rows.
+                        // Missing rows stay NaN in the stored column.
                         double[] qCol = col.clone();
                         for (int pass = 0; pass < 2; pass++) {
                             for (double[] q : keptStored) {
                                 double dot = 0.0;
-                                for (int j = 0; j < n; j++) dot += q[j] * qCol[j];
-                                for (int j = 0; j < n; j++) qCol[j] -= dot * q[j];
+                                for (int j : observedRows) dot += q[j] * qCol[j];
+                                for (int j : observedRows) qCol[j] -= dot * q[j];
                             }
                         }
                         double qNormSq = 0.0;
-                        for (double val : qCol) qNormSq += val * val;
+                        for (int j : observedRows) qNormSq += qCol[j] * qCol[j];
                         double qNorm = TMath.sqrt(qNormSq);
                         if (qNorm > 0.0) {
-                            for (int j = 0; j < n; j++) qCol[j] /= qNorm;
+                            for (int j : observedRows) qCol[j] /= qNorm;
                         }
 
                         keptStored.add(qCol);

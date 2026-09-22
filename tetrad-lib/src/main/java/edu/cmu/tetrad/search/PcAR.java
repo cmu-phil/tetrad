@@ -1148,7 +1148,7 @@ public class PcAR implements IGraphSearch {
             int shown = 0;
             for (OrientationClash oc : orientationClashes) {
                 if (shown++ >= cap) break;
-                TetradLogger.getInstance().log(
+                TetradLogger.getInstance().warn(
                         "[PcAR bidirected-clash] " + oc.u().getName() + " -- " + oc.z().getName()
                                 + " cannot be consistently oriented (witnesses " + oc.witnesses()
                                 + "); detection-only, not a recovery candidate");

@@ -71,6 +71,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      */
     private transient Color lineColor;
     /**
+     * Optional free-text note shown in the workbench tooltip for this edge (e.g. an estimated coefficient). Transient;
+     * intended for display graphs.
+     */
+    private transient String annotation;
+    /**
      * Whether the edge is bold.
      */
     private boolean bold = false;
@@ -149,6 +154,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     public Edge(Edge edge) {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
         this.lineColor = edge.getLineColor();
+        this.annotation = edge.annotation;
         this.bold = edge.bold;
         this.highlighted = edge.highlighted;
         this.properties = new ArrayList<>(edge.properties);
@@ -313,6 +319,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     public Edge sameEdgeFlippedDirection() {
         Edge _edge = new Edge(getNode2(), getNode1(), getEndpoint2(), getEndpoint1(), false);
         _edge.lineColor = lineColor;
+        _edge.annotation = annotation;
         _edge.bold = bold;
         _edge.highlighted = highlighted;
         _edge.properties = new ArrayList<>(properties);
@@ -548,6 +555,34 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      */
     public Color getLineColor() {
         return this.lineColor;
+    }
+
+    /**
+     * Sets a special line color for this edge, or null to restore the workbench default. Honored by the workbench when
+     * the edge is displayed.
+     *
+     * @param lineColor a {@link java.awt.Color} object, or null
+     */
+    public void setLineColor(Color lineColor) {
+        this.lineColor = lineColor;
+    }
+
+    /**
+     * Returns the annotation shown in the workbench tooltip for this edge, or null if none.
+     *
+     * @return a {@link java.lang.String} object, or null
+     */
+    public String getAnnotation() {
+        return this.annotation;
+    }
+
+    /**
+     * Sets an annotation to be shown in the workbench tooltip for this edge, or null for none.
+     *
+     * @param annotation a {@link java.lang.String} object, or null
+     */
+    public void setAnnotation(String annotation) {
+        this.annotation = annotation;
     }
 
     /**

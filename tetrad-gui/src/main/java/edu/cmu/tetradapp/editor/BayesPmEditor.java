@@ -108,8 +108,6 @@ public class BayesPmEditor extends JPanel
             throw new IllegalArgumentException("There are no nodes in that Bayes PM.");
         }
 
-        setLayout(new BorderLayout());
-
         Graph graph = this.wrapper.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
         workbench.setEnableEditing(false);
@@ -141,7 +139,10 @@ public class BayesPmEditor extends JPanel
         wizard.setEditingMeasuredVariablesAllowed(true);
         this.wizard = wizard;
 
+        this.targetPanel.removeAll();
         this.targetPanel.add(panel, BorderLayout.CENTER);
+        this.targetPanel.revalidate();
+        this.targetPanel.repaint();
     }
 
     /**

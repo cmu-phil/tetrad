@@ -136,7 +136,7 @@ public class TestCovarianceAudit {
 
     /**
      * A variable that is nearly (but not exactly) a linear function of the others is flagged
-     * NEAR_DETERMINISM_CONTINUOUS. Here X3 = X1 + X2 + e with var(X1) = var(X2) = 1, cov(X1, X2) = 0, and var(e) =
+     * NEAR_DETERMINISM_LINEAR. Here X3 = X1 + X2 + e with var(X1) = var(X2) = 1, cov(X1, X2) = 0, and var(e) =
      * 0.03, so R^2 of X3 on the others is 2/2.03 = 0.9852, above the 0.98 default, while R^2 of X1 (or X2) on the
      * others is 1 - var(e) = 0.97, below it.
      */
@@ -149,8 +149,8 @@ public class TestCovarianceAudit {
 
         CovarianceAudit audit = new CovarianceAudit(cov(m, 1000, "X1", "X2", "X3"));
 
-        assertTrue(audit.hasFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS));
-        AuditFinding f = audit.getFindings(FindingCode.NEAR_DETERMINISM_CONTINUOUS).get(0);
+        assertTrue(audit.hasFinding(FindingCode.NEAR_DETERMINISM_LINEAR));
+        AuditFinding f = audit.getFindings(FindingCode.NEAR_DETERMINISM_LINEAR).get(0);
         assertEquals(List.of("X3"), f.getVariables());
         assertEquals(2.0 / 2.03, audit.getR2OnOthers().get("X3"), 1e-6);
         assertFalse(audit.hasFinding(FindingCode.EXACT_LINEAR_DEPENDENCE));
@@ -158,7 +158,7 @@ public class TestCovarianceAudit {
         // With a raised threshold, the same matrix is not flagged.
         CovarianceAudit strict = new CovarianceAudit(cov(m, 1000, "X1", "X2", "X3"),
                 new CovarianceAudit.Config().withR2Determinism(0.999));
-        assertFalse(strict.hasFinding(FindingCode.NEAR_DETERMINISM_CONTINUOUS));
+        assertFalse(strict.hasFinding(FindingCode.NEAR_DETERMINISM_LINEAR));
     }
 
     /**

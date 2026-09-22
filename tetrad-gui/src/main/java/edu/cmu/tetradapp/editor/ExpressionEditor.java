@@ -99,6 +99,29 @@ class ExpressionEditor extends JPanel {
         this.positionsListener = new PositionsFocusListener();
         this.expression.addFocusListener(this.positionsListener);
 
+        // Validate the right-hand side when focus leaves the field, so the user
+        // gets feedback before pressing Save. Invalid expressions are tinted
+        // pink with the parse message as a tooltip.
+        Color normalBackground = this.expression.getBackground();
+        this.expression.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent e) {
+                String text = ExpressionEditor.this.expression.getText();
+                if (text == null || text.trim().isEmpty()) {
+                    ExpressionEditor.this.expression.setBackground(normalBackground);
+                    ExpressionEditor.this.expression.setToolTipText(null);
+                    return;
+                }
+                try {
+                    ExpressionEditor.this.parser.parseExpression(text);
+                    ExpressionEditor.this.expression.setBackground(normalBackground);
+                    ExpressionEditor.this.expression.setToolTipText(null);
+                } catch (ParseException ex) {
+                    ExpressionEditor.this.expression.setBackground(new Color(255, 225, 225));
+                    ExpressionEditor.this.expression.setToolTipText(ex.getMessage());
+                }
+            }
+        });
+
         Box box = Box.createHorizontalBox();
         box.add(this.variable);
         box.add(Box.createHorizontalStrut(5));
@@ -106,6 +129,7 @@ class ExpressionEditor extends JPanel {
         box.add(Box.createHorizontalStrut(5));
         box.add(this.expression);
         JCheckBox checkBox = new JCheckBox();
+        checkBox.setToolTipText("Mark this expression for removal");
         checkBox.addActionListener(e -> {
             JCheckBox b = (JCheckBox) e.getSource();
             ExpressionEditor.this.remove = b.isSelected();
@@ -152,7 +176,9 @@ class ExpressionEditor extends JPanel {
      * @param listener a {@link java.awt.event.FocusListener} object
      */
     public void addFieldFocusListener(FocusListener listener) {
-        this.listeners.add(listener);
+        if (!this.listeners.contains(listener)) {
+            this.listeners.add(listener);
+        }
     }
 
 
@@ -355,8 +381,6 @@ class ExpressionEditor extends JPanel {
      * Highlights the next selection.
      */
     private void highlightNextSelection() {
-        System.out.println("Highlighting next selection.");
-
         if (!this.selections.isEmpty()) {
             Selection sel = this.selections.get(0);
             this.expression.setSelectionColor(ExpressionEditor.SELECTION);

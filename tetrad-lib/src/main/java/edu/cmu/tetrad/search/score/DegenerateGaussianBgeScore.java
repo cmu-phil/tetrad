@@ -21,6 +21,8 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -52,6 +54,19 @@ public class DegenerateGaussianBgeScore extends BasisFunctionBgeScore {
      */
     public DegenerateGaussianBgeScore(DataSet dataSet) {
         super(dataSet, 1, embed(dataSet, 1, -1), false);
+    }
+
+    /**
+     * Constructs the score with an explicit missing-data specification; LISTWISE and TESTWISE are supported on data
+     * with missing values (see {@link BasisFunctionBgeScore#BasisFunctionBgeScore(DataSet, int, boolean,
+     * MissingDataSpec)}). A null spec on missing data is treated as FAIL.
+     *
+     * @param dataSet the (mixed) data set.
+     * @param spec    the missing-data specification, or null.
+     */
+    public DegenerateGaussianBgeScore(DataSet dataSet, MissingDataSpec spec) {
+        super(MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "DegenerateGaussianBgeScore"), 1,
+                embed(MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "DegenerateGaussianBgeScore"), 1, -1), false);
     }
 
     /**

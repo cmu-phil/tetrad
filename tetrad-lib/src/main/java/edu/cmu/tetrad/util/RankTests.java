@@ -712,7 +712,62 @@ public class RankTests {
     private static SimpleMatrix invPsdWithRidge(SimpleMatrix Szz, double ridge) {
         SimpleMatrix A = Szz.copy();
         for (int i = 0; i < A.getNumRows(); i++) A.set(i, i, A.get(i, i) + ridge);
-        return A.pseudoInverse();
+
+        // A non-finite entry here is not a numerical edge case to be smoothed over: it means the
+        // covariance matrix itself is undefined for this block, typically because of missing values
+        // or a column that is constant over the rows actually used. EJML's pseudoInverse() reports
+        // this only as "Invert failed, maybe a bug?", which sends the user looking for a Tetrad bug.
+        // Report the offending entry instead.
+        for (int i = 0; i < A.getNumRows(); i++) {
+            for (int j = 0; j < A.getNumCols(); j++) {
+                double v = A.get(i, j);
+                if (!Double.isFinite(v)) {
+                    throw new IllegalArgumentException(
+                            "Conditioning covariance block contains a non-finite value (" + v
+                            + ") at row " + i + ", column " + j + ". This usually means the data "
+                            + "contain missing values, or a variable that is constant over the rows "
+                            + "used, so its covariance with other variables is undefined.");
+                }
+            }
+        }
+
+        try {
+            return A.pseudoInverse();
+        } catch (RuntimeException e) {
+            // SVD failed to converge on a finite but badly scaled matrix. Fall back to the
+            // symmetric eigendecomposition route used by invSqrtPSD_rankAware above.
+            return pinvSymmetric(A);
+        }
+    }
+
+    /**
+     * Pseudo-inverse of a symmetric matrix by eigendecomposition, discarding eigenvalues at or below a
+     * relative tolerance. Used as a fallback when the SVD-based pseudo-inverse fails to converge.
+     *
+     * @param A the symmetric matrix to invert
+     * @return the pseudo-inverse of A
+     */
+    private static SimpleMatrix pinvSymmetric(SimpleMatrix A) {
+        SimpleMatrix Asym = A.plus(A.transpose()).divide(2.0);
+        int n = Asym.getNumRows();
+        SimpleEVD<SimpleMatrix> evd = Asym.eig();
+
+        double dmax = 0.0;
+        double[] d = new double[n];
+        for (int i = 0; i < n; i++) {
+            d[i] = evd.getEigenvalue(i).getReal();
+            if (Double.isFinite(d[i])) dmax = TMath.max(dmax, TMath.abs(d[i]));
+        }
+        double tol = TMath.max(MIN_EIG, 1e-10 * dmax);
+
+        SimpleMatrix out = new SimpleMatrix(n, n);
+        for (int i = 0; i < n; i++) {
+            if (!Double.isFinite(d[i]) || d[i] <= tol) continue;
+            SimpleMatrix v = evd.getEigenVector(i);
+            if (v == null) continue;
+            out = out.plus(v.mult(v.transpose()).divide(d[i]));
+        }
+        return out;
     }
 
     /**

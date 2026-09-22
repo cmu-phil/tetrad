@@ -107,6 +107,11 @@ public class OrderedLocalMarkovProperty {
      * @return Independence facts from the full OLMP model that involve x.
      */
     public static Set<IndependenceFact> getModelForNode(Graph admg, Node x) {
+        // Defense in depth (added 2026-9-9): a null or foreign node has no facts.
+        // MarkovCheck.computeImpliedFactsForVertex guards this at the contract level;
+        // this protects direct callers passing the result of a failed getNode lookup.
+        if (x == null || x.getName() == null) return new HashSet<>();
+
         Set<IndependenceFact> all = getModel(admg);
         Map<String, Node> byName = new HashMap<>();
         for (Node n : admg.getNodes()) byName.put(n.getName(), n);

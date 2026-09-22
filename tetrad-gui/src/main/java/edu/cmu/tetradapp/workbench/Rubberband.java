@@ -100,8 +100,12 @@ class Rubberband extends JComponent {
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
+        WorkbenchStyle.applyHints(g2);
         resetShapeBounds();
-        g2.setColor(Color.black);
+        Color accent = WorkbenchStyle.accent();
+        g2.setColor(new Color(accent.getRed(), accent.getGreen(), accent.getBlue(), 28));
+        g2.fill(this.shape);
+        g2.setColor(accent);
         g2.setStroke(this.stroke);
         g2.draw(this.shape);
     }

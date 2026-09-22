@@ -178,8 +178,9 @@ public class TestMissingDataPolicyPhase2 {
     }
 
     /**
-     * The covariance-consuming scores accept the em policy via the wrapper-level EM-covariance route; testwise
-     * still throws for them; default still throws.
+     * The covariance-consuming scores accept the em policy via the wrapper-level EM-covariance route and (since
+     * 2026-9) the testwise policy via SemBicScore's row-subset path, which they had always implemented but not
+     * declared; default still throws.
      */
     @Test
     public void testCovarianceScoresEmRoute() {
@@ -190,7 +191,12 @@ public class TestMissingDataPolicyPhase2 {
         assertNotNull(new PoissonPriorScore().getScore(cont, policy("em")));
         assertNotNull(new ZhangShenBoundScore().getScore(cont, policy("em")));
 
-        assertThrows(IllegalArgumentException.class, () -> new EbicScore().getScore(cont, policy("testwise")));
+        for (edu.cmu.tetrad.algcomparison.score.ScoreWrapper w : new edu.cmu.tetrad.algcomparison.score.ScoreWrapper[]{
+                new EbicScore(), new GicScores(), new PoissonPriorScore(), new ZhangShenBoundScore()}) {
+            edu.cmu.tetrad.search.score.Score s = w.getScore(cont, policy("testwise"));
+            org.junit.Assert.assertTrue(w.getDescription(), Double.isFinite(s.localScore(0, 1, 2)));
+        }
+
         assertThrows(IllegalArgumentException.class, () -> new EbicScore().getScore(cont, new Parameters()));
 
         assertNotNull(new EbicScore().getScore(cont, policy("listwise")));

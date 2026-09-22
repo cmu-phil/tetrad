@@ -69,10 +69,6 @@ public class Ida {
      */
     private final List<Node> possibleCauses;
     /**
-     * A map from node names to indices in the covariance matrix.
-     */
-    private final Map<String, Integer> nodeIndices;
-    /**
      * The covariance matrix for the dataset.
      */
     private final ICovarianceMatrix allCovariances;
@@ -128,11 +124,6 @@ public class Ida {
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         this.possibleCauses = possibleCauses;
         this.allCovariances = new CovarianceMatrix(dataSet);
-        this.nodeIndices = new HashMap<>();
-
-        for (int i = 0; i < graph.getNodes().size(); i++) {
-            this.nodeIndices.put(graph.getNodes().get(i).getName(), i);
-        }
     }
 
     /**
@@ -213,16 +204,27 @@ public class Ida {
     }
 
     private boolean isLegalParentSet(List<Node> parents, List<Node> siblingsChoice) {
-        // Per Lemma 3.1 (Maathuis et al. 2009): G^{S->i} is locally valid iff
-        // no two chosen siblings are adjacent (which would create a new v-structure
-        // with Xi as collider). No condition on parent-sibling adjacency is required.
+        // Per Maathuis et al. (2009): orienting the chosen siblings S into X (and the
+        // remaining siblings out of X) is locally valid iff it creates no NEW unshielded
+        // collider at X. A collider s1 -> X <- s2 is unshielded only when s1 and s2 are
+        // NOT adjacent, so (1) any two chosen siblings must be adjacent to each other,
+        // and (2) each chosen sibling must be adjacent to every existing parent of X
+        // (the parent edge is already oriented, so a non-adjacent pair would form a new
+        // unshielded collider). Existing parents need not be mutually adjacent: any
+        // collider among them is already present in the CPDAG.
         if (siblingsChoice.size() > 1) {
             ChoiceGenerator gen2 = new ChoiceGenerator(siblingsChoice.size(), 2);
             int[] choice2;
 
             while ((choice2 = gen2.next()) != null) {
                 List<Node> adj = GraphUtils.asList(choice2, siblingsChoice);
-                if (this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) return false;
+                if (!this.cpdag.isAdjacentTo(adj.get(0), adj.get(1))) return false;
+            }
+        }
+
+        for (Node sibling : siblingsChoice) {
+            for (Node parent : parents) {
+                if (!this.cpdag.isAdjacentTo(sibling, parent)) return false;
             }
         }
 
@@ -282,7 +284,7 @@ public class Ida {
             }
         } catch (Exception e) {
             // If O-set computation fails, treat this orientation as yielding no effect
-            TetradLogger.getInstance().log("O-set computation failed for " + x + " ~~> " + y + ": " + e);
+            TetradLogger.getInstance().warn("O-set computation failed for " + x + " ~~> " + y + ": " + e);
             return 0.0;
         }
 
@@ -359,6 +361,36 @@ public class Ida {
     }
 
     /**
+     * Returns a map from nodes in V \ {Y} to their minimum absolute effects on Y. This is the magnitude score CStaR
+     * requires (Stekhoven et al. 2012): the absolute value is taken for each possible total effect first, and the
+     * minimum of those absolute values is returned. (Taking the absolute value of the signed minimum instead would be
+     * incorrect: effects -2 and -0.5 must yield 0.5, not 2.)
+     *
+     * @param y The child variable.
+     * @return This map.
+     */
+    public Map<Node, Double> calculateMinimumAbsoluteTotalEffectsOnY(Node y) {
+        SortedMap<Node, Double> minEffects = new TreeMap<>();
+
+        for (Node x : this.possibleCauses) {
+            if (!(this.cpdag.containsNode(x) && this.cpdag.containsNode(y))) continue;
+            LinkedList<Double> effects = getAbsTotalEffects(x, y);
+            if (!effects.isEmpty()) {
+                double min = effects.getFirst();
+
+                if (!Double.isFinite(min)) {
+                    throw new IllegalStateException("Non-finite minimum absolute total effect for "
+                            + x + " ~~> " + y + ": " + min);
+                }
+
+                minEffects.put(x, min);
+            }
+        }
+
+        return minEffects;
+    }
+
+    /**
      * Calculates the beta coefficient for a given set of regressors and a child node.
      * <p>
      * Note that x must be the first regressor.
@@ -411,7 +443,7 @@ public class Ida {
             try {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
-                TetradLogger.getInstance().log("Singularity encountered when regressing "
+                TetradLogger.getInstance().warn("Singularity encountered when regressing "
                         + LogUtilsSearch.getScoreFact(child, regressors));
                 return 0.0;
             }

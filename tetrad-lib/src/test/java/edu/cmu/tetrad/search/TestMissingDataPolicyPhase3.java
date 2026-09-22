@@ -52,9 +52,10 @@ import static org.junit.Assert.assertTrue;
  * Pins the Phase 3 settlement of missing-data support across the remaining tests and scores: components discovered
  * to be natively test-wise are declared and gated as such and exercised end-to-end (Probabilistic, Minimax,
  * Neykov-Minimax); the native-policy sets of the original spec-aware score wrappers are corrected to what their
- * components actually implement (BDeu, Discrete BIC, and CG-BIC are test-wise only; DG-BIC is listwise-only since
- * its indicator embedding is undefined for missing values); and the Poisson Prior Test gains the same EM-covariance
- * route as its score. Everything else supports listwise (and fail) through the gate, which is the honest offering
+ * components actually implement (BDeu, Discrete BIC, and CG-BIC are test-wise only; DG-BIC is test-wise, since the
+ * embedding propagates a missing source entry to every derived column, and since 2026-9 also EM, taken of the
+ * embedded matrix under the working model the score already assumes); and the Poisson Prior Test gains the same
+ * EM-covariance route as its score. Everything else supports listwise (and fail) through the gate, which is the honest offering
  * for kernel, feature-embedding, and block components whose machinery has no principled per-test row treatment.
  *
  * @author josephramsey
@@ -169,23 +170,31 @@ public class TestMissingDataPolicyPhase3 {
     }
 
     /**
-     * DG-BIC is listwise-only (its indicator embedding is undefined for missing values): the gate now refuses
-     * test-wise and em up front, while listwise succeeds.
+     * DG-BIC supports listwise, test-wise (the embedding propagates a missing source entry to every derived column
+     * of that variable, and SemBicScore's row-subset path takes over) and, since 2026-9, em: the EM estimate is
+     * taken of the embedded matrix, under the same jointly-Gaussian working model the score already assumes for
+     * the indicator columns, so it is the existing approximation carried through to incomplete data rather than a
+     * new one. Default (no policy set) is still refused by the gate.
      */
     @Test
-    public void testDgBicListwiseOnly() {
+    public void testDgBicDeletionPolicies() {
         DataSet disc = discreteWithMissing();
 
         assertNotNull(new DegenerateGaussianBicScore().getScore(disc, policy("listwise")));
+
+        edu.cmu.tetrad.search.score.Score tw = new DegenerateGaussianBicScore().getScore(disc, policy("testwise"));
+        assertTrue(Double.isFinite(tw.localScore(0, 1)));
+
+        edu.cmu.tetrad.search.score.Score em = new DegenerateGaussianBicScore().getScore(disc, policy("em"));
+        assertTrue(Double.isFinite(em.localScore(0, 1)));
+
         assertThrows(IllegalArgumentException.class,
-                () -> new DegenerateGaussianBicScore().getScore(disc, policy("testwise")));
-        assertThrows(IllegalArgumentException.class,
-                () -> new DegenerateGaussianBicScore().getScore(disc, policy("em")));
+                () -> new DegenerateGaussianBicScore().getScore(disc, new Parameters()));
     }
 
     /**
-     * The Poisson Prior Test gains the same EM-covariance route as its score wrapper, and the resulting test runs
-     * end-to-end.
+     * The Poisson Prior Test gains the same EM-covariance route as its score wrapper, and (since 2026-9) the same
+     * test-wise route; both resulting tests run end-to-end.
      */
     @Test
     public void testPoissonBicTestEmRoute() throws InterruptedException {
@@ -194,8 +203,10 @@ public class TestMissingDataPolicyPhase3 {
         IndependenceTest test = new PoissonBicTest().getTest(cont, policy("em"));
         exercise(test);
 
+        IndependenceTest testwise = new PoissonBicTest().getTest(cont, policy("testwise"));
+        exercise(testwise);
+
         assertNotNull(new PoissonBicTest().getTest(cont, policy("listwise")));
-        assertThrows(IllegalArgumentException.class, () -> new PoissonBicTest().getTest(cont, policy("testwise")));
         assertThrows(IllegalArgumentException.class, () -> new PoissonBicTest().getTest(cont, new Parameters()));
     }
 }

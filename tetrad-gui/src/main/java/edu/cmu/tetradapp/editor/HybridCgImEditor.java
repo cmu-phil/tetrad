@@ -1,11 +1,18 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.hybridcg.HybridCgEdgeSignificance;
+import edu.cmu.tetrad.hybridcg.HybridCgIo;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgPm;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetradapp.model.EditorUtils;
 import edu.cmu.tetradapp.model.HybridCgImWrapper;
 import edu.cmu.tetrad.util.TMath;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -13,9 +20,13 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 /**
@@ -35,14 +46,24 @@ import java.util.stream.Collectors;
  */
 public final class HybridCgImEditor extends JPanel {
 
-    private final HybridCgIm im;
-    private final HybridCgPm pm;
-    private final Node[] nodes;
+    private HybridCgIm im;
+    private HybridCgPm pm;
+    private Node[] nodes;
+
+    /** The session wrapper, when constructed standalone; null when embedded. */
+    private HybridCgImWrapper wrapper;
+
+    /** Persistent shaded-graph view, when constructed with a graph tab; null otherwise. */
+    private HybridCgGraphViewer graphView;
+    private JTabbedPane tabs;
 
     // LEFT
     private final DefaultListModel<Node> varListModel = new DefaultListModel<>();
     private final JList<Node> varList = new JList<>(varListModel);
     private final JTextField filterField = new JTextField();
+
+    /** Shown on the blank card; explains what to do when the model is empty. */
+    private final JLabel blankHint = new JLabel();
 
     // RIGHT
     private final CardLayout cards = new CardLayout();
@@ -67,6 +88,24 @@ public final class HybridCgImEditor extends JPanel {
     // state
     private int currentY = -1;
 
+    // ---- Optional significance overlay, supplied by the estimator editor; null when not shown. ----
+
+    /** Per-edge LRT results keyed by the edges of the model's graph, or null. */
+    private java.util.Map<Edge, HybridCgEdgeSignificance.Result> edgeSig;
+
+    /** Coefficient t-test p-values, indexed [node][stratum row][cont-parent order index], or null. */
+    private double[][][] coefPValues;
+
+    /** The level the overlay marks against. */
+    private double sigAlpha = 0.05;
+
+    /**
+     * True while {@link #selectVariable} is changing the list selection. The list's selection listener checks this to
+     * skip the IM-to-graph echo (re-centering the graph on a node the user just clicked there) and the
+     * "selectedVariable" event (the caller already knows).
+     */
+    private boolean externalSelection = false;
+
     // number formatting
     private static final DecimalFormat DF3 = new DecimalFormat("0.###");
 
@@ -76,19 +115,209 @@ public final class HybridCgImEditor extends JPanel {
     private javax.swing.table.TableModel discModel;
     private javax.swing.table.TableModel contModel;
 
-    public HybridCgImEditor(HybridCgImWrapper wrapper) { this(wrapper.getHybridCgIm()); }
+    /** Standalone editor (session box): IM tables plus a Graph tab, with File and Graph menus. */
+    public HybridCgImEditor(HybridCgImWrapper wrapper) {
+        this(wrapper.getHybridCgIm(), true);
+        this.wrapper = wrapper;
+        add(buildMenuBar(), BorderLayout.NORTH);
+    }
 
-    public HybridCgImEditor(HybridCgIm im) {
+    /** Embedded editor (e.g. inside the estimator, which supplies its own Graph tab): IM tables only. */
+    public HybridCgImEditor(HybridCgIm im) { this(im, false); }
+
+    /**
+     * @param im           the model to edit
+     * @param withGraphTab if true, wrap the tables in an "IM" tab and add a "Graph" tab showing the model graph with
+     *                     edges shaded by strength (see {@link HybridCgGraphViewer}); the graph is rebuilt each time
+     *                     its tab is selected so it reflects edits made in the IM tab
+     */
+    public HybridCgImEditor(HybridCgIm im, boolean withGraphTab) {
         this.im = Objects.requireNonNull(im, "im");
         this.pm = im.getPm();
         this.nodes = pm.getNodes();
 
-        setLayout(new BorderLayout(10,10));
-        add(buildLeft(), BorderLayout.WEST);
-        add(buildRight(), BorderLayout.CENTER);
+        JPanel tables = new JPanel(new BorderLayout(10,10));
+        tables.add(buildLeft(), BorderLayout.WEST);
+        tables.add(buildRight(), BorderLayout.CENTER);
+
+        setLayout(new BorderLayout());
+        if (withGraphTab) {
+            this.graphView = new HybridCgGraphViewer(im);
+            this.tabs = new JTabbedPane();
+            this.tabs.addTab("IM", tables);
+            this.tabs.addTab("Graph", this.graphView.getComponent());
+            this.tabs.setToolTipTextAt(1, "Model graph with edges shaded by strength");
+            // Recolor on tab select so the graph reflects edits made in the IM tab. The workbench itself
+            // persists, so menus and actions bound to it stay valid.
+            this.tabs.addChangeListener(e -> {
+                if (this.tabs.getSelectedIndex() == 1) {
+                    this.graphView.update(this.im);
+                    // update() rebuilt the display nodes, wiping any selection; re-apply the
+                    // current variable so the graph opens centered on what the IM tab shows.
+                    syncGraphSelection(varList.getSelectedValue());
+                }
+            });
+            // Clicking a node in the Graph tab selects that variable in the IM tab, so its table is
+            // showing when the user switches back. The workbench persists across update() calls, so
+            // one listener suffices. Multi-node selections are ignored.
+            this.graphView.getWorkbench().addPropertyChangeListener("selectedNodes", e -> {
+                if (e.getNewValue() instanceof List<?> sel && sel.size() == 1
+                    && sel.getFirst() instanceof Node n) {
+                    selectVariable(n);
+                }
+            });
+            add(this.tabs, BorderLayout.CENTER);
+        } else {
+            add(tables, BorderLayout.CENTER);
+        }
 
         loadVariableList(null);
         if (!varListModel.isEmpty()) varList.setSelectedIndex(0);
+        updateBlankHint();
+    }
+
+    /** Sets the blank-card text: an empty model gets a pointer to File > Load; otherwise the card is silent. */
+    private void updateBlankHint() {
+        boolean empty = this.nodes.length == 0;
+        blankHint.setForeground(new Color(0x777777));
+        blankHint.setText(empty
+                ? "Empty model. Use File > Load Model From JSON... to load a saved Hybrid CG IM."
+                : "");
+    }
+
+    // ============================ Menus ============================
+
+    private JMenuBar buildMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu file = new JMenu("File");
+
+        JMenuItem saveJson = new JMenuItem("Save Model As JSON...");
+        saveJson.addActionListener(e -> saveModelAsJson());
+        file.add(saveJson);
+
+        JMenuItem loadJson = new JMenuItem("Load Model From JSON...");
+        loadJson.addActionListener(e -> loadModelFromJson());
+        file.add(loadJson);
+
+        file.addSeparator();
+        file.add(onGraphTab(new SaveComponentImage(graphView.getWorkbench(), "Save Graph Image...")));
+
+        menuBar.add(file);
+        menuBar.add(graphView.graphMenu(this::showGraphTab, new Parameters()));
+        menuBar.add(new LayoutMenu(graphView.getWorkbench()));
+        return menuBar;
+    }
+
+    /** Wraps an action so the Graph tab is shown first (some actions need a laid-out workbench). */
+    private JMenuItem onGraphTab(Action delegate) {
+        JMenuItem item = new JMenuItem(new AbstractAction((String) delegate.getValue(Action.NAME)) {
+            @Override public void actionPerformed(ActionEvent e) {
+                showGraphTab();
+                delegate.actionPerformed(e);
+            }
+        });
+        return item;
+    }
+
+    private void showGraphTab() {
+        if (this.tabs != null) this.tabs.setSelectedIndex(1);
+    }
+
+    private void saveModelAsJson() {
+        File outfile = EditorUtils.getSaveFile("hybridcg_im", "json", this, false, "Save Model As JSON...");
+        if (outfile == null) return;
+        try {
+            HybridCgIo.save(this.im, outfile);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Save failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void loadModelFromJson() {
+        JFileChooser chooser = new JFileChooser();
+        String dir = Preferences.userRoot().get("fileSaveLocation", Preferences.userRoot().absolutePath());
+        chooser.setCurrentDirectory(new File(dir));
+        chooser.setDialogTitle("Load Model From JSON...");
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+
+        File file = chooser.getSelectedFile();
+        if (file == null) return;
+        Preferences.userRoot().put("fileSaveLocation", file.getParent());
+
+        try {
+            HybridCgIm loaded = HybridCgIo.load(file);
+            if (this.wrapper != null) this.wrapper.setIm(loaded);
+            setModel(loaded);
+            firePropertyChange("modelChanged", null, null);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Load failed:\n" + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Replaces the displayed model in place, rebuilding the variable list, tables, and graph view.
+     *
+     * @param newIm the model to display
+     */
+    public void setModel(HybridCgIm newIm) {
+        this.im = Objects.requireNonNull(newIm, "im");
+        this.pm = newIm.getPm();
+        this.nodes = this.pm.getNodes();
+        this.currentY = -1;
+
+        filterField.setText("");
+        varList.clearSelection();
+        loadVariableList(null);
+        if (!varListModel.isEmpty()) varList.setSelectedIndex(0);
+        else cards.show(right, "blank");
+        updateBlankHint();
+
+        if (this.graphView != null) this.graphView.update(newIm);
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Selects the variable with the given node's name in the variable list, clearing the name filter if it is hiding
+     * that variable, and scrolls the list to it. The right-hand table follows via the list's selection listener.
+     * Matching is by name, since callers (e.g. a graph view) may hold node objects from a copied graph. No-op if the
+     * model has no variable of that name.
+     *
+     * @param node a node whose name identifies the variable to select
+     */
+    public void selectVariable(Node node) {
+        if (node == null) return;
+
+        Node match = null;
+        for (Node n : this.nodes) {
+            if (n.getName().equals(node.getName())) { match = n; break; }
+        }
+        if (match == null) return;
+
+        this.externalSelection = true;
+        try {
+            if (!varListModel.contains(match)) { // hidden by the filter
+                filterField.setText("");
+                loadVariableList(null);
+            }
+            varList.setSelectedValue(match, true);
+        } finally {
+            this.externalSelection = false;
+        }
+    }
+
+    /**
+     * Selects and centers the given variable's node in the Graph tab's workbench, matching by name (the colored graph
+     * holds copied nodes). No-op when this editor has no graph tab (the embedded case) or the node isn't in the
+     * displayed graph.
+     */
+    private void syncGraphSelection(Node node) {
+        if (this.graphView == null || node == null) return;
+        Node wbNode = this.graphView.getWorkbench().getGraph().getNode(node.getName());
+        if (wbNode != null) this.graphView.getWorkbench().centerWorkbenchOnNode(wbNode);
     }
 
     // ============================ LEFT ============================
@@ -107,7 +336,17 @@ public final class HybridCgImEditor extends JPanel {
                 return this;
             }
         });
-        varList.addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) onSelectChild(varList.getSelectedValue()); });
+        varList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return;
+            Node sel = varList.getSelectedValue();
+            onSelectChild(sel);
+            if (!externalSelection && sel != null) {
+                // User-originated selection: mirror it in the Graph tab (standalone case) and tell
+                // any container (the estimator syncs its own graph view off this event).
+                syncGraphSelection(sel);
+                firePropertyChange("selectedVariable", null, sel);
+            }
+        });
 
         filterField.setToolTipText("Filter by name (press Enter)");
         filterField.addActionListener(e -> loadVariableList(filterField.getText().trim()));
@@ -156,7 +395,9 @@ public final class HybridCgImEditor extends JPanel {
         contRandomizeAll.addActionListener(e -> { randomizeContinuousTable(currentY); refreshActiveTable(); });
 
         right.setLayout(cards);
-        right.add(new JPanel(), "blank");
+        JPanel blank = new JPanel(new GridBagLayout());
+        blank.add(blankHint);
+        right.add(blank, "blank");
         right.add(discCard, "disc");
         right.add(contCard, "cont");
         return right;
@@ -199,6 +440,61 @@ public final class HybridCgImEditor extends JPanel {
         });
     }
 
+    // =========================== Significance overlay ===========================
+
+    /**
+     * Sets or clears the significance overlay: per-edge LRT results shown as a summary line above each child's
+     * table, and per-stratum coefficient t-test p-values greying non-significant coefficient cells in regression
+     * tables (see {@link HybridCgRegEditingTable#setSignificance}). Pass nulls to clear. The current selection is
+     * rebuilt so the overlay takes effect immediately.
+     *
+     * @param edgeSig     per-edge LRT results keyed by the edges of the model's graph, or null
+     * @param coefPValues p-values indexed [node][stratum row][cont-parent order index], or null
+     * @param alpha       the level to mark against
+     */
+    public void setSignificance(java.util.Map<Edge, HybridCgEdgeSignificance.Result> edgeSig,
+                                double[][][] coefPValues, double alpha) {
+        this.edgeSig = edgeSig;
+        this.coefPValues = coefPValues;
+        this.sigAlpha = alpha;
+        if (this.currentY >= 0) onSelectChild(this.nodes[this.currentY]);
+    }
+
+    /**
+     * An html fragment summarizing the LRT verdict for each edge into the given child, for the info line above its
+     * table; empty when no overlay is set or no edge into the child has a result.
+     */
+    private String edgeSigSummary(Node child) {
+        if (this.edgeSig == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (java.util.Map.Entry<Edge, HybridCgEdgeSignificance.Result> e : this.edgeSig.entrySet()) {
+            Edge edge = e.getKey();
+            Node head;
+            try {
+                head = Edges.getDirectedEdgeHead(edge);
+            } catch (Exception notDirected) {
+                continue;
+            }
+            if (!head.getName().equals(child.getName())) continue;
+            Node parent = edge.getNode1().equals(head) ? edge.getNode2() : edge.getNode1();
+            HybridCgEdgeSignificance.Result r = e.getValue();
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(escape(parent.getName())).append(": ");
+            if (!r.testable()) {
+                sb.append("n/a");
+            } else {
+                sb.append(String.format("%.3g", r.pValue()));
+                if (r.pValue() > this.sigAlpha) sb.append("&nbsp;(ns)");
+            }
+        }
+        if (sb.length() == 0) return "";
+        return "<br>Edge LRT p-values: " + sb + String.format(" &nbsp;[alpha = %.3g]", this.sigAlpha);
+    }
+
+    private static String escape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
     // =========================== Selection ===========================
 
     private void onSelectChild(Node child) {
@@ -223,16 +519,21 @@ public final class HybridCgImEditor extends JPanel {
             // Update instructions
             int[] dps = pm.getDiscreteParents(currentY);
             if (dps.length == 0) {
-                discInfo.setText("No discrete parents — single row with probabilities for the child’s categories.");
+                discInfo.setText("<html>No discrete parents — single row with probabilities for the child’s categories."
+                                 + edgeSigSummary(child) + "</html>");
             } else {
                 List<String> names = Arrays.stream(dps).mapToObj(i -> pm.getNodes()[i].getName()).collect(Collectors.toList());
-                discInfo.setText("Rows are strata of " + names + "; columns are categories of " + child.getName() + ".");
+                discInfo.setText("<html>Rows are strata of " + escape(names.toString()) + "; columns are categories of "
+                                 + escape(child.getName()) + "." + edgeSigSummary(child) + "</html>");
             }
 
             cards.show(right, "disc");
         } else {
             // Full regression table
             HybridCgRegEditingTable table = new HybridCgRegEditingTable(im, pm, currentY);
+            if (this.coefPValues != null && this.coefPValues[currentY] != null) {
+                table.setSignificance(this.coefPValues[currentY], this.sigAlpha);
+            }
             installDoubleFormatting(table); // ensure 0.### in-place
 //            contScroll = new JScrollPane(table);
 
@@ -247,10 +548,12 @@ public final class HybridCgImEditor extends JPanel {
             // Update instructions
             int[] dps = pm.getDiscreteParents(currentY);
             if (dps.length == 0) {
-                contInfo.setText("No discrete parents — single stratum (one row). Columns: Intercept, parents, Variance.");
+                contInfo.setText("<html>No discrete parents — single stratum (one row). Columns: Intercept, parents, Variance."
+                                 + edgeSigSummary(child) + "</html>");
             } else {
                 List<String> names = Arrays.stream(dps).mapToObj(i -> pm.getNodes()[i].getName()).collect(Collectors.toList());
-                contInfo.setText("Rows are strata of " + names + ". Columns: Intercept, parents, Variance.");
+                contInfo.setText("<html>Rows are strata of " + escape(names.toString())
+                                 + ". Columns: Intercept, parents, Variance." + edgeSigSummary(child) + "</html>");
             }
 
             cards.show(right, "cont");
@@ -401,7 +704,10 @@ public final class HybridCgImEditor extends JPanel {
             try { return Double.valueOf(s); } catch (Exception ex) { return Double.NaN; }
         }
         @Override public Component getTableCellEditorComponent(JTable t, Object v, boolean sel, int r, int c) {
-            ((JTextField)getComponent()).setText((v instanceof Number) ? fmt.format(((Number) v).doubleValue()) : "");
+            // A NaN cell is unestimated, not a number to edit down from; start blank.
+            boolean nan = (v instanceof Number n) && Double.isNaN(n.doubleValue());
+            ((JTextField)getComponent()).setText((v instanceof Number && !nan)
+                    ? fmt.format(((Number) v).doubleValue()) : "");
             return getComponent();
         }
     }

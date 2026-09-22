@@ -1047,7 +1047,7 @@ public class DataTransforms {
                                                + "Covariance Audit on the result for the full diagnosis.");
             }
         } catch (Exception e) {
-            TetradLogger.getInstance().log("Gaussian copula correlation: the eigenvalues could not be computed, "
+            TetradLogger.getInstance().warn("Gaussian copula correlation: the eigenvalues could not be computed, "
                                            + "so positive semidefiniteness was not checked.");
         }
     }
@@ -1369,6 +1369,22 @@ public class DataTransforms {
 //        }
 //    }
 
+
+    /**
+     * Returns a linearized ("un-warped") version of the dataset: each variable is
+     * passed through a monotone Yeo-Johnson transform chosen to make its relations to
+     * the other variables as linear as possible (post-nonlinear model un-warping).
+     * Unlike the nonparanormal transform, this preserves the marginal skewness that
+     * skew-based orientation methods rely on, to the extent the post-nonlinear model
+     * holds. Columns are standardized. Fitted lambdas and before/after nonlinearity
+     * per variable are written to the log; see {@link Linearizer}.
+     *
+     * @param dataSet a continuous {@link edu.cmu.tetrad.data.DataSet}
+     * @return the linearized dataset
+     */
+    public static DataSet getLinearizedTransformed(DataSet dataSet) {
+        return new Linearizer(dataSet).linearize();
+    }
 
     /**
      * Returns a nonparanormal-transformed version of the dataset. Each continuous

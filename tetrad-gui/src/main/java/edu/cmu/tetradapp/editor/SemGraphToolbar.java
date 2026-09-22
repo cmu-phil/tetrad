@@ -20,8 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
+import edu.cmu.tetradapp.workbench.WorkbenchIcons;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -182,11 +182,10 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
      * to the panel and button group.
      */
     private void addButton(JToggleButton button, String name) {
-        String imageName = name + "3.gif";
-        button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName)));
+        button.setIcon(WorkbenchIcons.forTool(name));
         button.setMaximumSize(new Dimension(80, 40));
         button.setPreferredSize(new Dimension(80, 40));
-        this.buttonImageNames.put(button, imageName);
+        this.buttonImageNames.put(button, name);
         this.buttonsPanel.add(button);
         this.buttonsPanel.add(Box.createVerticalStrut(5));
         this.group.add(button);
@@ -196,7 +195,7 @@ class SemGraphToolbar extends JPanel implements PropertyChangeListener {
      * Reloads all button icons; called after a look-and-feel change.
      */
     private void refreshButtonIcons() {
-        this.buttonImageNames.forEach((button, imageName) ->
-                button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName))));
+        this.buttonImageNames.forEach((button, name) ->
+                button.setIcon(WorkbenchIcons.forTool(name)));
     }
 }

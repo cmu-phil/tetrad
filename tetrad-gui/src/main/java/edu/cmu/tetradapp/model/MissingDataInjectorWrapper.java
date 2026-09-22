@@ -21,8 +21,8 @@
 package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.MissingnessInjector;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
-import java.util.Arrays;
 
 /**
  * Wraps a data model so that a random sample will automatically be drawn on construction from a BayesIm.
@@ -62,19 +61,21 @@ public class MissingDataInjectorWrapper extends DataWrapper {
         DataSet dataSet =
                 (DataSet) wrapper.getSelectedDataModel();
 
-        int numVars = dataSet.getNumColumns();
-
         double prob = params.getDouble("prob", 0.02);
-        double[] probs = new double[numVars];
+        double rowPropensity = params.getDouble("missingnessRowPropensity", 0.0);
+        String profile = params.getString("missingnessRateProfile", "");
 
-        Arrays.fill(probs, prob);
+        double[] probs = MissingnessInjector.parseRateProfile(profile, dataSet.getVariables(), prob);
 
-        this.outputDataSet = DataTransforms.addMissingData(dataSet, probs);
+        MissingnessInjector.Result result =
+                MissingnessInjector.inject(dataSet, new MissingnessInjector.Spec(probs, rowPropensity));
+
+        this.outputDataSet = result.data();
         setDataModel(this.outputDataSet);
         setSourceGraph(wrapper.getSourceGraph());
 
-        LogDataUtils.logDataModelList("Parent data with missing values injected randomly.", getDataModelList());
-
+        LogDataUtils.logDataModelList("Parent data with missing values injected.", getDataModelList());
+        TetradLogger.getInstance().log("Injected missingness: " + result.report().description());
     }
 
     /**

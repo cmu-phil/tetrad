@@ -5,6 +5,8 @@ import edu.cmu.tetradapp.workbench.PointPair;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 
 /**
  * Presents an edge in the Tetrad SessionWorkbench.
@@ -229,58 +231,25 @@ final class SessionEditorEdge extends DisplayEdge {
         Graphics2D g2d = (Graphics2D) g.create();
 
         try {
-            Stroke solid = new BasicStroke(2.5f);
-            g2d.setStroke(solid);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
 
             PointPair pp;
 
             switch (getMode()) {
                 case DisplayEdge.HALF_ANCHORED:
-                    g2d.setColor(getLineColor());
                     pp = calculateEdge(getNode1(), getRelativeMouseTrackPoint());
-
-                    if (pp != null) {
-                        pp.getFrom().translate(-getLocation().x, -getLocation().y);
-                        pp.getTo().translate(-getLocation().x, -getLocation().y);
-
-                        setClickRegion(null);
-
-                        g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x, pp.getTo().y);
-                        drawEndpoints(pp, g2d);
-                        firePropertyChange("newPointPair", null, pp);
-                    }
+                    drawSessionEdge(g2d, pp, getLineColor());
                     break;
 
                 case DisplayEdge.ANCHORED_UNSELECTED:
-                    g2d.setColor(getLineColor());
                     pp = calculateEdge(getNode1(), getNode2());
-
-                    if (pp != null) {
-                        pp.getFrom().translate(-getLocation().x, -getLocation().y);
-                        pp.getTo().translate(-getLocation().x, -getLocation().y);
-
-                        setClickRegion(null);
-
-                        g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x, pp.getTo().y);
-                        drawEndpoints(pp, g2d);
-                        firePropertyChange("newPointPair", null, pp);
-                    }
+                    drawSessionEdge(g2d, pp, getLineColor());
                     break;
 
                 case DisplayEdge.ANCHORED_SELECTED:
-                    g2d.setColor(getSelectedColor());
                     pp = calculateEdge(getNode1(), getNode2());
-
-                    if (pp != null) {
-                        pp.getFrom().translate(-getLocation().x, -getLocation().y);
-                        pp.getTo().translate(-getLocation().x, -getLocation().y);
-
-                        setClickRegion(null);
-
-                        g2d.drawLine(pp.getFrom().x, pp.getFrom().y, pp.getTo().x, pp.getTo().y);
-                        drawEndpoints(pp, g2d);
-                        firePropertyChange("newPointPair", null, pp);
-                    }
+                    drawSessionEdge(g2d, pp, getSelectedColor());
                     break;
 
                 default:
@@ -295,6 +264,79 @@ final class SessionEditorEdge extends DisplayEdge {
         } finally {
             g2d.dispose();
         }
+    }
+
+    // ============================================================
+    // Session-edge rendering
+    // ============================================================
+
+    /**
+     * Stroke width of the session edge shaft, in pixels. Deliberately much
+     * heavier than workbench edges so session edges (dataflow) cannot be
+     * mistaken for causal or Markov edges.
+     */
+    private static final float SHAFT_WIDTH = 5f;
+
+    /**
+     * Length of the arrowhead along the edge, in pixels.
+     */
+    private static final float HEAD_LENGTH = 16f;
+
+    /**
+     * Half the width of the arrowhead base, in pixels.
+     */
+    private static final float HEAD_HALF_WIDTH = 8f;
+
+    /**
+     * Draws a session edge as a single thick solid line with a filled
+     * arrowhead scaled to match.
+     *
+     * @param g2d   the graphics to draw on
+     * @param pp    the connected points, in parent coordinates; may be null
+     * @param color the color for shaft and head
+     */
+    private void drawSessionEdge(Graphics2D g2d, PointPair pp, Color color) {
+        if (pp == null) {
+            return;
+        }
+
+        pp.getFrom().translate(-getLocation().x, -getLocation().y);
+        pp.getTo().translate(-getLocation().x, -getLocation().y);
+
+        setClickRegion(null);
+
+        double dx = pp.getTo().x - pp.getFrom().x;
+        double dy = pp.getTo().y - pp.getFrom().y;
+        double len = Math.sqrt(dx * dx + dy * dy);
+        if (len < 1e-6) {
+            firePropertyChange("newPointPair", null, pp);
+            return;
+        }
+
+        double ux = dx / len;
+        double uy = dy / len;
+
+        // The shaft stops at the base of the arrowhead so the round cap
+        // does not bulge past the head.
+        double baseX = pp.getTo().x - ux * HEAD_LENGTH;
+        double baseY = pp.getTo().y - uy * HEAD_LENGTH;
+
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(SHAFT_WIDTH, BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND));
+        g2d.draw(new Line2D.Double(pp.getFrom().x, pp.getFrom().y,
+                baseX, baseY));
+
+        // Filled arrowhead, base corners offset along the perpendicular
+        // unit vector (-uy, ux).
+        Path2D.Double head = new Path2D.Double();
+        head.moveTo(pp.getTo().x, pp.getTo().y);
+        head.lineTo(baseX - uy * HEAD_HALF_WIDTH, baseY + ux * HEAD_HALF_WIDTH);
+        head.lineTo(baseX + uy * HEAD_HALF_WIDTH, baseY - ux * HEAD_HALF_WIDTH);
+        head.closePath();
+        g2d.fill(head);
+
+        firePropertyChange("newPointPair", null, pp);
     }
 
     /**

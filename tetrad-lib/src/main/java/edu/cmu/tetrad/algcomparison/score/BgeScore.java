@@ -69,13 +69,14 @@ public class BgeScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BGe Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"), "BGe Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.BgeScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.BgeScore((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.BgeScore((DataSet) this.dataSet,
+                    MissingDataUtils.fromParameters(parameters));
         } else if (dataSet instanceof ICovarianceMatrix) {
             score = new edu.cmu.tetrad.search.score.BgeScore((ICovarianceMatrix) this.dataSet);
         } else {

@@ -67,7 +67,7 @@ public class FfMlContinuous implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "FFML-Continuous Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "FFML-Continuous Score");
         this.dataSet = dataSet;
 
         edu.cmu.tetrad.search.score.FfMlContinuous score;

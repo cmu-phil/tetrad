@@ -113,6 +113,16 @@ public class VertexCheckEditor extends JPanel {
     private AbstractTableModel overviewModel;
     private AbstractTableModel factsModel;
     private IndependenceWrapper independenceWrapper;
+    /**
+     * The message of the last "test could not be constructed" notice shown to the user, so the same notice is
+     * not shown repeatedly. Null if no such notice has been shown.
+     */
+    private String lastPendingTestMessage;
+    /**
+     * The "untestable/total" key of the last untestable-facts notice, so the same notice is not repeated on
+     * every sweep. Null if none shown.
+     */
+    private String lastUntestableNoticeKey;
     private boolean initializing;
     private boolean applyingGraphProgrammatically = false;
     //    private volatile boolean runningAll = false;
@@ -196,8 +206,9 @@ public class VertexCheckEditor extends JPanel {
             if (!applyingGraphProgrammatically) {
                 Object oldV = evt.getOldValue();
                 if (oldV instanceof Graph oldG) {
-                    graphHistory.push(safeCopy(oldG));
-
+                    // Push exactly once, on the EDT. (The previous code pushed the same
+                    // graph twice -- once synchronously here and once in the deferred
+                    // task -- so every change cost two undo clicks.)
                     SwingUtilities.invokeLater(() -> {
                         graphHistory.push(safeCopy(oldG));
                         updateUndoButtonEnabled();
@@ -301,8 +312,17 @@ public class VertexCheckEditor extends JPanel {
         else if (dv instanceof Long) comp = getLongTextField(parameter, parameters, (Long) dv,
                 pd.getLowerBoundLong(), pd.getUpperBoundLong());
         else if (dv instanceof Boolean) comp = getBooleanSelectionBox(parameter, parameters, (Boolean) dv);
-        else if (dv instanceof String) comp = getStringField(parameter, parameters, (String) dv);
-        else throw new IllegalArgumentException("Unexpected type: " + dv.getClass());
+        else if (dv instanceof String) {
+            // A String parameter with a declared set of legal values (e.g., the missing-data policy) gets a
+            // dropdown, as in the search editor's parameter panel, rather than a free text field whose typed
+            // value only commits on Enter or focus change.
+            if (!pd.getAllowedValues().isEmpty()) {
+                comp = ParameterComponents.getStringSelectionBox(parameter, parameters, (String) dv,
+                        pd.getAllowedValues());
+            } else {
+                comp = getStringField(parameter, parameters, (String) dv);
+            }
+        } else throw new IllegalArgumentException("Unexpected type: " + dv.getClass());
 
         Box row = Box.createHorizontalBox();
         JLabel label = new JLabel(pd.getShortDescription());
@@ -847,6 +867,16 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void runAllAndRefresh(String preferredVertex, Runnable onDone) {
+        if (model.getIndependenceTest() instanceof PendingIndependenceTest) {
+            // The chosen test could not be constructed (e.g., missing values with no missing-data policy
+            // chosen), so there is nothing to run yet; setTestFromCombo() has already told the user why and
+            // where to fix it. The tables simply stay empty until the test can be constructed.
+            overviewModel.fireTableDataChanged();
+            refreshModelDiagnostics();
+            if (onDone != null) onDone.run();
+            return;
+        }
+
         if (activeWorker != null && !activeWorker.isDone()) {
             cancelRequested.set(true);          // stop the in-flight compute, not just interrupt
             activeWorker.cancel(true);
@@ -867,8 +897,30 @@ public class VertexCheckEditor extends JPanel {
             @Override
             protected void done() {
                 if (!isCancelled()) {
+                    // Surface background failures rather than swallowing them (added
+                    // 2026-9-9). SwingWorker captures any exception thrown by
+                    // doInBackground and rethrows it only from get(); this done() never
+                    // called get(), so a failure in runAllVertices left the overview
+                    // table blank and the model diagnostics at "(not computed)" with no
+                    // indication anything went wrong.
+                    try {
+                        get();
+                    } catch (java.util.concurrent.ExecutionException e) {
+                        Throwable cause = (e.getCause() != null) ? e.getCause() : e;
+                        TetradLogger.getInstance().warn("Vertex check failed: " + cause);
+                        java.io.StringWriter sw = new java.io.StringWriter();
+                        cause.printStackTrace(new java.io.PrintWriter(sw));
+                        TetradLogger.getInstance().log(sw.toString());
+                        cause.printStackTrace();
+                        JOptionPane.showMessageDialog(VertexCheckEditor.this,
+                                "Vertex check failed: " + cause,
+                                "Vertex Check Error", JOptionPane.ERROR_MESSAGE);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                     overviewModel.fireTableDataChanged();
                     refreshModelDiagnostics();
+                    notifyUntestableFacts();
                     String active;
                     if (preferredVertex != null) {
                         restoreOverviewSelection(preferredVertex);
@@ -954,6 +1006,19 @@ public class VertexCheckEditor extends JPanel {
             @Override
             protected void done() {
                 if (isCancelled()) return;
+                // Same exception surfacing as runAllAndRefresh's worker (added 2026-9-9).
+                try {
+                    get();
+                } catch (java.util.concurrent.ExecutionException e) {
+                    Throwable cause = (e.getCause() != null) ? e.getCause() : e;
+                    TetradLogger.getInstance().warn("Vertex check failed: " + cause);
+                    cause.printStackTrace();
+                    JOptionPane.showMessageDialog(VertexCheckEditor.this,
+                            "Vertex check failed: " + cause,
+                            "Vertex Check Error", JOptionPane.ERROR_MESSAGE);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 updateTable(sel);
             }
         };
@@ -991,7 +1056,22 @@ public class VertexCheckEditor extends JPanel {
         if (clazz == null) return;
         try {
             independenceWrapper = clazz.getDeclaredConstructor().newInstance();
-            IndependenceTest test = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
+
+            IndependenceTest test;
+
+            try {
+                test = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
+            } catch (IllegalArgumentException e) {
+                // The test could not be constructed for this data with the current parameters--typically
+                // because the data contain missing values and no missing-data policy has been chosen yet
+                // (see MissingDataUtils.gate). Just opening the editor should not throw, so install a
+                // placeholder test that lets the editor open, tell the user what needs to be set, and let
+                // them fix it in the Params dialog; setTestFromCombo() runs again when that dialog closes.
+                test = new PendingIndependenceTest(independenceWrapper.getDescription(),
+                        e.getMessage(), model.getDataModel());
+                notifyPendingTest(e.getMessage());
+            }
+
             model.setIndependenceTest(test);
             model.setSavedClassName(clazz.getName());
 //            PREFS.put(PREF_KEY_TEST, clazz.getName());
@@ -999,9 +1079,81 @@ public class VertexCheckEditor extends JPanel {
             repaint();
         } catch (InstantiationException | IllegalAccessException
                  | InvocationTargetException | NoSuchMethodException e) {
-            TetradLogger.getInstance().log("Error: " + e.getMessage());
+            TetradLogger.getInstance().warn("Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Tells the user that the chosen test could not be constructed (a PendingIndependenceTest placeholder is in
+     * place instead) and where to fix it. Shown once per distinct message, so the notice appears when the editor
+     * opens or the situation changes, but not on every repeated setTestFromCombo() call for the same unresolved
+     * problem.
+     *
+     * @param message The construction error's message.
+     */
+    /**
+     * Warns when a sweep produced facts with no p-value (NaN): under the caching layer's error policy those
+     * are facts the chosen test could not actually be run on (e.g., too few usable rows after deletion of
+     * missing values), silently recorded as independent. Shown once per distinct count, queued to the EDT so
+     * it appears after the progress dialog is gone.
+     */
+    private void notifyUntestableFacts() {
+        int[] counts = model.countUntestableFacts();
+
+        // Zero facts after a completed sweep means there was nothing to check at all -- most often an
+        // empty or near-empty graph was connected by mistake. Say so instead of leaving the tables blank.
+        if (counts[0] == 0) {
+            if ("nofacts".equals(this.lastUntestableNoticeKey)) return;
+            this.lastUntestableNoticeKey = "nofacts";
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(VertexCheckEditor.this,
+                    "This graph implies no independence facts to check under the chosen conditioning set"
+                    + " type, so there is nothing to test. (Is the graph empty, or nearly so?)",
+                    "No Implied Facts", JOptionPane.INFORMATION_MESSAGE));
+            return;
+        }
+
+        if (counts[1] == 0) return;
+
+        String key = counts[1] + "/" + counts[0];
+        if (key.equals(this.lastUntestableNoticeKey)) return;
+        this.lastUntestableNoticeKey = key;
+
+        String example = model.getUntestableExample();
+
+        // A NaN p-value has two causes: the test threw on that fact (example carries the most recent
+        // error), or a fact variable's NAME does not occur among the test's variables at all, in which
+        // case the caching layer's conservative default judges the fact independent without any test.
+        // Name the offending variables so the user can tell which situation they are in.
+        java.util.Set<String> testNames = new java.util.HashSet<>();
+        for (Node v : model.getIndependenceTest().getVariables()) testNames.add(v.getName());
+        List<String> notInData = new ArrayList<>();
+        for (Node g : model.getGraph().getNodes()) {
+            if (!testNames.contains(g.getName())) notInData.add(g.getName());
+        }
+
+        String message = counts[1] + " of " + counts[0] + " implied facts could not be tested with the"
+                + " chosen test and settings. Each such fact is shown with no p-value and counted as"
+                + " independent, so judgments for these facts carry no evidence."
+                + (example == null ? "" : "\n\nMost recent test error: " + example)
+                + (notInData.isEmpty() ? "" : "\n\nGraph variables not among the data variables (facts"
+                + " involving them cannot be tested): " + notInData);
+
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(VertexCheckEditor.this,
+                message, "Some Facts Could Not Be Tested", JOptionPane.WARNING_MESSAGE));
+    }
+
+    private void notifyPendingTest(String message) {
+        if (message != null && message.equals(this.lastPendingTestMessage)) {
+            return;
+        }
+
+        this.lastPendingTestMessage = message;
+
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                message + "\n\nThe vertex check cannot run until this is resolved; parameters for the "
+                + "chosen test (including the missing-data policy) can be set using the Params button.",
+                "Independence Test Not Configured", JOptionPane.WARNING_MESSAGE));
     }
 
     private void applySavedSetType() {

@@ -823,11 +823,11 @@ public final class Fcit2 implements IGraphSearch {
         }
 
         if (lastScan.edge() != null) {
-            TetradLogger.getInstance().log("\nNon-genuine DDPs detected: a discriminating-path leg is "
+            TetradLogger.getInstance().warn("\nNon-genuine DDPs detected: a discriminating-path leg is "
                     + "test-confirmed spurious but could not be discharged (single-edge removal and the "
                     + "saturating pass both refused). First such edge: " + lastScan.edge());
         } else if (lastScan.indeterminate()) {
-            TetradLogger.getInstance().log(
+            TetradLogger.getInstance().warn(
                     "\nDetection inconclusive: a blocking search timed out or was truncated before a verdict. "
                             + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {
@@ -1579,7 +1579,7 @@ public final class Fcit2 implements IGraphSearch {
                 r0r4Strategy.setSepsetMap(this.sepsets);
             }
 
-            TetradLogger.getInstance().log("SATURATION REVERTED: the saturating reorientation "
+            TetradLogger.getInstance().warn("SATURATION REVERTED: the saturating reorientation "
                     + (orientationFailed ? ("failed (" + failureReason + ")") : "was not a legal PAG ("
                     + legal.getReason() + ")")
                     + ". Every deleted pair was test-confirmed independent, so under the oracle this "

@@ -21,6 +21,9 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
@@ -176,12 +179,41 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     private List<Integer> rows;
 
     /**
-     * Constructs a Kci instance with the given DataSet.
+     * If true, each test is evaluated on the rows (within the active rows) that are complete on x, y, and z, by
+     * delegating to a fresh instance over those rows. Set by the {@link #Kci(DataSet, MissingDataSpec)} constructor
+     * under the TESTWISE policy.
+     */
+    private boolean testwiseDeletion = false;
+
+    /**
+     * Constructs a Kci instance with the given DataSet. A data set with missing values is rejected; use
+     * {@link #Kci(DataSet, MissingDataSpec)} to choose a policy.
      *
      * @param dataSet the dataset containing the data to be analyzed. It is used to initialize the data matrix, variable
      *                list, and other attributes.
      */
     public Kci(DataSet dataSet) {
+        this(dataSet, null);
+    }
+
+    /**
+     * Constructs a Kci instance with an explicit missing-data specification. On a data set with missing values the
+     * supported policies are LISTWISE and TESTWISE; under TESTWISE each test is computed on the rows complete on x,
+     * y, and z. A null spec on missing data throws.
+     *
+     * @param dataSet the dataset.
+     * @param spec    the missing-data specification, or null (equivalent to FAIL on missing data).
+     */
+    public Kci(DataSet dataSet, MissingDataSpec spec) {
+        if (dataSet == null) throw new NullPointerException("Data set is null.");
+
+        // A null spec on missing data fails, as for the other tests and scores; previously each missing entry was
+        // silently replaced by 0 after z-scoring (the causal-learn convention), an imputation nobody chose.
+        dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "Kci");
+        this.testwiseDeletion = spec != null
+                && spec.getPolicy() == edu.cmu.tetrad.data.missing.MissingDataPolicy.TESTWISE
+                && dataSet.existsMissingValue();
+
         this.dataSet = DataTransforms.standardizeData(dataSet);
 
         this.varToRow = new HashMap<>();
@@ -278,16 +310,18 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
     }
 
     private static int[] uniformSample(int n, int m) {
-        int[] idx = new int[n];
-        for (int i = 0; i < n; i++) idx[i] = i;
-        // Partial FisherâYates
-        for (int i = 0; i < m; i++) {
-            int j = i + RandomUtil.getInstance().nextInt(n - i);
-            int t = idx[i];
-            idx[i] = idx[j];
-            idx[j] = t;
+        // Changes from the pre-2026-9 implementation: the m rows used for the median-distance bandwidth heuristic
+        // were previously a random subsample drawn from the global RandomUtil, so two calls on identical input
+        // returned different p-values (and the result depended on unrelated prior draws). The rows are now
+        // evenly spaced through the active row set, which is deterministic and, for exchangeable rows, an
+        // equally good sample of pairwise distances.
+        int[] idx = new int[m];
+        if (m >= n) {
+            for (int i = 0; i < m; i++) idx[i] = i;
+        } else {
+            for (int i = 0; i < m; i++) idx[i] = (int) (((long) i * (n - 1)) / (double) (m - 1));
         }
-        return Arrays.copyOf(idx, m);
+        return idx;
     }
 
     /**
@@ -540,6 +574,20 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         if (rows == null || rows.isEmpty()) {
             return 1.0;
         }
+
+        if (this.testwiseDeletion) {
+            List<Integer> complete = completeRows(x, y, z);
+
+            if (complete.size() < rows.size()) {
+                // Delegate to an instance over the complete rows only. Its caches are private to it and are
+                // discarded with it; the row set differs per test, so nothing could be shared anyway.
+                Kci sub = new Kci(this.dataVxN, this.varToRow, complete);
+                sub.copySettingsFrom(this);
+                sub.testwiseDeletion = false;
+                return sub.isIndependenceConditional(x, y, z);
+            }
+        }
+
         final int n = rows.size();
         if (n < 2) {
             return 1.0;
@@ -621,6 +669,45 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
         }
 
         return p;
+    }
+
+    /**
+     * The active rows on which none of x, y, z is missing.
+     */
+    private List<Integer> completeRows(Node x, Node y, List<Node> z) {
+        List<Integer> cols = new ArrayList<>(2 + z.size());
+        cols.add(varToRow.get(x));
+        cols.add(varToRow.get(y));
+        for (Node v : z) cols.add(varToRow.get(v));
+
+        List<Integer> out = new ArrayList<>(rows.size());
+        R:
+        for (int r : rows) {
+            for (int c : cols) {
+                if (Double.isNaN(dataVxN.get(c, r))) continue R;
+            }
+            out.add(r);
+        }
+        return out;
+    }
+
+    /**
+     * Copies the kernel and test settings of another instance (not its data, rows, or caches).
+     */
+    private void copySettingsFrom(Kci other) {
+        this.polyDegree = other.polyDegree;
+        this.polyCoef0 = other.polyCoef0;
+        this.polyGamma = other.polyGamma;
+        this.kernelType = other.kernelType;
+        this.epsilon = other.epsilon;
+        this.scalingFactor = other.scalingFactor;
+        this.approximate = other.approximate;
+        this.numPermutations = other.numPermutations;
+        this.dataSet = other.dataSet;
+        this.verbose = other.verbose;
+        this.alpha = other.alpha;
+        this.useJointXZKernel = other.useJointXZKernel;
+        this.useHalfZConcatForKx = other.useHalfZConcatForKx;
     }
 
     private double effectiveEpsilonFromUncentered(SimpleMatrix KZraw) {
@@ -1320,5 +1407,16 @@ public class Kci implements IndependenceTest, RawMarginalIndependenceTest {
          * Represents the polynomial kernel, which generalizes the linear kernel by introducing polynomial terms.
          */
         POLYNOMIAL
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test is evaluated on the rows complete on
+     * x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

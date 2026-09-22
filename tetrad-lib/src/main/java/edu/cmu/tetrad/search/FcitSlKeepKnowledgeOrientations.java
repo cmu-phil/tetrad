@@ -978,7 +978,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
                 canonicalOrient.finalOrientation(canonicalPag);
 
                 if (PagLegalityCheck.isLegalPag(canonicalPag, new HashSet<>(selectionNodes)).isLegalPag()) {
-                    TetradLogger.getInstance().log("KNOWLEDGE/DATA CONFLICT: the knowledge-refined final "
+                    TetradLogger.getInstance().warn("KNOWLEDGE/DATA CONFLICT: the knowledge-refined final "
                             + "graph fails the modulo-knowledge certificate while the knowledge-free "
                             + "rendering is a strictly legal PAG. Returning the knowledge-free rendering; "
                             + "the conflicting knowledge orientations are dropped.");
@@ -1013,7 +1013,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
         if (finalScan.edge() != null) {
             TetradLogger.getInstance().log("\nNon-genuine DDPs detected (R4).");
         } else if (finalScan.indeterminate()) {
-            TetradLogger.getInstance().log(
+            TetradLogger.getInstance().warn(
                     "\nR4: Detection inconclusive: a blocking search timed out before a verdict. "
                             + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {
@@ -1043,7 +1043,7 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
                 + (allowClassEscape ? "" : "; escape disabled."));
 
         if (useClassWalk) {
-            TetradLogger.getInstance().log("Class walk (single mark changes): " + classWalkCommits
+            TetradLogger.getInstance().warn("Class walk (single mark changes): " + classWalkCommits
                     + " commit(s), " + classWalkVisited + " class member(s) visited, "
                     + classWalkTruncations + " truncation(s)"
                     + (classWalkBestFirst ? ", best-first on stamp deficit" : ", breadth-first")

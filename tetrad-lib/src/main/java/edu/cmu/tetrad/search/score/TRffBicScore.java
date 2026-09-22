@@ -1,11 +1,11 @@
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.EffectiveSampleSizeSettable;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.data.DMatrixRMaj;
@@ -510,18 +510,23 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
     private double[] getOmega(int child, int parent, int D) {
         // omega_k ~ N(0, 1/sigma^2). Return length D.
         long key = omegaKey(child, parent);
+        // Changes from the pre-2026-9 implementation: these draws came from the global RandomUtil, so two
+        // instances on identical data gave different scores and rffSeed had no effect on them. They now come
+        // from a local generator seeded by (rffSeed, cache key).
         return omegaCache.computeIfAbsent(key, kk -> {
+            java.util.Random rng = new java.util.Random(mix64(kk ^ rffSeed));
             double[] w = new double[D];
             double invSigma = 1.0 / rffSigma;
-            for (int k = 0; k < D; k++) w[k] = RandomUtil.getInstance().nextGaussian() * invSigma;
+            for (int k = 0; k < D; k++) w[k] = rng.nextGaussian() * invSigma;
             return w;
         });
     }
 
     private double[] getPhase(int child, int D) {
         return phaseCache.computeIfAbsent(child, cc -> {
+            java.util.Random rng = new java.util.Random(mix64(0x51ED270B2C3F9A1DL ^ (long) cc ^ rffSeed));
             double[] phase = new double[D];
-            for (int k = 0; k < D; k++) phase[k] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            for (int k = 0; k < D; k++) phase[k] = 2.0 * TMath.PI * rng.nextDouble();
             return phase;
         });
     }
@@ -1731,9 +1736,10 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
     private double[] getOmegaAug(int child, int parent, int D) {
         long key = omegaKey(child, parent) ^ AUG_OMEGA_SALT;
         return omegaCache.computeIfAbsent(key, kk -> {
+            java.util.Random rng = new java.util.Random(mix64(kk ^ rffSeed));
             double[] w = new double[D];
             double invSigma = 1.0 / rffSigma;
-            for (int k = 0; k < D; k++) w[k] = RandomUtil.getInstance().nextGaussian() * invSigma;
+            for (int k = 0; k < D; k++) w[k] = rng.nextGaussian() * invSigma;
             return w;
         });
     }
@@ -1744,8 +1750,9 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
      */
     private double[] getPhaseAug(int child, int D) {
         return phaseCache.computeIfAbsent(~child, cc -> {
+            java.util.Random rng = new java.util.Random(mix64(0x51ED270B2C3F9A1DL ^ (long) cc ^ rffSeed));
             double[] phase = new double[D];
-            for (int k = 0; k < D; k++) phase[k] = 2.0 * TMath.PI * RandomUtil.getInstance().nextDouble();
+            for (int k = 0; k < D; k++) phase[k] = 2.0 * TMath.PI * rng.nextDouble();
             return phase;
         });
     }
@@ -1983,5 +1990,16 @@ public final class TRffBicScore implements Score, EffectiveSampleSizeSettable {
             throws java.io.IOException, ClassNotFoundException {
         in.defaultReadObject();
         initCaches(); // important
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: each local score is computed on the rows complete on the child and its parents (the
+     * pre-existing row-subset path, now declared).
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

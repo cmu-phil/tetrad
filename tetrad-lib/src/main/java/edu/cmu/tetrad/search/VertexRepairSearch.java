@@ -93,6 +93,15 @@ import java.util.stream.Collectors;
  * stale queue entries and the full verification sweep that certifies convergence.
  * The default is {@code true} (as of 2026-8-13); pass {@code false} to restore the
  * original full-invalidation behavior exactly.
+ * <p>
+ * As of 2026-9-8, PAG repair under the ordered-local-Markov conditioning types
+ * additionally scores candidates in two phases -- a cheap MAG-side screening pass over
+ * all candidates and a fully canonicalized exact pass over every candidate that can
+ * actually be applied; see {@link #setTwoPhasePagScoring(boolean)} for the contract
+ * and {@code false} to restore single-phase scoring exactly. Canonicalization results
+ * are also memoized across calls, keyed on the structural signature of the input
+ * graph; both canonicalizers are deterministic given the input and the knowledge, so
+ * the memo is a pure cache.
  *
  * @author josephramsey (extracted from VertexRepairPanelGlobalRepair)
  */
@@ -104,61 +113,8 @@ public final class VertexRepairSearch implements IGraphSearch {
 
     /**
      * Canonical ranking: best candidate sorts first.
-     * Priority chain: (1) fewer Markov violations; (2) fewer edges when alpha > 0.01;
-     * (3) higher Model-P; (4) stable key tie-break.
-     */
-//    /**
-//     * Canonical ranking: best candidate sorts first.
-//     * Priority chain:
-//     *   (1) fewer Markov violations (smaller delta);
-//     *   (2) fewer edges, but only for candidates that have "earned" the edges
-//     *       comparison — removals, no-ops, or candidates whose Model-P clears alpha.
-//     *       Candidates with NaN Model-P are treated as not having earned it (they
-//     *       haven't been evaluated yet), so they sort after those that have.
-//     *   (3) higher Model-P, with NaN sorting last (unknown is worse than known);
-//     *   (4) stable key tie-break.
-//     */
-//    public static final Comparator<ScoredCandidate> CANONICAL_TABLE_ORDER = (a, b) -> {
-//        if (a == null && b == null) return 0;
-//        if (a == null) return 1;
-//        if (b == null) return -1;
-//
-//        int c;
-//
-//        // (1) Fewer Markov violations wins.
-//        c = Integer.compare(a.violationsAfter(), b.violationsAfter());
-//        if (c != 0) return c;
-//
-//        // (2) Edges comparison — only candidates that are removals, no-ops, or
-//        // whose Model-P clears alpha "earn" the edges comparison. Candidates with
-//        // NaN Model-P have not been evaluated yet and so are treated as not earning
-//        // it (MAX_VALUE sinks them relative to earned candidates but ties among
-//        // themselves, so the next key breaks them).
-//        int edges1 = earnsEdgesComparison(a) ? a.edgesAfter() : Integer.MAX_VALUE;
-//        int edges2 = earnsEdgesComparison(b) ? b.edgesAfter() : Integer.MAX_VALUE;
-//        c = Integer.compare(edges1, edges2);
-//        if (c != 0) return c;
-//
-//        // (3) Higher Model-P wins. NaN sorts last (unknown/unevaluated is worse
-//        // than any real value).
-//        c = compareModelPDesc(a.modelPAfter(), b.modelPAfter());
-//        if (c != 0) return c;
-//
-//        c = compareModelPDesc(a.nodePAfter(), b.nodePAfter());
-//        if (c != 0) return c;
-//
-//        c  = compareModelPDesc(a.modelPAfter() - a.modelPBefore(), b.modelPAfter() - b.modelPBefore());
-//        if (c != 0) return c;
-//
-//        // (4) Stable tie-break on keys and descriptions.
-//        return stableTieBreak(a, b);
-//    };
-
-
-    /**
-     * Canonical ranking: best candidate sorts first.
      * Priority chain:
-     *   (0) Markov-passing beats non-passing. A candidate "passes" when its
+         *   (0) Markov-passing beats non-passing. A candidate "passes" when its
      *       Model-P exceeds alpha. Within the non-passing group, a larger
      *       Model-P is preferred — this gives the search a gradient toward
      *       clearing alpha when it's stuck in a non-I-map region. NaN
@@ -325,6 +281,48 @@ public final class VertexRepairSearch implements IGraphSearch {
      * search() so a reused instance doesn't carry a previous run's frontier.
      */
     private Set<String> reachedVertexNames = null;
+
+    /**
+     * When true (the default as of 2026-9-8), PAG repair under the ordered-local-Markov
+     * conditioning types scores candidates in two phases; see
+     * {@link #setTwoPhasePagScoring(boolean)} for the exact contract.
+     */
+    private boolean twoPhasePagScoring = true;
+
+    /**
+     * Cap on the number of memoized canonicalization results retained; least recently
+     * used entries are evicted beyond this. Sized to comfortably cover the
+     * poll-then-apply and rescore patterns the memo exists for while bounding memory.
+     */
+    private static final int CANONICALIZATION_MEMO_MAX = 512;
+
+    /**
+     * Sentinel stored in {@link #canonicalizationMemo} for inputs whose canonicalization
+     * returned null (illegal or failed), so repeated rejects are also memo hits.
+     */
+    private static final Graph CANONICALIZATION_NULL = new EdgeListGraph();
+
+    /**
+     * Memoized canonicalization results, keyed on a structural signature of the input
+     * graph (plus a tag for which canonicalizer ran). Valid across graph versions,
+     * because both canonicalizers are deterministic functions of the input graph, the
+     * background knowledge, and nothing else; cleared whenever the knowledge or graph
+     * type changes. Access-ordered with LRU eviction at
+     * {@link #CANONICALIZATION_MEMO_MAX} entries. (Added 2026-9-8.)
+     */
+    private final Map<String, Graph> canonicalizationMemo =
+            new LinkedHashMap<>(64, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Graph> eldest) {
+                    return size() > CANONICALIZATION_MEMO_MAX;
+                }
+            };
+
+    /**
+     * Number of canonicalization memo hits since construction; package-private for
+     * testing only.
+     */
+    long canonicalizationMemoHits = 0L;
 
     // =========================================================================
     // Construction
@@ -533,13 +531,40 @@ public final class VertexRepairSearch implements IGraphSearch {
     // =========================================================================
 
     private static int stableTieBreak(ScoredCandidate a, ScoredCandidate b) {
+        // Move-type rank before the lexical key (added 2026-9-9). Candidates reach this
+        // tier with NaN Model-P whenever the queue is built without Model-P evaluation
+        // (computeScoredCandidatesForNodeNoModelP), so among equal-violation candidates
+        // every substantive tier ties and THIS comparison decides which candidate the
+        // global queue polls -- and applies -- first. The old key comparison made that
+        // decision lexically, and since "ADD:" sorts before "MREPL:", "REM:" and "REP:",
+        // edge additions were systematically applied ahead of removals and
+        // reorientations that scored identically: densify-first, the opposite of the
+        // parsimony bias the earnsEdgesComparison tier encodes. The rank prefers
+        // removals, then reorientations, then everything else, then additions; the
+        // lexical comparison remains as the final stable component.
+        int c = Integer.compare(moveTypeRank(a), moveTypeRank(b));
+        if (c != 0) return c;
         String ka = (a.edit() == null || a.edit().key() == null) ? "" : a.edit().key();
         String kb = (b.edit() == null || b.edit().key() == null) ? "" : b.edit().key();
-        int c = ka.compareTo(kb);
+        c = ka.compareTo(kb);
         if (c != 0) return c;
         String da = (a.edit() == null || a.edit().description() == null) ? "" : a.edit().description();
         String db = (b.edit() == null || b.edit().description() == null) ? "" : b.edit().description();
         return da.compareTo(db);
+    }
+
+    /**
+     * Parsimony-leaning rank of a candidate's move type for the final tie-break:
+     * removals first, then reorientations, then no-ops and other moves, then additions.
+     */
+    private static int moveTypeRank(ScoredCandidate sc) {
+        MoveType t = (sc == null || sc.edit() == null) ? MoveType.OTHER : sc.edit().moveType();
+        return switch (t) {
+            case REMOVE_EDGE -> 0;
+            case REORIENT_SIMPLE -> 1;
+            case OTHER -> 2;
+            case ADD_EDGE -> 3;
+        };
     }
 
     private static Edge getEdgeByNames(Graph g, Edge e) {
@@ -722,6 +747,10 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge;
+        // Canonicalization output depends on the knowledge (both canonicalizers restore
+        // knowledge-forced orientations), so memoized results are invalid across a
+        // knowledge change.
+        canonicalizationMemo.clear();
         bumpGraphVersion();
     }
 
@@ -778,6 +807,10 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setGraphType(AdjustmentGraphType graphType) {
         this.graphType = Objects.requireNonNull(graphType, "graphType");
+        // The memo keys are tagged by canonicalizer, so entries could not collide
+        // across types, but a type change is rare and clearing keeps the invariant
+        // trivially simple.
+        canonicalizationMemo.clear();
         bumpGraphVersion();
     }
 
@@ -832,6 +865,55 @@ public final class VertexRepairSearch implements IGraphSearch {
      */
     public void setAffectedOnlyInvalidation(boolean affectedOnlyInvalidation) {
         this.affectedOnlyInvalidation = affectedOnlyInvalidation;
+    }
+
+    /**
+     * When true (the default as of 2026-9-8), PAG repair under the two
+     * ordered-local-Markov conditioning types scores candidates in two phases rather
+     * than fully canonicalizing every candidate.
+     *
+     * <p><b>Phase 1 (screening, the hot path).</b> Each candidate edit is applied and
+     * projected only as far as its implied MAG ({@code zhangMagFromPag} plus the
+     * {@code isLegalMag} gate) -- exactly the first half of
+     * {@link #canonicalizeToPagOrNull(Graph)} -- and Markov violations are counted on
+     * that MAG. The expensive second half (the {@code magToPag} projection with the
+     * dsep-based orientation engine, plus knowledge refinement and its certification
+     * round trip) is skipped for every screened candidate. This is sound for ranking
+     * because the two ordered-local-Markov conditioning types compute their implied
+     * facts from a MAG of the graph's equivalence class in any case (see
+     * {@code MarkovCheck.prepareMagForVertexFacts}); all MAGs in one class imply the
+     * same independence facts, so violation truth-values are class-invariant. What is
+     * NOT invariant is the enumeration: the screening MAG is a class member but
+     * generally not the Zhang-canonical member, and the ordered-local property
+     * enumerates (slightly) different fact lists for different members. Screening
+     * violation counts can therefore differ from fully-canonical counts by small
+     * amounts, which perturbs only greedy candidate ORDER, never the legality or
+     * certification of anything applied.
+     *
+     * <p><b>Phase 2 (exact, the commitment path).</b> Every candidate that can actually
+     * be applied is re-scored on its fully canonicalized, knowledge-refined graph
+     * before application, exactly as when this option is off: at poll time in
+     * GLOBAL_QUEUE ({@code evalModelPForEntry} rebuilds via
+     * {@link #buildCandidateGraph}), for the Model-P top-K in LOCAL_SWEEP scoring, and
+     * unconditionally in {@code applyCandidateInternal}. In addition, when this option
+     * is on, (a) every polled GLOBAL_QUEUE entry -- not only stale-version ones -- must
+     * beat a fresh no-op on its exact scores before application, and (b) the
+     * knowledge-consistency check, which screening skips because MAG marks
+     * over-commit relative to the knowledge-refined PAG, is enforced on the exact
+     * graph at those same points. So the working graph only ever advances through
+     * fully certified, exactly scored candidates; the screening approximation cannot
+     * leak into an applied graph.
+     *
+     * <p><b>Scope.</b> Active only when the graph type is PAG and the conditioning-set
+     * type is one of the two ordered-local-Markov types. For all other combinations
+     * scoring is byte-for-byte the pre-2026-9-8 behavior, as it is whenever this flag
+     * is false.
+     *
+     * @param twoPhasePagScoring true to enable two-phase PAG scoring
+     */
+    public void setTwoPhasePagScoring(boolean twoPhasePagScoring) {
+        this.twoPhasePagScoring = twoPhasePagScoring;
+        bumpGraphVersion();
     }
 
     /**
@@ -1074,6 +1156,17 @@ public final class VertexRepairSearch implements IGraphSearch {
             ScoredCandidate withMp = evalModelPForEntry(entry);
 
             if (withMp == null) {
+                if (twoPhaseActive()) {
+                    // Under two-phase scoring a null here is expected, not exceptional:
+                    // the entry passed Phase-1 screening but its exact rebuild failed
+                    // (disguised no-op, illegal canonicalization, or knowledge
+                    // violation). Recomputing the node would re-screen and re-queue the
+                    // very same entry, looping forever; instead drop just this head so
+                    // the node's next-best candidate (whose queue entry is already
+                    // offered) can surface.
+                    currentForNode.removeFirst();
+                    continue;
+                }
                 // Stale candidate no longer applies; refresh this node's candidates.
                 if (!invalidateAndRecompute(Set.of(entry.nodeName()))) return;
                 continue;
@@ -1086,7 +1179,11 @@ public final class VertexRepairSearch implements IGraphSearch {
             // (Entries at the current version have already beaten the no-op via the
             // head-of-list check, exactly as under full invalidation.) A dropped head
             // is removed from its node's list so the next-best candidate can surface.
-            if (affectedOnlyInvalidation && entry.version() != graphVersion
+            // Under two-phase PAG scoring this gate applies to EVERY entry, current
+            // version included: the head-of-list check was earned on screening scores,
+            // and application must be earned on the exact scores just computed.
+            if ((twoPhaseActive()
+                    || (affectedOnlyInvalidation && entry.version() != graphVersion))
                     && !applyWorthy(withMp, entry.nodeName())) {
                 currentForNode.removeFirst();
                 continue;
@@ -1239,6 +1336,15 @@ public final class VertexRepairSearch implements IGraphSearch {
         GlobalEvalCache baseCache = bb.cache();
         int baseline = bb.violations();
 
+        // Under two-phase PAG scoring, this bulk loop is the Phase-1 screening pass:
+        // candidates are projected only to their implied MAGs, and the knowledge check
+        // is deferred to the exact path (see setTwoPhasePagScoring; MAG marks
+        // over-commit relative to the knowledge-refined PAG, so checking here would
+        // wrongly reject consistent candidates). Every entry queued from here is
+        // exactly rebuilt, exactly re-scored, and knowledge-checked at poll time
+        // before it can be applied.
+        boolean screening = twoPhaseActive();
+
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> result = new ArrayList<>();
 
@@ -1246,9 +1352,10 @@ public final class VertexRepairSearch implements IGraphSearch {
             if (stopRequested()) return List.of();
 
             Graph g2 = candGraphByKey.computeIfAbsent(cand.key(),
-                    k -> buildCandidateGraph(base, cand));
+                    k -> screening ? buildScreeningGraph(base, cand)
+                            : buildCandidateGraph(base, cand));
             if (g2 == null) continue;
-            if (violatesKnowledge(g2)) continue;
+            if (!screening && violatesKnowledge(g2)) continue;
 
             boolean useLocality = usesLocality();
             Set<String> affected = affectedVertices(base, node, g2);
@@ -1276,6 +1383,11 @@ public final class VertexRepairSearch implements IGraphSearch {
         int baseline = bb.violations();
         double mpBefore = bb.modelP();
 
+        // Under two-phase PAG scoring, this loop is the Phase-1 screening pass:
+        // candidates are projected only to their implied MAGs, and the knowledge check
+        // is deferred to the Phase-2 exact rebuild below (see setTwoPhasePagScoring).
+        boolean screening = twoPhaseActive();
+
         Map<String, Graph> candGraphByKey = new HashMap<>();
         List<ScoredCandidate> scored = new ArrayList<>();
 
@@ -1283,9 +1395,10 @@ public final class VertexRepairSearch implements IGraphSearch {
             if (stopRequested()) return List.of();
 
             Graph g2 = candGraphByKey.computeIfAbsent(cand.key(),
-                    k -> buildCandidateGraph(base, cand));
+                    k -> screening ? buildScreeningGraph(base, cand)
+                            : buildCandidateGraph(base, cand));
             if (g2 == null) continue;
-            if (violatesKnowledge(g2)) continue;
+            if (!screening && violatesKnowledge(g2)) continue;
 
             Set<String> affected = affectedVertices(base, node, g2);
             int after = usesLocality()
@@ -1312,28 +1425,64 @@ public final class VertexRepairSearch implements IGraphSearch {
         for (ScoredCandidate sc : scored) {
             if (sc != null && sc.edit() != null
                     && moveType(sc.edit()) == MoveType.REORIENT_SIMPLE) {
-                keysToEval.add(sc.edit().key());
+                // Under two-phase PAG screening, each key added here costs a full
+                // canonicalization (zhangMagFromPag + dsep-based magToPag + knowledge
+                // certification) in the exact block below. Multi-edge pattern moves
+                // (MREPL keys, up to 2^8 per node as of 2026-9-9) would swamp the panel
+                // path through that rebuild, so under screening the blanket rule covers
+                // only single-edge reorients; pattern moves compete for the top-K like
+                // adds. When screening is inactive (including all CPDAG/PDAG/DAG runs)
+                // behavior is unchanged.
+                String k = sc.edit().key();
+                if (screening && k != null && k.startsWith("MREPL:")) continue;
+                keysToEval.add(k);
             }
         }
 
+        // Phase-2 exact evaluation for the selected keys. Under two-phase PAG scoring
+        // the screening graphs are MAGs, so each selected candidate is first rebuilt
+        // through the full canonicalization (memoized; the winner's rebuild is then a
+        // hit at apply time), knowledge-checked, and its violations recomputed exactly;
+        // a candidate whose exact rebuild fails (disguised no-op, illegal, or
+        // knowledge-violating) is dropped entirely rather than left with screening
+        // scores. When two-phase scoring is inactive the graphs are already exact and
+        // this block reduces to the previous behavior.
         Map<String, Double> mpAfterByKey = new HashMap<>();
         Map<String, Double> nodePAfterByKey = new HashMap<>();
+        Map<String, Integer> exactAfterByKey = new HashMap<>();
+        Set<String> droppedKeys = new HashSet<>();
         for (String key : keysToEval) {
             if (stopRequested()) return List.of();
             Graph g2 = candGraphByKey.get(key);
-            if (g2 != null) {
-                Set<String> affected = affectedVertices(base, node, g2);
-                mpAfterByKey.put(key, evalModelPLocality(baseCache, g2, affected));
-                nodePAfterByKey.put(key, nodePValue(g2, node));
+            if (g2 == null) continue;
+            if (screening) {
+                CandidateEdit cand = candidates.stream()
+                        .filter(c -> key.equals(c.key())).findFirst().orElse(null);
+                Graph exact = (cand == null) ? null : buildCandidateGraph(base, cand);
+                if (exact == null || violatesKnowledge(exact)) {
+                    droppedKeys.add(key);
+                    continue;
+                }
+                g2 = exact;
+                Set<String> affectedExact = affectedVertices(base, node, g2);
+                exactAfterByKey.put(key, usesLocality()
+                        ? evalGraphLocality(baseCache, g2, affectedExact, false).violations()
+                        : evalViolationsOnly(g2));
             }
+            Set<String> affected = affectedVertices(base, node, g2);
+            mpAfterByKey.put(key, evalModelPLocality(baseCache, g2, affected));
+            nodePAfterByKey.put(key, nodePValue(g2, node));
         }
 
         List<ScoredCandidate> result = new ArrayList<>(scored.size());
         for (ScoredCandidate sc : scored) {
+            if (droppedKeys.contains(sc.edit().key())) continue;
             Double mpAfter = mpAfterByKey.get(sc.edit().key());
             Double nodePAfter = nodePAfterByKey.get(sc.edit().key());
+            Integer exactAfter = exactAfterByKey.get(sc.edit().key());
             ScoredCandidate patched = new ScoredCandidate(
-                    sc.edit(), sc.violationsBaseline(), sc.violationsAfter(),
+                    sc.edit(), sc.violationsBaseline(),
+                    (exactAfter == null ? sc.violationsAfter() : exactAfter),
                     (nodePAfter == null ? Double.NaN : nodePAfter), mpBefore,
                     (mpAfter == null ? Double.NaN : mpAfter),
                     sc.edgesAfter(), true, Q.getAlpha());
@@ -1361,6 +1510,11 @@ public final class VertexRepairSearch implements IGraphSearch {
 
         Graph g2 = buildCandidateGraph(base, cand);
         if (g2 == null) return null;
+        // Under two-phase PAG scoring the knowledge check was deferred from screening
+        // to this exact rebuild; a violating candidate is reported as null and dropped
+        // by the poll loop's head-removal path. No-op when two-phase scoring is
+        // inactive, since screening already filtered on the same (exact) graphs.
+        if (twoPhaseActive() && violatesKnowledge(g2)) return null;
 
         Node node = workingGraph.getNode(entry.nodeName());
         if (node == null) return null;
@@ -1377,8 +1531,12 @@ public final class VertexRepairSearch implements IGraphSearch {
 
         // Under affected-only invalidation, a stale entry's node-P was computed against
         // an older graph state; refresh it so the applyWorthy comparison against the
-        // fresh no-op is like-for-like all the way down the comparator tiers.
-        double nodePAfter = (affectedOnlyInvalidation && entry.version() != graphVersion)
+        // fresh no-op is like-for-like all the way down the comparator tiers. Under
+        // two-phase PAG scoring the screening pass never computed a node-P at all
+        // (NaN), and every entry faces the applyWorthy gate, so it is refreshed here
+        // for every entry for the same like-for-like reason.
+        double nodePAfter = (twoPhaseActive()
+                || (affectedOnlyInvalidation && entry.version() != graphVersion))
                 ? nodePValue(g2, node)
                 : sc.nodePAfter();
 
@@ -1416,9 +1574,21 @@ public final class VertexRepairSearch implements IGraphSearch {
             for (Edge add : addMenuForPair(x, y)) out.add(CandidateEdit.addEdge(add));
         }
 
+        // PAG included as of 2026-9-9. The PAG branch of the pattern enumerator (and its
+        // 2026-8-13 selection-bias fix) had been written but was unreachable behind this
+        // gate. The joint moves are not a luxury for PAGs: a single-edge move that
+        // installs one new arrowhead at x is erased by PAG canonicalization unless that
+        // arrowhead is class-forced on its own, so a new unshielded collider
+        // y *-> x <-* z was unreachable one arrowhead at a time (each intermediate is
+        // class-equivalent to the base and dropped as a disguised no-op). The joint move
+        // installs both arrowheads at once, which the class does force. MAG remains
+        // excluded: MAG edits apply literally with no canonicalization to erase them, so
+        // single-edge moves compose, and the MAG free-edge predicate (tail-tail) named
+        // edges that cannot occur in a selection-free MAG anyway.
         if (graphType == AdjustmentGraphType.DAG
                 || graphType == AdjustmentGraphType.CPDAG
-                || graphType == AdjustmentGraphType.PDAG) {
+                || graphType == AdjustmentGraphType.PDAG
+                || graphType == AdjustmentGraphType.PAG) {
             out.addAll(enumerateIncidentOrientationPatternMoves(g, x));
         }
 
@@ -1449,18 +1619,30 @@ public final class VertexRepairSearch implements IGraphSearch {
                 case PAG -> {
                     if (ex == Endpoint.CIRCLE) freeEdges.add(e);
                 }
+                // MAG deliberately collects nothing: this method is not called for MAGs
+                // (see the gate in enumerateCandidates), and the tail-tail edges the old
+                // branch named cannot occur in a selection-free MAG. (Dead branch removed
+                // 2026-9-9.)
                 case MAG -> {
-                    if (ex == Endpoint.TAIL && endpointAt(e, y) == Endpoint.TAIL)
-                        freeEdges.add(e);
                 }
             }
         }
 
         if (freeEdges.isEmpty()) return List.of();
 
-        final int MAX_FREE = 12;
+        // PAG evaluation has no locality (usesLocality() is false), so every candidate
+        // pays a full implied-fact enumeration; the mask count is therefore capped lower
+        // for PAGs (2^8 = 256) than for the locality-served types (2^12 = 4096).
+        final int MAX_FREE = (graphType == AdjustmentGraphType.PAG) ? 8 : 12;
         final int MAX_MOVES = 5000;
-        if (freeEdges.size() > MAX_FREE) return List.of();
+        // Above the cap, fall back to the pairwise collider moves rather than returning
+        // nothing (added 2026-9-9; previously a node with more free edges than the cap
+        // got NO pattern moves at all, so a new collider at a high-degree hub was
+        // unreachable -- exactly the cliff the cap created). The fallback covers the
+        // reachability case the full masks exist for at m-choose-2 cost instead of 2^m.
+        if (freeEdges.size() > MAX_FREE) {
+            return enumeratePairwiseColliderFallback(g, x, freeEdges, MAX_MOVES);
+        }
 
         List<CandidateEdit> out = new ArrayList<>();
         int m = freeEdges.size();
@@ -1483,41 +1665,181 @@ public final class VertexRepairSearch implements IGraphSearch {
                 olds.add(old);
                 boolean intoX = ((mask & (1 << i)) != 0);
                 String yn = (y.getName() == null) ? "?" : y.getName();
-                Edge ne;
-                if (graphType == AdjustmentGraphType.PAG) {
-                    Endpoint eyKeep = endpointAt(old, y);
-                    // Selection bias is excluded, so a tail at x is only compatible with
-                    // an arrow at y: x --- y and x o-- y are inadmissible. Orienting the
-                    // edge out of x therefore forces the arrowhead at y, rather than
-                    // keeping y's existing circle or tail. Orienting into x can keep y's
-                    // endpoint, since y o-> x, y <-> x and y --> x are all admissible.
-                    // (Changed 2026-8-13; the previous code kept y's endpoint in both
-                    // directions, silently emitting the selection-bias edge y o-- x for
-                    // every o-o edge oriented out of x.)
-                    ne = intoX
-                            ? new Edge(y, x, eyKeep, Endpoint.ARROW)
-                            : new Edge(y, x, Endpoint.ARROW, Endpoint.TAIL);
-                } else {
-                    ne = intoX
-                            ? new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW)
-                            : new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
-                }
+                // Per-type endpoint policy lives in the two helpers (extracted 2026-9-9,
+                // shared with the pairwise fallback). For PAGs in particular: selection
+                // bias is excluded, so orienting out of x forces the arrowhead at y
+                // (x --- y and x o-- y are inadmissible), while orienting into x keeps
+                // y's endpoint, since y o-> x, y <-> x and y --> x are all admissible.
+                // (Policy set 2026-8-13; the pre-8-13 code kept y's endpoint in both
+                // directions, silently emitting the selection-bias edge y o-- x for
+                // every o-o edge oriented out of x.)
+                Edge ne = intoX ? orientedIntoX(old, x, y) : orientedOutOfX(x, y);
                 news.add(ne);
                 if (intoX) parents.add(yn);
                 else children.add(yn);
             }
 
             if (news.isEmpty()) continue;
-            RandomUtil.shuffle(parents);
-            RandomUtil.shuffle(children);
+            // Sorted, not shuffled (fixed 2026-9-9): the label is the dedup key
+            // (MREPL:label), so it must be a stable function of the move. Shuffling let
+            // the same logical move carry different keys across re-enumerations of a
+            // node within one run, defeating LOCAL_SWEEP's attemptedKeys cycle check.
+            parents.sort(NaturalSort.naturalComparator());
+            children.sort(NaturalSort.naturalComparator());
 
-            String label = "Orient incident edges at " + xName
+            // In a PAG an edge oriented into x may be o-> or <->, not necessarily a
+            // parent, so the Pa/Ch wording is reserved for the directed types.
+            String label = (graphType == AdjustmentGraphType.PAG)
+                    ? "Orient incident edges at " + xName
+                    + " | Into={" + String.join(",", parents) + "}"
+                    + " | OutOf={" + String.join(",", children) + "}"
+                    : "Orient incident edges at " + xName
                     + " | Pa={" + String.join(",", parents) + "}"
                     + " | Ch={" + String.join(",", children) + "}";
             out.add(CandidateEdit.replaceEdges(label, olds, news));
         }
 
         return out;
+    }
+
+    /**
+     * The edge that orients {@code old} into {@code x}, per graph type. For PAGs the
+     * distal endpoint at {@code y} is kept (y o-&gt; x, y &lt;-&gt; x and y --&gt; x are
+     * all admissible); for the directed types the result is y --&gt; x. Shared by the
+     * full mask enumeration and the pairwise fallback so the two cannot drift apart.
+     */
+    private Edge orientedIntoX(Edge old, Node x, Node y) {
+        if (graphType == AdjustmentGraphType.PAG) {
+            return new Edge(y, x, endpointAt(old, y), Endpoint.ARROW);
+        }
+        return new Edge(y, x, Endpoint.TAIL, Endpoint.ARROW);
+    }
+
+    /**
+     * The edge that orients an x-incident edge out of {@code x}, per graph type. For
+     * PAGs the arrowhead at {@code y} is forced (selection bias is excluded, so a tail
+     * at x is only compatible with an arrow at y); for the directed types the result is
+     * x --&gt; y. Shared by the full mask enumeration and the pairwise fallback.
+     */
+    private Edge orientedOutOfX(Node x, Node y) {
+        if (graphType == AdjustmentGraphType.PAG) {
+            return new Edge(y, x, Endpoint.ARROW, Endpoint.TAIL);
+        }
+        return new Edge(x, y, Endpoint.TAIL, Endpoint.ARROW);
+    }
+
+    /**
+     * Fallback pattern moves for a node whose free-edge count exceeds the cap in
+     * {@link #enumerateIncidentOrientationPatternMoves}, where the full 2^m mask
+     * enumeration is unaffordable. (Added 2026-9-9; previously such nodes got no
+     * pattern moves at all, so a new collider at a high-degree hub was unreachable --
+     * single-arrowhead moves are erased by canonicalization unless class-forced.)
+     *
+     * <p>Each enumerated move is a COMPLETE orientation of the free star at x, i.e. a
+     * specific mask of the full enumeration, never a partial one:
+     * <ul>
+     *   <li>For each pair of free edges whose distal nodes are NOT adjacent in
+     *       {@code g}: the pair oriented into {@code x} and every other free edge
+     *       oriented out -- the hypothesis "x is a collider of exactly this pair". The
+     *       into-pair installs an unshielded collider, which is class-forced and so
+     *       survives canonicalization; the out-orientations that are not class-forced
+     *       are simply erased by it. Pairs with adjacent distals are skipped: a
+     *       shielded double arrowhead is generally not class-forced and the move
+     *       canonicalizes to a disguised no-op, so those pairs mostly buy wasted
+     *       evaluations. The omission this accepts: a shielded collider forced via a
+     *       discriminating path is not proposed by this fallback (below the cap, the
+     *       full masks still cover it).</li>
+     *   <li>One "all free edges into x" move, since a hub that is a common effect of
+     *       its neighbors is cheap to test and common in practice.</li>
+     * </ul>
+     *
+     * <p>Partial moves that leave some free edges untouched were tried first and are
+     * deliberately NOT emitted: the untouched circles at x hand
+     * {@code zhangMagFromPag}'s circle-component completion the discretion to orient
+     * them, and a completion choice pointing one of them into x poisons the screening
+     * facts with dependencies the data genuinely rejects, sinking the candidate at any
+     * alpha. Complete orientations leave the completion no discretion at x.
+     *
+     * <p>Cost is m-choose-2 rather than 2^m, further bounded by {@code maxMoves}. The
+     * labels use the same format as the full mask enumeration, so a fallback move and
+     * the identical below-cap mask carry the same dedup key.
+     */
+    private List<CandidateEdit> enumeratePairwiseColliderFallback(Graph g, Node x,
+                                                                  List<Edge> freeEdges,
+                                                                  int maxMoves) {
+        if (g == null || x == null || freeEdges == null || freeEdges.size() < 2) {
+            return List.of();
+        }
+
+        // Resolve distal nodes once; drop malformed entries.
+        List<Edge> edges = new ArrayList<>(freeEdges.size());
+        List<Node> distals = new ArrayList<>(freeEdges.size());
+        for (Edge e : freeEdges) {
+            if (e == null) continue;
+            Node y = e.getDistalNode(x);
+            if (y == null) continue;
+            edges.add(e);
+            distals.add(y);
+        }
+        int m = edges.size();
+        if (m < 2) return List.of();
+
+        List<CandidateEdit> out = new ArrayList<>();
+
+        for (int i = 0; i < m && out.size() < maxMoves; i++) {
+            for (int j = i + 1; j < m && out.size() < maxMoves; j++) {
+                if (g.isAdjacentTo(distals.get(i), distals.get(j))) continue; // unshielded only
+                out.add(starOrientationMove(x, edges, distals, Set.of(i, j)));
+            }
+        }
+
+        // The all-into-x move.
+        if (out.size() < maxMoves) {
+            Set<Integer> all = new LinkedHashSet<>();
+            for (int i = 0; i < m; i++) all.add(i);
+            out.add(starOrientationMove(x, edges, distals, all));
+        }
+
+        return out;
+    }
+
+    /**
+     * Builds the complete star-orientation move at {@code x}: the free edges at the
+     * given indices oriented into {@code x}, all others out. The label matches the
+     * full mask enumeration's format for the identical configuration.
+     */
+    private CandidateEdit starOrientationMove(Node x, List<Edge> edges, List<Node> distals,
+                                              Set<Integer> intoIndices) {
+        String xName = (x.getName() == null) ? "?" : x.getName();
+        List<Edge> olds = new ArrayList<>(edges.size());
+        List<Edge> news = new ArrayList<>(edges.size());
+        List<String> into = new ArrayList<>();
+        List<String> outOf = new ArrayList<>();
+
+        for (int i = 0; i < edges.size(); i++) {
+            Edge old = edges.get(i);
+            Node y = distals.get(i);
+            String yn = (y.getName() == null) ? "?" : y.getName();
+            olds.add(old);
+            if (intoIndices.contains(i)) {
+                news.add(orientedIntoX(old, x, y));
+                into.add(yn);
+            } else {
+                news.add(orientedOutOfX(x, y));
+                outOf.add(yn);
+            }
+        }
+        into.sort(NaturalSort.naturalComparator());
+        outOf.sort(NaturalSort.naturalComparator());
+
+        String label = (graphType == AdjustmentGraphType.PAG)
+                ? "Orient incident edges at " + xName
+                + " | Into={" + String.join(",", into) + "}"
+                + " | OutOf={" + String.join(",", outOf) + "}"
+                : "Orient incident edges at " + xName
+                + " | Pa={" + String.join(",", into) + "}"
+                + " | Ch={" + String.join(",", outOf) + "}";
+        return CandidateEdit.replaceEdges(label, olds, news);
     }
 
     private List<Edge> edgeMenuForPair(Node x, Node y) {
@@ -1593,10 +1915,18 @@ public final class VertexRepairSearch implements IGraphSearch {
         Graph base = safeCopy(workingGraph);
         if (graphType == AdjustmentGraphType.CPDAG) {
             base = canonicalizeToCpdagOrNull(base);
+        } else if (graphType == AdjustmentGraphType.PAG) {
+            // Restored 2026-9-9 (commented out 2026-8-13 as "redundant"). It was not:
+            // buildCandidateGraph applies edits to THIS base, while
+            // applyCandidateInternal applies them to a canonicalized copy of the working
+            // graph, so on a non-canonical legal input (e.g., a hand-edited GUI graph --
+            // a core use case for repair) the graph that got scored and the graph that
+            // got installed could differ, and the disguised-no-op check compared against
+            // the wrong reference. With the base canonicalized here, the apply-time
+            // canonicalization is a memo hit (memo added 2026-9-8), so the restoration
+            // is nearly free.
+            base = canonicalizeToPagOrNull(base);
         }
-//        else if (graphType == AdjustmentGraphType.PAG) {
-//            base = canonicalizeToPagOrNull(base);
-//        }
         return base;
     }
 
@@ -1698,6 +2028,16 @@ public final class VertexRepairSearch implements IGraphSearch {
         if (!intentAlreadyChecked
                 && requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return;
 
+        // Under two-phase PAG scoring the knowledge check was deferred from screening
+        // to the exact path; this is the final safety net covering candidates (e.g.
+        // LOCAL_SWEEP heads outside the Phase-2 top-K) whose only exact build is this
+        // one. No-op when two-phase scoring is inactive, preserving the previous
+        // behavior byte for byte.
+        if (twoPhaseActive() && violatesKnowledge(g2)) {
+            vlog("Move rejected: canonicalized candidate violates knowledge.");
+            return;
+        }
+
         workingGraph = g2;
         bumpGraphVersion();
         vlog("APPLIED successfully");
@@ -1706,36 +2046,28 @@ public final class VertexRepairSearch implements IGraphSearch {
     private GlobalEvalCache buildBaselineCache(Graph g) {
         if (g == null) return new GlobalEvalCache(Map.of());
         Map<String, VertexContribution> out = new HashMap<>();
-        List<Node> nodes = g.getNodes();
-        // Prepare the graph-level MAG transform once for all vertices of this graph
-        // rather than once per vertex inside computeImpliedFactsForVertex. (Changed
-        // from the pre-2026-8-13 implementation, which redid the legality checks and
-        // CPDAG-to-DAG-to-MAG conversion for every vertex; the conversion is
-        // deterministic, so the facts are identical.)
-        Graph preparedMag = MarkovCheck.prepareMagForVertexFacts(g, type);
-        for (Node v : nodes) {
-            if (v == null) continue;
-            out.put(v.getName(), evalVertexContribution(g, v, preparedMag));
+        // Whole-graph fact model computed ONCE and bucketed per vertex (changed
+        // 2026-9-9). The previous per-vertex path -- prepareMagForVertexFacts once,
+        // then computeImpliedFactsForVertex per vertex -- shared the MAG transform but
+        // NOT the ordered-local model itself, which getModelForNode recomputed for
+        // every vertex: V full-model computations per baseline. The facts, and hence
+        // the contributions, are identical.
+        Map<String, List<IndependenceFact>> byVertex =
+                MarkovCheck.computeImpliedFactsByVertex(g, type);
+        for (Node v : g.getNodes()) {
+            if (v == null || v.getName() == null) continue;
+            out.put(v.getName(), evalVertexContribution(byVertex.get(v.getName())));
         }
         return new GlobalEvalCache(out);
     }
 
-    private VertexContribution evalVertexContribution(Graph g, Node vInGraph) {
-        return evalVertexContribution(g, vInGraph, null);
-    }
-
     /**
-     * Per-vertex contribution with an optional MAG prepared once per graph via
-     * {@link MarkovCheck#prepareMagForVertexFacts}. A null {@code preparedMag} behaves
-     * exactly as before, preparing per call.
+     * Per-vertex contribution from an explicit fact list, typically one bucket of
+     * {@link MarkovCheck#computeImpliedFactsByVertex}. (Refactored 2026-9-9 from the
+     * graph-plus-vertex signature; the evaluation over the facts is unchanged.)
      */
-    private VertexContribution evalVertexContribution(Graph g, Node vInGraph, Graph preparedMag) {
-        if (g == null || vInGraph == null) return new VertexContribution(Map.of(), Map.of());
-        Node v = g.getNode(vInGraph.getName());
-        if (v == null) return new VertexContribution(Map.of(), Map.of());
-
-        List<IndependenceFact> facts = MarkovCheck.computeImpliedFactsForVertex(g, v, type, preparedMag);
-        if (facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
+    private VertexContribution evalVertexContribution(List<IndependenceFact> facts) {
+        if (facts == null || facts.isEmpty()) return new VertexContribution(Map.of(), Map.of());
 
         Map<String, Boolean> viol = new LinkedHashMap<>();
         Map<String, Double> pByKey = new LinkedHashMap<>();
@@ -1783,11 +2115,19 @@ public final class VertexRepairSearch implements IGraphSearch {
         }
 
         if (affectedVertexNames != null && !affectedVertexNames.isEmpty()) {
-            // Prepare the candidate graph's MAG transform once and share it across all
-            // affected vertices, instead of redoing the legality checks and
-            // CPDAG-to-DAG-to-MAG conversion per vertex. (Changed from the pre-2026-8-13
-            // implementation; the conversion is deterministic, so the facts are identical.)
-            Graph preparedMag = MarkovCheck.prepareMagForVertexFacts(candidateGraph, type);
+            // For the ordered-local-Markov types, the whole-graph fact model is
+            // computed ONCE and bucketed per vertex (changed 2026-9-9; previously the
+            // MAG transform was shared but getModelForNode recomputed the full model
+            // for every affected vertex). For the uniform-Z types, whose per-vertex
+            // facts are local and cheap, per-vertex computation is kept: the bulk
+            // method would compute facts for ALL vertices when only the affected few
+            // are needed.
+            boolean wholeGraphModel =
+                    type == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY
+                            || type == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION;
+            Map<String, List<IndependenceFact>> byVertex = wholeGraphModel
+                    ? MarkovCheck.computeImpliedFactsByVertex(candidateGraph, type)
+                    : null;
             for (String name : affectedVertexNames) {
                 if (name == null) continue;
                 Node v = candidateGraph.getNode(name);
@@ -1795,7 +2135,10 @@ public final class VertexRepairSearch implements IGraphSearch {
                     contrib.remove(name);
                     continue;
                 }
-                contrib.put(name, evalVertexContribution(candidateGraph, v, preparedMag));
+                List<IndependenceFact> facts = (byVertex != null)
+                        ? byVertex.get(name)
+                        : MarkovCheck.computeImpliedFactsForVertex(candidateGraph, v, type);
+                contrib.put(name, evalVertexContribution(facts));
             }
         }
 
@@ -1967,22 +2310,73 @@ public final class VertexRepairSearch implements IGraphSearch {
         return g2;
     }
 
+    /**
+     * True when two-phase PAG scoring applies to the current configuration: the flag is
+     * on, the graph type is PAG, and the conditioning-set type is one of the two
+     * ordered-local-Markov types (whose implied facts are computed from a MAG of the
+     * class in any case, making MAG-side screening rank-sound). See
+     * {@link #setTwoPhasePagScoring(boolean)}.
+     */
+    private boolean twoPhaseActive() {
+        return twoPhasePagScoring
+                && graphType == AdjustmentGraphType.PAG
+                && (type == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY
+                || type == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION);
+    }
+
+    /**
+     * Phase-1 screening build for two-phase PAG scoring: applies the edit and projects
+     * only as far as the implied MAG, skipping the {@code magToPag} projection,
+     * knowledge refinement, and certification that {@link #buildCandidateGraph} pays.
+     * This is deliberately the first half of {@link #canonicalizeToPagOrNull(Graph)},
+     * so a candidate rejected here (illegal MAG) would also have been rejected there.
+     *
+     * <p>Differences from the exact build, all resolved on the exact path before any
+     * application (see {@link #setTwoPhasePagScoring(boolean)}): the disguised-no-op
+     * check ({@code canonical.equals(base)}) is skipped, because the screening MAG and
+     * the canonical base PAG are never comparable by equality -- such candidates score
+     * at the baseline, lose to real improvements, and are dropped by the exact rebuild
+     * at poll time if ever polled; and the knowledge-consistency check is skipped,
+     * because the MAG resolves every circle to a definite mark, so
+     * {@code Knowledge.isViolatedBy} on the MAG can reject candidates whose
+     * knowledge-refined canonical PAG is perfectly consistent.
+     *
+     * @return the implied MAG of the edited graph for screening evaluation, or null if
+     * the edit was not realized, the MAG is illegal, or it exhibits selection bias
+     */
+    private Graph buildScreeningGraph(Graph base, CandidateEdit cand) {
+        if (base == null || cand == null) return null;
+        Graph g2 = cand.applyTo(safeCopy(base));
+        if (g2 == null) return null;
+        if (requiresEdgePresenceCheck(cand) && !allIntendedNewEdgesPresent(g2, cand)) return null;
+        try {
+            Graph mag = GraphTransforms.zhangMagFromPag(g2);
+            if (!mag.paths().isLegalMag()) return null;
+            if (hasSelectionBias(mag)) return null;
+            return mag;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     private boolean isLegalGraphType(Graph g) {
         return switch (graphType) {
             case DAG -> g.paths().isLegalDag();
             case CPDAG -> g.paths().isLegalCpdag() || g.paths().isLegalPdag();
             case PDAG -> g.paths().isLegalPdag();
             case MAG -> g.paths().isLegalMag() && !hasSelectionBias(g);
-            // The isLegalPag() conjunct is commented out as of 2026-8-13.
-            // buildCandidateGraph now projects every PAG candidate through
-            // canonicalizeToPagOrNull, which returns magToPag of a graph that has already
-            // passed isLegalMag, so PAG legality holds by construction and the check is
-            // redundant. It was also the only call on the candidate path with a
-            // 20-second internal timeout (PagLegalityCheck), which under GC pressure or
-            // on a slow machine could silently drop candidates and make the search
-            // machine-dependent. Uncomment to restore the check if magToPag is ever
-            // suspected of emitting a non-legal PAG.
-            case PAG -> g.paths().isLegalPag() && !hasSelectionBias(g);
+            // Knowledge-aware as of 2026-9-9. The strict isLegalPag() conjunct had been
+            // commented out 2026-8-13 (canonicalizeToPagOrNull output is legal by
+            // construction) and restored later the same day as a safety net once
+            // knowledge refinement was added -- but the strict test is exactly the wrong
+            // net for refined output: a knowledge-refined PAG carries marks the class
+            // alone does not force and ALWAYS fails the strict round-trip equality (see
+            // isLegalPagGivenKnowledge). With tier knowledge set, buildCandidateGraph
+            // therefore rejected every candidate whose refinement added marks, silently
+            // freezing the knowledge-marked regions of the graph. The knowledge-aware
+            // predicate reduces to the strict test when knowledge is empty, so
+            // no-knowledge behavior is unchanged.
+            case PAG -> isLegalPagGivenKnowledge(g) && !hasSelectionBias(g);
         };
     }
 
@@ -2085,7 +2479,53 @@ public final class VertexRepairSearch implements IGraphSearch {
                 || graphType == AdjustmentGraphType.PDAG;
     }
 
+    /**
+     * Structural signature of a graph for canonicalization memo keys: the sorted node
+     * names plus the sorted structural edge keys. Two graphs with the same signature
+     * are identical as node-and-edge-mark structures, which is exactly the input on
+     * which both canonicalizers are deterministic functions (given fixed knowledge).
+     */
+    private static String graphSignature(Graph g) {
+        if (g == null) return "null";
+        List<String> names = new ArrayList<>();
+        for (Node n : g.getNodes()) names.add(n == null || n.getName() == null ? "?" : n.getName());
+        Collections.sort(names);
+        List<String> edgeKeys = new ArrayList<>();
+        for (Edge e : g.getEdges()) edgeKeys.add(structuralEdgeKey(e));
+        Collections.sort(edgeKeys);
+        return String.join(",", names) + ";" + String.join(",", edgeKeys);
+    }
+
+    /**
+     * Memo front for the two canonicalizers. Both are deterministic in the input graph
+     * and the background knowledge (the memo is cleared on knowledge and graph-type
+     * changes), so a hit returns exactly what recomputation would. The stored graph is
+     * returned as a defensive copy, since callers may install the result as the
+     * working graph and edit it. Null results are cached too, via a sentinel, so
+     * repeated rejects of the same input are also hits. (Added 2026-9-8. The main
+     * beneficiaries are the poll-then-apply pattern in GLOBAL_QUEUE, which
+     * canonicalizes the same applied candidate twice within one graph version, and
+     * LOCAL_SWEEP's rescore-then-apply pattern.)
+     */
+    private Graph memoizedCanonicalize(String tag, Graph h,
+                                       java.util.function.Function<Graph, Graph> canonicalizer) {
+        if (h == null) return null;
+        String key = tag + "|" + graphSignature(h);
+        Graph cached = canonicalizationMemo.get(key);
+        if (cached != null) {
+            canonicalizationMemoHits++;
+            return (cached == CANONICALIZATION_NULL) ? null : safeCopy(cached);
+        }
+        Graph result = canonicalizer.apply(h);
+        canonicalizationMemo.put(key, (result == null) ? CANONICALIZATION_NULL : safeCopy(result));
+        return result;
+    }
+
     private Graph canonicalizeToCpdagOrNull(Graph h) {
+        return memoizedCanonicalize("CPDAG", h, this::canonicalizeToCpdagOrNullUncached);
+    }
+
+    private Graph canonicalizeToCpdagOrNullUncached(Graph h) {
         if (h == null) return null;
         try {
             Graph h2 = new EdgeListGraph(h);
@@ -2164,6 +2604,10 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     private Graph canonicalizeToPagOrNull(Graph h) {
+        return memoizedCanonicalize("PAG", h, this::canonicalizeToPagOrNullUncached);
+    }
+
+    private Graph canonicalizeToPagOrNullUncached(Graph h) {
         try {
             Graph h2 = new EdgeListGraph(h);
             Graph mag = GraphTransforms.zhangMagFromPag(h2);
@@ -2420,7 +2864,14 @@ public final class VertexRepairSearch implements IGraphSearch {
     }
 
     private void fireEditApplied(CandidateEdit edit, Graph currentGraph) {
-        for (RepairListener l : listeners) l.editApplied(edit, currentGraph);
+        // The RepairListener.editApplied Javadoc promises listeners a safe copy, but the
+        // call sites pass the live working graph; hand out one shared defensive copy per
+        // event (not per listener) so listeners that hop threads -- notably GUI listeners
+        // painting the graph on the EDT while this thread continues editing -- never see
+        // the working graph mid-mutation. (Fixed 2026-9-8; no listener read the graph
+        // before, so this was latent.)
+        Graph copy = safeCopy(currentGraph);
+        for (RepairListener l : listeners) l.editApplied(edit, copy);
     }
 
     private void fireRepairConverged(int totalEdits, String message) {

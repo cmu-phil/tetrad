@@ -919,7 +919,7 @@ public final class FaskOrig implements IGraphSearch {
                 pc1 = partialCorrelation(x, y, _Z, x, 0, lambda);
                 pc2 = partialCorrelation(x, y, _Z, y, 0, lambda);
             } catch (SingularMatrixException e) {
-                TetradLogger.getInstance().log("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
+                TetradLogger.getInstance().warn("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
                 continue;
             }
 

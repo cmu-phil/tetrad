@@ -74,6 +74,11 @@ public final class CachedIndependenceQueries implements IndependenceTest, Tetrad
      * multiple threads.
      */
     private volatile ErrorPolicy errorPolicy = ErrorPolicy.TREAT_AS_INDEPENDENT;
+    /**
+     * The message of the most recent error swallowed by a deferred error policy, for user-facing reporting.
+     * Null if none since the last setTest.
+     */
+    private transient volatile String lastErrorMessage;
 
     /**
      * Default constructor for the CachedIndependenceQueries class.
@@ -289,6 +294,7 @@ public final class CachedIndependenceQueries implements IndependenceTest, Tetrad
         this.test = test;
         rebuildMaps(test);
         clearCaches();
+        this.lastErrorMessage = null;
     }
 
     // ------------------------ lifecycle ------------------------
@@ -645,12 +651,27 @@ public final class CachedIndependenceQueries implements IndependenceTest, Tetrad
                 case RETHROW -> throw new RuntimeException(ie);
             };
         } catch (Throwable t) {
+            // Keep the message so interfaces can say WHY facts came back with no p-value, instead of the
+            // silent NaN the deferred error policies produce.
+            this.lastErrorMessage = t.getMessage() == null ? t.toString() : t.getMessage();
             return switch (errorPolicy) {
                 case TREAT_AS_INDEPENDENT -> new Eval(true, Double.NaN);
                 case TREAT_AS_DEPENDENT -> new Eval(false, Double.NaN);
                 case RETHROW -> throw new RuntimeException(t);
             };
         }
+    }
+
+    /**
+     * Returns the message of the most recent error swallowed by a deferred error policy
+     * (TREAT_AS_INDEPENDENT or TREAT_AS_DEPENDENT) while evaluating a fact, or null if none has occurred
+     * since the last setTest. Under those policies a failing fact is recorded with a NaN p-value; this
+     * message lets interfaces report the underlying reason.
+     *
+     * @return The message, or null.
+     */
+    public String getLastErrorMessage() {
+        return this.lastErrorMessage;
     }
 
     /**

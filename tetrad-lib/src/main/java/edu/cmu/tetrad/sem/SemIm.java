@@ -1856,7 +1856,7 @@ public final class SemIm implements Im, ISemIm {
                 }
             }
             if (hasOffDiagCovar) {
-                TetradLogger.getInstance().log("WARNING: simulateDataRecursive with non-Gaussian " +
+                TetradLogger.getInstance().warn("simulateDataRecursive with non-Gaussian " +
                         "noise ignores off-diagonal error covariances. Errors will be simulated " +
                         "as independent despite correlated error terms in the model.");
             }

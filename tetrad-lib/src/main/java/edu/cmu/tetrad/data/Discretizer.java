@@ -83,17 +83,28 @@ public class Discretizer {
      * @return an array of  objects
      */
     public static double[] getEqualFrequencyBreakPoints(double[] _data, int numberOfCategories) {
+        // Use finite values only: Arrays.sort places NaN at the end of the
+        // array, so with missing data the upper quantile indices would land
+        // in the NaN tail and produce NaN cutoffs.
+        int m = 0;
         double[] data = new double[_data.length];
-        System.arraycopy(_data, 0, data, 0, data.length);
-
-        // first sort the data.
+        for (double v : _data) {
+            if (Double.isFinite(v)) data[m++] = v;
+        }
+        data = Arrays.copyOf(data, m);
         Arrays.sort(data);
 
-        int n = data.length / numberOfCategories;
         double[] breakpoints = new double[numberOfCategories - 1];
 
+        if (m == 0) {
+            Arrays.fill(breakpoints, Double.NaN);
+            return breakpoints;
+        }
+
+        int n = m / numberOfCategories;
+
         for (int i = 0; i < breakpoints.length; i++) {
-            breakpoints[i] = data[n * (i + 1)];
+            breakpoints[i] = data[Math.min(m - 1, n * (i + 1))];
         }
 
         return breakpoints;
@@ -122,13 +133,19 @@ public class Discretizer {
             throw new NullPointerException();
         }
 
-        for (int i = 0; i < cutoffs.length - 1; i++) {
-            if (!(cutoffs[i] <= cutoffs[i + 1])) {
+        // Validate order over the finite cutoffs only; NaN cutoffs are
+        // treated as absent throughout this method.
+        double lastFinite = Double.NEGATIVE_INFINITY;
+        for (double cutoff : cutoffs) {
+            if (!Double.isFinite(cutoff)) continue;
+            if (cutoff < lastFinite) {
                 System.out.println(
                         "Cutoffs should be in nondecreasing order: "
                         + Arrays.toString(cutoffs)
                 );
+                break;
             }
+            lastFinite = cutoff;
         }
 
         if (variableName == null) {
@@ -153,6 +170,15 @@ public class Discretizer {
 
         int[] discreteData = new int[_data.length];
 
+        // Index of the category just above the last finite cutoff. Values
+        // exceeding every finite cutoff map here, so that with trailing NaN
+        // cutoffs (formerly produced under missing data) the used categories
+        // stay contiguous instead of jumping to the top category.
+        int overflowCategory = 0;
+        for (int j = 0; j < cutoffs.length; j++) {
+            if (Double.isFinite(cutoffs[j])) overflowCategory = j + 1;
+        }
+
         loop:
         for (int i = 0; i < _data.length; i++) {
             if (Double.isNaN(_data[i])) {
@@ -161,6 +187,7 @@ public class Discretizer {
             }
 
             for (int j = 0; j < cutoffs.length; j++) {
+                if (!Double.isFinite(cutoffs[j])) continue;   // ignore NaN cutoffs
                 if (_data[i] > Double.NEGATIVE_INFINITY
                     && _data[i] < Double.POSITIVE_INFINITY
                     && _data[i] < cutoffs[j]) {
@@ -169,7 +196,7 @@ public class Discretizer {
                 }
             }
 
-            discreteData[i] = cutoffs.length;
+            discreteData[i] = overflowCategory;
         }
 
         return new Discretization(variable, discreteData);
@@ -211,15 +238,25 @@ public class Discretizer {
         double[] data = this.sourceDataSet.getDoubleData().getColumn(i).toArray();
 //        double[] breakpoints = Discretizer.getEqualFrequencyBreakPoints(data, numCategories);
 
-        double max = StatUtils.max(data);
-        double min = StatUtils.min(data);
-
-        double interval = (max - min) / numCategories;
+        // Min and max over finite values only: StatUtils.min/max seed with
+        // data[0], so a missing first entry would make both NaN and hence
+        // every breakpoint NaN.
+        double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
+        for (double v : data) {
+            if (!Double.isFinite(v)) continue;
+            if (v < min) min = v;
+            if (v > max) max = v;
+        }
 
         double[] breakpoints = new double[numCategories - 1];
 
-        for (int g = 0; g < numCategories - 1; g++) {
-            breakpoints[g] = min + (g + 1) * interval;
+        if (min > max) {                       // no finite values at all
+            Arrays.fill(breakpoints, Double.NaN);
+        } else {
+            double interval = (max - min) / numCategories;
+            for (int g = 0; g < numCategories - 1; g++) {
+                breakpoints[g] = min + (g + 1) * interval;
+            }
         }
 
         List<String> categories = new DiscreteVariable(name, numCategories).getCategories();

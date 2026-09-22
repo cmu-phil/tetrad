@@ -188,7 +188,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     @Override
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
+//        getWorkbench().deselectAll();
 
         sessionElements.forEach(o -> {
             if (o instanceof GraphNode modelNode) {
@@ -680,6 +680,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(graphProperties);
         graph.add(pathsAction);
         graph.add(new UnderliningsAction(getWorkbench()));
+        graph.add(new FindVariableAction(getWorkbench()));
         graph.addSeparator();
 
         randomGraph.addActionListener(e -> {

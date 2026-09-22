@@ -88,12 +88,13 @@ public class BasisFunctionLrt implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BF-LRT (Basis Function Likelihood Ratio Test)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "BF-LRT (Basis Function Likelihood Ratio Test)");
         IndTestBasisFunctionBlocks test = new IndTestBasisFunctionBlocks(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getInt(Params.TRUNCATION_LIMIT),
                 LEGENDRE_BASIS_TYPE,
-                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION));
+                parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION),
+                MissingDataUtils.fromParameters(parameters));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
         test.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
         return test;

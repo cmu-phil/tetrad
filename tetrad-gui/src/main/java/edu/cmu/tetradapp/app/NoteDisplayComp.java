@@ -22,6 +22,8 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
@@ -87,13 +89,8 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     private static Color getNoteFillColor() {
-        if (isDarkMode()) {
-            Color panel = uiColor("Panel.background", new Color(43, 43, 43));
-            Color base = new Color(92, 86, 58); // muted warm note tone for dark mode
-            return blend(panel, base, 0.70);
-        }
-
-        return new Color(255, 252, 210);
+        // Tol sand on the card fill, the same tint as the Knowledge band in either mode.
+        return blend(WorkbenchStyle.cardFill(), WorkbenchStyle.TOL_SAND, isDarkMode() ? 0.50 : 0.35);
     }
 
     private static Color getRuledLineColor() {
@@ -142,7 +139,8 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     private static Color getTextColor() {
-        return uiColor("Label.foreground", isDarkMode() ? new Color(235, 235, 235) : Color.BLACK);
+        // The note text follows the same rule as a band label: readable on the note fill.
+        return WorkbenchStyle.readableOn(WorkbenchStyle.labelForeground(), getNoteFillColor());
     }
 
     private static Color getShadowColor() {

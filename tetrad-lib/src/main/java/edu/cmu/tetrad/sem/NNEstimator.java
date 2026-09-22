@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.MixedDataBox;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -27,7 +28,9 @@ import java.util.stream.IntStream;
  *   <li>Computes an {@link AdequacyReport} comparing the observed and simulated
  *       joint distributions (MMD² plus per-node summaries).</li>
  *   <li>Optionally runs k-fold cross-validation to produce honest OOS metrics
- *       at both the node level and the whole-graph level ({@link #crossValidate}).</li>
+ *       at both the node level and the whole-graph level ({@link #crossValidate});
+ *       the fold models are cached and reused by
+ *       {@link #computePartialEdgeStrength}.</li>
  * </ol>
  *
  * <p>This class has no dependency on any GUI toolkit and can be used directly
@@ -87,6 +90,13 @@ public final class NNEstimator implements TetradSerializable {
      */
     private CVReport cvReport;
 
+    /**
+     * Fraction of rows in the most recent simulation in which some node's
+     * continuous parents fell more than {@code zWarn1} training SDs from their
+     * training mean; NaN until {@link #simulate} is called.
+     */
+    private double lastExtrapolationFraction = Double.NaN;
+
     // ── constructors ─────────────────────────────────────────────────────────
 
     /**
@@ -137,21 +147,52 @@ public final class NNEstimator implements TetradSerializable {
     }
 
     /**
-     * Converts a DataSet to a double matrix for MMD² computation.
-     * Discrete variables are represented by their integer code cast to double.
+     * Mean and SD of each continuous column (SD floored at a small positive
+     * value); discrete columns get mean 0 and SD 1 so their codes pass through.
      */
-    private static double[][] toMatrix(DataSet data, List<Node> variables) {
+    private static void columnMoments(DataSet data, List<Node> variables, double[] mu, double[] sd) {
+        int n = data.getNumRows();
+        for (int j = 0; j < variables.size(); j++) {
+            if (variables.get(j) instanceof DiscreteVariable) { mu[j] = 0.0; sd[j] = 1.0; continue; }
+            double sum = 0, sum2 = 0; int c = 0;
+            for (int i = 0; i < n; i++) {
+                double v = data.getDouble(i, j);
+                if (!Double.isFinite(v)) continue;
+                sum += v; sum2 += v * v; c++;
+            }
+            double m = c > 0 ? sum / c : 0.0;
+            double var = c > 1 ? (sum2 - c * m * m) / (c - 1) : 1.0;
+            mu[j] = m;
+            sd[j] = TMath.sqrt(TMath.max(var, 1e-12));
+        }
+    }
+
+    /**
+     * Converts a DataSet to a double matrix for MMD² computation, standardizing
+     * each continuous column with the supplied moments.
+     */
+    private static double[][] toStandardizedMatrix(DataSet data, List<Node> variables,
+                                                   double[] mu, double[] sd) {
         int n = data.getNumRows();
         int p = variables.size();
-        double[][] out = new double[n][p];
+        // Complete cases only: a missing continuous cell would put NaN into
+        // the MMD computation (poisoning the whole fold's MMD²), and a
+        // missing discrete cell would insert the raw −99 code as a finite
+        // feature value, silently distorting the comparison. Simulated data
+        // is always complete, so this only affects observed rows.
+        List<double[]> rows = new ArrayList<>(n);
+        outer:
         for (int i = 0; i < n; i++) {
+            double[] r = new double[p];
             for (int j = 0; j < p; j++) {
-                out[i][j] = (variables.get(j) instanceof DiscreteVariable)
+                if (TrainedDagSimulatorGNM.isMissingCell(data, i, j)) continue outer;
+                r[j] = (variables.get(j) instanceof DiscreteVariable)
                         ? TrainedDagSimulatorGNM.safeGetInt(data, i, j)
-                        : data.getDouble(i, j);
+                        : (data.getDouble(i, j) - mu[j]) / sd[j];
             }
+            rows.add(r);
         }
-        return out;
+        return rows.toArray(new double[0][]);
     }
 
     /**
@@ -178,6 +219,8 @@ public final class NNEstimator implements TetradSerializable {
         TrainedDagSimulatorGNM.SimResult result = fittedSimulator.simulate(sampleSize);
         simulatedData = result.toDataSet();
         simulatedData.setName("Simulated");
+        lastExtrapolationFraction = result.nSamples > 0
+                ? result.rowsExceedWarn1 / (double) result.nSamples : Double.NaN;
 
         adequacyReport = TrainedDagAdequacy.mmd2(
                 observedData,
@@ -206,17 +249,21 @@ public final class NNEstimator implements TetradSerializable {
      * Runs k-fold cross-validation and returns a {@link CVReport} with honest
      * OOS metrics at both the node level and the whole-graph level.
      *
-     * <p>For each fold:
+     * <p>The k fold models (one simulator trained on each set of k−1 training
+     * folds) are built once by {@link #getFoldModels(int)} and cached, so that
+     * {@link #computePartialEdgeStrength} can reuse exactly the same folds.
+     * For each fold:
      * <ol>
-     *   <li>A fresh {@link TrainedDagSimulatorGNM} is trained on the k-1
-     *       training folds.</li>
-     *   <li>Node-level OOS MSE (continuous) or 0-1 loss (discrete) is computed
-     *       by calling {@link TrainedDagSimulatorGNM#predictNode} on each
-     *       held-out row. Root nodes are skipped.</li>
+     *   <li>Node-level OOS MSE (continuous) or cross-entropy (discrete) is
+     *       computed by calling {@link TrainedDagSimulatorGNM#predictNode} on
+     *       each held-out row. Root nodes are skipped.</li>
      *   <li>A whole-graph OOS MMD² is computed by simulating
      *       {@code testSize} rows from the fold-trained model and comparing
      *       the joint distribution to the held-out rows.</li>
      * </ol>
+     *
+     * <p>Folds are contiguous blocks of rows in file order (a blocked CV);
+     * shuffle the rows first if they are sorted by some variable.
      *
      * <p>This method does <em>not</em> require {@link #fit()} to have been called
      * first — it is self-contained. It does not update the full-data fitted model;
@@ -226,12 +273,23 @@ public final class NNEstimator implements TetradSerializable {
      * @return a {@link CVReport} with per-node and whole-graph OOS metrics
      */
     public CVReport crossValidate(int k) {
-        int n = observedData.getNumRows();
-        if (k < 2) throw new IllegalArgumentException("k must be >= 2");
-        if (k > n) throw new IllegalArgumentException("k must be <= number of rows (" + n + ")");
+        FoldModels fm = getFoldModels(k);
 
         List<Node> variables = observedData.getVariables();
         int p = variables.size();
+
+        // Parent column indices per variable, for the completeness filter.
+        Map<String, Integer> idxByName = new HashMap<>();
+        for (int j = 0; j < p; j++) idxByName.put(variables.get(j).getName(), j);
+        int[][] parentIdxByCol = new int[p][];
+        for (int j = 0; j < p; j++) {
+            Node g = dag.getNode(variables.get(j).getName());
+            parentIdxByCol[j] = (g == null) ? new int[0]
+                    : dag.getParents(g).stream()
+                        .map(q -> idxByName.get(q.getName()))
+                        .filter(Objects::nonNull)
+                        .mapToInt(Integer::intValue).toArray();
+        }
 
         // Thread-safe per-variable OOS accumulators.
         DoubleAdder[]        sseCont  = new DoubleAdder[p];
@@ -244,7 +302,6 @@ public final class NNEstimator implements TetradSerializable {
             xentDisc[j] = new DoubleAdder();
             nDisc[j]    = new AtomicInteger(0);
         }
-
         DoubleAdder totalMmd2Adder  = new DoubleAdder();
         AtomicInteger mmd2CountAtomic = new AtomicInteger(0);
 
@@ -252,45 +309,19 @@ public final class NNEstimator implements TetradSerializable {
         double[] baselineMse  = computeBaselineMse(variables);
         double[] baselineXent = computeBaselineXent(variables);
 
-        int foldSize = n / k;
-
-        // ── Parallel fold loop ────────────────────────────────────────────────────
-        // Each fold trains its own simulator on its own training subset — no shared
-        // mutable state between folds. Accumulators use DoubleAdder/AtomicInteger
-        // for lock-free thread-safe updates.
-
         IntStream.range(0, k).parallel().forEach(fold -> {
-            int testStart = fold * foldSize;
-            int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
-            int testN     = testEnd - testStart;
-            int trainN    = n - testN;
-
-            // Partition row indices.
-            int[] trainRows = new int[trainN];
-            int[] testRows  = new int[testN];
-            int ti = 0, vi = 0;
-            for (int r = 0; r < n; r++) {
-                if (r >= testStart && r < testEnd) testRows[vi++] = r;
-                else                               trainRows[ti++] = r;
-            }
-
-            DataSet trainSet = rowSubset(observedData, trainRows);
-            DataSet testSet  = rowSubset(observedData, testRows);
-
-            // Train a fresh simulator on this fold's training data.
-            long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
-            TrainedDagSimulatorGNM sim = buildSimulator(trainSet, foldSeed);
-            sim.fit();
+            TrainedDagSimulatorGNM sim = fm.sims[fold];
+            DataSet testSet = fm.test[fold];
+            int testN = testSet.getNumRows();
 
             // ── Node-level OOS ────────────────────────────────────────────────────
-
             for (int j = 0; j < p; j++) {
                 Node var     = variables.get(j);
                 boolean isDisc = (var instanceof DiscreteVariable);
 
                 for (int ti2 = 0; ti2 < testN; ti2++) {
+                    if (rowIncomplete(testSet, ti2, j, parentIdxByCol[j])) continue;
                     double pred = sim.predictNode(j, testSet, ti2);
-
                     // NaN signals a root node — no conditional prediction available.
                     if (!Double.isFinite(pred)) continue;
 
@@ -312,21 +343,22 @@ public final class NNEstimator implements TetradSerializable {
             }
 
             // ── Whole-graph OOS MMD² ──────────────────────────────────────────────
-
+            // Both blocks are standardized with the training fold's mean and SD,
+            // so the value is on the same scale as the footer's MMD² and is
+            // comparable across datasets. Discrete codes are left as is.
             try {
                 TrainedDagSimulatorGNM.SimResult simResult = sim.simulate(testN);
                 DataSet simTest = simResult.toDataSet();
-
-                double[][] X = toMatrix(testSet, variables);
-                double[][] Y = toMatrix(simTest, variables);
-
+                double[] mu = new double[p], sdv = new double[p];
+                columnMoments(fm.train[fold], variables, mu, sdv);
+                double[][] X = toStandardizedMatrix(testSet, variables, mu, sdv);
+                double[][] Y = toStandardizedMatrix(simTest, variables, mu, sdv);
                 double mmd2 = RandomFeatureMMD.compute(
                         X, Y,
                         params.mmdFeatures,
                         params.mmdSeed ^ fold,
                         1.0,
                         params.mmdMaxRows);
-
                 totalMmd2Adder.add(mmd2);
                 mmd2CountAtomic.incrementAndGet();
             } catch (Exception ignored) {
@@ -335,9 +367,7 @@ public final class NNEstimator implements TetradSerializable {
         });
 
         // ── Assemble per-node summaries (non-root nodes only) ─────────────────────
-
         List<NodeCVSummary> summaries = new ArrayList<>();
-
         for (int j = 0; j < p; j++) {
             Node var     = variables.get(j);
             boolean isDisc = (var instanceof DiscreteVariable);
@@ -364,8 +394,105 @@ public final class NNEstimator implements TetradSerializable {
 
         double meanMmd2 = (mmd2CountAtomic.get() > 0)
                 ? totalMmd2Adder.sum() / mmd2CountAtomic.get() : Double.NaN;
+
         cvReport = new CVReport(k, summaries, meanMmd2);
         return cvReport;
+    }
+
+    // ── Fold models ───────────────────────────────────────────────────────────
+
+    /**
+     * The k fold models of a k-fold split: for each fold, the training rows,
+     * the held-out rows, and a simulator fitted on the training rows only.
+     * Built once per k and shared by {@link #crossValidate} and
+     * {@link #computePartialEdgeStrength} so their numbers live on the same
+     * folds.
+     */
+    private static final class FoldModels {
+        final int k;
+        final DataSet[] train;
+        final DataSet[] test;
+        final TrainedDagSimulatorGNM[] sims;
+
+        FoldModels(int k, DataSet[] train, DataSet[] test, TrainedDagSimulatorGNM[] sims) {
+            this.k = k;
+            this.train = train;
+            this.test = test;
+            this.sims = sims;
+        }
+    }
+
+    /** Cached fold models; rebuilt only when k changes. Not serialized. */
+    private transient FoldModels foldModels;
+
+    /**
+     * Returns the fold models for a k-fold split, building and caching them
+     * on first use (in parallel over folds). Folds are contiguous blocks of
+     * rows in file order. Thread-safe: concurrent callers wait for the first
+     * build rather than each building their own.
+     *
+     * @param k number of folds; must be &ge; 2 and &le; n
+     * @return the cached fold models for this k
+     */
+    private synchronized FoldModels getFoldModels(int k) {
+        int n = observedData.getNumRows();
+        if (k < 2) throw new IllegalArgumentException("k must be >= 2");
+        if (k > n) throw new IllegalArgumentException("k must be <= number of rows (" + n + ")");
+        if (foldModels != null && foldModels.k == k) return foldModels;
+
+        int foldSize = n / k;
+        DataSet[] train = new DataSet[k];
+        DataSet[] test  = new DataSet[k];
+        TrainedDagSimulatorGNM[] sims = new TrainedDagSimulatorGNM[k];
+
+        // Row order used for blocking: file order, or a seeded permutation.
+        int[] order = IntStream.range(0, n).toArray();
+        if (params.shuffleFolds) {
+            Random shuffleRng = new Random(params.seed ^ 0x5F01D5L);
+            for (int i = n - 1; i > 0; i--) {
+                int j = shuffleRng.nextInt(i + 1);
+                int t = order[i]; order[i] = order[j]; order[j] = t;
+            }
+        }
+
+        IntStream.range(0, k).parallel().forEach(fold -> {
+            int testStart = fold * foldSize;
+            int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
+            int testN     = testEnd - testStart;
+            int trainN    = n - testN;
+
+            int[] trainRows = new int[trainN];
+            int[] testRows  = new int[testN];
+            int ti = 0, vi = 0;
+            for (int pos = 0; pos < n; pos++) {
+                int r = order[pos];
+                if (pos >= testStart && pos < testEnd) testRows[vi++] = r;
+                else                                   trainRows[ti++] = r;
+            }
+            train[fold] = rowSubset(observedData, trainRows);
+            test[fold]  = rowSubset(observedData, testRows);
+
+            long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
+            TrainedDagSimulatorGNM sim = buildSimulator(train[fold], foldSeed);
+            sim.fit();
+            sims[fold] = sim;
+        });
+
+        foldModels = new FoldModels(k, train, test, sims);
+        return foldModels;
+    }
+
+    /**
+     * Reports whether fold models for {@code k} are currently cached.
+     *
+     * @param k number of folds
+     * @return true if a call to {@link #crossValidate(int)} or
+     * {@link #computePartialEdgeStrength} at this k would reuse cached
+     * fold models rather than refitting
+     */
+    public boolean hasFoldModels(int k) {
+        FoldModels fm = foldModels;
+        return fm != null && fm.k == k;
     }
 
     /**
@@ -410,6 +537,18 @@ public final class NNEstimator implements TetradSerializable {
         return adequacyReport;
     }
 
+    /**
+     * Returns the fraction of rows in the most recent simulation where at
+     * least one mechanism was asked to extrapolate: some continuous parent lay
+     * more than the GNM's {@code zWarn1} training SDs from its training mean.
+     * Such rows are where resimulated tails the data never had come from.
+     *
+     * @return the extrapolation fraction, or NaN if nothing has been simulated
+     */
+    public double getLastExtrapolationFraction() {
+        return lastExtrapolationFraction;
+    }
+
     // ── private helpers ──────────────────────────────────────────────────────
 
     /**
@@ -432,165 +571,379 @@ public final class NNEstimator implements TetradSerializable {
     // ── Edge strength ─────────────────────────────────────────────────────────
 
     /**
-     * Computes the strength of a single edge (parentName → childName) by
-     * retraining <em>only the child's mechanism</em> without that parent,
-     * holding all other node mechanisms fixed, and comparing the resulting
-     * marginal distribution of the child to the original.
+     * Computes the intervention strength of a single edge (parentName → childName)
+     * in the sense of Janzing et al. (2013) and DoWhy's {@code arrow_strength},
+     * with a Monte Carlo error bar and a refit-noise null.
      *
-     * <p>This is the correct isolation: only the affected structural equation
-     * is changed, so the comparison cleanly reflects the contribution of that
-     * one edge rather than cascading changes through the graph.
+     * <p>The child's fitted mechanism is held fixed; nothing is retrained. For
+     * each of {@code numConfigs} parent configurations, sampled with
+     * replacement from the observed rows on which the child's parents are all
+     * present, the child is drawn {@code edgeDrawsPerConfig} times with the
+     * configuration as is, and {@code edgeDrawsPerConfig} times again with the
+     * parent's slot replaced by an independent draw from that parent's observed
+     * marginal. The two conditional distributions are compared and the result
+     * averaged over configurations.
      *
-     * <p>Three complementary measures are returned:
+     * <p>That whole pass is repeated {@code edgeRepeats} times with fresh
+     * configurations, noise, and randomized values; the reported measures are
+     * the means over repeats and their standard deviations are reported
+     * alongside. Separately, a refit-noise null is computed once per child and
+     * shared by all edges into it: the child's mechanism is retrained with the
+     * <em>same</em> parents under {@code edgeNullRefits} new seeds, and the same
+     * conditional MMD² is measured between original and refit. An edge whose
+     * MMD² does not clear that band is not distinguishable from training noise;
+     * see {@link EdgeStrengthResult#isAboveNoise()}.
+     *
+     * <p>Because the mechanism is not refit, this measures how much the
+     * mechanism <em>uses</em> the parent, not whether the parent is predictively
+     * necessary. A parent that is redundant with another parent still registers
+     * as strong here if the network relies on it; see
+     * {@link #computePartialEdgeStrength} for the complementary question.
+     *
+     * <p>Three measures are returned:
      * <ul>
-     *   <li><b>MMD²</b> — nonparametric, captures any distributional change.</li>
-     *   <li><b>Variance difference</b> (continuous) — var(Y_removed) − var(Y_original).
-     *       Analogous to DoWhy's default arrow_strength metric.</li>
-     *   <li><b>KL divergence in bits</b> (discrete) — KL(P_removed ‖ P_original).
-     *       Analogous to DoWhy's categorical arrow_strength metric.</li>
+     *   <li><b>MMD²</b> — mean over configurations of the MMD² between the two
+     *       sets of draws. A continuous child is standardized by its observed SD
+     *       first, so values are comparable across children.</li>
+     *   <li><b>Variance difference</b> (continuous) — mean over configurations
+     *       of var(Y | pa, X randomized) − var(Y | pa); also returned as a
+     *       fraction of the child's observed variance. For a linear mechanism
+     *       Y = aX + …, this is a²·var(X).</li>
+     *   <li><b>KL divergence in bits</b> (discrete) — mean over configurations
+     *       and randomized draws of KL(P(Y | pa) ‖ P(Y | pa, X randomized)).</li>
      * </ul>
      *
-     * <p>Requires {@link #fit()} to have been called first.
+     * <p>Safe to call concurrently for different edges. Requires {@link #fit()}.
      *
      * @param parentName name of the parent variable (tail of the edge)
      * @param childName  name of the child variable (head of the edge)
-     * @param simulatedN number of rows to simulate from each model for
-     *                   comparison; larger = more stable (suggest &ge; 2000)
-     * @return an {@link EdgeStrengthResult} with all three measures
+     * @param numConfigs number of observed parent configurations to average
+     *                   over per repeat; larger = more stable (suggest a few hundred)
+     * @return an {@link EdgeStrengthResult}
      * @throws IllegalStateException    if {@link #fit()} has not been called
-     * @throws IllegalArgumentException if the edge does not exist, or either
-     *                                  variable name is not found
+     * @throws IllegalArgumentException if the edge does not exist, either
+     *                                  variable name is not found, or no
+     *                                  observed row has the child's parents
+     *                                  all present
      */
     public EdgeStrengthResult computeEdgeStrength(String parentName,
                                                   String childName,
-                                                  int simulatedN) {
-//        if (true) {
-//            return new EdgeStrengthResult(parentName, childName, false, 0.0, 0.0, 0.0, 0);
-//        }
-
+                                                  int numConfigs) {
         checkFitted();
-        if (simulatedN < 1)
-            throw new IllegalArgumentException("simulatedN must be >= 1");
+        if (numConfigs < 1)
+            throw new IllegalArgumentException("numConfigs must be >= 1");
+        int m = Math.max(2, params.edgeDrawsPerConfig);
+        int reps = Math.max(1, params.edgeRepeats);
 
         // ── Validate edge ─────────────────────────────────────────────────────
-
         Node parentNode = findVariable(parentName);
         Node childNode  = findVariable(childName);
-
         if (!dag.isParentOf(parentNode, childNode)) {
             throw new IllegalArgumentException(
                     "No edge " + parentName + " → " + childName + " in the DAG.");
         }
-
         boolean isDisc = (childNode instanceof DiscreteVariable);
 
-        // ── Build reduced parent index array for the child ────────────────────
-
-        List<Node> allParents = dag.getParents(childNode);
-        List<Integer> reducedParentIdxList = new ArrayList<>();
-
+        List<Node> variables = observedData.getVariables();
         Map<String, Integer> indexByName = new HashMap<>();
-        for (int j = 0; j < observedData.getVariables().size(); j++) {
-            indexByName.put(observedData.getVariables().get(j).getName(), j);
+        for (int j = 0; j < variables.size(); j++) indexByName.put(variables.get(j).getName(), j);
+        int childIdx  = indexByName.get(childName);
+        int parentIdx = indexByName.get(parentName);
+
+        double childVar = isDisc ? Double.NaN : columnVariance(observedData, childIdx);
+
+        // ── Repeats of the intervention pass ──────────────────────────────────
+        double[] mmd = new double[reps], dv = new double[reps], kl = new double[reps];
+        for (int r = 0; r < reps; r++) {
+            PassResult pr = conditionalPass(parentIdx, childIdx, numConfigs, m,
+                    fittedSimulator, true, r);
+            mmd[r] = pr.mmd2(); dv[r] = pr.dVar(); kl[r] = pr.klBits();
         }
+        double mmd2 = mean(mmd), mmd2Sd = sd(mmd);
+        double dVar = isDisc ? Double.NaN : mean(dv);
+        double dVarFrac = (!isDisc && Double.isFinite(dVar) && Double.isFinite(childVar) && childVar > 0)
+                ? dVar / childVar : Double.NaN;
+        double dVarFracSd = (!isDisc && Double.isFinite(childVar) && childVar > 0)
+                ? sd(dv) / childVar : Double.NaN;
+        double klBits = isDisc ? mean(kl) : Double.NaN;
+        double klBitsSd = isDisc ? sd(kl) : Double.NaN;
 
-        for (Node p : allParents) {
-            if (!p.getName().equals(parentName)) {
-                Integer idx = indexByName.get(p.getName());
-                if (idx != null) reducedParentIdxList.add(idx);
-            }
-        }
-
-        int[] reducedParentIndices = reducedParentIdxList.stream()
-                .mapToInt(Integer::intValue).toArray();
-
-        int childIndex = indexByName.get(childName);
-
-        // ── Build hybrid simulator: only child mechanism retrained ────────────
-
-        TrainedDagSimulatorGNM hybridSim = fittedSimulator.withReducedParents(
-                childIndex, reducedParentIndices, params.seed ^ 0xDEADBEEFL);
-
-        // ── Simulate from both models ─────────────────────────────────────────
-
-        DataSet origSim    = fittedSimulator.simulate(simulatedN).toDataSet();
-        DataSet reducedSim = hybridSim.simulate(simulatedN).toDataSet();
-
-        // ── Extract child column marginals ────────────────────────────────────
-
-        int origCol    = origSim.getColumnIndex(origSim.getVariable(childName));
-        int reducedCol = reducedSim.getColumnIndex(reducedSim.getVariable(childName));
-
-        double[][] origVec    = extractColumn(origSim,    origCol,    isDisc);
-        double[][] reducedVec = extractColumn(reducedSim, reducedCol, isDisc);
-
-        // ── MMD² on marginal ──────────────────────────────────────────────────
-
-        double mmd2 = RandomFeatureMMD.compute(
-                origVec, reducedVec,
-                params.mmdFeatures,
-                params.mmdSeed,
-                1.0,
-                params.mmdMaxRows);
-
-        // ── Variance difference (continuous) ──────────────────────────────────
-
-        double varianceDiff = Double.NaN;
-        if (!isDisc) {
-            double varOrig    = columnVariance(origSim,    origCol);
-            double varReduced = columnVariance(reducedSim, reducedCol);
-            varianceDiff = varReduced - varOrig;
-        }
-
-        // ── KL divergence in bits (discrete) ─────────────────────────────────
-
-        double klDivBits = Double.NaN;
-        if (isDisc) {
-            int L = ((DiscreteVariable) childNode).getNumCategories();
-            double[] pOrig    = empiricalProbs(origSim,    origCol,    L);
-            double[] pReduced = empiricalProbs(reducedSim, reducedCol, L);
-            klDivBits = klDivergenceBits(pReduced, pOrig);
-        }
+        // ── Refit-noise null for this child (cached, shared by its edges) ─────
+        NullBand nb = getNullBand(childIdx, numConfigs, m);
 
         return new EdgeStrengthResult(
                 parentName, childName, isDisc,
-                mmd2, varianceDiff, klDivBits,
-                simulatedN);
+                mmd2, mmd2Sd,
+                dVar, dVarFrac, dVarFracSd,
+                klBits, klBitsSd,
+                numConfigs, m, reps,
+                nb.mean, nb.sd, nb.refits);
+    }
+
+    /** Result of one conditional pass over parent configurations. */
+    private record PassResult(double mmd2, double dVar, double klBits) {}
+
+    /** Refit-noise null for one child: MMD² between original and same-parent refits. */
+    private record NullBand(double mean, double sd, int refits) {}
+
+    /** Cached null bands keyed by child index. Not serialized. */
+    private transient Map<Integer, NullBand> nullBands;
+
+    /** Per-child locks so concurrent edges into one child compute its null once. */
+    private transient Map<Integer, Object> nullLocks;
+
+    /**
+     * Returns the refit-noise null for a child, computing and caching it on
+     * first use. With {@code edgeNullRefits == 0} the band is NaN. Concurrent
+     * callers for the same child wait for the first computation rather than
+     * repeating it.
+     */
+    private NullBand getNullBand(int childIdx, int numConfigs, int m) {
+        int refits = Math.max(0, params.edgeNullRefits);
+        if (refits == 0) return new NullBand(Double.NaN, Double.NaN, 0);
+
+        Object lock;
+        synchronized (this) {
+            if (nullBands == null) nullBands = new HashMap<>();
+            if (nullLocks == null) nullLocks = new HashMap<>();
+            NullBand cached = nullBands.get(childIdx);
+            if (cached != null) return cached;
+            lock = nullLocks.computeIfAbsent(childIdx, k -> new Object());
+        }
+
+        synchronized (lock) {
+            synchronized (this) {
+                NullBand cached = nullBands.get(childIdx);
+                if (cached != null) return cached;
+            }
+
+            List<Node> variables = observedData.getVariables();
+            Map<String, Integer> indexByName = new HashMap<>();
+            for (int j = 0; j < variables.size(); j++) indexByName.put(variables.get(j).getName(), j);
+            Node childNode = variables.get(childIdx);
+            int[] allParents = dag.getParents(childNode).stream()
+                    .mapToInt(q -> indexByName.get(q.getName())).toArray();
+
+            double[] vals = new double[refits];
+            for (int j = 0; j < refits; j++) {
+                long refitSeed = params.seed ^ mixEdgeSeed(childIdx, 1000 + j);
+                TrainedDagSimulatorGNM refit =
+                        fittedSimulator.withReducedParents(childIdx, allParents, refitSeed);
+                // Same conditional pass, but condition B is the refit with no
+                // randomization; the parent-slot argument is unused.
+                PassResult pr = conditionalPass(childIdx, childIdx, numConfigs, m,
+                        refit, false, 500 + j);
+                vals[j] = pr.mmd2();
+            }
+            NullBand nb = new NullBand(mean(vals), sd(vals), refits);
+            synchronized (this) {
+                nullBands.put(childIdx, nb);
+            }
+            return nb;
+        }
     }
 
     /**
-     * Computes the partial edge strength of X → Y by residualizing Y on its
-     * other parents and measuring how much X explains in the residual via
-     * k-fold cross-validation.
+     * One pass over sampled parent configurations. Condition A draws the
+     * child from the fitted simulator with the configuration as is. Condition
+     * B draws it from {@code simB}; if {@code randomizeParent}, the parent's
+     * slot is replaced by an independent observed value before each draw.
+     * The two conditions share noise seeds so the comparison is coupled.
      *
-     * <p>This is the nonparametric analog of partial R² in regression. Unlike
-     * {@link #computeEdgeStrength}, which measures the marginal contribution
-     * of X averaged over the joint distribution of all parents, this method
-     * controls for the other parents first — making it less sensitive to
-     * inter-parent correlations and giving a cleaner signal about whether X
-     * causally contributes to Y.
+     * @param seedMix distinguishes repeats; different values sample different
+     *                configurations and noise
+     */
+    private PassResult conditionalPass(int parentIdx, int childIdx, int numConfigs, int m,
+                                       TrainedDagSimulatorGNM simB, boolean randomizeParent,
+                                       long seedMix) {
+        List<Node> variables = observedData.getVariables();
+        int p = variables.size();
+        Node childNode = variables.get(childIdx);
+        boolean isDisc = fittedSimulator.isDiscreteVariable(childIdx);
+        boolean parentIsDisc = fittedSimulator.isDiscreteVariable(parentIdx);
+        Map<String, Integer> indexByName = new HashMap<>();
+        for (int j = 0; j < p; j++) indexByName.put(variables.get(j).getName(), j);
+        int[] parentCols = dag.getParents(childNode).stream()
+                .mapToInt(q -> indexByName.get(q.getName())).toArray();
+
+        // ── Observed rows usable as parent configurations ─────────────────────
+        int n = observedData.getNumRows();
+        List<Integer> usable = new ArrayList<>();
+        for (int r = 0; r < n; r++) {
+            boolean ok = true;
+            for (int c : parentCols) {
+                if (fittedSimulator.isDiscreteVariable(c)) {
+                    if (TrainedDagSimulatorGNM.safeGetInt(observedData, r, c) < 0) { ok = false; break; }
+                } else {
+                    if (!Double.isFinite(observedData.getDouble(r, c))) { ok = false; break; }
+                }
+            }
+            if (ok) usable.add(r);
+        }
+        if (usable.isEmpty())
+            throw new IllegalArgumentException(
+                    "No observed row has all parents of " + childNode.getName() + " present.");
+
+        // ── Pool of independent parent values (observed marginal of X) ────────
+        double[] xPoolCont = null;
+        int[]    xPoolDisc = null;
+        if (randomizeParent) {
+            if (parentIsDisc) {
+                xPoolDisc = IntStream.range(0, n)
+                        .map(r -> TrainedDagSimulatorGNM.safeGetInt(observedData, r, parentIdx))
+                        .filter(v -> v >= 0).toArray();
+                if (xPoolDisc.length == 0)
+                    throw new IllegalArgumentException("No observed values for " + variables.get(parentIdx).getName() + ".");
+            } else {
+                xPoolCont = IntStream.range(0, n)
+                        .mapToDouble(r -> observedData.getDouble(r, parentIdx))
+                        .filter(Double::isFinite).toArray();
+                if (xPoolCont.length == 0)
+                    throw new IllegalArgumentException("No observed values for " + variables.get(parentIdx).getName() + ".");
+            }
+        }
+
+        // ── Child scale, for standardizing MMD² ───────────────────────────────
+        double childSd = 1.0;
+        if (!isDisc) {
+            double v = columnVariance(observedData, childIdx);
+            if (Double.isFinite(v) && v > 0) childSd = TMath.sqrt(v);
+        }
+
+        // ── Main loop over configurations ─────────────────────────────────────
+        long base = params.seed ^ mixEdgeSeed(parentIdx, childIdx) ^ (seedMix * 0x9E3779B97F4A7C15L);
+        Random selRng = new Random(base ^ 0xA5A5A5A5A5A5A5A5L);
+
+        double[] contRow = new double[p];
+        int[]    discRow = new int[p];
+        double[][] drawsA = new double[m][1];
+        double[][] drawsB = new double[m][1];
+
+        double sumMmd2 = 0.0, sumDVar = 0.0, sumKlBits = 0.0;
+        int    countMmd = 0,  countDVar = 0, countKl = 0;
+
+        for (int c = 0; c < numConfigs; c++) {
+            int row = usable.get(selRng.nextInt(usable.size()));
+            fittedSimulator.fillRowFromData(observedData, row, contRow, discRow);
+            long noiseSeed = base ^ ((long) c * 0x9E3779B97F4A7C15L);
+
+            // Condition A: configuration as observed, fitted simulator.
+            double[] pA = null;
+            if (isDisc) pA = fittedSimulator.childProbsGiven(childIdx, contRow, discRow);
+            Random rngA = new Random(noiseSeed);
+            for (int i = 0; i < m; i++) {
+                fittedSimulator.generateChild(childIdx, contRow, discRow, rngA);
+                drawsA[i][0] = isDisc ? discRow[childIdx] : contRow[childIdx] / childSd;
+            }
+
+            // Condition B: simB, with the parent slot randomized if requested.
+            Random rngB = new Random(noiseSeed);
+            double klAcc = 0.0; int klN = 0;
+            for (int i = 0; i < m; i++) {
+                if (randomizeParent) {
+                    if (parentIsDisc) discRow[parentIdx] = xPoolDisc[selRng.nextInt(xPoolDisc.length)];
+                    else              contRow[parentIdx] = xPoolCont[selRng.nextInt(xPoolCont.length)];
+                }
+                if (isDisc) {
+                    double[] pB = simB.childProbsGiven(childIdx, contRow, discRow);
+                    double kl = klDivergenceBits(pA, pB);
+                    if (Double.isFinite(kl)) { klAcc += kl; klN++; }
+                }
+                simB.generateChild(childIdx, contRow, discRow, rngB);
+                drawsB[i][0] = isDisc ? discRow[childIdx] : contRow[childIdx] / childSd;
+            }
+
+            // ── Per-configuration measures ────────────────────────────────────
+            double mmd2 = RandomFeatureMMD.compute(
+                    drawsA, drawsB,
+                    params.mmdFeatures,
+                    params.mmdSeed ^ c,
+                    1.0,
+                    params.mmdMaxRows);
+            if (Double.isFinite(mmd2)) { sumMmd2 += mmd2; countMmd++; }
+
+            if (!isDisc) {
+                double vA = sampleVariance(drawsA) * childSd * childSd;
+                double vB = sampleVariance(drawsB) * childSd * childSd;
+                if (Double.isFinite(vA) && Double.isFinite(vB)) {
+                    sumDVar += (vB - vA); countDVar++;
+                }
+            } else if (klN > 0) {
+                sumKlBits += klAcc / klN; countKl++;
+            }
+        }
+
+        return new PassResult(
+                countMmd  > 0 ? sumMmd2   / countMmd  : Double.NaN,
+                countDVar > 0 ? sumDVar   / countDVar : Double.NaN,
+                countKl   > 0 ? sumKlBits / countKl   : Double.NaN);
+    }
+
+    private static double mean(double[] v) {
+        double s = 0; int n = 0;
+        for (double x : v) if (Double.isFinite(x)) { s += x; n++; }
+        return n > 0 ? s / n : Double.NaN;
+    }
+
+    private static double sd(double[] v) {
+        double mu = mean(v);
+        if (!Double.isFinite(mu)) return Double.NaN;
+        double s = 0; int n = 0;
+        for (double x : v) if (Double.isFinite(x)) { s += (x - mu) * (x - mu); n++; }
+        return n > 1 ? TMath.sqrt(s / (n - 1)) : Double.NaN;
+    }
+
+    private static long mixEdgeSeed(int parentIdx, int childIdx) {
+        long h = 0x5DEECE66DL;
+        h = h * 31 + parentIdx;
+        h = h * 31 + childIdx;
+        h ^= (h >>> 29);
+        h *= 0xBF58476D1CE4E5B9L;
+        h ^= (h >>> 32);
+        return h;
+    }
+
+    /** Sample variance of a one-column matrix. */
+    private static double sampleVariance(double[][] col) {
+        int n = col.length;
+        if (n < 2) return Double.NaN;
+        double sum = 0, sum2 = 0;
+        for (double[] r : col) { sum += r[0]; sum2 += r[0] * r[0]; }
+        double mean = sum / n;
+        return (sum2 - n * mean * mean) / (n - 1);
+    }
+
+    /**
+     * Computes the partial edge strength of X → Y: the held-out predictive
+     * gain from X once Y's other parents are accounted for, on the same
+     * k folds {@link #crossValidate(int)} uses.
      *
-     * <p>For continuous children:
-     * <ol>
-     *   <li>Compute residuals R = Y − Ŷ on the observed data, where Ŷ is
-     *       the zero-noise point prediction of the fitted mechanism using all
-     *       parents (i.e. the conditional mean estimate).</li>
-     *   <li>Pass R and the observed values of X to
-     *       {@link TrainedDagSimulatorGNM#fitResidualRegressionOosR2}, which
-     *       fits a small MLP of R ~ X via k-fold CV and returns OOS R².</li>
-     * </ol>
+     * <p>For each fold, the cached fold model (all mechanisms trained on the
+     * training rows) is the <em>full</em> model. A <em>reduced</em> model is
+     * made from it by retraining only Y's mechanism, on the same training
+     * rows, without X. Both predict the held-out rows.
      *
-     * <p>For discrete children, a CV cross-entropy improvement is computed
-     * by comparing the full model (all parents) against the reduced model
-     * (all parents except X) on held-out folds.
+     * <p>For a continuous child the result is the difference in held-out
+     * R², where R² = 1 − OOS MSE / marginal variance exactly as in the
+     * Cross-Validation table:
+     * <pre>  partialR2 = R²_full − R²_reduced = (MSE_reduced − MSE_full) / var(Y)</pre>
+     * For a discrete child it is the difference in held-out cross-entropy,
+     * in nats: {@code xent_reduced − xent_full}. Positive means X adds
+     * information the other parents do not carry.
      *
-     * <p>Requires {@link #fit()} to have been called first.
+     * <p>This is the complement of {@link #computeEdgeStrength}: a parent that
+     * is redundant with another parent scores near zero here even if the
+     * fitted mechanism leans on it, because the reduced mechanism can use the
+     * other parent instead.
+     *
+     * <p>Requires {@link #fit()} to have been called first. Safe to call
+     * concurrently for different edges; the first call at a given k builds the
+     * fold models and later calls reuse them.
      *
      * @param parentName name of the parent variable X
      * @param childName  name of the child variable Y
-     * @param k          number of CV folds for the residual regression
-     * @return a {@link PartialEdgeStrengthResult} with partial R² (continuous)
-     *         or cross-entropy improvement (discrete)
+     * @param k          number of CV folds
+     * @return a {@link PartialEdgeStrengthResult}
      * @throws IllegalStateException    if {@link #fit()} has not been called
      * @throws IllegalArgumentException if the edge does not exist or either
      *                                  variable is not found
@@ -600,176 +953,420 @@ public final class NNEstimator implements TetradSerializable {
         checkFitted();
 
         // ── Validate ──────────────────────────────────────────────────────────
-
         Node parentNode = findVariable(parentName);
         Node childNode  = findVariable(childName);
-
         if (!dag.isParentOf(parentNode, childNode)) {
             throw new IllegalArgumentException(
                     "No edge " + parentName + " → " + childName + " in the DAG.");
         }
-
         boolean isDisc = (childNode instanceof DiscreteVariable);
-
-        int n = observedData.getNumRows();
-        if (k < 2) throw new IllegalArgumentException("k must be >= 2");
-        if (k > n) throw new IllegalArgumentException(
-                "k must be <= number of rows (" + n + ")");
-
-        // ── Build column index map ────────────────────────────────────────────
+        boolean contParent = !(parentNode instanceof DiscreteVariable);
 
         List<Node> variables = observedData.getVariables();
         Map<String, Integer> indexByName = new HashMap<>();
         for (int j = 0; j < variables.size(); j++) {
             indexByName.put(variables.get(j).getName(), j);
         }
-        int childIdx  = indexByName.get(childName);
+        int childIdx = indexByName.get(childName);
         int parentIdx = indexByName.get(parentName);
 
-        // ── Continuous child ──────────────────────────────────────────────────
+        // Finite-difference step for the average marginal effect: a fixed
+        // fraction of the parent's observed SD. Only used for a continuous
+        // parent of a continuous child.
+        boolean doAme = !isDisc && contParent;
+        double sdX = doAme ? TMath.sqrt(columnVariance(observedData, parentIdx)) : Double.NaN;
+        double sdY = doAme ? TMath.sqrt(columnVariance(observedData, childIdx)) : Double.NaN;
+        double ameStep = doAme && Double.isFinite(sdX) && sdX > 0 ? 0.05 * sdX : Double.NaN;
+        boolean ameOk = doAme && Double.isFinite(ameStep) && Double.isFinite(sdY) && sdY > 0;
 
-        if (!isDisc) {
+        int[] fullParentIndices = dag.getParents(childNode).stream()
+                .mapToInt(q -> indexByName.get(q.getName()))
+                .toArray();
 
-            // Build reduced parent index array: all parents of Y except X.
-            List<Node> allParents = dag.getParents(childNode);
-            int[] reducedParentIndices = allParents.stream()
-                    .filter(p -> !p.getName().equals(parentName))
-                    .mapToInt(p -> indexByName.get(p.getName()))
-                    .toArray();
+        int[] reducedParentIndices = dag.getParents(childNode).stream()
+                .filter(q -> !q.getName().equals(parentName))
+                .mapToInt(q -> indexByName.get(q.getName()))
+                .toArray();
 
-            // Build reduced simulator: retrain only Y's mechanism without X,
-            // all other mechanisms unchanged.
-            TrainedDagSimulatorGNM reducedSim = fittedSimulator.withReducedParents(
-                    childIdx, reducedParentIndices, params.seed ^ 0xDEADBEEFL);
+        FoldModels fm = getFoldModels(k);
 
-            // Compute residuals R = Y - Ŷ_reduced on all observed rows.
-            // Ŷ_reduced is the prediction from the reduced mechanism (without X),
-            // so R still contains X's signal — it has not been absorbed yet.
-            double[] xVals = new double[n];
-            double[] rVals = new double[n];
+        // Per-fold accumulators; folds run in parallel and each writes only
+        // its own slot. The reduced child mechanism is a fresh object per fold,
+        // and the shared fold simulators are safe for concurrent prediction.
+        double[] sseFullF = new double[k], sseRedF = new double[k];
+        double[] xentFullF = new double[k], xentRedF = new double[k];
+        int[] nContF = new int[k], nDiscF = new int[k];
+        double[] derivSumF = new double[k];
+        int[] nDerivF = new int[k], nPosF = new int[k];
+        final boolean ameEnabled = ameOk;
+        final double h = ameStep;
 
-            double residSum = 0, residSum2 = 0;
-            int residCount = 0;
+        IntStream.range(0, k).parallel().forEach(fold -> {
+            TrainedDagSimulatorGNM full = fm.sims[fold];
+            long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
+            TrainedDagSimulatorGNM reduced = full.withReducedParents(
+                    childIdx, reducedParentIndices, foldSeed ^ 0xDEADBEEFL);
 
-            for (int i = 0; i < n; i++) {
-                double yObs = observedData.getDouble(i, childIdx);
-                double yHat = reducedSim.predictNode(childIdx, observedData, i);
-                double xVal = observedData.getDouble(i, parentIdx);
+            DataSet testSet = fm.test[fold];
+            int testN = testSet.getNumRows();
 
-                xVals[i] = xVal;
-
-                if (Double.isFinite(yObs) && Double.isFinite(yHat)) {
-                    double r = yObs - yHat;
-                    rVals[i] = r;
-                    residSum  += r;
-                    residSum2 += r * r;
-                    residCount++;
+            for (int i = 0; i < testN; i++) {
+                // Both models are scored only on rows complete in
+                // {Y} ∪ Pa(Y); see rowIncomplete.
+                if (rowIncomplete(testSet, i, childIdx, fullParentIndices)) continue;
+                if (!isDisc) {
+                    double yObs = testSet.getDouble(i, childIdx);
+                    if (!Double.isFinite(yObs)) continue;
+                    double yFull = full.predictNode(childIdx, testSet, i);
+                    double yRed  = reduced.predictNode(childIdx, testSet, i);
+                    if (!Double.isFinite(yFull) || !Double.isFinite(yRed)) continue;
+                    sseFullF[fold] += (yObs - yFull) * (yObs - yFull);
+                    sseRedF[fold]  += (yObs - yRed)  * (yObs - yRed);
+                    nContF[fold]++;
                 } else {
-                    rVals[i] = Double.NaN;
+                    int obs = TrainedDagSimulatorGNM.safeGetInt(testSet, i, childIdx);
+                    double[] pFull = full.predictNodeProbs(childIdx, testSet, i);
+                    double[] pRed  = reduced.predictNodeProbs(childIdx, testSet, i);
+                    if (pFull == null || pRed == null) continue;
+                    if (obs < 0 || obs >= pFull.length) continue;
+                    xentFullF[fold] += -TMath.log(TMath.max(pFull[obs], 1e-300));
+                    xentRedF[fold]  += -TMath.log(TMath.max(pRed[obs],  1e-300));
+                    nDiscF[fold]++;
                 }
             }
 
-            // Residual variance — baseline for partial R².
-            double residVar = Double.NaN;
-            if (residCount > 1) {
-                double residMean = residSum / residCount;
-                residVar = (residSum2 - residCount * residMean * residMean)
-                        / (residCount - 1);
+            // ── OOS average marginal effect (continuous parent & child) ──────
+            // Central finite difference of the fold's full mechanism with
+            // respect to the parent, other parents at observed values,
+            // evaluated on the held-out rows. A mutable copy of the test set
+            // lets us perturb the one parent cell per row and restore it.
+            if (ameEnabled) {
+                DataSet perturbed = testSet.copy();
+                for (int i = 0; i < testN; i++) {
+                    // Same rows as the scoring above: complete in {Y} ∪ Pa(Y),
+                    // so derivatives are never taken at imputed inputs.
+                    if (rowIncomplete(perturbed, i, childIdx, fullParentIndices)) continue;
+                    double x = perturbed.getDouble(i, parentIdx);
+                    if (!Double.isFinite(x)) continue;
+                    perturbed.setDouble(i, parentIdx, x + h);
+                    double fPlus = full.predictNode(childIdx, perturbed, i);
+                    perturbed.setDouble(i, parentIdx, x - h);
+                    double fMinus = full.predictNode(childIdx, perturbed, i);
+                    perturbed.setDouble(i, parentIdx, x);
+                    if (!Double.isFinite(fPlus) || !Double.isFinite(fMinus)) continue;
+                    double deriv = (fPlus - fMinus) / (2.0 * h);
+                    derivSumF[fold] += deriv;
+                    nDerivF[fold]++;
+                    if (deriv > 0.0) nPosF[fold]++;
+                }
             }
+        });
 
-            // OOS R² of residual regression R ~ X via TrainedDagSimulatorGNM.
-            double partialR2 = fittedSimulator.fitResidualRegressionOosR2(
-                    xVals, rVals, k, params.seed ^ 0xDEADBEEFL);
+        double sseFull = 0.0, sseRed = 0.0, xentFull = 0.0, xentRed = 0.0;
+        int nCont = 0, nDisc = 0;
+        for (int fold = 0; fold < k; fold++) {
+            sseFull += sseFullF[fold]; sseRed += sseRedF[fold]; nCont += nContF[fold];
+            xentFull += xentFullF[fold]; xentRed += xentRedF[fold]; nDisc += nDiscF[fold];
+        }
+
+        if (!isDisc) {
+            double mseFull = nCont > 0 ? sseFull / nCont : Double.NaN;
+            double mseRed  = nCont > 0 ? sseRed  / nCont : Double.NaN;
+            double baseVar = computeBaselineMse(variables)[childIdx];
+            double partialR2 = (Double.isFinite(mseFull) && Double.isFinite(mseRed)
+                    && Double.isFinite(baseVar) && baseVar > 0)
+                    ? (mseRed - mseFull) / baseVar : Double.NaN;
+
+            double derivSum = 0.0;
+            int nDeriv = 0, nPos = 0;
+            for (int fold = 0; fold < k; fold++) {
+                derivSum += derivSumF[fold];
+                nDeriv += nDerivF[fold];
+                nPos += nPosF[fold];
+            }
+            double ame = (ameOk && nDeriv > 0) ? derivSum / nDeriv : Double.NaN;
+            double ameStd = Double.isFinite(ame) ? ame * sdX / sdY : Double.NaN;
+            double fracPos = (ameOk && nDeriv > 0) ? (double) nPos / nDeriv : Double.NaN;
 
             return new PartialEdgeStrengthResult(
                     parentName, childName, false,
-                    partialR2, residVar, Double.NaN, k);
-
-            // ── Discrete child ────────────────────────────────────────────────────
-
+                    partialR2, mseRed, Double.NaN, k,
+                    ame, ameStd, fracPos);
         } else {
-
-            // Build reduced parent index array: all parents of Y except X.
-            List<Node> allParents = dag.getParents(childNode);
-            int[] reducedParentIndices = allParents.stream()
-                    .filter(p -> !p.getName().equals(parentName))
-                    .mapToInt(p -> indexByName.get(p.getName()))
-                    .toArray();
-
-            int L = ((DiscreteVariable) childNode).getNumCategories();
-            int foldSize = n / k;
-
-            double totalXentFull    = 0.0;
-            double totalXentReduced = 0.0;
-            int    totalN           = 0;
-
-            for (int fold = 0; fold < k; fold++) {
-                int testStart = fold * foldSize;
-                int testEnd   = (fold == k - 1) ? n : testStart + foldSize;
-                int testN     = testEnd - testStart;
-                int trainN    = n - testN;
-
-
-                // Partition row indices.
-                int[] trainRows = new int[trainN];
-                int[] testRows  = new int[testN];
-                int ti = 0, vi = 0;
-                for (int r = 0; r < n; r++) {
-                    if (r >= testStart && r < testEnd) testRows[vi++]  = r;
-                    else                               trainRows[ti++] = r;
-                }
-
-                DataSet trainSet = rowSubset(observedData, trainRows);
-                DataSet testSet  = rowSubset(observedData, testRows);
-
-                // Full model: all parents, trained on this fold's training data.
-                long foldSeed = params.seed ^ (long) fold * 0x9E3779B97F4A7C15L;
-                TrainedDagSimulatorGNM fullSim = buildSimulator(trainSet, foldSeed);
-                fullSim.fit();
-
-                // Reduced model: all parents except X, retrain child only.
-                TrainedDagSimulatorGNM reducedSim = fullSim.withReducedParents(
-                        childIdx, reducedParentIndices, foldSeed ^ 0xDEADBEEFL);
-
-                // Evaluate cross-entropy of both models on held-out rows.
-                for (int ti2 = 0; ti2 < testN; ti2++) {
-                    int obs = TrainedDagSimulatorGNM.safeGetInt(
-                            testSet, ti2, childIdx);
-                    if (obs < 0 || obs >= L) continue;
-
-                    double[] fullProbs    = fullSim.predictNodeProbs(
-                            childIdx, testSet, ti2);
-                    double[] reducedProbs = reducedSim.predictNodeProbs(
-                            childIdx, testSet, ti2);
-
-                    if (fullProbs == null || reducedProbs == null) continue;
-
-                    totalXentFull    += -TMath.log(
-                            TMath.max(fullProbs[obs],    1e-300));
-                    totalXentReduced += -TMath.log(
-                            TMath.max(reducedProbs[obs], 1e-300));
-                    totalN++;
-                }
-            }
-
-            // Positive improvement = full model (with X) beats reduced model.
-            double xentFull    = (totalN > 0)
-                    ? totalXentFull    / totalN : Double.NaN;
-            double xentReduced = (totalN > 0)
-                    ? totalXentReduced / totalN : Double.NaN;
-            double improvement = (Double.isFinite(xentFull)
-                    && Double.isFinite(xentReduced))
-                    ? xentReduced - xentFull
-                    : Double.NaN;
-
+            double xf = nDisc > 0 ? xentFull / nDisc : Double.NaN;
+            double xr = nDisc > 0 ? xentRed  / nDisc : Double.NaN;
+            double improvement = (Double.isFinite(xf) && Double.isFinite(xr))
+                    ? xr - xf : Double.NaN;
             return new PartialEdgeStrengthResult(
                     parentName, childName, true,
                     Double.NaN, Double.NaN, improvement, k);
         }
     }
 
+    // == prediction-based pruning ==
+
+    /**
+     * Backward elimination of parents whose held-out predictive contribution
+     * is not distinguishable from zero, per child, on the same k folds as
+     * {@link #crossValidate(int)}.
+     *
+     * <p>For each parent X of a child Y, the current fold mechanisms (trained
+     * on Y's current working parent set) and reduced fold mechanisms
+     * (retrained without X) predict the same held-out rows, giving one paired
+     * improvement per fold: delta R^2 for a continuous Y, delta cross-entropy
+     * in nats for a discrete Y. X is kept when the fold-mean improvement
+     * exceeds {@code threshold} fold standard errors. While any parent fails,
+     * the one with the smallest t-statistic is removed and the survivors
+     * re-tested, so a redundant pair loses at most one member. Children are
+     * independent because the estimator factorizes per node, so elimination
+     * runs per child and never re-tests edges into other children.
+     *
+     * <p>When the reduced parent set is empty, the reduced predictor is the
+     * training fold's marginal mean (continuous) or Laplace-smoothed marginal
+     * class frequencies (discrete) rather than a retrained network.
+     *
+     * <p>The returned graph is a copy of the DAG with the proposed deletions
+     * removed; this estimator is not modified. Deletion means predictive
+     * redundancy given the survivors, not causal absence.
+     *
+     * <p>Requires {@link #fit()} to have been called first.
+     *
+     * @param k         number of CV folds
+     * @param threshold keep a parent when its fold-mean improvement exceeds
+     *                  this many fold standard errors; 0 keeps any positive
+     *                  mean, 1 is a reasonable default
+     * @return a {@link PredictionPruneReport}
+     * @throws IllegalStateException if {@link #fit()} has not been called
+     */
+    public PredictionPruneReport pruneByPredictiveContribution(int k, double threshold) {
+        checkFitted();
+        FoldModels fm = getFoldModels(k);
+
+        List<Node> variables = observedData.getVariables();
+        Map<String, Integer> indexByName = new HashMap<>();
+        for (int j = 0; j < variables.size(); j++) {
+            indexByName.put(variables.get(j).getName(), j);
+        }
+        double[] baseVar = computeBaselineMse(variables);
+
+        List<PredictionPruneReport.Deletion> deletions =
+                Collections.synchronizedList(new ArrayList<>());
+
+        List<Node> children = dag.getNodes().stream()
+                .filter(nd -> !dag.getParents(nd).isEmpty())
+                .filter(nd -> indexByName.containsKey(nd.getName()))
+                .toList();
+
+        children.parallelStream().forEach(childNode -> {
+            int childIdx = indexByName.get(childNode.getName());
+            boolean isDisc = (childNode instanceof DiscreteVariable);
+
+            List<Integer> working = new ArrayList<>();
+            for (Node q : dag.getParents(childNode)) {
+                Integer qi = indexByName.get(q.getName());
+                if (qi != null) working.add(qi);
+            }
+            if (working.isEmpty()) return;
+
+            // Per-fold mechanisms for the current working parent set. The
+            // cached fold models already hold the full-parent mechanisms.
+            TrainedDagSimulatorGNM[] cur = new TrainedDagSimulatorGNM[k];
+            System.arraycopy(fm.sims, 0, cur, 0, k);
+
+            int step = 0;
+            while (!working.isEmpty()) {
+                int[] curArr = working.stream().mapToInt(Integer::intValue).toArray();
+
+                int worstPos = -1;
+                double worstT = Double.POSITIVE_INFINITY;
+                double worstMean = Double.NaN, worstSe = Double.NaN;
+
+                for (int ci = 0; ci < working.size(); ci++) {
+                    int x = working.get(ci);
+                    int[] red = working.stream()
+                            .filter(q -> q != x)
+                            .mapToInt(Integer::intValue).toArray();
+
+                    long salt = mixEdgeSeed(x, childIdx)
+                            ^ (long) step * 0x9E3779B97F4A7C15L;
+                    double[] d = foldImprovements(fm, cur, childIdx, isDisc,
+                            curArr, red, baseVar[childIdx], salt);
+
+                    double m = mean(d);
+                    int nf = 0;
+                    for (double v : d) if (Double.isFinite(v)) nf++;
+                    double se = (nf >= 2) ? sd(d) / TMath.sqrt(nf) : Double.NaN;
+
+                    boolean pass = (Double.isFinite(se) && se > 0)
+                            ? m > threshold * se
+                            : m > 0;
+                    double tStat = (Double.isFinite(se) && se > 0)
+                            ? m / se
+                            : (m > 0 ? Double.POSITIVE_INFINITY
+                                     : Double.NEGATIVE_INFINITY);
+
+                    if (!pass && tStat < worstT) {
+                        worstT = tStat;
+                        worstPos = ci;
+                        worstMean = m;
+                        worstSe = se;
+                    }
+                }
+
+                if (worstPos < 0) break;   // every survivor passes
+
+                int removed = working.remove(worstPos);
+                deletions.add(new PredictionPruneReport.Deletion(
+                        variables.get(removed).getName(),
+                        childNode.getName(), isDisc,
+                        worstMean, worstSe,
+                        Double.isFinite(worstT) ? worstT : Double.NaN,
+                        step));
+
+                if (!working.isEmpty()) {
+                    int[] newArr = working.stream()
+                            .mapToInt(Integer::intValue).toArray();
+                    for (int f = 0; f < k; f++) {
+                        long foldSeed = params.seed
+                                ^ (long) f * 0x9E3779B97F4A7C15L
+                                ^ mixEdgeSeed(removed, childIdx)
+                                ^ (long) step;
+                        cur[f] = cur[f].withReducedParents(childIdx, newArr, foldSeed);
+                    }
+                }
+                step++;
+            }
+        });
+
+        Graph pruned = new EdgeListGraph(dag);
+        for (PredictionPruneReport.Deletion d : deletions) {
+            Node pn = pruned.getNode(d.parentName);
+            Node cn = pruned.getNode(d.childName);
+            if (pn != null && cn != null && pruned.getEdge(pn, cn) != null) {
+                pruned.removeEdge(pruned.getEdge(pn, cn));
+            }
+        }
+
+        List<PredictionPruneReport.Deletion> sorted = new ArrayList<>(deletions);
+        sorted.sort(Comparator
+                .comparing((PredictionPruneReport.Deletion d) -> d.childName)
+                .thenComparingInt(d -> d.step));
+
+        return new PredictionPruneReport(sorted, pruned, k, threshold);
+    }
+
+    /**
+     * Per-fold paired improvement of the current model over the reduced one
+     * for a single candidate parent, on rows complete in the child plus the
+     * current parent set. Continuous child: delta R^2 via the marginal-variance
+     * denominator. Discrete child: delta mean cross-entropy in nats. When
+     * {@code reducedParents} is empty, the reduced predictor is the training
+     * fold's marginal (mean or smoothed class frequencies). A fold with no
+     * scorable rows contributes NaN.
+     */
+    private double[] foldImprovements(FoldModels fm, TrainedDagSimulatorGNM[] cur,
+                                      int childIdx, boolean isDisc,
+                                      int[] curParents, int[] reducedParents,
+                                      double baseVar, long seedSalt) {
+        int k = fm.k;
+        double[] d = new double[k];
+
+        for (int f = 0; f < k; f++) {
+            long foldSeed = params.seed
+                    ^ (long) f * 0x9E3779B97F4A7C15L ^ seedSalt;
+
+            TrainedDagSimulatorGNM reduced = (reducedParents.length > 0)
+                    ? cur[f].withReducedParents(childIdx, reducedParents, foldSeed)
+                    : null;
+
+            // Marginal fallbacks from the training fold, for empty reductions.
+            double trainMean = 0.0;
+            double[] trainProbs = null;
+            if (reduced == null) {
+                DataSet train = fm.train[f];
+                if (!isDisc) {
+                    double sum = 0; int n = 0;
+                    for (int r = 0; r < train.getNumRows(); r++) {
+                        double v = train.getDouble(r, childIdx);
+                        if (Double.isFinite(v)) { sum += v; n++; }
+                    }
+                    trainMean = n > 0 ? sum / n : 0.0;
+                } else {
+                    int L = ((DiscreteVariable) observedData.getVariable(childIdx))
+                            .getNumCategories();
+                    int[] counts = new int[L];
+                    int n = 0;
+                    for (int r = 0; r < train.getNumRows(); r++) {
+                        int v = TrainedDagSimulatorGNM.safeGetInt(train, r, childIdx);
+                        if (v >= 0 && v < L) { counts[v]++; n++; }
+                    }
+                    trainProbs = new double[L];
+                    for (int c = 0; c < L; c++) {
+                        trainProbs[c] = (counts[c] + 1.0) / (n + L);   // Laplace
+                    }
+                }
+            }
+
+            DataSet testSet = fm.test[f];
+            double sseCur = 0, sseRed = 0, xentCur = 0, xentRed = 0;
+            int n = 0;
+
+            for (int i = 0; i < testSet.getNumRows(); i++) {
+                if (rowIncomplete(testSet, i, childIdx, curParents)) continue;
+
+                if (!isDisc) {
+                    double yObs = testSet.getDouble(i, childIdx);
+                    double yCur = cur[f].predictNode(childIdx, testSet, i);
+                    double yRed = (reduced != null)
+                            ? reduced.predictNode(childIdx, testSet, i)
+                            : trainMean;
+                    if (!Double.isFinite(yCur) || !Double.isFinite(yRed)) continue;
+                    sseCur += (yObs - yCur) * (yObs - yCur);
+                    sseRed += (yObs - yRed) * (yObs - yRed);
+                    n++;
+                } else {
+                    int obs = TrainedDagSimulatorGNM.safeGetInt(testSet, i, childIdx);
+                    double[] pCur = cur[f].predictNodeProbs(childIdx, testSet, i);
+                    double[] pRed = (reduced != null)
+                            ? reduced.predictNodeProbs(childIdx, testSet, i)
+                            : trainProbs;
+                    if (pCur == null || pRed == null) continue;
+                    if (obs < 0 || obs >= pCur.length || obs >= pRed.length) continue;
+                    xentCur += -TMath.log(TMath.max(pCur[obs], 1e-300));
+                    xentRed += -TMath.log(TMath.max(pRed[obs], 1e-300));
+                    n++;
+                }
+            }
+
+            if (n == 0) {
+                d[f] = Double.NaN;
+            } else if (!isDisc) {
+                d[f] = (Double.isFinite(baseVar) && baseVar > 0)
+                        ? ((sseRed / n) - (sseCur / n)) / baseVar
+                        : Double.NaN;
+            } else {
+                d[f] = (xentRed / n) - (xentCur / n);
+            }
+        }
+        return d;
+    }
 
     // ── private helpers ───────────────────────────────────────────────────────
+
+    /**
+     * True if the row is missing the child or any of the given parents.
+     * Scoring is restricted to rows complete in {Y} ∪ Pa(Y), matching the
+     * training-side listwise-deletion contract; otherwise the encoder would
+     * silently impute missing parents at prediction time, which in the
+     * full-vs-reduced comparison handicaps only the full model.
+     */
+    private static boolean rowIncomplete(DataSet data, int row, int child, int[] parents) {
+        if (TrainedDagSimulatorGNM.isMissingCell(data, row, child)) return true;
+        for (int q : parents) {
+            if (TrainedDagSimulatorGNM.isMissingCell(data, row, q)) return true;
+        }
+        return false;
+    }
 
     private Node findVariable(String name) {
         for (Node n : observedData.getVariables()) {
@@ -777,20 +1374,6 @@ public final class NNEstimator implements TetradSerializable {
         }
         throw new IllegalArgumentException(
                 "Variable not found in dataset: " + name);
-    }
-
-    /**
-     * Extracts a single column as an (n x 1) matrix for MMD² input.
-     */
-    private static double[][] extractColumn(DataSet data, int col, boolean isDisc) {
-        int n = data.getNumRows();
-        double[][] out = new double[n][1];
-        for (int i = 0; i < n; i++) {
-            out[i][0] = isDisc
-                    ? TrainedDagSimulatorGNM.safeGetInt(data, i, col)
-                    : data.getDouble(i, col);
-        }
-        return out;
     }
 
     /**
@@ -808,25 +1391,6 @@ public final class NNEstimator implements TetradSerializable {
         if (count < 2) return Double.NaN;
         double mean = sum / count;
         return (sum2 - count * mean * mean) / (count - 1);
-    }
-
-    /**
-     * Empirical marginal class probabilities for a discrete column.
-     */
-    private static double[] empiricalProbs(DataSet data, int col, int L) {
-        double[] counts = new double[L];
-        int total = 0;
-        for (int i = 0; i < data.getNumRows(); i++) {
-            int v = TrainedDagSimulatorGNM.safeGetInt(data, i, col);
-            if (v < 0 || v >= L) continue;
-            counts[v]++; total++;
-        }
-        double[] p = new double[L];
-        if (total > 0)
-            for (int k = 0; k < L; k++) p[k] = counts[k] / total;
-        else
-            for (int k = 0; k < L; k++) p[k] = 1.0 / L;
-        return p;
     }
 
     /**
@@ -850,7 +1414,11 @@ public final class NNEstimator implements TetradSerializable {
 
     private TrainedDagSimulatorGNM buildSimulator(DataSet data, long seed) {
         TrainedDagSimulatorGNM.Params gnmParams = new TrainedDagSimulatorGNM.Params();
-        gnmParams.seed = seed;
+        gnmParams.seed   = seed;
+        gnmParams.hidden = params.hidden;
+        gnmParams.epochs = params.epochs;
+        gnmParams.lr     = params.lr;
+        gnmParams.l2     = params.l2;
         return new TrainedDagSimulatorGNM(data, dag, gnmParams);
     }
 

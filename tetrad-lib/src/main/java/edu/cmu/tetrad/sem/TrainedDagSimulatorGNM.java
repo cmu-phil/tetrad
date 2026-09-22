@@ -90,6 +90,15 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
      */
     private final List<NodeReport> nodeReports = Collections.synchronizedList(new ArrayList<>());
 
+    /**
+     * Set while {@link #withReducedParents} refits a single mechanism, so that
+     * the refit does not append a report to this simulator's list. Without
+     * this, every edge-strength or partial-strength computation would leave a
+     * report behind on the fitted or fold simulator it was derived from.
+     */
+    private static final ThreadLocal<Boolean> SUPPRESS_NODE_REPORTS =
+            ThreadLocal.withInitial(() -> false);
+
     // -------------------- fit reporting --------------------
     /**
      * A final variable representing a DataSet object.
@@ -203,17 +212,22 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
                 new InputEncoder(data, reducedParentIndices, params.maxDiscreteLevels);
 
         Mechanism reduced;
-        if (!isDiscrete[nodeIndex]) {
-            ContinuousMechanism cm = new ContinuousMechanism(
-                    nodeIndex, reducedParentIndices, reducedEncoder, initRng);
-            cm.fit(data, fitRng, params);
-            reduced = cm;
-        } else {
-            int L = ((DiscreteVariable) variables.get(nodeIndex)).getNumCategories();
-            DiscreteMechanism dm = new DiscreteMechanism(
-                    nodeIndex, reducedParentIndices, reducedEncoder, L, initRng);
-            dm.fit(data, fitRng, params);
-            reduced = dm;
+        SUPPRESS_NODE_REPORTS.set(true);
+        try {
+            if (!isDiscrete[nodeIndex]) {
+                ContinuousMechanism cm = new ContinuousMechanism(
+                        nodeIndex, reducedParentIndices, reducedEncoder, initRng);
+                cm.fit(data, fitRng, params);
+                reduced = cm;
+            } else {
+                int L = ((DiscreteVariable) variables.get(nodeIndex)).getNumCategories();
+                DiscreteMechanism dm = new DiscreteMechanism(
+                        nodeIndex, reducedParentIndices, reducedEncoder, L, initRng);
+                dm.fit(data, fitRng, params);
+                reduced = dm;
+            }
+        } finally {
+            SUPPRESS_NODE_REPORTS.set(false);
         }
 
         hybridMechanisms[nodeIndex] = reduced;
@@ -294,6 +308,43 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
      * @param row  The row index of the value to retrieve. Must be a valid index within the dataset.
      * @param col  The column index of the value to retrieve. Must be a valid index within the dataset.
      * @return The integer value at the specified cell, or {@code -1} if the cell contains a non-finite value.
+     */
+    /**
+     * True if the cell holds a missing value: NaN or an infinity for a
+     * continuous variable, or a negative category code for a discrete
+     * variable. Tetrad encodes discrete missing values as
+     * {@link DiscreteVariable#MISSING_VALUE} (−99); since valid category
+     * codes are non-negative, any negative code is treated as missing.
+     *
+     * @param data the dataset
+     * @param row  the row index
+     * @param col  the column index
+     * @return whether the cell is missing
+     */
+    public static boolean isMissingCell(DataSet data, int row, int col) {
+        Node v = data.getVariable(col);
+        if (v instanceof DiscreteVariable) {
+            try {
+                return data.getInt(row, col) < 0;
+            } catch (Throwable t) {
+                double x = data.getDouble(row, col);
+                return !Double.isFinite(x) || x < 0;
+            }
+        } else {
+            double x = data.getDouble(row, col);
+            return !Double.isFinite(x);
+        }
+    }
+
+    /**
+     * Safely retrieves an integer value from the specified row and column of a DataSet.
+     * Attempts to retrieve the value as an integer, falling back to processing it as
+     * a double if an exception occurs. If the value is not finite, it returns -1.
+     *
+     * @param data the DataSet from which the value is to be retrieved
+     * @param row the row index from which the value is to be extracted
+     * @param col the column index from which the value is to be extracted
+     * @return the integer value at the specified row and column, or -1 if the value is non-finite or an error occurs
      */
     public static int safeGetInt(DataSet data, int row, int col) {
         try {
@@ -544,121 +595,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
     }
 
     /**
-     * Fits a single-input MLP regression of {@code rVals} ~ {@code xVals} using
-     * k-fold cross-validation and returns the OOS R².
-     *
-     * <p>Used by {@link NNEstimator#computePartialEdgeStrength} to measure how
-     * much a single parent X explains in the residuals R = Y − Ŷ, after the
-     * other parents have already been accounted for by the fitted mechanism.
-     *
-     * <p>Uses the same {@link MlpRegressor} and training hyperparameters as the
-     * main fit, keeping the residual regression consistent with the primary model.
-     *
-     * @param xVals  observed values of the parent variable (length n)
-     * @param rVals  residuals R = Y − Ŷ (length n); NaN entries are skipped
-     * @param k      number of CV folds
-     * @param seed   random seed for weight initialization and fold shuffling
-     * @return OOS R² of the residual regression; NaN if insufficient data
-     */
-    public double fitResidualRegressionOosR2(double[] xVals, double[] rVals,
-                                             int k, long seed) {
-        // Collect valid (finite) rows.
-        List<Integer> valid = new ArrayList<>();
-        for (int i = 0; i < xVals.length; i++) {
-            if (Double.isFinite(xVals[i]) && Double.isFinite(rVals[i]))
-                valid.add(i);
-        }
-
-        int nValid = valid.size();
-        if (nValid < k * 2) return Double.NaN;   // too few rows
-
-        // Baseline: variance of residuals (denominator for R²).
-        double sum = 0, sum2 = 0;
-        for (int i : valid) { sum += rVals[i]; sum2 += rVals[i] * rVals[i]; }
-        double mean    = sum / nValid;
-        double residVar = (sum2 - nValid * mean * mean) / (nValid - 1);
-        if (!Double.isFinite(residVar) || residVar <= 0) return Double.NaN;
-
-        // Shuffle valid indices for CV.
-        int[] order = valid.stream().mapToInt(Integer::intValue).toArray();
-        Random rng = new Random(seed);
-        for (int i = nValid - 1; i > 0; i--) {
-            int j = rng.nextInt(i + 1);
-            int t = order[i]; order[i] = order[j]; order[j] = t;
-        }
-
-        int foldSize = nValid / k;
-        double totalSse = 0.0;
-        int    totalN   = 0;
-
-        int[] layers = params.getHiddenLayers();
-
-        for (int fold = 0; fold < k; fold++) {
-            int testStart = fold * foldSize;
-            int testEnd   = (fold == k - 1) ? nValid : testStart + foldSize;
-
-            // Build encoded train/test arrays — single continuous input, z-scored.
-            // Compute mean/sd of X on training rows only.
-            double xSum = 0, xSum2 = 0;
-            int xCount = 0;
-            for (int vi = 0; vi < nValid; vi++) {
-                if (vi >= testStart && vi < testEnd) continue;
-                double x = xVals[order[vi]];
-                xSum += x; xSum2 += x * x; xCount++;
-            }
-            double xMean = (xCount > 0) ? xSum / xCount : 0.0;
-            double xVar  = (xCount > 1)
-                    ? (xSum2 - xCount * xMean * xMean) / (xCount - 1) : 1.0;
-            double xSd   = TMath.sqrt(TMath.max(1e-12, xVar));
-
-            int trainN = nValid - (testEnd - testStart);
-            int testN  = testEnd - testStart;
-
-            double[][] Xtr = new double[trainN][1];
-            double[]   Ytr = new double[trainN];
-            double[][] Xte = new double[testN][1];
-            double[]   Yte = new double[testN];
-
-            int ti = 0, vi2 = 0;
-            for (int vi = 0; vi < nValid; vi++) {
-                double xz = (xVals[order[vi]] - xMean) / xSd;
-                double r  = rVals[order[vi]];
-                if (vi >= testStart && vi < testEnd) {
-                    Xte[vi2][0] = xz; Yte[vi2] = r; vi2++;
-                } else {
-                    Xtr[ti][0]  = xz; Ytr[ti]  = r; ti++;
-                }
-            }
-
-            // Fit MLP on training fold.
-            MlpRegressor mlp = new MlpRegressor(1, layers,
-                    new Random(mixSeed(seed, fold, 0xCAFEBABEL)));
-
-            int[]   idx = new int[trainN];
-            for (int i = 0; i < trainN; i++) idx[i] = i;
-
-            for (int ep = 0; ep < params.epochs; ep++) {
-                shuffleIndices(idx, new Random(mixSeed(seed, fold * 1000 + ep, 0L)));
-                for (int start = 0; start < trainN; start += params.batchSize) {
-                    int end = TMath.min(trainN, start + params.batchSize);
-                    mlp.sgdStep(Xtr, Ytr, idx, start, end, params.lr, params.l2);
-                }
-            }
-
-            // Evaluate on test fold.
-            for (int i = 0; i < testN; i++) {
-                double pred = mlp.predict(Xte[i]);
-                double err  = Yte[i] - pred;
-                totalSse += err * err;
-                totalN++;
-            }
-        }
-
-        double oosMse = (totalN > 0) ? totalSse / totalN : Double.NaN;
-        return Double.isFinite(oosMse) ? 1.0 - oosMse / residVar : Double.NaN;
-    }
-
-    /**
      * Simulates data by generating continuous and discrete values for all variables in the
      * trained directed acyclic graph (DAG) model. It performs the simulation using a specified
      * number of samples and a seed for random number generation.
@@ -671,6 +607,93 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
      */
     public SimResult simulate(int nSamples) {
         return simulate(nSamples, params.seed ^ 0x9E3779B97F4A7C15L);
+    }
+
+    // ── Conditional draws for a single child ───────────────────────────────
+
+    /**
+     * Copies one observed row into the parallel continuous / discrete row
+     * arrays used by the mechanisms, so a child can be generated conditional
+     * on an observed parent configuration.
+     *
+     * @param source  the dataset to read from (any dataset over these variables)
+     * @param row     the row index in {@code source}
+     * @param contRow output array of length {@link #getNumVariables()}
+     * @param discRow output array of length {@link #getNumVariables()}
+     */
+    public void fillRowFromData(DataSet source, int row, double[] contRow, int[] discRow) {
+        int p = variables.size();
+        for (int j = 0; j < p; j++) {
+            if (isDiscrete[j]) {
+                discRow[j] = safeGetInt(source, row, j);
+                contRow[j] = 0.0;
+            } else {
+                contRow[j] = source.getDouble(row, j);
+                discRow[j] = 0;
+            }
+        }
+    }
+
+    /**
+     * Generates one value of node {@code childIdx} from its fitted mechanism,
+     * reading the parents from {@code contRow} / {@code discRow} and writing
+     * the result into the child's slot of the same arrays. Other slots are
+     * untouched. Safe to call concurrently from multiple threads.
+     *
+     * @param childIdx index of the child in the variable list
+     * @param contRow  continuous slots (parents read; child written if continuous)
+     * @param discRow  discrete slots (parents read; child written if discrete)
+     * @param rng      source of noise / categorical draws
+     * @throws IllegalStateException if {@link #fit()} has not been called
+     */
+    public void generateChild(int childIdx, double[] contRow, int[] discRow, Random rng) {
+        Mechanism mech = mechanisms[childIdx];
+        if (mech == null) throw new IllegalStateException("fit() must be called before generateChild().");
+        mech.generateOneRow(data, contRow, discRow, rng);
+    }
+
+    /**
+     * For a discrete child, the generative class distribution p(Y | pa) given
+     * the parent values in {@code contRow} / {@code discRow}: exactly the
+     * distribution {@link #generateChild} samples from, including any
+     * {@code lambdaParents} mixing with base rates.
+     *
+     * @param childIdx index of a discrete child
+     * @param contRow  continuous parent slots
+     * @param discRow  discrete parent slots
+     * @return a fresh probability array over the child's categories
+     * @throws IllegalArgumentException if the child is not discrete
+     * @throws IllegalStateException    if {@link #fit()} has not been called
+     */
+    public double[] childProbsGiven(int childIdx, double[] contRow, int[] discRow) {
+        Mechanism mech = mechanisms[childIdx];
+        if (mech == null) throw new IllegalStateException("fit() must be called before childProbsGiven().");
+        if (mech instanceof DiscreteMechanism dm) {
+            return dm.mixedProbsFromGenerated(contRow, discRow);
+        }
+        if (mech instanceof RootDiscreteMechanism rdm) {
+            return rdm.probs.clone();
+        }
+        throw new IllegalArgumentException("Node " + variables.get(childIdx).getName() + " is not discrete.");
+    }
+
+    /**
+     * Returns the number of variables.
+     *
+     * @return the length of the row arrays used by {@link #fillRowFromData} and {@link #generateChild}
+     */
+    public int getNumVariables() {
+        return variables.size();
+    }
+
+    /**
+     * Reports whether a variable is discrete.
+     *
+     * @param idx variable index
+     * @return true if the variable at {@code idx} is discrete
+     */
+    public boolean isDiscreteVariable(int idx) {
+        return isDiscrete[idx];
     }
 
     /**
@@ -700,21 +723,36 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         Map<String, Integer> indexByName = new HashMap<>();
         for (int j = 0; j < variables.size(); j++) indexByName.put(variables.get(j).getName(), j);
 
+        // Support tracking: before each child is generated, how far its
+        // continuous parents' simulated values sit from the training range,
+        // in training z-units. Counted per variable and per row.
+        long[] exceed1 = new long[p];
+        long[] exceed2 = new long[p];
+        long rowsExceed1 = 0;
+        double zWarn1 = params.zWarn1, zWarn2 = params.zWarn2;
+
         for (int r = 0; r < nSamples; r++) {
+            boolean rowFlag = false;
             for (Node child : topo) {
                 Integer idx = indexByName.get(child.getName());
                 if (idx == null) continue;
                 Mechanism mech = mechanisms[idx];
                 if (mech == null) continue;
+                double z = mech.encoder.maxAbsParentZ(cont[r]);
+                if (z > zWarn1) { exceed1[idx]++; rowFlag = true; }
+                if (z > zWarn2) exceed2[idx]++;
                 mech.generateOneRow(data, cont[r], disc[r], rng);
             }
+            if (rowFlag) rowsExceed1++;
         }
 
-        return new SimResult(cont, disc, variables, dag);
+        return new SimResult(cont, disc, variables, dag,
+                exceed1, exceed2, nSamples, zWarn1, zWarn2, rowsExceed1);
     }
 
     private void addNodeReportContinuous(int childIdx, int[] parentIdx, int trainingRowsUsed,
                                          double mse, double residMean, double residSd) {
+        if (SUPPRESS_NODE_REPORTS.get()) return;
         String childName = variables.get(childIdx).getName();
         List<String> parents = new ArrayList<>();
         for (int pi : parentIdx) parents.add(variables.get(pi).getName());
@@ -734,6 +772,7 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
     private void addNodeReportDiscrete(int childIdx, int[] parentIdx, int trainingRowsUsed,
                                        double xent, int numLevels) {
+        if (SUPPRESS_NODE_REPORTS.get()) return;
         String childName = variables.get(childIdx).getName();
         List<String> parents = new ArrayList<>();
         for (int pi : parentIdx) parents.add(variables.get(pi).getName());
@@ -1175,6 +1214,20 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
          * @param discRow An array containing the discrete input variables for the current row.
          * @param out An array where the encoded output will be stored. It must be preallocated with the correct size.
          */
+        /**
+         * Largest |z| among this node's continuous parents for an already
+         * generated row, using the training mean and SD of each parent.
+         * Returns 0 if there are no continuous parents.
+         */
+        double maxAbsParentZ(double[] contRow) {
+            double best = 0.0;
+            for (int k = 0; k < contParents.length; k++) {
+                double z = TMath.abs((contRow[contParents[k]] - mean[k]) / sd[k]);
+                if (z > best) best = z;
+            }
+            return best;
+        }
+
         void encodeFromGenerated(double[] contRow, int[] discRow, double[] out) {
             Arrays.fill(out, 0.0);
 
@@ -1249,19 +1302,7 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         }
 
         private static boolean isMissing(DataSet data, int row, int col) {
-            Node v = data.getVariable(col);
-            if (v instanceof DiscreteVariable) {
-                try {
-                    int x = data.getInt(row, col);
-                    return x == Integer.MIN_VALUE;
-                } catch (Throwable t) {
-                    double x = data.getDouble(row, col);
-                    return !Double.isFinite(x);
-                }
-            } else {
-                double x = data.getDouble(row, col);
-                return !Double.isFinite(x);
-            }
+            return isMissingCell(data, row, col);
         }
 
         void shuffle(Random rng) {
@@ -1827,12 +1868,19 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
          */
         public final double zWarn2;
 
+        /**
+         * Number of simulated rows in which at least one node's continuous
+         * parents exceeded {@link #zWarn1} in training z-units, i.e. rows where
+         * some mechanism was asked to extrapolate.
+         */
+        public final long rowsExceedWarn1;
+
         // Backwards-compatible ctor (same shape as your current code expects)
         SimResult(double[][] cont, int[][] disc, List<Node> variables, Graph trueDag) {
             this(cont, disc, variables, trueDag,
                     null, null,
                     cont != null ? cont.length : 0L,
-                    Double.NaN, Double.NaN);
+                    Double.NaN, Double.NaN, 0L);
         }
 
         // Extended ctor (use if you track warnings in simulate())
@@ -1844,7 +1892,9 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
                   long[] zExceedWarn2,
                   long nSamples,
                   double zWarn1,
-                  double zWarn2) {
+                  double zWarn2,
+                  long rowsExceedWarn1) {
+            this.rowsExceedWarn1 = rowsExceedWarn1;
             this.cont = cont;
             this.disc = disc;
             this.variables = new ArrayList<>(variables);
@@ -1878,7 +1928,9 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             sb.append("bootstrapRoots=").append(bootstrapRoots).append("\n");
 
             if (Double.isFinite(zWarn1) && Double.isFinite(zWarn2)) {
-                sb.append("zWarn1=").append(zWarn1).append(" zWarn2=").append(zWarn2).append("\n\n");
+                sb.append("zWarn1=").append(zWarn1).append(" zWarn2=").append(zWarn2).append("\n");
+                sb.append("rows with any parent |z| > zWarn1: ").append(rowsExceedWarn1)
+                        .append(" of ").append(nSamples).append("\n\n");
                 sb.append("Support warnings (fraction of rows where max|z(parent)| exceeds thresholds)\n");
 
                 long denom = TMath.max(1L, nSamples);
@@ -1995,10 +2047,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
         double residMean;
         double residSd;
 
-        // reusable simulation buffers
-        private final double[] workX;
-        private final double[] workXE;
-
         ContinuousMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, Random rng) {
             super(childIndex, parentIdx, encoder);
 
@@ -2006,8 +2054,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             this.netMean = new MlpRegressor(encoder.featureDim, layers, rng);
             this.netGNM = new MlpRegressor(encoder.featureDim + 1, layers, rng);
 
-            this.workX = new double[encoder.featureDim];
-            this.workXE = new double[encoder.featureDim + 1];
         }
 
         @Override
@@ -2120,6 +2166,12 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         @Override
         void generateOneRow(DataSet data, double[] contRow, int[] discRow, Random rng) {
+            // Buffers are method-local so that concurrent simulations sharing this
+            // mechanism (e.g. parallel edge-strength computation) cannot corrupt
+            // each other's feature vectors.
+            double[] workX  = new double[encoder.featureDim];
+            double[] workXE = new double[encoder.featureDim + 1];
+
             // parent features from already-generated parents
             encoder.encodeFromGenerated(contRow, discRow, workX);
 
@@ -2188,6 +2240,8 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         @Override
         double predictRow(DataSet data, int row) {
+            double[] workX  = new double[encoder.featureDim];
+            double[] workXE = new double[encoder.featureDim + 1];
             encoder.encodeRow(data, row, workX);
             // Use zero noise (e=0) for a point prediction — equivalent to
             // predicting the conditional mean E[Y | pa(Y)].
@@ -2291,11 +2345,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         double[] baseProbs; // empirical p(y) over training rows
 
-        // reusable simulation buffers
-        private final double[] workX;
-        private final double[] workPNet;
-        private final double[] workPMix;
-
         DiscreteMechanism(int childIndex, int[] parentIdx, InputEncoder encoder, int numLevels, Random rng) {
             super(childIndex, parentIdx, encoder);
             this.numLevels = numLevels;
@@ -2303,9 +2352,6 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
             int[] layers = params.getHiddenLayers();
             this.net = new MlpSoftmaxClassifier(encoder.featureDim, layers, numLevels, rng);
 
-            this.workX = new double[encoder.featureDim];
-            this.workPNet = new double[numLevels];
-            this.workPMix = new double[numLevels];
         }
 
         @Override
@@ -2358,6 +2404,21 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         @Override
         void generateOneRow(DataSet data, double[] contRow, int[] discRow, Random rng) {
+            discRow[childIndex] = sampleCategorical(mixedProbsFromGenerated(contRow, discRow), rng);
+        }
+
+        /**
+         * The generative class distribution p(Y | pa) for an already-generated
+         * (or explicitly supplied) parent row: the network's softmax mixed with
+         * the base rates by {@code lambdaParents}. This is exactly the
+         * distribution {@link #generateOneRow} samples from. Buffers are
+         * method-local so the mechanism is safe to share across threads.
+         */
+        double[] mixedProbsFromGenerated(double[] contRow, int[] discRow) {
+            double[] workX    = new double[encoder.featureDim];
+            double[] workPNet = new double[numLevels];
+            double[] workPMix = new double[numLevels];
+
             encoder.encodeFromGenerated(contRow, discRow, workX);
             net.predictProbsInto(workX, workPNet);
 
@@ -2382,7 +2443,7 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
                 }
             }
 
-            discRow[childIndex] = sampleCategorical(workPMix, rng);
+            return workPMix;
         }
 
         private double[] empiricalProbs(DataSet data, TrainingRows tr, int col, int K) {
@@ -2414,15 +2475,13 @@ public final class TrainedDagSimulatorGNM implements TetradSerializable {
 
         @Override
         double predictRow(DataSet data, int row) {
-            encoder.encodeRow(data, row, workX);
-            net.predictProbsInto(workX, workPNet);
-            return argmax(workPNet);   // return modal class as double
+            return argmax(predictNodeProbs(data, row));   // modal class as double
         }
 
         @Override
         double[] predictNodeProbs(DataSet data, int row) {
+            double[] workX = new double[encoder.featureDim];
             encoder.encodeRow(data, row, workX);
-            // Return a copy — workPNet is a reusable buffer.
             double[] probs = new double[numLevels];
             net.predictProbsInto(workX, probs);
             return probs;

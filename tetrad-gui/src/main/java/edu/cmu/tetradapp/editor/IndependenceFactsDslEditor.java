@@ -916,7 +916,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
             return getEvaluatorFromSelection(forceRebuild);
         } catch (RuntimeException ex) {
             Throwable cause = (ex.getCause() != null) ? ex.getCause() : ex;
-            TetradLogger.getInstance().log("Could not build independence test: " + cause.getMessage());
+            TetradLogger.getInstance().warn("Could not build independence test: " + cause.getMessage());
             independenceTest = null;
             independenceWrapper = null;
             Q = null;
@@ -1008,7 +1008,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
                 return new StatisticalFactEvaluator(this::nodeInTestByName, this::checkIndependence);
             } catch (InstantiationException | IllegalAccessException |
                      InvocationTargetException | NoSuchMethodException e) {
-                TetradLogger.getInstance().log("Error building independence test: " + e.getMessage());
+                TetradLogger.getInstance().warn("Error building independence test: " + e.getMessage());
                 throw new RuntimeException(e);
             }
         }

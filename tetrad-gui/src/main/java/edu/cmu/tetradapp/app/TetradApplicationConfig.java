@@ -336,6 +336,17 @@ public class TetradApplicationConfig {
     }
 
     /**
+     * Returns all session node configurations, keyed by box type id (for
+     * instance, "Graph" or "PM"), in the order they appear in the
+     * configuration file. The returned map is unmodifiable.
+     *
+     * @return an unmodifiable map from box type id to configuration.
+     */
+    public Map<String, SessionNodeConfig> getConfigs() {
+        return Collections.unmodifiableMap(this.configs);
+    }
+
+    /**
      * Default implementation of the session config. Most functionality is implemented by static methods from the
      * outer-class.
      */

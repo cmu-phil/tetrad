@@ -1713,11 +1713,11 @@ public class Comparison implements TetradSerializable {
                 deleteFilesThenDirectory(currentFile);
             } else {
                 if (!currentFile.delete())
-                    TetradLogger.getInstance().log("File could not be deleted: " + currentFile);
+                    TetradLogger.getInstance().warn("File could not be deleted: " + currentFile);
             }
         }
 
-        if (!dir.delete()) TetradLogger.getInstance().log("Directory could not be deleted: " + dir);
+        if (!dir.delete()) TetradLogger.getInstance().warn("Directory could not be deleted: " + dir);
     }
 
     private void doRun(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers, List<SimulationWrapper> simulationWrappers,

@@ -39,9 +39,62 @@ import static java.util.Collections.sort;
 public class LayoutUtil {
 
     // ---- Circle layout constants ----
-    private static final int CIRCLE_BASE_OFFSET = 120;
-    private static final int CIRCLE_NODE_FACTOR = 7;
-    private static final int CIRCLE_MARGIN = 50;
+    // Gap kept between the boxes of any two nodes, in pixels. Mirrors the
+    // workbench's overlap margin so lib and GUI agree on what "not touching" means.
+    private static final double NODE_GAP = 10.0;
+    // Margin between the canvas edge and the nearest node box.
+    private static final double LAYOUT_MARGIN = 20.0;
+
+    // ---- Latent placement constants ----
+    // Ring search steps outward from the anchor by RING_STEP until it finds a
+    // spot whose box clears every other box by NODE_GAP, giving up after MAX_RINGS.
+    private static final double LATENT_RING_STEP = 15.0;
+    private static final int LATENT_MAX_RINGS = 30;
+    private static final int LATENT_RING_SECTORS = 16;
+
+    /**
+     * Supplies the rendered box size of each node, so a layout can space nodes
+     * by what they actually take up on screen. The GUI supplies display-node
+     * sizes; headless callers use {@link #estimatedNodeSize()}.
+     */
+    public interface NodeSize {
+        /**
+         * Returns the width of the rendered box of the specified node in pixels.
+         *
+         * @param node the node for which the box width is to be determined
+         * @return the width of the node's box in pixels
+         */
+        double width(Node node);
+
+        /**
+         * Returns the height of the rendered box of the given node in pixels.
+         *
+         * @param node the node whose box height is to be determined
+         * @return the height of the node's box in pixels
+         */
+        double height(Node node);
+    }
+
+    /**
+     * A size estimate for use when no display sizes are available: about 8 px
+     * per character of the name plus padding, with the same 60 px floor and
+     * ~30 px height the workbench's measured node boxes use.
+     *
+     * @return the estimate
+     */
+    public static NodeSize estimatedNodeSize() {
+        return new NodeSize() {
+            @Override
+            public double width(Node node) {
+                return Math.max(60.0, 8.0 * node.getName().length() + 14.0);
+            }
+
+            @Override
+            public double height(Node node) {
+                return 30.0;
+            }
+        };
+    }
 
     /**
      * Constructor.
@@ -374,44 +427,167 @@ public class LayoutUtil {
             return;
         }
 
-        if (graph.getNumNodes() <= 20) {
-            circleLayout(graph);
-        } else {
-            squareLayout(graph);
-        }
+        // The previous defaults, kept for reference:
+//        if (graph.getNumNodes() <= 20) {
+//            circleLayout(graph);
+//        } else {
+//            squareLayout(graph);
+//        }
+
+        richardsLayout(graph);
     }
 
     /**
-     * Arranges the nodes in the graph in a circle.
+     * Arranges the nodes in the graph in a circle, using an estimate of each
+     * node's rendered size. See {@link #circleLayout(Graph, NodeSize)}.
      *
      * @param graph the graph to be arranged.
      */
     public static void circleLayout(Graph graph) {
+        circleLayout(graph, estimatedNodeSize());
+    }
+
+    /**
+     * Arranges the non-latent nodes in a circle just large enough that no two
+     * node boxes overlap, places each latent near its adjacent nodes without
+     * overlapping anything, and shifts the result so the bounding box of all
+     * node boxes sits at ({@code LAYOUT_MARGIN}, {@code LAYOUT_MARGIN}) — i.e.
+     * comfortably in the top-left of the canvas.
+     *
+     * <p>The radius is chosen from the node boxes: two boxes at angles a and b
+     * on a circle of radius r are separated by r|cos a − cos b| horizontally
+     * and r|sin a − sin b| vertically, and are apart if either separation
+     * exceeds the corresponding box extent plus the gap. The smallest such r is
+     * computed for every pair (not only neighbors — with wide labels and few
+     * nodes, the node across the circle is the binding one), and the radius is
+     * the largest of those.
+     *
+     * @param graph the graph to be arranged.
+     * @param size  supplies each node's rendered box size.
+     */
+    public static void circleLayout(Graph graph, NodeSize size) {
         if (graph == null) {
             return;
         }
 
-        int centerx = CIRCLE_BASE_OFFSET + CIRCLE_NODE_FACTOR * graph.getNumNodes();
-        int centery = CIRCLE_BASE_OFFSET + CIRCLE_NODE_FACTOR * graph.getNumNodes();
-        int radius = centerx - CIRCLE_MARGIN;
+        List<Node> ring = new ArrayList<>();
 
-        List<Node> nodes = graph.getNodes();
-        nodes.sort(NaturalSort.naturalComparator());
-
-        double rad = 2.0 * Math.PI / nodes.size();
-        double phi = 1.5 * Math.PI; // start from 12 o'clock
-
-        for (Node node : nodes) {
-            int centerX = centerx + (int) (radius * TMath.cos(phi));
-            int centerY = centery + (int) (radius * TMath.sin(phi));
-
-            node.setCenterX(centerX);
-            node.setCenterY(centerY);
-
-            phi += rad;
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() != NodeType.LATENT) {
+                ring.add(node);
+            }
         }
 
-        repositionLatents(graph);
+        ring.sort(NaturalSort.naturalComparator());
+        int n = ring.size();
+
+        if (n > 0) {
+            double[] angle = new double[n];
+            double step = 2.0 * Math.PI / n;
+
+            for (int i = 0; i < n; i++) {
+                angle[i] = 1.5 * Math.PI + i * step; // start from 12 o'clock
+            }
+
+            double radius = 0.0;
+
+            for (int i = 0; i < n; i++) {
+                for (int j = i + 1; j < n; j++) {
+                    double wNeed = (size.width(ring.get(i)) + size.width(ring.get(j))) / 2.0 + NODE_GAP;
+                    double hNeed = (size.height(ring.get(i)) + size.height(ring.get(j))) / 2.0 + NODE_GAP;
+
+                    double dcos = Math.abs(Math.cos(angle[i]) - Math.cos(angle[j]));
+                    double dsin = Math.abs(Math.sin(angle[i]) - Math.sin(angle[j]));
+
+                    double byWidth = dcos > 1e-9 ? wNeed / dcos : Double.POSITIVE_INFINITY;
+                    double byHeight = dsin > 1e-9 ? hNeed / dsin : Double.POSITIVE_INFINITY;
+                    double pairRadius = Math.min(byWidth, byHeight);
+
+                    if (Double.isFinite(pairRadius)) {
+                        radius = Math.max(radius, pairRadius);
+                    }
+                }
+            }
+
+            // Provisional center; the whole layout is shifted to the margin below.
+            // Positions are rounded to integers, which can shave a pixel off the
+            // binding pair's separation, so verify the box constraint on the rounded
+            // positions and grow the radius by a pixel at a time until it holds.
+            double cx = radius, cy = radius;
+
+            for (int attempt = 0; attempt < 100; attempt++) {
+                for (int i = 0; i < n; i++) {
+                    ring.get(i).setCenter((int) Math.round(cx + radius * Math.cos(angle[i])),
+                            (int) Math.round(cy + radius * Math.sin(angle[i])));
+                }
+
+                if (ringClears(ring, size)) {
+                    break;
+                }
+
+                radius += 1.0;
+                cx = radius;
+                cy = radius;
+            }
+        }
+
+        repositionLatents(graph, size);
+        shiftToMargin(graph, size);
+    }
+
+    /**
+     * @return true if every pair of ring nodes' boxes, at their current integer
+     * centers, is separated by at least {@code NODE_GAP} on some axis.
+     */
+    private static boolean ringClears(List<Node> ring, NodeSize size) {
+        for (int i = 0; i < ring.size(); i++) {
+            Node a = ring.get(i);
+
+            for (int j = i + 1; j < ring.size(); j++) {
+                Node b = ring.get(j);
+                double needX = (size.width(a) + size.width(b)) / 2.0 + NODE_GAP;
+                double needY = (size.height(a) + size.height(b)) / 2.0 + NODE_GAP;
+
+                if (Math.abs(a.getCenterX() - b.getCenterX()) < needX
+                        && Math.abs(a.getCenterY() - b.getCenterY()) < needY) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Translates every node so that the bounding box of all node boxes has its
+     * top-left corner at ({@code LAYOUT_MARGIN}, {@code LAYOUT_MARGIN}).
+     *
+     * @param graph the graph
+     * @param size  supplies each node's rendered box size
+     */
+    private static void shiftToMargin(Graph graph, NodeSize size) {
+        double minLeft = Double.POSITIVE_INFINITY;
+        double minTop = Double.POSITIVE_INFINITY;
+
+        for (Node node : graph.getNodes()) {
+            minLeft = Math.min(minLeft, node.getCenterX() - size.width(node) / 2.0);
+            minTop = Math.min(minTop, node.getCenterY() - size.height(node) / 2.0);
+        }
+
+        if (!Double.isFinite(minLeft) || !Double.isFinite(minTop)) {
+            return;
+        }
+
+        int dx = (int) Math.round(LAYOUT_MARGIN - minLeft);
+        int dy = (int) Math.round(LAYOUT_MARGIN - minTop);
+
+        if (dx == 0 && dy == 0) {
+            return;
+        }
+
+        for (Node node : graph.getNodes()) {
+            node.setCenter(node.getCenterX() + dx, node.getCenterY() + dy);
+        }
     }
 
     /**
@@ -556,6 +732,629 @@ public class LayoutUtil {
         return tiers;
     }
 
+    //==================== Richard's layout ==============================//
+
+    /**
+     * Arranges the graph the way Richard lays out a graph for presentation:
+     * layered by causal depth, with each layer shifted a bit further right
+     * than the one above it, so that the flow reads down and to the right,
+     * and with within-layer orderings chosen by barycenter sweeps to reduce
+     * edge crossings. Node sizes are estimated; see
+     * {@link #richardsLayout(Graph, NodeSize)} to supply real display sizes.
+     *
+     * @param graph the graph to be arranged.
+     */
+    public static void richardsLayout(Graph graph) {
+        richardsLayout(graph, estimatedNodeSize());
+    }
+
+    /**
+     * Richard's layout with the given node sizes and default spacing: a
+     * 30 px horizontal gap between node boxes, 90 px between layer
+     * centerlines, and a 50 px rightward shear per layer.
+     *
+     * @param graph the graph to be arranged.
+     * @param size  supplies the rendered box size of each node.
+     */
+    public static void richardsLayout(Graph graph, NodeSize size) {
+        richardsLayout(graph, size, 30.0, 90.0, 50.0, true);
+    }
+
+    /**
+     * Richard's layout, fully parameterized.
+     *
+     * <p>The method is deterministic: the same graph in the same node order
+     * gives the same layout every time. It proceeds in four steps:</p>
+     *
+     * <ol>
+     * <li><b>Layering.</b> Nodes are assigned to layers by causal depth
+     * using the directed structure only (each node goes in the first layer
+     * where all of the nodes with arrows into it are already placed; a
+     * cyclic remainder, if any, becomes a final layer). For PAGs this means
+     * an edge like x o-&gt; y places y below x, which matches the
+     * "y is not an ancestor of x" reading of the arrowhead.</li>
+     * <li><b>Crossing reduction.</b> Alternating down and up barycenter
+     * sweeps reorder each layer by the mean position of its neighbors in the
+     * sweep direction; all edge types vote here, including edges that span
+     * more than one layer. The ordering with the fewest straight-line
+     * crossings seen over all sweeps is kept.</li>
+     * <li><b>Coordinate assignment.</b> Within each layer, nodes are packed
+     * by their actual box widths, then pulled toward the mean x of their
+     * neighbors over several relaxation passes, preserving the layer order
+     * and minimum separation, so children line up under their parents.</li>
+     * <li><b>Shear.</b> Each layer is shifted right by
+     * {@code shearPerLayer * layerIndex}, so exogenous variables sit at the
+     * upper left and downstream variables render down and to the right.</li>
+     * </ol>
+     *
+     * @param graph         the graph to be arranged.
+     * @param size          supplies the rendered box size of each node.
+     * @param xGap          horizontal gap kept between node boxes in a layer.
+     * @param yGap          vertical distance between layer centerlines.
+     * @param shearPerLayer rightward shift added per layer of depth.
+     */
+    public static void richardsLayout(Graph graph, NodeSize size, double xGap,
+                                      double yGap, double shearPerLayer) {
+        richardsLayout(graph, size, xGap, yGap, shearPerLayer, true);
+    }
+
+    /**
+     * Richard's layout, with the nudge pass switchable. When {@code nudge}
+     * is false, the post-processing step that moves nodes sideways off the
+     * straight lines of long edges is skipped.
+     *
+     * @param graph         the graph to be arranged.
+     * @param size          supplies the rendered box size of each node.
+     * @param xGap          horizontal gap kept between node boxes in a layer.
+     * @param yGap          vertical distance between layer centerlines.
+     * @param shearPerLayer rightward shift added per layer of depth.
+     * @param nudge         whether to nudge nodes off long edge lines.
+     */
+    public static void richardsLayout(Graph graph, NodeSize size, double xGap,
+                                      double yGap, double shearPerLayer, boolean nudge) {
+        if (graph == null) return;
+
+        List<Node> allNodes = graph.getNodes();
+        Map<Node, Integer> nodeIndex = new HashMap<>();
+        for (int i = 0; i < allNodes.size(); i++) nodeIndex.put(allNodes.get(i), i);
+
+        // Unattached variables are set aside and placed in a block at the
+        // top right, so the main layout can hug the upper left.
+        Set<Node> attached = new HashSet<>();
+
+        for (Edge e : graph.getEdges()) {
+            if (e.getNode1() != e.getNode2()) {
+                attached.add(e.getNode1());
+                attached.add(e.getNode2());
+            }
+        }
+
+        List<Node> isolated = new ArrayList<>();
+
+        for (Node n : allNodes) {
+            if (!attached.contains(n)) isolated.add(n);
+        }
+
+        List<List<Node>> tiers = getTiers(graph);
+        for (List<Node> tier : tiers) tier.removeAll(isolated);
+        tiers.removeIf(List::isEmpty);
+
+        if (tiers.isEmpty()) {
+            placeIsolatedGrid(isolated, size, LAYOUT_MARGIN, xGap);
+            return;
+        }
+
+        // Deterministic start: order each tier by the graph's node order.
+        for (List<Node> tier : tiers) tier.sort(Comparator.comparingInt(nodeIndex::get));
+
+        // Nodes joined within a tier by edges that do not determine depth
+        // (o-o, ---, <->, and any cyclic remainder) would otherwise sit in
+        // one row with those edges drawn along it. Split each such tier
+        // into sub-rows so that no edge joins two nodes in the same row.
+        tiers = splitTiersForSameTierEdges(graph, tiers, nodeIndex);
+
+        Map<Node, Integer> tierOf = new HashMap<>();
+        for (int t = 0; t < tiers.size(); t++) {
+            for (Node n : tiers.get(t)) tierOf.put(n, t);
+        }
+
+        // Neighbor lists over all edges that connect different tiers. Every
+        // edge type votes in the ordering; only the tier assignment above is
+        // restricted to the directed structure.
+        Map<Node, List<Node>> upNbrs = new HashMap<>();
+        Map<Node, List<Node>> downNbrs = new HashMap<>();
+        for (Node n : allNodes) {
+            upNbrs.put(n, new ArrayList<>());
+            downNbrs.put(n, new ArrayList<>());
+        }
+
+        List<Node[]> crossEdges = new ArrayList<>();
+
+        for (Edge e : graph.getEdges()) {
+            Node a = e.getNode1();
+            Node b = e.getNode2();
+            Integer ta = tierOf.get(a);
+            Integer tb = tierOf.get(b);
+            if (ta == null || tb == null || ta.intValue() == tb.intValue()) continue;
+            Node hi = ta < tb ? a : b;
+            Node lo = ta < tb ? b : a;
+            downNbrs.get(hi).add(lo);
+            upNbrs.get(lo).add(hi);
+            crossEdges.add(new Node[]{hi, lo});
+        }
+
+        // Barycenter sweeps; keep the ordering with the fewest crossings.
+        // Crossing counting is O(E^2), so above this many cross-tier edges
+        // the sweeps still run but the keep-best bookkeeping is skipped.
+        final int maxEdgesForCrossingCounts = 2000;
+        boolean trackCrossings = crossEdges.size() <= maxEdgesForCrossingCounts;
+
+        int bestCrossings = trackCrossings
+                ? countCrossings(crossEdges, tierOf, normalizedPositions(tiers))
+                : Integer.MAX_VALUE;
+        List<List<Node>> bestTiers = copyTiers(tiers);
+
+        for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
+            boolean downSweep = sweep % 2 == 0;
+
+            for (int ti = 0; ti < tiers.size(); ti++) {
+                int t = downSweep ? ti : tiers.size() - 1 - ti;
+                List<Node> tier = tiers.get(t);
+                if (tier.size() < 2) continue;
+
+                Map<Node, Double> pos = normalizedPositions(tiers);
+                Map<Node, Double> key = new HashMap<>();
+
+                for (Node n : tier) {
+                    List<Node> nbrs = downSweep ? upNbrs.get(n) : downNbrs.get(n);
+
+                    if (nbrs.isEmpty()) {
+                        nbrs = new ArrayList<>(upNbrs.get(n));
+                        nbrs.addAll(downNbrs.get(n));
+                    }
+
+                    if (nbrs.isEmpty()) {
+                        key.put(n, pos.get(n));
+                    } else {
+                        double s = 0.0;
+                        for (Node m : nbrs) s += pos.get(m);
+                        key.put(n, s / nbrs.size());
+                    }
+                }
+
+                tier.sort(Comparator.comparingDouble(key::get));
+            }
+
+            if (trackCrossings) {
+                int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
+
+                if (c < bestCrossings) {
+                    bestCrossings = c;
+                    bestTiers = copyTiers(tiers);
+                }
+            }
+        }
+
+        if (trackCrossings) {
+            tiers = bestTiers;
+        }
+
+        // Coordinate assignment: pack each tier by real widths, then pull
+        // nodes toward the mean x of their neighbors, preserving order and
+        // separation, so children line up under their parents.
+        Map<Node, Double> x = new HashMap<>();
+
+        for (List<Node> tier : tiers) {
+            double cx = 0.0;
+
+            for (int i = 0; i < tier.size(); i++) {
+                Node n = tier.get(i);
+                double half = size.width(n) / 2.0;
+                cx += half;
+                x.put(n, cx);
+                cx += half + xGap;
+            }
+        }
+
+        for (int pass = 0; pass < 6; pass++) {
+            boolean downPass = pass % 2 == 0;
+
+            for (int ti = 0; ti < tiers.size(); ti++) {
+                int t = downPass ? ti : tiers.size() - 1 - ti;
+                List<Node> tier = tiers.get(t);
+                int m = tier.size();
+
+                double[] desired = new double[m];
+
+                for (int i = 0; i < m; i++) {
+                    Node n = tier.get(i);
+                    List<Node> nbrs = downPass ? upNbrs.get(n) : downNbrs.get(n);
+
+                    if (nbrs.isEmpty()) {
+                        nbrs = new ArrayList<>(upNbrs.get(n));
+                        nbrs.addAll(downNbrs.get(n));
+                    }
+
+                    if (nbrs.isEmpty()) {
+                        desired[i] = x.get(n);
+                    } else {
+                        double s = 0.0;
+                        for (Node q : nbrs) s += x.get(q);
+                        desired[i] = s / nbrs.size();
+                    }
+                }
+
+                // Two feasible placements -- one biased right, one biased
+                // left -- averaged. Both satisfy every separation
+                // constraint, and the constraints are linear, so the
+                // average does too.
+                double[] right = new double[m];
+                double[] left = new double[m];
+
+                for (int i = 0; i < m; i++) {
+                    double minX = (i == 0) ? Double.NEGATIVE_INFINITY
+                            : right[i - 1] + size.width(tier.get(i - 1)) / 2.0
+                              + xGap + size.width(tier.get(i)) / 2.0;
+                    right[i] = Math.max(desired[i], minX);
+                }
+
+                for (int i = m - 1; i >= 0; i--) {
+                    double maxX = (i == m - 1) ? Double.POSITIVE_INFINITY
+                            : left[i + 1] - size.width(tier.get(i + 1)) / 2.0
+                              - xGap - size.width(tier.get(i)) / 2.0;
+                    left[i] = Math.min(desired[i], maxX);
+                }
+
+                for (int i = 0; i < m; i++) {
+                    x.put(tier.get(i), (right[i] + left[i]) / 2.0);
+                }
+            }
+        }
+
+        // Shear, then nudge nodes sideways so that no long edge's straight
+        // line passes through a node box, then shift so the top-left node
+        // box sits at the layout margin.
+        for (int t = 0; t < tiers.size(); t++) {
+            for (Node n : tiers.get(t)) {
+                x.put(n, x.get(n) + t * shearPerLayer);
+            }
+        }
+
+        if (nudge) {
+            nudgeOffEdgeLines(tiers, tierOf, crossEdges, x, size, xGap);
+        }
+
+        double minLeft = Double.POSITIVE_INFINITY;
+
+        for (int t = 0; t < tiers.size(); t++) {
+            for (Node n : tiers.get(t)) {
+                minLeft = Math.min(minLeft, x.get(n) - size.width(n) / 2.0);
+            }
+        }
+
+        double topHalf = 0.0;
+        for (Node n : tiers.get(0)) topHalf = Math.max(topHalf, size.height(n) / 2.0);
+
+        for (int t = 0; t < tiers.size(); t++) {
+            double y = LAYOUT_MARGIN + topHalf + t * yGap;
+
+            for (Node n : tiers.get(t)) {
+                n.setCenterX((int) Math.round(x.get(n) - minLeft + LAYOUT_MARGIN));
+                n.setCenterY((int) Math.round(y));
+            }
+        }
+
+        if (!isolated.isEmpty()) {
+            double maxRight = 0.0;
+
+            for (Map.Entry<Node, Double> entry : x.entrySet()) {
+                maxRight = Math.max(maxRight, entry.getValue() - minLeft
+                        + LAYOUT_MARGIN + size.width(entry.getKey()) / 2.0);
+            }
+
+            placeIsolatedGrid(isolated, size, maxRight + 2 * xGap, xGap);
+        }
+    }
+
+    /**
+     * Places unattached variables in a top-aligned grid, roughly square,
+     * in reading order, starting at the given left edge.
+     */
+    private static void placeIsolatedGrid(List<Node> isolated, NodeSize size,
+                                          double startX, double xGap) {
+        if (isolated.isEmpty()) return;
+
+        int cols = (int) Math.ceil(Math.sqrt(isolated.size()));
+        double y = LAYOUT_MARGIN;
+        int i = 0;
+
+        while (i < isolated.size()) {
+            double cx = startX;
+            double rowHeight = 0.0;
+
+            for (int c = 0; c < cols && i < isolated.size(); c++, i++) {
+                Node n = isolated.get(i);
+                double half = size.width(n) / 2.0;
+                cx += half;
+                n.setCenterX((int) Math.round(cx));
+                n.setCenterY((int) Math.round(y + size.height(n) / 2.0));
+                cx += half + xGap;
+                rowHeight = Math.max(rowHeight, size.height(n));
+            }
+
+            y += rowHeight + 20.0;
+        }
+    }
+
+    /**
+     * Post-processing: where a straight edge spanning two or more layers
+     * would pass through (or too close to) the box of a node in an
+     * intermediate layer, the node is pushed sideways until the line
+     * clears its box. For each node, the forbidden horizontal intervals
+     * from all such edge lines crossing its row are merged, and the node
+     * moves to the nearest point outside their union; a tie between sides
+     * is broken by the parity of the layer, which staggers chains whose
+     * skip edges would otherwise be drawn on top of them. After each round
+     * of moves, within-layer order and minimum separation are re-imposed,
+     * and the process repeats until there are no violations or the round
+     * limit is reached, so clearance is best effort in crowded regions.
+     */
+    private static void nudgeOffEdgeLines(List<List<Node>> tiers, Map<Node, Integer> tierOf,
+                                          List<Node[]> crossEdges, Map<Node, Double> x,
+                                          NodeSize size, double xGap) {
+        for (int round = 0; round < 12; round++) {
+            Map<Node, List<double[]>> forbidden = new HashMap<>();
+
+            for (Node[] e : crossEdges) {
+                Node hi = e[0];
+                Node lo = e[1];
+                int tHi = tierOf.get(hi);
+                int tLo = tierOf.get(lo);
+                if (tLo - tHi < 2) continue;
+
+                double xHi = x.get(hi);
+                double xLo = x.get(lo);
+
+                for (int t = tHi + 1; t < tLo; t++) {
+                    // Where the straight edge crosses this layer's centerline.
+                    double segX = xHi + (xLo - xHi) * (t - tHi) / (double) (tLo - tHi);
+
+                    for (Node v : tiers.get(t)) {
+                        if (v == hi || v == lo) continue;
+                        double clearance = size.width(v) / 2.0 + xGap / 2.0;
+                        forbidden.computeIfAbsent(v, k -> new ArrayList<>())
+                                .add(new double[]{segX - clearance, segX + clearance});
+                    }
+                }
+            }
+
+            boolean moved = false;
+
+            for (int t = 0; t < tiers.size(); t++) {
+                for (Node v : tiers.get(t)) {
+                    List<double[]> intervals = forbidden.get(v);
+                    if (intervals == null) continue;
+
+                    // Merge overlapping intervals, then find the component
+                    // containing the node, if any.
+                    intervals.sort(Comparator.comparingDouble(a -> a[0]));
+                    double xv = x.get(v);
+                    double left = Double.NaN;
+                    double right = Double.NaN;
+                    double curLo = intervals.get(0)[0];
+                    double curHi = intervals.get(0)[1];
+
+                    for (int i = 1; i <= intervals.size(); i++) {
+                        if (i < intervals.size() && intervals.get(i)[0] <= curHi) {
+                            curHi = Math.max(curHi, intervals.get(i)[1]);
+                        } else {
+                            if (xv > curLo && xv < curHi) {
+                                left = curLo;
+                                right = curHi;
+                                break;
+                            }
+
+                            if (i < intervals.size()) {
+                                curLo = intervals.get(i)[0];
+                                curHi = intervals.get(i)[1];
+                            }
+                        }
+                    }
+
+                    if (Double.isNaN(left)) continue;
+
+                    double moveLeft = xv - left;
+                    double moveRight = right - xv;
+                    double target;
+
+                    if (Math.abs(moveLeft - moveRight) < 1e-9) {
+                        target = (t % 2 == 0) ? right : left;
+                    } else {
+                        target = moveLeft < moveRight ? left : right;
+                    }
+
+                    x.put(v, target);
+                    moved = true;
+                }
+            }
+
+            if (!moved) return;
+
+            // Re-impose within-layer order and minimum separation, biased
+            // as little as possible around the moved positions.
+            for (List<Node> tier : tiers) {
+                int m = tier.size();
+                if (m < 2) continue;
+
+                double[] desired = new double[m];
+                for (int i = 0; i < m; i++) desired[i] = x.get(tier.get(i));
+
+                double[] right = new double[m];
+                double[] left = new double[m];
+
+                for (int i = 0; i < m; i++) {
+                    double minX = (i == 0) ? Double.NEGATIVE_INFINITY
+                            : right[i - 1] + size.width(tier.get(i - 1)) / 2.0
+                              + xGap + size.width(tier.get(i)) / 2.0;
+                    right[i] = Math.max(desired[i], minX);
+                }
+
+                for (int i = m - 1; i >= 0; i--) {
+                    double maxX = (i == m - 1) ? Double.POSITIVE_INFINITY
+                            : left[i + 1] - size.width(tier.get(i + 1)) / 2.0
+                              - xGap - size.width(tier.get(i)) / 2.0;
+                    left[i] = Math.min(desired[i], maxX);
+                }
+
+                for (int i = 0; i < m; i++) {
+                    x.put(tier.get(i), (right[i] + left[i]) / 2.0);
+                }
+            }
+        }
+    }
+
+    /**
+     * Splits any tier containing edges between its own members into
+     * sub-rows via greedy (Welsh-Powell) coloring, so that no edge joins
+     * two nodes in the same row. In CPDAGs and PAGs, variables connected
+     * only by edges that do not determine causal depth (o-o, ---, &lt;-&gt;)
+     * share a tier, and without this step those edges would all be drawn
+     * along the row, overlapping one another and the node boxes. The
+     * sub-rows then take part in crossing minimization and coordinate
+     * assignment like any other layer.
+     */
+    private static List<List<Node>> splitTiersForSameTierEdges(
+            Graph graph, List<List<Node>> tiers, Map<Node, Integer> nodeIndex) {
+        List<List<Node>> expanded = new ArrayList<>();
+
+        for (List<Node> tier : tiers) {
+            if (tier.size() < 2) {
+                expanded.add(tier);
+                continue;
+            }
+
+            Set<Node> members = new HashSet<>(tier);
+            Map<Node, Set<Node>> adj = new HashMap<>();
+            for (Node n : tier) adj.put(n, new HashSet<>());
+            boolean anyEdges = false;
+
+            for (Edge e : graph.getEdges()) {
+                Node a = e.getNode1();
+                Node b = e.getNode2();
+
+                if (a != b && members.contains(a) && members.contains(b)) {
+                    adj.get(a).add(b);
+                    adj.get(b).add(a);
+                    anyEdges = true;
+                }
+            }
+
+            if (!anyEdges) {
+                expanded.add(tier);
+                continue;
+            }
+
+            // Highest degree first, ties by the graph's node order, so the
+            // split is deterministic.
+            List<Node> order = new ArrayList<>(tier);
+            order.sort(Comparator.comparingInt((Node n) -> -adj.get(n).size())
+                    .thenComparingInt(nodeIndex::get));
+
+            Map<Node, Integer> color = new HashMap<>();
+            int numColors = 0;
+
+            for (Node n : order) {
+                Set<Integer> used = new HashSet<>();
+
+                for (Node m : adj.get(n)) {
+                    Integer c = color.get(m);
+                    if (c != null) used.add(c);
+                }
+
+                int c = 0;
+                while (used.contains(c)) c++;
+                color.put(n, c);
+                numColors = Math.max(numColors, c + 1);
+            }
+
+            for (int c = 0; c < numColors; c++) {
+                List<Node> subRow = new ArrayList<>();
+
+                for (Node n : tier) {
+                    if (color.get(n) == c) subRow.add(n);
+                }
+
+                expanded.add(subRow);
+            }
+        }
+
+        return expanded;
+    }
+
+    /**
+     * The position of each node within its tier, normalized to (0, 1) so
+     * that tiers of different sizes are comparable.
+     */
+    private static Map<Node, Double> normalizedPositions(List<List<Node>> tiers) {
+        Map<Node, Double> pos = new HashMap<>();
+
+        for (List<Node> tier : tiers) {
+            for (int i = 0; i < tier.size(); i++) {
+                pos.put(tier.get(i), (i + 0.5) / tier.size());
+            }
+        }
+
+        return pos;
+    }
+
+    /**
+     * Counts proper crossings between straight-line edges drawn in
+     * (normalized position, tier) space. Edges sharing an endpoint do not
+     * cross. O(E^2), fine at presentation scale.
+     */
+    private static int countCrossings(List<Node[]> crossEdges, Map<Node, Integer> tierOf,
+                                      Map<Node, Double> pos) {
+        int count = 0;
+
+        for (int i = 0; i < crossEdges.size(); i++) {
+            Node[] e1 = crossEdges.get(i);
+
+            for (int j = i + 1; j < crossEdges.size(); j++) {
+                Node[] e2 = crossEdges.get(j);
+
+                if (e1[0] == e2[0] || e1[0] == e2[1] || e1[1] == e2[0] || e1[1] == e2[1]) {
+                    continue;
+                }
+
+                if (segmentsCross(pos.get(e1[0]), tierOf.get(e1[0]), pos.get(e1[1]), tierOf.get(e1[1]),
+                        pos.get(e2[0]), tierOf.get(e2[0]), pos.get(e2[1]), tierOf.get(e2[1]))) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private static boolean segmentsCross(double ax, double ay, double bx, double by,
+                                         double cx, double cy, double dx, double dy) {
+        double d1 = cross(cx - ax, cy - ay, bx - ax, by - ay);
+        double d2 = cross(dx - ax, dy - ay, bx - ax, by - ay);
+        double d3 = cross(ax - cx, ay - cy, dx - cx, dy - cy);
+        double d4 = cross(bx - cx, by - cy, dx - cx, dy - cy);
+        return d1 * d2 < 0 && d3 * d4 < 0;
+    }
+
+    private static double cross(double ux, double uy, double vx, double vy) {
+        return ux * vy - uy * vx;
+    }
+
+    private static List<List<Node>> copyTiers(List<List<Node>> tiers) {
+        List<List<Node>> copy = new ArrayList<>();
+        for (List<Node> tier : tiers) copy.add(new ArrayList<>(tier));
+        return copy;
+    }
+
     /**
      * Arranges the nodes in the result graph according to their positions in
      * the source graph.
@@ -601,47 +1400,144 @@ public class LayoutUtil {
      * @param graph the graph containing the nodes to be repositioned.
      */
     public static void repositionLatents(Graph graph) {
-        for (Node latent : graph.getNodes()) {
-            if (latent.getNodeType() == NodeType.LATENT) {
-                Set<Node> neighbors = new HashSet<>(graph.getAdjacentNodes(latent));
-
-                for (Node neighbor : new HashSet<>(neighbors)) {
-                    if (neighbor.getNodeType() == NodeType.LATENT) {
-                        neighbors.remove(neighbor);
-                    }
-                }
-
-                positionLatentNode(latent, neighbors);
-            }
-        }
+        repositionLatents(graph, estimatedNodeSize());
     }
 
     /**
-     * Positions a latent node based on the average position of its measured
-     * neighbors.
+     * Places each latent near its adjacent nodes without overlapping any other
+     * node's box. A latent is anchored at the centroid of its measured
+     * neighbors (falling back to all neighbors, then the graph center), and a
+     * ring search then finds the nearest point whose box clears every
+     * already-placed box by {@code NODE_GAP}. Ties are broken toward the
+     * outside of the graph so the latent floats just off its cluster rather
+     * than into the crowded interior. Latents with more measured neighbors are
+     * placed first, and each placed latent becomes an obstacle for the rest.
      *
-     * @param latent    the latent node to be positioned
-     * @param neighbors the set of neighboring nodes
+     * @param graph the graph containing the nodes to be repositioned.
+     * @param size  supplies each node's rendered box size.
      */
-    public static void positionLatentNode(Node latent, Set<Node> neighbors) {
-        if (neighbors.isEmpty()) return;
+    public static void repositionLatents(Graph graph, NodeSize size) {
+        List<Node> latents = new ArrayList<>();
+        List<Node> obstacles = new ArrayList<>();
 
-        float avgX = 0f;
-        float avgY = 0f;
+        double gx = 0.0, gy = 0.0;
+        int gc = 0;
+
+        for (Node node : graph.getNodes()) {
+            if (node.getNodeType() == NodeType.LATENT) {
+                latents.add(node);
+            } else {
+                obstacles.add(node);
+                gx += node.getCenterX();
+                gy += node.getCenterY();
+                gc++;
+            }
+        }
+
+        if (gc > 0) {
+            gx /= gc;
+            gy /= gc;
+        }
+
+        latents.sort(Comparator.comparingInt((Node l) -> countMeasuredNeighbors(graph, l))
+                .reversed().thenComparing(Node::getName));
+
+        for (Node latent : latents) {
+            positionLatentNode(graph, latent, obstacles, size, gx, gy);
+            obstacles.add(latent);
+        }
+    }
+
+    private static void positionLatentNode(Graph graph, Node latent, List<Node> obstacles,
+                                           NodeSize size, double gx, double gy) {
+        double ax = 0.0, ay = 0.0;
+        int ac = 0;
+
+        for (Node nb : graph.getAdjacentNodes(latent)) {
+            if (nb.getNodeType() == NodeType.MEASURED) {
+                ax += nb.getCenterX();
+                ay += nb.getCenterY();
+                ac++;
+            }
+        }
+
+        if (ac == 0) {
+            for (Node nb : graph.getAdjacentNodes(latent)) {
+                ax += nb.getCenterX();
+                ay += nb.getCenterY();
+                ac++;
+            }
+        }
+
+        if (ac == 0) {
+            ax = gx;
+            ay = gy;
+            ac = 1;
+        }
+
+        ax /= ac;
+        ay /= ac;
+
+        // Sweep order starts at the outward direction; straight up if the anchor
+        // is at the graph center.
+        double ox = ax - gx, oy = ay - gy;
+        double baseAngle = (Math.hypot(ox, oy) < 1e-6) ? -Math.PI / 2.0 : Math.atan2(oy, ox);
+
+        double w = size.width(latent);
+        double h = size.height(latent);
+        double sector = 2.0 * Math.PI / LATENT_RING_SECTORS;
+
+        for (int ring = 0; ring <= LATENT_MAX_RINGS; ring++) {
+            double r = ring * LATENT_RING_STEP;
+            int steps = (ring == 0) ? 1 : LATENT_RING_SECTORS;
+
+            for (int s = 0; s < steps; s++) {
+                // 0, +1, -1, +2, -2, ... sectors from the base angle.
+                double offset = (s == 0) ? 0.0
+                        : ((s % 2 == 1 ? 1 : -1) * ((s + 1) / 2)) * sector;
+                double angle = baseAngle + offset;
+
+                int cx = (int) Math.round(ax + r * Math.cos(angle));
+                int cy = (int) Math.round(ay + r * Math.sin(angle));
+
+                if (boxClearsAll(cx, cy, w, h, obstacles, size)) {
+                    latent.setCenter(cx, cy);
+                    return;
+                }
+            }
+        }
+
+        latent.setCenter((int) Math.round(ax), (int) Math.round(ay));
+    }
+
+    private static int countMeasuredNeighbors(Graph graph, Node node) {
         int count = 0;
 
-        for (Node neighbor : neighbors) {
-            if (neighbor.getNodeType() == NodeType.MEASURED) {
-                avgX += neighbor.getCenterX();
-                avgY += neighbor.getCenterY();
+        for (Node nb : graph.getAdjacentNodes(node)) {
+            if (nb.getNodeType() == NodeType.MEASURED) {
                 count++;
             }
         }
 
-        avgX /= count;
-        avgY /= count;
+        return count;
+    }
 
-        latent.setCenter((int) avgX, (int) avgY);
+    /**
+     * Returns true if a box of the given size centered at (x, y) is separated
+     * from every obstacle's box by at least {@code NODE_GAP} on some axis.
+     */
+    private static boolean boxClearsAll(double x, double y, double w, double h,
+                                        List<Node> obstacles, NodeSize size) {
+        for (Node o : obstacles) {
+            double needX = (w + size.width(o)) / 2.0 + NODE_GAP;
+            double needY = (h + size.height(o)) / 2.0 + NODE_GAP;
+
+            if (Math.abs(x - o.getCenterX()) < needX && Math.abs(y - o.getCenterY()) < needY) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // ========================================================================

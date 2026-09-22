@@ -22,7 +22,13 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.special.Gamma;
@@ -81,9 +87,15 @@ import static org.apache.commons.math3.util.FastMath.log;
 public class BgeScore implements Score {
 
     /**
-     * The covariance matrix of the data.
+     * The covariance matrix of the data; null under test-wise deletion, where each family's covariance is
+     * computed on demand from {@link #testwise}.
      */
     private final ICovarianceMatrix covariances;
+
+    /**
+     * Per-family covariance provider under test-wise deletion; null otherwise.
+     */
+    private final TestwiseCovariance testwise;
 
     /**
      * The variables of the data, in covariance-matrix order.
@@ -126,6 +138,7 @@ public class BgeScore implements Score {
         }
 
         this.covariances = covariances;
+        this.testwise = null;
         this.variables = new ArrayList<>(covariances.getVariables());
         this.sampleSize = covariances.getSampleSize();
         this.nEff = this.sampleSize;
@@ -141,22 +154,85 @@ public class BgeScore implements Score {
     }
 
     /**
-     * Constructs a BGe score from a continuous data set.
+     * Constructs a BGe score from a continuous data set. A data set with missing values is rejected; use
+     * {@link #BgeScore(DataSet, MissingDataSpec)} to choose a missing-data policy.
      *
      * @param dataSet the data set.
      */
     public BgeScore(DataSet dataSet) {
-        this(covarianceOf(dataSet));
+        this(dataSet, null);
     }
 
-    private static ICovarianceMatrix covarianceOf(DataSet dataSet) {
+    /**
+     * Constructs a BGe score from a continuous data set with an explicit missing-data specification. On a data set
+     * with missing values the supported policies are LISTWISE (complete cases), EM_COVARIANCE (the score is computed
+     * from the EM-estimated covariance matrix, valid under MAR for approximately Gaussian data; the effective sample
+     * size follows the spec's mode), and TESTWISE: each family's scatter matrix R_S = T_S + (n_S - 1) S_S is formed
+     * from the covariance of the family's columns over the rows complete on those columns, with n_S the number of
+     * such rows and the prior scale T_S taken from the same rows' variances. A null spec on missing data is
+     * treated as FAIL (previously a data set with missing values made every sample variance NaN and the constructor
+     * threw).
+     * <p>
+     * Under TESTWISE an explicit effective sample size is applied as a deflation factor: each family uses
+     * n_S * (nEff / sampleSize).
+     *
+     * @param dataSet the data set.
+     * @param spec    the missing-data specification, or null (equivalent to FAIL on missing data).
+     * @throws IllegalArgumentException      if the data set is not continuous, or has missing values and the policy
+     *                                       is FAIL.
+     * @throws UnsupportedOperationException if the policy is MULTIPLE_IMPUTATION (a search-level policy).
+     */
+    public BgeScore(DataSet dataSet, MissingDataSpec spec) {
         if (dataSet == null) {
             throw new NullPointerException("Data set is null.");
         }
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("BGe requires a continuous data set.");
         }
-        return new CovarianceMatrix(dataSet);
+
+        boolean missing = dataSet.existsMissingValue();
+        MissingDataPolicy policy = spec == null ? MissingDataPolicy.FAIL : spec.getPolicy();
+        ICovarianceMatrix cov = null;
+        TestwiseCovariance tw = null;
+        int ess = -1;
+
+        if (!missing) {
+            cov = new CovarianceMatrix(dataSet);
+        } else {
+            switch (policy) {
+                case LISTWISE -> cov = new CovarianceMatrix(MissingDataUtils.listwiseDelete(dataSet));
+                case EM_COVARIANCE -> {
+                    EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
+                    estimator.setRidge(spec.getEmRidge());
+                    estimator.setTolerance(spec.getEmTolerance());
+                    estimator.setMaxIterations(spec.getEmMaxIterations());
+                    cov = estimator.estimate();
+                    ess = MissingDataUtils.effectiveSampleSize(dataSet, spec);
+                }
+                case TESTWISE -> tw = new TestwiseCovariance(dataSet.getDoubleData());
+                case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
+                        "BgeScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed datasets, not by "
+                                + "a single score.");
+                default -> throw new IllegalArgumentException("BgeScore: The dataset contains missing values and "
+                        + "the missing-data policy is FAIL. Use MissingDataSpec.listwise(), testwise(), or "
+                        + "emCovariance(). " + MissingDataUtils.briefSummary(dataSet));
+            }
+        }
+
+        this.covariances = cov;
+        this.testwise = tw;
+        this.variables = new ArrayList<>(dataSet.getVariables());
+        this.sampleSize = cov != null ? cov.getSampleSize() : dataSet.getNumRows();
+        this.nEff = ess > 0 ? ess : this.sampleSize;
+
+        this.sampleVariances = new double[this.variables.size()];
+        for (int j = 0; j < this.variables.size(); j++) {
+            this.sampleVariances[j] = cov != null ? cov.getValue(j, j) : tw.column(j).cov().get(0, 0);
+            if (!(this.sampleVariances[j] > 0)) {
+                throw new IllegalArgumentException("Variable " + this.variables.get(j)
+                        + " has non-positive sample variance; BGe requires every variable to vary.");
+            }
+        }
     }
 
     /**
@@ -175,18 +251,50 @@ public class BgeScore implements Score {
         System.arraycopy(pa, 0, paY, 0, pa.length);
         paY[pa.length] = node;
 
-        double n = this.nEff;
         double p = this.variables.size();
         double l = pa.length;
         double a = alphaW() - p;
         double t = priorScale();
 
-        // Prior scale is diagonal, so log|T_S| = sum_{j in S} log(t s_j^2).
-        double logDetTPaY = logDetPrior(paY, t);
-        double logDetTPa = logDetPrior(pa, t);
+        final double n;
+        final double logDetTPaY;
+        final double logDetTPa;
+        final double logDetRPaY;
+        final double logDetRPa;
 
-        double logDetRPaY = logDetPosterior(paY, t, n);
-        double logDetRPa = pa.length == 0 ? 0.0 : logDetPosterior(pa, t, n);
+        if (this.testwise == null) {
+            n = this.nEff;
+
+            // Prior scale is diagonal, so log|T_S| = sum_{j in S} log(t s_j^2).
+            logDetTPaY = logDetPrior(paY, t);
+            logDetTPa = logDetPrior(pa, t);
+
+            logDetRPaY = logDetPosterior(paY, t, n);
+            logDetRPa = pa.length == 0 ? 0.0 : logDetPosterior(pa, t, n);
+        } else {
+            // Test-wise deletion: both terms of the family score are evaluated on the rows complete on
+            // {node} u parents, so that the numerator and denominator marginals share one sample and one
+            // scatter. (Scoring the parent marginal on its own, larger, complete-row set would compare
+            // likelihoods of different samples.)
+            TestwiseCovariance.Family fam = this.testwise.family(paY);
+            if (fam.n() < 2) return Double.NaN;
+
+            n = fam.n() * (this.nEff / (double) this.sampleSize);
+
+            double[] famVar = new double[paY.length];
+            for (int j = 0; j < paY.length; j++) famVar[j] = fam.cov().get(j, j);
+
+            int[] paPos = new int[pa.length];
+            for (int j = 0; j < pa.length; j++) paPos[j] = j;
+            int[] paYPos = new int[paY.length];
+            for (int j = 0; j < paY.length; j++) paYPos[j] = j;
+
+            logDetTPaY = logDetPrior(famVar, paYPos, t);
+            logDetTPa = logDetPrior(famVar, paPos, t);
+
+            logDetRPaY = logDetPosterior(fam.cov().view(paYPos, paYPos).mat(), famVar, paYPos, t, n);
+            logDetRPa = pa.length == 0 ? 0.0 : logDetPosterior(fam.cov().view(paPos, paPos).mat(), famVar, paPos, t, n);
+        }
 
         double score = -(n / 2.0) * log(Math.PI)
                 + 0.5 * log(this.alphaMu / (n + this.alphaMu))
@@ -312,12 +420,25 @@ public class BgeScore implements Score {
     }
 
     /**
-     * Returns the covariance matrix the score is computed from.
+     * Returns the covariance matrix the score is computed from, or null under test-wise deletion (where there is
+     * no single covariance matrix; each family has its own).
      *
-     * @return the covariance matrix.
+     * @return the covariance matrix, or null.
      */
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed from a data set with {@code MissingDataSpec.testwise()}, each family is scored on the
+     * rows complete on that family. The score can also be built from an EM-estimated covariance matrix (see
+     * {@link #BgeScore(DataSet, MissingDataSpec)} with {@code MissingDataSpec.emCovariance()}).
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 
     /**
@@ -341,9 +462,13 @@ public class BgeScore implements Score {
     }
 
     private double logDetPrior(int[] s, double t) {
+        return logDetPrior(this.sampleVariances, s, t);
+    }
+
+    private static double logDetPrior(double[] variances, int[] s, double t) {
         double sum = 0.0;
         for (int j : s) {
-            sum += log(t * this.sampleVariances[j]);
+            sum += log(t * variances[j]);
         }
         return sum;
     }
@@ -352,15 +477,22 @@ public class BgeScore implements Score {
      * log|R_S| for R_S = T_S + (N - 1) S_S, computed by Cholesky.
      */
     private double logDetPosterior(int[] s, double t, double n) {
+        return logDetPosterior(this.covariances.getSelection(s, s), this.sampleVariances, s, t, n);
+    }
+
+    /**
+     * As above, from a covariance submatrix already restricted to the columns s (so indexed 0..k-1) and a variance
+     * array indexed by the original columns.
+     */
+    private static double logDetPosterior(Matrix sub, double[] variances, int[] s, double t, double n) {
         int k = s.length;
-        Matrix sub = this.covariances.getSelection(s, s);
         double[][] r = new double[k][k];
 
         for (int i = 0; i < k; i++) {
             for (int j = 0; j < k; j++) {
                 r[i][j] = (n - 1.0) * sub.get(i, j);
             }
-            r[i][i] += t * this.sampleVariances[s[i]];
+            r[i][i] += t * variances[s[i]];
         }
 
         return logDetSpd(r);

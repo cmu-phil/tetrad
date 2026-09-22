@@ -436,7 +436,7 @@ public class ChiSquareTest {
         // row skipping (each conditional table drops the rows missing on the variables it involves). Force the
         // correct table on incomplete data rather than misbehave silently.
         if (cellTableType == CellTableType.AD_TREE && this.dataSet.existsMissingValue()) {
-            TetradLogger.getInstance().log("ChiSquareTest: The dataset contains missing values; the AD-tree cell "
+            TetradLogger.getInstance().warn("ChiSquareTest: The dataset contains missing values; the AD-tree cell "
                     + "table does not handle these correctly, so the count-sample cell table (test-wise row "
                     + "skipping) will be used instead.");
             cellTableType = CellTableType.COUNT_SAMPLE;

@@ -140,7 +140,7 @@ public final class CdnodPag {
         for (Node c : ctx) {
             for (Node v : new ArrayList<>(g.getAdjacentNodes(c))) {
                 if (ctx.contains(v)) {
-                    TetradLogger.getInstance().log("[CD-NOD-PAG] Warning: context-context adjacency "
+                    TetradLogger.getInstance().warn("[CD-NOD-PAG] Warning: context-context adjacency "
                             + c.getName() + " *-* " + v.getName()
                             + "; leaving unoriented. Contexts are assumed exogenous and mutually independent.");
                     continue;
@@ -211,7 +211,7 @@ public final class CdnodPag {
         // remain valid throughout.)
         List<Node> contexts = resolveNodes(pag, contextNames);
         if (contexts.isEmpty()) {
-            TetradLogger.getInstance().log("[CD-NOD-PAG] No context variables provided; skipping change-based orientation.");
+            TetradLogger.getInstance().warn("[CD-NOD-PAG] No context variables provided; skipping change-based orientation.");
             return propagator.apply(pag);
         }
 
@@ -230,7 +230,7 @@ public final class CdnodPag {
         pag = guardedPropagator.apply(pag);
 
         if (!legalityCheck.apply(pag)) {
-            TetradLogger.getInstance().log("[CD-NOD-PAG] Warning: baseline PAG fails strong legality after context-edge "
+            TetradLogger.getInstance().warn("[CD-NOD-PAG] Warning: baseline PAG fails strong legality after context-edge "
                     + "orientation. The PagBuilder was likely run without knowledge forbidding edges into "
                     + "Tier-0 contexts; results may be unreliable.");
         }

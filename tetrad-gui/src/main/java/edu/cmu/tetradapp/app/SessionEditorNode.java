@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -106,6 +107,7 @@ public final class SessionEditorNode extends DisplayNode {
 
         this.simulationStudy = simulationStudy;
         displayComp.setName(modelNode.getSessionName());
+        displayComp.setNodeType(modelNode.getButtonType());
 
         if (displayComp instanceof NoteDisplayComp) {
             createParamObjects(this);
@@ -212,17 +214,20 @@ public final class SessionEditorNode extends DisplayNode {
         // Make sure the node is deselected.
         setSelected(false);
 
-        Dimension size = getSize();
-        Point location = getLocation();
-
-        int centerX = (int) location.getX() + size.width / 2;
-        int centerY = (int) location.getY() + size.height / 2;
-
-        int newX = centerX - getPreferredSize().width / 2;
-        int newY = centerY - getPreferredSize().height / 2;
-
-        setLocation(newX, newY);
+        // Resize to fit the new label, keeping the node centered where the model says it is. The model center is
+        // the source of truth: DisplayNode.setLocation keeps it in sync on every move, and the session file
+        // supplies it on load. Reading the display bounds instead was a race on load, where the workbench is built
+        // on the WatchedProcess worker while this method has been deferred to the EDT: the deferred call could read
+        // the (0, 0) bounds of a node not yet placed and then write that position back after the worker had placed
+        // it, sending the node to the upper-left corner. Size is set before location so the write-back of the
+        // center in setLocation uses the new width and height.
         setSize(getPreferredSize());
+
+        Node model = getModelNode();
+        if (model != null && model.getCenterX() != -1 && model.getCenterY() != -1) {
+            setLocation(model.getCenterX() - getWidth() / 2, model.getCenterY() - getHeight() / 2);
+        }
+
         repaint();
     }
 
@@ -497,7 +502,11 @@ public final class SessionEditorNode extends DisplayNode {
 
                     e.printStackTrace();
 
-                    JOptionPane.showMessageDialog(sessionEditorNode, message);
+                    // Session events fire on the WatchedProcess worker thread during propagation (see
+                    // adjustToModel); a modal dialog shown directly from that thread can deadlock with the modal
+                    // "Processing" dialog, so queue it on the EDT instead.
+                    SwingUtilities.invokeLater(() ->
+                            JOptionPane.showMessageDialog(sessionEditorNode, message));
                 }
             }
         });
@@ -1077,8 +1086,20 @@ public final class SessionEditorNode extends DisplayNode {
         Class<?> modelClass = determineTheModelClass(sessionNode);
 
         if (modelClass == null && !simulation) {
-            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                    this.config.getNodeSpecificMessage());
+            String message;
+
+            try {
+                // Derive the message from the model constructors themselves,
+                // which are the ground truth for which parent combinations
+                // work; the hand-written config messages have drifted out of
+                // sync with them and are kept only as a fallback.
+                message = NodeInputsMessage.build(sessionNode, this.config);
+            } catch (Exception e) {
+                message = this.config.getNodeSpecificMessage();
+            }
+
+            JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), message,
+                    "Inputs Needed", JOptionPane.INFORMATION_MESSAGE);
             return false;
         }
 

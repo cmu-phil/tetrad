@@ -321,7 +321,7 @@ public class SepsetFinder {
         try {
             pValue = test.checkIndependence(x, y, combination).getPValue();
         } catch (Exception e) {
-            TetradLogger.getInstance().log("Error in getPValue: " + e.getMessage());
+            TetradLogger.getInstance().warn("Error in getPValue: " + e.getMessage());
             return 0.0;
         }
         return Double.isNaN(pValue) ? 1.0 : pValue;

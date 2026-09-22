@@ -344,7 +344,7 @@ public class PythonGin implements Algorithm {
             Node n2 = nodeMap.get(name2);
 
             if (n1 == null || n2 == null) {
-                TetradLogger.getInstance().log(
+                TetradLogger.getInstance().warn(
                         "[PythonGin] Skipping edge with unknown node(s): "
                                 + name1 + " -- " + name2);
                 continue;

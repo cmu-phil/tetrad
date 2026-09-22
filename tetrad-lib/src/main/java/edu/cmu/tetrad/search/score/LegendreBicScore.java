@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -1691,5 +1692,16 @@ public final class LegendreBicScore implements Score, EffectiveSampleSizeSettabl
      * @param edf    The effective degrees of freedom used in the model.
      */
     private record FitResult(double logLik, double edf) {
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: each local score is computed on the rows complete on the child and its parents (the
+     * pre-existing row-subset path, now declared).
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

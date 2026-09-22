@@ -184,6 +184,8 @@ public class BayesEstimatorEditor extends JPanel {
 
         JTextArea modelParametersText = new JTextArea();
         modelParametersText.setText(buf.toString());
+        modelParametersText.setEditable(false);
+        modelParametersText.setMargin(new Insets(8, 8, 8, 8));
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.add("Model", wizardScroll);
@@ -194,7 +196,6 @@ public class BayesEstimatorEditor extends JPanel {
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(workbenchScroll.getPreferredSize().width);
 
-        setLayout(new BorderLayout());
         panel.add(splitPane, BorderLayout.CENTER);
 
         setName("Bayes IM Editor");
@@ -215,8 +216,10 @@ public class BayesEstimatorEditor extends JPanel {
         file.add(new SaveComponentImage(workbench, "Save Graph Image..."));
         panel.add(menuBar, BorderLayout.NORTH);
 
+        this.targetPanel.removeAll();
         this.targetPanel.add(panel, BorderLayout.CENTER);
-        validate();
+        this.targetPanel.revalidate();
+        this.targetPanel.repaint();
     }
 }
 

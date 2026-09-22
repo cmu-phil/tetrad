@@ -588,7 +588,15 @@ public class MarkovCheckEditor extends JPanel {
         } else if (defaultValue instanceof Boolean) {
             component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
         } else if (defaultValue instanceof String) {
-            component = getStringField(parameter, parameters, (String) defaultValue);
+            if (!paramDesc.getAllowedValues().isEmpty()) {
+                // A String parameter with a declared set of legal values (e.g., the missing-data policy) gets
+                // a dropdown, as in the search editor's parameter panel, rather than a free text field whose
+                // typed value only commits on Enter or focus change.
+                component = ParameterComponents.getStringSelectionBox(parameter, parameters,
+                        (String) defaultValue, paramDesc.getAllowedValues());
+            } else {
+                component = getStringField(parameter, parameters, (String) defaultValue);
+            }
         } else {
             throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
@@ -855,6 +863,26 @@ public class MarkovCheckEditor extends JPanel {
                     throw new RuntimeException(e);
                 }
 
+                if (model.getMarkovCheck().getIndependenceTest() instanceof PendingIndependenceTest pending) {
+                    // The chosen test could not be constructed (e.g., missing values with no missing-data
+                    // policy chosen), so there is nothing to run; state the reason rather than failing deep
+                    // inside the check.
+                    //
+                    // The dialog MUST be queued with invokeLater rather than shown from this WatchedProcess
+                    // thread. This guard runs at the very start of watch(), so a dialog shown directly from
+                    // here races with the (already queued, not yet dispatched) setVisible of WatchedProcess's
+                    // modal Stop dialog; if this dialog wins the race, the Stop dialog then opens on top,
+                    // modally blocks this dialog's OK button, and is never disposed because watch() is
+                    // blocked waiting for that OK -- a deadlock observed in practice. Queuing restores a safe
+                    // order: the Stop dialog's setVisible was queued before this thread started, so it is
+                    // dispatched first, this dialog then opens above it as the newest modal dialog and stays
+                    // clickable, and watch() returns at once so the Stop dialog is disposed.
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            pending.getMessage() + "\n\nParameters for the chosen test (including the "
+                            + "missing-data policy) can be set using the Params button.",
+                            "Independence Test Not Configured", JOptionPane.WARNING_MESSAGE));
+                    return;
+                }
 
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();
@@ -893,6 +921,35 @@ public class MarkovCheckEditor extends JPanel {
                     throw new RuntimeException(e);
                 }
 
+                // An empty implied-fact set means there was nothing to check at all -- most often an empty
+                // or near-empty graph was connected by mistake. Without this notice the run just leaves the
+                // tables blank. Queued to the EDT, not shown from this WatchedProcess thread, for the
+                // modality reasons documented at the pending-test guard above.
+                if (model.getMarkovCheck().getImpliedFactCount() == 0) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            "This graph implies no independence facts to check under the chosen conditioning"
+                            + " set type, so there is nothing to test. (Is the graph empty, or nearly so?)",
+                            "No Implied Facts", JOptionPane.INFORMATION_MESSAGE));
+                    // Fall through so the (empty) tables still refresh, clearing any rows from an earlier
+                    // run under a different conditioning set type.
+                }
+
+                // Facts whose test threw are skipped inside the check; without this notice, a run over data
+                // the chosen test cannot handle (e.g., too few usable rows after deletion of missing values)
+                // shows empty or thinned tables with no explanation. Queued to the EDT, not shown from this
+                // WatchedProcess thread, for the modality reasons documented at the pending-test guard above.
+                int failures = model.getMarkovCheck().getTestFailureCount();
+
+                if (failures > 0) {
+                    boolean empty = model.getResults(true).isEmpty();
+                    String example = model.getMarkovCheck().getTestFailureExample();
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                            failures + " implied fact(s) could not be tested with the chosen test and settings"
+                            + " and were skipped" + (empty ? ", so the tables are empty" : "") + "."
+                            + (example == null ? "" : "\n\nFirst error: " + example),
+                            "Some Facts Could Not Be Tested", JOptionPane.WARNING_MESSAGE));
+                }
+
 //                if (checkDependentDistribution.isSelected()) {
 //                    if (clear) {
 //                        model.getMarkovCheck().generateResults(true, true);
@@ -924,10 +981,44 @@ public class MarkovCheckEditor extends JPanel {
             try {
                 independenceWrapper =
                         clazz.getDeclaredConstructor().newInstance();
-                independenceTest =
-                        independenceWrapper.getTest(model.getDataModel(),
-                                model.getParameters());
+
+                try {
+                    independenceTest =
+                            independenceWrapper.getTest(model.getDataModel(),
+                                    model.getParameters());
+                } catch (IllegalArgumentException e) {
+                    // The test could not be constructed for this data with the current parameters--typically
+                    // because the data contain missing values and no missing-data policy has been chosen yet
+                    // (see MissingDataUtils.gate). Just opening the editor should not throw, so install a
+                    // placeholder test that lets the editor open, tell the user what needs to be set, and let
+                    // them fix it in the Params dialog; setTest() runs again when that dialog closes.
+                    independenceTest = new PendingIndependenceTest(independenceWrapper.getDescription(),
+                            e.getMessage(), model.getDataModel());
+                }
+
                 model.setIndependenceTest(independenceTest);
+
+                // Reflect an unconfigurable test passively in the editor. A modal dialog must not be
+                // shown from here: setTest runs both directly from the constructor and inside
+                // WatchedProcess threads, and a queued modal dialog interleaves with WatchedProcess's
+                // own modal "Stop Process" dialogs in a way that can wedge the whole UI (verified
+                // empirically). The Run action's guard shows the full message instead.
+                boolean pending = independenceTest instanceof PendingIndependenceTest;
+                String pendingMessage = pending
+                        ? ((PendingIndependenceTest) independenceTest).getMessage() : null;
+
+                SwingUtilities.invokeLater(() -> {
+                    markovTestLabel.setForeground(pending
+                            ? Color.RED.darker() : UIManager.getColor("Label.foreground"));
+                    markovTestLabel.setToolTipText(pending
+                            ? "<html>" + pendingMessage.replace("\n", "<br>") + "</html>" : null);
+                });
+
+                if (this.fraction != null) {
+                    boolean subsampleable = independenceTest instanceof RowsSettable
+                            && independenceTest.getData() instanceof DataSet;
+                    this.fraction.setEditable(subsampleable);
+                }
                 markovTestLabel.setText(
                         model.getMarkovCheck().getIndependenceTest().toString());
 
@@ -938,11 +1029,12 @@ public class MarkovCheckEditor extends JPanel {
                 repaint();
             } catch (InstantiationException | IllegalAccessException
                      | InvocationTargetException | NoSuchMethodException e1) {
-                TetradLogger.getInstance().log("Error: " + e1.getMessage());
+                TetradLogger.getInstance().warn("Error: " + e1.getMessage());
                 throw new RuntimeException(e1);
             }
         }
     }
+
 
     private JPanel buildGuiIndep() {
         Box tableBox = Box.createVerticalBox();

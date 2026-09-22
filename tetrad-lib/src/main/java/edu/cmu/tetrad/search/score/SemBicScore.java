@@ -29,6 +29,7 @@ import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseCovariance;
 import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -88,9 +89,12 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     private final Map<Node, Integer> indexMap;
     /**
-     * The log of the sample size.
+     * The log of the effective sample size, kept in step with nEff by setEffectiveSampleSize. It was previously a
+     * final field set once in the constructors, so that a caller setting an effective sample size afterwards (as the
+     * algcomparison wrappers do from the effectiveSampleSize parameter) changed the likelihood term but not the BIC
+     * penalty. Fixed 2026-9-11.
      */
-    private final double logN;
+    private double logN;
     /**
      * True if row subsets should be calculated.
      */
@@ -116,9 +120,19 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     private boolean verbose;
     /**
-     * The penalty penaltyDiscount, 1 for standard BIC.
+     * The penalty penaltyDiscount, 1 for standard BIC. Initialized to 1 so that every constructor yields standard
+     * BIC unless a discount is set; previously the constructors that take a data set and no discount left the field
+     * at 0 on complete data (no penalty at all) while setting 1 on missing data.
      */
-    private double penaltyDiscount;
+    private double penaltyDiscount = 1.0;
+    /**
+     * How many singularities to log in full before only counting them.
+     */
+    private static final int MAX_SINGULARITIES_LOGGED = 10;
+    /**
+     * The number of local-score evaluations that failed with a singularity.
+     */
+    private final java.util.concurrent.atomic.AtomicInteger numSingularities = new java.util.concurrent.atomic.AtomicInteger();
     /**
      * The structure prior, 0 for standard BIC.
      */
@@ -152,7 +166,6 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         this.sampleSize = covariances.getSampleSize();
         setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
-        this.logN = log(nEff);
         penaltyDiscount = 1.0;
     }
 
@@ -176,7 +189,6 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         this.sampleSize = covariances.getSampleSize();
         setEffectiveSampleSize(-1);
         this.indexMap = indexMap(this.variables);
-        this.logN = log(nEff);
         this.penaltyDiscount = penaltyDiscount;
     }
 
@@ -240,7 +252,6 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-            this.logN = log(nEff);
         } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
             EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
             estimator.setRidge(spec.getEmRidge());
@@ -253,14 +264,12 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             setEffectiveSampleSize(MissingDataUtils.effectiveSampleSize(dataSet, spec));
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-            this.logN = log(nEff);
         } else { // TESTWISE
             this.variables = dataSet.getVariables();
             this.sampleSize = dataSet.getNumRows();
             setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = true;
-            this.logN = log(nEff);
             this.penaltyDiscount = 1.0;
         }
     }
@@ -370,45 +379,58 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             return covarianceMatrix.getSelection(rows, cols);
         }
 
-        // The set of valid rows (complete on every column in 'rows' and 'cols') is the same for every cell of the
-        // covariance matrix, so it is computed once per call--and cached per column set across calls; see
-        // TestwiseRows--rather than recomputed inside every cell as before. The numerics are unchanged. (Note: this
-        // path divides by n - 1 while calcCovWithTestwiseDeletion divides by n; that preexisting inconsistency is
-        // preserved here for backward compatibility and flagged for later resolution.)
-        int[] filterColumns = new int[cols.length + rows.length];
-        System.arraycopy(cols, 0, filterColumns, 0, cols.length);
-        System.arraycopy(rows, 0, filterColumns, cols.length, rows.length);
-        List<Integer> validRows = TestwiseRows.forMatrix(data).validRows(filterColumns, rowsInData);
+        // Under test-wise deletion the family covariance is taken from TestwiseCovariance, which computes each
+        // column set once (means hoisted out of the cell loop, one pass for the cross products) and, when the
+        // candidate rows are the whole dataset, memoizes it by column set across calls. Previously every call
+        // rebuilt the matrix from the raw data and recomputed both column means inside every cell, so a single
+        // local score cost O(k^2 m) row visits with no reuse between calls; with a basis-function embedding
+        // multiplying k, this dominated BOSS on modest data. The numerics are unchanged: both paths divide by
+        // n - 1 over the rows complete on every column in 'rows' and 'cols'. (calcCovWithTestwiseDeletion still
+        // divides by n; that preexisting inconsistency is untouched here.)
+        int[] union = unionPreservingOrder(cols, rows);
+        TestwiseCovariance.Family family = TestwiseCovariance.forMatrix(data).family(union, rowsInData);
+
+        // With no more complete rows than variables, the sample covariance is undefined (0 or 1 rows gives NaN) or
+        // rank deficient, and chooseInverse would fail on NaN with an IllegalArgumentException that no caller
+        // catches. Report it as a singularity instead, so that localScore returns NaN and the search treats the
+        // parent set as unscorable rather than dying. This arises with test-wise deletion on sparse data, e.g. a
+        // wide table in which few units are observed on every one of several assessments. Added 2026-9-10.
+        if (family.n() <= cols.length) {
+            throw new SingularMatrixException();
+        }
+
+        if (Arrays.equals(rows, cols) && Arrays.equals(union, cols)) {
+            return family.cov();
+        }
 
         Matrix cov = new Matrix(rows.length, cols.length);
 
         for (int i = 0; i < rows.length; i++) {
+            int a = indexOf(union, rows[i]);
             for (int j = 0; j < cols.length; j++) {
-                double mui = 0.0;
-                double muj = 0.0;
-                double sampleSize = validRows.size();
-
-                for (int k : validRows) {
-                    mui += data.get(k, cols[i]);
-                    muj += data.get(k, cols[j]);
-                }
-
-                mui /= sampleSize;
-                muj /= sampleSize;
-
-                double _cov = 0.0;
-
-                for (int k : validRows) {
-                    _cov += (data.get(k, cols[i]) - mui) * (data.get(k, cols[j]) - muj);
-                }
-
-                double mean = _cov / (sampleSize - 1);
-                cov.set(i, j, mean);
-                cov.set(j, i, mean);
+                cov.set(i, j, family.cov().get(a, indexOf(union, cols[j])));
             }
         }
 
         return cov;
+    }
+
+    /**
+     * The distinct entries of the two arrays, first array's order first, then any new entries of the second.
+     */
+    private static int[] unionPreservingOrder(int[] first, int[] second) {
+        LinkedHashSet<Integer> set = new LinkedHashSet<>();
+        for (int c : first) set.add(c);
+        for (int c : second) set.add(c);
+        int[] out = new int[set.size()];
+        int k = 0;
+        for (int c : set) out[k++] = c;
+        return out;
+    }
+
+    private static int indexOf(int[] array, int value) {
+        for (int i = 0; i < array.length; i++) if (array[i] == value) return i;
+        throw new IllegalStateException("Column " + value + " not in family.");
     }
 
     private static List<Integer> getRows(Matrix data, boolean calculateRowSubsets) {
@@ -591,7 +613,11 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
 
         double c = getPenaltyDiscount();
 
-        return -this.nEff * log(1.0 - r * r) - c * log(this.nEff) - 2.0 * (sp1 - sp2);
+        // Under test-wise deletion the penalty is scaled by how few rows the partial correlation rests on; see
+        // localPenaltyLogN.
+        double logN = rows == null ? log(this.nEff) : penaltyLogN(rows.size());
+
+        return -this.nEff * log(1.0 - r * r) - c * logN - 2.0 * (sp1 - sp2);
     }
 
     /**
@@ -610,7 +636,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return Double.NaN;
         }
 
@@ -619,8 +645,10 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
 
         if (this.ruleType == RuleType.CHICKERING || this.ruleType == RuleType.NANDY) {
 
-            // Standard BIC, with penalty discount and structure prior.
-            double _score = 2 * lik - c * (k) * logN - getStructurePrior(k);
+            // Standard BIC, with penalty discount and structure prior. Under test-wise deletion the penalty is
+            // the per-observation BIC penalty of the local fit scaled up to the common sample size; see
+            // localPenaltyLogN.
+            double _score = 2 * lik - c * (k) * localPenaltyLogN(i, parents) - getStructurePrior(k);
 
             if (Double.isNaN(_score) || Double.isInfinite(_score)) {
                 return Double.NaN;
@@ -651,7 +679,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return new LikelihoodResult(Double.NaN, -1, penaltyDiscount, nEff);
         }
 
@@ -676,7 +704,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         try {
             lik = getLikelihood(i, parents);
         } catch (SingularMatrixException e) {
-            TetradLogger.getInstance().log("Singularity encountered when scoring " + LogUtilsSearch.getScoreFact(i, parents, variables));
+            noteSingularity(i, parents);
             return Double.NaN;
         }
 
@@ -699,6 +727,69 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
     }
 
     /**
+     * Under test-wise deletion, the factor that puts the residual variance of i given parents, estimated on the
+     * rows complete on i and its parents, on the same footing as the marginal variance of i estimated on all of
+     * i's own rows: the ratio of i's variance over its own rows to i's variance over the local rows. Multiplying
+     * the residual variance by it makes the local score depend on the local R-squared, computed within one row
+     * subset, times the common n, rather than on a ratio of variances estimated on two different subsets.
+     * Without it the comparison of parent sets was dominated by the sampling noise of the subset marginal
+     * variances (relative standard deviation about sqrt(2 / m) on m rows), which the common n then multiplied:
+     * on 200 complete rows out of 250, a parent with zero true effect was accepted by plain BIC about 30% of the
+     * time in simulation, against the 2 to 3% expected on complete data; with this correction it is about 2%.
+     * On complete data the factor is 1. Added 2026-9-11.
+     *
+     * @param i       The index of the variable.
+     * @param parents The indices of its parents (non-empty).
+     * @return The factor.
+     */
+    private double testwiseVarianceCorrection(int i, int[] parents) {
+        // Both variances are read from the shared family cache: the family over concat(i, parents) is exactly the
+        // one getCov just built for this call, and i's own family is a single column. Both divide by n - 1 over
+        // the same row sets the previous inline passes used, so the value is unchanged; the two extra passes over
+        // boxed row lists per local score are gone.
+        TestwiseCovariance testwise = TestwiseCovariance.forMatrix(this.data);
+        double ownVariance = testwise.column(i).cov().get(0, 0);
+        double localVariance = testwise.family(concat(i, parents)).cov().get(0, 0);
+        return ownVariance / localVariance;
+    }
+
+    /**
+     * The "log n" in the BIC penalty for the local score of i given parents. On complete data, or with an EM
+     * covariance, this is log of the effective sample size. Under test-wise deletion the residual variance was
+     * estimated on only the rows complete on i and all of its parents, m of them, while the likelihood term is
+     * scaled to the common sample size n so that local scores of different parent sets remain comparable (the
+     * constant -n/2 (log 2 pi + 1) must be common, or the comparison would depend on the scale of the data).
+     * Previously the penalty used log n regardless of m, so a variance reduction achieved by overfitting 20
+     * complete rows was scored exactly like one seen on 200: the count of supporting rows made no difference.
+     * Here the local fit is treated as a BIC on m rows, normalized per observation and scaled to n: the penalty
+     * becomes c k log(m) (n / m), which equals the standard penalty when m = n and grows as m shrinks (about
+     * seven times the standard penalty at m = 20, n = 250). This is a heuristic for comparing fits on different
+     * available-case subsets, not a decomposition of one joint likelihood; it reduces to standard BIC on
+     * complete data. Added 2026-9-11.
+     *
+     * @param i       The index of the variable.
+     * @param parents The indices of its parents.
+     * @return The penalty's log-n term.
+     */
+    private double localPenaltyLogN(int i, int[] parents) {
+        if (!this.calculateRowSubsets) {
+            return this.logN;
+        }
+
+        int m = TestwiseRows.forMatrix(this.data).validRows(concat(i, parents)).size();
+        return penaltyLogN(m);
+    }
+
+    /**
+     * The penalty's log-n term for a local fit on m complete rows out of sampleSize; see localPenaltyLogN. If the
+     * user has set an effective sample size, m is scaled by the same ratio.
+     */
+    private double penaltyLogN(int m) {
+        double mEff = m * (this.nEff / (double) this.sampleSize);
+        return log(mEff) * (this.nEff / mEff);
+    }
+
+    /**
      * Calculates the likelihood for the given variable and its parent variables based on the provided data and
      * covariance matrices. This method computes the variance for the residuals and uses it to determine the likelihood
      * score.
@@ -710,8 +801,43 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     public double getLikelihood(int i, int[] parents) throws SingularMatrixException {
         double sigmaSquared = SemBicScore.getResidualVariance(i, parents, this.data, this.covariances, this.calculateRowSubsets, lambda);
+
+        if (this.calculateRowSubsets && parents.length > 0) {
+            sigmaSquared *= testwiseVarianceCorrection(i, parents);
+        }
+
         return -0.5 * this.nEff * (TMath.log(2 * TMath.PI * sigmaSquared) + 1);
 //        return -(double) (this.nEff / 2.0) * log(sigmaSquared);
+    }
+
+    /**
+     * Records a singularity in a local-score evaluation. The first few are logged in full, after which they are
+     * only counted: on sparse data under test-wise deletion there can be many thousands, which swamps the log.
+     * See getNumSingularities().
+     */
+    private void noteSingularity(int i, int[] parents) {
+        int n = this.numSingularities.incrementAndGet();
+
+        if (n <= MAX_SINGULARITIES_LOGGED) {
+            TetradLogger.getInstance().warn("Singularity encountered when scoring "
+                    + LogUtilsSearch.getScoreFact(i, parents, variables));
+
+            if (n == MAX_SINGULARITIES_LOGGED) {
+                TetradLogger.getInstance().warn("Further singularities will be counted but not logged; see "
+                        + "SemBicScore.getNumSingularities().");
+            }
+        }
+    }
+
+    /**
+     * Returns the number of local-score evaluations that failed with a singularity (and so returned NaN) since
+     * this score was constructed. A large count, e.g. under test-wise deletion on sparse data, means many parent
+     * sets could not be scored at all.
+     *
+     * @return The count.
+     */
+    public int getNumSingularities() {
+        return this.numSingularities.get();
     }
 
     /**
@@ -1155,6 +1281,7 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
     @Override
     public void setEffectiveSampleSize(int nEff) {
         this.nEff = nEff < 0 ? this.sampleSize : nEff;
+        this.logN = log(this.nEff);
     }
 
     /**

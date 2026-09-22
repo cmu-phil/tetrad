@@ -87,6 +87,35 @@ public final class Fask {
     private Fask.LeftRight leftRight = LeftRight.FASK2;
 
     /**
+     * Whether the external graph's compelled orientations act as default orientations that the left-right statistic
+     * can overturn only under the bootstrap sign-consensus gate below (default: false, i.e., the external graph
+     * supplies adjacencies only, as before). Only consulted when an external graph has been set.
+     */
+    private boolean useExternalOrientations = false;
+
+    /**
+     * Number of bootstrap resamples used to gate an override of a compelled external orientation. Zero (the default)
+     * means no gate: the left-right statistic overturns a compelled orientation whenever it opposes it, which for
+     * compelled edges reduces to plain FASK. With a single dataset there is no cross-dataset consensus to appeal to,
+     * so a positive value here is what makes the override a genuine test rather than a relabeling.
+     */
+    private int overrideBootstraps = 0;
+
+    /**
+     * Block length for the override bootstrap. One (the default) resamples rows independently, which is correct for
+     * i.i.d. rows. A larger value resamples contiguous blocks of that length (a moving-block bootstrap), which is
+     * what autocorrelated rows -- time series such as LFP recordings -- require: with i.i.d. resampling of
+     * autocorrelated rows the resamples are far more alike than independent samples would be, the sign consensus is
+     * then much too easy to achieve, and false reversals follow.
+     */
+    private int overrideBlockLength = 1;
+
+    /**
+     * Provenance of each orientation decision from the last search, recorded when external orientations are in use.
+     */
+    private final java.util.Map<Edge, Origin> edgeOrigins = new java.util.HashMap<>();
+
+    /**
      * Constructs a new Fask instance with the specified data set and score.
      *
      * @param dataSet the data set used for the analysis
@@ -563,7 +592,9 @@ public final class Fask {
         List<Node> variables = dataSet.getVariables();
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
         this.data = colData;
+        this.edgeOrigins.clear();
         Graph G0;
+        Graph oriented = null;
 
         if (externalGraph != null) {
             Graph g1 = new EdgeListGraph(externalGraph.getNodes());
@@ -574,6 +605,13 @@ public final class Fask {
             }
             g1 = GraphUtils.replaceNodes(g1, dataSet.getVariables());
             G0 = g1;
+
+            if (useExternalOrientations) {
+                // Only compelled orientations act. A supplied DAG is converted to its CPDAG
+                // first, so reversible edges do not masquerade as compelled.
+                Graph ext = GraphUtils.replaceNodes(externalGraph, dataSet.getVariables());
+                oriented = ext.paths().isLegalDag() ? GraphTransforms.dagToCpdag(ext) : ext;
+            }
         } else if (useBossAdjacencies) {
             Boss boss = new Boss(this.score);
             PermutationSearch ps = new PermutationSearch(boss);
@@ -620,11 +658,45 @@ public final class Fask {
                         } else if (alpha > 0 && isTwoCycle(x, y, G0, X, Y)) {
                             graph.addEdge(Edges.directedEdge(X, Y));
                             graph.addEdge(Edges.directedEdge(Y, X));
+                            this.edgeOrigins.put(Edges.directedEdge(X, Y), Origin.TWO_CYCLE);
+                            this.edgeOrigins.put(Edges.directedEdge(Y, X), Origin.TWO_CYCLE);
                         } else {
                             int ruleIndex = leftRight.ordinal() + 1;
                             double score = leftRightDiff(x, y, ruleIndex);
-                            if (score > 0) graph.addDirectedEdge(X, Y);
-                            else graph.addDirectedEdge(Y, X);
+
+                            // Compelled orientation of this pair in the external graph, if any:
+                            // +1 for X->Y, -1 for Y->X, 0 for none (reversible, or not in use).
+                            int compelled = 0;
+
+                            if (oriented != null) {
+                                Node ox = oriented.getNode(X.getName());
+                                Node oy = oriented.getNode(Y.getName());
+                                Edge oe = (ox == null || oy == null) ? null : oriented.getEdge(ox, oy);
+
+                                if (oe != null && Edges.isDirectedEdge(oe)) {
+                                    compelled = oe.pointsTowards(oy) ? +1 : -1;
+                                }
+                            }
+
+                            if (compelled != 0) {
+                                boolean opposes = compelled > 0 ? score < 0 : score > 0;
+                                boolean consensus = opposes
+                                                    && bootstrapSignConsensus(x, y, ruleIndex, compelled);
+
+                                if (consensus) {
+                                    if (compelled > 0) graph.addDirectedEdge(Y, X);
+                                    else graph.addDirectedEdge(X, Y);
+                                    this.edgeOrigins.put(graph.getEdge(X, Y), Origin.OVERRIDE);
+                                } else {
+                                    if (compelled > 0) graph.addDirectedEdge(X, Y);
+                                    else graph.addDirectedEdge(Y, X);
+                                    this.edgeOrigins.put(graph.getEdge(X, Y), Origin.EVIDENCE_DEFAULT);
+                                }
+                            } else {
+                                if (score > 0) graph.addDirectedEdge(X, Y);
+                                else graph.addDirectedEdge(Y, X);
+                                this.edgeOrigins.put(graph.getEdge(X, Y), Origin.LEFT_RIGHT);
+                            }
                         }
                     }
                 }
@@ -705,6 +777,58 @@ public final class Fask {
     }
 
     /**
+     * Sets whether the external graph's compelled orientations act as default orientations, overturnable by the
+     * left-right statistic only under the bootstrap sign-consensus gate (see
+     * {@link #setOverrideBootstraps(int)}). When false (the default), the external graph supplies adjacencies only,
+     * which is FASK's historical behavior. Only consulted when an external graph has been set.
+     *
+     * @param useExternalOrientations true to use the external graph's compelled orientations as defaults
+     */
+    public void setUseExternalOrientations(boolean useExternalOrientations) {
+        this.useExternalOrientations = useExternalOrientations;
+    }
+
+    /**
+     * Sets the number of bootstrap resamples gating an override of a compelled external orientation. Zero (the
+     * default) means no gate, in which case the left-right statistic overturns a compelled orientation whenever it
+     * opposes it -- for compelled edges, plain FASK. A positive value requires every resample's statistic to oppose
+     * the compelled direction before the override is taken.
+     *
+     * @param overrideBootstraps the number of resamples, nonnegative
+     */
+    public void setOverrideBootstraps(int overrideBootstraps) {
+        if (overrideBootstraps < 0) {
+            throw new IllegalArgumentException("Number of bootstraps must be nonnegative: " + overrideBootstraps);
+        }
+        this.overrideBootstraps = overrideBootstraps;
+    }
+
+    /**
+     * Sets the block length for the override bootstrap. One (the default) resamples rows independently. A larger
+     * value resamples contiguous blocks, which is what autocorrelated rows require; a common choice is about the
+     * square root of the number of rows.
+     *
+     * @param overrideBlockLength the block length, at least one
+     */
+    public void setOverrideBlockLength(int overrideBlockLength) {
+        if (overrideBlockLength < 1) {
+            throw new IllegalArgumentException("Block length must be at least 1: " + overrideBlockLength);
+        }
+        this.overrideBlockLength = overrideBlockLength;
+    }
+
+    /**
+     * Returns the provenance of each orientation from the last search: whether it came from the left-right statistic
+     * alone, from a compelled external orientation kept as the default, from an override of such an orientation, or
+     * from the two-cycle test.
+     *
+     * @return an unmodifiable view of the per-edge origins
+     */
+    public java.util.Map<Edge, Origin> getEdgeOrigins() {
+        return java.util.Collections.unmodifiableMap(this.edgeOrigins);
+    }
+
+    /**
      * Sets the threshold value for considering extra edges in the FASK algorithm.
      *
      * @param extraEdgeThreshold the threshold value to be set for extra edges, where a lower value
@@ -748,10 +872,58 @@ public final class Fask {
 //        return TMath.abs(score) < alpha;
 //    }
 
-    private boolean isTwoCycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
-        x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));
+    /**
+     * Gate on overturning a compelled external orientation: resample the pair jointly and require EVERY resample's
+     * left-right statistic to oppose the compelled direction (strict sign consensus). With
+     * {@code overrideBootstraps == 0} there is no gate and the method returns true, so the left-right statistic
+     * decides alone. Rows are resampled in contiguous blocks of {@code overrideBlockLength}, which for length one is
+     * the ordinary i.i.d. pairwise bootstrap.
+     *
+     * @param x         standardized series for X
+     * @param y         standardized series for Y
+     * @param ruleIndex the left-right rule index
+     * @param compelled +1 when the external graph compels X-&gt;Y, -1 when it compels Y-&gt;X
+     * @return true just in case the override is allowed
+     */
+    private boolean bootstrapSignConsensus(double[] x, double[] y, int ruleIndex, int compelled) {
+        if (this.overrideBootstraps <= 0) return true;
 
+        int n = x.length;
+        int block = TMath.max(1, TMath.min(this.overrideBlockLength, n));
+        int numBlocks = (int) TMath.ceil(n / (double) block);
+
+        double[] bx = new double[n];
+        double[] by = new double[n];
+
+        for (int b = 0; b < this.overrideBootstraps; b++) {
+            int filled = 0;
+
+            for (int k = 0; k < numBlocks && filled < n; k++) {
+                int start = edu.cmu.tetrad.util.RandomUtil.getInstance().nextInt(n);
+
+                for (int t = 0; t < block && filled < n; t++) {
+                    int r = (start + t) % n;
+                    bx[filled] = x[r];
+                    by[filled] = y[r];
+                    filled++;
+                }
+            }
+
+            double[] sx = bx.clone();
+            double[] sy = by.clone();
+            standardize(sx);
+            standardize(sy);
+
+            double s = leftRightDiff(sx, sy, ruleIndex);
+
+            // Any resample failing to oppose the compelled direction defeats the consensus.
+            if (compelled > 0 ? s >= 0 : s <= 0) return false;
+        }
+
+        return true;
+    }
+
+    private boolean isTwoCycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
         Set<Node> pool = new HashSet<>(G0.getAdjacentNodes(X));
         pool.addAll(G0.getAdjacentNodes(Y));
         List<Node> cand = new ArrayList<>(pool);
@@ -760,6 +932,37 @@ public final class Fask {
 
         if (cand.isEmpty()) return false;
 
+        double[][] candCols = new double[cand.size()][];
+        for (int i = 0; i < cand.size(); i++) {
+            candCols[i] = this.data[this.dataSet.getColumnIndex(cand.get(i))];
+        }
+
+        return twoCycleTest(x, y, candCols, this.cutoff);
+    }
+
+    /**
+     * The FASK two-cycle test, in static form so that multi-dataset algorithms (e.g.,
+     * {@link FaskPool}) can run it per dataset. The pair is judged a two-cycle when the
+     * two-cycle pattern (both conditional correlations shifting significantly from the
+     * unconditional correlation, in the same direction) holds unconditionally and
+     * persists under every conditioning subset of the candidate columns up to size 2.
+     * Skew-sign correction is applied internally, so pass uncorrected (standardized)
+     * columns.
+     *
+     * @param x        standardized series for X
+     * @param y        standardized series for Y
+     * @param candCols columns for the conditioning candidates (typically the adjacents
+     *                 of X and Y other than X and Y themselves); with no candidates the
+     *                 test returns false, matching single-dataset FASK
+     * @param cutoff   the z cutoff corresponding to the two-cycle alpha
+     * @return true just in case the pair passes the two-cycle test
+     */
+    public static boolean twoCycleTest(double[] x, double[] y, double[][] candCols, double cutoff) {
+        if (candCols == null || candCols.length == 0) return false;
+
+        x = correctSkewness(x, skewness(x));
+        y = correctSkewness(y, skewness(y));
+
         final int n = x.length;
         final int minPart = (int) TMath.ceil(0.15 * n);
         final double ridge = 1e-6;
@@ -767,16 +970,17 @@ public final class Fask {
         final int maxSize = 2;// (depth < 0) ? cand.size() : TMath.min(depth, cand.size());
 
         // Baseline: must show two-cycle pattern unconditionally
-        if (!showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps)) {
+        if (!showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps, cutoff)) {
             return false;
         }
 
         // Must persist under ALL conditioning sets
-        SublistGenerator gen = new SublistGenerator(cand.size(), maxSize);
+        SublistGenerator gen = new SublistGenerator(candCols.length, maxSize);
         int[] choice;
         while ((choice = gen.next()) != null) {
-            List<Node> zNodes = GraphUtils.asList(choice, cand);
-            if (!showsTwoCyclePattern(x, y, zNodes, minPart, ridge, clampEps)) {
+            double[][] Z = new double[choice.length][];
+            for (int i = 0; i < choice.length; i++) Z[i] = candCols[choice[i]];
+            if (!showsTwoCyclePattern(x, y, Z, minPart, ridge, clampEps, cutoff)) {
                 return false;
             }
         }
@@ -784,10 +988,11 @@ public final class Fask {
         return true;
     }
 
-    private boolean showsTwoCyclePattern(double[] x, double[] y, List<Node> zNodes,
-                                         int minPart, double ridge, double clampEps) {
+    private static boolean showsTwoCyclePattern(double[] x, double[] y, double[][] zCols,
+                                                int minPart, double ridge, double clampEps,
+                                                double cutoff) {
 
-        double[][] Z = (zNodes == null) ? new double[0][] : buildZ(zNodes);
+        double[][] Z = (zCols == null) ? new double[0][] : zCols;
 
         final double pc, pc1, pc2;
         try {
@@ -824,18 +1029,8 @@ public final class Fask {
 
     // === Returns true if conditioning on Z BREAKS the cycle opposition pattern (i.e., destroys it) ===
 
-    // === Utility to build Z matrix ===
-    private double[][] buildZ(List<Node> zNodes) {
-        double[][] Z = new double[zNodes.size()][];
-        for (int i = 0; i < zNodes.size(); i++) {
-            int col = dataSet.getColumnIndex(zNodes.get(i));
-            Z[i] = data[col];
-        }
-        return Z;
-    }
-
-    private double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition,
-                                      double threshold, double direction, double lambda)
+    private static double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition,
+                                             double threshold, double direction, double lambda)
             throws SingularMatrixException {
         double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
         Matrix m = new Matrix(cv).transpose();
@@ -845,6 +1040,29 @@ public final class Fask {
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName())
                 || knowledge.isRequired(left.getName(), right.getName());
+    }
+
+    /**
+     * The provenance of an orientation decision, recorded per edge in {@link #getEdgeOrigins()}.
+     */
+    public enum Origin {
+        /**
+         * Oriented by the left-right statistic alone.
+         */
+        LEFT_RIGHT,
+        /**
+         * The external graph's compelled orientation was kept as the default.
+         */
+        EVIDENCE_DEFAULT,
+        /**
+         * The external graph's compelled orientation was overturned by the left-right statistic under the bootstrap
+         * sign-consensus gate.
+         */
+        OVERRIDE,
+        /**
+         * Output as a two-cycle by the two-cycle test.
+         */
+        TWO_CYCLE
     }
 
     /**

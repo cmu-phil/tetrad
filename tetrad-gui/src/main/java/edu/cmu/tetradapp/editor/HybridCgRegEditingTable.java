@@ -25,13 +25,30 @@ final class HybridCgRegEditingTable extends JTable {
 
     private static final DecimalFormat DF3 = new DecimalFormat("0.###");
 
+    /** Foreground for coefficient cells whose per-stratum t-test misses the level. */
+    private static final Color NOT_SIGNIFICANT = new Color(0x9E9E9E);
+
+    /** Text shown in place of a NaN parameter, which means the row was never fitted. */
+    private static final String UNESTIMATED = "not estimated";
+
+    /**
+     * Per-stratum t-test p-values for the coefficient columns, indexed [stratum row][continuous-parent order index]
+     * as returned by {@code HybridCgEdgeSignificance.coefficientPValues} for this child; null for no overlay.
+     */
+    private double[][] coefPValues;
+
+    /** The level the overlay greys against. */
+    private double sigAlpha = 0.05;
+
     HybridCgRegEditingTable(HybridCgIm im, HybridCgPm pm, int yIndex) {
         setModel(new Model(im, pm, yIndex));
 
-        // Renderers/editors for doubles
+        // Renderers/editors for doubles. A NaN parameter is not a number the user should read as an
+        // estimate; it means the row was never fitted, so say so rather than printing "NaN".
         setDefaultRenderer(Double.class, new DefaultTableCellRenderer() {
             @Override protected void setValue(Object value) {
-                if (value instanceof Number n) setText(DF3.format(n.doubleValue()));
+                if (value instanceof Number n && Double.isNaN(n.doubleValue())) setText(UNESTIMATED);
+                else if (value instanceof Number n) setText(DF3.format(n.doubleValue()));
                 else super.setValue(value);
             }
         });
@@ -57,16 +74,111 @@ final class HybridCgRegEditingTable extends JTable {
                     String maxLabel = m.maxParentLabelWidthSample(c);
                     w = TMath.max(80, fm.stringWidth(maxLabel) + pad);
                 } else if (c == d) {
-                    w = fm.stringWidth("mean") + pad;
+                    w = TMath.max(fm.stringWidth("mean"), fm.stringWidth(UNESTIMATED)) + pad;
                 } else if (c == d + 1 + mcoeff) {
-                    w = fm.stringWidth("Variance") + pad;
+                    w = TMath.max(fm.stringWidth("Variance"), fm.stringWidth(UNESTIMATED)) + pad;
                 } else {
                     // coefficient columns
-                    w = TMath.max(100, fm.stringWidth(getColumnName(c)) + pad);
+                    w = TMath.max(100, TMath.max(fm.stringWidth(getColumnName(c)),
+                            fm.stringWidth(UNESTIMATED)) + pad);
                 }
                 getColumnModel().getColumn(c).setPreferredWidth(w);
             }
         });
+    }
+
+    /**
+     * Sets or clears the significance overlay. When set, coefficient cells whose per-stratum t-test p-value exceeds
+     * {@code alpha} are drawn grey, and hovering any coefficient cell shows its p-value; cells whose test is
+     * unavailable (NaN) are drawn normally with a tooltip saying so. The mean and variance columns are not edges and
+     * are never greyed.
+     *
+     * @param coefPValues p-values indexed [stratum row][continuous-parent order index], or null to clear
+     * @param alpha       the level to grey against
+     */
+    void setSignificance(double[][] coefPValues, double alpha) {
+        this.coefPValues = coefPValues;
+        this.sigAlpha = alpha;
+        repaint();
+    }
+
+    /** True if the column holds a coefficient for a continuous parent. */
+    private boolean isCoefficientColumn(int col) {
+        Model m = (Model) getModel();
+        int d = m.discParents.size();
+        return col > d && col < d + 1 + m.contParents.size();
+    }
+
+    /** The p-value for a coefficient cell, or NaN if none is available. */
+    private double pValueAt(int row, int col) {
+        if (this.coefPValues == null || !isCoefficientColumn(col)) return Double.NaN;
+        Model m = (Model) getModel();
+        int j = col - (m.discParents.size() + 1);
+        if (row < 0 || row >= this.coefPValues.length) return Double.NaN;
+        double[] rowP = this.coefPValues[row];
+        return (rowP == null || j >= rowP.length) ? Double.NaN : rowP[j];
+    }
+
+    /** True if the column holds a fitted parameter: mean, a coefficient, or the variance. */
+    private boolean isParameterColumn(int col) {
+        return col >= ((Model) getModel()).discParents.size();
+    }
+
+    /** True if the parameter cell holds NaN, meaning the row was never fitted. */
+    private boolean isUnestimated(int row, int col) {
+        if (row < 0 || col < 0 || !isParameterColumn(col)) return false;
+        Object v = getModel().getValueAt(row, col);
+        return v instanceof Number n && Double.isNaN(n.doubleValue());
+    }
+
+    @Override
+    public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int col) {
+        Component c = super.prepareRenderer(renderer, row, col);
+        if (!isCellSelected(row, col)) {
+            int mRow = convertRowIndexToModel(row);
+            int mCol = convertColumnIndexToModel(col);
+            double p = pValueAt(mRow, mCol);
+            boolean grey = isUnestimated(mRow, mCol)
+                           || (this.coefPValues != null && !Double.isNaN(p) && p > this.sigAlpha);
+            c.setForeground(grey ? NOT_SIGNIFICANT : getForeground());
+        }
+        return c;
+    }
+
+    @Override
+    public String getToolTipText(java.awt.event.MouseEvent event) {
+        int row = rowAtPoint(event.getPoint());
+        int col = columnAtPoint(event.getPoint());
+        if (row < 0 || col < 0) return super.getToolTipText(event);
+
+        int mRow = convertRowIndexToModel(row);
+        int mCol = convertColumnIndexToModel(col);
+
+        if (isUnestimated(mRow, mCol)) {
+            Model m = (Model) getModel();
+            int n = m.im.getRowCaseCount(m.y, mRow);
+            if (n == 0) {
+                return "Not estimated: no complete cases for this combination of discrete parents. "
+                       + "A case counts only if the child and all of its parents are observed.";
+            }
+            if (n > 0) {
+                int needed = m.contParents.size() + 2;
+                return "Not estimated: " + n + (n == 1 ? " complete case" : " complete cases")
+                       + " for this combination of discrete parents, and " + needed
+                       + " are needed before a residual variance can be estimated.";
+            }
+            return "Not estimated for this combination of discrete parents.";
+        }
+
+        if (this.coefPValues != null && isCoefficientColumn(mCol)) {
+            double p = pValueAt(mRow, mCol);
+            if (Double.isNaN(p)) {
+                return "No t-test for this stratum (insufficient cases or singular design).";
+            }
+            return String.format("Per-stratum t-test p = %.4g%s", p,
+                    p > this.sigAlpha ? String.format(" (not significant at %.3g)", this.sigAlpha) : "");
+        }
+        return super.getToolTipText(event);
     }
 
     // ---------------- Table Model ----------------

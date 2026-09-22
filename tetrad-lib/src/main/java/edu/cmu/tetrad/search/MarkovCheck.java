@@ -65,7 +65,18 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     /**
      * The graph.
      */
-    private final Graph graph;
+    private Graph graph;
+    /**
+     * The number of implied facts whose independence test threw an exception during the last result generation
+     * (each such fact is skipped, so it appears in no table). Written from the parallel per-fact tasks.
+     */
+    private final java.util.concurrent.atomic.AtomicInteger testFailureCount =
+            new java.util.concurrent.atomic.AtomicInteger();
+    /**
+     * The message of the first such exception, as an example for user-facing reporting. Null if none.
+     */
+    private final java.util.concurrent.atomic.AtomicReference<String> testFailureExample =
+            new java.util.concurrent.atomic.AtomicReference<>();
     /**
      * The results of the Markov check for the independent case.
      */
@@ -243,16 +254,71 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      */
     public static Set<IndependenceFact> computeAllImpliedFacts(Graph g, ConditioningSetType setType) {
         Set<IndependenceFact> allImpliedFacts = new HashSet<>();
+        for (List<IndependenceFact> facts : computeImpliedFactsByVertex(g, setType).values()) {
+            allImpliedFacts.addAll(facts);
+        }
+        return allImpliedFacts;
+    }
 
-        // Prepare the graph-level MAG transform once (relevant for the ordered-local-Markov
-        // types); null for other types, in which case the per-vertex path is unchanged.
-        Graph preparedMag = prepareMagForVertexFacts(g, setType);
+    /**
+     * Computes the implied independence facts for EVERY vertex of {@code graph} at once,
+     * keyed by vertex name. Equivalent, vertex for vertex, to calling
+     * {@link #computeImpliedFactsForVertex(Graph, Node, ConditioningSetType)} for each
+     * vertex -- the same facts, with the same X/Y name-order normalization -- but for
+     * the two ordered-local-Markov conditioning types it computes the whole-graph model
+     * ONCE and buckets its facts by endpoint, instead of recomputing the full model per
+     * vertex inside {@code getModelForNode}. (Added 2026-9-9. The per-vertex path cost
+     * V full-model computations per graph -- measured at 4.7x/13.5x/23.5x the single-model
+     * cost at V = 10/20/30 -- and callers that evaluate every candidate graph of a
+     * repair search paid it per candidate.) For the other conditioning types, whose
+     * per-vertex facts are local and cheap, this simply loops the per-vertex method.
+     *
+     * <p>Every vertex of the graph gets an entry; vertices with no facts map to an
+     * empty list. Each fact appears in the bucket of both of its endpoints, matching
+     * the per-vertex method's filter.
+     *
+     * @param graph   the graph whose implied facts are to be computed
+     * @param setType the conditioning set type
+     * @return a map from vertex name to that vertex's implied facts; never null
+     */
+    public static Map<String, List<IndependenceFact>> computeImpliedFactsByVertex(
+            Graph graph, ConditioningSetType setType) {
+        Map<String, List<IndependenceFact>> out = new LinkedHashMap<>();
+        if (graph == null) return out;
 
-        for (Node x : g.getNodes()) {
-            allImpliedFacts.addAll(computeImpliedFactsForVertex(g, x, setType, preparedMag));
+        for (Node n : graph.getNodes()) {
+            if (n != null && n.getName() != null) out.put(n.getName(), new ArrayList<>());
         }
 
-        return allImpliedFacts;
+        if (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY
+                || setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY_SINK_ELIMINATION) {
+            Graph mag = prepareMagForVertexFacts(graph, setType);
+            if (mag == null) return out;
+            Set<IndependenceFact> model =
+                    (setType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY)
+                            ? OrderedLocalMarkovProperty.getModel(mag)
+                            : OrderedLocalMarkovPropertySinkElimination.getModel(mag);
+
+            for (IndependenceFact f : model) {
+                if (f == null || f.getX() == null || f.getY() == null) continue;
+                // Same normalization as getModelForNode: X/Y in name order.
+                Node X = f.getX(), Y = f.getY();
+                IndependenceFact norm = (X.getName().compareTo(Y.getName()) <= 0)
+                        ? new IndependenceFact(X, Y, f.getZ())
+                        : new IndependenceFact(Y, X, f.getZ());
+                List<IndependenceFact> bx = out.get(X.getName());
+                if (bx != null) bx.add(norm);
+                List<IndependenceFact> by = out.get(Y.getName());
+                if (by != null) by.add(norm);
+            }
+            return out;
+        }
+
+        for (Node x : graph.getNodes()) {
+            if (x == null || x.getName() == null) continue;
+            out.put(x.getName(), computeImpliedFactsForVertex(graph, x, setType));
+        }
+        return out;
     }
 
     /**
@@ -327,6 +393,21 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @return the implied independence facts for the vertex
      */
     public static List<IndependenceFact> computeImpliedFactsForVertex(Graph graph, Node x, ConditioningSetType conditioningSetType, Graph preparedMag) {
+        // Contract guard (added 2026-9-9): a graph implies no independence facts about
+        // a vertex it does not contain, so such a vertex gets an empty list rather than
+        // a downstream failure. Before this guard, a data variable absent from the
+        // graph (the checked graph was learned on, or edited to, a subset of the data
+        // columns) NPE'd inside the ordered-local-Markov path -- getNode returned null
+        // and getModelForNode dereferenced it -- and, more quietly, would have
+        // FABRICATED facts under the uniform-Z types: a foreign x has empty adjacency,
+        // so LOCAL_MARKOV would pair it against the graph's nodes with an empty
+        // conditioning set, asserting marginal independencies the graph says nothing
+        // about.
+        if (graph == null || x == null || x.getName() == null
+                || graph.getNode(x.getName()) == null) {
+            return new ArrayList<>();
+        }
+
         if (preparedMag != null) {
             if (conditioningSetType == ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY) {
                 Node _x = preparedMag.getNode(x.getName());
@@ -1459,6 +1540,8 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
     public void generateResults(boolean indep, boolean clear) {
         if (clear) {
             clear();
+            testFailureCount.set(0);
+            testFailureExample.set(null);
         }
 
         if (setType == ConditioningSetType.GLOBAL_MARKOV) {
@@ -1956,6 +2039,39 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
      * @param test the independence test to be set
      * @throws IllegalArgumentException if the test parameter is null
      */
+    /**
+     * Returns the number of independence facts the graph implied under the conditioning set type at the last
+     * result generation, or -1 if results have not been generated (or were generated by the all-subsets
+     * route, which does not record this set). Zero here means there was nothing to check at all -- for
+     * example, an empty graph -- which interfaces should say rather than showing empty tables.
+     *
+     * @return The number of implied facts, or -1.
+     */
+    public int getImpliedFactCount() {
+        return this.allIndependenceFacts == null ? -1 : this.allIndependenceFacts.size();
+    }
+
+    /**
+     * Returns the number of implied facts whose independence test threw an exception during the last result
+     * generation. Each such fact was skipped and appears in no result table, so a nonzero count explains
+     * missing (possibly all) results. Reset when results are generated with clear == true.
+     *
+     * @return The number of skipped facts.
+     */
+    public int getTestFailureCount() {
+        return testFailureCount.get();
+    }
+
+    /**
+     * Returns the message of the first such test failure, as an example for user-facing reporting, or null if
+     * no failure has occurred since the last reset.
+     *
+     * @return The message, or null.
+     */
+    public String getTestFailureExample() {
+        return testFailureExample.get();
+    }
+
     public void setIndependenceTest(IndependenceTest test) {
         if (test == null) {
             throw new IllegalArgumentException("Independence test cannot be null.");
@@ -1964,6 +2080,35 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         this.independenceTest = test;
         this.cachedQueries = new CachingIndependenceTest(test);
 //        cachedQueries.setTest(test);  // clears caches, rebuilds mapping
+
+        // Re-align the graph and the independence/conditioning node lists to the new test's variable
+        // objects, by name. Some tests (e.g., DG-LRT) look their variables up by object identity, and a
+        // test set after construction can carry different Node objects with the same names than the test
+        // this check was constructed with (for example, a test built on an EM-estimated covariance matrix,
+        // or a real test replacing a placeholder installed when construction failed). Without this, every
+        // implied fact's test fails on such a swap.
+        this.graph = GraphUtils.replaceNodes(this.graph, test.getVariables());
+
+        if (this.independenceNodes != null) {
+            this.independenceNodes = replaceNodesByName(this.independenceNodes, test.getVariables());
+        }
+
+        if (this.conditioningNodes != null) {
+            this.conditioningNodes = replaceNodesByName(this.conditioningNodes, test.getVariables());
+        }
+    }
+
+    /**
+     * Returns a copy of the given node list in which each node is replaced by the same-named node from
+     * newVariables where one exists; nodes with no same-named replacement are kept as they are.
+     */
+    private static List<Node> replaceNodesByName(List<Node> nodes, List<Node> newVariables) {
+        Map<String, Node> byName = new HashMap<>();
+        for (Node v : newVariables) byName.put(v.getName(), v);
+
+        List<Node> out = new ArrayList<>(nodes.size());
+        for (Node n : nodes) out.add(byName.getOrDefault(n.getName(), n));
+        return out;
     }
 
     /**
@@ -2262,7 +2407,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    TetradLogger.getInstance().log("Error in independence test; not adding result: " + e.getMessage());
+                    TetradLogger.getInstance().warn("Error in independence test; not adding result: " + e.getMessage());
+                    // Record the failure so interfaces can report how many facts were skipped and why,
+                    // rather than silently showing fewer (possibly zero) results.
+                    testFailureCount.incrementAndGet();
+                    testFailureExample.compareAndSet(null, e.getMessage() == null ? e.toString() : e.getMessage());
                     return;
                 }
 

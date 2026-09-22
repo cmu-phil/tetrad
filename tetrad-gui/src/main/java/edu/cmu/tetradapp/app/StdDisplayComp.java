@@ -1,46 +1,82 @@
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.util.Locale;
 
 /**
- * Appearance of session nodes for standard nodes.
+ * Appearance of standard session nodes, drawn as a compact card.
  * <p>
- * Uses colors from the active Swing Look &amp; Feel when available,
- * with Tetrad defaults as fallbacks.
+ * The card has a thin header band, tinted by node type, that names the type in small capitals, and a body that shows
+ * the session name with the model acronym beneath it. A node with no model is drawn hollow with a dashed border, so
+ * the "not yet filled in" state reads as an outline rather than a gray slab. Everything is vector-drawn from the
+ * active Swing Look &amp; Feel colors, so the node scales correctly on HiDPI screens and follows light and dark mode
+ * without any image assets.
+ * <p>
+ * The constructor still accepts the image path from the session configuration for compatibility, but the image is no
+ * longer displayed.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
-    private static final Font SMALL_FONT = new Font("Dialog", Font.BOLD, 10);
+    /**
+     * Corner radius of the card.
+     */
+    private static final int ARC = 12;
 
-    private final JLabel nameLabel;
-    private final JLabel acronymLabel;
-    private final String imagePath;
-    private final JLabel iconLabel;
+    /**
+     * Height of the type band at the top of the card.
+     */
+    private static final int BAND_HEIGHT = 18;
+
+    /**
+     * Horizontal padding inside the card.
+     */
+    private static final int PAD_X = 14;
+
+    /**
+     * Vertical gap between the name and the acronym.
+     */
+    private static final int GAP_Y = 3;
+
+    /**
+     * Bottom padding inside the card.
+     */
+    private static final int PAD_BOTTOM = 10;
+
+    /**
+     * Minimum card width so short names still produce a sensible box.
+     */
+    private static final int MIN_WIDTH = 96;
+
+    private static final Font FALLBACK_FONT = new Font("Dialog", Font.PLAIN, 12);
+
+    private String name = " ";
+    private String acronym = "No model";
+    private String nodeType = "";
 
     private boolean hasModel;
     private boolean selected;
 
+    /**
+     * Constructs a session node card. The image path is accepted for configuration compatibility and ignored.
+     *
+     * @param imagePath the (unused) icon path from the session configuration.
+     */
     public StdDisplayComp(String imagePath) {
-        this.nameLabel = new JLabel(" ");
-        this.acronymLabel = new JLabel("No model");
-        this.iconLabel = new JLabel();
-        this.imagePath = imagePath;
-
         setOpaque(false);
-        nameLabel.setOpaque(false);
-        acronymLabel.setOpaque(false);
-        iconLabel.setOpaque(false);
-
-        layoutComponents();
+        setFont(uiFont("Label.font", FALLBACK_FONT));
     }
+
+    // ---------------------------------------------------------------- LAF helpers
 
     private static Color uiColor(String key, Color fallback) {
         Color c = UIManager.getColor(key);
@@ -60,272 +96,319 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         t = Math.max(0.0, Math.min(1.0, t));
         int r = (int) Math.round((1.0 - t) * a.getRed() + t * b.getRed());
         int g = (int) Math.round((1.0 - t) * a.getGreen() + t * b.getGreen());
-        int b2 = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
-        return new Color(
-                Math.max(0, Math.min(255, r)),
-                Math.max(0, Math.min(255, g)),
-                Math.max(0, Math.min(255, b2))
-        );
+        int bl = (int) Math.round((1.0 - t) * a.getBlue() + t * b.getBlue());
+        return new Color(clamp(r), clamp(g), clamp(bl));
     }
 
-    private static Color brighten(Color c, double amount) {
-        return blend(c, Color.WHITE, amount);
+    private static int clamp(int v) {
+        return Math.max(0, Math.min(255, v));
     }
 
-    private static Color darken(Color c, double amount) {
-        return blend(c, Color.BLACK, amount);
+    private static Color withAlpha(Color c, int alpha) {
+        return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
+    }
+
+    // ---------------------------------------------------------------- type bands
+
+    /**
+     * The Tol muted hue for the node type, and the weight at which it is tinted onto the card in light and in dark
+     * mode. The weights differ by hue on purpose. Under deuteranopia and protanopia the red-green axis collapses
+     * and two bands can only be told apart by lightness and blue-yellow, so the weights are chosen per hue (light
+     * hues tinted lightly onto a white card and heavily onto a dark one, dark hues the reverse); with these
+     * weights every pair of bands is at least 11 Lab units apart in light mode and 14 in dark, for normal,
+     * deuteranopic, and protanopic vision.
+     */
+    private record Band(Color hue, double lightTint, double darkTint) {
+    }
+
+    private static Band band(String type) {
+        if (type == null) return new Band(WorkbenchStyle.lafBorder(), 0.60, 0.60);
+        return switch (type) {
+            case "Data" -> new Band(WorkbenchStyle.TOL_TEAL, 0.25, 0.80);
+            case "Simulation" -> new Band(WorkbenchStyle.TOL_OLIVE, 0.45, 0.80);
+            case "Knowledge" -> new Band(WorkbenchStyle.TOL_SAND, 0.35, 0.50);
+            case "Graph" -> new Band(WorkbenchStyle.TOL_INDIGO, 0.55, 0.70);
+            case "Search", "Latent_Clusters", "Latent_Structure", "Regression", "Updater" ->
+                    new Band(WorkbenchStyle.TOL_ROSE, 0.45, 0.50);
+            case "Estimator" -> new Band(WorkbenchStyle.TOL_WINE, 0.55, 0.40);
+            case "PM" -> new Band(WorkbenchStyle.TOL_PURPLE, 0.45, 0.80);
+            case "IM" -> new Band(WorkbenchStyle.TOL_GREEN, 0.55, 0.80);
+            case "Compare", "GridSearch" -> new Band(WorkbenchStyle.TOL_CYAN, 0.55, 0.60);
+            case "Note" -> new Band(WorkbenchStyle.TOL_SAND, 0.35, 0.50);
+            default -> new Band(WorkbenchStyle.lafBorder(), 0.60, 0.60);
+        };
+    }
+
+    private static String typeLabel(String type) {
+        if (type == null || type.isEmpty()) return "";
+        return type.replace('_', ' ').toUpperCase(Locale.ROOT);
+    }
+
+    // ---------------------------------------------------------------- colors
+    //
+    // These are static and public so other parts of the session editor (the toolbar, for instance) can use the
+    // same colors for the same node types. All of them read the current Look & Feel at call time, so they follow
+    // light and dark mode automatically.
+
+    /**
+     * The panel background color of the current Look &amp; Feel.
+     *
+     * @return the panel background color.
+     */
+    public static Color panelBackground() {
+        return WorkbenchStyle.panelBackground();
     }
 
     /**
-     * Unselected node fill when there is a model.
+     * The fill color of a session node card body: the Look and Feel's component background, separated from the
+     * panel by the border and shadow like any other component.
+     *
+     * @return the card fill color.
      */
-    private static Color getHasModelFillColor() {
-        if (isDarkMode()) {
-            Color panel = uiColor("Panel.background", new Color(60, 63, 65));
-            Color button = uiColor("Button.background", panel);
-            return brighten(blend(panel, button, 0.5), 0.01);
-        }
-
-        //        Color button = UIManager.getColor("Button.background");
-        //        if (button != null) {
-        //            return blend(button, new Color(26, 113, 169, 255), 0.10);
-        //            // In light mode, move AWAY from the background so nodes stand out more.
-        ////            return brighten(button, 0.05);
-        //        }
-
-        //        Color panel = UIManager.getColor("Panel.background");
-        //        if (panel != null) {
-        //            return blend(panel, DisplayNodeUtils.getNodeFillColor(), 0.10);// new Color(26, 113, 169, 255), 0.10);
-        ////            return brighten(panel, 0.10);
-        //        }
-
-        return DisplayNodeUtils.getNodeFillColor();
+    public static Color cardFill() {
+        return WorkbenchStyle.cardFill();
     }
 
     /**
-     * Unselected node fill when there is no model.
+     * The fill color of the type band for the given node type.
+     *
+     * @param type the node's button type, e.g. "Search".
+     * @return the band fill color.
      */
-    private static Color getNoModelFillColor() {
-        Color base = getHasModelFillColor();
-
-        if (isDarkMode()) {
-            // Make "no model" clearly dimmer and slightly grayer in dark mode.
-            return darken(blend(base, Color.BLACK, 0.25), 0.18);
-        }
-
-        // In light mode, keep it muted but still clearly visible.
-        return Color.LIGHT_GRAY;// darken(Color.LIGHT_GRAY, 0.20);
+    public static Color bandFill(String type) {
+        Band b = band(type);
+        return blend(cardFill(), b.hue(), isDarkMode() ? b.darkTint() : b.lightTint());
     }
 
     /**
-     * Selected node fill.
+     * The text color used on the type band for the given node type: the band's hue, pushed toward white or black
+     * until it clears 4.5:1 on the band.
+     *
+     * @param type the node's button type, e.g. "Search".
+     * @return the band text color.
      */
-    private static Color getSelectedFillColor() {
-        if (isDarkMode()) {
-            return uiColor("Table.selectionBackground", DisplayNodeUtils.getNodeSelectedFillColor());
-        }
-
-        return DisplayNodeUtils.getNodeSelectedFillColor();
+    public static Color bandText(String type) {
+        return WorkbenchStyle.readableOn(band(type).hue(), bandFill(type));
     }
 
-    private static Color getEdgeColor() {
-        Color c = UIManager.getColor("Component.borderColor");
-        if (c != null) {
-            return isDarkMode() ? c : darken(c, 0.10);
-        }
-
-        c = UIManager.getColor("Separator.foreground");
-        if (c != null) {
-            return isDarkMode() ? c : darken(c, 0.10);
-        }
-
-        c = UIManager.getColor("Label.foreground");
-        if (c != null) {
-            return isDarkMode() ? blend(c, Color.GRAY, 0.35) : blend(c, Color.BLACK, 0.35);
-        }
-
-        return DisplayNodeUtils.getNodeEdgeColor();
+    /**
+     * The border color of an unselected session node card: the Look and Feel's component border.
+     *
+     * @return the border color.
+     */
+    public static Color cardBorder() {
+        return WorkbenchStyle.lafBorder();
     }
 
-    private static Color getSelectedEdgeColor() {
-        Color c = UIManager.getColor("Component.focusColor");
-        if (c != null) return c;
-
-        c = UIManager.getColor("Focus.color");
-        if (c != null) return c;
-
-        c = UIManager.getColor("Table.selectionBackground");
-        if (c != null) return c;
-
-        return DisplayNodeUtils.getNodeSelectedEdgeColor();
+    private Color getSelectedBorderColor() {
+        return WorkbenchStyle.accent();
     }
 
-    private static Color getPrimaryTextColor() {
-        return uiColor("Label.foreground", isDarkMode() ? new Color(230, 230, 230) : Color.BLACK);
+    private Color getPrimaryText() {
+        return WorkbenchStyle.nodeText();
     }
 
-    private static Color getSecondaryTextColor() {
-        Color fg = getPrimaryTextColor();
-        return isDarkMode() ? blend(fg, Color.GRAY, 0.30) : blend(fg, Color.WHITE, 0.20);
+    private Color getSecondaryText() {
+        Color fg = getPrimaryText();
+        return isDarkMode() ? blend(fg, Color.GRAY, 0.35) : blend(fg, Color.WHITE, 0.40);
     }
 
-    private static Color darker(Color c, double factor) {
-        int r = (int) (c.getRed() * (1 - factor));
-        int g = (int) (c.getGreen() * (1 - factor));
-        int b = (int) (c.getBlue() * (1 - factor));
-        return new Color(Math.max(r, 0), Math.max(g, 0), Math.max(b, 0));
+    // ---------------------------------------------------------------- fonts
+
+    private Font nameFont() {
+        return getFont().deriveFont(Font.PLAIN);
     }
 
-    private static Color lighter(Color c, double factor) {
-        int r = (int) (c.getRed() + (255 - c.getRed()) * factor);
-        int g = (int) (c.getGreen() + (255 - c.getGreen()) * factor);
-        int b = (int) (c.getBlue() + (255 - c.getBlue()) * factor);
-        return new Color(Math.min(r, 255), Math.min(g, 255), Math.min(b, 255));
+    private Font acronymFont() {
+        Font f = getFont();
+        return f.deriveFont(Font.BOLD, Math.max(9f, f.getSize2D() - 1f));
     }
 
-    private Color getUnselectedFillColor() {
-        return hasModel ? getHasModelFillColor() : getNoModelFillColor();
+    private Font bandFont() {
+        Font f = getFont();
+        return f.deriveFont(Font.BOLD, Math.max(8f, f.getSize2D() - 3f));
     }
 
-    private boolean isSelected() {
-        return this.selected;
-    }
+    // ---------------------------------------------------------------- SessionDisplayComp
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setSelected(boolean selected) {
         this.selected = selected;
         repaint();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setName(String name) {
         super.setName(name);
-        this.nameLabel.setText(name);
+        this.name = name == null ? " " : name;
+        resize();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setAcronym(String acronym) {
-        this.acronymLabel.setText(acronym);
-        layoutComponents();
+        this.acronym = acronym == null ? "" : acronym;
+        resize();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setHasModel(boolean hasModel) {
         this.hasModel = hasModel;
-        refreshTheme();
         repaint();
     }
 
-    private Shape getShape() {
-        return new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 5, 5);
-        //        return new Rectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setNodeType(String nodeType) {
+        this.nodeType = nodeType == null ? "" : nodeType;
+        resize();
     }
 
+    // ---------------------------------------------------------------- geometry
+
+    private Shape getShape() {
+        return new RoundRectangle2D.Double(0.5, 0.5, getWidth() - 1, getHeight() - 1, ARC, ARC);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
+    private FontMetrics fm(Font f) {
+        return getFontMetrics(f);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        FontMetrics nameFm = fm(nameFont());
+        FontMetrics acrFm = fm(acronymFont());
+        FontMetrics bandFm = fm(bandFont());
+
+        int textW = Math.max(nameFm.stringWidth(name), acrFm.stringWidth(acronym));
+        textW = Math.max(textW, bandFm.stringWidth(typeLabel(nodeType)));
+        int w = Math.max(MIN_WIDTH, textW + 2 * PAD_X);
+
+        int h = BAND_HEIGHT + 8 + nameFm.getHeight() + GAP_Y + acrFm.getHeight() + PAD_BOTTOM;
+        return new Dimension(w, h);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Dimension getMinimumSize() {
+        return getPreferredSize();
+    }
+
+    private void resize() {
+        setSize(getPreferredSize());
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void updateUI() {
         super.updateUI();
-        refreshTheme();
-        refreshIcon();
-        layoutComponents();
+        setFont(uiFont("Label.font", FALLBACK_FONT));
+        resize();
     }
 
-    private void refreshTheme() {
-        Font baseFont = uiFont("Label.font", DisplayNodeUtils.getFont());
-        setFont(baseFont);
+    // ---------------------------------------------------------------- painting
 
-        nameLabel.setForeground(getPrimaryTextColor());
-        nameLabel.setFont(baseFont);
-
-        acronymLabel.setForeground(getSecondaryTextColor());
-        acronymLabel.setFont(SMALL_FONT);
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
         try {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
-            Shape shape = getShape();
+            int w = getWidth();
+            int h = getHeight();
+            Shape card = getShape();
 
-            g2.setColor(isSelected() ? getSelectedFillColor() : getUnselectedFillColor());
-            g2.fill(shape);
-
-            if (isDarkMode()) {
-                g2.setColor(lighter(isSelected() ? getSelectedEdgeColor() : getEdgeColor(), 0.25));
-            } else {
-                g2.setColor(darker(isSelected() ? getSelectedEdgeColor() : getEdgeColor(), .25));
+            // Soft shadow, light mode only. In dark mode a shadow is invisible and just muddies the edge.
+            if (!isDarkMode() && hasModel) {
+                g2.setColor(new Color(0, 0, 0, 22));
+                g2.fill(new RoundRectangle2D.Double(1.5, 2.5, w - 1, h - 1, ARC, ARC));
             }
-            g2.draw(shape);
+
+            // Card body.
+            g2.setColor(hasModel ? cardFill() : withAlpha(cardFill(), 140));
+            g2.fill(card);
+
+            // Type band: the top of the card, clipped to the rounded outline.
+            Area band = new Area(card);
+            band.intersect(new Area(new Rectangle2D.Double(0, 0, w, BAND_HEIGHT)));
+            g2.setColor(hasModel ? bandFill(nodeType) : withAlpha(bandFill(nodeType), 160));
+            g2.fill(band);
+
+            // Band text.
+            String label = typeLabel(nodeType);
+            if (!label.isEmpty()) {
+                g2.setFont(bandFont());
+                FontMetrics bfm = g2.getFontMetrics();
+                int tx = (w - bfm.stringWidth(label)) / 2;
+                int ty = (BAND_HEIGHT - bfm.getHeight()) / 2 + bfm.getAscent();
+                g2.setColor(bandText(nodeType));
+                g2.drawString(label, tx, ty);
+            }
+
+            // Name.
+            g2.setFont(nameFont());
+            FontMetrics nfm = g2.getFontMetrics();
+            int nameY = BAND_HEIGHT + 8 + nfm.getAscent();
+            g2.setColor(getPrimaryText());
+            g2.drawString(name, (w - nfm.stringWidth(name)) / 2, nameY);
+
+            // Acronym.
+            g2.setFont(acronymFont());
+            FontMetrics afm = g2.getFontMetrics();
+            int acrY = nameY + nfm.getDescent() + GAP_Y + afm.getAscent();
+            g2.setColor(hasModel ? getSecondaryText() : blend(getSecondaryText(), panelBackground(), 0.35));
+            g2.drawString(acronym, (w - afm.stringWidth(acronym)) / 2, acrY);
+
+            // Border. Dashed when there is no model; heavier and accented when selected.
+            if (selected) {
+                g2.setStroke(new BasicStroke(2f));
+                g2.setColor(getSelectedBorderColor());
+            } else if (hasModel) {
+                g2.setStroke(new BasicStroke(1f));
+                g2.setColor(cardBorder());
+            } else {
+                g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 1f,
+                        new float[]{4f, 3f}, 0f));
+                g2.setColor(blend(cardBorder(), getPrimaryText(), 0.25));
+            }
+            g2.draw(card);
         } finally {
             g2.dispose();
         }
-    }
-
-    private void layoutComponents() {
-        removeAll();
-        setLayout(new BorderLayout());
-
-        refreshTheme();
-
-        Box b = Box.createVerticalBox();
-        b.setOpaque(false);
-        refreshIcon();
-
-        Box b1 = Box.createHorizontalBox();
-        b1.setOpaque(false);
-        b1.add(Box.createHorizontalGlue());
-        b1.add(getIconLabel());
-        b1.add(Box.createHorizontalGlue());
-        b.add(b1);
-
-        Box b2 = Box.createHorizontalBox();
-        b2.setOpaque(false);
-        b2.add(Box.createHorizontalGlue());
-        b2.add(Box.createHorizontalStrut(6));
-        b2.add(getNameLabel());
-        b2.add(Box.createHorizontalStrut(6));
-        b2.add(Box.createHorizontalGlue());
-        b.add(b2);
-
-        Box b3 = Box.createHorizontalBox();
-        b3.setOpaque(false);
-        b3.add(Box.createHorizontalGlue());
-        b3.add(Box.createHorizontalStrut(6));
-        b3.add(getAcronymLabel());
-        b3.add(Box.createHorizontalStrut(6));
-        b3.add(Box.createHorizontalGlue());
-        b.add(b3);
-
-        b.add(Box.createRigidArea(new Dimension(60, 4)));
-
-        add(b, BorderLayout.CENTER);
-
-        setSize(getPreferredSize());
-
-        revalidate();
-        repaint();
-    }
-
-    private JLabel getAcronymLabel() {
-        return this.acronymLabel;
-    }
-
-    private JLabel getNameLabel() {
-        return this.nameLabel;
-    }
-
-    private JLabel getIconLabel() {
-        return this.iconLabel;
-    }
-
-    private void refreshIcon() {
-        Image image = ImageUtils.getImage(this, imagePath);
-        iconLabel.setIcon(new ImageIcon(image));
     }
 }

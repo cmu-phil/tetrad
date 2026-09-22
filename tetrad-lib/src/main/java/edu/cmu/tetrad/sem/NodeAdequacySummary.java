@@ -46,7 +46,7 @@ public final class NodeAdequacySummary implements TetradSerializable {
     /**
      * The improvement in loss value from the baseline to the holdout set.
      */
-    public final double improvement; // baseline - model
+    public final double improvement; // continuous: training R² = 1 − MSE/var; discrete: entropy − training xent (nats)
 
     /**
      * Constructs a new instance of NodeAdequacySummary, representing the adequacy and
@@ -62,12 +62,13 @@ public final class NodeAdequacySummary implements TetradSerializable {
                         boolean discrete,
                         List<String> parents,
                         double holdoutLoss,
-                        double baselineLoss) {
+                        double baselineLoss,
+                        double improvement) {
         this.node = node;
         this.discrete = discrete;
         this.parents = parents;
         this.holdoutLoss = holdoutLoss;
         this.baselineLoss = baselineLoss;
-        this.improvement = baselineLoss - holdoutLoss;
+        this.improvement = improvement;
     }
 }

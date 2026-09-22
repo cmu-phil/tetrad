@@ -71,7 +71,7 @@ public class FfMl implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "FFML Score");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "FFML Score");
         edu.cmu.tetrad.search.score.FfMl score;
 
         if (dataSet instanceof DataSet) {

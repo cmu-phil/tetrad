@@ -24,7 +24,7 @@ public class TestDataAuditDialog2 {
 
         // Engineer a dataset that should produce findings:
         //   x0: standard normal (clean)
-        //   x1: x0 + tiny noise               -> HIGH_CORRELATION (and likely NEAR_DETERMINISM_CONTINUOUS)
+        //   x1: x0 + tiny noise               -> HIGH_CORRELATION (and likely NEAR_DETERMINISM_LINEAR)
         //   x2: exponential                   -> NON_GAUSSIAN
         //   x3: continuous but only 3 values  -> CONTINUOUS_FEW_VALUES
         //   x4: near-constant continuous      -> NEAR_CONSTANT

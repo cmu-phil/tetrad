@@ -20,14 +20,18 @@
 
 package edu.cmu.tetradapp.app;
 
-import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
+import edu.cmu.tetradapp.workbench.WorkbenchIcons;
+import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.LinkedHashMap;
@@ -59,11 +63,6 @@ final class SessionEditorToolbar extends JPanel {
     private final Map<JToggleButton, String> nodeTypes = new LinkedHashMap<>();
 
     /**
-     * Maps icon-bearing buttons to their image resource names, for L&F refresh.
-     */
-    private final Map<JToggleButton, String> buttonImageNames = new LinkedHashMap<>();
-
-    /**
      * The workbench this toolbar controls.
      */
     private final SessionEditorWorkbench workbench;
@@ -78,6 +77,11 @@ final class SessionEditorToolbar extends JPanel {
      * Whether the Shift key is currently held down.
      */
     private boolean shiftDown;
+
+    /**
+     * Sentinel entry in the button list marking a visual gap between groups of buttons.
+     */
+    private static final ButtonInfo GROUP_GAP = null;
 
     /**
      * Constructs a new session toolbar.
@@ -104,31 +108,41 @@ final class SessionEditorToolbar extends JPanel {
                                 + "<br>to construct the object in the second node."
                                 + "<br>As a shortcut, hold down the Control key."
                                 + "</html>"),
-                new ButtonInfo("Graph",          "Graph",             "graph",       "<html>Add a graph node.</html>"),
-                new ButtonInfo("Compare",        "Compare",           "compare",     "<html>Add a node to compare graphs or SEM IM's.</html>"),
-                new ButtonInfo("GridSearch",     "Grid Search",       "search",      "<html>Add a node to do a grid search.</html>"),
-                new ButtonInfo("PM",             "Parametric Model",  "pm",          "<html>Add a node for a parametric model.</html>"),
-                new ButtonInfo("IM",             "Instantiated Model","semIm",       "<html>Add a node for an instantiated model.</html>"),
-                new ButtonInfo("Estimator",      "Estimator",         "estimator",   "<html>Add a node for an estimator.</html>"),
+                GROUP_GAP,
+                // --- Real-data pipeline: load data, add knowledge, search. ---
                 new ButtonInfo("Data",           "Data",              "data",        "<html>Add a node for a data object.</html>"),
-                new ButtonInfo("Simulation",     "Simulation",        "simulation",  "<html>Add a node for a simulation object.</html>"),
+                new ButtonInfo("Knowledge",      "Knowledge",         "knowledge",   "<html>Add a knowledge box node.</html>"),
                 new ButtonInfo("Search",         "Search",            "search",      "<html>Add a node for a search algorithm.</html>"),
                 new ButtonInfo("Latent_Clusters","Latent Clusters",   "cluster",     "<html>Add a node for a clustering algorithm.</html>"),
                 new ButtonInfo("Latent_Structure","Latent Structure", "clustersearch","<html>Add a node for a block search.</html>"),
-                new ButtonInfo("Knowledge",      "Knowledge",         "knowledge",   "<html>Add a knowledge box node.</html>"),
+                new ButtonInfo("Graph",          "Graph",             "graph",       "<html>Add a graph node.</html>"),
+                new ButtonInfo("Compare",        "Compare",           "compare",     "<html>Add a node to compare graphs or SEM IM's.</html>"),
+                GROUP_GAP,
+                // --- Modeling and inference on a graph. ---
+                new ButtonInfo("PM",             "Parametric Model",  "pm",          "<html>Add a node for a parametric model.</html>"),
+                new ButtonInfo("Estimator",      "Estimator",         "estimator",   "<html>Add a node for an estimator.</html>"),
                 new ButtonInfo("Updater",        "Updater",           "updater",     "<html>Add a node for an updater.</html>"),
                 new ButtonInfo("Regression",     "Regression",        "regression",  "<html>Add a node for a regression.</html>"),
+                new ButtonInfo("IM",             "Instantiated Model","semIm",       "<html>Add a node for an instantiated model.</html>"),
+                GROUP_GAP,
+                // --- Simulation and benchmarking. ---
+                new ButtonInfo("Simulation",     "Simulation",        "simulation",  "<html>Add a node for a simulation object.</html>"),
+                new ButtonInfo("GridSearch",     "Grid Search",       "search",      "<html>Add a node to do a grid search.</html>"),
+                GROUP_GAP,
+                // --- Annotation. ---
                 new ButtonInfo("Note",           "Note",              "note",        "<html>Add a note to the session.</html>")
         };
 
         JToggleButton[] buttons = new JToggleButton[buttonInfos.length];
         for (int i = 0; i < buttonInfos.length; i++) {
-            buttons[i] = constructButton(buttonInfos[i]);
+            buttons[i] = buttonInfos[i] == GROUP_GAP ? null : constructButton(buttonInfos[i]);
         }
 
         ButtonGroup buttonGroup = new ButtonGroup();
         for (JToggleButton button : buttons) {
-            buttonGroup.add(button);
+            if (button != null) {
+                buttonGroup.add(button);
+            }
         }
 
         ChangeListener changeListener = e -> {
@@ -139,14 +153,23 @@ final class SessionEditorToolbar extends JPanel {
         };
 
         for (JToggleButton button : buttons) {
+            if (button == null) {
+                buttonsPanel.add(Box.createVerticalStrut(15));
+                continue;
+            }
             button.addChangeListener(changeListener);
             buttonsPanel.add(button);
             buttonsPanel.add(Box.createVerticalStrut(5));
         }
 
+//        buttonsPanel.setPreferredSize(new Dimension(120, 800));
+        buttonsPanel.setPreferredSize(new Dimension(135, buttonsPanel.getPreferredSize().height));
+
         setLayout(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(buttonsPanel);
-        scroll.setPreferredSize(new Dimension(130, 1000));
+        JScrollPane scroll = new JScrollPane(buttonsPanel,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
         add(scroll, BorderLayout.CENTER);
 
         // After an action, reset selection or keep edge button selected as appropriate.
@@ -207,10 +230,7 @@ final class SessionEditorToolbar extends JPanel {
     @Override
     public void updateUI() {
         super.updateUI();
-        if (this.buttonImageNames != null) {
-            this.buttonImageNames.forEach((button, imageName) ->
-                    button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName))));
-        }
+        // Icons read their colors from WorkbenchStyle at paint time, so nothing needs reloading.
         revalidate();
         repaint();
     }
@@ -250,16 +270,24 @@ final class SessionEditorToolbar extends JPanel {
         });
 
         String nodeTypeName = buttonInfo.getNodeTypeName();
-        if (SELECT_TYPE.equals(nodeTypeName) || EDGE_TYPE.equals(nodeTypeName)) {
-            String imageName = imagePrefix + ".gif";
-            button.setIcon(new ImageIcon(ImageUtils.getImage(this, imageName)));
-            this.buttonImageNames.put(button, imageName);
+        if (SELECT_TYPE.equals(nodeTypeName)) {
+            button.setIcon(WorkbenchIcons.forTool("move"));
+        } else if (EDGE_TYPE.equals(nodeTypeName)) {
+            button.setIcon(new SessionEdgeIcon());
         } else {
             button.setName(nodeTypeName);
-            button.setText("<html><center>" + buttonInfo.getDisplayName() + "</center></html>");
+            button.setText("<html>" + buttonInfo.getDisplayName() + "</html>");
+            button.setIcon(new NodeTypeIcon(nodeTypeName));
+            button.setHorizontalAlignment(SwingConstants.LEFT);
+            button.setIconTextGap(8);
         }
 
-        button.setMaximumSize(new Dimension(110, 40));
+        // Fix the button size so every button is the same width and the panel's
+        // preferred width reflects that, rather than the unwrapped HTML text width.
+        // The width leaves room for the type icon plus two lines of label text.
+        button.setMargin(new Insets(2, 8, 2, 6));
+        button.setPreferredSize(new Dimension(130, 40));
+        button.setMaximumSize(new Dimension(130, 40));
         button.setToolTipText(buttonInfo.getToolTipText());
         this.nodeTypes.put(button, nodeTypeName);
 
@@ -307,6 +335,123 @@ final class SessionEditorToolbar extends JPanel {
 
     private void setShiftDown(boolean shiftDown) {
         this.shiftDown = shiftDown;
+    }
+
+    // -------------------------------------------------------------------------
+    // NodeTypeIcon
+    // -------------------------------------------------------------------------
+
+    /**
+     * A small vector icon that echoes the session node card for a node type: a rounded rectangle in the card fill
+     * with a type-tinted band across the top. Colors come from {@link StdDisplayComp}, so the toolbar and the
+     * workbench nodes always agree, and they are read at paint time, so the icon follows light and dark mode
+     * without being rebuilt.
+     */
+    private static final class NodeTypeIcon implements Icon {
+
+        private static final int W = 18;
+        private static final int H = 16;
+        private static final int ARC = 5;
+        private static final int BAND = 6;
+
+        private final String nodeType;
+
+        private NodeTypeIcon(String nodeType) {
+            this.nodeType = nodeType;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return W;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return H;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+                Shape card = new RoundRectangle2D.Double(x + 0.5, y + 0.5, W - 1, H - 1, ARC, ARC);
+
+                g2.setColor(StdDisplayComp.cardFill());
+                g2.fill(card);
+
+                Area band = new Area(card);
+                band.intersect(new Area(new Rectangle2D.Double(x, y, W, BAND)));
+                g2.setColor(StdDisplayComp.bandFill(nodeType));
+                g2.fill(band);
+
+                g2.setStroke(new BasicStroke(1f));
+                g2.setColor(StdDisplayComp.cardBorder());
+                g2.draw(card);
+            } finally {
+                g2.dispose();
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // SessionEdgeIcon
+    // -------------------------------------------------------------------------
+
+    /**
+     * Two miniature session cards joined by an arrow: the draw-edge tool. The cards are drawn the same way as
+     * {@link NodeTypeIcon}, and the arrow the same way as the graph toolbar's edge icons.
+     */
+    private static final class SessionEdgeIcon implements Icon {
+
+        private static final int W = 64;
+        private static final int H = 26;
+
+        @Override
+        public int getIconWidth() {
+            return W;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return H;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+
+                int cw = 18, ch = 16, arc = 5, band = 6;
+                int cy = y + (H - ch) / 2;
+                int lx = x + 2, rx = x + W - 2 - cw;
+
+                miniCard(g2, lx, cy, cw, ch, arc, band, "Data");
+                miniCard(g2, rx, cy, cw, ch, arc, band, "Search");
+
+                g2.setColor(WorkbenchStyle.edge());
+                WorkbenchIcons.paintArrow(g2, lx + cw + 1, y + H / 2.0, rx - 1, y + H / 2.0);
+            } finally {
+                g2.dispose();
+            }
+        }
+
+        private static void miniCard(Graphics2D g2, int x, int y, int w, int h, int arc, int band, String type) {
+            Shape card = new RoundRectangle2D.Double(x + 0.5, y + 0.5, w - 1, h - 1, arc, arc);
+            g2.setColor(StdDisplayComp.cardFill());
+            g2.fill(card);
+            Area top = new Area(card);
+            top.intersect(new Area(new Rectangle2D.Double(x, y, w, band)));
+            g2.setColor(StdDisplayComp.bandFill(type));
+            g2.fill(top);
+            g2.setStroke(new BasicStroke(1f));
+            g2.setColor(StdDisplayComp.cardBorder());
+            g2.draw(card);
+        }
     }
 
     // -------------------------------------------------------------------------

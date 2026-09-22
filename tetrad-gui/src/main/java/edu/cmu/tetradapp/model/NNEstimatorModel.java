@@ -47,7 +47,7 @@ import java.util.Objects;
  *       is repopulated on editor reopen without re-running the computation.</li>
  * </ul>
  */
-public final class NNEstimatorModel extends DataWrapper implements SessionModel {
+public final class NNEstimatorModel extends DataWrapper implements SessionModel, GraphSource {
 
     @Serial
     private static final long serialVersionUID = 24L;
@@ -70,6 +70,16 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
     private CVReport persistedCvReport;
 
     private List<EdgeStrengthPair> persistedEdgeStrengthResults = new ArrayList<>();
+
+    /**
+     * When non-null, the DAG the estimator is fitted to instead of the
+     * session's input graph — set by "apply pruning" in the compare panel.
+     * Persisted so a saved session reopens on the pruned model.
+     */
+    private Graph prunedGraph;
+
+    /** The most recent prune proposal; persisted like the CV report. */
+    private edu.cmu.tetrad.sem.PredictionPruneReport persistedPruneReport;
 
     // ── constructor ───────────────────────────────────────────────────────────
 
@@ -110,7 +120,7 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
         this.sampleSize = TMath.max(1, sampleSize);
 
         NNEstimatorParams params = buildParams();
-        estimator = new NNEstimator(inputData, inputGraph, params);
+        estimator = new NNEstimator(inputData, getWorkingGraph(), params);
         DataSet simulated = estimator.fitAndSimulate(this.sampleSize);
 
         // Make both datasets available to downstream session nodes.
@@ -208,6 +218,16 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
     }
 
     /**
+     * Returns the fraction of rows in the most recent resimulation in which
+     * some mechanism was asked to extrapolate beyond its training range.
+     *
+     * @return the extrapolation fraction, or NaN if nothing has been simulated
+     */
+    public double getExtrapolationFraction() {
+        return estimator == null ? Double.NaN : estimator.getLastExtrapolationFraction();
+    }
+
+    /**
      * Returns the CV report from the most recent {@link #runCrossValidate}
      * call, preferring the live estimator copy and falling back to the
      * persisted copy after a session reload.
@@ -237,7 +257,53 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
 
     // ── GraphSource ───────────────────────────────────────────────────────────
 
-    public Graph getGraph() { return inputGraph; }
+    /**
+     * The graph of the edges currently in the model: the pruned graph when
+     * pruning has been applied, otherwise the session's input graph. This is
+     * what a downstream Graph box receives. The original input graph remains
+     * available via {@link #getInputGraph()}.
+     * @return the current model graph
+     */
+    public Graph getGraph() { return getWorkingGraph(); }
+
+
+    /**
+     * The graph the estimator is (or will be) fitted to: the pruned graph
+     * when one has been applied, otherwise the session's input graph.
+     * @return the working graph
+     */
+    public Graph getWorkingGraph() {
+        return prunedGraph != null ? prunedGraph : inputGraph;
+    }
+
+    /**
+     * Applies a pruned graph; the next {@link #resimulate} fits to it.
+     * Pass null to revert to the session's input graph.
+     * @param g the pruned graph, or null to revert
+     */
+    public void setPrunedGraph(Graph g) { this.prunedGraph = g; }
+
+    /**
+     * The applied pruned graph, or null if none.
+     * @return the pruned graph or null
+     */
+    public Graph getPrunedGraph() { return prunedGraph; }
+
+    /**
+     * Stores the most recent prune proposal for session persistence.
+     * @param r the report
+     */
+    public void setPruneReport(edu.cmu.tetrad.sem.PredictionPruneReport r) {
+        this.persistedPruneReport = r;
+    }
+
+    /**
+     * The persisted prune proposal, or null if none.
+     * @return the report or null
+     */
+    public edu.cmu.tetrad.sem.PredictionPruneReport getPruneReport() {
+        return persistedPruneReport;
+    }
 
     // ── serialization ─────────────────────────────────────────────────────────
 
@@ -259,9 +325,57 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel 
 
     private NNEstimatorParams buildParams() {
         NNEstimatorParams p = new NNEstimatorParams();
-        p.seed = System.nanoTime();
+        NNEstimatorParams d = new NNEstimatorParams();
+        p.seed = parameters.getBoolean(RANDOMIZE_SEED, false)
+                ? System.nanoTime()
+                : parameters.getLong(SEED, DEFAULT_SEED);
+        p.hidden             = parameters.getInt(HIDDEN, d.hidden);
+        p.epochs             = parameters.getInt(EPOCHS, d.epochs);
+        p.lr                 = parameters.getDouble(LEARNING_RATE, d.lr);
+        p.l2                 = parameters.getDouble(WEIGHT_DECAY, d.l2);
+        p.mmdFeatures        = parameters.getInt(MMD_FEATURES, d.mmdFeatures);
+        p.edgeDrawsPerConfig = parameters.getInt(EDGE_DRAWS_PER_CONFIG, d.edgeDrawsPerConfig);
+        p.edgeRepeats        = parameters.getInt(EDGE_REPEATS, d.edgeRepeats);
+        p.edgeNullRefits     = parameters.getInt(EDGE_NULL_REFITS, d.edgeNullRefits);
+        p.shuffleFolds       = parameters.getBoolean(SHUFFLE_FOLDS, d.shuffleFolds);
         return p;
     }
+
+    /**
+     * Returns the session parameters this model reads.
+     *
+     * @return the parameters object shared with the params editor
+     */
+    public Parameters getParameters() {
+        return parameters;
+    }
+
+    // ── parameter keys (read by buildParams, written by NNEstimatorParamsEditor) ──
+
+    /** Long. Seed for training, simulation, folds, and edge strength. */
+    public static final String SEED = "nnSeed";
+    /** Default seed; fixed so two NN Estimator boxes on the same data are comparable. */
+    public static final long DEFAULT_SEED = 42L;
+    /** Boolean. If true, a fresh time-based seed is used on every resimulate. */
+    public static final String RANDOMIZE_SEED = "nnRandomizeSeed";
+    /** Integer. Hidden units per node network. */
+    public static final String HIDDEN = "nnHidden";
+    /** Integer. Training epochs per node. */
+    public static final String EPOCHS = "nnEpochs";
+    /** Double. SGD learning rate. */
+    public static final String LEARNING_RATE = "nnLearningRate";
+    /** Double. L2 weight decay. */
+    public static final String WEIGHT_DECAY = "nnWeightDecay";
+    /** Integer. Random Fourier features for MMD². */
+    public static final String MMD_FEATURES = "nnMmdFeatures";
+    /** Integer. Child draws per parent configuration in edge strength. */
+    public static final String EDGE_DRAWS_PER_CONFIG = "nnEdgeDrawsPerConfig";
+    /** Integer. Independent repeats of each edge-strength computation. */
+    public static final String EDGE_REPEATS = "nnEdgeRepeats";
+    /** Integer. Refits for the refit-noise null; 0 to skip. */
+    public static final String EDGE_NULL_REFITS = "nnEdgeNullRefits";
+    /** Boolean. Shuffle rows before cutting CV folds. */
+    public static final String SHUFFLE_FOLDS = "nnShuffleFolds";
 
     // ── nested types ──────────────────────────────────────────────────────────
 

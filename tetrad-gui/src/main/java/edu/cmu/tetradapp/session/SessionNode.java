@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.Simulation;
+import edu.cmu.tetradapp.util.ErrorDialogs;
 
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
@@ -108,6 +109,16 @@ public class SessionNode implements Node {
      * whether one of the objects used to create the model has been destroyed.
      */
     private Class[] modelParamTypes;
+
+    /**
+     * The concrete classes of the parent models actually bound into the constructor of the current model, excluding
+     * Parameters and the resurrected old model. Recorded at construction for reassessModel: the declared constructor
+     * parameter types in modelParamTypes can be interfaces or supertypes (e.g., GraphSource, DataWrapper), which never
+     * compare equal to any parent model's concrete class (e.g., GraphWrapper, Simulation), so a validity check against
+     * modelParamTypes destroys every model built through such a slot. Null when no model has been constructed, or for
+     * sessions saved before this field existed (reassessment is then skipped). Added 2026-9-21.
+     */
+    private List<Class<?>> constructedParentClasses;
 
     /**
      * The model itself. Once this is created, another model cannot be created until this one is explicitly destroyed.
@@ -588,7 +599,15 @@ public class SessionNode implements Node {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e.getMessage());
+
+                // This catch runs on the WatchedProcess worker thread during downstream propagation. Showing a
+                // modal JOptionPane directly from that thread while the modal "Processing" dialog is up blocks the
+                // worker inside the dialog and can deadlock with the Processing dialog's modality; and when the
+                // exception's message is null (e.g., a NullPointerException), the dialog is blank. ErrorDialogs
+                // queues the dialog on the EDT without blocking this thread and always shows the exception type
+                // and message.
+                ErrorDialogs.showError(JOptionUtils.centeringComp(), "Error",
+                        getDisplayName() + " could not be executed.", e);
             }
         }
     }
@@ -641,6 +660,7 @@ public class SessionNode implements Node {
         }
 
         this.modelParamTypes = null;
+        this.constructedParentClasses = null;
         getSessionSupport().fireModelDestroyed(this);
     }
 
@@ -1010,7 +1030,8 @@ public class SessionNode implements Node {
      */
     public Object[] getModelConstructorArguments(Class modelClass) {
         List<Object> parentModels = listParentModels(); // never returns null
-        parentModels.add(getParam(modelClass));
+        Parameters param = getParam(modelClass);
+        parentModels.add(param);
 
         Constructor[] constructors = modelClass.getConstructors();
 
@@ -1023,7 +1044,51 @@ public class SessionNode implements Node {
             }
         }
 
+        // Array-form constructors (X[] parents, Parameters params), e.g. the data-manipulation models taking
+        // DataWrapper[]: the parent models are the array's elements, so the flat list of matching parents plus
+        // the parameter object is what a parameter editor should see. Added 2026-9-10.
+        if (param != null) {
+            for (Constructor constructor : constructors) {
+                List<Object> matched = arrayFormParents(constructor.getParameterTypes(), parentModels);
+
+                if (matched != null) {
+                    matched.add(param);
+                    return matched.toArray();
+                }
+            }
+        }
+
         return null;
+    }
+
+    /**
+     * For a constructor of the form (X[] parents, Parameters params), returns the given objects assignable to X,
+     * or null if the constructor is not of that form or no object matches. Before this, such constructors were
+     * recognized when creating the model (see createModelUsingArguments) but not by
+     * existsParameterizedConstructor or getModelConstructorArguments, which insisted that the number of
+     * candidates equal the number of constructor parameters; so a model taking DataWrapper[] with two data
+     * parents (or with one, since DataWrapper[] is not assignable from DataWrapper) never had its parameter
+     * editor shown. Added 2026-9-10.
+     *
+     * @param parameterTypes the constructor's parameter types
+     * @param objects        the candidate parent models (and the parameter object, which is ignored here)
+     * @return the matching parents, in order, or null
+     */
+    private static List<Object> arrayFormParents(Class[] parameterTypes, List<?> objects) {
+        if (parameterTypes.length != 2 || !parameterTypes[0].isArray() || parameterTypes[1] != Parameters.class) {
+            return null;
+        }
+
+        Class<?> component = parameterTypes[0].getComponentType();
+        List<Object> matched = new ArrayList<>();
+
+        for (Object o : objects) {
+            if (o != null && !(o instanceof Parameters) && component.isAssignableFrom(o.getClass())) {
+                matched.add(o);
+            }
+        }
+
+        return matched.isEmpty() ? null : matched;
     }
 
     /**
@@ -1167,6 +1232,11 @@ public class SessionNode implements Node {
                 Object[] arguments = assignParameters(parameterTypes, parentModels);
 
                 if (arguments != null) {
+                    return true;
+                }
+
+                // Array-form constructor (X[] parents, Parameters params); see arrayFormParents. Added 2026-9-10.
+                if (param != null && arrayFormParents(parameterTypes, parentModels) != null) {
                     return true;
                 }
             }
@@ -1804,6 +1874,32 @@ public class SessionNode implements Node {
                 this.modelParamTypes = constructorTypes;
                 this.lastModelClass = modelClass;
 
+                // Record the concrete classes of the parent models actually bound into the
+                // constructor, excluding Parameters and the resurrected old model, for
+                // reassessModel. An array-form argument (C1[], Parameters) is unpacked to
+                // its elements.
+                List<Class<?>> parentClasses = new ArrayList<>();
+
+                for (Object argument : arguments) {
+                    if (argument == null || argument instanceof Parameters || argument == oldModelInPool) {
+                        continue;
+                    }
+
+                    if (argument.getClass().isArray()) {
+                        int len = Array.getLength(argument);
+                        for (int i = 0; i < len; i++) {
+                            Object element = Array.get(argument, i);
+                            if (element != null && !(element instanceof Parameters) && element != oldModelInPool) {
+                                parentClasses.add(element.getClass());
+                            }
+                        }
+                    } else {
+                        parentClasses.add(argument.getClass());
+                    }
+                }
+
+                this.constructedParentClasses = parentClasses;
+
                 getSessionSupport().fireModelCreated(this);
                 break;
             }
@@ -1954,23 +2050,27 @@ public class SessionNode implements Node {
     /**
      * Reassesses whether the current model is still valid given the current
      * parent models. Destroys the model if the multiset of current parent model
-     * types no longer matches the multiset of types that were used to construct
-     * it. Uses a frequency-count comparison so that duplicate types are handled
-     * correctly (e.g. two DataModel parents are distinct from one).
+     * classes no longer matches the multiset of parent model classes that were
+     * bound into its constructor. Uses a frequency-count comparison so that
+     * duplicate types are handled correctly (e.g. two DataModel parents are
+     * distinct from one).
+     *
+     * <p>The comparison is against the CONCRETE classes of the arguments bound
+     * at construction (constructedParentClasses), not the declared constructor
+     * parameter types (modelParamTypes): declared types can be interfaces or
+     * supertypes (e.g., GraphSource, DataWrapper), which never compare equal to
+     * a parent model's concrete class (e.g., GraphWrapper, Simulation), so
+     * comparing against them destroyed every model built through such a slot -
+     * in particular, any search box with a graph parent. The resurrected old
+     * model, which is a constructor argument but not a parent, is excluded from
+     * the recorded classes for the same reason. Fixed 2026-9-21.</p>
      */
     private void reassessModel() {
-        if (this.modelParamTypes == null) {
+        if (this.constructedParentClasses == null) {
             return;
         }
 
-        for (Class clazz : this.modelParamTypes) {
-            if (clazz == null) {
-                return;
-            }
-        }
-
-        // Collect the types of models currently present in parent nodes,
-        // excluding Parameters (which is not a parent model, it's a config object).
+        // Collect the classes of models currently present in parent nodes.
         List<Class<?>> currentTypes = new ArrayList<>();
         for (SessionNode node : this.parents) {
             Object model = node.getModel();
@@ -1979,17 +2079,9 @@ public class SessionNode implements Node {
             }
         }
 
-        // Collect the non-Parameters types that were used to construct the model.
-        List<Class<?>> constructedTypes = new ArrayList<>();
-        for (Class clazz : this.modelParamTypes) {
-            if (clazz != Parameters.class) {
-                constructedTypes.add(clazz);
-            }
-        }
-
         // Compare as multisets via frequency maps. If they differ, the model
         // was built from a parent configuration that no longer exists.
-        if (!sameMultiset(currentTypes, constructedTypes)) {
+        if (!sameMultiset(currentTypes, this.constructedParentClasses)) {
             destroyModel();
         }
     }

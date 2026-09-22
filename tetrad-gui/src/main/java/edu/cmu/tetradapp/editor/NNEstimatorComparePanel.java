@@ -10,6 +10,7 @@ import edu.cmu.tetrad.sem.CVReport;
 import edu.cmu.tetrad.sem.EdgeStrengthResult;
 import edu.cmu.tetrad.sem.NodeCVSummary;
 import edu.cmu.tetrad.sem.PartialEdgeStrengthResult;
+import edu.cmu.tetrad.sem.PredictionPruneReport;
 import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.model.NNEstimatorModel;
@@ -28,16 +29,25 @@ import java.util.concurrent.*;
 /**
  * Side-by-side visual comparison panel for {@link NNEstimatorModel}.
  *
- * <p>The panel has three tabs:
+ * <p>The panel's tabs:
  * <ol>
  *   <li><b>Cross-Validation</b> — k-fold OOS metrics per node plus whole-graph
  *       MMD². Results are restored from the model on relaunch.</li>
- *   <li><b>Edge Strength</b> — select a child node and compute the marginal
- *       and partial strength of each of its parent edges. Results appear
+ *   <li><b>Edge Strength</b> — select a child node and compute the
+ *       intervention strength (mechanism held fixed, parent randomized) and
+ *       partial strength of each of its parent edges. Results appear
  *       progressively as each parent is computed, are accumulated across
  *       multiple child selections, and are restored from the model on
  *       relaunch.</li>
+ *   <li><b>Graph</b> — the working DAG with edges shaded by a statistic
+ *       chosen from a dropdown (see {@link NNEstimatorGraphPanel}); reads
+ *       results already computed on the other tabs.</li>
+ *   <li><b>Prune</b> — propose and apply edge deletions whose removal does
+ *       not degrade held-out prediction.</li>
  *   <li><b>Observed vs. Resimulated</b> — side-by-side plot matrix.</li>
+ *   <li><b>Explanation</b> — static plain-language account of what the
+ *       estimator fits, what each tab computes, and how to read the numbers
+ *       (see {@link NNEstimatorExplanationPanel}).</li>
  * </ol>
  *
  * <p>All long-running operations run on background threads via
@@ -49,11 +59,18 @@ public final class NNEstimatorComparePanel extends JPanel {
 
     private final NNEstimatorModel model;
     private final DataSet observed;
-    private final Graph dag;
+    private Graph dag;
 
     // ── tab 1: cross-validation ───────────────────────────────────────────────
 
     private final JSpinner kSpinner;
+    /**
+     * Second spinner for the Edge Strength tab. A Swing component can have
+     * only one parent, so the CV tab's {@link #kSpinner} cannot also be placed
+     * on the Edge Strength tab; this one shares its {@link SpinnerNumberModel}
+     * so the two stay in sync.
+     */
+    private final JSpinner edgeKSpinner;
     private final JButton runCvButton = new JButton("Run Cross-Validation");
     private final JLabel cvSummaryLabel = new JLabel(" ");
     private final CVTableModel cvTableModel = new CVTableModel();
@@ -62,8 +79,9 @@ public final class NNEstimatorComparePanel extends JPanel {
     // ── tab 2: edge strength ──────────────────────────────────────────────────
 
     private final JComboBox<String> childCombo = new JComboBox<>();
-    private final JSpinner edgeSimNSpinner =
-            new JSpinner(new SpinnerNumberModel(5000, 100, 1_000_000, 500));
+    /** Number of observed parent configurations each edge strength is averaged over. */
+    private final JSpinner edgeConfigSpinner =
+            new JSpinner(new SpinnerNumberModel(300, 10, 100_000, 50));
     private final JButton computeEdgeButton = new JButton("Compute Parent Strengths");
     private final JButton computeAllButton  = new JButton("Compute All");  // NEW
     private final JLabel edgeProgressLabel = new JLabel(" ");
@@ -77,6 +95,23 @@ public final class NNEstimatorComparePanel extends JPanel {
     private final JButton resimulateButton = new JButton("Resimulate");
     private DataSet simulated;
     private DualPlotMatrix dual;
+
+    // ── tab 4: prune ──────────────────────────────────────────────────────────
+
+    private final JSpinner pruneTSpinner =
+            new JSpinner(new SpinnerNumberModel(1.0, 0.0, 10.0, 0.25));
+    private final JSpinner pruneKSpinner;
+    private final JButton proposePruneButton = new JButton("Propose Pruning");
+    private final JButton applyPruneButton   = new JButton("Apply && Re-estimate");
+    private final JButton revertPruneButton  = new JButton("Revert Prune");
+    private final JLabel pruneProgressLabel  = new JLabel(" ");
+    private final PruneTableModel pruneTableModel = new PruneTableModel();
+    private final JTable pruneTable = new JTable(pruneTableModel);
+    private PredictionPruneReport pruneReport;
+
+    // ── graph tab ─────────────────────────────────────────────────────────────
+
+    private final NNEstimatorGraphPanel graphPanel;
 
     // ── shared status ─────────────────────────────────────────────────────────
 
@@ -94,6 +129,8 @@ public final class NNEstimatorComparePanel extends JPanel {
         int n0 = TMath.max(1, observed.getNumRows());
         this.nSpinner = new JSpinner(new SpinnerNumberModel(n0, 1, 10_000_000, 50));
         this.kSpinner = new JSpinner(new SpinnerNumberModel(5, 2, TMath.min(20, n0), 1));
+        this.edgeKSpinner = new JSpinner(kSpinner.getModel());
+        this.pruneKSpinner = new JSpinner(kSpinner.getModel());
 
         // Fallback to observed data if no simulation exists yet (e.g. after reload).
         this.simulated = model.getSimulatedData() != null
@@ -104,13 +141,24 @@ public final class NNEstimatorComparePanel extends JPanel {
 //        computeEdgeButton.setEnabled(fitted);
 //        computeAllButton.setEnabled(fitted && childCombo.getItemCount() > 0);
 
-        edgeSimNSpinner.setValue(observed.getNumRows());
+        edgeConfigSpinner.setValue(TMath.max(10, TMath.min(300, observed.getNumRows())));
 
         // Build tabs.
+        this.graphPanel = new NNEstimatorGraphPanel(model);
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Cross-Validation",         buildCvTab());
         tabs.addTab("Edge Strength",            buildEdgeStrengthTab());
+        tabs.addTab("Graph",                    graphPanel);
+        tabs.addTab("Prune",                    buildPruneTab());
         tabs.addTab("Observed vs. Resimulated", buildPlotTab());
+        tabs.addTab("Explanation",              NNEstimatorExplanationPanel.create());
+
+        // Recolor from the latest persisted results whenever the Graph tab is
+        // shown, so values computed on other tabs appear without a manual
+        // refresh.
+        tabs.addChangeListener(e -> {
+            if (tabs.getSelectedComponent() == graphPanel) graphPanel.refresh();
+        });
 
         add(tabs,          BorderLayout.CENTER);
         add(buildFooter(), BorderLayout.SOUTH);
@@ -121,7 +169,7 @@ public final class NNEstimatorComparePanel extends JPanel {
         if (existingCv != null) {
             cvTableModel.setReport(existingCv);
             cvSummaryLabel.setText(existingCv.toStatusLine());
-            status.setText(existingCv.toStatusLine());
+            refreshAdequacyStatus(model);
         }
 
         // ── Restore persisted edge-strength results ───────────────────────────
@@ -140,10 +188,28 @@ public final class NNEstimatorComparePanel extends JPanel {
                     + "before running CV or computing edge strengths.");
         }
 
+        // ── Restore persisted prune report ────────────────────────────────────
+        PredictionPruneReport savedPrune = model.getPruneReport();
+        if (savedPrune != null) {
+            this.pruneReport = savedPrune;
+            pruneTableModel.setReport(savedPrune);
+            applyPruneButton.setEnabled(model.getPrunedGraph() == null
+                    && !savedPrune.getDeletions().isEmpty());
+            if (model.getPrunedGraph() != null) {
+                this.dag = model.getWorkingGraph();
+                pruneProgressLabel.setText(
+                        "Pruned graph applied; model was re-estimated on it.");
+            }
+        } else {
+            applyPruneButton.setEnabled(false);
+        }
+        revertPruneButton.setEnabled(model.getPrunedGraph() != null);
+
         wireResimulate();
         wireCv();
         wireEdgeStrength();
         wireComputeAll();
+        wirePrune();
 
         setPreferredSize(new Dimension(1200, 820));
     }
@@ -200,10 +266,10 @@ public final class NNEstimatorComparePanel extends JPanel {
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         controls.add(new JLabel("Child node:"));
         controls.add(childCombo);
-        controls.add(new JLabel("Simulated n:"));
-        controls.add(edgeSimNSpinner);
+        controls.add(new JLabel("Parent configs:"));
+        controls.add(edgeConfigSpinner);
         controls.add(new JLabel("  CV k:"));
-        controls.add(kSpinner);
+        controls.add(edgeKSpinner);
         controls.add(computeEdgeButton);
         controls.add(computeAllButton);   // NEW
 
@@ -224,17 +290,36 @@ public final class NNEstimatorComparePanel extends JPanel {
         edgeTable.setFillsViewportHeight(true);
         edgeTable.setRowHeight(22);
         edgeTable.setAutoCreateRowSorter(true);
-        styleEdgeTable();
+        // With the AME columns the table is wider than the panel; turn off
+        // auto-resize so the enclosing scrollpane scrolls horizontally
+        // instead of crushing every column.
+        edgeTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        int[] widths = {160, 70, 60, 100, 130, 130, 80, 80, 80, 95};
+        for (int c = 0; c < widths.length
+                && c < edgeTable.getColumnModel().getColumnCount(); c++) {
+            edgeTable.getColumnModel().getColumn(c).setPreferredWidth(widths[c]);
+        }
         JScrollPane scroll = new JScrollPane(edgeTable);
         scroll.setBorder(new TitledBorder(
                 "Parent strength results (history — sortable by MMD²)"));
 
         JLabel note = new JLabel(
                 "<html><i>"
-                        + "MMD² and ΔVar: marginal effect of removing the edge. "
-                        + "Partial R²: OOS R² of residual regression R ~ X after controlling for "
-                        + "other parents — positive (green/bold) = X explains variance beyond other parents. "
-                        + "KL divergence in bits for discrete nodes."
+                        + "MMD², ΔVar/Var(Y) and KL: intervention strength — the child's fitted mechanism is held "
+                        + "fixed and the parent's input is replaced by an independent draw, averaged over "
+                        + "observed parent configurations (DoWhy arrow strength); ± SD is across repeats. "
+                        + "Null MMD²: what retraining the child with the same parents produces; gray italic = "
+                        + "not above that band. "
+                        + "Partial: held-out R² (or cross-entropy) gain from the parent after controlling for the "
+                        + "other parents, on the same folds as the Cross-Validation tab — "
+                        + "positive (green/bold) = the parent adds information beyond them. "
+                        + "A redundant parent scores high on the first and near zero on the second. "
+                        + "AME: signed average marginal effect of the parent on a continuous child "
+                        + "(held-out central finite differences, other parents at observed values); "
+                        + "AME (std) multiplies by SD(parent)/SD(child) for comparability. "
+                        + "An asterisk marks a non-monotone fitted effect, where the sign varies "
+                        + "over the data range. AME cells are grayed when the partial ΔR² is near "
+                        + "zero, since a redundant parent's share of the fitted effect is arbitrary."
                         + "</i></html>");
         note.setFont(note.getFont().deriveFont(Font.PLAIN, 11f));
         note.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
@@ -352,7 +437,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                         CVReport report = get();
                         cvTableModel.setReport(report);
                         cvSummaryLabel.setText(report != null ? report.toStatusLine() : " ");
-                        status.setText(report != null ? report.toStatusLine() : "CV complete.");
+                        refreshAdequacyStatus(model);
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         cvSummaryLabel.setText("Cross-validation interrupted.");
@@ -391,7 +476,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                 return;
             }
 
-            int simN  = ((Number) edgeSimNSpinner.getValue()).intValue();
+            int numConfigs = ((Number) edgeConfigSpinner.getValue()).intValue();
             int cvK   = ((Number) kSpinner.getValue()).intValue();
             int total = allEdges.size();
 
@@ -420,7 +505,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                     EdgeStrengthResult edge = model.getEstimator()
                             .computeEdgeStrength(
                                     pc.parent().getName(),
-                                    pc.child().getName(), simN);
+                                    pc.child().getName(), numConfigs);
                     PartialEdgeStrengthResult partial = model.getEstimator()
                             .computePartialEdgeStrength(
                                     pc.parent().getName(),
@@ -471,7 +556,9 @@ public final class NNEstimatorComparePanel extends JPanel {
                                         edgeResultLabel.setText(
                                                 "Strongest overall: "
                                                         + strongest.edge().toSummaryLine()));
-                        status.setText("All edge strengths computed.");
+                        long above = results.stream().filter(p -> p.edge().isAboveNoise()).count();
+                        status.setText("All edge strengths computed: " + above + " of "
+                                + results.size() + " above the refit-noise band.");
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         edgeProgressLabel.setText("Interrupted.");
@@ -523,7 +610,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                 return;
             }
 
-            int simN  = ((Number) edgeSimNSpinner.getValue()).intValue();
+            int numConfigs = ((Number) edgeConfigSpinner.getValue()).intValue();
             int cvK   = ((Number) kSpinner.getValue()).intValue();
             int total = parents.size();
 
@@ -554,7 +641,7 @@ public final class NNEstimatorComparePanel extends JPanel {
                 completion.submit(() -> {
                     EdgeStrengthResult edge = model.getEstimator()
                             .computeEdgeStrength(
-                                    parent.getName(), childName, simN);
+                                    parent.getName(), childName, numConfigs);
                     PartialEdgeStrengthResult partial = model.getEstimator()
                             .computePartialEdgeStrength(
                                     parent.getName(), childName, cvK);
@@ -643,13 +730,26 @@ public final class NNEstimatorComparePanel extends JPanel {
                     + "before running CV or computing edge strengths.");
             return;
         }
-        status.setText(String.format(
-                "n = %d  |  MMD² = %.4f  |  Mean node improvement = %.4f"
-                        + "  |  Nodes improved = %.0f%%",
-                model.getSampleSize(),
-                report.getMmd2(),
-                report.getMeanImprovement(),
-                report.getFracImproved() * 100.0));
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("n = %d  |  MMD² = %.4f", model.getSampleSize(), report.getMmd2()));
+
+        double extrap = model.getExtrapolationFraction();
+        if (Double.isFinite(extrap)) {
+            sb.append(String.format("  |  Extrapolating rows = %.1f%%", extrap * 100.0));
+        }
+
+        CVReport cv = model.getCvReport();
+        if (cv != null) {
+            sb.append("  |  ").append(cv.toStatusLine());
+        } else {
+            sb.append(String.format("  |  Training fit (in-sample): %.0f%% of nodes beat marginal",
+                    report.getFracImproved() * 100.0));
+        }
+        status.setText(sb.toString());
+        status.setToolTipText("MMD² is on standardized data. Extrapolating rows: fraction of "
+                + "resimulated rows where some parent lay more than 4 training SDs from its "
+                + "training mean. Run Cross-Validation for held-out fit; until then the fit "
+                + "shown is on the training rows.");
     }
 
     // ── CV table styling ──────────────────────────────────────────────────────
@@ -710,7 +810,53 @@ public final class NNEstimatorComparePanel extends JPanel {
                 setHorizontalAlignment(modelCol == EdgeStrengthTableModel.COL_EDGE
                         ? SwingConstants.LEFT : SwingConstants.RIGHT);
 
-                if (modelCol == EdgeStrengthTableModel.COL_PARTIAL
+                int modelRow = table.convertRowIndexToModel(row);
+                boolean aboveNoise = edgeTableModel.isAboveNoise(modelRow);
+                setToolTipText(null);
+
+                if ((modelCol == EdgeStrengthTableModel.COL_MMD2
+                     || modelCol == EdgeStrengthTableModel.COL_NULL) && !aboveNoise) {
+                    setForeground(Color.GRAY);
+                    setFont(getFont().deriveFont(Font.ITALIC));
+                    setToolTipText("MMD² is within the refit-noise band for this child: "
+                            + "not distinguishable from training randomness.");
+                } else if ((modelCol == EdgeStrengthTableModel.COL_AME
+                            || modelCol == EdgeStrengthTableModel.COL_AME_STD)
+                        && value instanceof String s && !s.equals("—")) {
+                    boolean nonMono = s.endsWith("*");
+                    boolean weak = edgeTableModel.isPartialWeak(modelRow);
+                    if (weak) {
+                        // Parent is largely redundant given the other parents:
+                        // the fitted mechanism's credit split is arbitrary, so
+                        // the AME describes one of many equally good fits.
+                        setForeground(Color.GRAY);
+                        setFont(getFont().deriveFont(Font.ITALIC));
+                        setToolTipText("Partial ΔR² is near zero: this parent is "
+                                + "largely redundant given the child's other parents, "
+                                + "so the model's credit assignment — and this AME — "
+                                + "is not identified by the data."
+                                + (nonMono ? " Also non-monotone over the data range."
+                                           : ""));
+                    } else {
+                        try {
+                            double v = Double.parseDouble(
+                                    nonMono ? s.substring(0, s.length() - 1).trim() : s);
+                            setForeground(v > 0 ? new Color(0, 130, 0)
+                                    : v < 0 ? Color.RED : table.getForeground());
+                            setFont(getFont().deriveFont(nonMono ? Font.ITALIC : Font.PLAIN));
+                        } catch (NumberFormatException ignored) {
+                            setForeground(isSelected
+                                    ? table.getSelectionForeground()
+                                    : table.getForeground());
+                            setFont(getFont().deriveFont(Font.PLAIN));
+                        }
+                        if (nonMono) {
+                            setToolTipText("Fitted effect changes sign over the data range "
+                                    + "(non-monotone); this average mixes regions of "
+                                    + "opposite sign.");
+                        }
+                    }
+                } else if (modelCol == EdgeStrengthTableModel.COL_PARTIAL
                         && value instanceof String s && !s.equals("—")) {
                     try {
                         double v = Double.parseDouble(s);
@@ -736,6 +882,231 @@ public final class NNEstimatorComparePanel extends JPanel {
                 return c;
             }
         });
+    }
+
+    // ── prune tab ─────────────────────────────────────────────────────────────
+
+    private JPanel buildPruneTab() {
+        JPanel tab = new JPanel(new BorderLayout(8, 8));
+        tab.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        controls.add(new JLabel("Number of folds (k):"));
+        controls.add(pruneKSpinner);
+        controls.add(new JLabel("Keep threshold (t, in fold SEs):"));
+        controls.add(pruneTSpinner);
+        controls.add(proposePruneButton);
+        controls.add(applyPruneButton);
+        controls.add(revertPruneButton);
+        revertPruneButton.setToolTipText(
+                "Re-estimate on the input graph, discarding the applied prune.");
+
+        JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        labelPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
+        labelPanel.add(pruneProgressLabel);
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.add(controls,   BorderLayout.NORTH);
+        top.add(labelPanel, BorderLayout.SOUTH);
+
+        pruneTable.setFillsViewportHeight(true);
+        pruneTable.setRowHeight(22);
+        pruneTable.setAutoCreateRowSorter(true);
+        JScrollPane scroll = new JScrollPane(pruneTable);
+        scroll.setBorder(new TitledBorder("Proposed deletions (review before applying)"));
+
+        JLabel note = new JLabel(
+                "<html><i>"
+                        + "Backward elimination per child on the CV folds: a parent is kept when its "
+                        + "fold-mean held-out improvement (ΔR², or Δ cross-entropy in nats for a "
+                        + "discrete child) exceeds t fold standard errors; while any parent fails, the "
+                        + "weakest is removed and the survivors re-tested, so a redundant pair loses at "
+                        + "most one member. Deletion means the parent adds no unique predictive "
+                        + "information given the survivors — not that the edge is causally absent. "
+                        + "After applying, metrics computed on these same folds are optimistic; confirm "
+                        + "important conclusions on a fresh split."
+                        + "</i></html>");
+        note.setFont(note.getFont().deriveFont(Font.PLAIN, 11f));
+        note.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+
+        tab.add(top,    BorderLayout.NORTH);
+        tab.add(scroll, BorderLayout.CENTER);
+        tab.add(note,   BorderLayout.SOUTH);
+        return tab;
+    }
+
+    private void wirePrune() {
+        proposePruneButton.addActionListener(e -> {
+            if (model.getEstimator() == null) {
+                pruneProgressLabel.setText(
+                        "Fit the estimator first (Resimulate on the plot tab).");
+                return;
+            }
+            int k = (Integer) pruneKSpinner.getValue();
+            double t = ((Number) pruneTSpinner.getValue()).doubleValue();
+
+            proposePruneButton.setEnabled(false);
+            applyPruneButton.setEnabled(false);
+            pruneProgressLabel.setText(
+                    "Running backward elimination (k=" + k + ", t=" + t + ") …");
+
+            new SwingWorker<PredictionPruneReport, Void>() {
+                @Override
+                protected PredictionPruneReport doInBackground() {
+                    return model.getEstimator()
+                            .pruneByPredictiveContribution(k, t);
+                }
+
+                @Override
+                protected void done() {
+                    proposePruneButton.setEnabled(true);
+                    try {
+                        pruneReport = get();
+                        model.setPruneReport(pruneReport);
+                        pruneTableModel.setReport(pruneReport);
+                        int nDel = pruneReport.getDeletions().size();
+                        if (nDel == 0) {
+                            pruneProgressLabel.setText(
+                                    "No deletions proposed: every parent clears the threshold.");
+                            applyPruneButton.setEnabled(false);
+                        } else {
+                            pruneProgressLabel.setText(nDel
+                                    + " deletion(s) proposed. Review, then Apply && Re-estimate.");
+                            applyPruneButton.setEnabled(true);
+                        }
+                    } catch (Exception ex) {
+                        pruneProgressLabel.setText("Pruning failed: " + ex.getMessage());
+                    }
+                }
+            }.execute();
+        });
+
+        applyPruneButton.addActionListener(e -> {
+            if (pruneReport == null) return;
+            int sampleSize = (Integer) nSpinner.getValue();
+
+            proposePruneButton.setEnabled(false);
+            applyPruneButton.setEnabled(false);
+            revertPruneButton.setEnabled(false);
+            pruneProgressLabel.setText("Re-estimating on the pruned graph …");
+
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    model.setPrunedGraph(pruneReport.getPrunedGraph());
+                    model.resimulate(sampleSize);
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    proposePruneButton.setEnabled(true);
+                    try {
+                        get();
+                        dag = model.getWorkingGraph();
+                        populateChildCombo();
+                        simulated = model.getSimulatedData() != null
+                                ? model.getSimulatedData() : observed;
+                        refreshAdequacyStatus(model);
+                        pruneProgressLabel.setText(
+                                "Applied: model re-estimated on the pruned graph. "
+                                + "Rerun CV and edge strengths; note both use the "
+                                + "selection folds and are optimistic.");
+                        status.setText("Model is fitted to the pruned graph "
+                                + "(" + pruneReport.getDeletions().size()
+                                + " edge(s) removed).");
+                        revertPruneButton.setEnabled(true);
+                        firePropertyChange("modelChanged", null, null);
+                    } catch (Exception ex) {
+                        applyPruneButton.setEnabled(true);
+                        revertPruneButton.setEnabled(model.getPrunedGraph() != null);
+                        pruneProgressLabel.setText("Apply failed: " + ex.getMessage());
+                    }
+                }
+            }.execute();
+        });
+
+        revertPruneButton.addActionListener(e -> {
+            if (model.getPrunedGraph() == null) return;
+            int sampleSize = (Integer) nSpinner.getValue();
+
+            proposePruneButton.setEnabled(false);
+            applyPruneButton.setEnabled(false);
+            revertPruneButton.setEnabled(false);
+            pruneProgressLabel.setText("Re-estimating on the input graph …");
+
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    model.setPrunedGraph(null);
+                    model.resimulate(sampleSize);
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    proposePruneButton.setEnabled(true);
+                    try {
+                        get();
+                        dag = model.getWorkingGraph();
+                        populateChildCombo();
+                        simulated = model.getSimulatedData() != null
+                                ? model.getSimulatedData() : observed;
+                        refreshAdequacyStatus(model);
+                        // The proposal is kept, so it can be applied again.
+                        applyPruneButton.setEnabled(pruneReport != null
+                                && !pruneReport.getDeletions().isEmpty());
+                        pruneProgressLabel.setText(
+                                "Reverted: model re-estimated on the input graph. "
+                                + "Rerun CV and edge strengths; earlier results "
+                                + "were computed on the pruned model.");
+                        status.setText("Model is fitted to the input graph.");
+                        firePropertyChange("modelChanged", null, null);
+                    } catch (Exception ex) {
+                        revertPruneButton.setEnabled(model.getPrunedGraph() != null);
+                        pruneProgressLabel.setText("Revert failed: " + ex.getMessage());
+                    }
+                }
+            }.execute();
+        });
+    }
+
+    // =========================================================================
+    // PruneTableModel
+    // =========================================================================
+
+    private static final class PruneTableModel extends AbstractTableModel {
+
+        private static final String[] COLUMNS =
+                {"Edge", "Δ (fold mean)", "SE", "t", "Type", "Step"};
+
+        private final List<PredictionPruneReport.Deletion> rows = new ArrayList<>();
+
+        void setReport(PredictionPruneReport report) {
+            rows.clear();
+            rows.addAll(report.getDeletions());
+            fireTableDataChanged();
+        }
+
+        @Override public int getRowCount()    { return rows.size(); }
+        @Override public int getColumnCount() { return COLUMNS.length; }
+        @Override public String getColumnName(int col) { return COLUMNS[col]; }
+
+        @Override
+        public Object getValueAt(int row, int col) {
+            PredictionPruneReport.Deletion d = rows.get(row);
+            return switch (col) {
+                case 0 -> d.parentName + " → " + d.childName;
+                case 1 -> String.format("%.4f", d.meanImprovement);
+                case 2 -> Double.isFinite(d.seImprovement)
+                        ? String.format("%.4f", d.seImprovement) : "—";
+                case 3 -> Double.isFinite(d.tStat)
+                        ? String.format("%.2f", d.tStat) : "—";
+                case 4 -> d.discreteChild ? "Xent (nats)" : "ΔR²";
+                case 5 -> d.step;
+                default -> "";
+            };
+        }
     }
 
     // =========================================================================
@@ -798,15 +1169,41 @@ public final class NNEstimatorComparePanel extends JPanel {
     private static final class EdgeStrengthTableModel extends AbstractTableModel {
 
         private static final String[] COLUMNS =
-                {"Edge", "MMD²", "ΔVar / KL (bits)",
-                        "Partial R² / Xent Improv.", "Type", "Sim n"};
+                {"Edge", "MMD²", "± SD", "Null MMD²", "ΔVar/Var(Y) / KL (bits)",
+                        "Partial ΔR² / Xent Improv.", "AME", "AME (std)",
+                        "Type", "Configs × reps"};
 
         static final int COL_EDGE    = 0;
         static final int COL_MMD2    = 1;
-        static final int COL_DELTA   = 2;
-        static final int COL_PARTIAL = 3;
-        static final int COL_TYPE    = 4;
-        static final int COL_N       = 5;
+        static final int COL_MMD2_SD = 2;
+        static final int COL_NULL    = 3;
+        static final int COL_DELTA   = 4;
+        static final int COL_PARTIAL = 5;
+        static final int COL_AME     = 6;
+        static final int COL_AME_STD = 7;
+        static final int COL_TYPE    = 8;
+        static final int COL_N       = 9;
+
+        /** Whether the row's MMD² clears its refit-noise band; used by the renderer. */
+        boolean isAboveNoise(int row) {
+            return rows.get(row).edge().isAboveNoise();
+        }
+
+        /**
+         * Whether the row's partial ΔR² is finite but below this threshold,
+         * meaning the parent is largely redundant given the child's other
+         * parents. When true, the fitted mechanism's credit assignment among
+         * the parents is not identified by the data, so the AME columns are
+         * shown grayed out; used by the renderer.
+         */
+        static final double PARTIAL_WEAK_THRESHOLD = 0.01;
+
+        boolean isPartialWeak(int row) {
+            PartialEdgeStrengthResult p = rows.get(row).partial();
+            return p != null && !p.discreteChild
+                    && Double.isFinite(p.partialR2)
+                    && p.partialR2 < PARTIAL_WEAK_THRESHOLD;
+        }
 
         private record EdgeRow(EdgeStrengthResult edge,
                                PartialEdgeStrengthResult partial) {}
@@ -828,11 +1225,16 @@ public final class NNEstimatorComparePanel extends JPanel {
             EdgeStrengthResult        e = er.edge();
             PartialEdgeStrengthResult p = er.partial();
             return switch (col) {
-                case COL_EDGE  -> e.parentName + " \u2192 " + e.childName;
-                case COL_MMD2  -> fmt(e.mmd2);
+                case COL_EDGE    -> e.parentName + " \u2192 " + e.childName;
+                case COL_MMD2    -> fmt(e.mmd2);
+                case COL_MMD2_SD -> fmt(e.mmd2Sd);
+                case COL_NULL    -> Double.isFinite(e.nullMmd2)
+                        ? fmt(e.nullMmd2) + (Double.isFinite(e.nullMmd2Sd)
+                                             ? " ± " + fmt(e.nullMmd2Sd) : "")
+                        : "—";
                 case COL_DELTA -> e.discreteChild
                         ? fmt(e.klDivBits) + " bits"
-                        : fmt(e.varianceDiff);
+                        : fmt(e.varianceDiffFrac);
                 case COL_PARTIAL -> {
                     if (p == null) yield "—";
                     yield p.discreteChild
@@ -841,8 +1243,16 @@ public final class NNEstimatorComparePanel extends JPanel {
                             : (Double.isFinite(p.partialR2)
                                ? fmt(p.partialR2) : "—");
                 }
+                case COL_AME -> {
+                    if (p == null || !Double.isFinite(p.avgMarginalEffect)) yield "—";
+                    yield fmt(p.avgMarginalEffect) + (p.isNonMonotone() ? " *" : "");
+                }
+                case COL_AME_STD -> {
+                    if (p == null || !Double.isFinite(p.avgMarginalEffectStd)) yield "—";
+                    yield fmt(p.avgMarginalEffectStd) + (p.isNonMonotone() ? " *" : "");
+                }
                 case COL_TYPE -> e.discreteChild ? "Discrete" : "Continuous";
-                case COL_N    -> e.simulatedN;
+                case COL_N    -> e.simulatedN + " × " + e.numRepeats;
                 default -> "";
             };
         }

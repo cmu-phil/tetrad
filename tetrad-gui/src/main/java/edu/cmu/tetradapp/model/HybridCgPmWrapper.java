@@ -7,6 +7,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetradapp.session.SessionModel;
 import edu.cmu.tetrad.util.TMath;
 
@@ -69,16 +70,44 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
 
         final List<Node> nodeOrder = new ArrayList<>(graph.getNodes());
 
-        // Build type/category maps from node classes (normalize categories to avoid nulls)
+        // Decide which variables are discrete. When a data set is attached, types come
+        // from the data's variables (mode "fromGraph" after replaceNodes); otherwise the
+        // "hybridcg.pmTypeMode" parameter governs: fromGraph (default), allContinuous,
+        // allDiscrete, or mixed (a fixed proportion chosen by a seeded shuffle).
+        final String mode = (dataSet != null) ? "fromGraph"
+                : params.getString("hybridcg.pmTypeMode", "fromGraph");
+
+        final int minCats = TMath.max(2, params.getInt("hybridcg.minCategories", 2));
+        final int maxCats = TMath.max(minCats, params.getInt("hybridcg.maxCategories", 4));
+
+        final Set<Node> forcedDiscrete = new HashSet<>();
+
+        if ("mixed".equals(mode)) {
+            int pct = TMath.min(100, TMath.max(0, params.getInt("hybridcg.percentDiscrete", 50)));
+            int numDiscrete = (int) TMath.round(pct / 100.0 * nodeOrder.size());
+            List<Node> shuffled = new ArrayList<>(nodeOrder);
+            RandomUtil.shuffle(shuffled);
+            forcedDiscrete.addAll(shuffled.subList(0, numDiscrete));
+        } else if ("allDiscrete".equals(mode)) {
+            forcedDiscrete.addAll(nodeOrder);
+        }
+
+        // Build type/category maps (normalize categories to avoid nulls)
         final Map<Node, Boolean> isDisc = new LinkedHashMap<>();
         final Map<Node, List<String>> cats = new LinkedHashMap<>();
 
         for (Node v : nodeOrder) {
-            final boolean discrete = v instanceof DiscreteVariable;
+            final boolean discrete = switch (mode) {
+                case "allContinuous" -> false;
+                case "allDiscrete", "mixed" -> forcedDiscrete.contains(v);
+                default -> v instanceof DiscreteVariable;
+            };
+
             isDisc.put(v, discrete);
+
             if (discrete) {
-                List<String> c = ((DiscreteVariable) v).getCategories();
-                cats.put(v, (c == null) ? List.of("0", "1") : new ArrayList<>(c));
+                List<String> c = (v instanceof DiscreteVariable dv) ? dv.getCategories() : null;
+                cats.put(v, (c == null || c.isEmpty()) ? randomCategories(minCats, maxCats) : new ArrayList<>(c));
             } else {
                 cats.put(v, null);
             }
@@ -117,6 +146,17 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         if (data != null) {
             applyCutpointsFromDataInternal(this.hybridCgPm, data, bins, method);
         }
+    }
+
+    /**
+     * Draws a category count uniformly at random in [minCats, maxCats] and returns default
+     * category names "0", "1", ..., using Tetrad's seeded random source for reproducibility.
+     */
+    private static List<String> randomCategories(int minCats, int maxCats) {
+        int k = minCats + RandomUtil.getInstance().nextInt(maxCats - minCats + 1);
+        List<String> out = new ArrayList<>(k);
+        for (int i = 0; i < k; i++) out.add(Integer.toString(i));
+        return out;
     }
 
     /**

@@ -165,7 +165,7 @@ public final class DagEditor extends JPanel
     @Override
     public void pasteSubsession(List<Object> sessionElements, Point upperLeft) {
         getWorkbench().pasteSubgraph(sessionElements, upperLeft);
-        getWorkbench().deselectAll();
+//        getWorkbench().deselectAll();
 
         sessionElements.forEach(sessionElement -> {
             if (sessionElement instanceof GraphNode) {
@@ -476,6 +476,7 @@ public final class DagEditor extends JPanel
 
         graph.add(GraphUtils.getHighlightMenu(this.workbench));
         graph.add(GraphUtils.getCheckGraphMenu(this.workbench));
+        graph.add(new FindVariableAction(getWorkbench()));
 
 //        JMenu revert = new JMenu("Revert Graph");
 //        graph.add(revert);

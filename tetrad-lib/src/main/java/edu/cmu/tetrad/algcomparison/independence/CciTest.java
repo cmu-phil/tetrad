@@ -66,7 +66,7 @@ public class CciTest implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "CCI-Test (Conditional Correlation Independence Test)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "CCI-Test (Conditional Correlation Independence Test)");
         return new IndTestConditionalCorrelation(
                 SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA),

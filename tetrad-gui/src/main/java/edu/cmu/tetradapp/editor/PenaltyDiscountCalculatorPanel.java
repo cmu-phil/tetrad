@@ -24,6 +24,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.search.score.BasisFunctionBicScore;
 import edu.cmu.tetrad.search.score.PenaltyDiscountCalibration;
 import edu.cmu.tetrad.search.score.PenaltyDiscountReport;
@@ -62,6 +64,12 @@ import java.util.Map;
  *
  * <p>Selecting a covariance matrix restricts the calculator to the SEM BIC family, which is the only one defined
  * on second moments; p and N are read from the matrix.</p>
+ *
+ * <p>On a tabular data set with missing values, a Missing values control chooses between testwise and listwise
+ * deletion for the Basis Function family, which is the only family that constructs a score on the data; this
+ * matches the explicit-choice contract the search wrappers enforce. Changing the policy sets the N field to the
+ * matching row count, which the user is still free to edit. The permutation fit requires listwise deletion, since
+ * it draws null statistics from the raw embedded columns and must see the same complete rows as the score.</p>
  *
  * <p>Computation runs off the event thread under a {@link WatchedProcess}. For the SEM BIC and Degenerate Gaussian
  * families it is instantaneous, but constructing a Basis Function score embeds the data, and the optional
@@ -155,11 +163,18 @@ final class PenaltyDiscountCalculatorPanel {
     private static JComponent createPanel(ISelectedModel editor, DataModel model, int p, int rows,
                                           int completeCases) {
         boolean tabular = model instanceof DataSet;
+        boolean hasMissing = tabular && ((DataSet) model).existsMissingValue();
 
         JComboBox<String> family = new JComboBox<>(tabular
                 ? new String[]{FAMILY_SEM_BIC, FAMILY_DG_BIC, FAMILY_BF_BIC}
                 : new String[]{FAMILY_SEM_BIC});
         family.setEnabled(tabular);
+
+        // The Basis Function family is the only one that constructs a score on the data, so it is the only one
+        // that needs a missing-data policy here; the SEM BIC and DG block sizes do not depend on the rows.
+        JComboBox<String> missingPolicy = new JComboBox<>(new String[]{"Testwise deletion", "Listwise deletion"});
+        missingPolicy.setToolTipText(
+                "How the Basis Function score treats the missing values in this data set.");
 
         JSpinner truncation = new JSpinner(new SpinnerNumberModel(3, 1, 20, 1));
         JCheckBox rankTransform = new JCheckBox("Rank transform", false);
@@ -194,11 +209,21 @@ final class PenaltyDiscountCalculatorPanel {
             truncation.setEnabled(bf);
             rankTransform.setEnabled(bf);
             adaptive.setEnabled(bf);
-            permutation.setEnabled(bf);
+            missingPolicy.setEnabled(bf && hasMissing);
+
+            // The permutation fit draws null statistics from the raw embedded columns, which carry NaN under
+            // testwise deletion, so it is only offered when the score and the fit see the same complete rows.
+            boolean testwise = hasMissing && missingPolicy.getSelectedIndex() == 0;
+            permutation.setEnabled(bf && !testwise);
+            if (!permutation.isEnabled()) permutation.setSelected(false);
             nullDraws.setEnabled(bf && permutation.isSelected());
         };
         family.addActionListener(e -> syncEnabled.run());
         permutation.addActionListener(e -> syncEnabled.run());
+        missingPolicy.addActionListener(e -> {
+            sampleSize.setText(String.valueOf(missingPolicy.getSelectedIndex() == 1 ? completeCases : rows));
+            syncEnabled.run();
+        });
         syncEnabled.run();
 
         JButton compute = new JButton("Compute");
@@ -233,6 +258,7 @@ final class PenaltyDiscountCalculatorPanel {
             boolean rank = rankTransform.isSelected();
             boolean adapt = adaptive.isSelected();
             boolean fitNulls = bf && permutation.isSelected();
+            boolean listwise = hasMissing && missingPolicy.getSelectedIndex() == 1;
 
             // Off the event thread: embedding the data for a Basis Function score, and the permutation fit in
             // particular, are not instantaneous on a large data set.
@@ -246,14 +272,25 @@ final class PenaltyDiscountCalculatorPanel {
                     try {
                         if (bf) {
                             DataSet dataSet = (DataSet) model;
+                            MissingDataSpec spec = dataSet.existsMissingValue()
+                                    ? (listwise ? MissingDataSpec.listwise() : MissingDataSpec.testwise())
+                                    : null;
                             BasisFunctionBicScore score = new BasisFunctionBicScore(
-                                    dataSet, truncationLimit, 0.0, adapt, rank);
+                                    dataSet, truncationLimit, 0.0, adapt, rank, spec);
                             sizes = score.embeddingBlockSizes();
 
+                            if (spec != null && !listwise) {
+                                note += "\nNote: testwise deletion is in effect. Each family is scored on its own"
+                                        + "\ncomplete rows, with the penalty scaled to match, while this calibration"
+                                        + "\nuses the single N entered above. Entering the complete-case count gives"
+                                        + "\na conservative calibration.\n";
+                            }
+
                             if (fitNulls) {
-                                fits = score.fitNullsByPermutation(dataSet, draws, 0L);
+                                fits = score.fitNullsByPermutation(
+                                        listwise ? MissingDataUtils.listwiseDelete(dataSet) : dataSet, draws, 0L);
                             } else if (!rank) {
-                                note = "\nWARNING: the min-max basis embedding's null is not chi-square -- it has a"
+                                note += "\nWARNING: the min-max basis embedding's null is not chi-square -- it has a"
                                        + "\npower-law tail -- so the exact calibration below sets the penalty"
                                        + "\ndiscount too low, in past measurements by enough to produce about a"
                                        + "\nhundred times the budgeted false edges. Either check"
@@ -317,6 +354,16 @@ final class PenaltyDiscountCalculatorPanel {
         gbc.gridx = 1;
         gbc.gridwidth = 3;
         inputs.add(family, gbc);
+
+        if (hasMissing) {
+            gbc.gridwidth = 1;
+            gbc.gridy++;
+            gbc.gridx = 0;
+            inputs.add(new JLabel("Missing values:"), gbc);
+            gbc.gridx = 1;
+            gbc.gridwidth = 3;
+            inputs.add(missingPolicy, gbc);
+        }
 
         gbc.gridwidth = 1;
         gbc.gridy++;

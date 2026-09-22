@@ -70,14 +70,23 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of(), "DG-BIC (Degenerate Gaussian BIC Score)");
+        // "em" is native here as well as "testwise": DegenerateGaussianScore estimates the EM covariance of the
+        // embedded matrix, under the same jointly-Gaussian working model it already assumes for the indicator
+        // columns. Without "em" in this set the gate rejects the policy before the score is ever constructed.
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"),
+                "DG-BIC (Degenerate Gaussian BIC Score)");
         this.dataSet = dataSet;
         boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
         DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet), precomputeCovariances,
                 parameters.getDouble(Params.SINGULARITY_LAMBDA),
                 MissingDataUtils.fromParameters(parameters));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-        degenerateGaussianScore.setEffectiveSampleSize(parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE));
+        // Applied only when the user actually set it. This line previously ran unconditionally, and since the
+        // parameter defaults to -1 it overwrote the effective sample size the constructor had just derived from
+        // the missing-data spec -- so missingEssMode had no effect through this wrapper, whatever it was set to,
+        // while working correctly when the score was constructed directly. Changed 2026-9-14.
+        int ess = parameters.getInt(Params.EFFECTIVE_SAMPLE_SIZE);
+        if (ess > 0) degenerateGaussianScore.setEffectiveSampleSize(ess);
         return degenerateGaussianScore;
     }
 
@@ -109,6 +118,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_ESS_MODE);
         return parameters;
     }
 

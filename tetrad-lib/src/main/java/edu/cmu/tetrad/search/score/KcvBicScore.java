@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search.score;
 
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
@@ -1360,5 +1361,16 @@ public final class KcvBicScore implements Score, EffectiveSampleSizeSettable {
          * Compute median pairwise distance in the parent space (more RCIT-like, more expensive).
          */
         PARENT_SET_MEDIAN
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: each local score is computed on the rows complete on the child and its parents (the
+     * pre-existing row-subset path, now declared).
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 }

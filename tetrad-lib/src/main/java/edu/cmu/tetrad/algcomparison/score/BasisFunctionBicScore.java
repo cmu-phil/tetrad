@@ -71,7 +71,10 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
      */
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "BF-BIC (Basis Function BIC)");
+        // "em" is native here as well as "testwise"; see BasisFunctionBicScore's EM branch. Without it in this
+        // set the gate rejects the policy before the score is ever constructed.
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"),
+                "BF-BIC (Basis Function BIC)");
         this.dataSet = dataSet;
 
         // Changes from the pre-2026-8 implementation: the singularity lambda was previously read
@@ -85,7 +88,8 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
                 parameters.getInt(Params.TRUNCATION_LIMIT),
                 parameters.getDouble(Params.SINGULARITY_LAMBDA),
                 parameters.getBoolean(Params.ADAPTIVE_BASIS_SELECTION),
-                parameters.getBoolean(Params.BASIS_RANK_TRANSFORM));
+                parameters.getBoolean(Params.BASIS_RANK_TRANSFORM),
+                MissingDataUtils.fromParameters(parameters));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setDoOneEquationOnly(parameters.getBoolean(Params.DO_ONE_EQUATION_ONLY));
         return score;
@@ -124,7 +128,8 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
         // data the scores will see.
         java.util.List<DataSet> gated = new java.util.ArrayList<>();
         for (DataModel dataModel : dataModels) {
-            DataModel gatedModel = MissingDataUtils.gate(dataModel, parameters, false, "BF-BIC (Basis Function BIC)");
+            DataModel gatedModel = MissingDataUtils.gate(dataModel, parameters,
+                    java.util.Set.of("testwise", "em"), "BF-BIC (Basis Function BIC)");
             gated.add(SimpleDataLoader.getMixedDataSet(gatedModel));
         }
 
@@ -202,6 +207,7 @@ public class BasisFunctionBicScore implements ScoreWrapper, MultiDataSetScoreWra
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.DO_ONE_EQUATION_ONLY);
         parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_ESS_MODE);
         return parameters;
     }
 

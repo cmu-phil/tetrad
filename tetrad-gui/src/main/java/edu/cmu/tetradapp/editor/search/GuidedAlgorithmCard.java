@@ -57,7 +57,9 @@ import java.util.*;
  * <ul>
  * <li>Left column, "Tell me about your data": (1) a statement of what the connected data is, since the search box
  * already knows it and asking would only let the answer disagree with the data; (2) "Could something unmeasured cause
- * two of them?", which selects between the causal-sufficiency family and the latent-tolerant family; (3) design
+ * two of them?", which selects between the causal-sufficiency family and the latent-tolerant family — a fresh box
+ * opens on the answer the user last clicked (persisted in {@code Preferences.userRoot()} under
+ * {@code guidedLatentDefault}), initially "No, all causes are measured"; (3) design
  * facets (time series, background knowledge). Each option shows how many algorithms would be listed if it were
  * chosen.</li>
  * <li>Right column: the algorithms that fit, one row each, with the algorithm's name, its command (the same string
@@ -97,6 +99,14 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     private static final String UI_DATA_FILTER = "ui.search.dataset_filter";
     private static final String UI_KNOWLEDGE = "ui.search.knowledge";
 
+    /**
+     * Cross-launch key (java.util.prefs.Preferences.userRoot()): the latent-confounder answer the user last chose by
+     * clicking a radio button. A search box with no saved session state opens with this answer; when it has never
+     * been set, the default is {@link LatentChoice#NO}. Kept in Preferences rather than {@link Parameters} because
+     * the runner's Parameters travel with the session, not the machine.
+     */
+    private static final String PREF_LATENT_DEFAULT = "guidedLatentDefault";
+
     private static final String FAMILY_LINEAR_GAUSSIAN = "linear-gaussian";
     private static final String FAMILY_MIXED = "mixed";
     private static final String FAMILY_GENERAL = "general";
@@ -112,7 +122,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     private final Map<AlgorithmModel, Map<DataType, ScoreModel>> defaultScoreModels = new HashMap<>();
 
     // Answers.
-    private LatentChoice latent = LatentChoice.ANY;
+    private LatentChoice latent = defaultLatentChoice();
     private boolean timeSeries = false;
     private boolean knowledge = false;
     private boolean experimental = false;
@@ -281,6 +291,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
 
     /**
      * Sets the latent-confounder answer programmatically (used by tests; the UI goes through the radio buttons).
+     * Unlike a radio click, this does not update the cross-launch default in Preferences.
      *
      * @param choice the choice.
      */
@@ -442,7 +453,8 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         resetBtn.setAlignmentX(LEFT_ALIGNMENT);
         resetBtn.setToolTipText("Clear the answers above and the name filter.");
         resetBtn.addActionListener(e -> {
-            this.latent = LatentChoice.ANY;
+            // Back to the answers a fresh box would open with; does not itself change the cross-launch default.
+            this.latent = defaultLatentChoice();
             this.timeSeries = false;
             this.knowledge = false;
             this.query = "";
@@ -538,8 +550,22 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     private void onLatent(LatentChoice choice) {
         if (this.restoring) return;
         this.latent = choice;
+        // A click is an explicit answer, so it becomes the default for future search boxes. Programmatic paths
+        // (restore, tests, Start over) deliberately do not write this.
+        java.util.prefs.Preferences.userRoot().put(PREF_LATENT_DEFAULT, choice.name());
         rebuildRows();
         saveStates();
+    }
+
+    /**
+     * The latent-confounder answer a search box opens with when the session has nothing saved: the answer the user
+     * last clicked, read from {@code Preferences.userRoot()}, else {@link LatentChoice#NO}.
+     *
+     * @return the default choice.
+     */
+    private static LatentChoice defaultLatentChoice() {
+        return LatentChoice.parse(java.util.prefs.Preferences.userRoot()
+                .get(PREF_LATENT_DEFAULT, LatentChoice.NO.name()));
     }
 
     //=========================== State -> widgets ===========================//
@@ -1147,7 +1173,9 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     private void restoreUserAlgoSelections(Map<String, Object> sel) {
         this.restoring = true;
         try {
-            // Latent answer: the guided key if present, else derived from the classic algo_type filter.
+            // Latent answer: the guided key if present, else derived from the classic algo_type filter, else the
+            // user's cross-launch default (Preferences; NO when never set). Session state always wins over the
+            // default, so a saved session reopens as it was saved.
             Object l = sel.get(LATENT_PARAM);
             if (l instanceof String s) {
                 this.latent = LatentChoice.parse(s);
@@ -1158,7 +1186,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
                     else if (AlgType.allow_latent_common_causes.name().equals(s)) this.latent = LatentChoice.YES;
                     else this.latent = LatentChoice.ANY;
                 } else {
-                    this.latent = LatentChoice.ANY;
+                    this.latent = defaultLatentChoice();
                 }
             }
             this.timeSeries = sel.get(TIME_SERIES_PARAM) instanceof Boolean b && b;

@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-interface MultipleGraphSource {
+public interface MultipleGraphSource {
     /**
      * <p>getGraphs.</p>
      *

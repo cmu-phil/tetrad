@@ -263,6 +263,9 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.HybridCgPmEditor
                 </editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.HybridCgPmParamsEditor
+                </params-editor-class>
             </model>
             <model name="Generalized SEM Parametric Model" acronym="Gen. SEM PM" help="sem_im">
                 <logger>
@@ -385,6 +388,20 @@
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
                 <params-editor-class>
                     edu.cmu.tetradapp.editor.datamanip.DataSubsetParamsEditor
+                </params-editor-class>
+            </model>
+
+            <model name="Split Data by Condition"
+                   acronym="Data Split" help="data_split" category="Manipulation of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.datamanip.DataSplitModel
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.DataSplitParamsEditor
                 </params-editor-class>
             </model>
 
@@ -644,6 +661,17 @@
                     edu.cmu.tetradapp.editor.datamanip.ArResidualsParamsEditor
                 </params-editor-class>
             </model>
+            <model name="Long to Wide" acronym="Wide"
+                   help="data" category="Manipulation of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LongToWideWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>edu.cmu.tetradapp.editor.LongToWideParamsEditor</params-editor-class>
+            </model>
             <model name="Logarithmic Transform" acronym="Log"
                    help="data" category="Conversion of Data">
                 <logger>
@@ -672,6 +700,16 @@
                     <event id="data" description="Data"/>
                 </logger>
                 <model-class>edu.cmu.tetradapp.model.NonparanormalTransform
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+            </model>
+            <model name="Linearize Un-Warp Transform" acronym="Linearize"
+                   help="nonpn" category="Conversion of Data">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.LinearizeTransform
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
@@ -782,6 +820,19 @@
                     edu.cmu.tetradapp.editor.MissingDataInjectorParamsEditor
                 </params-editor-class>
             </model>
+            <model name="Impute Missing Data" acronym="Impute Missing"
+                   help="data" category="Missing Values">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.ImputeMissingDataWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.ImputeMissingDataParamsEditor
+                </params-editor-class>
+            </model>
             <model name="Add Missingness Indicators" acronym="Missingness Indicators"
                    help="data" category="Missing Values">
                 <logger>
@@ -791,6 +842,9 @@
                 <model-class>edu.cmu.tetradapp.model.AddMissingnessIndicatorsWrapper
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.AddMissingnessIndicatorsParamsEditor
+                </params-editor-class>
             </model>
             <model name="Standardize Data" acronym="Standardized"
                    help="data" category="Conversion of Data">
@@ -953,6 +1007,20 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
+            <model name="Join Datasets on Key" acronym="Join"
+                   help="data" category="Column operations">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="data" description="Data"/>
+                </logger>
+                <model-class>
+                    edu.cmu.tetradapp.model.datamanip.JoinDatasetsWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.datamanip.JoinDatasetsParamsEditor
+                </params-editor-class>
+            </model>
             <model name="Implied Covariance Matrix--Measured" acronym="Implied Covar Meas" help="data"
                    category="implied">
                 <logger>
@@ -1089,6 +1157,9 @@
                 <model-class>edu.cmu.tetradapp.model.NNEstimatorModel
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.NNEstimatorEditor</editor-class>
+                <params-editor-class>
+                    edu.cmu.tetradapp.editor.NNEstimatorParamsEditor
+                </params-editor-class>
             </model>
         </models>
         <display-component image="estimatorIcon.gif"/>
@@ -1290,7 +1361,7 @@
             <!--                <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentRegressionEditor</editor-class>-->
             <!--            </model>-->
             <model name="Linear Adjustment Effects" acronym="Linear Adjustment Effects"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="linear_adjustment_effects" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
@@ -1300,7 +1371,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.LinearAdjustmentTotalEffectsEditor</editor-class>
             </model>
             <model name="G-Regression Effects" acronym="G-Regression Effects"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="g_regression_effects" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
@@ -1310,7 +1381,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.GRegressionEditor</editor-class>
             </model>
             <model name="Doubly Robust ATE" acronym="Doubly Robust ATE"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="doubly_robust_ate" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
@@ -1320,7 +1391,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.DoublyRobustEstEditorV2</editor-class>
             </model>
             <model name="Interventional Histogram" acronym="Interventional Histogram"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="interventional_histogram" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>
@@ -1330,7 +1401,7 @@
                 <editor-class>edu.cmu.tetradapp.editor.InterventionalHistogramEditor</editor-class>
             </model>
             <model name="Linear IDA Check" acronym="IDA Check"
-                   help="indep_facts" category="Independence Facts Comparison">
+                   help="ida_check" category="Effect Estimation">
                 <logger>
                     <event id="info" description="Information" default="on"/>
                     <event id="comparison" description="Comparison" default="on"/>

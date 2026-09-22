@@ -71,19 +71,19 @@ public class CdnodBoss extends AbstractBootstrapAlgorithm implements Algorithm, 
      * Parameter key selecting the collider orientation style for triples BOSS leaves unresolved:
      * 1 = SEPSETS, 2 = CONSERVATIVE, 3 = MAX_P. Default 1.
      */
-    public static final String CDNOD_COLLIDER_STYLE = "cdnodColliderStyle";
+    public static final String CDNOD_COLLIDER_STYLE = Params.CDNOD_COLLIDER_STYLE;
 
     /**
      * Parameter key for the MAX_P tie-guard margin. Default 0.0 (classic MAX-P).
      */
-    public static final String CDNOD_MAX_P_MARGIN = "cdnodMaxPMargin";
+    public static final String CDNOD_MAX_P_MARGIN = Params.CDNOD_MAX_P_MARGIN;
 
     /**
      * Parameter key: if true, context variables are excluded from conditioning sets in the
      * collider-orientation step, uniformly across styles (including RecursiveBlocking hints).
      * Default false (contexts admissible, per Huang et al. 2020).
      */
-    public static final String CDNOD_EXCLUDE_CONTEXTS_FROM_S = "cdnodExcludeContextsFromS";
+    public static final String CDNOD_EXCLUDE_CONTEXTS_FROM_S = Params.CDNOD_EXCLUDE_CONTEXTS_FROM_S;
 
     /**
      * The score wrapper supplying the score for the BOSS backbone.

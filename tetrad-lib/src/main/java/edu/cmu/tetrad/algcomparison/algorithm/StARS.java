@@ -208,9 +208,7 @@ public class StARS implements Algorithm {
         List<String> parameters = this.algorithm.getParameters();
         parameters.add("depth");
         parameters.add("verbose");
-        parameters.add("StARS.percentageB");
-        parameters.add("StARS.tolerance");
-        parameters.add("StARS.cutoff");
+        parameters.add(Params.STARS_CUTOFF);
         parameters.add("numSubsamples");
 
         return parameters;

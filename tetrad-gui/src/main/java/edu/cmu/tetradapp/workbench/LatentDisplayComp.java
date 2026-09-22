@@ -25,33 +25,33 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
 /**
- * Eliptical variable display for a latent.
+ * The display component for a latent-variable node in a graph workbench: an ellipse in a light violet tint with the
+ * variable name centered in it. Colors and font come from {@link WorkbenchStyle}, so the node follows the active
+ * Look &amp; Feel.
  *
  * @author josephramsey
  * @version $Id: $Id
  */
 public class LatentDisplayComp extends JComponent implements DisplayComp {
 
-    /**
-     * True iff this display node is selected.
-     */
     private boolean selected;
 
     /**
-     * <p>Constructor for LatentDisplayComp.</p>
+     * Constructs a latent node display with the given name.
      *
-     * @param name a {@link java.lang.String} object
+     * @param name the node name.
      */
     public LatentDisplayComp(String name) {
-        setBackground(DisplayNodeUtils.getNodeFillColor());
-        setFont(DisplayNodeUtils.getFont());
+        setOpaque(false);
+        setFont(WorkbenchStyle.nodeFont());
         setName(name);
-        this.setSize(getPreferredSize());
+        setSize(getPreferredSize());
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setName(String name) {
         super.setName(name);
         setSize(getPreferredSize());
@@ -60,57 +60,40 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
 
-    /**
-     * @return the shape of the component.
-     */
     private Shape getShape() {
-        return new Ellipse2D.Double(0, 0, getPreferredSize().width - 1,
-                getPreferredSize().height - 1);
+        Dimension d = getPreferredSize();
+        return new Ellipse2D.Double(0.5, 0.5, d.width - 1, d.height - 1);
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Paints the component.
      */
+    @Override
     public void paint(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        int width = getPreferredSize().width;
-        int stringWidth = fm.stringWidth(getName());
-        int stringX = (width - stringWidth) / 2;
-        int stringY = fm.getAscent() + DisplayNodeUtils.getPixelGap();
-
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedFillColor() :
-                DisplayNodeUtils.getNodeFillColor());
-        g2.fill(getShape());
-        g2.setColor(isSelected() ? DisplayNodeUtils.getNodeSelectedEdgeColor() :
-                DisplayNodeUtils.getNodeEdgeColor());
-        g2.draw(getShape());
-        g2.setColor(DisplayNodeUtils.getNodeTextColor());
-        g2.setFont(DisplayNodeUtils.getFont());
-        g2.drawString(getName(), stringX, stringY);
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            WorkbenchStyle.applyHints(g2);
+            DisplayNodeUtils.paintNode(g2, getShape(), getName(), getPreferredSize(),
+                    WorkbenchStyle.latentFill(), isSelected());
+        } finally {
+            g2.dispose();
+        }
     }
 
     /**
-     * Calculates the size of the component based on its name.
-     *
-     * @return a {@link java.awt.Dimension} object
+     * {@inheritDoc}
      */
+    @Override
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(DisplayNodeUtils.getFont());
-        String name1 = getName();
-        int textWidth = fm.stringWidth(name1);
-        int textHeight = fm.getAscent();
-        int width = textWidth + fm.getMaxAdvance() + 5;
-        int height = 2 * DisplayNodeUtils.getPixelGap() + textHeight + 5;
-
-        width = (width < 60) ? 60 : width;
-
+        FontMetrics fm = getFontMetrics(WorkbenchStyle.nodeFont());
+        int width = fm.stringWidth(getName()) + fm.getMaxAdvance() + 5;
+        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 5;
+        width = Math.max(width, 60);
         return new Dimension(width, height);
     }
 
@@ -121,12 +104,8 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
 }
-
-
-
-
-
