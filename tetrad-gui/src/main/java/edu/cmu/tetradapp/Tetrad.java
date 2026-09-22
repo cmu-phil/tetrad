@@ -85,7 +85,6 @@ public final class Tetrad implements PropertyChangeListener {
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * Launches Tetrad as an application. One way to launch Tetrad IV as an application is the following:&gt; 0
      * <pre>java -jar jarname.jar</pre>
      * <p>
      * where "jarname.jar" is a jar containing all the classes of Tetrad IV, properly compiled, along with all the

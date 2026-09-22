@@ -423,9 +423,9 @@ public class LayoutUtil {
             }
         }
 
-        if (allOriented) {
-            return;
-        }
+//        if (allOriented) {
+//            return;
+//        }
 
         // The previous defaults, kept for reference:
 //        if (graph.getNumNodes() <= 20) {
@@ -655,7 +655,7 @@ public class LayoutUtil {
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public static void layoutByCausalOrder(Graph graph) {
+    public static void  layoutByCausalOrder(Graph graph) {
         List<List<Node>> tiers = getTiers(graph);
 
         int y = 0;

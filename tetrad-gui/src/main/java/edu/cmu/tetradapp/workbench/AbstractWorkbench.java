@@ -236,8 +236,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         LayoutUtil.defaultLayout(graph);
 
         // The display nodes were created by setGraph above, before the default layout assigned positions. If the
-        // default layout ran (a circle up to 20 nodes, a square beyond), widen it for the display nodes' label
-        // sizes and place them; a graph that arrived with positions (e.g., from a saved session) is left as is.
+        // default layout ran (Richard's layout), re-run it with the display nodes' real label sizes and place
+        // them; a graph that arrived with positions (e.g., from a saved session) is left as is.
         if (unpositioned) {
             widenDefaultLayout();
         }
@@ -248,13 +248,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * nodes' centers.
      */
     private void widenDefaultLayout() {
-        if (this.graph.getNumNodes() <= 20) {
-            // Re-run the circle with the display nodes' real box sizes; the default layout above only had the
-            // lib's name-length estimate.
-            LayoutUtil.circleLayout(this.graph, LayoutUtils.displayNodeSizes(this));
-        } else {
-            LayoutUtils.respaceSquareForLabels(this.graph, this);
-        }
+        // Re-run the default (Richard's) layout with the display nodes' real box sizes; the default layout above
+        // only had the lib's name-length estimate. (This previously re-ran the OLD default -- a circle up to 20
+        // nodes, a square beyond -- which clobbered Richard's layout every time a graph arrived unpositioned.)
+        LayoutUtil.richardsLayout(this.graph, LayoutUtils.displayNodeSizes(this));
 
         for (Node node : this.graph.getNodes()) {
             DisplayNode d = (DisplayNode) getModelNodesToDisplay().get(node);

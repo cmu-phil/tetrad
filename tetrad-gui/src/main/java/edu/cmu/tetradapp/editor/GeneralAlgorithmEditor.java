@@ -230,7 +230,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     /**
      * <p>setAlgorithmResult.</p>
-     *
+     *  an
      * @param jsonResult a {@link java.lang.String} object
      */
     public void setAlgorithmResult(String jsonResult) {
