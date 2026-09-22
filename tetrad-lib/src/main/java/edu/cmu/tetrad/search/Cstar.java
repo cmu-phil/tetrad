@@ -60,6 +60,13 @@ import java.util.concurrent.*;
 public class Cstar {
 
     /**
+     * Versioned prefix for the per-subsample effects cache files. Legacy "effects." files hold signed minimum
+     * effects (possibly computed from invalid parent sets under the old parent-set checks); this code writes and
+     * reuses only minimum-absolute-effect caches. Bump the version if the cache semantics change again.
+     */
+    private static final String EFFECTS_PREFIX = "effects.minabs-v1.";
+
+    /**
      * The type of CPDAG algorithm to use.
      */
     private final IndependenceWrapper test;
@@ -329,10 +336,13 @@ public class Cstar {
                     Graph cpdag;
                     double[][] effects;
 
-                    if (new File(origDir, "cpdag." + (this.subsample + 1) + ".txt").exists() && new File(origDir, "effects." + (this.subsample + 1) + ".txt").exists()) {
+                    // The effects cache prefix is versioned: legacy "effects.*" files contain signed
+                    // minima (possibly computed from invalid parent sets) and cannot be repaired by
+                    // taking absolute values, so they must not be reused here.
+                    if (new File(origDir, "cpdag." + (this.subsample + 1) + ".txt").exists() && new File(origDir, EFFECTS_PREFIX + (this.subsample + 1) + ".txt").exists()) {
                         TetradLogger.getInstance().log("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
                         cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(origDir, "cpdag." + (this.subsample + 1) + ".txt"));
-                        effects = loadMatrix(new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
+                        effects = loadMatrix(new File(origDir, EFFECTS_PREFIX + (this.subsample + 1) + ".txt"));
                     } else {
                         TetradLogger.getInstance().log("Sampling data for index " + (this.subsample + 1));
 
@@ -368,7 +378,7 @@ public class Cstar {
 
                         TetradLogger.getInstance().log("Running IDA for index " + (this.subsample + 1));
                         for (int e = 0; e < this.possibleEffects.size(); e++) {
-                            Map<Node, Double> minEffects = ida.calculateMinimumTotalEffectsOnY(this.possibleEffects.get(e));
+                            Map<Node, Double> minEffects = ida.calculateMinimumAbsoluteTotalEffectsOnY(this.possibleEffects.get(e));
 
                             for (int c = 0; c < this.possibleCauses.size(); c++) {
                                 final Double _e = minEffects.get(this.possibleCauses.get(c));
@@ -378,7 +388,7 @@ public class Cstar {
                     }
 
                     TetradLogger.getInstance().log("Saving CPDAG and effects for index " + (this.subsample + 1));
-                    saveMatrix(effects, new File(newDir, "effects." + (this.subsample + 1) + ".txt"));
+                    saveMatrix(effects, new File(newDir, EFFECTS_PREFIX + (this.subsample + 1) + ".txt"));
 
                     try {
                         GraphSaveLoadUtils.saveGraph(cpdag, new File(newDir, "cpdag." + (this.subsample + 1) + ".txt"), false);
