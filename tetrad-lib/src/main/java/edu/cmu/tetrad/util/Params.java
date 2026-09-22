@@ -561,6 +561,14 @@ public final class Params {
      */
     public static final String FASK_POOL_EXTERNAL_ADJACENCY_FRACTION = "faskPoolExternalAdjacencyFraction";
     /**
+     * Constant <code>FASK_OVERRIDE_BOOTSTRAPS="faskOverrideBootstraps"</code>
+     */
+    public static final String FASK_OVERRIDE_BOOTSTRAPS = "faskOverrideBootstraps";
+    /**
+     * Constant <code>FASK_OVERRIDE_BLOCK_LENGTH="faskOverrideBlockLength"</code>
+     */
+    public static final String FASK_OVERRIDE_BLOCK_LENGTH = "faskOverrideBlockLength";
+    /**
      * Constant <code>FAST_ICA_A="fastIcaA"</code>
      */
     public static final String FAST_ICA_A = "fastIcaA";
