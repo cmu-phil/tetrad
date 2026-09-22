@@ -2108,6 +2108,66 @@ Source:
             <span id="faskLeftRightRule_value_type">Integer</span></li>
     </ul>
 
+    === faskNonempirical ===
+    <h3 class="parameter_description" id="faskNonempirical">faskNonempirical</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="faskNonempirical_short_desc">Variables should be assumed to have
+        positive skewness</span></li>
+        <li>Long Description: <span id="faskNonempirical_long_desc"> If false (default), each variable is
+        multiplied by the sign of its skewness in the left-right rule.</span>
+        </li>
+        <li>Default Value: <span id="faskNonempirical_default_value">false</span></li>
+        <li>Lower
+            Bound: <span id="faskNonempirical_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="faskNonempirical_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="faskNonempirical_value_type">Boolean</span></li>
+    </ul>
+
+    === faskOverrideBlockLength ===
+    <h3 class="parameter_description" id="faskOverrideBlockLength">faskOverrideBlockLength</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="faskOverrideBlockLength_short_desc">Block length for the FASK
+        override bootstrap (1 = i.i.d. resampling)</span></li>
+        <li>Long Description: <span id="faskOverrideBlockLength_long_desc"> Only used by single-dataset FASK
+        when faskOverrideBootstraps is positive. One (the default) resamples rows independently, which is
+        correct when the rows are independent. A larger value resamples contiguous blocks of that length (a
+        moving-block bootstrap), which is what autocorrelated rows require -- time series such as LFP
+        recordings. Resampling autocorrelated rows independently makes the resamples far more alike than
+        independent samples would be, so the sign consensus becomes much too easy to achieve and false
+        reversals follow; a common choice is about the square root of the number of rows.</span>
+        </li>
+        <li>Default Value: <span id="faskOverrideBlockLength_default_value">1</span></li>
+        <li>Lower
+            Bound: <span id="faskOverrideBlockLength_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="faskOverrideBlockLength_upper_bound">100000</span></li>
+        <li>Value Type:
+            <span id="faskOverrideBlockLength_value_type">Integer</span></li>
+    </ul>
+
+    === faskOverrideBootstraps ===
+    <h3 class="parameter_description" id="faskOverrideBootstraps">faskOverrideBootstraps</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="faskOverrideBootstraps_short_desc">Bootstrap resamples gating an
+        override of a compelled external orientation in single-dataset FASK</span></li>
+        <li>Long Description: <span id="faskOverrideBootstraps_long_desc"> Only used by single-dataset FASK,
+        and only when an external graph is supplied with faskPoolExternalOrientations true. Zero (the
+        default) means no gate: the left-right statistic overturns a compelled orientation whenever it
+        opposes it, which on compelled edges is simply plain FASK, so the external orientations then have no
+        effect. A positive value requires every resample's left-right statistic to oppose the compelled
+        direction before the override is taken (strict sign consensus). With one dataset there is no
+        cross-dataset consensus to appeal to, so this is what makes the override a test rather than a
+        relabeling. Cost is linear in this value times the number of adjacencies.</span>
+        </li>
+        <li>Default Value: <span id="faskOverrideBootstraps_default_value">0</span></li>
+        <li>Lower
+            Bound: <span id="faskOverrideBootstraps_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="faskOverrideBootstraps_upper_bound">100000</span></li>
+        <li>Value Type:
+            <span id="faskOverrideBootstraps_value_type">Integer</span></li>
+    </ul>
+
     === faskPoolAdjacency ===
     <h3 class="parameter_description" id="faskPoolAdjacency">faskPoolAdjacency</h3>
     <ul class="parameter_description_list">
@@ -2167,6 +2227,26 @@ Source:
             Type: <span id="faskPoolAdjacencyOrientations_value_type">Boolean</span></li>
     </ul>
 
+    === faskPoolExternalAdjacencyFraction ===
+    <h3 class="parameter_description" id="faskPoolExternalAdjacencyFraction">faskPoolExternalAdjacencyFraction</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="faskPoolExternalAdjacencyFraction_short_desc">Fraction of the
+        external graphs a pair must be adjacent in</span></li>
+        <li>Long Description: <span id="faskPoolExternalAdjacencyFraction_long_desc"> Only consulted when
+        more than one external graph is given to FASK-Pool (one per dataset). A pair enters the composite
+        skeleton when the number of graphs in which it is adjacent exceeds this fraction of the number of
+        graphs. Zero takes the union of the skeletons, 0.5 (the default) a strict majority, and 1.0 the
+        intersection.</span>
+        </li>
+        <li>Default Value: <span id="faskPoolExternalAdjacencyFraction_default_value">0.5</span></li>
+        <li>Lower
+            Bound: <span id="faskPoolExternalAdjacencyFraction_lower_bound">0.0</span></li>
+        <li>Upper
+            Bound: <span id="faskPoolExternalAdjacencyFraction_upper_bound">1.0</span></li>
+        <li>Value
+            Type: <span id="faskPoolExternalAdjacencyFraction_value_type">Double</span></li>
+    </ul>
+
     === faskPoolExternalOrientations ===
     <h3 class="parameter_description" id="faskPoolExternalOrientations">faskPoolExternalOrientations</h3>
     <ul class="parameter_description_list">
@@ -2201,86 +2281,6 @@ Source:
             Bound: <span id="faskPoolExternalOrientations_upper_bound"></span></li>
         <li>Value
             Type: <span id="faskPoolExternalOrientations_value_type">Boolean</span></li>
-    </ul>
-
-    === faskPoolExternalAdjacencyFraction ===
-    <h3 class="parameter_description" id="faskPoolExternalAdjacencyFraction">faskPoolExternalAdjacencyFraction</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description: <span id="faskPoolExternalAdjacencyFraction_short_desc">Fraction of the
-        external graphs a pair must be adjacent in</span></li>
-        <li>Long Description: <span id="faskPoolExternalAdjacencyFraction_long_desc"> Only consulted when
-        more than one external graph is given to FASK-Pool (one per dataset). A pair enters the composite
-        skeleton when the number of graphs in which it is adjacent exceeds this fraction of the number of
-        graphs. Zero takes the union of the skeletons, 0.5 (the default) a strict majority, and 1.0 the
-        intersection.</span>
-        </li>
-        <li>Default Value: <span id="faskPoolExternalAdjacencyFraction_default_value">0.5</span></li>
-        <li>Lower
-            Bound: <span id="faskPoolExternalAdjacencyFraction_lower_bound">0.0</span></li>
-        <li>Upper
-            Bound: <span id="faskPoolExternalAdjacencyFraction_upper_bound">1.0</span></li>
-        <li>Value
-            Type: <span id="faskPoolExternalAdjacencyFraction_value_type">Double</span></li>
-    </ul>
-
-    === faskOverrideBootstraps ===
-    <h3 class="parameter_description" id="faskOverrideBootstraps">faskOverrideBootstraps</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description: <span id="faskOverrideBootstraps_short_desc">Bootstrap resamples gating an
-        override of a compelled external orientation in single-dataset FASK</span></li>
-        <li>Long Description: <span id="faskOverrideBootstraps_long_desc"> Only used by single-dataset FASK,
-        and only when an external graph is supplied with faskPoolExternalOrientations true. Zero (the
-        default) means no gate: the left-right statistic overturns a compelled orientation whenever it
-        opposes it, which on compelled edges is simply plain FASK, so the external orientations then have no
-        effect. A positive value requires every resample's left-right statistic to oppose the compelled
-        direction before the override is taken (strict sign consensus). With one dataset there is no
-        cross-dataset consensus to appeal to, so this is what makes the override a test rather than a
-        relabeling. Cost is linear in this value times the number of adjacencies.</span>
-        </li>
-        <li>Default Value: <span id="faskOverrideBootstraps_default_value">0</span></li>
-        <li>Lower
-            Bound: <span id="faskOverrideBootstraps_lower_bound">0</span></li>
-        <li>Upper Bound: <span id="faskOverrideBootstraps_upper_bound">100000</span></li>
-        <li>Value Type:
-            <span id="faskOverrideBootstraps_value_type">Integer</span></li>
-    </ul>
-
-    === faskOverrideBlockLength ===
-    <h3 class="parameter_description" id="faskOverrideBlockLength">faskOverrideBlockLength</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description: <span id="faskOverrideBlockLength_short_desc">Block length for the FASK
-        override bootstrap (1 = i.i.d. resampling)</span></li>
-        <li>Long Description: <span id="faskOverrideBlockLength_long_desc"> Only used by single-dataset FASK
-        when faskOverrideBootstraps is positive. One (the default) resamples rows independently, which is
-        correct when the rows are independent. A larger value resamples contiguous blocks of that length (a
-        moving-block bootstrap), which is what autocorrelated rows require -- time series such as LFP
-        recordings. Resampling autocorrelated rows independently makes the resamples far more alike than
-        independent samples would be, so the sign consensus becomes much too easy to achieve and false
-        reversals follow; a common choice is about the square root of the number of rows.</span>
-        </li>
-        <li>Default Value: <span id="faskOverrideBlockLength_default_value">1</span></li>
-        <li>Lower
-            Bound: <span id="faskOverrideBlockLength_lower_bound">1</span></li>
-        <li>Upper Bound: <span id="faskOverrideBlockLength_upper_bound">100000</span></li>
-        <li>Value Type:
-            <span id="faskOverrideBlockLength_value_type">Integer</span></li>
-    </ul>
-
-    === faskNonempirical ===
-    <h3 class="parameter_description" id="faskNonempirical">faskNonempirical</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description: <span id="faskNonempirical_short_desc">Variables should be assumed to have
-        positive skewness</span></li>
-        <li>Long Description: <span id="faskNonempirical_long_desc"> If false (default), each variable is
-        multiplied by the sign of its skewness in the left-right rule.</span>
-        </li>
-        <li>Default Value: <span id="faskNonempirical_default_value">false</span></li>
-        <li>Lower
-            Bound: <span id="faskNonempirical_lower_bound"></span></li>
-        <li>Upper
-            Bound: <span id="faskNonempirical_upper_bound"></span></li>
-        <li>Value
-            Type: <span id="faskNonempirical_value_type">Boolean</span></li>
     </ul>
 
     === fasRule ===

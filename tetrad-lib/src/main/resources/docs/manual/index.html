@@ -4664,6 +4664,22 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     </div>
 
 
+    <h4>Input Assumptions</h4>
+
+    <p>Continuous data in which the variables are non-Gaussian.
+        Non-Gaussianity can be assessed using the Anderson-Darling score, which
+        is available in the Data box.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Orients all the edges in the input graph using the selected
+        score.</p>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
+
+
     <h3>The DM-PC Algorithm</h3>
 
     <h4>Description</h4>
@@ -4685,80 +4701,34 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     </div>
 
 
-    <h3>The FASK-Vote Algorithm</h3>
+    <h3>The FASK-Pool Algorithm</h3>
 
     <h4>Description</h4>
 
-    <div id="fask-vote"><p>FASK-Vote is a metascript that learns a
-        model from a list of datasets in a method similar to IMaGES (see). For
-        adjacencies, it uses FAS-Stable with the voting-based score from IMaGES
-        used as a test (using all the datasets, standardized), producing a
-        single undirected graph G. It then orients each edge X--Y in G for each
-        dataset using the FASK (see) left-right rule and orient X->Y if that rule
-        orients X--Y as such in at least half of the datasets. The final graph is
-        returned. </p>
+    <div id="fask-pool"><p>FASK-Pool learns a model from a list of continuous
+        datasets, in the manner of FASK-Vote (see), but pooling rather than voting.
+        A graph-based stage supplies the common adjacency structure&mdash;IMaGES,
+        a pooled adjacency search, or one external graph per dataset,
+        combined&mdash;and each adjacency is then oriented by the sign of the FASK
+        left-right statistic pooled across the datasets (sample-size weighted by
+        default), rather than by voting on per-dataset orientations as FASK-Vote
+        does. Where the graph stage compels a direction, that direction is kept as
+        a default orientation that the pooled statistic can overturn only on
+        strong opposing signal.</p>
 
-        <p>For FASK, See Sanchez-Romero R, Ramsey JD, Zhang K, Glymour
+        <p>For FASK, see Sanchez-Romero R, Ramsey JD, Zhang K, Glymour
             MR, Huang B, Glymour C. Causal discovery of feedback networks with
             functional magnetic resonance imaging. Network Neuroscience 2018.</p>
     </div>
 
     <h4>Input Assumptions</h4>
 
-    <p>Same as FASK.</p>
+    <p>Same as FASK-Vote: a list of continuous datasets over the same variables.</p>
 
     <h4>Output Format</h4>
 
     <p>Same as FASK.</p>
 
-    <h3>Orientation Algorithms (R3, RSkew, Skew)</h3>
-
-    <h4>Description</h4>
-
-    <div id="r3">
-
-        <p>This is an algorithm that orients an edge X--Y for continuous
-            variables based on non-Gaussian information. This rule in particular
-            uses an entropy calculation to make the orientation. Note that if the
-            variables X and Y are both Gaussian, and the model is linear, it is
-            not possible to orient the edge X--Y pairwise; any attempt to do so
-            would result in random orientation. But if X and Y are non-Gaussian,
-            the orientation is fairly easy. This rule is similar to Hyvarinen and
-            Smith's (2013) EB rule, but using Anderson Darling for the measure of
-            non-Gaussianity, to somewhat better effect. See Ramsey et al. (2012).
-        </p></div>
-
-
-    <div id="skew">
-
-        <p>This is an algorithm that orients an edge X--Y for continuousz
-            variables based on non-Gaussian information. This rule in particular
-            uses a skewness to make the orientation. Note that if the variables X
-            and Y are both Gaussian, and the model is linear, it is not possible
-            to orient the edge X--Y pairwise; any attempt to do so would result
-            in random orientation. But if X and Y are non-Gaussian, in particular
-            in this case, if X and Y are skewed, the orientation is relatively
-            straightforward. See Hyvarinen and Smith (2013) for details. </p>
-
-        <p>The Skew rule is differently motivated from the RSkew rule
-            (see), though they both appeal to the skewness of the variables.</p>
-
-    </div>
-
-    <h4>Input Assumptions</h4>
-
-    <p>Continuous data in which the variables are non-Gaussian.
-        Non-Gaussianity can be assessed using the Anderson-Darling score, which
-        is available in the Data box.</p>
-
-    <h4>Output Format</h4>
-
-    <p>Orients all the edges in the input graph using the selected
-        score.</p>
-
-    <h4>Parameters</h4>
-
-    <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
 
     <h3>The BOSS-LiNGAM Algorithm</h3>
 
