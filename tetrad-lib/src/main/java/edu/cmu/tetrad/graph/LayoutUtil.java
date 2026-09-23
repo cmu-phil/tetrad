@@ -423,9 +423,9 @@ public class LayoutUtil {
             }
         }
 
-//        if (allOriented) {
-//            return;
-//        }
+        if (allOriented) {
+            return;
+        }
 
         // The previous defaults, kept for reference:
 //        if (graph.getNumNodes() <= 20) {
