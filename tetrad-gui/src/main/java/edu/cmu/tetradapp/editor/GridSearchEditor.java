@@ -318,7 +318,16 @@ public class GridSearchEditor extends JPanel {
                 }
             }
             case Boolean ignored -> component = getBooleanSelectionBox(parameter, parameters, bothOptionAllowed);
-            case String s -> component = createStringField(parameter, parameters, s);
+            case String s -> {
+                // Parameters that declare a fixed set of allowed values (e.g., missingDataPolicy, missingEssMode)
+                // get a dropdown, as in AlgorithmParameterPanel; free-form strings keep the text field.
+                if (!paramDesc.getAllowedValues().isEmpty()) {
+                    component = ParameterComponents.getStringSelectionBox(parameter, parameters, s,
+                            paramDesc.getAllowedValues());
+                } else {
+                    component = createStringField(parameter, parameters, s);
+                }
+            }
             default -> throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
 
@@ -826,7 +835,14 @@ public class GridSearchEditor extends JPanel {
                 component = createLongTextField(parameter, parameters, l, lowerBoundLong, upperBoundLong);
             }
             case Boolean b -> component = createBooleanSelectionBox(parameter, parameters, b);
-            case String s -> component = getStringField(parameter, parameters, s);
+            case String s -> {
+                if (!paramDesc.getAllowedValues().isEmpty()) {
+                    component = ParameterComponents.getStringSelectionBox(parameter, parameters, s,
+                            paramDesc.getAllowedValues());
+                } else {
+                    component = getStringField(parameter, parameters, s);
+                }
+            }
             default -> throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
 
