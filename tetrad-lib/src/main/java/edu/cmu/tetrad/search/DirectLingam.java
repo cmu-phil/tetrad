@@ -127,8 +127,10 @@ public class DirectLingam {
         double b1 = 0.0;
 
         for (double value : x) {
-            // First term in the log-cosh style approximation.
-            b1 += value * value / 2.0;
+            // G1(u) = log cosh u (Hyvarinen 1998). Do not replace with u^2/2: on
+            // standardized data its mean is the constant (n-1)/(2n), which would
+            // erase the even (kurtosis-like) half of the negentropy approximation.
+            b1 += log(cosh(value));
         }
 
         b1 /= x.length;
