@@ -368,15 +368,17 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             Graph selection = wrapper.getSelectionGraph(i);
 
-            if (!layoutGraph.isEmpty()) {
-                for (Node node : selection.getNodes()) {
-                    List<Integer> center = layoutGraph.get(node.getName());
+//            if (!layoutGraph.isEmpty()) {
+//                for (Node node : selection.getNodes()) {
+//                    List<Integer> center = layoutGraph.get(node.getName());
+//
+//                    if (center != null) {
+//                        node.setCenter(center.getFirst(), center.get(1));
+//                    }
+//                }
+//            }
 
-                    if (center != null) {
-                        node.setCenter(center.getFirst(), center.get(1));
-                    }
-                }
-            }
+            LayoutUtil.richardsLayout(selection);
 
             GraphWorkbench workbench = getWorkbench(i);
             workbench.setGraph(selection);
