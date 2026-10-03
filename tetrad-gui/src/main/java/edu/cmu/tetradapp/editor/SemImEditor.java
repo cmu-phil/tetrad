@@ -871,7 +871,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             });
 
-            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient");
+            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient", true);
             shadeEdges.setToolTipText("Color edges blue (positive) or vermillion (negative), darker for larger "
                     + "|coefficient| relative to the largest in the model; error covariances by their correlation.");
             shadeEdges.addActionListener((e) -> graphicalEditor().setShadeEdges(shadeEdges.isSelected()));
@@ -1206,7 +1206,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         /**
          * Whether display edges are shaded by coefficient sign and relative magnitude.
          */
-        private boolean shadeEdges = false;
+        private boolean shadeEdges = true;
 
         /**
          * Constructs a SemIm graphical editor for the given SemIm.
