@@ -735,6 +735,121 @@ public class LayoutUtil {
     //==================== Richard's layout ==============================//
 
     /**
+     * Tiers by causal depth, like {@link #getTiers(Graph)}, but for graphs
+     * whose directed structure may be cyclic. The parent relation is the
+     * same (nodes with an arrow into a node, less those the node also has an
+     * arrow into, so two-cycles and bidirected edges do not count). A
+     * depth-first search from the parentless nodes, in graph node order,
+     * finds the back edges; with those set aside the relation is acyclic,
+     * and each node's tier is its longest-path depth in what remains. For
+     * an acyclic graph there are no back edges and the tiers are those of
+     * {@link #getTiers(Graph)}.
+     */
+    private static List<List<Node>> getTiersBreakingCycles(Graph graph) {
+        List<Node> nodes = graph.getNodes();
+        Map<Node, Integer> index = new HashMap<>();
+        for (int i = 0; i < nodes.size(); i++) index.put(nodes.get(i), i);
+
+        List<List<Integer>> children = new ArrayList<>();
+        boolean[] hasParent = new boolean[nodes.size()];
+        for (int i = 0; i < nodes.size(); i++) children.add(new ArrayList<>());
+
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            Set<Node> parents = new HashSet<>(graph.getNodesInTo(node, Endpoint.ARROW));
+            graph.getNodesOutTo(node, Endpoint.ARROW).forEach(parents::remove);
+            parents.remove(node);
+
+            for (Node p : parents) {
+                Integer pi = index.get(p);
+                if (pi == null) continue;
+                children.get(pi).add(i);
+                hasParent[i] = true;
+            }
+        }
+
+        for (List<Integer> c : children) sort(c);
+
+        int[] tier = layerBreakingCycles(children, hasParent);
+
+        int numTiers = 0;
+        for (int t : tier) numTiers = Math.max(numTiers, t + 1);
+
+        List<List<Node>> tiers = new ArrayList<>();
+        for (int t = 0; t < numTiers; t++) tiers.add(new ArrayList<>());
+        for (int i = 0; i < nodes.size(); i++) tiers.get(tier[i]).add(nodes.get(i));
+
+        return tiers;
+    }
+
+    /**
+     * Longest-path layering of a directed graph given by child lists, after
+     * setting aside the back edges of a depth-first search (iterative, so
+     * deep graphs do not overflow the stack). The search starts from the
+     * parentless nodes first, in index order, then from any node not yet
+     * reached, which happens only for cycles with no parentless ancestor.
+     *
+     * @return the tier of each node, zero-based.
+     */
+    static int[] layerBreakingCycles(List<List<Integer>> children, boolean[] hasParent) {
+        int n = children.size();
+        int[] state = new int[n];        // 0 = unvisited, 1 = on the stack, 2 = done
+        int[] next = new int[n];         // next child position to look at
+        int[] finished = new int[n];     // nodes in order of finishing
+        int numFinished = 0;
+        List<Set<Integer>> back = new ArrayList<>();
+        for (int i = 0; i < n; i++) back.add(new HashSet<>());
+
+        int[] stack = new int[n];
+
+        for (int pass = 0; pass < 2; pass++) {
+            for (int root = 0; root < n; root++) {
+                if (state[root] != 0) continue;
+                if (pass == 0 && hasParent[root]) continue;
+
+                int top = 0;
+                stack[top] = root;
+                state[root] = 1;
+
+                while (top >= 0) {
+                    int u = stack[top];
+                    List<Integer> ch = children.get(u);
+
+                    if (next[u] < ch.size()) {
+                        int v = ch.get(next[u]++);
+
+                        if (state[v] == 0) {
+                            state[v] = 1;
+                            stack[++top] = v;
+                        } else if (state[v] == 1) {
+                            back.get(u).add(v);
+                        }
+                    } else {
+                        state[u] = 2;
+                        finished[numFinished++] = u;
+                        top--;
+                    }
+                }
+            }
+        }
+
+        // Reverse finishing order is a topological order once the back
+        // edges are set aside.
+        int[] tier = new int[n];
+
+        for (int k = n - 1; k >= 0; k--) {
+            int u = finished[k];
+
+            for (int v : children.get(u)) {
+                if (back.get(u).contains(v)) continue;
+                tier[v] = Math.max(tier[v], tier[u] + 1);
+            }
+        }
+
+        return tier;
+    }
+
+    /**
      * Arranges the graph the way Richard lays out a graph for presentation:
      * layered by causal depth, with each layer shifted a bit further right
      * than the one above it, so that the flow reads down and to the right,
@@ -769,8 +884,11 @@ public class LayoutUtil {
      * <ol>
      * <li><b>Layering.</b> Nodes are assigned to layers by causal depth
      * using the directed structure only (each node goes in the first layer
-     * where all of the nodes with arrows into it are already placed; a
-     * cyclic remainder, if any, becomes a final layer). For PAGs this means
+     * where all of the nodes with arrows into it are already placed). If
+     * the directed structure has cycles, one edge per cycle found by a
+     * depth-first search is set aside for the layering, so those edges, and
+     * only those, are drawn pointing up; everything downstream of a cycle is
+     * still layered by depth. For PAGs this means
      * an edge like x o-&gt; y places y below x, which matches the
      * "y is not an ancestor of x" reading of the arrowhead.</li>
      * <li><b>Crossing reduction.</b> Alternating down and up barycenter
@@ -835,7 +953,7 @@ public class LayoutUtil {
             if (!attached.contains(n)) isolated.add(n);
         }
 
-        List<List<Node>> tiers = getTiers(graph);
+        List<List<Node>> tiers = getTiersBreakingCycles(graph);
         for (List<Node> tier : tiers) tier.removeAll(isolated);
         tiers.removeIf(List::isEmpty);
 
