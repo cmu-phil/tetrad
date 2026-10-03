@@ -1581,7 +1581,7 @@ public class DataTransforms {
                 }
             }
 
-            norm = TMath.sqrt(norm / (data.getNumRows() - 1));
+            norm = TMath.sqrt(norm / (count - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {
@@ -1641,7 +1641,7 @@ public class DataTransforms {
                 }
             }
 
-            norm = TMath.sqrt(norm / (data.getNumRows() - 1));
+            norm = TMath.sqrt(norm / (count - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {

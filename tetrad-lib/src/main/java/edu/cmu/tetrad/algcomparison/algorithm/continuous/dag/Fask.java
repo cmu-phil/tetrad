@@ -96,8 +96,7 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
      * @param dataModel  the data model to run the search on
      * @param parameters the parameters for the search
      * @return the resulting graph from the search
-     * @throws IllegalStateException    if the data model is not a DataSet or if there are missing values
-     * @throws IllegalArgumentException if there are missing values in the data set
+     * @throws IllegalStateException    if the data model is not a DataSet
      * @throws InterruptedException     if any
      */
     @Override
@@ -106,13 +105,8 @@ public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, Accep
             throw new IllegalStateException("Expecting a dataset.");
         }
 
-        for (int j = 0; j < dataSet.getNumColumns(); j++) {
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                if (Double.isNaN(dataSet.getDouble(i, j))) {
-                    throw new IllegalArgumentException("Please remove or impute missing values.");
-                }
-            }
-        }
+        // Missing values are allowed: the score handles them by its missing-data policy for the adjacency
+        // phase, and the pairwise orientation and two-cycle statistics use pairwise/testwise deletion.
 
         edu.cmu.tetrad.search.Fask fask = new edu.cmu.tetrad.search.Fask(dataSet, this.score.getScore(dataSet, parameters));
 

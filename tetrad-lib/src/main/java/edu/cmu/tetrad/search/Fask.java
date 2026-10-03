@@ -65,6 +65,10 @@ import static edu.cmu.tetrad.util.TMath.*;
  * @author Joseph Ramsey
  */
 public final class Fask {
+    /**
+     * The minimum number of jointly observed rows a pair needs for its edge to be oriented when values are missing.
+     */
+    private static final int MIN_PAIRWISE_ROWS = 20;
     private final Score score;
     private final DataSet dataSet;
     private double[][] data;
@@ -454,6 +458,37 @@ public final class Fask {
         return r;
     }
 
+    /**
+     * Restricts the given equal-length columns to the rows in which none of them is missing (NaN). If no row is
+     * dropped, the original arrays are returned, uncopied.
+     *
+     * @param cols the columns
+     * @return the columns restricted to their jointly observed rows
+     */
+    private static double[][] completeRows(double[]... cols) {
+        int n = cols[0].length;
+        int[] keep = new int[n];
+        int m = 0;
+
+        ROW:
+        for (int r = 0; r < n; r++) {
+            for (double[] col : cols) {
+                if (Double.isNaN(col[r])) continue ROW;
+            }
+            keep[m++] = r;
+        }
+
+        if (m == n) return cols;
+
+        double[][] out = new double[cols.length][m];
+
+        for (int c = 0; c < cols.length; c++) {
+            for (int k = 0; k < m; k++) out[c][k] = cols[c][keep[k]];
+        }
+
+        return out;
+    }
+
     private static double[] solve(double[][] A, double[] b) {
 
         int n = b.length;
@@ -643,8 +678,11 @@ public final class Fask {
                     Node X = variables.get(i);
                     Node Y = variables.get(j);
 
-                    final double[] x = colData[i];
-                    final double[] y = colData[j];
+                    // Pairwise deletion: the pairwise statistics use just the rows where X and Y are both
+                    // observed. With no missing values these are the full columns, unchanged.
+                    final double[][] pair = completeRows(colData[i], colData[j]);
+                    final double[] x = pair[0];
+                    final double[] y = pair[1];
 
                     double skewX = StatUtils.cov(x, y, x, 0, +1)[1];
                     double skewY = StatUtils.cov(x, y, y, 0, +1)[1];
@@ -655,7 +693,10 @@ public final class Fask {
                             graph.addDirectedEdge(X, Y);
                         } else if (knowledgeOrients(Y, X)) {
                             graph.addDirectedEdge(Y, X);
-                        } else if (alpha > 0 && isTwoCycle(x, y, G0, X, Y)) {
+                        } else if (x.length < MIN_PAIRWISE_ROWS) {
+                            // Too few jointly observed rows to orient; keep the adjacency, unoriented.
+                            graph.addUndirectedEdge(X, Y);
+                        } else if (alpha > 0 && isTwoCycle(colData[i], colData[j], G0, X, Y)) {
                             graph.addEdge(Edges.directedEdge(X, Y));
                             graph.addEdge(Edges.directedEdge(Y, X));
                             this.edgeOrigins.put(Edges.directedEdge(X, Y), Origin.TWO_CYCLE);
@@ -960,8 +1001,8 @@ public final class Fask {
     public static boolean twoCycleTest(double[] x, double[] y, double[][] candCols, double cutoff) {
         if (candCols == null || candCols.length == 0) return false;
 
-        x = correctSkewness(x, skewness(x));
-        y = correctSkewness(y, skewness(y));
+        x = correctSkewness(x, skewness(completeRows(x)[0]));
+        y = correctSkewness(y, skewness(completeRows(y)[0]));
 
         final int n = x.length;
         final int minPart = (int) TMath.ceil(0.15 * n);
@@ -993,6 +1034,20 @@ public final class Fask {
                                                 double cutoff) {
 
         double[][] Z = (zCols == null) ? new double[0][] : zCols;
+
+        // Testwise deletion: use just the rows complete for x, y and this conditioning set.
+        double[][] all = new double[Z.length + 2][];
+        all[0] = x;
+        all[1] = y;
+        System.arraycopy(Z, 0, all, 2, Z.length);
+        double[][] complete = completeRows(all);
+
+        if (complete[0].length != x.length) {
+            x = complete[0];
+            y = complete[1];
+            Z = java.util.Arrays.copyOfRange(complete, 2, complete.length);
+            minPart = (int) TMath.ceil(0.15 * x.length);
+        }
 
         final double pc, pc1, pc2;
         try {
