@@ -32,7 +32,9 @@ import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Estimates a SemIm given a CovarianceMatrix and a SemPm. (A DataSet may be substituted for the CovarianceMatrix.)
@@ -85,6 +87,12 @@ public final class SemEstimator implements TetradSerializable {
     private int numRestarts = 1;
 
     /**
+     * When the data set has missing values, the EM estimates of the mean and standard deviation of each measured
+     * variable, by name; null otherwise.
+     */
+    private Map<String, double[]> missingDataMoments;
+
+    /**
      * Constructs a Sem Estimator that does default estimation.
      *
      * @param semPm   a SemPm specifying the graph and parameterization for the model.
@@ -116,10 +124,52 @@ public final class SemEstimator implements TetradSerializable {
      */
     public SemEstimator(DataSet dataSet, SemPm semPm,
                         SemOptimizer semOptimizer) {
-        this(new CovarianceMatrix(dataSet), semPm, semOptimizer);
-        if (DataUtils.containsMissingValue(dataSet)) {
-            throw new IllegalArgumentException("Expecting a data set with no missing values.");
+        if (dataSet == null) {
+            throw new NullPointerException("Data set must not be null.");
         }
+
+        if (semPm == null) {
+            throw new NullPointerException("SemPm must not be null.");
+        }
+
+        ICovarianceMatrix covMatrix;
+
+        if (DataUtils.containsMissingValue(dataSet)) {
+
+            // Missing values: estimate the covariance matrix and means of the model's measured variables by
+            // maximum likelihood under a saturated Gaussian model (EM), using every row, and fit the SEM to
+            // that. This assumes multivariate normality and ignorable (MAR) missingness.
+            DataSet measured = subset(dataSet, semPm);
+            EmCovarianceEstimator em = new EmCovarianceEstimator(measured);
+            covMatrix = em.estimate();
+
+            if (DataUtils.containsMissingValue(covMatrix.getMatrix())) {
+                throw new IllegalArgumentException("The EM covariance estimate for the data with missing values "
+                                                   + "could not be computed (some variable or pair of variables may have too few "
+                                                   + "observed values).");
+            }
+
+            double[] means = em.getMeans();
+            this.missingDataMoments = new HashMap<>();
+
+            for (int j = 0; j < measured.getNumColumns(); j++) {
+                this.missingDataMoments.put(measured.getVariable(j).getName(),
+                        new double[]{means[j], Math.sqrt(covMatrix.getValue(j, j))});
+            }
+
+            TetradLogger.getInstance().warn("SEM estimator: the data have missing values, so the model is fit to "
+                                            + "an EM (maximum likelihood) covariance matrix. The sample size is taken to be the "
+                                            + "number of rows (" + covMatrix.getSampleSize() + "; smallest pairwise count "
+                                            + em.getMinPairwiseCount() + "), which overstates the information in the data, so "
+                                            + "the chi square, p-value, BIC and standard errors are optimistic.");
+        } else {
+            covMatrix = new CovarianceMatrix(dataSet);
+        }
+
+        semPm.getGraph().setShowErrorTerms(false);
+        setCovMatrix(submatrix(covMatrix, semPm));
+        setSemPm(semPm);
+        setSemOptimizer(semOptimizer);
         setDataSet(subset(dataSet, semPm));
     }
 
@@ -419,14 +469,16 @@ public final class SemEstimator implements TetradSerializable {
             int numColumns = dataSet.getNumColumns();
 
             for (int j = 0; j < numColumns; j++) {
-                double[] column = dataSet.getDoubleData().getColumn(j).toArray();
-                double mean = StatUtils.mean(column);
-
                 Node node = dataSet.getVariable(j);
+                double[] moments = this.missingDataMoments == null ? null
+                        : this.missingDataMoments.get(node.getName());
+                double[] column = dataSet.getDoubleData().getColumn(j).toArray();
+                double mean = moments != null ? moments[0] : StatUtils.mean(column);
+
                 Node variableNode = semIm.getVariableNode(node.getName());
                 semIm.setMean(variableNode, mean);
 
-                double standardDeviation = StatUtils.sd(column);
+                double standardDeviation = moments != null ? moments[1] : StatUtils.sd(column);
 
                 semIm.setMeanStandardDeviation(variableNode, standardDeviation);
             }
