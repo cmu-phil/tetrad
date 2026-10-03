@@ -101,7 +101,8 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
         if (!(dm instanceof DataSet ds)) {
             throw new IllegalArgumentException("A DataSet is required for NN estimator.");
         }
-        this.inputData = ds;
+        // The graph may be over a subset of the data's variables; estimate, simulate and compare over just those.
+        this.inputData = edu.cmu.tetrad.sem.NNEstimator.restrictToGraph(ds, this.inputGraph);
 
         this.sampleSize = TMath.max(1, inputData.getNumRows());
         resimulate(this.sampleSize);
