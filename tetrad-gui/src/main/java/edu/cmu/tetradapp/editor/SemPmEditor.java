@@ -55,7 +55,21 @@ import java.util.Map;
  * @author josephramsey
  */
 public final class SemPmEditor extends JPanel implements DelegatesEditing,
-        LayoutEditable {
+        LayoutEditable, DoNotScroll {
+
+    /**
+     * This editor is not wrapped in an outer scroll pane by the editor window (see {@link DoNotScroll}), since that
+     * would scroll the menu bar out of view along with the contents; the panes inside it scroll instead. So that the
+     * window still fits on the screen for a large model, the preferred size is capped to the screen here.
+     *
+     * @return the preferred size, no larger than the screen less a margin.
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension size = super.getPreferredSize();
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        return new Dimension(Math.min(size.width, screen.width - 50), Math.min(size.height, screen.height - 200));
+    }
 
     /**
      * The SemIm being edited.
