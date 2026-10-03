@@ -20,15 +20,20 @@
 
 package edu.cmu.tetradapp.editor.search;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.editor.*;
 import edu.cmu.tetradapp.util.ArrowKeyNavigation;
+import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
 import edu.cmu.tetradapp.workbench.TieLayoutMenu;
@@ -275,11 +280,81 @@ public class GraphCard extends JPanel {
         mainPanel.setPreferredSize(new Dimension(825, 406));
         mainPanel.add(new JScrollPane(graphWorkbench), BorderLayout.CENTER);
 
-        if (GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm())) {
-            mainPanel.add(createLatentVariableInstructionBox(), BorderLayout.SOUTH);
+        Box south = Box.createVerticalBox();
+        DataSet dataSet = plotDataSet();
+
+        if (dataSet != null) {
+            Box plotBox = Box.createHorizontalBox();
+            plotBox.add(createPlotMatrixButton(dataSet, graphWorkbench));
+            plotBox.add(Box.createHorizontalGlue());
+            south.add(plotBox);
         }
 
+        if (GraphSearchUtils.isLatentVariableAlgorithmByAnnotation(this.algorithmRunner.getAlgorithm())) {
+            south.add(createLatentVariableInstructionBox());
+        }
+
+        mainPanel.add(south, BorderLayout.SOUTH);
+
         return mainPanel;
+    }
+
+    /**
+     * The data set to plot from: the first tabular data set the search was given, or null if there is none (a
+     * search from a graph, or from a covariance matrix).
+     */
+    private DataSet plotDataSet() {
+        for (DataModel model : this.algorithmRunner.getDataModelList()) {
+            if (model instanceof DataSet dataSet && dataSet.getNumRows() > 0) return dataSet;
+        }
+
+        return null;
+    }
+
+    /**
+     * A button that opens a plot matrix over the variables selected in the given workbench, as the data audit and
+     * nonlinearity check tools do for their selected rows. Selected nodes with no column of the same name in the
+     * data (latents, lagged copies) are left out. Does not modify the data or the graph.
+     */
+    private JButton createPlotMatrixButton(DataSet dataSet, GraphWorkbench graphWorkbench) {
+        JButton plot = new JButton("Plot Matrix for Selected");
+        plot.setToolTipText("Open a plot matrix over the variables selected in the graph.");
+
+        plot.addActionListener(e -> {
+            java.util.List<Node> variables = new java.util.ArrayList<>();
+
+            for (DisplayNode displayNode : graphWorkbench.getSelectedNodes()) {
+                Node modelNode = displayNode.getModelNode();
+                if (modelNode == null) continue;
+                Node variable = dataSet.getVariable(modelNode.getName());
+                if (variable != null && !variables.contains(variable)) variables.add(variable);
+            }
+
+            if (variables.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Select one or more variables in the graph that are in the data, then click this button.");
+                return;
+            }
+
+            StringBuilder title = new StringBuilder("Plot Matrix: ");
+
+            for (int i = 0; i < variables.size() && i < 4; i++) {
+                if (i > 0) title.append(", ");
+                title.append(variables.get(i).getName());
+            }
+
+            if (variables.size() > 4) {
+                title.append(", ... (").append(variables.size()).append(" variables)");
+            }
+
+            PlotMatrix panel = new PlotMatrix(dataSet, variables, variables, variables);
+            EditorWindow window = new EditorWindow(panel, title.toString(), null, false, plot);
+            DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+            window.pack();
+            window.setVisible(true);
+        });
+
+        return plot;
     }
 
     private Box createLatentVariableInstructionBox() {
