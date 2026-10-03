@@ -695,7 +695,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     Graph graph;
                     try {
                         graph = algo.search(data, this.parameters);
-                        LayoutUtil.defaultLayout(graph);
+                        LayoutUtil.richardsLayout(graph);
                         graphList.add(graph);
                         graphSubtitle.put(graph, noteFor(data));
 
@@ -724,9 +724,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             if (LayoutUtil.isLaggedGraph(graph)) {
                 LayoutUtil.layoutByKnowledgeIndices(graph);
             } else if (knowledge != null && knowledge.getNumTiers() > 0) {
-                LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
+//                LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
+                LayoutUtil.richardsLayout(graph);
             } else {
-                LayoutUtil.defaultLayout(graph);
+                LayoutUtil.richardsLayout(graph);
             }
         }
 
