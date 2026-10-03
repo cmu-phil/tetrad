@@ -21,11 +21,14 @@
 package edu.cmu.tetradapp.editor;
 
 
+import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Histogram;
+import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.util.NaturalSort;
 
 import javax.swing.*;
@@ -81,6 +84,18 @@ public class PlotMatrix extends JPanel {
      * Remove zero points per plot
      */
     private boolean removeZeroPointsPerPlot = false;
+
+    /**
+     * Whether scatterplots are added-variable (partial regression) plots: each of the two variables is shown with
+     * the other selected continuous variables regressed out.
+     */
+    private boolean addedVariablePlots = false;
+
+    /**
+     * Whether every plot is drawn from just the rows that have no missing value in any selected variable, instead
+     * of each plot using the rows complete for its own variables.
+     */
+    private boolean completeRowsOnly = false;
 
     /**
      * Last rows
@@ -172,6 +187,29 @@ public class PlotMatrix extends JPanel {
         removeZeroPointsPerPlot.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
         removeZeroPointsPerPlot.setSelected(false);
         settings.add(removeZeroPointsPerPlot);
+
+        JMenuItem adjustForOthers = new JCheckBoxMenuItem("Adjust for Other Selected Variables (Added-Variable Plots)");
+        adjustForOthers.setToolTipText("<html>In each scatterplot, plot the two variables with the other selected continuous "
+                                       + "variables regressed out of both.<br>The trend line's slope is then the variable's "
+                                       + "coefficient in the regression on all of them together.</html>");
+        adjustForOthers.setSelected(false);
+        settings.add(adjustForOthers);
+
+        adjustForOthers.addActionListener(e -> {
+            this.addedVariablePlots = adjustForOthers.isSelected();
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
+        });
+
+        JMenuItem completeRows = new JCheckBoxMenuItem("Use Only Rows Complete for All Selected Variables");
+        completeRows.setToolTipText("<html>Draw every plot from just the rows with no missing value in any selected "
+                                    + "variable,<br>so that plain and adjusted plots can be compared on the same rows.</html>");
+        completeRows.setSelected(false);
+        settings.add(completeRows);
+
+        completeRows.addActionListener(e -> {
+            this.completeRowsOnly = completeRows.isSelected();
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
+        });
 
         removeZeroPointsPerPlot.addActionListener(e -> {
             setRemoveMinPointsPerPlot(!isRemoveTrendLinesPerPlot());
@@ -314,6 +352,23 @@ public class PlotMatrix extends JPanel {
         int[] colIndices = colSelector.getSelectedIndices();
         charts.removeAll();
 
+        final DataSet original = dataSet;
+
+        if (this.completeRowsOnly) {
+            List<Integer> complete = completeRows(dataSet, nodes, rowIndices, colIndices);
+
+            if (complete.isEmpty()) {
+                charts.setLayout(new BorderLayout());
+                charts.add(new JLabel("No rows are complete for all of the selected variables.",
+                        SwingConstants.CENTER), BorderLayout.CENTER);
+                revalidate();
+                repaint();
+                return;
+            }
+
+            dataSet = dataSet.subsetRows(complete);
+        }
+
         charts.setLayout(new GridLayout(rowIndices.length, colIndices.length));
 
         for (int rowIndex : rowIndices) {
@@ -344,14 +399,22 @@ public class PlotMatrix extends JPanel {
                             rowIndices.length == 1 && colIndices.length == 1);
                     panel.setMinimumSize(new Dimension(10, 10));
 
-                    addPanelListener(charts, dataSet, nodes, rowIndex, colIndex, panel);
+                    addPanelListener(charts, original, nodes, rowIndex, colIndex, panel);
 
                     charts.add(panel);
                 } else {
-                    ScatterPlot scatterPlot = new ScatterPlot(dataSet, addRegressionLines, nodes.get(rowIndex).getName(),
+                    DataSet adjusted = this.addedVariablePlots
+                            ? addedVariableData(dataSet, nodes, rowIndex, colIndex, rowIndices, colIndices) : null;
+
+                    // An adjusted cell plots residuals from a two-column data set of its own; the conditioning
+                    // ranges were applied in choosing its rows, so they are not applied again below.
+                    ScatterPlot scatterPlot = adjusted != null
+                            ? new ScatterPlot(adjusted, addRegressionLines, adjusted.getVariable(0).getName(),
+                            adjusted.getVariable(1).getName(), false)
+                            : new ScatterPlot(dataSet, addRegressionLines, nodes.get(rowIndex).getName(),
                             nodes.get(colIndex).getName(), removeZeroPointsPerPlot);
 
-                    for (Node node : conditioningPanelMap.keySet()) {
+                    for (Node node : adjusted != null ? Collections.<Node>emptySet() : conditioningPanelMap.keySet()) {
                         if (node instanceof ContinuousVariable var) {
                             VariableConditioningEditor.ContinuousConditioningPanel panel
                                     = (VariableConditioningEditor.ContinuousConditioningPanel)
@@ -377,7 +440,7 @@ public class PlotMatrix extends JPanel {
                     if (rowIndices.length > 5 || colIndices.length > 5) pointSize = 2;
                     panel.setPointSize(pointSize);
 
-                    addPanelListener(charts, dataSet, nodes, rowIndex, colIndex, panel);
+                    addPanelListener(charts, original, nodes, rowIndex, colIndex, panel);
                     charts.add(panel);
                 }
             }
@@ -385,6 +448,120 @@ public class PlotMatrix extends JPanel {
 
         revalidate();
         repaint();
+    }
+
+    /**
+     * The data for an added-variable (partial regression) plot of one cell: the row variable and the column
+     * variable, each replaced by its residuals from a linear regression on the other selected continuous variables.
+     * The regression of the second residual on the first has the slope that the row variable gets in the regression
+     * of the column variable on the row variable and the others together. Uses the rows that satisfy the
+     * conditioning ranges and are complete for the two variables and the others. Returns null, so that the ordinary
+     * scatterplot is shown, if either variable is discrete, there are no other continuous variables selected, there
+     * are too few such rows, or the regression fails.
+     */
+    private DataSet addedVariableData(DataSet dataSet, List<Node> nodes, int rowIndex, int colIndex,
+                                      int[] rowIndices, int[] colIndices) {
+        Node x = nodes.get(rowIndex);
+        Node y = nodes.get(colIndex);
+        if (!(x instanceof ContinuousVariable) || !(y instanceof ContinuousVariable)) return null;
+
+        List<Node> others = new ArrayList<>();
+
+        for (int[] indices : new int[][]{rowIndices, colIndices}) {
+            for (int index : indices) {
+                Node node = nodes.get(index);
+                if (node == x || node == y || others.contains(node)) continue;
+                if (node instanceof ContinuousVariable) others.add(node);
+            }
+        }
+
+        if (others.isEmpty()) return null;
+
+        List<Node> needed = new ArrayList<>(others);
+        needed.add(x);
+        needed.add(y);
+
+        List<Integer> rows = new ArrayList<>();
+
+        ROW:
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (Node node : needed) {
+                if (!Double.isFinite(dataSet.getDouble(i, column(dataSet, node)))) continue ROW;
+            }
+
+            for (Node node : conditioningPanelMap.keySet()) {
+                int column = column(dataSet, node);
+
+                if (node instanceof ContinuousVariable) {
+                    VariableConditioningEditor.ContinuousConditioningPanel panel
+                            = (VariableConditioningEditor.ContinuousConditioningPanel) conditioningPanelMap.get(node);
+                    double value = dataSet.getDouble(i, column);
+                    if (!(value >= panel.getLow() && value <= panel.getHigh())) continue ROW;
+                } else if (node instanceof DiscreteVariable) {
+                    VariableConditioningEditor.DiscreteConditioningPanel panel
+                            = (VariableConditioningEditor.DiscreteConditioningPanel) conditioningPanelMap.get(node);
+                    if (dataSet.getInt(i, column) != panel.getIndex()) continue ROW;
+                }
+            }
+
+            rows.add(i);
+        }
+
+        // Need residual degrees of freedom: more rows than an intercept, the others, and the plotted variable.
+        if (rows.size() < others.size() + 3) return null;
+
+        try {
+            int[] _rows = rows.stream().mapToInt(Integer::intValue).toArray();
+            RegressionDataset regression = new RegressionDataset(dataSet);
+            regression.setRows(_rows);
+            double[] rx = regression.regress(x, others).getResiduals().toArray();
+            double[] ry = regression.regress(y, others).getResiduals().toArray();
+            if (rx.length != _rows.length || ry.length != _rows.length) return null;
+
+            List<Node> variables = new ArrayList<>();
+            variables.add(new ContinuousVariable(x.getName() + " | others"));
+            variables.add(new ContinuousVariable(y.getName() + " | others"));
+            return new BoxDataSet(new VerticalDoubleDataBox(new double[][]{rx, ry}), variables);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /**
+     * The column of the given variable in the given data set, matched by name (a row subset of the data carries
+     * its own variable objects).
+     */
+    private static int column(DataSet dataSet, Node node) {
+        return dataSet.getColumnIndex(dataSet.getVariable(node.getName()));
+    }
+
+    /**
+     * The rows of the data set with no missing value in any selected row or column variable: finite for a
+     * continuous variable, not the missing-value code for a discrete one.
+     */
+    private static List<Integer> completeRows(DataSet dataSet, List<Node> nodes, int[] rowIndices, int[] colIndices) {
+        Set<Node> selected = new HashSet<>();
+        for (int index : rowIndices) selected.add(nodes.get(index));
+        for (int index : colIndices) selected.add(nodes.get(index));
+
+        List<Integer> rows = new ArrayList<>();
+
+        ROW:
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (Node node : selected) {
+                int column = column(dataSet, node);
+
+                if (node instanceof DiscreteVariable) {
+                    if (dataSet.getInt(i, column) == DiscreteVariable.MISSING_VALUE) continue ROW;
+                } else if (!Double.isFinite(dataSet.getDouble(i, column))) {
+                    continue ROW;
+                }
+            }
+
+            rows.add(i);
+        }
+
+        return rows;
     }
 
     private void addPanelListener(JPanel charts, DataSet dataSet, List<Node> nodes, int rowIndex, int colIndex, JPanel panel) {
