@@ -20,6 +20,9 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -66,8 +69,65 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      */
+    /**
+     * The data the graph is about, if any could be found among the parents; null otherwise. Used only for
+     * display (the plot matrix).
+     */
+    private DataSet dataSet;
+
     public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
+
+        // A graph source that carries its own data (a search, a simulation, an estimator) supplies it.
+        this.dataSet = dataOf(graphWrapper);
+    }
+
+    /**
+     * Constructs the wrapper from a graph source and a separate data box, whose data is made available for
+     * display.
+     *
+     * @param graphWrapper the source of the graph
+     * @param dataWrapper  the source of the data
+     * @param parameters   the parameters
+     */
+    public GraphSelectionWrapper(GraphSource graphWrapper, DataWrapper dataWrapper, Parameters parameters) {
+        this(graphWrapper.getGraph(), parameters);
+        DataSet fromDataBox = dataOf(dataWrapper);
+        this.dataSet = fromDataBox != null ? fromDataBox : dataOf(graphWrapper);
+    }
+
+    /**
+     * The first non-empty tabular data set the given session model carries, or null if it carries none.
+     */
+    private static DataSet dataOf(Object source) {
+        try {
+            DataModelList list = null;
+
+            if (source instanceof DataWrapper dataWrapper) {
+                list = dataWrapper.getDataModelList();
+            } else if (source instanceof GeneralAlgorithmRunner runner) {
+                list = runner.getDataModelList();
+            }
+
+            if (list == null) return null;
+
+            for (DataModel model : list) {
+                if (model instanceof DataSet data && data.getNumRows() > 0) return data;
+            }
+        } catch (RuntimeException e) {
+            // No data to be had from this source; the plot matrix is simply not offered.
+        }
+
+        return null;
+    }
+
+    /**
+     * The data the graph is about, if any was available from the parents.
+     *
+     * @return the data set, or null
+     */
+    public DataSet getDataSet() {
+        return this.dataSet;
     }
 
     /**

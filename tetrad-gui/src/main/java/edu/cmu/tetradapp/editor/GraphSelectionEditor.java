@@ -205,6 +205,10 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         // Add to buttonPanel
         buttonPanel.add(executeButton);
 
+        if (wrapper.getDataSet() != null) {
+            buttonPanel.add(createPlotMatrixButton(wrapper.getDataSet()));
+        }
+
         // Add top level componments to container
         add(createTopMenuBar(), BorderLayout.NORTH);
         add(splitPane, BorderLayout.CENTER);
@@ -214,6 +218,61 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
     }
 
     // Top menu bar, contains "Save As" and "Graph"
+    /**
+     * A button that opens a plot matrix over the selected variables, as in the search editor: the nodes selected in
+     * the graph showing, or, if none are selected there, the variables in the selected-variables list. Variables
+     * with no column of the same name in the data are left out. Does not modify the data or the graph.
+     */
+    private JButton createPlotMatrixButton(edu.cmu.tetrad.data.DataSet dataSet) {
+        JButton plot = new JButton("Plot Matrix for Selected");
+        plot.setToolTipText("Open a plot matrix over the variables selected in the graph, or, if none are "
+                            + "selected there, over the selected variables list.");
+
+        plot.addActionListener(e -> {
+            List<Node> chosen = new ArrayList<>();
+
+            for (DisplayNode displayNode : getWorkbench().getSelectedNodes()) {
+                if (displayNode.getModelNode() != null) chosen.add(displayNode.getModelNode());
+            }
+
+            if (chosen.isEmpty() && wrapper.getSelectedVariables() != null) {
+                chosen.addAll(wrapper.getSelectedVariables());
+            }
+
+            List<Node> variables = new ArrayList<>();
+
+            for (Node node : chosen) {
+                Node variable = dataSet.getVariable(node.getName());
+                if (variable != null && !variables.contains(variable)) variables.add(variable);
+            }
+
+            if (variables.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Select one or more variables that are in the data, then click this button.");
+                return;
+            }
+
+            StringBuilder title = new StringBuilder("Plot Matrix: ");
+
+            for (int i = 0; i < variables.size() && i < 4; i++) {
+                if (i > 0) title.append(", ");
+                title.append(variables.get(i).getName());
+            }
+
+            if (variables.size() > 4) {
+                title.append(", ... (").append(variables.size()).append(" variables)");
+            }
+
+            PlotMatrix panel = new PlotMatrix(dataSet, variables, variables, variables);
+            EditorWindow window = new EditorWindow(panel, title.toString(), null, false, plot);
+            DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+            window.pack();
+            window.setVisible(true);
+        });
+
+        return plot;
+    }
+
     private JMenuBar createTopMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
