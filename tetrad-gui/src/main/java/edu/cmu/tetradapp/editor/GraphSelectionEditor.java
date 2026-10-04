@@ -268,6 +268,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             }
 
             PlotMatrix panel = new PlotMatrix(dataSet, variables, variables, variables);
+            panel.setDataSetChoices(wrapper.getDataSets(), dataSet);
             EditorWindow window = new EditorWindow(panel, title.toString(), null, false, plot);
             DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
             window.pack();

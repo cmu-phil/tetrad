@@ -62,6 +62,17 @@ public class PlotMatrix extends JPanel {
     private final JPanel charts;
 
     /**
+     * The data set being plotted. It can be changed, among data sets with the same variables, by the chooser that
+     * setDataSetChoices adds.
+     */
+    private DataSet dataSet;
+
+    /**
+     * The variables listed in the row and column selectors.
+     */
+    private List<Node> nodes;
+
+    /**
      * Row selector
      */
     private final JList<Node> rowSelector;
@@ -162,17 +173,22 @@ public class PlotMatrix extends JPanel {
      * data set if {@code variables} is null), with the given initial selections. The data set itself is not
      * subsetted, so conditioning (Settings &gt; Edit Conditioning Variables...) may still use any variable in it.
      *
-     * @param dataSet     the data set to plot
+     * @param data        the data set to plot
      * @param variables   variables to list in the row/column selectors, or null for all
      * @param initialRows variables to preselect as rows, or null
      * @param initialCols variables to preselect as columns, or null
      */
-    public PlotMatrix(DataSet dataSet, Collection<Node> variables,
+    public PlotMatrix(DataSet data, Collection<Node> variables,
                       Collection<Node> initialRows, Collection<Node> initialCols) {
         setLayout(new BorderLayout());
 
+        // Below, "dataSet" is the field, read when a listener runs, so that the listeners follow a change of data
+        // set.
+        this.dataSet = data;
+
         List<Node> nodes = restrictTo(dataSet.getVariables(), variables);
         nodes.sort(NaturalSort.naturalComparator());
+        this.nodes = nodes;
 
         Node[] _vars = new Node[nodes.size()];
         for (int i = 0; i < nodes.size(); i++) _vars[i] = nodes.get(i);
@@ -335,6 +351,59 @@ public class PlotMatrix extends JPanel {
 
         add(b1, BorderLayout.CENTER);
         setPreferredSize(new Dimension(750, 450));
+    }
+
+    /**
+     * Offers a choice among several data sets with the same variables (for instance, the completed data sets of a
+     * multiple imputation), by a chooser below the plots. Choosing one redraws the plots from it, keeping the
+     * selected variables and all settings. Data sets lacking any of the listed variables are not offered; if fewer
+     * than two remain, no chooser is added. Call once, after construction.
+     *
+     * @param dataSets the data sets to choose among, in the order to list them
+     * @param selected the one showing now (the one given to the constructor)
+     */
+    public void setDataSetChoices(List<DataSet> dataSets, DataSet selected) {
+        if (dataSets == null) return;
+
+        List<DataSet> choices = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+
+        CHOICE:
+        for (int i = 0; i < dataSets.size(); i++) {
+            DataSet choice = dataSets.get(i);
+            if (choice == null) continue;
+
+            for (Node node : this.nodes) {
+                if (choice.getVariable(node.getName()) == null) continue CHOICE;
+            }
+
+            String name = choice.getName();
+            choices.add(choice);
+            labels.add((i + 1) + (name == null || name.isBlank() ? "" : ": " + name));
+        }
+
+        if (choices.size() < 2) return;
+
+        JComboBox<String> chooser = new JComboBox<>(labels.toArray(new String[0]));
+        chooser.setMaximumSize(chooser.getPreferredSize());
+        int index = choices.indexOf(selected);
+        if (index >= 0) chooser.setSelectedIndex(index);
+
+        chooser.addActionListener(e -> {
+            int chosen = chooser.getSelectedIndex();
+            if (chosen < 0 || choices.get(chosen) == this.dataSet) return;
+            this.dataSet = choices.get(chosen);
+            constructPlotMatrix(charts, this.dataSet, this.nodes, rowSelector, colSelector,
+                    isRemoveTrendLinesPerPlot());
+        });
+
+        Box box = Box.createHorizontalBox();
+        box.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        box.add(new JLabel("Data set (of " + choices.size() + "): "));
+        box.add(chooser);
+        box.add(Box.createHorizontalGlue());
+        add(box, BorderLayout.SOUTH);
+        revalidate();
     }
 
     /**

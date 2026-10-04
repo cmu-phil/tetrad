@@ -76,6 +76,12 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     private DataSet dataSet;
 
     /**
+     * All the data sets the parent that supplied the data carries, for choosing among in the plot matrix; holds
+     * just the one above if there is only one. Null in sessions saved before this field existed.
+     */
+    private List<DataSet> dataSets;
+
+    /**
      * If the graph came from a search with several results, the name of the result it is; null otherwise. Used
      * only for display.
      */
@@ -87,6 +93,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
         // A graph source that carries its own data (a search, a simulation, an estimator) supplies it.
         this.dataSet = dataOf(graphWrapper);
+        this.dataSets = dataSetsOf(graphWrapper);
     }
 
     /**
@@ -102,6 +109,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         this.sourceResultName = resultNameOf(graphWrapper);
         DataSet fromDataBox = dataOf(dataWrapper);
         this.dataSet = fromDataBox != null ? fromDataBox : dataOf(graphWrapper);
+        this.dataSets = dataSetsOf(fromDataBox != null ? dataWrapper : graphWrapper);
     }
 
     /**
@@ -147,6 +155,39 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     public String getSourceResultName() {
         return this.sourceResultName;
+    }
+
+    private static List<DataSet> dataSetsOf(Object source) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        try {
+            DataModelList list = null;
+
+            if (source instanceof DataWrapper dataWrapper) {
+                list = dataWrapper.getDataModelList();
+            } else if (source instanceof GeneralAlgorithmRunner runner) {
+                list = runner.getDataModelList();
+            }
+
+            if (list != null) {
+                for (DataModel model : list) {
+                    if (model instanceof DataSet data && data.getNumRows() > 0) dataSets.add(data);
+                }
+            }
+        } catch (RuntimeException e) {
+            // As for dataOf: no choice of data is offered.
+        }
+
+        return dataSets;
+    }
+
+    /**
+     * All the data sets available to plot from, of which getDataSet() is the one to show first.
+     *
+     * @return the data sets; empty if there are none
+     */
+    public List<DataSet> getDataSets() {
+        return this.dataSets == null ? new ArrayList<>() : this.dataSets;
     }
 
     /**

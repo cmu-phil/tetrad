@@ -69,6 +69,11 @@ public class GraphCard extends JPanel {
     private GraphWorkbench workbench;
 
     /**
+     * The index of the result whose panel is being built; its data set is the one its plot matrix opens on.
+     */
+    private int resultIndex = 0;
+
+    /**
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -140,6 +145,7 @@ public class GraphCard extends JPanel {
                 String title = (names != null && i < names.size()) ? names.get(i) : ("Result " + (i + 1));
 
                 // Reuse your existing single-graph panel builder
+                this.resultIndex = i;
                 JPanel graphPanel = new PaddingPanel(createGraphPanel(g));
 
                 Graph graph = this.algorithmRunner.getGraphs().get(i);
@@ -191,6 +197,7 @@ public class GraphCard extends JPanel {
             add(downstream, BorderLayout.SOUTH);
         } else {
             // Legacy single-graph UI (unchanged)
+            this.resultIndex = 0;
             Graph graph = (graphs != null && !graphs.isEmpty()) ? graphs.get(0) : this.algorithmRunner.getGraph();
             PaddingPanel graphPanel = new PaddingPanel(createGraphPanel(graph));
             EdgeTypeTable edgePanel = createEdgeTypeTable(graph);
@@ -326,11 +333,33 @@ public class GraphCard extends JPanel {
      * search from a graph, or from a covariance matrix).
      */
     private DataSet plotDataSet() {
-        for (DataModel model : this.algorithmRunner.getDataModelList()) {
-            if (model instanceof DataSet dataSet && dataSet.getNumRows() > 0) return dataSet;
+        java.util.List<DataSet> dataSets = plotDataSets();
+        if (dataSets.isEmpty()) return null;
+
+        // One result per data set: the data set this result was found from.
+        java.util.List<Graph> graphs = this.algorithmRunner.getGraphs();
+
+        if (graphs != null && graphs.size() == this.algorithmRunner.getDataModelList().size()
+            && this.resultIndex < graphs.size()
+            && this.algorithmRunner.getDataModelList().get(this.resultIndex) instanceof DataSet dataSet
+            && dataSet.getNumRows() > 0) {
+            return dataSet;
         }
 
-        return null;
+        return dataSets.getFirst();
+    }
+
+    /**
+     * All the tabular data sets the search was given.
+     */
+    private java.util.List<DataSet> plotDataSets() {
+        java.util.List<DataSet> dataSets = new java.util.ArrayList<>();
+
+        for (DataModel model : this.algorithmRunner.getDataModelList()) {
+            if (model instanceof DataSet dataSet && dataSet.getNumRows() > 0) dataSets.add(dataSet);
+        }
+
+        return dataSets;
     }
 
     /**
@@ -370,6 +399,7 @@ public class GraphCard extends JPanel {
             }
 
             PlotMatrix panel = new PlotMatrix(dataSet, variables, variables, variables);
+            panel.setDataSetChoices(plotDataSets(), dataSet);
             EditorWindow window = new EditorWindow(panel, title.toString(), null, false, plot);
             DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
             window.pack();
