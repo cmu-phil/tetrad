@@ -220,6 +220,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
+                // Not while the search field is being typed in: the keys would then go to the workbench, where
+                // Backspace deletes the selected nodes. A click on the workbench takes the focus as usual.
+                Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+
+                if (owner instanceof JComponent component
+                    && component.getClientProperty(WorkbenchSearchBar.FIELD_KEY) != null) {
+                    return;
+                }
+
+                grabFocus();
+            }
+
+            public void mousePressed(MouseEvent e) {
                 grabFocus();
             }
         });
@@ -233,7 +246,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        LayoutUtil.defaultLayout(graph);
+        LayoutUtil.defaultLayoutConditional(graph);
 
         // The display nodes were created by setGraph above, before the default layout assigned positions. If the
         // default layout ran (Richard's layout), re-run it with the display nodes' real label sizes and place
@@ -843,6 +856,43 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     private Map<Object, Object> getDisplayToModel() {
         return this.displayToModel;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * When the workbench comes to be shown in a scroll pane, gives the scroll pane the bar for selecting variables
+     * by name (see {@link WorkbenchSearchBar}). This is done just afterwards, not here, since the scroll pane is
+     * itself in the middle of being shown.
+     */
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        SwingUtilities.invokeLater(() -> WorkbenchSearchBar.install(this));
+    }
+
+    /**
+     * Whether the search bar may select nodes here: selection must be allowed, and of more than one node.
+     */
+    final boolean isSearchSelectable() {
+        return isAllowNodeEdgeSelection() && isAllowMultipleNodeSelection();
+    }
+
+    /**
+     * Selects or deselects one node for the search bar, leaving the rest of the selection as it is.
+     */
+    final void setNodeSelectedBySearch(Node modelNode, boolean selected) {
+        if (getModelNodesToDisplay().get(modelNode) instanceof DisplayNode displayNode) {
+            displayNode.setSelected(selected);
+        }
+    }
+
+    /**
+     * Tells selection listeners that the search bar has changed the selection, and repaints.
+     */
+    final void fireSearchSelection() {
+        if (isSearchSelectable()) fireNodeSelection();
+        repaint();
     }
 
     /**

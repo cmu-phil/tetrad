@@ -476,7 +476,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
             return false;
         }
 
-        LayoutUtil.defaultLayout(parsed);
+        LayoutUtil.defaultLayoutConditional(parsed);
         workbench.setGraph(parsed);
         this.edgeTypeTable.update(parsed);
         this.taBaseline = String.valueOf(parsed);

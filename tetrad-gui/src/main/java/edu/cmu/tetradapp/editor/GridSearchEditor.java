@@ -1357,7 +1357,7 @@ public class GridSearchEditor extends JPanel {
 
         if (graphFile.exists()) {
             Graph graph = GraphSaveLoadUtils.loadGraphTxt(graphFile);
-            LayoutUtil.defaultLayout(graph);
+            LayoutUtil.defaultLayoutConditional(graph);
             workbench.setGraph(graph);
             model.setSelectedGraph(graph);
 
