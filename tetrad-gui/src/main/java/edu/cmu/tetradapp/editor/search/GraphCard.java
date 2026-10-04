@@ -314,7 +314,7 @@ public class GraphCard extends JPanel {
 
         if (dataSet != null) {
             Box plotBox = Box.createHorizontalBox();
-            plotBox.add(createPlotMatrixButton(dataSet, graphWorkbench));
+            plotBox.add(PlotMatrixForSelected.button(() -> graphWorkbench, () -> dataSet, this::plotDataSets));
             plotBox.add(Box.createHorizontalGlue());
             south.add(plotBox);
         }
@@ -360,53 +360,6 @@ public class GraphCard extends JPanel {
         }
 
         return dataSets;
-    }
-
-    /**
-     * A button that opens a plot matrix over the variables selected in the given workbench, as the data audit and
-     * nonlinearity check tools do for their selected rows. Selected nodes with no column of the same name in the
-     * data (latents, lagged copies) are left out. Does not modify the data or the graph.
-     */
-    private JButton createPlotMatrixButton(DataSet dataSet, GraphWorkbench graphWorkbench) {
-        JButton plot = new JButton("Plot Matrix for Selected");
-        plot.setToolTipText("Open a plot matrix over the variables selected in the graph.");
-
-        plot.addActionListener(e -> {
-            java.util.List<Node> variables = new java.util.ArrayList<>();
-
-            for (DisplayNode displayNode : graphWorkbench.getSelectedNodes()) {
-                Node modelNode = displayNode.getModelNode();
-                if (modelNode == null) continue;
-                Node variable = dataSet.getVariable(modelNode.getName());
-                if (variable != null && !variables.contains(variable)) variables.add(variable);
-            }
-
-            if (variables.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "Select one or more variables in the graph that are in the data, then click this button.");
-                return;
-            }
-
-            StringBuilder title = new StringBuilder("Plot Matrix: ");
-
-            for (int i = 0; i < variables.size() && i < 4; i++) {
-                if (i > 0) title.append(", ");
-                title.append(variables.get(i).getName());
-            }
-
-            if (variables.size() > 4) {
-                title.append(", ... (").append(variables.size()).append(" variables)");
-            }
-
-            PlotMatrix panel = new PlotMatrix(dataSet, variables, variables, variables);
-            panel.setDataSetChoices(plotDataSets(), dataSet);
-            EditorWindow window = new EditorWindow(panel, title.toString(), null, false, plot);
-            DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
-            window.pack();
-            window.setVisible(true);
-        });
-
-        return plot;
     }
 
     private Box createLatentVariableInstructionBox() {

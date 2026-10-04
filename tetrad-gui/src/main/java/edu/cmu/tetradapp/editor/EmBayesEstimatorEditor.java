@@ -54,6 +54,11 @@ public class EmBayesEstimatorEditor extends JPanel {
     private EMBayesEstimatorEditorWizard wizard;
 
     /**
+     * The workbench showing now; replaced whenever the display is rebuilt.
+     */
+    private GraphWorkbench workbench;
+
+    /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
     private EmBayesEstimatorEditor(BayesIm bayesIm,
@@ -73,6 +78,7 @@ public class EmBayesEstimatorEditor extends JPanel {
 
         Graph graph = bayesIm.getBayesPm().getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
+        this.workbench = workbench;
         this.wizard = new EMBayesEstimatorEditorWizard(bayesIm, workbench);
         this.wizard.enableEditing(false);
 
@@ -154,6 +160,9 @@ public class EmBayesEstimatorEditor extends JPanel {
 
         // The parent data box holds several data sets: say which one the estimate is from, and let another be
         // chosen, which re-estimates on it.
+        // The bar along the bottom: the data chooser, if there is a choice, and the plot matrix button.
+        Box south = Box.createHorizontalBox();
+        south.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         Box[] dataChooser = new Box[1];
 
         dataChooser[0] = DataSetChooser.create(emBayesEstWrapper.getDataSets(), emBayesEstWrapper.getDataIndex(),
@@ -173,7 +182,7 @@ public class EmBayesEstimatorEditor extends JPanel {
 
                         SwingUtilities.invokeLater(() -> {
                             build(emBayesEstWrapper.getEstimateBayesIm(), emBayesEstWrapper.getDataSet());
-                            add(dataChooser[0], BorderLayout.SOUTH);
+                            add(south, BorderLayout.SOUTH);
                             revalidate();
                             repaint();
                             firePropertyChange("modelChanged", null, null);
@@ -181,11 +190,17 @@ public class EmBayesEstimatorEditor extends JPanel {
                     }
                 });
 
-        if (dataChooser[0] != null) {
-            dataChooser[0].setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-            dataChooser[0].add(Box.createHorizontalGlue());
-            add(dataChooser[0], BorderLayout.SOUTH);
+        if (dataChooser[0] != null) south.add(dataChooser[0]);
+        south.add(Box.createHorizontalGlue());
+
+        // Plots are of the data as given, missing values and all; the latent variables EM adds have no column.
+        if (!emBayesEstWrapper.getDataSets().isEmpty()) {
+            south.add(PlotMatrixForSelected.button(() -> this.workbench,
+                    () -> emBayesEstWrapper.getDataSets().get(emBayesEstWrapper.getDataIndex()),
+                    emBayesEstWrapper::getDataSets));
         }
+
+        add(south, BorderLayout.SOUTH);
     }
 
     /**

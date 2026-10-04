@@ -127,6 +127,13 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
             b.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         }
 
+        if (!wrapper.getDataSets().isEmpty()) {
+            b.add(PlotMatrixForSelected.button(
+                    () -> this.graphicalEditor == null ? null : this.graphicalEditor.getWorkbench(),
+                    () -> wrapper.getDataSets().get(wrapper.getDataIndex()), wrapper::getDataSets));
+            b.add(Box.createHorizontalStrut(8));
+        }
+
         b.add(execute);
         add(b, BorderLayout.SOUTH);
 

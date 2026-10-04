@@ -69,6 +69,11 @@ public class BayesEstimatorEditor extends JPanel {
     private BayesEstimatorEditorWizard wizard;
 
     /**
+     * The workbench showing now; replaced whenever the display is rebuilt.
+     */
+    private GraphWorkbench workbench;
+
+    /**
      * Constructs a new instantiated model editor from a Bayes IM.
      *
      * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
@@ -94,6 +99,14 @@ public class BayesEstimatorEditor extends JPanel {
         resetBayesImEditor();
 
         add(this.targetPanel, BorderLayout.CENTER);
+
+        Box plotBar = Box.createHorizontalBox();
+        plotBar.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        plotBar.add(Box.createHorizontalGlue());
+        plotBar.add(PlotMatrixForSelected.button(() -> this.workbench, this.wrapper::getDataSet,
+                this.wrapper::getDataModels));
+        add(plotBar, BorderLayout.SOUTH);
+
         validate();
 
         // One IM was estimated per data set; the shared chooser says which one is shown and handed downstream,
@@ -149,6 +162,7 @@ public class BayesEstimatorEditor extends JPanel {
         Graph graph = bayesPm.getDag();
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
+        this.workbench = workbench;
         this.wizard = new BayesEstimatorEditorWizard(bayesIm, workbench);
         this.wizard.enableEditing(false);
 

@@ -282,6 +282,13 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         lowerBar.add(Box.createHorizontalStrut(4));
         lowerBar.add(fixSize(restarts));
         lowerBar.add(Box.createHorizontalGlue());
+        if (this.dataSet != null) {
+            lowerBar.add(PlotMatrixForSelected.button(
+                    () -> this.oneEditorPanel == null ? null : this.oneEditorPanel.getWorkbench(),
+                    () -> this.dataSet, wrapper::getDataModels));
+            lowerBar.add(Box.createHorizontalStrut(8));
+        }
+
         lowerBar.add(report);
 
         // Several data sets: offer the estimates pooled over all of them.

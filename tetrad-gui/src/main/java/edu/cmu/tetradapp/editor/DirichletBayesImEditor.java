@@ -53,6 +53,11 @@ public class DirichletBayesImEditor extends JPanel {
     private DirichletBayesImCountsWizard countsWizard;
 
     /**
+     * The workbench showing now; replaced whenever the display is rebuilt.
+     */
+    private GraphWorkbench workbench;
+
+    /**
      * Constructs a new instantiated model editor from a Bayes IM.
      */
     private DirichletBayesImEditor(DirichletBayesIm dirichletBayesIm) {
@@ -75,6 +80,7 @@ public class DirichletBayesImEditor extends JPanel {
         BayesPm bayesPm = dirichletBayesIm.getBayesPm();
         Graph graph = bayesPm.getDag();
         GraphWorkbench workbench = new GraphWorkbench(graph);
+        this.workbench = workbench;
 
         JMenuBar menuBar = new JMenuBar();
         JMenu file = new JMenu("File");
@@ -160,6 +166,9 @@ public class DirichletBayesImEditor extends JPanel {
 
         // The parent data box holds several data sets: say which one the estimate is from, and let another be
         // chosen, which re-estimates on it from the same prior.
+        // The bar along the bottom: the data chooser, if there is a choice, and the plot matrix button.
+        Box south = Box.createHorizontalBox();
+        south.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         Box[] dataChooser = new Box[1];
 
         dataChooser[0] = DataSetChooser.create(dirichletEstWrapper.getDataSets(),
@@ -174,16 +183,22 @@ public class DirichletBayesImEditor extends JPanel {
                     }
 
                     build(dirichletEstWrapper.getEstimatedBayesIm());
-                    add(dataChooser[0], BorderLayout.SOUTH);
+                    add(south, BorderLayout.SOUTH);
                     revalidate();
                     repaint();
                     firePropertyChange("modelChanged", null, null);
                 });
 
-        if (dataChooser[0] != null) {
-            dataChooser[0].setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-            dataChooser[0].add(Box.createHorizontalGlue());
-            add(dataChooser[0], BorderLayout.SOUTH);
+        if (dataChooser[0] != null) south.add(dataChooser[0]);
+        south.add(Box.createHorizontalGlue());
+
+        if (!dirichletEstWrapper.getDataSets().isEmpty()) {
+            south.add(PlotMatrixForSelected.button(() -> this.workbench,
+                    () -> dirichletEstWrapper.getDataSets().get(dirichletEstWrapper.getDataIndex()),
+                    dirichletEstWrapper::getDataSets));
+            add(south, BorderLayout.SOUTH);
+        } else if (dataChooser[0] != null) {
+            add(south, BorderLayout.SOUTH);
         }
     }
 

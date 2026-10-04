@@ -87,6 +87,10 @@ final class NNEstimatorGraphPanel extends JPanel {
         controls.add(statCombo);
         controls.add(refreshButton);
         controls.add(coverageLabel);
+        controls.add(PlotMatrixForSelected.button(() -> this.workbench,
+                () -> model.getSourceData().isEmpty() ? model.getInputData()
+                        : model.getSourceData().get(model.getDataIndex()),
+                model::getSourceData));
 
         JPanel south = new JPanel(new BorderLayout());
         legendPanel.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));

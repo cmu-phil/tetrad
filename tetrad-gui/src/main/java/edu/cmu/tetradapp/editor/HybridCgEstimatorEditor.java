@@ -108,6 +108,8 @@ public final class HybridCgEstimatorEditor extends JPanel {
         });
 
         statusBar.add(bicLabel);
+        statusBar.add(PlotMatrixForSelected.button(graphView::getWorkbench, wrapper::getDataSet,
+                () -> this.dataWrapper == null ? null : this.dataWrapper.getDataModelList()));
 
         JPanel right = new JPanel(new BorderLayout());
         right.add(tabs, BorderLayout.CENTER);
