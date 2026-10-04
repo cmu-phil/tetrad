@@ -113,6 +113,25 @@ public final class HybridCgEstimatorEditor extends JPanel {
         right.add(tabs, BorderLayout.CENTER);
         right.add(statusBar, BorderLayout.SOUTH);
 
+        // One IM was estimated per data set; this chooses which one is shown and handed downstream.
+        if (wrapper.getNumModels() > 1 && this.dataWrapper != null
+            && this.dataWrapper.getDataModelList().size() == wrapper.getNumModels()) {
+            Box chooser = DataSetChooser.create(this.dataWrapper.getDataModelList(), wrapper.getModelIndex(),
+                    index -> {
+                        wrapper.setModelIndex(index);
+                        HybridCgIm chosen = wrapper.getEstimatedHybridCgIm();
+                        if (chosen != null) showIm(chosen);
+                        updateBic();
+                        firePropertyChange("modelChanged", null, null);
+                    });
+
+            if (chooser != null) {
+                chooser.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+                chooser.add(Box.createHorizontalGlue());
+                right.add(chooser, BorderLayout.NORTH);
+            }
+        }
+
         settings.setPreferredSize(new Dimension(320, 400));
         right.setPreferredSize(new Dimension(600, 400));
 

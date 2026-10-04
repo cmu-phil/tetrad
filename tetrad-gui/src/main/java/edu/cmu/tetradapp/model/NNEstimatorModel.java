@@ -54,7 +54,18 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
 
     // ── session inputs ──────────────────────────────────────────────────────
     private final Graph inputGraph;
-    private final DataSet inputData;
+    private DataSet inputData;
+
+    /**
+     * The data sets of the parent data box, to choose among in the editor; null in sessions saved before this field
+     * existed.
+     */
+    private List<DataSet> sourceData;
+
+    /**
+     * The index in sourceData of the data set the estimator is fitted to.
+     */
+    private int dataIndex = 0;
     private final Parameters parameters;
 
     // ── core estimator (transient — refitted on demand) ─────────────────────
@@ -95,12 +106,20 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
             throw new IllegalArgumentException("No graph provided for NN estimator.");
         }
 
-        DataModel dm = dataWrapper.getDataModelList().isEmpty()
-                ? null
-                : dataWrapper.getDataModelList().getFirst();
-        if (!(dm instanceof DataSet ds)) {
+        // The data set selected in the data box if it is tabular, else the first tabular one.
+        this.sourceData = new ArrayList<>();
+
+        for (DataModel model : dataWrapper.getDataModelList()) {
+            if (model instanceof DataSet dataSet) this.sourceData.add(dataSet);
+        }
+
+        if (this.sourceData.isEmpty()) {
             throw new IllegalArgumentException("A DataSet is required for NN estimator.");
         }
+
+        this.dataIndex = Math.max(0, this.sourceData.indexOf(dataWrapper.getSelectedDataModel()));
+        DataSet ds = this.sourceData.get(this.dataIndex);
+
         // The graph may be over a subset of the data's variables; estimate, simulate and compare over just those.
         this.inputData = edu.cmu.tetrad.sem.NNEstimator.restrictToGraph(ds, this.inputGraph);
 
@@ -109,6 +128,45 @@ public final class NNEstimatorModel extends DataWrapper implements SessionModel,
     }
 
     // ── public API ────────────────────────────────────────────────────────────
+
+    /**
+     * The data sets of the parent data box, to choose among.
+     *
+     * @return the data sets; empty if unknown (a session saved before the choice existed)
+     */
+    public List<DataSet> getSourceData() {
+        return this.sourceData == null ? new ArrayList<>() : this.sourceData;
+    }
+
+    /**
+     * The index, in getSourceData(), of the data set the estimator is fitted to.
+     *
+     * @return the index
+     */
+    public int getDataIndex() {
+        return this.dataIndex;
+    }
+
+    /**
+     * Switches to another of the parent's data sets and refits. Everything derived from the previous data set is
+     * discarded, since it does not describe this one: the cross-validation report, the edge strength results, the
+     * prune proposal and any applied pruning. Slow (a full fit); run off the EDT.
+     *
+     * @param index the index, in getSourceData(), of the data set to fit
+     */
+    public void setDataIndex(int index) {
+        if (index < 0 || index >= getSourceData().size()) {
+            throw new IllegalArgumentException("No data set at index " + index + ".");
+        }
+
+        this.dataIndex = index;
+        this.inputData = edu.cmu.tetrad.sem.NNEstimator.restrictToGraph(this.sourceData.get(index), this.inputGraph);
+        this.persistedCvReport = null;
+        this.persistedEdgeStrengthResults = new ArrayList<>();
+        this.persistedPruneReport = null;
+        this.prunedGraph = null;
+        resimulate(TMath.max(1, this.inputData.getNumRows()));
+    }
 
     /**
      * Re-trains the NN estimator on the full input data and simulates a fresh

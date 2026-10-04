@@ -66,6 +66,17 @@ public class SemEstimatorWrapper implements SessionModel {
      */
     private SemEstimator semEstimator;
 
+    /**
+     * The data models of the parent data box, if this was built from one, for choosing among in the editor; null
+     * otherwise, and in sessions saved before this field existed.
+     */
+    private DataModelList dataModels;
+
+    /**
+     * The index in dataModels of the data model the current estimate is from.
+     */
+    private int dataIndex = 0;
+
     //==============================CONSTRUCTORS==========================//
 
     /**
@@ -80,28 +91,70 @@ public class SemEstimatorWrapper implements SessionModel {
         this.params = params;
         this.semPm = semPm;
 
+        SemEstimator estimator = estimateOn(dataModel);
+
+        if (!degreesOfFreedomCheck(semPm)) {
+            throw new IllegalArgumentException("Cannot proceed.");
+        }
+
+        this.semEstimator = estimator;
+    }
+
+    /**
+     * Estimates the SEM PM on the given data with the current optimizer, restarts and score settings.
+     */
+    private SemEstimator estimateOn(DataModel dataModel) {
+        SemEstimator estimator;
+
         if (dataModel instanceof DataSet dataSet) {
-            SemEstimator estimator = new SemEstimator(dataSet, semPm, getOptimizer());
+            estimator = new SemEstimator(dataSet, this.semPm, getOptimizer());
             estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
             estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fgls));
-            estimator.estimate();
-            if (!degreesOfFreedomCheck(semPm)) {
-                throw new IllegalArgumentException("Cannot proceed.");
-            }
-            this.semEstimator = estimator;
         } else if (dataModel instanceof ICovarianceMatrix) {
             ICovarianceMatrix covMatrix = new CovarianceMatrix((ICovarianceMatrix) dataModel);
-            SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
+            estimator = new SemEstimator(covMatrix, this.semPm, getOptimizer());
             estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
             estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fml));
-            estimator.estimate();
-            if (!degreesOfFreedomCheck(semPm)) {
-                throw new IllegalArgumentException("Cannot proceed.");
-            }
-            this.semEstimator = estimator;
         } else {
             throw new IllegalArgumentException("Data must consist of continuous data sets or covariance matrices.");
         }
+
+        estimator.estimate();
+        return estimator;
+    }
+
+    /**
+     * The data models of the parent data box, to choose among.
+     *
+     * @return the data models, or null if this estimator was not built from a data box
+     */
+    public DataModelList getDataModels() {
+        return this.dataModels;
+    }
+
+    /**
+     * The index, in getDataModels(), of the data model the current estimate is from.
+     *
+     * @return the index
+     */
+    public int getDataIndex() {
+        return this.dataIndex;
+    }
+
+    /**
+     * Re-estimates on another of the parent's data models, replacing the current estimate. If the estimation
+     * fails, the current estimate and index are left as they were and the exception is passed on.
+     *
+     * @param index the index, in getDataModels(), of the data model to estimate on
+     */
+    public void setDataIndex(int index) {
+        if (this.dataModels == null || index < 0 || index >= this.dataModels.size()) {
+            throw new IllegalArgumentException("No data model at index " + index + ".");
+        }
+
+        this.semEstimator = estimateOn(this.dataModels.get(index));
+        this.dataIndex = index;
+        log();
     }
 
     /**
@@ -113,6 +166,8 @@ public class SemEstimatorWrapper implements SessionModel {
      */
     public SemEstimatorWrapper(DataWrapper dataWrapper, SemPmWrapper semPmWrapper, Parameters params) {
         this(dataWrapper.getSelectedDataModel(), semPmWrapper.getSemPm(), params);
+        this.dataModels = dataWrapper.getDataModelList();
+        this.dataIndex = Math.max(0, this.dataModels.indexOf(dataWrapper.getSelectedDataModel()));
         log();
     }
 

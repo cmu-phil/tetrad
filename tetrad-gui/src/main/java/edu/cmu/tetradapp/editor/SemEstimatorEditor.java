@@ -93,7 +93,7 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
     /**
      * The data set for the SEM estimator.
      */
-    private final DataSet dataSet;
+    private DataSet dataSet;
 
     /**
      * The SEM estimator wrapper.
@@ -240,6 +240,35 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
 
         Box lowerBar = Box.createHorizontalBox();
         lowerBar.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+
+        // The parent data box holds several data sets: say which one the estimate is from, and let another be
+        // chosen, which re-estimates on it with the settings showing.
+        Box dataChooser = DataSetChooser.create(wrapper.getDataModels(), wrapper.getDataIndex(), index -> {
+            class ChooseDataProcess extends WatchedProcess {
+                @Override
+                public void watch() {
+                    try {
+                        wrapper.setDataIndex(index);
+                        SemEstimatorEditor.this.dataSet = wrapper.getSemEstimator().getDataSet();
+                        resetSemImEditor();
+                        firePropertyChange("modelChanged", null, null);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(estimateButton,
+                                "Could not estimate on that data set; the estimate shown is still from data set "
+                                + (wrapper.getDataIndex() + 1) + ".\n" + ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            new ChooseDataProcess();
+        });
+
+        if (dataChooser != null) {
+            lowerBar.add(dataChooser);
+            lowerBar.add(Box.createHorizontalStrut(12));
+        }
+
         lowerBar.add(new JLabel("Optimizer:"));
         lowerBar.add(Box.createHorizontalStrut(4));
         lowerBar.add(fixSize(optimizerCombo));
