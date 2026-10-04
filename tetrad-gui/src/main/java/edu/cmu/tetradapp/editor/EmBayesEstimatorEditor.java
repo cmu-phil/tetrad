@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.EmBayesEstimatorWrapper;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -50,13 +51,22 @@ public class EmBayesEstimatorEditor extends JPanel {
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
-    private final EMBayesEstimatorEditorWizard wizard;
+    private EMBayesEstimatorEditorWizard wizard;
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
      */
     private EmBayesEstimatorEditor(BayesIm bayesIm,
                                    DataSet dataSet) {
+        build(bayesIm, dataSet);
+    }
+
+    /**
+     * Lays out the editor for the given estimate, replacing whatever it showed before.
+     */
+    private void build(BayesIm bayesIm, DataSet dataSet) {
+        removeAll();
+
         if (bayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
@@ -141,6 +151,41 @@ public class EmBayesEstimatorEditor extends JPanel {
         this(emBayesEstWrapper.getEstimateBayesIm(),
                 //eMbayesEstWrapper.getSelectedDataModel());
                 emBayesEstWrapper.getDataSet());
+
+        // The parent data box holds several data sets: say which one the estimate is from, and let another be
+        // chosen, which re-estimates on it.
+        Box[] dataChooser = new Box[1];
+
+        dataChooser[0] = DataSetChooser.create(emBayesEstWrapper.getDataSets(), emBayesEstWrapper.getDataIndex(),
+                index -> new WatchedProcess() {
+                    @Override
+                    public void watch() {
+                        try {
+                            emBayesEstWrapper.setDataIndex(index);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                                    EmBayesEstimatorEditor.this,
+                                    "Could not estimate on that data set; the estimate shown is still from data set "
+                                    + (emBayesEstWrapper.getDataIndex() + 1) + ".\n" + ex.getMessage()));
+                            return;
+                        }
+
+                        SwingUtilities.invokeLater(() -> {
+                            build(emBayesEstWrapper.getEstimateBayesIm(), emBayesEstWrapper.getDataSet());
+                            add(dataChooser[0], BorderLayout.SOUTH);
+                            revalidate();
+                            repaint();
+                            firePropertyChange("modelChanged", null, null);
+                        });
+                    }
+                });
+
+        if (dataChooser[0] != null) {
+            dataChooser[0].setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+            dataChooser[0].add(Box.createHorizontalGlue());
+            add(dataChooser[0], BorderLayout.SOUTH);
+        }
     }
 
     /**

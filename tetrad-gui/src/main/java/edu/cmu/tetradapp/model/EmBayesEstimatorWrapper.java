@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.EmBayesEstimator;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -34,6 +35,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
@@ -60,6 +63,23 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
      * Contains the estimated BayesIm, or null if it hasn't been estimated yet.
      */
     private BayesIm estimateBayesIm;
+
+    /**
+     * The data sets of the parent data box, to choose among in the editor; null in sessions saved before this field
+     * existed.
+     */
+    private List<DataSet> dataSets;
+
+    /**
+     * The index in dataSets of the data set the current estimate is from.
+     */
+    private int dataIndex = 0;
+
+    /**
+     * The Bayes PM and tolerance the estimate was made with, kept for re-estimating on another data set.
+     */
+    private BayesPm bayesPm;
+    private double tolerance = 0.0001;
 
     //============================CONSTRUCTORS==========================//
 
@@ -99,6 +119,11 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
                 (DataSet) dataWrapper.getSelectedDataModel();
         BayesPm bayesPm = bayesPmWrapper.getBayesPm();
 
+        this.bayesPm = bayesPm;
+        this.tolerance = params.getDouble("tolerance", 0.0001);
+        this.dataSets = tabularDataSets(dataWrapper);
+        this.dataIndex = Math.max(0, this.dataSets.indexOf(dataSet));
+
         EmBayesEstimator estimator = new EmBayesEstimator(bayesPm, dataSet);
         this.dataSet = estimator.getMixedDataSet();
 
@@ -110,6 +135,58 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
             throw new RuntimeException(
                     "Please specify the search tolerance first.");
         }
+        TetradLogger.getInstance().log("EM-Estimated Bayes IM:");
+        TetradLogger.getInstance().log("" + this.estimateBayesIm);
+    }
+
+    /**
+     * The tabular data sets of a data box, in order.
+     */
+    private static List<DataSet> tabularDataSets(DataWrapper dataWrapper) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel model : dataWrapper.getDataModelList()) {
+            if (model instanceof DataSet dataSet) dataSets.add(dataSet);
+        }
+
+        return dataSets;
+    }
+
+    /**
+     * The data sets of the parent data box, to choose among in the editor.
+     *
+     * @return the data sets; empty if unknown (a session saved before the choice existed)
+     */
+    public List<DataSet> getDataSets() {
+        return this.dataSets == null ? new ArrayList<>() : this.dataSets;
+    }
+
+    /**
+     * The index, in getDataSets(), of the data set the current estimate is from.
+     *
+     * @return the index
+     */
+    public int getDataIndex() {
+        return this.dataIndex;
+    }
+
+    /**
+     * Re-estimates by EM on another of the parent's data sets, replacing the current estimate. If the estimation
+     * fails, the current estimate and index are left as they were and the exception is passed on.
+     *
+     * @param index the index, in getDataSets(), of the data set to estimate on
+     */
+    public void setDataIndex(int index) {
+        if (this.bayesPm == null || index < 0 || index >= getDataSets().size()) {
+            throw new IllegalArgumentException("No data set at index " + index + ".");
+        }
+
+        EmBayesEstimator estimator = new EmBayesEstimator(this.bayesPm, this.dataSets.get(index));
+        DataSet mixed = estimator.getMixedDataSet();
+        estimator.maximization(this.tolerance);
+        this.estimateBayesIm = estimator.getEstimatedIm();
+        this.dataSet = mixed;
+        this.dataIndex = index;
         TetradLogger.getInstance().log("EM-Estimated Bayes IM:");
         TetradLogger.getInstance().log("" + this.estimateBayesIm);
     }

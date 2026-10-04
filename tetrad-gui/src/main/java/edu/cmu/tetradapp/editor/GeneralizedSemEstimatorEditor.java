@@ -103,6 +103,30 @@ public final class GeneralizedSemEstimatorEditor extends JPanel implements Deleg
             tabbedPane.add("Report", estimationReport());
         });
 
+        // The parent data box holds several data sets: say which one the estimate is from, and let another be
+        // chosen, which re-estimates on it.
+        Box dataChooser = DataSetChooser.create(wrapper.getDataSets(), wrapper.getDataIndex(), index -> {
+            try {
+                wrapper.setDataIndex(index);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Could not estimate on that data set; the estimate shown is still from data set "
+                        + (wrapper.getDataIndex() + 1) + ".\n" + ex.getMessage());
+                return;
+            }
+
+            tabbedPane.removeAll();
+            tabbedPane.add("Variables", listEditor());
+            tabbedPane.add("Graph", graphicalEditor());
+            tabbedPane.add("Report", estimationReport());
+            firePropertyChange("modelChanged", null, null);
+        });
+
+        if (dataChooser != null) {
+            b.add(dataChooser, 0);
+            b.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+        }
+
         b.add(execute);
         add(b, BorderLayout.SOUTH);
 

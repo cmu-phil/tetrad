@@ -45,17 +45,26 @@ public class DirichletBayesImEditor extends JPanel {
     /**
      * The wizard for editing the probabilities.
      */
-    private final DirichletBayesImProbsWizard probsWizard;
+    private DirichletBayesImProbsWizard probsWizard;
 
     /**
      * The wizard for editing the pseudocounts.
      */
-    private final DirichletBayesImCountsWizard countsWizard;
+    private DirichletBayesImCountsWizard countsWizard;
 
     /**
      * Constructs a new instantiated model editor from a Bayes IM.
      */
     private DirichletBayesImEditor(DirichletBayesIm dirichletBayesIm) {
+        build(dirichletBayesIm);
+    }
+
+    /**
+     * Lays out the editor for the given IM, replacing whatever it showed before.
+     */
+    private void build(DirichletBayesIm dirichletBayesIm) {
+        removeAll();
+
         if (dirichletBayesIm == null) {
             throw new NullPointerException("Bayes IM must not be null.");
         }
@@ -148,6 +157,34 @@ public class DirichletBayesImEditor extends JPanel {
     public DirichletBayesImEditor(
             DirichletEstimatorWrapper dirichletEstWrapper) {
         this(dirichletEstWrapper.getEstimatedBayesIm());
+
+        // The parent data box holds several data sets: say which one the estimate is from, and let another be
+        // chosen, which re-estimates on it from the same prior.
+        Box[] dataChooser = new Box[1];
+
+        dataChooser[0] = DataSetChooser.create(dirichletEstWrapper.getDataSets(),
+                dirichletEstWrapper.getDataIndex(), index -> {
+                    try {
+                        dirichletEstWrapper.setDataIndex(index);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(this,
+                                "Could not estimate on that data set; the estimate shown is still from data set "
+                                + (dirichletEstWrapper.getDataIndex() + 1) + ".\n" + ex.getMessage());
+                        return;
+                    }
+
+                    build(dirichletEstWrapper.getEstimatedBayesIm());
+                    add(dataChooser[0], BorderLayout.SOUTH);
+                    revalidate();
+                    repaint();
+                    firePropertyChange("modelChanged", null, null);
+                });
+
+        if (dataChooser[0] != null) {
+            dataChooser[0].setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+            dataChooser[0].add(Box.createHorizontalGlue());
+            add(dataChooser[0], BorderLayout.SOUTH);
+        }
     }
 
     /**
