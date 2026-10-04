@@ -57,6 +57,11 @@ import java.util.Random;
  * solved does it fall back to marginal hot-deck draws for that update. Such draws are independent of every other
  * variable and so bias toward independence; every fallback, and every fit that was only possible because of the
  * ridge, is recorded (see {@link #getLoggedEvents()}) and logged, so that none of this happens silently.
+ * <p>
+ * Every other variable predicts each incomplete variable unless that would leave too few observed rows per predictor
+ * term, in which case only the variables most correlated with it, or with whether it is missing, are used (see
+ * {@link #setRowsPerPredictor(int)}); a minimum correlation can also be required (see
+ * {@link #setMinCorrelation(double)}). Any such selection is recorded with the other events.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -77,6 +82,18 @@ public final class MiceLiteImputer implements MultipleImputer {
      * The ridge penalty, as a fraction of each (standardized) predictor's sum of squares.
      */
     private final double ridge;
+
+    /**
+     * A variable is used as a predictor of a target only if its score for that target is at least this; 0 means no
+     * such requirement. See {@link #setMinCorrelation(double)}.
+     */
+    private double minCorrelation = 0.0;
+
+    /**
+     * The fewest observed rows of a target allowed per predictor term; if using every eligible variable would
+     * give fewer, only the highest-scoring ones are used. 0 means no limit. See {@link #setRowsPerPredictor(int)}.
+     */
+    private int rowsPerPredictor = 3;
 
     /**
      * What went less than cleanly in the last call to impute, with the number of column updates each applied to.
@@ -120,6 +137,45 @@ public final class MiceLiteImputer implements MultipleImputer {
         this.numDonors = numDonors;
         this.numSweeps = numSweeps;
         this.ridge = ridge;
+    }
+
+    /**
+     * Sets the minimum score a variable needs to be used as a predictor of a target (as quickpred does in the R
+     * mice package). The score is the larger of two absolute correlations, computed once from the observed data:
+     * the variable with the target, over rows where both are observed, and the variable with the indicator of
+     * whether the target is missing. For a discrete variable with three or more categories, the largest over its
+     * category indicators is used.
+     * <p>
+     * The default, 0, sets no minimum, and every other variable is a predictor unless the row limit applies. A
+     * minimum above 0 makes each imputed value independent of the variables left out, given those kept, which
+     * weakens weak dependencies in the completed data; for causal search, prefer leaving this at 0 and relying on
+     * the row limit, which only acts when a regression would otherwise be poorly determined.
+     *
+     * @param minCorrelation the minimum, in [0, 1)
+     */
+    public void setMinCorrelation(double minCorrelation) {
+        if (!(minCorrelation >= 0 && minCorrelation < 1)) {
+            throw new IllegalArgumentException("Minimum correlation must be in [0, 1): " + minCorrelation);
+        }
+
+        this.minCorrelation = minCorrelation;
+    }
+
+    /**
+     * Sets the fewest observed rows of a target allowed per predictor term (a continuous or two-category variable
+     * is one term; a variable with K categories is K - 1). When using every eligible variable would give fewer,
+     * the variables are taken in order of score (see {@link #setMinCorrelation(double)}) until the limit is
+     * reached, and the rest are left out for that target. The default is 3.
+     *
+     * @param rowsPerPredictor the limit, at least 1; or 0 for no limit, so that every eligible variable is used
+     *                         however few rows there are
+     */
+    public void setRowsPerPredictor(int rowsPerPredictor) {
+        if (rowsPerPredictor < 0) {
+            throw new IllegalArgumentException("Rows per predictor must be >= 0: " + rowsPerPredictor);
+        }
+
+        this.rowsPerPredictor = rowsPerPredictor;
     }
 
     /**
@@ -208,6 +264,17 @@ public final class MiceLiteImputer implements MultipleImputer {
         String[] names = new String[p];
         for (int j = 0; j < p; j++) names[j] = dataSet.getVariables().get(j).getName();
 
+        // Which variables predict each incomplete variable: null for all the others, the usual case.
+        int[][] predictors = new int[p][];
+        String[] selectionNotes = new String[p];
+
+        for (int j = 0; j < p; j++) {
+            if (!missRows.get(j).isEmpty()) {
+                predictors[j] = selectPredictors(base, miss, j, obsRows.get(j), numCategories, names,
+                        selectionNotes);
+            }
+        }
+
         Random rand = seed < 0 ? new Random() : new Random(seed);
         List<DataSet> imputed = new ArrayList<>(m);
 
@@ -224,7 +291,9 @@ public final class MiceLiteImputer implements MultipleImputer {
             for (int sweep = 0; sweep < this.numSweeps; sweep++) {
                 for (int j = 0; j < p; j++) {
                     if (missRows.get(j).isEmpty()) continue;
-                    imputeColumnPmm(work, j, obsRows.get(j), missRows.get(j), p, rand, names, numCategories);
+                    if (selectionNotes[j] != null) event(names[j], selectionNotes[j]);
+                    imputeColumnPmm(work, j, obsRows.get(j), missRows.get(j), p, rand, names, numCategories,
+                            predictors[j]);
                 }
             }
 
@@ -257,8 +326,19 @@ public final class MiceLiteImputer implements MultipleImputer {
      * cross-product matrix, and the system is solved by Cholesky decomposition.
      */
     private void imputeColumnPmm(double[][] work, int j, List<Integer> obs, List<Integer> missing, int p,
-                                 Random rand, String[] names, int[] numCategories) {
+                                 Random rand, String[] names, int[] numCategories, int[] predictors) {
         int nObs = obs.size();
+
+        // The variables that may predict j: the selected ones, or every other variable.
+        boolean[] eligible = new boolean[p];
+
+        if (predictors == null) {
+            java.util.Arrays.fill(eligible, true);
+        } else {
+            for (int k : predictors) eligible[k] = true;
+        }
+
+        eligible[j] = false;
 
         if (nObs < 2) {
             event(names[j], "filled by random draws from its own observed values, ignoring the other variables,"
@@ -271,7 +351,7 @@ public final class MiceLiteImputer implements MultipleImputer {
         List<int[]> candidates = new ArrayList<>();
 
         for (int k = 0; k < p; k++) {
-            if (k == j) continue;
+            if (!eligible[k]) continue;
 
             if (numCategories[k] == 0) {
                 candidates.add(new int[]{k, -1});
@@ -314,7 +394,7 @@ public final class MiceLiteImputer implements MultipleImputer {
         List<String> constant = new ArrayList<>();
 
         for (int k = 0; k < p; k++) {
-            if (k != j && !columnUsed[k]) constant.add(names[k]);
+            if (eligible[k] && !columnUsed[k]) constant.add(names[k]);
         }
 
         if (!constant.isEmpty()) {
@@ -324,7 +404,8 @@ public final class MiceLiteImputer implements MultipleImputer {
 
         if (q == 0) {
             event(names[j], "filled by random draws from its own observed values, ignoring the other variables,"
-                            + " because no predictor varies over its observed rows");
+                            + (candidates.isEmpty() ? " because no variable was selected as a predictor"
+                    : " because no predictor varies over its observed rows"));
             hotDeck(work, j, obs, missing, rand);
             return;
         }
@@ -475,6 +556,140 @@ public final class MiceLiteImputer implements MultipleImputer {
 
             work[i][j] = work[obs.get(best[rand.nextInt(k)])][j];
         }
+    }
+
+    /**
+     * Chooses the variables that predict column j, from the data as observed (before any imputation). Returns null
+     * if every other variable is to be used, which is the case unless a minimum correlation is set or there are
+     * too few observed rows of j for that many predictor terms. Otherwise returns the chosen columns, and puts a
+     * sentence saying what was done in notes[j].
+     */
+    private int[] selectPredictors(double[][] base, boolean[][] miss, int j, List<Integer> obs,
+                                   int[] numCategories, String[] names, String[] notes) {
+        int p = numCategories.length;
+        int nObs = obs.size();
+        int allTerms = 0;
+
+        for (int k = 0; k < p; k++) {
+            if (k != j) allTerms += numCategories[k] == 0 ? 1 : numCategories[k] - 1;
+        }
+
+        int maxTerms = this.rowsPerPredictor > 0 ? Math.max(1, nObs / this.rowsPerPredictor) : Integer.MAX_VALUE;
+
+        if (this.minCorrelation <= 0 && allTerms <= maxTerms) return null;
+
+        // Score each other variable for this target.
+        int n = base.length;
+        double[] score = new double[p];
+        double[] a = new double[n];
+        double[] b = new double[n];
+        int numTargets = numCategories[j] == 0 ? 1 : numCategories[j];
+
+        for (int k = 0; k < p; k++) {
+            if (k == j) continue;
+            int numFeatures = numCategories[k] == 0 ? 1 : numCategories[k];
+
+            for (int f = 0; f < numFeatures; f++) {
+                int category = numCategories[k] == 0 ? -1 : f;
+
+                // With the indicator that j is missing, over the rows where k is observed.
+                int count = 0;
+
+                for (int i = 0; i < n; i++) {
+                    if (miss[i][k]) continue;
+                    a[count] = feature(base, i, k, category);
+                    b[count] = miss[i][j] ? 1.0 : 0.0;
+                    count++;
+                }
+
+                score[k] = Math.max(score[k], absCorrelation(a, b, count));
+
+                // With j itself (or each of its category indicators), over the rows where both are observed.
+                for (int t = 0; t < numTargets; t++) {
+                    count = 0;
+
+                    for (int i : obs) {
+                        if (miss[i][k]) continue;
+                        a[count] = feature(base, i, k, category);
+                        b[count] = feature(base, i, j, numCategories[j] == 0 ? -1 : t);
+                        count++;
+                    }
+
+                    score[k] = Math.max(score[k], absCorrelation(a, b, count));
+                }
+            }
+        }
+
+        // Highest score first; those under the minimum are out; then as many as the row limit allows.
+        List<Integer> order = new ArrayList<>();
+
+        for (int k = 0; k < p; k++) {
+            if (k != j && score[k] >= this.minCorrelation) order.add(k);
+        }
+
+        int belowMinimum = p - 1 - order.size();
+        order.sort((x, y) -> score[x] != score[y] ? Double.compare(score[y], score[x]) : Integer.compare(x, y));
+
+        List<Integer> chosen = new ArrayList<>();
+        int terms = 0;
+
+        for (int k : order) {
+            int width = numCategories[k] == 0 ? 1 : numCategories[k] - 1;
+            if (terms + width > maxTerms && !chosen.isEmpty()) break;
+            chosen.add(k);
+            terms += width;
+        }
+
+        int overLimit = order.size() - chosen.size();
+        StringBuilder note = new StringBuilder("used " + chosen.size() + " of the " + (p - 1)
+                                               + " other variables as predictors");
+
+        if (belowMinimum > 0) {
+            note.append("; ").append(belowMinimum).append(" scored below the minimum correlation of ")
+                    .append(this.minCorrelation);
+        }
+
+        if (overLimit > 0) {
+            note.append("; ").append(overLimit).append(" more were left out, lowest scores first, to keep at least ")
+                    .append(this.rowsPerPredictor).append(" of its ").append(nObs)
+                    .append(" observed rows per predictor term");
+        }
+
+        notes[j] = note.toString();
+
+        int[] result = new int[chosen.size()];
+        for (int c = 0; c < result.length; c++) result[c] = chosen.get(c);
+        return result;
+    }
+
+    /**
+     * The absolute correlation of the first count entries of a and b; 0 if there are fewer than 3 or either is
+     * constant.
+     */
+    private static double absCorrelation(double[] a, double[] b, int count) {
+        if (count < 3) return 0.0;
+        double meanA = 0.0;
+        double meanB = 0.0;
+
+        for (int i = 0; i < count; i++) {
+            meanA += a[i];
+            meanB += b[i];
+        }
+
+        meanA /= count;
+        meanB /= count;
+        double sab = 0.0;
+        double saa = 0.0;
+        double sbb = 0.0;
+
+        for (int i = 0; i < count; i++) {
+            sab += (a[i] - meanA) * (b[i] - meanB);
+            saa += (a[i] - meanA) * (a[i] - meanA);
+            sbb += (b[i] - meanB) * (b[i] - meanB);
+        }
+
+        if (!(saa > 1e-12) || !(sbb > 1e-12)) return 0.0;
+        return Math.abs(sab / Math.sqrt(saa * sbb));
     }
 
     /**

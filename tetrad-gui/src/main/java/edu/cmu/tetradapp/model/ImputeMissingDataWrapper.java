@@ -131,9 +131,13 @@ public class ImputeMissingDataWrapper extends DataWrapper {
                             MissingDataSpec.emCovariance().getEmTolerance()))
                     .withEmMaxIterations(params.getInt("emMaxIterations",
                             MissingDataSpec.emCovariance().getEmMaxIterations())));
-            case MICE -> new MiceLiteImputer(
-                    Math.max(1, params.getInt("miceNumDonors", 5)),
-                    Math.max(1, params.getInt("miceNumSweeps", 5)));
+            case MICE -> {
+                MiceLiteImputer mice = new MiceLiteImputer(
+                        Math.max(1, params.getInt("miceNumDonors", 5)),
+                        Math.max(1, params.getInt("miceNumSweeps", 5)));
+                mice.setRowsPerPredictor(Math.max(0, params.getInt("miceRowsPerPredictor", 3)));
+                yield mice;
+            }
             case AUTO -> throw new IllegalStateException("AUTO should have been resolved.");
         };
 
