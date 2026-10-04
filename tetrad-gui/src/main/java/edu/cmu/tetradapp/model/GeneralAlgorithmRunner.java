@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
@@ -32,6 +33,7 @@ import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.*;
@@ -358,8 +360,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         this.parameters = parameters;
 
-        if (graphSource instanceof GeneralAlgorithmRunner) {
-            this.algorithm = ((GeneralAlgorithmRunner) graphSource).getAlgorithm();
+        if (graphSource instanceof GeneralAlgorithmRunner parent) {
+            this.algorithm = parent.getAlgorithm();
+
+            // A search box whose only parent is a search box searches that box's data, with its result as the
+            // source graph (set below).
+            if (dataWrapper == null) dataWrapper = parent.getDataWrapper();
         }
 
         if (dataWrapper != null) {
@@ -494,6 +500,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 ((TakesGraph) algo).setGraph(this.sourceGraph);
             }
 
+            // An algorithm that takes an external graph (FASK, the pairwise orientation algorithms) is given the source
+            // graph afresh at every run. The algorithm object is carried over from one run to the next, and the external
+            // graph it was built with may be stale, or absent if the source graph was not known when it was built.
+            if (algo instanceof TakesExternalGraph && this.sourceGraph != null) {
+                ((TakesExternalGraph) algo).setExternalGraph(new SingleGraphAlg(this.sourceGraph));
+            }
+
             if (this.algorithm instanceof AcceptsKnowledge) {
                 Knowledge knowledge1 = TsUtils.getKnowledge(getSourceGraph());
                 if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
@@ -542,6 +555,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     if (algo instanceof TakesGraph) {
                         ((TakesGraph) algo).setGraph(this.sourceGraph);
+                    }
+
+                    // An algorithm that takes an external graph (FASK, the pairwise orientation algorithms) is given the source
+                    // graph afresh at every run. The algorithm object is carried over from one run to the next, and the external
+                    // graph it was built with may be stale, or absent if the source graph was not known when it was built.
+                    if (algo instanceof TakesExternalGraph && this.sourceGraph != null) {
+                        ((TakesExternalGraph) algo).setExternalGraph(new SingleGraphAlg(this.sourceGraph));
                     }
 
                     if (this.algorithm instanceof AcceptsKnowledge) {
@@ -604,6 +624,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 if (algo instanceof TakesGraph) {
                     ((TakesGraph) algo).setGraph(this.sourceGraph);
+                }
+
+                // An algorithm that takes an external graph (FASK, the pairwise orientation algorithms) is given the source
+                // graph afresh at every run. The algorithm object is carried over from one run to the next, and the external
+                // graph it was built with may be stale, or absent if the source graph was not known when it was built.
+                if (algo instanceof TakesExternalGraph && this.sourceGraph != null) {
+                    ((TakesExternalGraph) algo).setExternalGraph(new SingleGraphAlg(this.sourceGraph));
                 }
 
                 if (this.algorithm instanceof AcceptsKnowledge && this.knowledge != null) {
@@ -678,6 +705,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     if (algo instanceof TakesGraph) {
                         ((TakesGraph) algo).setGraph(this.sourceGraph);
+                    }
+
+                    // An algorithm that takes an external graph (FASK, the pairwise orientation algorithms) is given the source
+                    // graph afresh at every run. The algorithm object is carried over from one run to the next, and the external
+                    // graph it was built with may be stale, or absent if the source graph was not known when it was built.
+                    if (algo instanceof TakesExternalGraph && this.sourceGraph != null) {
+                        ((TakesExternalGraph) algo).setExternalGraph(new SingleGraphAlg(this.sourceGraph));
                     }
 
                     if (this.algorithm instanceof AcceptsKnowledge) {
