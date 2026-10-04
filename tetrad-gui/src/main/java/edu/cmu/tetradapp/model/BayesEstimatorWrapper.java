@@ -251,6 +251,15 @@ public class BayesEstimatorWrapper implements SessionModel {
     }
 
     /**
+     * The data models of the parent data box, one per estimated model, for labeling the choice among them.
+     *
+     * @return the data models, or null if there is no data box
+     */
+    public DataModelList getDataModels() {
+        return this.dataWrapper == null ? null : this.dataWrapper.getDataModelList();
+    }
+
+    /**
      * Retrieves the model index.
      *
      * @return the model index
