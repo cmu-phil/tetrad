@@ -409,12 +409,11 @@ public class LayoutUtil {
     }
 
     /**
-     * Arranges the nodes in the graph in a circle if there are 20 or fewer
-     * nodes, otherwise arranges them in a square.
+     * Arranges the nodes using Richard's layout unless it's laid out.
      *
      * @param graph the graph to be arranged.
      */
-    public static void defaultLayout(Graph graph) {
+    public static void defaultLayoutConditional(Graph graph) {
         boolean allOriented = true;
 
         for (Node node : graph.getNodes()) {
@@ -427,13 +426,16 @@ public class LayoutUtil {
             return;
         }
 
-        // The previous defaults, kept for reference:
-//        if (graph.getNumNodes() <= 20) {
-//            circleLayout(graph);
-//        } else {
-//            squareLayout(graph);
-//        }
+        richardsLayout(graph);
+    }
 
+    /**
+     * Arranges the nodes in the graph in a circle if there are 20 or fewer
+     * nodes, otherwise arranges them in a square.
+     *
+     * @param graph the graph to be arranged.
+     */
+    public static void defaultLayout(Graph graph) {
         richardsLayout(graph);
     }
 
@@ -1487,7 +1489,7 @@ public class LayoutUtil {
         }
 
         if (sourceGraph == null) {
-            defaultLayout(resultGraph);
+            defaultLayoutConditional(resultGraph);
             return true;
         }
 
@@ -1759,7 +1761,7 @@ public class LayoutUtil {
          * Lays out the graph.
          */
         public void doLayout() {
-            defaultLayout(this.graph);
+            defaultLayoutConditional(this.graph);
 
             // Default to SwingProgressListener for backward compatibility.
             if (this.progressListener == null) {
@@ -2278,7 +2280,7 @@ public class LayoutUtil {
          * Lays out the graph.
          */
         public void doLayout() {
-            defaultLayout(this.graph);
+            defaultLayoutConditional(this.graph);
 
             List<List<Node>> components =
                     this.graph.paths().connectedComponents();

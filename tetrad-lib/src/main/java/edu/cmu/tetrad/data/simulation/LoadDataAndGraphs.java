@@ -113,7 +113,7 @@ public class LoadDataAndGraphs implements Simulation {
                         this.graphs.add(null);
                     }
 
-                    LayoutUtil.defaultLayout(this.graphs.get(i));
+                    LayoutUtil.defaultLayoutConditional(this.graphs.get(i));
 
                     File file1 = new File(path + "/data/data." + (i + 1) + ".txt");
 

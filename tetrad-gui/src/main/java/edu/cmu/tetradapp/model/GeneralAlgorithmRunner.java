@@ -512,7 +512,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 throw new RuntimeException(e);
             }
 
-            LayoutUtil.richardsLayout(graph);
+            LayoutUtil.defaultLayout(graph);
             graphList.add(graph);
             graphSubtitle.put(graph, "");
         }
@@ -630,7 +630,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     // Passing the DataModelList itself is the request to pool; see
                     // AbstractBootstrapAlgorithm.searchPooled.
                     Graph graph = algo.search(dataModelList, this.parameters);
-                    LayoutUtil.richardsLayout(graph);
+                    LayoutUtil.defaultLayout(graph);
                     graphList.add(graph);
                     graphSubtitle.put(graph, noteForAggregate(dataModelList));
                     resultNames.add("Pooled (" + dataModelList.size() + " data sets)");
@@ -702,7 +702,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     Graph graph;
                     try {
                         graph = algo.search(data, this.parameters);
-                        LayoutUtil.richardsLayout(graph);
+                        LayoutUtil.defaultLayout(graph);
                         graphList.add(graph);
                         graphSubtitle.put(graph, noteFor(data));
 
@@ -732,9 +732,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 LayoutUtil.layoutByKnowledgeIndices(graph);
             } else if (knowledge != null && knowledge.getNumTiers() > 0) {
 //                LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
-                LayoutUtil.richardsLayout(graph);
+                LayoutUtil.defaultLayout(graph);
             } else {
-                LayoutUtil.richardsLayout(graph);
+                LayoutUtil.defaultLayout(graph);
             }
         }
 

@@ -98,7 +98,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         LayoutUtil.defaultLayout(graph);
-        LayoutUtil.fruchtermanReingoldLayout(graph);
+//        LayoutUtil.fruchtermanReingoldLayout(graph);
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
 
@@ -185,7 +185,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
             LayoutUtil.arrangeBySourceGraph(resultGraph,
                     getLatestWorkbenchGraph());
         } else {
-            LayoutUtil.defaultLayout(resultGraph);
+            LayoutUtil.defaultLayoutConditional(resultGraph);
         }
     }
 
