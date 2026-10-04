@@ -366,41 +366,44 @@ public class PlotMatrix extends JPanel {
         if (dataSets == null) return;
 
         List<DataSet> choices = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
 
         CHOICE:
-        for (int i = 0; i < dataSets.size(); i++) {
-            DataSet choice = dataSets.get(i);
+        for (DataSet choice : dataSets) {
             if (choice == null) continue;
 
             for (Node node : this.nodes) {
                 if (choice.getVariable(node.getName()) == null) continue CHOICE;
             }
 
-            String name = choice.getName();
             choices.add(choice);
-            labels.add((i + 1) + (name == null || name.isBlank() ? "" : ": " + name));
         }
 
-        if (choices.size() < 2) return;
-
-        JComboBox<String> chooser = new JComboBox<>(labels.toArray(new String[0]));
-        chooser.setMaximumSize(chooser.getPreferredSize());
-        int index = choices.indexOf(selected);
-        if (index >= 0) chooser.setSelectedIndex(index);
-
-        chooser.addActionListener(e -> {
-            int chosen = chooser.getSelectedIndex();
-            if (chosen < 0 || choices.get(chosen) == this.dataSet) return;
+        // The shared chooser: a drop-down, previous and next buttons, and the arrow keys.
+        Box box = DataSetChooser.create(choices, Math.max(0, choices.indexOf(selected)), chosen -> {
             this.dataSet = choices.get(chosen);
             constructPlotMatrix(charts, this.dataSet, this.nodes, rowSelector, colSelector,
                     isRemoveTrendLinesPerPlot());
         });
 
-        Box box = Box.createHorizontalBox();
+        if (box == null) return;
+
+        // Ctrl or Cmd with Up or Down steps through the data sets from anywhere in the window. A list would
+        // otherwise keep those keys for itself while it has the focus, which it usually does here; plain Up and
+        // Down are left to the lists, for moving through the variables.
+        int menu;
+
+        try {
+            menu = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        } catch (HeadlessException e) {
+            menu = InputEvent.CTRL_DOWN_MASK;
+        }
+
+        for (JList<Node> list : List.of(rowSelector, colSelector)) {
+            list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, menu), "none");
+            list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, menu), "none");
+        }
+
         box.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-        box.add(new JLabel("Data set (of " + choices.size() + "): "));
-        box.add(chooser);
         box.add(Box.createHorizontalGlue());
         add(box, BorderLayout.SOUTH);
         revalidate();
