@@ -543,7 +543,27 @@ public class BayesPmWrapper implements SessionModel {
      * @return a {@link edu.cmu.tetrad.bayes.BayesPm} object
      */
     public BayesPm getBayesPm() {
-        return this.bayesPms.get(getModelIndex());
+        // The index is set from outside and may not match the number of PMs held (there is often just one);
+        // fall back to the first rather than fail.
+        int index = getModelIndex();
+        if (index < 0 || index >= this.bayesPms.size()) index = 0;
+        return this.bayesPms.get(index);
+    }
+
+    /**
+     * The Bayes PM to use with the data set at the given position in a list of data sets: the PM at that position
+     * if this wrapper holds one PM per data set (as from a simulation), otherwise the PM this wrapper currently
+     * shows, which then serves for every data set. Does not change the model index.
+     *
+     * @param dataIndex the position of the data set
+     * @return the Bayes PM for it
+     */
+    public BayesPm getBayesPmFor(int dataIndex) {
+        if (this.bayesPms.size() > 1 && dataIndex >= 0 && dataIndex < this.bayesPms.size()) {
+            return this.bayesPms.get(dataIndex);
+        }
+
+        return getBayesPm();
     }
 
     private void setBayesPm(BayesPm b) {
