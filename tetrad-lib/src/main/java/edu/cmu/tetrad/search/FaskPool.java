@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
@@ -148,6 +149,13 @@ import java.util.Set;
  * closely-related single-dataset override procedure reproduced its detections under an
  * acyclic null, so detections from this channel should not be trusted without a
  * calibration of that kind on the data at hand.</p>
+ *
+ * <p>Mixed data. With discrete variables in the datasets, the adjacency stage must be IMaGES with a score for mixed
+ * data (or external graphs). The pooled left-right statistic and the two-cycle test are computed for continuous
+ * pairs only, and only continuous variables are conditioned on in the two-cycle test. An adjacency with a discrete
+ * endpoint is oriented by knowledge or by the majority compelled orientation of the evidence graphs, if either
+ * applies, and is otherwise kept as an undirected edge, which means only that the method does not orient the
+ * pair.</p>
  *
  * @author josephramsey
  * @see FaskVote
@@ -281,7 +289,24 @@ public class FaskPool {
         // orientation stage use the standardized columns.
         List<DataSet> standardized = new ArrayList<>();
         for (DataSet dataSet : this.dataSets) {
-            standardized.add(DataTransforms.standardizeData(dataSet));
+            standardized.add(PooledAdjacencySearch.standardize(dataSet));
+        }
+
+        // The pooled left-right statistic and the two-cycle test are for continuous pairs. A variable counts as
+        // continuous only if it is continuous in every dataset.
+        Set<String> continuous = new HashSet<>();
+
+        for (Node node : this.dataSets.get(0).getVariables()) {
+            boolean inAll = true;
+
+            for (DataSet dataSet : this.dataSets) {
+                if (!(dataSet.getVariable(node.getName()) instanceof ContinuousVariable)) {
+                    inAll = false;
+                    break;
+                }
+            }
+
+            if (inAll) continuous.add(node.getName());
         }
 
         // Column arrays per dataset, keyed by variable name so datasets need only agree
@@ -353,6 +378,38 @@ public class FaskPool {
                 continue;
             } else if (knowledgeOrients(ry, rx)) {
                 result.addDirectedEdge(ry, rx);
+                continue;
+            }
+
+            if (!continuous.contains(x.getName()) || !continuous.contains(y.getName())) {
+                // A pair with a discrete variable: no pooled statistic. The majority compelled orientation of
+                // the evidence graphs, if there is one, orients it; otherwise the adjacency is kept undirected,
+                // meaning only that this method does not orient the pair.
+                int forward = 0;
+                int backward = 0;
+
+                if (numEvidenceGraphs > 0) {
+                    int[] tally = evidence.get(NamePair.of(x.getName(), y.getName()));
+
+                    if (tally != null) {
+                        boolean xFirst = x.getName().compareTo(y.getName()) < 0;
+                        forward = xFirst ? tally[0] : tally[1];
+                        backward = xFirst ? tally[1] : tally[0];
+                    }
+                }
+
+                if (forward > backward) {
+                    result.addDirectedEdge(rx, ry);
+                    this.edgeStats.put(result.getEdge(rx, ry), new EdgeStat(Double.NaN, Double.NaN, Double.NaN,
+                            0, forward, backward, Origin.EVIDENCE_DEFAULT));
+                } else if (backward > forward) {
+                    result.addDirectedEdge(ry, rx);
+                    this.edgeStats.put(result.getEdge(rx, ry), new EdgeStat(Double.NaN, Double.NaN, Double.NaN,
+                            0, backward, forward, Origin.EVIDENCE_DEFAULT));
+                } else {
+                    result.addUndirectedEdge(rx, ry);
+                }
+
                 continue;
             }
 
@@ -443,7 +500,7 @@ public class FaskPool {
             }
 
             // Two-cycle stage: only when enabled, and only on unanimity across datasets.
-            if (this.twoCycleAlpha > 0 && isPooledTwoCycle(adjacency, columns, x, y, twoCycleCutoff)) {
+            if (this.twoCycleAlpha > 0 && isPooledTwoCycle(adjacency, columns, x, y, twoCycleCutoff, continuous)) {
                 Edge e1 = Edges.directedEdge(rx, ry);
                 Edge e2 = Edges.directedEdge(ry, rx);
                 result.addEdge(e1);
@@ -650,11 +707,14 @@ public class FaskPool {
      * than X and Y themselves.
      */
     private boolean isPooledTwoCycle(Graph adjacency, List<Map<String, double[]>> columns,
-                                     Node x, Node y, double cutoff) {
+                                     Node x, Node y, double cutoff, Set<String> continuous) {
         Set<Node> pool = new HashSet<>(adjacency.getAdjacentNodes(x));
         pool.addAll(adjacency.getAdjacentNodes(y));
         pool.remove(x);
         pool.remove(y);
+
+        // Partial correlations are for continuous variables; a discrete neighbor is not conditioned on.
+        pool.removeIf(node -> !continuous.contains(node.getName()));
 
         if (pool.isEmpty()) return false;
 

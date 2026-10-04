@@ -54,7 +54,7 @@ import java.util.List;
         name = "FASK-Vote",
         command = "fask-vote",
         algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
+        dataType = {DataType.Continuous, DataType.Mixed}
 )
 @Experimental
 public class FaskVote implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesScoreWrapper,
@@ -162,7 +162,7 @@ public class FaskVote implements MultiDataSetAlgorithm, AcceptsKnowledge, TakesS
      */
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) throws InterruptedException {
-        return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
+        return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
     }
 
     /**

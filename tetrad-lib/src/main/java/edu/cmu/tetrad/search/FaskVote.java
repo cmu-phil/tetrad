@@ -79,6 +79,11 @@ import java.util.Set;
  * <p>The datasets are standardized for the adjacency stage, but the original datasets are
  * passed to FASK. This follows the behavior of the original implementation.</p>
  *
+ * <p>Mixed data. With discrete variables in the datasets, the adjacency stage must be IMaGES with a score for mixed
+ * data (or external graphs). Each per-dataset FASK orients continuous pairs only (see {@link Fask}), so a pair with
+ * a discrete variable gets no votes and is left undirected, unless knowledge or the external graphs' compelled
+ * orientations orient it. Such an undirected edge means only that the method does not orient the pair.</p>
+ *
  * @author Madelyn Glymour
  * @author josephramsey
  */
@@ -480,7 +485,7 @@ public class FaskVote {
         List<DataSet> standardized = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
-            standardized.add(DataTransforms.standardizeData(dataSet));
+            standardized.add(PooledAdjacencySearch.standardize(dataSet));
         }
 
         return standardized;
