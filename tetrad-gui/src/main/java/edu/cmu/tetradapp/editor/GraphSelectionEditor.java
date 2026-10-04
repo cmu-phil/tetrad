@@ -717,6 +717,20 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         private JTextArea textArea;
 
         /**
+         * Run after the selection has been changed from the text, to redraw the graphs; may be null.
+         */
+        private Runnable onSelectionChanged;
+
+        /**
+         * Sets what to run after the selection has been changed from the text.
+         *
+         * @param onSelectionChanged the callback, or null for none
+         */
+        public void setOnSelectionChanged(Runnable onSelectionChanged) {
+            this.onSelectionChanged = onSelectionChanged;
+        }
+
+        /**
          * Creates a new copy subsession action for the given LayoutEditable and clipboard.
          *
          * @param component    a {@link javax.swing.JComponent} object
@@ -782,7 +796,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 wrapper.setSelectedVariables(newSelected);
                 selectedList.setSelectedIndices(new int[0]);
                 sourceList.setSelectedIndices(new int[0]);
-                refreshGraphs();
+                if (onSelectionChanged != null) onSelectionChanged.run();
             });
         }
 
@@ -1048,6 +1062,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             GraphSelectionTextInputAction action
                     = new GraphSelectionTextInputAction(GraphEditorOptionsPanel.this,
                     wrapper, sourceList, selectedList);
+            action.setOnSelectionChanged(GraphSelectionEditor.this::refreshGraphs);
             JButton sort = new JButton(action);
             sort.setFont(sort.getFont().deriveFont(11f));
             sort.setMargin(new Insets(3, 3, 3, 3));
