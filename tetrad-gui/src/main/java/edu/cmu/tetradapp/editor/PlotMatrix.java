@@ -378,7 +378,7 @@ public class PlotMatrix extends JPanel {
             choices.add(choice);
         }
 
-        // The shared chooser: a drop-down, previous and next buttons, and the arrow keys.
+        // The shared chooser: a drop-down with previous and next buttons.
         Box box = DataSetChooser.create(choices, Math.max(0, choices.indexOf(selected)), chosen -> {
             this.dataSet = choices.get(chosen);
             constructPlotMatrix(charts, this.dataSet, this.nodes, rowSelector, colSelector,
@@ -386,22 +386,6 @@ public class PlotMatrix extends JPanel {
         });
 
         if (box == null) return;
-
-        // Ctrl or Cmd with Up or Down steps through the data sets from anywhere in the window. A list would
-        // otherwise keep those keys for itself while it has the focus, which it usually does here; plain Up and
-        // Down are left to the lists, for moving through the variables.
-        int menu;
-
-        try {
-            menu = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-        } catch (HeadlessException e) {
-            menu = InputEvent.CTRL_DOWN_MASK;
-        }
-
-        for (JList<Node> list : List.of(rowSelector, colSelector)) {
-            list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, menu), "none");
-            list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, menu), "none");
-        }
 
         box.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         box.add(Box.createHorizontalGlue());

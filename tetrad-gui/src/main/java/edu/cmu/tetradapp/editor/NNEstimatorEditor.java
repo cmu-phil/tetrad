@@ -22,8 +22,7 @@ public final class NNEstimatorEditor extends JPanel {
         super(new BorderLayout());
         this.model = model;
 
-        Box chooser = DataSetChooser.create(model.getSourceData(), model.getDataIndex(), this::chooseData,
-                false);
+        Box chooser = DataSetChooser.create(model.getSourceData(), model.getDataIndex(), this::chooseData);
 
         if (chooser != null) {
             chooser.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));

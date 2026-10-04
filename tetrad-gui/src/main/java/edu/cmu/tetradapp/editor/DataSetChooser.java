@@ -21,11 +21,8 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.util.List;
 import java.util.function.IntConsumer;
@@ -34,10 +31,8 @@ import java.util.function.IntConsumer;
  * A "Data set (of m)" drop-down for editors whose model can work from any one of several data sets (for instance,
  * the completed data sets of a multiple imputation). It always shows which data set is in use.
  * <p>
- * Beside the drop-down are previous and next buttons, which wrap at the ends. Unless asked not to, the chooser also
- * binds the arrow keys in the window it is shown in (see {@link ArrowKeyNavigation}): Ctrl or Cmd with Up or Down
- * steps through the data sets from anywhere in the window, and plain Up or Down does so when the focus is not in
- * something that uses those keys itself, such as a table or a list.
+ * Beside the drop-down are previous and next buttons, which wrap at the ends. No keys are bound: the arrow keys
+ * have other uses in the windows this appears in.
  *
  * @author josephramsey
  */
@@ -56,22 +51,6 @@ public final class DataSetChooser {
      * nothing to choose
      */
     public static Box create(List<? extends DataModel> models, int selected, IntConsumer onChoose) {
-        return create(models, selected, onChoose, true);
-    }
-
-    /**
-     * Builds the chooser.
-     *
-     * @param models    the data sets to choose among, in order
-     * @param selected  the index of the one in use now
-     * @param onChoose  called with the index of a newly chosen data set; not called when the choice is unchanged
-     * @param arrowKeys whether to bind the arrow keys to step through the data sets; pass false where a change of
-     *                  data set is costly or discards work, so that it is only ever made deliberately
-     * @return the chooser with its label, or null if there are fewer than two data sets, in which case there is
-     * nothing to choose
-     */
-    public static Box create(List<? extends DataModel> models, int selected, IntConsumer onChoose,
-                             boolean arrowKeys) {
         if (models == null || models.size() < 2) return null;
 
         String[] labels = new String[models.size()];
@@ -102,29 +81,6 @@ public final class DataSetChooser {
         box.add(Box.createHorizontalStrut(4));
         box.add(previous);
         box.add(next);
-
-        if (arrowKeys) {
-            String modifier = System.getProperty("os.name", "").toLowerCase().contains("mac") ? "Cmd" : "Ctrl";
-            chooser.setToolTipText(modifier + " + Up or Down steps through the data sets from anywhere in this window.");
-
-            // The keys are bound on the root pane of whatever window the chooser ends up in, which is not known
-            // until it is shown. Binding is idempotent per root pane, so being shown again is harmless.
-            box.addAncestorListener(new AncestorListener() {
-                @Override
-                public void ancestorAdded(AncestorEvent event) {
-                    JRootPane rootPane = SwingUtilities.getRootPane(box);
-                    if (rootPane != null) ArrowKeyNavigation.install(rootPane, chooser);
-                }
-
-                @Override
-                public void ancestorRemoved(AncestorEvent event) {
-                }
-
-                @Override
-                public void ancestorMoved(AncestorEvent event) {
-                }
-            });
-        }
 
         return box;
     }
