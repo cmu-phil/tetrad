@@ -32,6 +32,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.util.NaturalSort;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -108,6 +109,23 @@ public class PlotMatrix extends JPanel {
     private int[] lastCols = new int[]{0};
 
     /**
+     * While a single plot is enlarged by clicking on it, the row and column selections of the matrix it was
+     * clicked in; null otherwise. The enlarged plot is computed in the context of that selection, so that it shows
+     * the same points and trend line as the cell it enlarges.
+     */
+    private int[] focusRows = null;
+
+    /**
+     * See focusRows.
+     */
+    private int[] focusCols = null;
+
+    /**
+     * True while the click handler is changing the selections itself, so the selection listeners stand down.
+     */
+    private boolean changingSelection = false;
+
+    /**
      * Conditioning panel map
      */
     private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
@@ -167,10 +185,16 @@ public class PlotMatrix extends JPanel {
 
         charts = new JPanel();
 
-        this.rowSelector.addListSelectionListener(e ->
-                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot()));
-        this.colSelector.addListSelectionListener(e ->
-                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot()));
+        // A selection made by hand is a new matrix, not an enlargement of a cell of the old one.
+        ListSelectionListener selectionListener = e -> {
+            if (changingSelection) return;
+            focusRows = null;
+            focusCols = null;
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
+        };
+
+        this.rowSelector.addListSelectionListener(selectionListener);
+        this.colSelector.addListSelectionListener(selectionListener);
 
         constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
 
@@ -354,8 +378,16 @@ public class PlotMatrix extends JPanel {
 
         final DataSet original = dataSet;
 
+        // The selection that decides which rows are complete and which variables are adjusted for. For a plot
+        // enlarged by a click this is the selection of the matrix it came from, not the single row and column
+        // now selected; otherwise the enlargement would be a different plot from the cell that was clicked.
+        boolean focused = focusRows != null && focusCols != null
+                          && rowIndices.length == 1 && colIndices.length == 1;
+        int[] contextRows = focused ? focusRows : rowIndices;
+        int[] contextCols = focused ? focusCols : colIndices;
+
         if (this.completeRowsOnly) {
-            List<Integer> complete = completeRows(dataSet, nodes, rowIndices, colIndices);
+            List<Integer> complete = completeRows(dataSet, nodes, contextRows, contextCols);
 
             if (complete.isEmpty()) {
                 charts.setLayout(new BorderLayout());
@@ -404,7 +436,7 @@ public class PlotMatrix extends JPanel {
                     charts.add(panel);
                 } else {
                     DataSet adjusted = this.addedVariablePlots
-                            ? addedVariableData(dataSet, nodes, rowIndex, colIndex, rowIndices, colIndices) : null;
+                            ? addedVariableData(dataSet, nodes, rowIndex, colIndex, contextRows, contextCols) : null;
 
                     // An adjusted cell plots residuals from a two-column data set of its own; the conditioning
                     // ranges were applied in choosing its rows, so they are not applied again below.
@@ -568,20 +600,30 @@ public class PlotMatrix extends JPanel {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (rowSelector.getSelectedIndices().length == 1
-                    && colSelector.getSelectedIndices().length == 1) {
-                    rowSelector.setSelectedIndices(lastRows);
-                    colSelector.setSelectedIndices(lastCols);
-                    lastRows = new int[]{rowIndex};
-                    lastCols = new int[]{colIndex};
-                    constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
-                } else {
-                    lastRows = rowSelector.getSelectedIndices();
-                    lastCols = colSelector.getSelectedIndices();
-                    rowSelector.setSelectedIndex(rowIndex);
-                    colSelector.setSelectedIndex(colIndex);
-                    constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
+                changingSelection = true;
+
+                try {
+                    if (rowSelector.getSelectedIndices().length == 1
+                        && colSelector.getSelectedIndices().length == 1) {
+                        focusRows = null;
+                        focusCols = null;
+                        rowSelector.setSelectedIndices(lastRows);
+                        colSelector.setSelectedIndices(lastCols);
+                        lastRows = new int[]{rowIndex};
+                        lastCols = new int[]{colIndex};
+                    } else {
+                        lastRows = rowSelector.getSelectedIndices();
+                        lastCols = colSelector.getSelectedIndices();
+                        focusRows = lastRows;
+                        focusCols = lastCols;
+                        rowSelector.setSelectedIndex(rowIndex);
+                        colSelector.setSelectedIndex(colIndex);
+                    }
+                } finally {
+                    changingSelection = false;
                 }
+
+                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector, isRemoveTrendLinesPerPlot());
             }
         });
     }
