@@ -22,10 +22,12 @@ package edu.cmu.tetrad.data.missing;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -40,8 +42,13 @@ import java.util.Random;
  * <p>
  * "Lite" caveats, flagged: the conditional models are linear in the numeric codings (no interactions, no proper
  * multinomial model for discrete targets), and as with {@link MvnImputer} this is improper MI (no parameter draws).
- * If a regression cannot be fit (singularity, too few rows), the affected variable falls back to marginal hot-deck
- * draws for that sweep.
+ * <p>
+ * The regressions carry a small ridge penalty (as in the R mice package), so that collinear predictors, or more
+ * predictors than observed rows, do not stop a fit; predictors that are constant over the rows used are left out.
+ * Only if a variable has fewer than two observed rows, has no usable predictor, or the system still cannot be
+ * solved does it fall back to marginal hot-deck draws for that update. Such draws are independent of every other
+ * variable and so bias toward independence; every fallback, and every fit that was only possible because of the
+ * ridge, is recorded (see {@link #getLoggedEvents()}) and logged, so that none of this happens silently.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -59,6 +66,21 @@ public final class MiceLiteImputer implements MultipleImputer {
     private final int numSweeps;
 
     /**
+     * The ridge penalty, as a fraction of each (standardized) predictor's sum of squares.
+     */
+    private final double ridge;
+
+    /**
+     * What went less than cleanly in the last call to impute, with the number of column updates each applied to.
+     */
+    private final Map<String, Integer> events = new LinkedHashMap<>();
+
+    /**
+     * The number of updates each incomplete column got in the last call to impute (imputations times sweeps).
+     */
+    private int updatesPerColumn = 0;
+
+    /**
      * Constructs an imputer with the defaults: 5 donors, 5 sweeps.
      */
     public MiceLiteImputer() {
@@ -72,10 +94,45 @@ public final class MiceLiteImputer implements MultipleImputer {
      * @param numSweeps The number of chained sweeps; at least 1.
      */
     public MiceLiteImputer(int numDonors, int numSweeps) {
+        this(numDonors, numSweeps, 1e-5);
+    }
+
+    /**
+     * Constructs an imputer.
+     *
+     * @param numDonors The number of donor candidates for PMM; at least 1.
+     * @param numSweeps The number of chained sweeps; at least 1.
+     * @param ridge     The ridge penalty for the regressions, as a fraction of each standardized predictor's sum of
+     *                  squares; positive. The default is 1e-5, small enough to leave a well-posed fit unchanged.
+     */
+    public MiceLiteImputer(int numDonors, int numSweeps, double ridge) {
         if (numDonors < 1) throw new IllegalArgumentException("Number of donors must be >= 1: " + numDonors);
         if (numSweeps < 1) throw new IllegalArgumentException("Number of sweeps must be >= 1: " + numSweeps);
+        if (!(ridge > 0)) throw new IllegalArgumentException("Ridge must be > 0: " + ridge);
         this.numDonors = numDonors;
         this.numSweeps = numSweeps;
+        this.ridge = ridge;
+    }
+
+    /**
+     * What went less than cleanly in the last call to impute: fallbacks to marginal hot-deck draws, predictors left
+     * out as constant, and fits that were possible only because of the ridge. Each entry names the variable being
+     * imputed and says in how many of its updates the event occurred. Empty if every regression was well posed.
+     *
+     * @return The events, one per line of report.
+     */
+    public List<String> getLoggedEvents() {
+        List<String> report = new ArrayList<>();
+
+        for (Map.Entry<String, Integer> event : this.events.entrySet()) {
+            report.add(event.getKey() + " (in " + event.getValue() + " of " + this.updatesPerColumn + " updates)");
+        }
+
+        return report;
+    }
+
+    private void event(String name, String what) {
+        this.events.merge(name + ": " + what, 1, Integer::sum);
     }
 
     /**
@@ -128,6 +185,12 @@ public final class MiceLiteImputer implements MultipleImputer {
             }
         }
 
+        this.events.clear();
+        this.updatesPerColumn = m * this.numSweeps;
+
+        String[] names = new String[p];
+        for (int j = 0; j < p; j++) names[j] = dataSet.getVariables().get(j).getName();
+
         Random rand = seed < 0 ? new Random() : new Random(seed);
         List<DataSet> imputed = new ArrayList<>(m);
 
@@ -144,7 +207,7 @@ public final class MiceLiteImputer implements MultipleImputer {
             for (int sweep = 0; sweep < this.numSweeps; sweep++) {
                 for (int j = 0; j < p; j++) {
                     if (missRows.get(j).isEmpty()) continue;
-                    imputeColumnPmm(work, j, obsRows.get(j), missRows.get(j), p, rand);
+                    imputeColumnPmm(work, j, obsRows.get(j), missRows.get(j), p, rand, names);
                 }
             }
 
@@ -160,43 +223,29 @@ public final class MiceLiteImputer implements MultipleImputer {
             imputed.add(copy);
         }
 
+        for (String line : getLoggedEvents()) {
+            TetradLogger.getInstance().log("MICE imputation, " + line);
+        }
+
         return imputed;
     }
 
     /**
-     * One PMM update of column j: fit OLS of j on the other columns over the rows observed on j; fill each missing
-     * row from a random donor among the numDonors observed rows with the closest fitted values. Falls back to a
-     * marginal hot-deck draw if the regression cannot be fit.
+     * One PMM update of column j: fit a ridge regression of j on the other columns over the rows observed on j;
+     * fill each missing row from a random donor among the numDonors observed rows with the closest fitted values.
+     * Falls back to a marginal hot-deck draw, and records that it did, if no regression can be fit.
      */
     private void imputeColumnPmm(double[][] work, int j, List<Integer> obs, List<Integer> missing, int p,
-                                 Random rand) {
+                                 Random rand, String[] names) {
         int nObs = obs.size();
         double[] fittedObs;
-        double[] beta = null;
-
-        if (nObs > p + 2) {
-            try {
-                double[] y = new double[nObs];
-                double[][] x = new double[nObs][p - 1];
-
-                for (int a = 0; a < nObs; a++) {
-                    int row = obs.get(a);
-                    y[a] = work[row][j];
-                    int c = 0;
-                    for (int k = 0; k < p; k++) {
-                        if (k != j) x[a][c++] = work[row][k];
-                    }
-                }
-
-                OLSMultipleLinearRegression ols = new OLSMultipleLinearRegression();
-                ols.newSampleData(y, x);
-                beta = ols.estimateRegressionParameters(); // [intercept, coefs...]
-            } catch (Exception e) {
-                beta = null;
-            }
-        }
+        double[] beta = nObs < 2 ? null : ridgeFit(work, j, obs, p, names);
 
         if (beta == null) {
+            if (nObs < 2) {
+                event(names[j], "filled by random draws from its own observed values, ignoring the other"
+                                + " variables, because it has fewer than 2 observed rows");
+            }
 
             // Fallback: marginal hot deck.
             for (int i : missing) work[i][j] = work[obs.get(rand.nextInt(nObs))][j];
@@ -233,6 +282,132 @@ public final class MiceLiteImputer implements MultipleImputer {
 
             work[i][j] = work[obs.get(best[rand.nextInt(k)])][j];
         }
+    }
+
+    /**
+     * The ridge regression of column j on the other columns over the given rows, as [intercept, coefficients...]
+     * with one coefficient per other column in column order (zero for a predictor left out). Predictors are
+     * centered and scaled to unit sum of squares, the penalty is added to the diagonal of their cross-product
+     * matrix, and the system is solved by Cholesky decomposition. Returns null, having recorded why, if there is no
+     * usable predictor or the system cannot be solved.
+     */
+    private double[] ridgeFit(double[][] work, int j, List<Integer> obs, int p, String[] names) {
+        int nObs = obs.size();
+        double meanY = 0.0;
+        for (int row : obs) meanY += work[row][j];
+        meanY /= nObs;
+
+        // Usable predictors: those that vary over these rows.
+        int[] cols = new int[p - 1];
+        double[] mean = new double[p - 1];
+        double[] scale = new double[p - 1];
+        int q = 0;
+        List<String> constant = new ArrayList<>();
+
+        for (int k = 0; k < p; k++) {
+            if (k == j) continue;
+            double mu = 0.0;
+            for (int row : obs) mu += work[row][k];
+            mu /= nObs;
+            double ss = 0.0;
+            for (int row : obs) ss += (work[row][k] - mu) * (work[row][k] - mu);
+
+            if (ss > 1e-12 * nObs * (1.0 + mu * mu)) {
+                cols[q] = k;
+                mean[q] = mu;
+                scale[q] = Math.sqrt(ss);
+                q++;
+            } else {
+                constant.add(names[k]);
+            }
+        }
+
+        if (!constant.isEmpty()) {
+            event(names[j], "predictors constant over its observed rows were left out: "
+                            + String.join(", ", constant));
+        }
+
+        if (q == 0) {
+            event(names[j], "filled by random draws from its own observed values, ignoring the other variables,"
+                            + " because no predictor varies over its observed rows");
+            return null;
+        }
+
+        // Cross products of the standardized predictors (unit diagonal), and with the centered target.
+        double[][] g = new double[q][q];
+        double[] r = new double[q];
+        double[] z = new double[q];
+
+        for (int row : obs) {
+            for (int a = 0; a < q; a++) z[a] = (work[row][cols[a]] - mean[a]) / scale[a];
+            double y = work[row][j] - meanY;
+
+            for (int a = 0; a < q; a++) {
+                r[a] += z[a] * y;
+                for (int b = 0; b <= a; b++) g[a][b] += z[a] * z[b];
+            }
+        }
+
+        for (int a = 0; a < q; a++) g[a][a] += this.ridge;
+
+        // Cholesky decomposition in place (lower triangle). A pivot is the share of a predictor's variation not
+        // explained by the predictors before it, plus the ridge; a very small one means near collinearity.
+        double minPivot = Double.POSITIVE_INFINITY;
+
+        for (int a = 0; a < q; a++) {
+            for (int b = 0; b <= a; b++) {
+                double sum = g[a][b];
+                for (int c = 0; c < b; c++) sum -= g[a][c] * g[b][c];
+
+                if (a == b) {
+                    if (!(sum > 1e-12)) {
+                        event(names[j], "filled by random draws from its own observed values, ignoring the other"
+                                        + " variables, because the regression could not be solved");
+                        return null;
+                    }
+
+                    minPivot = Math.min(minPivot, sum);
+                    g[a][a] = Math.sqrt(sum);
+                } else {
+                    g[a][b] = sum / g[b][b];
+                }
+            }
+        }
+
+        if (nObs <= q + 2) {
+            event(names[j], "only " + nObs + " observed rows for " + q + " predictors; the fit rests on the ridge"
+                            + " penalty and is weak, so consider imputing with fewer variables");
+        } else if (minPivot < 1e-3) {
+            event(names[j], "its predictors are nearly collinear; the fit was stabilized by the ridge penalty");
+        }
+
+        // Solve L L' b = r.
+        double[] b = new double[q];
+
+        for (int a = 0; a < q; a++) {
+            double sum = r[a];
+            for (int c = 0; c < a; c++) sum -= g[a][c] * b[c];
+            b[a] = sum / g[a][a];
+        }
+
+        for (int a = q - 1; a >= 0; a--) {
+            double sum = b[a];
+            for (int c = a + 1; c < q; c++) sum -= g[c][a] * b[c];
+            b[a] = sum / g[a][a];
+        }
+
+        // Back to the original scale, in the layout fitted() expects.
+        double[] beta = new double[p];
+        beta[0] = meanY;
+
+        for (int a = 0; a < q; a++) {
+            double coef = b[a] / scale[a];
+            int position = cols[a] < j ? cols[a] + 1 : cols[a];
+            beta[position] = coef;
+            beta[0] -= coef * mean[a];
+        }
+
+        return beta;
     }
 
     private static double fitted(double[][] work, int row, int j, int p, double[] beta) {
