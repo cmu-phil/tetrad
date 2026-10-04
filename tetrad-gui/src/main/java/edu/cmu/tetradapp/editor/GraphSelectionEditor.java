@@ -203,6 +203,10 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         workbenchScrollsPanel.validate();
 
         // Add to buttonPanel
+        if (wrapper.getSourceResultName() != null) {
+            buttonPanel.add(new JLabel("Showing search result: " + wrapper.getSourceResultName()));
+        }
+
         buttonPanel.add(executeButton);
 
         if (wrapper.getDataSet() != null) {
@@ -300,6 +304,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
             assert selectedItem != null;
             wrapper.setType(selectedItem);
             setSelectedGraphType(selectedItem);
+            refreshGraphs();
         });
     }
 
@@ -420,6 +425,27 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         return workbenchScrollsPanel;
     }
 
+
+    /**
+     * Redraws the subgraphs for the current variables and options, as the "Graph It!" button does, after a change
+     * to either. Several changes made in one event (a drag and drop reports twice) give one redraw.
+     */
+    private void refreshGraphs() {
+        if (refreshPending) return;
+        refreshPending = true;
+
+        SwingUtilities.invokeLater(() -> {
+            refreshPending = false;
+
+            new WatchedProcess() {
+                public void watch() {
+                    tabbedPaneGraphs(wrapper);
+                }
+            };
+        });
+    }
+
+    private boolean refreshPending = false;
 
     private void tabbedPaneGraphs(GraphSelectionWrapper wrapper) {
         wrapper.calculateSelection();
@@ -756,6 +782,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 wrapper.setSelectedVariables(newSelected);
                 selectedList.setSelectedIndices(new int[0]);
                 sourceList.setSelectedIndices(new int[0]);
+                refreshGraphs();
             });
         }
 
@@ -889,6 +916,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 wrapper.setSelectedVariables(getSelected());
                 getSelectedList().setSelectedIndices(new int[0]);
                 getSourceList().setSelectedIndices(new int[0]);
+                refreshGraphs();
             });
             dualListPanel.getMoveToselector().addActionListener((e) -> {
                 for (GraphWorkbench workbench : workbenches) {
@@ -905,6 +933,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 getSelectedList().setSelectedIndices(new int[0]);
                 getSourceList().setSelectedIndices(new int[0]);
                 wrapper.setSelectedVariables(getSelected());
+                refreshGraphs();
             });
 
             VariableListModel selectedModel = (VariableListModel) getSelectedList().getModel();
@@ -940,12 +969,22 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 atLeast.setSelected(true);
             }
 
-            equals.addActionListener((e) -> wrapper.setNType(GraphSelectionWrapper.nType.equals));
-            atMost.addActionListener((e) -> wrapper.setNType(GraphSelectionWrapper.nType.atMost));
-            atLeast.addActionListener((e) -> wrapper.setNType(GraphSelectionWrapper.nType.atLeast));
+            equals.addActionListener((e) -> {
+                wrapper.setNType(GraphSelectionWrapper.nType.equals);
+                refreshGraphs();
+            });
+            atMost.addActionListener((e) -> {
+                wrapper.setNType(GraphSelectionWrapper.nType.atMost);
+                refreshGraphs();
+            });
+            atLeast.addActionListener((e) -> {
+                wrapper.setNType(GraphSelectionWrapper.nType.atLeast);
+                refreshGraphs();
+            });
             nField.setFilter((value, oldValue) -> {
                 try {
                     wrapper.setN(value);
+                    refreshGraphs();
                     return value;
                 } catch (Exception e) {
                     return oldValue;
@@ -1409,6 +1448,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                         model.addAll(transferData);
 
                         wrapper.setSelectedVariables(getSelected());
+                        refreshGraphs();
                         dtde.getDropTargetContext().dropComplete(true);
 
                     } catch (Exception exception) {
@@ -1447,6 +1487,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                             }
 
                             wrapper.setSelectedVariables(getSelected());
+                            refreshGraphs();
                         } catch (Exception exception) {
                             exception.printStackTrace(System.err);
                         }

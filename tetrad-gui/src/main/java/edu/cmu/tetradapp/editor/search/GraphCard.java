@@ -170,8 +170,25 @@ public class GraphCard extends JPanel {
                 tabs.addTab(title, inner);
             }
 
+            // The selected tab is the result that downstream boxes analyze. Selecting another one records the
+            // choice in the runner and reports the model as changed, so that on closing this editor the session
+            // offers to re-execute the children, as it does for any other edit.
+            JLabel downstream = new JLabel();
+            downstream.setBorder(new EmptyBorder(4, 8, 4, 8));
+            tabs.setSelectedIndex(this.algorithmRunner.getSelectedResultIndex());
+            downstream.setText(downstreamNote(tabs.getTitleAt(tabs.getSelectedIndex()), false));
+
+            tabs.addChangeListener(ev -> {
+                int index = tabs.getSelectedIndex();
+                if (index < 0 || index == this.algorithmRunner.getSelectedResultIndex()) return;
+                this.algorithmRunner.setSelectedResultIndex(index);
+                downstream.setText(downstreamNote(tabs.getTitleAt(index), true));
+                firePropertyChange("modelChanged", null, null);
+            });
+
             add(menuBar(), BorderLayout.NORTH);
             add(tabs, BorderLayout.CENTER);
+            add(downstream, BorderLayout.SOUTH);
         } else {
             // Legacy single-graph UI (unchanged)
             Graph graph = (graphs != null && !graphs.isEmpty()) ? graphs.get(0) : this.algorithmRunner.getGraph();
@@ -201,6 +218,11 @@ public class GraphCard extends JPanel {
 
         revalidate();
         repaint();
+    }
+
+    private static String downstreamNote(String resultName, boolean changed) {
+        return "<html>Downstream boxes analyze the selected result: <b>" + resultName + "</b>."
+               + (changed ? " Close this window and choose Execute to update them." : "") + "</html>";
     }
 
     JMenuBar menuBar() {

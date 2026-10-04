@@ -75,8 +75,15 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     private DataSet dataSet;
 
+    /**
+     * If the graph came from a search with several results, the name of the result it is; null otherwise. Used
+     * only for display.
+     */
+    private String sourceResultName;
+
     public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
+        this.sourceResultName = resultNameOf(graphWrapper);
 
         // A graph source that carries its own data (a search, a simulation, an estimator) supplies it.
         this.dataSet = dataOf(graphWrapper);
@@ -92,6 +99,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     public GraphSelectionWrapper(GraphSource graphWrapper, DataWrapper dataWrapper, Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
+        this.sourceResultName = resultNameOf(graphWrapper);
         DataSet fromDataBox = dataOf(dataWrapper);
         this.dataSet = fromDataBox != null ? fromDataBox : dataOf(graphWrapper);
     }
@@ -111,6 +119,13 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
             if (list == null) return null;
 
+            // A search over several data sets with one result per data set: the data for the selected result.
+            if (source instanceof GeneralAlgorithmRunner runner && runner.getGraphs() != null
+                && runner.getGraphs().size() == list.size()
+                && list.get(runner.getSelectedResultIndex()) instanceof DataSet data && data.getNumRows() > 0) {
+                return data;
+            }
+
             for (DataModel model : list) {
                 if (model instanceof DataSet data && data.getNumRows() > 0) return data;
             }
@@ -119,6 +134,19 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         }
 
         return null;
+    }
+
+    private static String resultNameOf(Object source) {
+        return source instanceof GeneralAlgorithmRunner runner ? runner.getSelectedResultName() : null;
+    }
+
+    /**
+     * The name of the search result this graph is, if it came from a search with several results.
+     *
+     * @return the name, or null
+     */
+    public String getSourceResultName() {
+        return this.sourceResultName;
     }
 
     /**
@@ -224,6 +252,12 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     public void setSelectedVariables(List<Node> variables) {
         this.selectedNodes = variables;
+
+        // The names are kept in the parameters, which outlive this wrapper, so that the selection carries over
+        // when the box is re-executed on a new graph (see setGraphs).
+        List<String> names = new ArrayList<>();
+        if (variables != null) for (Node node : variables) names.add(node.getName());
+        this.params.set("selectedVariableNames", names);
     }
 
     private List<Graph> getSelectionGraphs(Parameters params) {
@@ -274,7 +308,17 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             selectionGraphs.add(new EdgeListGraph());
         }
 
-        setSelectedVariables(new ArrayList<>());
+        // Start from the selection last made in this box, by name, keeping the variables the new graph has.
+        List<Node> restored = new ArrayList<>();
+
+        if (!graphs.isEmpty() && this.params.get("selectedVariableNames", new ArrayList<String>()) instanceof List<?> names) {
+            for (Object name : names) {
+                Node node = graphs.getFirst().getNode(String.valueOf(name));
+                if (node != null && !restored.contains(node)) restored.add(node);
+            }
+        }
+
+        setSelectedVariables(restored);
         this.params.set("selectionGraphs", selectionGraphs);
 
         List<Node> highlighted = (List<Node>) this.params.get("highlightInEditor", new ArrayList<>());

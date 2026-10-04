@@ -117,6 +117,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private long elapsedTime = -1L;
 
     /**
+     * Which of the result graphs is the one this runner hands to downstream boxes (see getGraph()). Chosen by
+     * selecting a result in the search editor; reset to the first result when a search is run.
+     */
+    private int selectedResultIndex = 0;
+
+    /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
      *
      * @param runner     a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
@@ -443,6 +449,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this.graphList.clear();
         this.resultNames.clear();
         this.graphSubtitle.clear();
+        this.selectedResultIndex = 0;
 
         if (this.independenceTests != null) {
             this.independenceTests.clear();
@@ -1104,8 +1111,41 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         if (this.graphList == null || this.graphList.isEmpty()) {
             return null;
         } else {
-            return this.graphList.getFirst();
+            return this.graphList.get(getSelectedResultIndex());
         }
+    }
+
+    /**
+     * The index of the result graph that getGraph() returns, and so the one downstream boxes analyze.
+     *
+     * @return the index, always within the list of results (0 if there are none)
+     */
+    public int getSelectedResultIndex() {
+        int size = this.graphList == null ? 0 : this.graphList.size();
+        if (this.selectedResultIndex < 0 || this.selectedResultIndex >= size) return 0;
+        return this.selectedResultIndex;
+    }
+
+    /**
+     * Sets which result graph getGraph() returns. Downstream boxes that were built from the previous selection
+     * are not changed by this call; they need to be re-executed.
+     *
+     * @param index the index of the result
+     */
+    public void setSelectedResultIndex(int index) {
+        this.selectedResultIndex = index;
+    }
+
+    /**
+     * The name of the selected result, as shown on its tab in the search editor.
+     *
+     * @return the name, or null if the search has at most one result, in which case there is nothing to say
+     */
+    public String getSelectedResultName() {
+        if (this.graphList == null || this.graphList.size() < 2) return null;
+        int index = getSelectedResultIndex();
+        if (this.resultNames != null && index < this.resultNames.size()) return this.resultNames.get(index);
+        return "Result " + (index + 1);
     }
 
     /**
@@ -1118,6 +1158,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public void setResultGraphs(List<Graph> gs) {
         this.graphList = gs;
+        this.selectedResultIndex = 0;
     }
 
     /**
