@@ -895,6 +895,11 @@ public class LayoutUtil {
      * "y is not an ancestor of x" reading of the arrowhead.</li>
      * <li><b>Crossing reduction.</b> Alternating down and up barycenter
      * sweeps reorder each layer by the mean position of its neighbors in the
+     * adjacent layer, and after each sweep every layer is walked and any two
+     * adjacent nodes whose exchange reduces the crossing count are exchanged,
+     * until no exchange helps (the transpose step of Gansner et al.), which
+     * removes the crossings the barycenter sort alone leaves behind. The
+     * barycenter of a node is the mean position of its neighbors in the
      * sweep direction; all edge types vote here, including edges that span
      * more than one layer. The ordering with the fewest straight-line
      * crossings seen over all sweeps is kept.</li>
@@ -1005,52 +1010,84 @@ public class LayoutUtil {
 
         // Barycenter sweeps; keep the ordering with the fewest crossings.
         // Crossing counting is O(E^2), so above this many cross-tier edges
-        // the sweeps still run but the keep-best bookkeeping is skipped.
+        // the sweeps still run but the keep-best bookkeeping, and the
+        // transpose step that depends on counting, are skipped.
         final int maxEdgesForCrossingCounts = 2000;
         boolean trackCrossings = crossEdges.size() <= maxEdgesForCrossingCounts;
+
+        // The cross-tier edges at each node, by index into crossEdges, for the
+        // transpose step: exchanging two nodes changes only crossings that
+        // involve an edge at one of them.
+        Map<Node, List<Integer>> edgesAt = new HashMap<>();
+        for (Node n : allNodes) edgesAt.put(n, new ArrayList<>());
+
+        for (int i = 0; i < crossEdges.size(); i++) {
+            edgesAt.get(crossEdges.get(i)[0]).add(i);
+            edgesAt.get(crossEdges.get(i)[1]).add(i);
+        }
 
         int bestCrossings = trackCrossings
                 ? countCrossings(crossEdges, tierOf, normalizedPositions(tiers))
                 : Integer.MAX_VALUE;
         List<List<Node>> bestTiers = copyTiers(tiers);
+        List<List<Node>> startTiers = copyTiers(tiers);
 
-        for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
-            boolean downSweep = sweep % 2 == 0;
+        // Two runs of the sweeps from the same start, the second with the
+        // transpose step after each sweep. The transpose step usually ends
+        // lower, but it also changes the ordering the next sweep starts from,
+        // and on some graphs that path ends higher; the best over both runs
+        // is never worse than the sweeps alone. Without crossing counts
+        // there is no transpose step and nothing to choose by, so one run.
+        for (int run = 0; run < (trackCrossings ? 2 : 1); run++) {
+            boolean transpose = run == 1;
+            if (run > 0) tiers = copyTiers(startTiers);
 
-            for (int ti = 0; ti < tiers.size(); ti++) {
-                int t = downSweep ? ti : tiers.size() - 1 - ti;
-                List<Node> tier = tiers.get(t);
-                if (tier.size() < 2) continue;
+            for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
+                boolean downSweep = sweep % 2 == 0;
 
-                Map<Node, Double> pos = normalizedPositions(tiers);
-                Map<Node, Double> key = new HashMap<>();
+                for (int ti = 0; ti < tiers.size(); ti++) {
+                    int t = downSweep ? ti : tiers.size() - 1 - ti;
+                    List<Node> tier = tiers.get(t);
+                    if (tier.size() < 2) continue;
 
-                for (Node n : tier) {
-                    List<Node> nbrs = downSweep ? upNbrs.get(n) : downNbrs.get(n);
+                    Map<Node, Double> pos = normalizedPositions(tiers);
+                    Map<Node, Double> key = new HashMap<>();
 
-                    if (nbrs.isEmpty()) {
-                        nbrs = new ArrayList<>(upNbrs.get(n));
-                        nbrs.addAll(downNbrs.get(n));
+                    for (Node n : tier) {
+                        List<Node> nbrs = downSweep ? upNbrs.get(n) : downNbrs.get(n);
+
+                        if (nbrs.isEmpty()) {
+                            nbrs = new ArrayList<>(upNbrs.get(n));
+                            nbrs.addAll(downNbrs.get(n));
+                        }
+
+                        if (nbrs.isEmpty()) {
+                            key.put(n, pos.get(n));
+                        } else {
+                            double s = 0.0;
+                            for (Node m : nbrs) s += pos.get(m);
+                            key.put(n, s / nbrs.size());
+                        }
                     }
 
-                    if (nbrs.isEmpty()) {
-                        key.put(n, pos.get(n));
-                    } else {
-                        double s = 0.0;
-                        for (Node m : nbrs) s += pos.get(m);
-                        key.put(n, s / nbrs.size());
-                    }
+                    tier.sort(Comparator.comparingDouble(key::get));
                 }
 
-                tier.sort(Comparator.comparingDouble(key::get));
-            }
+                // The barycenter sort does not look at crossings, so it can leave
+                // a layer where exchanging two neighbors would remove some (ties
+                // in the barycenter, above all). Exchange adjacent nodes while
+                // that strictly reduces the count.
+                if (transpose) {
+                    transposeTiers(tiers, crossEdges, edgesAt, tierOf);
+                }
 
-            if (trackCrossings) {
-                int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
+                if (trackCrossings) {
+                    int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
 
-                if (c < bestCrossings) {
-                    bestCrossings = c;
-                    bestTiers = copyTiers(tiers);
+                    if (c < bestCrossings) {
+                        bestCrossings = c;
+                        bestTiers = copyTiers(tiers);
+                    }
                 }
             }
         }
@@ -1212,9 +1249,12 @@ public class LayoutUtil {
      * intermediate layer, the node is pushed sideways until the line
      * clears its box. For each node, the forbidden horizontal intervals
      * from all such edge lines crossing its row are merged, and the node
-     * moves to the nearest point outside their union; a tie between sides
-     * is broken by the parity of the layer, which staggers chains whose
-     * skip edges would otherwise be drawn on top of them. After each round
+     * moves to one end of the block it sits in: the end at which its own
+     * edges cross fewer other edges, then, on a tie, the nearer end, then,
+     * on a tie, the end given by the parity of the layer, which staggers
+     * chains whose skip edges would otherwise be drawn on top of them.
+     * (With more cross-layer edges than crossings are counted for, only the
+     * last two rules apply.) After each round
      * of moves, within-layer order and minimum separation are re-imposed,
      * and the process repeats until there are no violations or the round
      * limit is reached, so clearance is best effort in crowded regions.
@@ -1222,6 +1262,20 @@ public class LayoutUtil {
     private static void nudgeOffEdgeLines(List<List<Node>> tiers, Map<Node, Integer> tierOf,
                                           List<Node[]> crossEdges, Map<Node, Double> x,
                                           NodeSize size, double xGap) {
+        // The cross-layer edges at each node, for choosing the side of a push by crossings. Counting is skipped
+        // above the same edge limit as in the ordering stage.
+        final int maxEdgesForCrossingCounts = 2000;
+        Map<Node, List<Integer>> edgesAt = null;
+
+        if (crossEdges.size() <= maxEdgesForCrossingCounts) {
+            edgesAt = new HashMap<>();
+
+            for (int i = 0; i < crossEdges.size(); i++) {
+                edgesAt.computeIfAbsent(crossEdges.get(i)[0], k -> new ArrayList<>()).add(i);
+                edgesAt.computeIfAbsent(crossEdges.get(i)[1], k -> new ArrayList<>()).add(i);
+            }
+        }
+
         for (int round = 0; round < 12; round++) {
             Map<Node, List<double[]>> forbidden = new HashMap<>();
 
@@ -1287,7 +1341,20 @@ public class LayoutUtil {
                     double moveRight = right - xv;
                     double target;
 
-                    if (Math.abs(moveLeft - moveRight) < 1e-9) {
+                    // The side at which the node's own edges cross fewer other edges, if that can be counted
+                    // and differs between the sides. Pushed to the wrong side, a node clears the lines through
+                    // its row only to have every one of its edges cross them.
+                    int crossLeft = -1;
+                    int crossRight = -1;
+
+                    if (edgesAt != null && edgesAt.containsKey(v)) {
+                        crossLeft = crossingsAtX(v, left, crossEdges, edgesAt, tierOf, x);
+                        crossRight = crossingsAtX(v, right, crossEdges, edgesAt, tierOf, x);
+                    }
+
+                    if (crossLeft != crossRight) {
+                        target = crossLeft < crossRight ? left : right;
+                    } else if (Math.abs(moveLeft - moveRight) < 1e-9) {
                         target = (t % 2 == 0) ? right : left;
                     } else {
                         target = moveLeft < moveRight ? left : right;
@@ -1425,6 +1492,128 @@ public class LayoutUtil {
         }
 
         return pos;
+    }
+
+    /**
+     * The number of crossings the edges at v would have with the other cross-layer edges if v were at the given
+     * x, with the other nodes where they are: straight edges in (x, tier) space, pairs sharing an endpoint not
+     * counted. The position map is left as it was.
+     */
+    private static int crossingsAtX(Node v, double xv, List<Node[]> crossEdges, Map<Node, List<Integer>> edgesAt,
+                                    Map<Node, Integer> tierOf, Map<Node, Double> x) {
+        Double saved = x.get(v);
+        x.put(v, xv);
+        int count = 0;
+
+        try {
+            for (int i : edgesAt.get(v)) {
+                Node[] e1 = crossEdges.get(i);
+
+                for (int j = 0; j < crossEdges.size(); j++) {
+                    if (j == i) continue;
+                    Node[] e2 = crossEdges.get(j);
+
+                    if (e1[0] == e2[0] || e1[0] == e2[1] || e1[1] == e2[0] || e1[1] == e2[1]) {
+                        continue;
+                    }
+
+                    if (segmentsCross(x.get(e1[0]), tierOf.get(e1[0]), x.get(e1[1]), tierOf.get(e1[1]),
+                            x.get(e2[0]), tierOf.get(e2[0]), x.get(e2[1]), tierOf.get(e2[1]))) {
+                        count++;
+                    }
+                }
+            }
+        } finally {
+            x.put(v, saved);
+        }
+
+        return count;
+    }
+
+    /**
+     * The transpose step: for each tier, walks the adjacent pairs and exchanges
+     * the two nodes whenever that strictly reduces the number of crossings,
+     * repeating over the tier until a full walk makes no exchange. Only the
+     * crossings that involve an edge at one of the two nodes can change, so
+     * those are what is counted, before and after the exchange, with straight
+     * edges in (normalized position, tier) space as in countCrossings. The
+     * tiers are modified in place.
+     */
+    private static void transposeTiers(List<List<Node>> tiers, List<Node[]> crossEdges,
+                                       Map<Node, List<Integer>> edgesAt, Map<Node, Integer> tierOf) {
+        // Walks over one tier are capped, so a pathological tier cannot run
+        // away; in practice a tier settles in a few walks.
+        final int maxWalksPerTier = 20;
+
+        for (List<Node> tier : tiers) {
+            if (tier.size() < 2) continue;
+
+            for (int walk = 0; walk < maxWalksPerTier; walk++) {
+                boolean improved = false;
+
+                for (int i = 0; i + 1 < tier.size(); i++) {
+                    Node u = tier.get(i);
+                    Node v = tier.get(i + 1);
+
+                    // Nothing can change if neither node has a cross-tier edge.
+                    if (edgesAt.get(u).isEmpty() && edgesAt.get(v).isEmpty()) continue;
+
+                    Map<Node, Double> pos = normalizedPositions(tiers);
+                    int before = crossingsInvolving(u, v, crossEdges, edgesAt, tierOf, pos);
+
+                    double pu = pos.get(u);
+                    pos.put(u, pos.get(v));
+                    pos.put(v, pu);
+                    int after = crossingsInvolving(u, v, crossEdges, edgesAt, tierOf, pos);
+
+                    if (after < before) {
+                        tier.set(i, v);
+                        tier.set(i + 1, u);
+                        improved = true;
+                    }
+                }
+
+                if (!improved) break;
+            }
+        }
+    }
+
+    /**
+     * Counts the crossings among pairs of cross-tier edges of which at least
+     * one has u or v as an endpoint, each pair once.
+     */
+    private static int crossingsInvolving(Node u, Node v, List<Node[]> crossEdges,
+                                          Map<Node, List<Integer>> edgesAt, Map<Node, Integer> tierOf,
+                                          Map<Node, Double> pos) {
+        List<Integer> involved = new ArrayList<>(edgesAt.get(u));
+        for (int i : edgesAt.get(v)) if (!involved.contains(i)) involved.add(i);
+
+        Set<Integer> involvedSet = new HashSet<>(involved);
+        int count = 0;
+
+        for (int i : involved) {
+            Node[] e1 = crossEdges.get(i);
+
+            for (int j = 0; j < crossEdges.size(); j++) {
+                if (j == i) continue;
+
+                // A pair of involved edges is seen from both sides; count it from one.
+                if (involvedSet.contains(j) && j < i) continue;
+
+                Node[] e2 = crossEdges.get(j);
+
+                if (e1[0] == e2[0] || e1[0] == e2[1] || e1[1] == e2[0] || e1[1] == e2[1]) {
+                    continue;
+                }
+
+                if (segmentsCross(pos.get(e1[0]), tierOf.get(e1[0]), pos.get(e1[1]), tierOf.get(e1[1]),
+                        pos.get(e2[0]), tierOf.get(e2[0]), pos.get(e2[1]), tierOf.get(e2[1]))) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     /**
