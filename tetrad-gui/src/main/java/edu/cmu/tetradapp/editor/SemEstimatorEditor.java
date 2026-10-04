@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.missing.RubinsRules;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
@@ -282,6 +283,51 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         lowerBar.add(fixSize(restarts));
         lowerBar.add(Box.createHorizontalGlue());
         lowerBar.add(report);
+
+        // Several data sets: offer the estimates pooled over all of them.
+        if (wrapper.getDataModels() != null && wrapper.getDataModels().size() > 1) {
+            JButton pooled = new JButton("Pooled Report");
+            pooled.setToolTipText("<html>Estimate on every data set and pool the estimates by Rubin's rules."
+                                  + "<br>For imputations of one data set only.</html>");
+
+            pooled.addActionListener((e) -> {
+                class PooledProcess extends WatchedProcess {
+                    @Override
+                    public void watch() {
+                        try {
+                            String text = compilePooledReport(wrapper.estimateOnAllDataModels());
+
+                            SwingUtilities.invokeLater(() -> {
+                                JTextArea textArea = new JTextArea(text);
+                                textArea.setEditable(false);
+                                textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+                                textArea.setCaretPosition(0);
+
+                                JScrollPane scroll = new JScrollPane(textArea);
+                                scroll.setPreferredSize(new Dimension(900, 450));
+
+                                JPanel editorPanel = new JPanel(new BorderLayout());
+                                editorPanel.add(scroll, BorderLayout.CENTER);
+
+                                EditorWindow window = new EditorWindow(editorPanel,
+                                        "Pooled Parameter Estimates", "Close", false, SemEstimatorEditor.this);
+                                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+                                window.setVisible(true);
+                            });
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            SwingUtilities.invokeLater(
+                                    () -> JOptionPane.showMessageDialog(pooled, ex.getMessage()));
+                        }
+                    }
+                }
+
+                new PooledProcess();
+            });
+
+            lowerBar.add(Box.createHorizontalStrut(8));
+            lowerBar.add(pooled);
+        }
         lowerBar.add(Box.createHorizontalStrut(8));
         lowerBar.add(estimateButton);
 
@@ -319,6 +365,83 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         restarts.setToolTipText(usesRestarts
                 ? "The number of random restarts for the optimizer."
                 : "Restarts apply only to the EM, Powell, and Random Search optimizers.");
+    }
+
+    /**
+     * The estimates from each data set pooled by Rubin's rules: one row per free parameter and per variable mean.
+     */
+    private String compilePooledReport(List<SemIm> ims) {
+        SemIm first = ims.getFirst();
+        int m = ims.size();
+        int nameWidth = 4;
+
+        for (Node node : first.getSemPm().getGraph().getNodes()) {
+            nameWidth = TMath.max(nameWidth, node.getName().length());
+        }
+
+        nameWidth += 2;
+
+        String rowFormat = "%-" + nameWidth + "s %-" + nameWidth + "s %-8s %12s %12s %12s %10s %12s %8s %12s %12s%n";
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Estimates pooled over ").append(m).append(" data sets by Rubin's rules.\n\n");
+        builder.append("Value is the mean of the ").append(m).append(" estimates. SE combines the average squared\n");
+        builder.append("standard error within a data set with the variance of the estimate between data\n");
+        builder.append("sets, so it includes the uncertainty due to the missing values, which the SE from\n");
+        builder.append("any one data set leaves out. FMI is the fraction of the information about the\n");
+        builder.append("parameter that was lost to missing data. Min and Max are over the data sets.\n\n");
+        builder.append("Valid only if the data sets are imputations of one data set; not for independent\n");
+        builder.append("samples, different subjects or different conditions. Tetrad's imputers do not draw\n");
+        builder.append("the imputation model's parameters, so the between-data-set variance, and with it\n");
+        builder.append("SE and FMI, are somewhat understated. The model chi-square is not pooled.\n\n");
+        builder.append(String.format(rowFormat, "From", "To", "Type", "Value", "SE", "T", "DF", "P", "FMI",
+                "Min", "Max"));
+
+        final int maxFreeParamsForStatistics = 200;
+        double completeDataDf = first.getSampleSize() - first.getNumFreeParams();
+
+        for (Parameter parameter : first.getFreeParameters()) {
+            double[] estimates = new double[m];
+            double[] standardErrors = new double[m];
+
+            for (int i = 0; i < m; i++) {
+                // The parameter itself, so that the estimate and its standard error are on the same scale; for a
+                // variance that is the variance, where the single-data-set report shows its square root.
+                estimates[i] = ims.get(i).getParamValue(parameter);
+                standardErrors[i] = ims.get(i).getStandardError(parameter, maxFreeParamsForStatistics);
+            }
+
+            appendPooledRow(builder, rowFormat, String.valueOf(parameter.getNodeA()),
+                    String.valueOf(parameter.getNodeB()),
+                    parameter.getType() == ParamType.VAR ? "Variance" : typeString(parameter),
+                    RubinsRules.pool(estimates, standardErrors, completeDataDf));
+        }
+
+        for (Node node : first.getVariableNodes()) {
+            double[] estimates = new double[m];
+            double[] standardErrors = new double[m];
+
+            for (int i = 0; i < m; i++) {
+                SemIm im = ims.get(i);
+                Node variable = im.getSemPm().getGraph().getNode(node.getName());
+                estimates[i] = im.getMean(variable);
+                standardErrors[i] = im.getMeanStdDev(variable) / TMath.sqrt(im.getSampleSize());
+            }
+
+            appendPooledRow(builder, rowFormat, node.getName(), node.getName(), "Mean",
+                    RubinsRules.pool(estimates, standardErrors, first.getSampleSize() - 1));
+        }
+
+        return builder.toString();
+    }
+
+    private void appendPooledRow(StringBuilder builder, String rowFormat, String from, String to, String type,
+                                 RubinsRules.Pooled pooled) {
+        builder.append(String.format(rowFormat, from, to, type,
+                asString(pooled.estimate()), asString(pooled.standardError()), asString(pooled.t()),
+                String.format("%.1f", pooled.degreesOfFreedom()), asString(pooled.pValue()),
+                String.format("%.3f", pooled.fractionMissingInformation()),
+                asString(pooled.min()), asString(pooled.max())));
     }
 
     private String compileReport() {

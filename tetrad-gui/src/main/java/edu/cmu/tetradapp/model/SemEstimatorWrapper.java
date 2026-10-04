@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -121,6 +122,33 @@ public class SemEstimatorWrapper implements SessionModel {
 
         estimator.estimate();
         return estimator;
+    }
+
+    /**
+     * Estimates the SEM PM separately on every one of the parent's data models, with the current settings, for
+     * pooling. The current estimate is not changed.
+     *
+     * @return the estimated SEM IMs, in the order of getDataModels()
+     * @throws IllegalArgumentException if there are no data models, or estimation fails on one; the message says
+     *                                  which
+     */
+    public List<SemIm> estimateOnAllDataModels() {
+        if (this.dataModels == null || this.dataModels.isEmpty()) {
+            throw new IllegalArgumentException("There are no data sets to estimate on.");
+        }
+
+        List<SemIm> ims = new ArrayList<>();
+
+        for (int i = 0; i < this.dataModels.size(); i++) {
+            try {
+                ims.add(estimateOn(this.dataModels.get(i)).getEstimatedSem());
+            } catch (RuntimeException e) {
+                throw new IllegalArgumentException("Estimation failed on data set " + (i + 1) + ": "
+                                                   + e.getMessage(), e);
+            }
+        }
+
+        return ims;
     }
 
     /**
