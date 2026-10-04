@@ -143,6 +143,18 @@ public final class PooledScoreWrapper implements ScoreWrapper {
     }
 
     /**
+     * The data sets being pooled for the calling thread: those registered by {@link #setThreadDataSets(List)}, or
+     * the default list if none are registered. For an algorithm whose search has a stage that works from the data
+     * directly rather than through the score, so that it can run that stage over the same data sets.
+     *
+     * @return the data sets, as an unmodifiable list
+     */
+    public List<DataModel> getDataSets() {
+        List<DataModel> dataSets = threadDataSets.get();
+        return java.util.Collections.unmodifiableList(dataSets == null ? defaultDataSets : dataSets);
+    }
+
+    /**
      * Returns the score wrapper that is built on each pooled data set.
      *
      * @return the inner score wrapper.

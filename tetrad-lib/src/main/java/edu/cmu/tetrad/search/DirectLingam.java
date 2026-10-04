@@ -46,6 +46,11 @@ import static edu.cmu.tetrad.util.TMath.*;
  * residual system. Once an ordering has been obtained, parent sets are selected from earlier
  * variables using grow-shrink trees built from the supplied score.</p>
  *
+ * <p>Several data sets over the same variables (for instance, the completed data sets of a multiple imputation, or
+ * several samples believed to share one structure) can be given in place of one. The ordering is then found by the
+ * same procedure with the pairwise objective summed over the data sets, each residualized on its own; the score
+ * supplied for parent selection should then be one pooled over the same data sets, such as the IMaGES score.</p>
+ *
  * <p>This implementation follows the general strategy of the following references:</p>
  *
  * <ul>
@@ -71,7 +76,7 @@ import static edu.cmu.tetrad.util.TMath.*;
 public class DirectLingam {
 
     /** Input data set. */
-    private final DataSet dataset;
+    private final List<DataSet> datasets;
 
     /** Variables in data-set order. */
     private final List<Node> variables;
@@ -92,8 +97,30 @@ public class DirectLingam {
      * @param score the score used to initialize the grow-shrink trees
      */
     public DirectLingam(DataSet dataset, Score score) {
-        this.dataset = dataset;
-        this.variables = dataset.getVariables();
+        this(List.of(dataset), score);
+    }
+
+    /**
+     * Constructs a DirectLiNGAM search object from several data sets over the same variables and a score. The
+     * causal ordering is found from all the data sets together (see the class comment); the score, which should be
+     * pooled over the same data sets, selects the parents.
+     *
+     * @param datasets the data sets; at least one, all with the same variables by name, in the same order
+     * @param score    the score used to initialize the grow-shrink trees
+     */
+    public DirectLingam(List<DataSet> datasets, Score score) {
+        if (datasets == null || datasets.isEmpty()) throw new IllegalArgumentException("At least one data set.");
+
+        List<String> names = datasets.getFirst().getVariableNames();
+
+        for (DataSet dataset : datasets) {
+            if (!dataset.getVariableNames().equals(names)) {
+                throw new IllegalArgumentException("The data sets must have the same variables in the same order.");
+            }
+        }
+
+        this.datasets = new ArrayList<>(datasets);
+        this.variables = datasets.getFirst().getVariables();
         this.gsts = new HashMap<>();
 
         int i = 0;
@@ -165,24 +192,33 @@ public class DirectLingam {
      */
     public Graph search() {
         List<Node> remaining = new ArrayList<>(this.variables);
-        Map<Node, double[]> residualMap = new HashMap<>();
 
-        double[][] dataColumns = this.dataset.getDoubleData().transpose().toArray();
+        // One residual system per data set, by variable position, so that the data sets need only agree on names.
+        List<Map<Node, double[]>> residualMaps = new ArrayList<>();
 
-        for (int i = 0; i < dataColumns.length; i++) {
-            standardize(dataColumns[i]);
-            residualMap.put(this.variables.get(i), dataColumns[i]);
+        for (DataSet dataset : this.datasets) {
+            Map<Node, double[]> residualMap = new HashMap<>();
+            double[][] dataColumns = dataset.getDoubleData().transpose().toArray();
+
+            for (int i = 0; i < dataColumns.length; i++) {
+                standardize(dataColumns[i]);
+                residualMap.put(this.variables.get(i), dataColumns[i]);
+            }
+
+            residualMaps.add(residualMap);
         }
 
         Set<Node> ordered = new HashSet<>();
         Graph graph = new EdgeListGraph(this.variables);
 
         while (!remaining.isEmpty()) {
-            Node next = getNext(remaining, residualMap);
+            Node next = getNext(remaining, residualMaps);
             remaining.remove(next);
 
-            for (Node node : remaining) {
-                residualMap.put(node, residuals(residualMap.get(node), residualMap.get(next)));
+            for (Map<Node, double[]> residualMap : residualMaps) {
+                for (Node node : remaining) {
+                    residualMap.put(node, residuals(residualMap.get(node), residualMap.get(next)));
+                }
             }
 
             ordered.add(next);
@@ -203,33 +239,37 @@ public class DirectLingam {
      *
      * <p>Among the variables not yet ordered, this method selects the variable that
      * minimizes the DirectLiNGAM pairwise objective computed from the current residual
-     * system. Smaller values indicate a variable that appears more nearly exogenous.</p>
+     * system, summed over the data sets. Smaller values indicate a variable that
+     * appears more nearly exogenous.</p>
      *
-     * @param remaining the variables not yet ordered
-     * @param residualMap the current residualized data vectors for those variables
+     * @param remaining    the variables not yet ordered
+     * @param residualMaps the current residualized data vectors for those variables, one map per data set
      * @return the next variable to place in the causal ordering
      */
-    private Node getNext(List<Node> remaining, Map<Node, double[]> residualMap) {
+    private Node getNext(List<Node> remaining, List<Map<Node, double[]>> residualMaps) {
         Node bestNode = remaining.getFirst();
         double bestScore = Double.POSITIVE_INFINITY;
 
         for (Node x : remaining) {
             double currentScore = 0.0;
-            double entropyX = maxEntApprox(residualMap.get(x));
 
-            for (Node y : remaining) {
-                if (x == y) {
-                    continue;
+            for (Map<Node, double[]> residualMap : residualMaps) {
+                double entropyX = maxEntApprox(residualMap.get(x));
+
+                for (Node y : remaining) {
+                    if (x == y) {
+                        continue;
+                    }
+
+                    double[] rxy = residuals(residualMap.get(x), residualMap.get(y));
+                    double[] ryx = residuals(residualMap.get(y), residualMap.get(x));
+
+                    double lr = maxEntApprox(residualMap.get(y)) - entropyX;
+                    lr += maxEntApprox(rxy) - maxEntApprox(ryx);
+
+                    double clipped = min(0.0, lr);
+                    currentScore += clipped * clipped;
                 }
-
-                double[] rxy = residuals(residualMap.get(x), residualMap.get(y));
-                double[] ryx = residuals(residualMap.get(y), residualMap.get(x));
-
-                double lr = maxEntApprox(residualMap.get(y)) - entropyX;
-                lr += maxEntApprox(rxy) - maxEntApprox(ryx);
-
-                double clipped = min(0.0, lr);
-                currentScore += clipped * clipped;
             }
 
             if (currentScore < bestScore) {
