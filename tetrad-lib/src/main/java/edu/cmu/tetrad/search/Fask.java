@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
@@ -61,6 +62,15 @@ import static edu.cmu.tetrad.util.TMath.*;
  * </ul>
  * <p>
  * All existing public behavior is preserved.
+ * <p>
+ * Mixed data. The left-right rule and the two-cycle test are statistics of a pair of continuous variables and have
+ * no meaning for a discrete one, so on a data set with discrete variables they are applied to continuous pairs
+ * only. The adjacency search runs on all the variables, with whatever score was supplied (which must then be one
+ * that handles mixed data). An adjacency with a discrete endpoint is kept as an undirected edge, unless knowledge
+ * or a compelled orientation of the external graph orients it. Such an undirected edge means only that this method
+ * does not orient the pair; it does not mean the two directions are Markov equivalent, and the result is not a
+ * CPDAG. The skew-based extra adjacencies are likewise sought among continuous pairs only, and only continuous
+ * variables are conditioned on in the two-cycle test.
  *
  * @author Joseph Ramsey
  */
@@ -628,6 +638,10 @@ public final class Fask {
         double[][] colData = dataSet.getDoubleData().transpose().toArray();
         this.data = colData;
         this.edgeOrigins.clear();
+
+        // The pairwise statistics are for continuous pairs; see the class comment on mixed data.
+        boolean[] continuous = new boolean[variables.size()];
+        for (int i = 0; i < variables.size(); i++) continuous[i] = variables.get(i) instanceof ContinuousVariable;
         Graph G0;
         Graph oriented = null;
 
@@ -678,6 +692,28 @@ public final class Fask {
                     Node X = variables.get(i);
                     Node Y = variables.get(j);
 
+                    if (!continuous[i] || !continuous[j]) {
+                        // A pair with a discrete variable: the adjacency, if the adjacency search found one,
+                        // oriented only by knowledge or by a compelled orientation of the external graph.
+                        if (useFasAdjacencies && G0.isAdjacentTo(X, Y)) {
+                            int compelled = compelledOrientation(oriented, X, Y);
+
+                            if (knowledgeOrients(X, Y)) {
+                                graph.addDirectedEdge(X, Y);
+                            } else if (knowledgeOrients(Y, X)) {
+                                graph.addDirectedEdge(Y, X);
+                            } else if (compelled != 0) {
+                                if (compelled > 0) graph.addDirectedEdge(X, Y);
+                                else graph.addDirectedEdge(Y, X);
+                                this.edgeOrigins.put(graph.getEdge(X, Y), Origin.EVIDENCE_DEFAULT);
+                            } else {
+                                graph.addUndirectedEdge(X, Y);
+                            }
+                        }
+
+                        continue;
+                    }
+
                     // Pairwise deletion: the pairwise statistics use just the rows where X and Y are both
                     // observed. With no missing values these are the full columns, unchanged.
                     final double[][] pair = completeRows(colData[i], colData[j]);
@@ -707,17 +743,7 @@ public final class Fask {
 
                             // Compelled orientation of this pair in the external graph, if any:
                             // +1 for X->Y, -1 for Y->X, 0 for none (reversible, or not in use).
-                            int compelled = 0;
-
-                            if (oriented != null) {
-                                Node ox = oriented.getNode(X.getName());
-                                Node oy = oriented.getNode(Y.getName());
-                                Edge oe = (ox == null || oy == null) ? null : oriented.getEdge(ox, oy);
-
-                                if (oe != null && Edges.isDirectedEdge(oe)) {
-                                    compelled = oe.pointsTowards(oy) ? +1 : -1;
-                                }
-                            }
+                            int compelled = compelledOrientation(oriented, X, Y);
 
                             if (compelled != 0) {
                                 boolean opposes = compelled > 0 ? score < 0 : score > 0;
@@ -964,12 +990,33 @@ public final class Fask {
         return true;
     }
 
+    /**
+     * The compelled orientation of the pair in the given graph: +1 for X->Y, -1 for Y->X, 0 for none (not adjacent
+     * there, not directed, or the graph is null because external orientations are not in use).
+     */
+    private static int compelledOrientation(Graph oriented, Node X, Node Y) {
+        if (oriented == null) return 0;
+
+        Node ox = oriented.getNode(X.getName());
+        Node oy = oriented.getNode(Y.getName());
+        Edge oe = (ox == null || oy == null) ? null : oriented.getEdge(ox, oy);
+
+        if (oe != null && Edges.isDirectedEdge(oe)) {
+            return oe.pointsTowards(oy) ? +1 : -1;
+        }
+
+        return 0;
+    }
+
     private boolean isTwoCycle(double[] x, double[] y, Graph G0, Node X, Node Y) {
         Set<Node> pool = new HashSet<>(G0.getAdjacentNodes(X));
         pool.addAll(G0.getAdjacentNodes(Y));
         List<Node> cand = new ArrayList<>(pool);
         cand.remove(X);
         cand.remove(Y);
+
+        // Partial correlations are for continuous variables; a discrete neighbor is not conditioned on.
+        cand.removeIf(node -> !(node instanceof ContinuousVariable));
 
         if (cand.isEmpty()) return false;
 

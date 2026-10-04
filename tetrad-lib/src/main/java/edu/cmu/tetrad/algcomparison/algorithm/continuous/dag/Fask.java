@@ -52,7 +52,7 @@ import static edu.cmu.tetrad.util.Params.*;
         name = "FASK",
         command = "fask",
         algoType = AlgType.forbid_latent_common_causes,
-        dataType = DataType.Continuous
+        dataType = {DataType.Continuous, DataType.Mixed}
 )
 public class Fask extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge, TakesScoreWrapper,
         TakesExternalGraph {
