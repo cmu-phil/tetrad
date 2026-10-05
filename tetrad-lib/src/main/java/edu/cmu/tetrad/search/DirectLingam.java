@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -70,6 +71,13 @@ import static edu.cmu.tetrad.util.TMath.*;
  * standardized before the ordering phase, and residuals are computed by simple least-squares
  * projection.</p>
  *
+ * <p>Missing values are not accepted: the constructor throws if any data set contains one. The
+ * ordering phase residualizes whole columns and carries the residuals forward, so there is no
+ * pairwise or test-wise deletion that does not collapse to list-wise deletion as the ordering grows.
+ * Impute (several times, pooling with the list-of-data-sets constructor) or delete rows beforehand.
+ * Previously a single NaN anywhere made every candidate's objective NaN, and the ordering silently
+ * fell back to the column order of the data set.</p>
+ *
  * @author bryanandrews
  * @version $Id: $Id
  */
@@ -105,8 +113,10 @@ public class DirectLingam {
      * causal ordering is found from all the data sets together (see the class comment); the score, which should be
      * pooled over the same data sets, selects the parents.
      *
-     * @param datasets the data sets; at least one, all with the same variables by name, in the same order
+     * @param datasets the data sets; at least one, all with the same variables by name, in the same order, and
+     *                 none with missing values
      * @param score    the score used to initialize the grow-shrink trees
+     * @throws IllegalArgumentException if the data sets disagree on variables or any contains a missing value
      */
     public DirectLingam(List<DataSet> datasets, Score score) {
         if (datasets == null || datasets.isEmpty()) throw new IllegalArgumentException("At least one data set.");
@@ -116,6 +126,13 @@ public class DirectLingam {
         for (DataSet dataset : datasets) {
             if (!dataset.getVariableNames().equals(names)) {
                 throw new IllegalArgumentException("The data sets must have the same variables in the same order.");
+            }
+
+            if (dataset.existsMissingValue()) {
+                throw new IllegalArgumentException("DirectLiNGAM: the data contain missing values, which the ordering "
+                        + "phase cannot handle (it residualizes whole columns). Impute first, e.g. multiple "
+                        + "imputation with pooling, or delete incomplete rows. "
+                        + MissingDataUtils.briefSummary(dataset));
             }
         }
 
