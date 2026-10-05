@@ -121,6 +121,15 @@ public class LayoutMenu extends JMenu {
             this.addSeparator();
         }
 
+        JMenuItem richardsLayout = new JMenuItem("Richard's Layout");
+        this.add(richardsLayout);
+
+        richardsLayout.addActionListener(e -> {
+            LayoutUtils.richardsLayout(LayoutMenu.this.getLayoutEditable());
+
+            // Copy the laid out graph to the clipboard.
+            getCopyLayoutAction().actionPerformed(null);
+        });
 
         JMenuItem circleLayout = new JMenuItem("Circle");
         this.add(circleLayout);
@@ -181,16 +190,6 @@ public class LayoutMenu extends JMenu {
         causalOrder.addActionListener(e -> {
             LayoutEditable layoutEditable13 = LayoutMenu.this.getLayoutEditable();
             LayoutUtils.layoutByCausalOrder(layoutEditable13);
-
-            // Copy the laid out graph to the clipboard.
-            getCopyLayoutAction().actionPerformed(null);
-        });
-
-        JMenuItem richardsLayout = new JMenuItem("Richard's Layout");
-        this.add(richardsLayout);
-
-        richardsLayout.addActionListener(e -> {
-            LayoutUtils.richardsLayout(LayoutMenu.this.getLayoutEditable());
 
             // Copy the laid out graph to the clipboard.
             getCopyLayoutAction().actionPerformed(null);

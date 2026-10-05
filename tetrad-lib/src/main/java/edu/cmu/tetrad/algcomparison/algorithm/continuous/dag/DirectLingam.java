@@ -135,7 +135,7 @@ public class DirectLingam extends AbstractBootstrapAlgorithm implements Algorith
      * @return The description of the algorithm.
      */
     public String getDescription() {
-        return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
+        return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model)";
     }
 
     /**
