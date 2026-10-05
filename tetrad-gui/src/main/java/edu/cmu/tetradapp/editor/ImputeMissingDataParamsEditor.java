@@ -94,10 +94,12 @@ public class ImputeMissingDataParamsEditor extends JPanel implements ParameterEd
         });
 
         IntTextField mField = new IntTextField(this.params.getInt("numImputations", 5), 4);
-        mField.setToolTipText("How many completed datasets to produce. At least 2; a single completed dataset"
-                              + " would present imputed values as measured ones.");
+        mField.setToolTipText("<html>How many completed datasets to produce. 1 is allowed, for a quick look or for a"
+                              + " tool that takes one dataset,<br>but a single completed dataset presents imputed"
+                              + " values as measured ones; use 2 or more to see<br>how much a result depends on"
+                              + " them.</html>");
         mField.setFilter((value, oldValue) -> {
-            if (value < 2) return oldValue;
+            if (value < 1) return oldValue;
             this.params.set("numImputations", value);
             return value;
         });

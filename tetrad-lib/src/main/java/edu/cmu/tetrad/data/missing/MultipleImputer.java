@@ -39,7 +39,8 @@ public interface MultipleImputer {
      * Produces m completed copies of the given dataset.
      *
      * @param dataSet The dataset; must contain at least one missing value.
-     * @param m       The number of imputations; at least 2.
+     * @param m       The number of imputations; at least 1. With 1, the single completed dataset shows nothing of
+     *                the uncertainty due to the missing values, which is what the differences among several show.
      * @param seed    A random seed for reproducibility, or -1 for a random seed.
      * @return The m completed datasets.
      */

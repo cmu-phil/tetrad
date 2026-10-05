@@ -4900,14 +4900,15 @@ Source:
     === missingNumImputations ===
     <h3 class="parameter_description" id="missingNumImputations">missingNumImputations</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="missingNumImputations_short_desc">Number of imputed datasets for multiple imputation (default 10; min 2)</span></li>
+        <li>Short Description: <span id="missingNumImputations_short_desc">Number of imputed datasets for multiple imputation (default 10; min 1)</span></li>
         <li>Long Description: <span id="missingNumImputations_long_desc">
         The number of completed datasets, m, generated under multiple imputation. The search is run
         on each imputed dataset and the resulting graphs are pooled by edge frequency. Larger
-        values give more stable pooled results at proportionally greater cost. Used only when
-        missingDataPolicy is "mi".</span></li>
+        values give more stable pooled results at proportionally greater cost. With 1 there is nothing
+        to pool: the result is the graph from one completed dataset, with no indication of how much it
+        depends on the imputed values. Used only when missingDataPolicy is "mi".</span></li>
         <li>Default Value: <span id="missingNumImputations_default_value">10</span></li>
-        <li>Lower Bound: <span id="missingNumImputations_lower_bound">2</span></li>
+        <li>Lower Bound: <span id="missingNumImputations_lower_bound">1</span></li>
         <li>Upper Bound: <span id="missingNumImputations_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="missingNumImputations_value_type">Integer</span></li>
     </ul>

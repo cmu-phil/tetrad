@@ -62,8 +62,10 @@ import java.util.List;
  * spurious determinism findings, and independence tests that are confident about structure the imputation put
  * there. Both imputers draw instead, which preserves second moments.</p>
  *
- * <p><b>The output is m datasets, not one.</b> That is deliberate: a single completed dataset presents imputed
- * values as though they were measured, and any analysis run on it understates uncertainty. Both imputers are
+ * <p><b>The output is m datasets, by default five.</b> That is deliberate: a single completed dataset presents
+ * imputed values as though they were measured, and any analysis run on it understates uncertainty. One can be asked
+ * for, for a quick look or for a tool that takes one dataset, and a log message then says what it lacks. Both
+ * imputers are
  * "improper" in Rubin's sense -- parameters are fixed at their estimates rather than drawn from a posterior -- so
  * even across m datasets the between-imputation variability is somewhat understated.</p>
  *
@@ -121,7 +123,7 @@ public class ImputeMissingDataWrapper extends DataWrapper {
         }
 
         Method method = resolveMethod(params, dataSet);
-        int m = Math.max(2, params.getInt("numImputations", 5));
+        int m = Math.max(1, params.getInt("numImputations", 5));
         long seed = params.getLong("imputationSeed", 0L);
 
         MultipleImputer imputer = switch (method) {
@@ -150,6 +152,12 @@ public class ImputeMissingDataWrapper extends DataWrapper {
         setSourceGraph(wrapper.getSourceGraph());
 
         LogDataUtils.logDataModelList("Parent data with missing values imputed.", getDataModelList());
+
+        if (imputed.size() == 1) {
+            TetradLogger.getInstance().log("Imputation: a single completed dataset was requested. Its imputed"
+                                           + " values are one draw, not measurements, and nothing in it shows how"
+                                           + " much a result depends on them; impute 2 or more to see that.");
+        }
         TetradLogger.getInstance().log("Imputation: method=" + method + ", m=" + imputed.size()
                                        + ", seed=" + seed + ". Draws, not conditional means; valid under MAR;"
                                        + " improper MI, so between-imputation variability is understated.");

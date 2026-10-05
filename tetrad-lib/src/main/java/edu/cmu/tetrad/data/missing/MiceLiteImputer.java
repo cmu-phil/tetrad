@@ -208,7 +208,7 @@ public final class MiceLiteImputer implements MultipleImputer {
             throw new IllegalArgumentException("The dataset has no missing values; nothing to impute.");
         }
 
-        if (m < 2) throw new IllegalArgumentException("Number of imputations must be >= 2: " + m);
+        if (m < 1) throw new IllegalArgumentException("Number of imputations must be >= 1: " + m);
 
         int n = dataSet.getNumRows();
         int p = dataSet.getNumColumns();
