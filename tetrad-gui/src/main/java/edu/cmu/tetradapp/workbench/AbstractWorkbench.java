@@ -145,6 +145,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private List<DisplayNode> dragNodes;
     /**
+     * True if the selected nodes have been moved as a group since the current drag started, so that releasing
+     * the mouse snaps the group to the grid only after an actual drag.
+     */
+    private boolean dragGroupMoved;
+    /**
+     * The spacing of the grid that dropped nodes snap to, in pixels.
+     */
+    private static final int GRID_SIZE = 20;
+    /**
      * For selecting multiple nodes using a rubberband, a rubberband is needed; this is it.
      */
     private Rubberband rubberband;
@@ -2375,6 +2384,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         this.clickPoint = p;
         this.dragNodes = getSelectedNodes();
+        this.dragGroupMoved = false;
     }
 
     /**
@@ -2398,7 +2408,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     private void snapNodeToGrid(DisplayNode node) {
-        final int gridSize = 20;
+        final int gridSize = GRID_SIZE;
 
         int x = node.getCenterPoint().x;
         int y = node.getCenterPoint().y;
@@ -2407,6 +2417,54 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         y = gridSize * ((y + gridSize / 2) / gridSize);
 
         node.setLocation(x - node.getSize().width / 2, y - node.getSize().height / 2);
+    }
+
+    /**
+     * Snaps a dragged group of nodes to the grid as a rigid body: the whole group is translated by the offset
+     * that puts the center of the anchor (the node the mouse was on) on a grid point, so the nodes keep their
+     * positions relative to one another. Snapping each node separately would instead distort any layout whose
+     * nodes are not already on the grid, such as a circle. If the translation would push a node off the top or
+     * left of the workbench, the group is moved back by whole grid steps.
+     *
+     * @param anchor the node that was dragged; a member of the drag group.
+     */
+    private void snapDragGroupToGrid(DisplayNode anchor) {
+        List<DisplayNode> dragNodes = this.dragNodes;
+
+        if (dragNodes == null || dragNodes.isEmpty()) {
+            return;
+        }
+
+        Point center = anchor.getCenterPoint();
+
+        int deltaX = GRID_SIZE * ((center.x + GRID_SIZE / 2) / GRID_SIZE) - center.x;
+        int deltaY = GRID_SIZE * ((center.y + GRID_SIZE / 2) / GRID_SIZE) - center.y;
+
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+
+        for (DisplayNode _node : dragNodes) {
+            minX = TMath.min(minX, _node.getLocation().x + deltaX);
+            minY = TMath.min(minY, _node.getLocation().y + deltaY);
+        }
+
+        while (minX < 0) {
+            minX += GRID_SIZE;
+            deltaX += GRID_SIZE;
+        }
+
+        while (minY < 0) {
+            minY += GRID_SIZE;
+            deltaY += GRID_SIZE;
+        }
+
+        if (deltaX == 0 && deltaY == 0) {
+            return;
+        }
+
+        for (DisplayNode _node : dragNodes) {
+            _node.setLocation(_node.getLocation().x + deltaX, _node.getLocation().y + deltaY);
+        }
     }
 
     private void handleMouseClicked(MouseEvent e) {
@@ -2608,12 +2666,22 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 } else if (source instanceof DisplayNode) {
                     List<DisplayNode> dragNodes = this.dragNodes;
 
-                    if (dragNodes != null && dragNodes.isEmpty()) {
+                    // The dragged node moved alone unless it was one of the selected nodes; see dragNodes(). This
+                    // was previously tested as dragNodes.isEmpty(), so an unselected node dragged while other
+                    // nodes were selected was not snapped.
+                    if (dragNodes != null && !dragNodes.contains(source)) {
                         snapSingleNodeFromNegative(source);
                         snapNodeToGrid((DisplayNode) source);
                         scrollRectToVisible(((DisplayNode) source).getBounds());
                     } else if (dragNodes != null) {
                         snapDragGroupFromNegative();
+
+                        // Only after an actual drag, so that a plain click on a selected node does not shift
+                        // the selection.
+                        if (this.dragGroupMoved) {
+                            snapDragGroupToGrid((DisplayNode) source);
+                            this.dragGroupMoved = false;
+                        }
 
                         Rectangle rect = dragNodes.getFirst().getBounds();
 
@@ -2912,6 +2980,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             _node.setLocation(newX, newY);
         }
+
+        this.dragGroupMoved = true;
     }
 
     /**
