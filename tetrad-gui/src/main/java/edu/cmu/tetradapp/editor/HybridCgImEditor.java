@@ -310,6 +310,15 @@ public final class HybridCgImEditor extends JPanel {
     }
 
     /**
+     * Returns the variable whose table is showing.
+     *
+     * @return the variable selected in the variable list, or null if none is
+     */
+    public Node getSelectedVariable() {
+        return varList.getSelectedValue();
+    }
+
+    /**
      * Selects and centers the given variable's node in the Graph tab's workbench, matching by name (the colored graph
      * holds copied nodes). No-op when this editor has no graph tab (the embedded case) or the node isn't in the
      * displayed graph.
