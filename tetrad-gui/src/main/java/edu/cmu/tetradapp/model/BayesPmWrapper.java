@@ -192,7 +192,7 @@ public class BayesPmWrapper implements SessionModel {
         Dag graph;
 
         try {
-            graph = new Dag(graphWrapper.getGraph());
+            graph = new Dag(new EdgeListGraph(graphWrapper.getGraph(), true));
         } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
@@ -223,7 +223,7 @@ public class BayesPmWrapper implements SessionModel {
         Dag graph;
 
         try {
-            graph = new Dag(graphWrapper.getGraph());
+            graph = new Dag(new EdgeListGraph(graphWrapper.getGraph(), true));
         } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
@@ -282,7 +282,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
-        this(new Dag(graphWrapper.getGraph()), dataWrapper);
+        this(new Dag(new EdgeListGraph(graphWrapper.getGraph(), true)), dataWrapper);
     }
 
     /**
@@ -343,7 +343,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param params  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, Parameters params) {
-        this(new Dag(wrapper.getGraph()), params);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), params);
     }
 
     /**
@@ -353,7 +353,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param dataWrapper a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, DataWrapper dataWrapper) {
-        this(new Dag(wrapper.getGraph()), dataWrapper);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), dataWrapper);
     }
 
     /**
@@ -363,7 +363,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public BayesPmWrapper(AlgorithmRunner wrapper, Simulation simulation) {
-        this(new Dag(wrapper.getGraph()), simulation);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), simulation);
     }
 
     /**
@@ -373,7 +373,7 @@ public class BayesPmWrapper implements SessionModel {
      * @param simulation a {@link edu.cmu.tetradapp.model.Simulation} object
      */
     public BayesPmWrapper(BayesEstimatorWrapper wrapper, Simulation simulation) {
-        this(new Dag(wrapper.getGraph()), simulation);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), simulation);
     }
 
     /**
@@ -384,7 +384,7 @@ public class BayesPmWrapper implements SessionModel {
      */
     public BayesPmWrapper(BayesEstimatorWrapper wrapper,
                           DataWrapper dataWrapper) {
-        this(new Dag(wrapper.getGraph()), dataWrapper);
+        this(new Dag(new EdgeListGraph(wrapper.getGraph(), true)), dataWrapper);
     }
 
     /**
@@ -402,7 +402,7 @@ public class BayesPmWrapper implements SessionModel {
         Dag graph;
 
         try {
-            graph = new Dag(dagWrapper.getDag());
+            graph = new Dag(new EdgeListGraph(dagWrapper.getDag(), true));
         } catch (Exception e) {
             throw new RuntimeException(
                     "The parent graph cannot be converted to " + "a DAG.");
@@ -484,7 +484,7 @@ public class BayesPmWrapper implements SessionModel {
             nodesToVars.put(node.getName(), var);
         }
 
-        Dag graph = new Dag(dagWrapper.getDag());
+        Dag graph = new Dag(new EdgeListGraph(dagWrapper.getDag(), true));
         BayesPm bayesPm = new BayesPm(graph, dataSet);
         List<Node> nodes = bayesPm.getDag().getNodes();
 

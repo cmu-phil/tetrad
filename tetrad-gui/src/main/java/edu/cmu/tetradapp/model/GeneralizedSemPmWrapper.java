@@ -234,7 +234,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper) {
-        this(new EdgeListGraph(graphWrapper.getGraph()));
+        this(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -244,7 +244,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * @param dataWrapper  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper, DataWrapper dataWrapper) {
-        this(new EdgeListGraph(graphWrapper.getGraph()));
+        this(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -254,7 +254,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * @param wrapper      a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper, GeneralizedSemPmWrapper wrapper) {
-        this(new EdgeListGraph(graphWrapper.getGraph()), wrapper.getSemPm());
+        this(new EdgeListGraph(graphWrapper.getGraph(), true), wrapper.getSemPm());
     }
 
     /**
@@ -264,7 +264,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * @param wrapper    a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      */
     public GeneralizedSemPmWrapper(DagWrapper dagWrapper, GeneralizedSemPmWrapper wrapper) {
-        this(new EdgeListGraph(dagWrapper.getDag()), wrapper.getSemPm());
+        this(new EdgeListGraph(dagWrapper.getDag(), true), wrapper.getSemPm());
     }
 
     /**
@@ -328,7 +328,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
      * @param wrapper a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
      */
     public GeneralizedSemPmWrapper(AlgorithmRunner wrapper) {
-        this(new EdgeListGraph(wrapper.getGraph()));
+        this(new EdgeListGraph(wrapper.getGraph(), true));
     }
 
     /**

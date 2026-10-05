@@ -260,7 +260,11 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     private void init(Parameters params, List<Graph> graphs) {
-        setGraphs(graphs);
+        // Own node objects: the graphs come from another box (usually a search), and the subgraph shown here is
+        // laid out on its own, which must not lay out that box's graph too. Node positions live on node objects.
+        List<Graph> own = new ArrayList<>();
+        for (Graph graph : graphs) own.add(new EdgeListGraph(graph, true));
+        setGraphs(own);
 
         calculateSelection();
         List<Graph> selectionGraphs = getSelectionGraphs(params);

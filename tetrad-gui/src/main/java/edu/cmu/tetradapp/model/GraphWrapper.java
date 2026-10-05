@@ -109,17 +109,32 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
     public GraphWrapper(GraphSource graphSource, Parameters parameters) {
         this.parameters = parameters;
 
+        // The graph comes from another box; this box gets its own copy of the nodes, so that laying it out
+        // here does not lay out the other box too. See ownCopies.
         if (graphSource instanceof Simulation simulation) {
-            this.graphs = simulation.getGraphs();
+            this.graphs = ownCopies(simulation.getGraphs());
             this.numModels = this.graphs.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(graphSource.getGraph()));
+            setGraph(new EdgeListGraph(graphSource.getGraph(), true));
         }
 
         //       log();
     }
+
+    /**
+     * Copies of the given graphs with their own node objects (see {@link EdgeListGraph#EdgeListGraph(Graph, boolean)}),
+     * so that this box starts with their layout but a layout set here afterwards stays here. Node positions live on
+     * node objects, so a box that kept the graphs of another box, or graphs built on a data set's variables, would
+     * share its layout with everything else holding those objects.
+     */
+    private static List<Graph> ownCopies(List<Graph> graphs) {
+        List<Graph> copies = new ArrayList<>();
+        for (Graph graph : graphs) copies.add(new EdgeListGraph(graph, true));
+        return copies;
+    }
+
 
     /**
      * <p>Constructor for GraphWrapper.</p>
@@ -147,7 +162,9 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             throw new NullPointerException("Graph must not be null.");
         }
 
-        setGraph(graph);
+        // Used by the graph-transforming boxes (make all edges undirected, choose a DAG in the CPDAG, ...), whose
+        // transformed graph shares its nodes with the source box's graph.
+        setGraph(new EdgeListGraph(graph, true));
         this.parameters = parameters;
     }
 
@@ -170,7 +187,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      */
     public GraphWrapper(Simulation simulation, Parameters parameters) {
         this.parameters = parameters;
-        this.graphs = simulation.getGraphs();
+        this.graphs = ownCopies(simulation.getGraphs());
         this.numModels = this.graphs.size();
         this.modelIndex = 0;
         this.modelSourceName = simulation.getName();
@@ -185,12 +202,14 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
      */
     public GraphWrapper(DataWrapper wrapper) {
         if (wrapper instanceof Simulation simulation) {
-            this.graphs = simulation.getGraphs();
+            this.graphs = ownCopies(simulation.getGraphs());
             this.numModels = this.graphs.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(wrapper.getVariables()));
+            // Fresh node objects, not the data set's variables, which every graph built from that data set shares:
+            // positions set on them here would otherwise be seen by every other box on the data.
+            setGraph(new EdgeListGraph(new EdgeListGraph(wrapper.getVariables()), true));
         }
 
         LayoutUtil.defaultLayout(getGraph());

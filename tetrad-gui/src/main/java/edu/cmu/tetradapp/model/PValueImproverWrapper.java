@@ -144,7 +144,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -160,7 +160,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -177,7 +177,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -193,7 +193,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -210,7 +210,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -226,7 +226,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -243,7 +243,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params, knowledgeBoxModel);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -259,7 +259,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         super(dataWrapper, params);
         this.dataWrapper = dataWrapper;
         this.params2 = params;
-        setGraph(new EdgeListGraph(graphWrapper.getGraph()));
+        setGraph(new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**

@@ -188,6 +188,25 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
+     * Constructs a copy of the given graph, optionally with its own node objects. With {@code copyNodes} false this
+     * is {@link #EdgeListGraph(Graph)}: the new graph shares the given graph's node objects. With it true, the nodes
+     * of the new graph are fresh copies of the given graph's nodes, equal to them (same name, type, and categories,
+     * so they index the same data columns) and in the same positions, so that a position afterwards set on either
+     * graph's nodes, by a layout or by dragging in a workbench, is not seen through the other. See
+     * {@link GraphUtils#detachNodes}.
+     *
+     * <p>Node positions live on node objects, so graphs that share node objects share a layout. Pass true when the
+     * new graph is to be a session box's own graph and the given one belongs to another box or to a data set.</p>
+     *
+     * @param graph     the graph to copy
+     * @param copyNodes true to give the copy its own node objects
+     * @throws IllegalArgumentException if any.
+     */
+    public EdgeListGraph(Graph graph, boolean copyNodes) throws IllegalArgumentException {
+        this(copyNodes ? GraphUtils.detachNodes(graph) : graph);
+    }
+
+    /**
      * Constructs a new graph, with no edges, using the given variable names.
      *
      * @param nodes a {@link java.util.List} object

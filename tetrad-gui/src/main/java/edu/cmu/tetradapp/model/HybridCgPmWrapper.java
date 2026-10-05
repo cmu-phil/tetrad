@@ -2,8 +2,10 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -65,7 +67,13 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
         Objects.requireNonNull(params, "params");
 
         if (dataSet != null) {
-            graph = GraphUtils.replaceNodes(graph, dataSet.getVariables());
+            // Take the variable types (and categories) from the data, but give the model its own node objects
+            // carrying the input graph's layout. replaceNodes alone made the model's nodes the data set's variable
+            // objects, shared with every other box on that data, so this box showed whatever layout was last set
+            // through them, and the layout of the input graph was lost.
+            Graph input = graph;
+            graph = new EdgeListGraph(GraphUtils.replaceNodes(graph, dataSet.getVariables()), true);
+            LayoutUtil.arrangeBySourceGraph(graph, input);
         }
 
         final List<Node> nodeOrder = new ArrayList<>(graph.getNodes());

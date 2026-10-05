@@ -96,14 +96,14 @@ public class SemGraphWrapper implements GraphSource,
             List<Graph> graphs = simulation.getGraphs();
             this.graphs = new ArrayList<>();
             for (Graph graph : graphs) {
-                this.graphs.add(new SemGraph(graph));
+                this.graphs.add(new SemGraph(ownCopy(graph)));
             }
 
             this.numModels = this.graphs.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
-            setGraph(new SemGraph(graphSource.getGraph()));
+            setGraph(new SemGraph(ownCopy(graphSource.getGraph())));
         }
 
         log();
@@ -119,6 +119,29 @@ public class SemGraphWrapper implements GraphSource,
             throw new NullPointerException("MAG must not be null.");
         }
         setSemGraph(graph);
+        this.parameters = new Parameters();
+        log();
+    }
+
+    /**
+     * A copy of the given graph with its own node objects (see {@link EdgeListGraph#EdgeListGraph(Graph, boolean)}),
+     * so that laying this box out does not lay out the box the graph came from. A SEM graph is returned as is: its
+     * error nodes would otherwise be copied as ordinary nodes.
+     */
+    private static Graph ownCopy(Graph graph) {
+        if (graph instanceof SemGraph) return graph;
+        return new EdgeListGraph(graph, true);
+    }
+
+    /**
+     * Constructs a wrapper for the given SEM graph, with its own node objects where the graph is not already a SEM
+     * graph; see {@link #ownCopy}.
+     */
+    private SemGraphWrapper(Graph graph, boolean own) {
+        if (graph == null) {
+            throw new NullPointerException("MAG must not be null.");
+        }
+        setSemGraph(new SemGraph(own ? ownCopy(graph) : graph));
         getSemGraph().setShowErrorTerms(false);
         this.parameters = new Parameters();
         log();
@@ -221,7 +244,7 @@ public class SemGraphWrapper implements GraphSource,
      * @param wrapper a {@link edu.cmu.tetradapp.model.AbstractAlgorithmRunner} object
      */
     public SemGraphWrapper(AbstractAlgorithmRunner wrapper) {
-        this(new SemGraph(wrapper.getResultGraph()));
+        this(wrapper.getResultGraph(), true);
     }
 
     /**
@@ -234,7 +257,7 @@ public class SemGraphWrapper implements GraphSource,
             this.graphs = new ArrayList<>();
 
             for (Graph graph : simulation.getGraphs()) {
-                SemGraph semGraph = new SemGraph(graph);
+                SemGraph semGraph = new SemGraph(ownCopy(graph));
                 semGraph.setShowErrorTerms(false);
                 this.graphs.add(semGraph);
             }
@@ -243,7 +266,9 @@ public class SemGraphWrapper implements GraphSource,
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(wrapper.getVariables()));
+            // Fresh node objects, not the data set's variables, which every graph built from that data set shares:
+            // positions set on them here would otherwise be seen by every other box on the data.
+            setGraph(new EdgeListGraph(new EdgeListGraph(wrapper.getVariables()), true));
         }
 
         LayoutUtil.defaultLayout(getGraph());
@@ -255,7 +280,7 @@ public class SemGraphWrapper implements GraphSource,
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
      */
     public SemGraphWrapper(BayesPmWrapper wrapper) {
-        this(new SemGraph(wrapper.getBayesPm().getDag()));
+        this(wrapper.getBayesPm().getDag(), true);
     }
 
     /**
@@ -264,7 +289,7 @@ public class SemGraphWrapper implements GraphSource,
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
      */
     public SemGraphWrapper(BayesImWrapper wrapper) {
-        this(new SemGraph(wrapper.getBayesIm().getBayesPm().getDag()));
+        this(wrapper.getBayesIm().getBayesPm().getDag(), true);
     }
 
     /**
@@ -273,7 +298,7 @@ public class SemGraphWrapper implements GraphSource,
      * @param wrapper a {@link edu.cmu.tetradapp.model.BayesEstimatorWrapper} object
      */
     public SemGraphWrapper(BayesEstimatorWrapper wrapper) {
-        this(new SemGraph(wrapper.getEstimatedBayesIm().getBayesPm().getDag()));
+        this(wrapper.getEstimatedBayesIm().getBayesPm().getDag(), true);
     }
 
     /**
@@ -310,7 +335,7 @@ public class SemGraphWrapper implements GraphSource,
      * @param wrapper a {@link edu.cmu.tetradapp.model.RegressionRunner} object
      */
     public SemGraphWrapper(RegressionRunner wrapper) {
-        this(new SemGraph(wrapper.getResultGraph()));
+        this(wrapper.getResultGraph(), true);
     }
 
     /**

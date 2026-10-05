@@ -38,6 +38,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
@@ -79,6 +80,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * The graph list.
      */
     List<Graph> graphList = new ArrayList<>();
+    /**
+     * The results of the previous search in this box, kept only as a layout reference for the next one when the
+     * session recreates the runner (see the copy constructor); otherwise the reference is graphList itself. Not
+     * saved with the session, which saves graphList.
+     */
+    private transient List<Graph> layoutReference;
     BlockSpec blockSpec = null;
     /**
      * The data model.
@@ -140,6 +147,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this.parameters = parameters;
 
         this.userAlgoSelections.putAll(runner.userAlgoSelections);
+
+        // The previous results are the layout reference for the next search, so the layout survives the session
+        // recreating this box (e.g. on Execute after an upstream change). They are not this runner's results.
+        if (runner.graphList != null && !runner.graphList.isEmpty()) {
+            this.layoutReference = new ArrayList<>(runner.graphList);
+        }
     }
 
     //===========================CONSTRUCTORS===========================//
@@ -452,6 +465,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public void execute() {
         long start = System.currentTimeMillis();
 
+        // The results of the previous search in this box, for laying out the new ones; see the layout pass below.
+        List<Graph> previous = !this.graphList.isEmpty() ? new ArrayList<>(this.graphList)
+                : this.layoutReference != null ? this.layoutReference : new ArrayList<>();
+        this.layoutReference = null;
+
         this.graphList.clear();
         this.resultNames.clear();
         this.graphSubtitle.clear();
@@ -518,14 +536,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
             Graph graph;
             try {
-                graph = algo.search(null, this.parameters);
-                graphSubtitle.put(graph, null);
+                graph = GraphUtils.detachNodes(algo.search(null, this.parameters));
                 resultNames.add("Oracle Result");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            LayoutUtil.defaultLayoutConditional(graph);
             graphList.add(graph);
             graphSubtitle.put(graph, "");
         }
@@ -578,8 +594,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     try {
-                        graphList.add(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
-                        graphSubtitle.put(graphList.getLast(), noteForAggregate(sub));
+                        Graph graph = GraphUtils.detachNodes(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
+                        graphList.add(graph);
+                        graphSubtitle.put(graph, noteForAggregate(sub));
                         resultNames.add("Multi-dataset Algorithm");
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
@@ -656,8 +673,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 try {
                     // Passing the DataModelList itself is the request to pool; see
                     // AbstractBootstrapAlgorithm.searchPooled.
-                    Graph graph = algo.search(dataModelList, this.parameters);
-                    LayoutUtil.defaultLayoutConditional(graph);
+                    Graph graph = GraphUtils.detachNodes(algo.search(dataModelList, this.parameters));
                     graphList.add(graph);
                     graphSubtitle.put(graph, noteForAggregate(dataModelList));
                     resultNames.add("Pooled (" + dataModelList.size() + " data sets)");
@@ -735,8 +751,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     Graph graph;
                     try {
-                        graph = algo.search(data, this.parameters);
-                        LayoutUtil.defaultLayoutConditional(graph);
+                        graph = GraphUtils.detachNodes(algo.search(data, this.parameters));
                         graphList.add(graph);
                         graphSubtitle.put(graph, noteFor(data));
 
@@ -754,21 +769,45 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             this.elapsedTime = stop - start;
         }
 
-        // Final layout pass. Lagged (time-series) graphs are ALWAYS laid out by lag index - current slice at the
-        // bottom, earlier lags in rows above - whether the lag came from the algorithm's timeLag parameter or from
-        // pre-lagged data, and whether or not knowledge tiers are present: the knowledge here is the user's base
-        // (unlagged) knowledge, so laying a lagged graph out by its tiers misplaces or drops the lagged nodes, and
-        // the default layout hides the lag structure, which is the main thing a time-series graph is for. (This pass
-        // previously overwrote the by-index layout the bootstrap base class had already applied.) Other graphs are
-        // laid out by knowledge tiers if any, else by the default layout.
-        for (Graph graph : graphList) {
+        // Layout pass. Each result above was detached (GraphUtils.detachNodes), so its nodes are its own: it holds
+        // no positions from anywhere else, and the positions the workbench writes to it reach nothing else. The
+        // results of a search used to be built on the data set's variable objects, which every box on that data
+        // shares, so with the conditional default layout a box inherited the layout of whichever box on the same
+        // data had laid out last, however different its graph. Fixed 2026-10-5.
+        //
+        // Lagged (time-series) graphs are ALWAYS laid out by lag index - current slice at the bottom, earlier lags
+        // in rows above - whether the lag came from the algorithm's timeLag parameter or from pre-lagged data, and
+        // whether or not knowledge tiers are present: the knowledge here is the user's base (unlagged) knowledge, so
+        // laying a lagged graph out by its tiers misplaces or drops the lagged nodes, and the default layout hides
+        // the lag structure, which is the main thing a time-series graph is for.
+        //
+        // Any other result is arranged like the corresponding result of the previous search in this box, when that
+        // covers all of its nodes, so that searching again (other settings, another algorithm) keeps the layout the
+        // user has in this box; failing that, like the source graph, when there is one and it covers all of the
+        // nodes, so that a search run against a known graph lines up with it; failing that, it is left unpositioned
+        // and the workbench lays it out, with the real label sizes, when it is first shown.
+        for (int i = 0; i < graphList.size(); i++) {
+            Graph graph = graphList.get(i);
+
             if (LayoutUtil.isLaggedGraph(graph)) {
                 LayoutUtil.layoutByKnowledgeIndices(graph);
-            } else if (knowledge != null && knowledge.getNumTiers() > 0) {
-//                LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
-                LayoutUtil.defaultLayoutConditional(graph);
-            } else {
-                LayoutUtil.defaultLayoutConditional(graph);
+                continue;
+            }
+
+            Graph reference = previous.isEmpty() ? null : previous.get(Math.min(i, previous.size() - 1));
+
+            if (reference != null && LayoutUtil.arrangeBySourceGraph(graph, reference)) {
+                continue;
+            }
+
+            if (this.sourceGraph != null && LayoutUtil.arrangeBySourceGraph(graph, this.sourceGraph)) {
+                continue;
+            }
+
+            // A partial match above may have positioned some nodes; clear them so the workbench lays out the whole
+            // graph rather than treating it as positioned.
+            for (Node node : graph.getNodes()) {
+                node.setCenter(-1, -1);
             }
         }
 
