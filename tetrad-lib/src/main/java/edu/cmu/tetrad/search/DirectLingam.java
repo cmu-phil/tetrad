@@ -49,8 +49,10 @@ import static edu.cmu.tetrad.util.TMath.*;
  *
  * <p>Several data sets over the same variables (for instance, the completed data sets of a multiple imputation, or
  * several samples believed to share one structure) can be given in place of one. The ordering is then found by the
- * same procedure with the pairwise objective summed over the data sets, each residualized on its own; the score
- * supplied for parent selection should then be one pooled over the same data sets, such as the IMaGES score.</p>
+ * same procedure with the pairwise objective summed over the data sets, each residualized on its own and each
+ * weighted by its share of the total sample size (as in the multi-group DirectLiNGAM of the lingam Python package);
+ * the score supplied for parent selection should then be one pooled over the same data sets, such as the IMaGES
+ * score.</p>
  *
  * <p>This implementation follows the general strategy of the following references:</p>
  *
@@ -256,8 +258,9 @@ public class DirectLingam {
      *
      * <p>Among the variables not yet ordered, this method selects the variable that
      * minimizes the DirectLiNGAM pairwise objective computed from the current residual
-     * system, summed over the data sets. Smaller values indicate a variable that
-     * appears more nearly exogenous.</p>
+     * system, summed over the data sets with each weighted by its share of the total
+     * sample size. Smaller values indicate a variable that appears more nearly
+     * exogenous. With one data set the weight is exactly 1.</p>
      *
      * @param remaining    the variables not yet ordered
      * @param residualMaps the current residualized data vectors for those variables, one map per data set
@@ -267,10 +270,18 @@ public class DirectLingam {
         Node bestNode = remaining.getFirst();
         double bestScore = Double.POSITIVE_INFINITY;
 
+        double totalRows = 0.0;
+
+        for (DataSet dataset : this.datasets) {
+            totalRows += dataset.getNumRows();
+        }
+
         for (Node x : remaining) {
             double currentScore = 0.0;
 
-            for (Map<Node, double[]> residualMap : residualMaps) {
+            for (int k = 0; k < residualMaps.size(); k++) {
+                Map<Node, double[]> residualMap = residualMaps.get(k);
+                double weight = this.datasets.get(k).getNumRows() / totalRows;
                 double entropyX = maxEntApprox(residualMap.get(x));
 
                 for (Node y : remaining) {
@@ -285,7 +296,7 @@ public class DirectLingam {
                     lr += maxEntApprox(rxy) - maxEntApprox(ryx);
 
                     double clipped = min(0.0, lr);
-                    currentScore += clipped * clipped;
+                    currentScore += weight * clipped * clipped;
                 }
             }
 
