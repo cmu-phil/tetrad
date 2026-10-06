@@ -447,8 +447,22 @@ public class MarkovCheckEditor extends JPanel {
             }
         };
 
+        // Says which data set the tables are computed from, and lets the user change it, when the data box
+        // holds more than one. Null (nothing shown) when there is only one.
+        Box dataChooser = DataSetChooser.create(model.getDataModels(), model.getDataIndex(), index -> {
+            DataType before = getDataType();
+            model.setDataIndex(index);
+
+            // The tests on offer depend on the kind of data. Left alone when the kind is unchanged, since
+            // rebuilding the list resets the test through the combo box's listener.
+            if (getDataType() != before) refreshTestList();
+
+            // Rebuilds the test on the chosen data set, then reruns the check from scratch.
+            refreshResult(model, tableIndep, tableDep, tableModelIndep, tableModelDep, fraction, true);
+        });
+
         initComponents(params, sample, addSample, pane, conditioningSetsLabel, removeExtraneousVariables,
-                verbose, fractionSampleLabel);
+                verbose, fractionSampleLabel, dataChooser);
     }
 
     /**
@@ -786,7 +800,11 @@ public class MarkovCheckEditor extends JPanel {
     private void initComponents(JButton params, JButton resample, JButton addSample, JTabbedPane pane,
                                 JLabel conditioningSetsLabel, JCheckBox removeExtranenousVariables,
                                 JCheckBox verbose,
-                                JLabel fractionSampleLabel) {
+                                JLabel fractionSampleLabel, Box dataChooser) {
+        // A row of its own above the others; an empty, zero-height box when there is nothing to choose.
+        Box dataRow = dataChooser != null ? dataChooser : Box.createHorizontalBox();
+        int dataRowGap = dataChooser != null ? 6 : 0;
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -794,6 +812,7 @@ public class MarkovCheckEditor extends JPanel {
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                 .addComponent(pane)
+                                .addComponent(dataRow, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                 .addGroup(layout.createSequentialGroup()
@@ -826,6 +845,8 @@ public class MarkovCheckEditor extends JPanel {
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
+                                .addComponent(dataRow, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addGap(dataRowGap)
                                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(testLabel)
                                         .addComponent(indTestJComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)

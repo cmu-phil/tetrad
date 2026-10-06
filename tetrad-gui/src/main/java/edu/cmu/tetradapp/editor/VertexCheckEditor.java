@@ -462,6 +462,38 @@ public class VertexCheckEditor extends JPanel {
         }
     }
 
+    /**
+     * Switches the check to another of the data box's data sets and reruns it. The test list and the uniformity
+     * choices depend on the kind of data, so both are rebuilt; an open repair is closed first, exactly as if the
+     * user had left the Repair tab, since it holds a test on the previous data set.
+     */
+    private void chooseData(int index) {
+        if (rightTabs != null && rightTabs.getSelectedIndex() == TAB_REPAIR) {
+            rightTabs.setSelectedIndex(TAB_CHECK);
+        }
+
+        model.setDataIndex(index);
+
+        boolean rowData = model.getDataModel() instanceof DataSet;
+        if (!rowData && VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(model.getUniformityTest())) {
+            model.setUniformityTest(VertexCheckIndTestModel.KOLMOGOROV_SMIRNOFF);
+        }
+
+        initializing = true;
+        try {
+            modelUniformityTest.setModel(new DefaultComboBoxModel<>(rowData
+                    ? new String[]{"Use KS", "Use AD", "Use WB"}
+                    : new String[]{"Use KS", "Use AD"}));
+            modelUniformityTest.setSelectedIndex(uniformityTestIndex(model.getUniformityTest()));
+            refreshTestList();
+        } finally {
+            initializing = false;
+        }
+
+        setTestFromCombo();
+        resetResultsUI();
+    }
+
     private void buildControls() {
         Box controls = Box.createHorizontalBox();
         controls.add(new JLabel("Independence Test:"));
@@ -494,6 +526,15 @@ public class VertexCheckEditor extends JPanel {
         essBlocksButton.addActionListener(e -> chooseEssBlockColumns());
 
         Box controls2 = Box.createHorizontalBox();
+
+        // Says which data set the tables are computed from, and lets the user change it, when the data box
+        // holds more than one. Null (nothing shown) when there is only one.
+        Box dataChooser = DataSetChooser.create(model.getDataModels(), model.getDataIndex(), this::chooseData);
+        if (dataChooser != null) {
+            controls2.add(dataChooser);
+            controls2.add(Box.createHorizontalStrut(12));
+        }
+
         controls2.add(experimentalToggle);
         controls2.add(perFactEssCheckBox);
         controls2.add(essBlocksButton);

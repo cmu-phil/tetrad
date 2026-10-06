@@ -160,8 +160,26 @@ public final class ErrorDialogs {
         summaryArea.setBorder(null);
         summaryArea.setFont(UIManager.getFont("Label.font"));
         summaryArea.setColumns(50);
-        summaryArea.setAlignmentX(Component.LEFT_ALIGNMENT);
-        top.add(summaryArea);
+
+        // A wrapping text area reports its height for the width it currently has, and before it is laid out that
+        // is none, so it claims one line per paragraph. pack() then sizes the dialog for one line, and when the
+        // text wraps it overflows the dialog or runs under the buttons. Give it its width first so that the height
+        // is the wrapped height, and scroll a message longer than a dozen lines rather than growing the dialog.
+        int summaryWidth = summaryArea.getPreferredSize().width;
+        summaryArea.setSize(summaryWidth, Short.MAX_VALUE);
+        int summaryHeight = summaryArea.getPreferredSize().height;
+        int lineHeight = summaryArea.getFontMetrics(summaryArea.getFont()).getHeight();
+
+        JScrollPane summaryScroll = new JScrollPane(summaryArea,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        summaryScroll.setBorder(null);
+        summaryScroll.setOpaque(false);
+        summaryScroll.getViewport().setOpaque(false);
+        summaryScroll.setPreferredSize(new Dimension(
+                summaryWidth + summaryScroll.getVerticalScrollBar().getPreferredSize().width,
+                Math.min(summaryHeight, 12 * lineHeight)));
+        summaryScroll.setAlignmentX(Component.LEFT_ALIGNMENT);
+        top.add(summaryScroll);
         body.add(top, BorderLayout.NORTH);
 
         JTextArea detailsArea = new JTextArea(details, 14, 70);
@@ -194,16 +212,34 @@ public final class ErrorDialogs {
             boolean show = detailsToggle.isSelected();
             detailsScroll.setVisible(show);
             detailsToggle.setText(show ? "Details <<" : "Details >>");
-            dialog.pack();
-            dialog.setLocationRelativeTo(owner);
+            packWithinScreen(dialog, owner);
         });
         copyButton.addActionListener(e -> Toolkit.getDefaultToolkit().getSystemClipboard()
                 .setContents(new StringSelection(details), null));
         closeButton.addActionListener(e -> dialog.dispose());
         dialog.getRootPane().setDefaultButton(closeButton);
 
-        dialog.pack();
-        dialog.setLocationRelativeTo(owner);
+        packWithinScreen(dialog, owner);
+        dialog.setMinimumSize(dialog.getSize());
         dialog.setVisible(true);
+    }
+
+    /**
+     * Packs the dialog, holds it to the usable area of the screen it will appear on (the details pane takes up any
+     * shortfall, by scrolling), and centers it on the owner.
+     */
+    private static void packWithinScreen(JDialog dialog, Window owner) {
+        dialog.pack();
+
+        GraphicsConfiguration gc = owner != null ? owner.getGraphicsConfiguration()
+                : dialog.getGraphicsConfiguration();
+        Rectangle screen = gc.getBounds();
+        Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        int maxWidth = screen.width - insets.left - insets.right - 40;
+        int maxHeight = screen.height - insets.top - insets.bottom - 40;
+
+        Dimension size = dialog.getSize();
+        dialog.setSize(Math.min(size.width, maxWidth), Math.min(size.height, maxHeight));
+        dialog.setLocationRelativeTo(owner);
     }
 }

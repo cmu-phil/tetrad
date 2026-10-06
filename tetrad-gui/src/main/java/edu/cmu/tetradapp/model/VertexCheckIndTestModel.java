@@ -68,7 +68,16 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public static final String WILD_BOOTSTRAP = "wildBootstrap";
     @Serial
     private static final long serialVersionUID = 1L;
-    private final DataModel dataModel;
+    private DataModel dataModel;
+    /**
+     * The data models the parent data box offers, in order; the check runs on one of them. Null in sessions saved
+     * before the choice existed, in which case dataModel is the only one.
+     */
+    private List<DataModel> dataModels;
+    /**
+     * The index, in dataModels, of the data model being checked.
+     */
+    private int dataIndex;
     private final Parameters parameters;
     private final Map<String, VertexSummary> summariesByVertex = new LinkedHashMap<>();
     private final Map<String, List<IndependenceResult>> resultsByVertex = new LinkedHashMap<>();
@@ -105,6 +114,13 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     public VertexCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, KnowledgeBoxModel knowlegeBox,
                                    Parameters parameters) {
         this.dataModel = dataModel.getSelectedDataModel();
+        this.dataModels = new ArrayList<>(dataModel.getDataModelList());
+
+        // By identity, not equals(): equal-content data sets (and equals() on large ones) should not matter.
+        for (int i = 0; i < this.dataModels.size(); i++) {
+            if (this.dataModels.get(i) == this.dataModel) this.dataIndex = i;
+        }
+
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
 
@@ -214,6 +230,43 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     public DataModel getDataModel() {
         return dataModel;
+    }
+
+    /**
+     * The data models that can be checked, in the order of the parent data box.
+     *
+     * @return the data models; just the one in use for sessions saved before the choice existed.
+     */
+    public List<DataModel> getDataModels() {
+        return dataModels == null ? List.of(dataModel) : dataModels;
+    }
+
+    /**
+     * The index, in getDataModels(), of the data model being checked.
+     *
+     * @return the index.
+     */
+    public int getDataIndex() {
+        return dataModels == null ? 0 : dataIndex;
+    }
+
+    /**
+     * Chooses the data model to check. Results, cached queries and the per-fact ESS block assignment all belong to
+     * the previous data model and are dropped. The independence test in use was built on the previous data model
+     * too, so the caller must build a new one and pass it to setIndependenceTest before running the check again.
+     *
+     * @param index the index, in getDataModels(), of the data model to check.
+     */
+    public void setDataIndex(int index) {
+        if (index < 0 || index >= getDataModels().size()) {
+            throw new IllegalArgumentException("No data model at index " + index + ".");
+        }
+
+        this.dataModel = getDataModels().get(index);
+        this.dataIndex = index;
+        this.essBlockIds = null;
+        this.cachedQueries.clearCaches();
+        clearResults();
     }
 
     public Parameters getParameters() {
