@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -53,6 +54,11 @@ import static edu.cmu.tetrad.util.TMath.*;
  * weighted by its share of the total sample size (as in the multi-group DirectLiNGAM of the lingam Python package);
  * the score supplied for parent selection should then be one pooled over the same data sets, such as the IMaGES
  * score.</p>
+ *
+ * <p>Background knowledge is honored (see {@link #setKnowledge(Knowledge)}). Tiers and required edges constrain
+ * the ordering: a variable is not placed while a variable from an earlier tier, or one of its required parents,
+ * is still waiting. Forbidden and required edges, including those a tier's "forbidden within" setting implies,
+ * constrain parent selection.</p>
  *
  * <p>This implementation follows the general strategy of the following references:</p>
  *
@@ -96,6 +102,16 @@ public class DirectLingam {
      * among variables that have already been placed earlier in the ordering.
      */
     private final Map<Node, GrowShrinkTree> gsts;
+
+    /**
+     * For each variable, the tier the knowledge puts it in; variables in no tier are absent.
+     */
+    private final Map<Node, Integer> tiers = new HashMap<>();
+
+    /**
+     * For each variable, the variables the knowledge requires as its parents; variables with none are absent.
+     */
+    private final Map<Node, List<Node>> requiredParents = new HashMap<>();
 
     /**
      * Constructs a DirectLiNGAM search object from a data set and a score.
@@ -149,6 +165,90 @@ public class DirectLingam {
             index.put(node, i++);
             this.gsts.put(node, new GrowShrinkTree(score, index, node));
         }
+    }
+
+    /**
+     * Sets background knowledge. All of it is honored, in the two places it can act.
+     *
+     * <ul>
+     *   <li><i>The ordering.</i> A variable is a candidate for the next place only if no variable still
+     *   waiting is in an earlier tier and none is one of its required parents. Variables in no tier are
+     *   unconstrained by tiers. The pairwise objective itself is unchanged and still compares each candidate
+     *   with every waiting variable.</li>
+     *   <li><i>Parent selection.</i> Forbidden parents are never chosen and required parents always are; this
+     *   covers explicit forbidden and required edges and whatever the tiers' "forbidden within" and "can cause
+     *   only next tier" settings forbid.</li>
+     * </ul>
+     *
+     * <p>If the knowledge is true of the generating model, restricting the candidates loses nothing: among the
+     * waiting variables at least one that is exogenous always remains a candidate. If it is false, the search
+     * follows it anyway. Knowledge about variables not in the data is ignored. Knowledge with no possible
+     * ordering (required edges forming a cycle, or running against the tiers) makes {@link #search()} throw.</p>
+     *
+     * @param knowledge the knowledge; null for none
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) knowledge = new Knowledge();
+
+        this.tiers.clear();
+        this.requiredParents.clear();
+
+        for (Node node : this.variables) {
+            int tier = knowledge.isInWhichTier(node);
+            if (tier >= 0) this.tiers.put(node, tier);
+
+            List<Node> required = new ArrayList<>();
+            List<Node> forbidden = new ArrayList<>();
+
+            for (Node parent : this.variables) {
+                if (parent == node) continue;
+                if (knowledge.isRequired(parent.getName(), node.getName())) required.add(parent);
+                if (knowledge.isForbidden(parent.getName(), node.getName())) forbidden.add(parent);
+            }
+
+            if (!required.isEmpty()) this.requiredParents.put(node, required);
+            this.gsts.get(node).setKnowledge(required, forbidden);
+        }
+    }
+
+    /**
+     * The variables among those not yet ordered that the knowledge allows to be placed next: those with no
+     * waiting variable in an earlier tier and no waiting required parent. All of them when there is no knowledge.
+     */
+    private List<Node> candidates(List<Node> remaining) {
+        if (this.tiers.isEmpty() && this.requiredParents.isEmpty()) return remaining;
+
+        int earliest = Integer.MAX_VALUE;
+
+        for (Node node : remaining) {
+            Integer tier = this.tiers.get(node);
+            if (tier != null && tier < earliest) earliest = tier;
+        }
+
+        List<Node> candidates = new ArrayList<>();
+
+        for (Node node : remaining) {
+            Integer tier = this.tiers.get(node);
+            if (tier != null && tier > earliest) continue;
+
+            boolean parentWaiting = false;
+
+            for (Node parent : this.requiredParents.getOrDefault(node, List.of())) {
+                if (remaining.contains(parent)) {
+                    parentWaiting = true;
+                    break;
+                }
+            }
+
+            if (!parentWaiting) candidates.add(node);
+        }
+
+        if (candidates.isEmpty()) {
+            throw new IllegalArgumentException("DirectLiNGAM: the knowledge allows no causal order. Each of these "
+                    + "variables must come after another of them, by a required edge or by the tiers: " + remaining);
+        }
+
+        return candidates;
     }
 
     /**
@@ -256,7 +356,8 @@ public class DirectLingam {
     /**
      * Returns the next variable to place in the causal ordering.
      *
-     * <p>Among the variables not yet ordered, this method selects the variable that
+     * <p>Among the variables not yet ordered that the knowledge allows next (all of them
+     * when there is none; see {@link #setKnowledge(Knowledge)}), this method selects the variable that
      * minimizes the DirectLiNGAM pairwise objective computed from the current residual
      * system, summed over the data sets with each weighted by its share of the total
      * sample size. Smaller values indicate a variable that appears more nearly
@@ -267,7 +368,10 @@ public class DirectLingam {
      * @return the next variable to place in the causal ordering
      */
     private Node getNext(List<Node> remaining, List<Map<Node, double[]>> residualMaps) {
-        Node bestNode = remaining.getFirst();
+        List<Node> candidates = candidates(remaining);
+        if (candidates.size() == 1) return candidates.getFirst();
+
+        Node bestNode = candidates.getFirst();
         double bestScore = Double.POSITIVE_INFINITY;
 
         double totalRows = 0.0;
@@ -276,7 +380,7 @@ public class DirectLingam {
             totalRows += dataset.getNumRows();
         }
 
-        for (Node x : remaining) {
+        for (Node x : candidates) {
             double currentScore = 0.0;
 
             for (int k = 0; k < residualMaps.size(); k++) {
