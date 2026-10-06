@@ -46,7 +46,9 @@ import java.util.Random;
  * category codes and continuous imputations respect the observed distribution (no Gaussianity assumption). The
  * chain is initialized by marginal hot-deck draws and swept a fixed number of times.
  * <p>
- * "Lite" caveats, flagged: the conditional models are linear and additive (no interactions); a discrete target is
+ * "Lite" caveats, flagged: the conditional models are additive (no interactions), and linear unless powers of the
+ * continuous predictors are asked for (see {@link #setPredictorDegree(int)}); donors for a continuous target are
+ * matched on its fitted mean alone unless more is asked for (see {@link #setTargetDegree(int)}); a discrete target is
  * matched on linear fits to its category indicators, not on a multinomial model; ordered categories are treated
  * like unordered ones, which is valid but ignores the order; and as with {@link MvnImputer} this is improper MI (no
  * parameter draws).
@@ -94,6 +96,37 @@ public final class MiceLiteImputer implements MultipleImputer {
      * give fewer, only the highest-scoring ones are used. 0 means no limit. See {@link #setRowsPerPredictor(int)}.
      */
     private int rowsPerPredictor = 3;
+
+    /**
+     * The highest power of a continuous predictor used in the regressions; 1 means linear. See
+     * {@link #setPredictorDegree(int)}.
+     */
+    private int predictorDegree = 1;
+
+    /**
+     * The number of powers of a continuous variable whose fitted values donors are matched on when it is imputed;
+     * 1 means the variable itself only. See {@link #setTargetDegree(int)}.
+     */
+    private int targetDegree = 1;
+
+    /**
+     * For each column, the number of terms it contributes as a number: the predictor degree if it is continuous,
+     * otherwise 1. Set at the start of each call to impute.
+     */
+    private int[] powers;
+
+    /**
+     * For each column, the number of fitted values donors are matched on when it is imputed as a number: the
+     * target degree if it is continuous, otherwise 1. Set at the start of each call to impute.
+     */
+    private int[] moments;
+
+    /**
+     * For each continuous column, the mean and standard deviation of its observed values, by which it is
+     * standardized before powers are taken. Set at the start of each call to impute.
+     */
+    private double[] center;
+    private double[] spread;
 
     /**
      * What went less than cleanly in the last call to impute, with the number of column updates each applied to.
@@ -179,6 +212,56 @@ public final class MiceLiteImputer implements MultipleImputer {
     }
 
     /**
+     * Sets the highest power of a continuous predictor used in the regressions. With degree d, a continuous
+     * predictor x enters as z, z^2, ..., z^d, where z is x standardized by the mean and standard deviation of its
+     * observed values. The default, 1, is the linear model. A degree of 2 or 3 lets the fitted value of a variable
+     * follow a curved (including non-monotone) dependence on a predictor, such as y = x^2 + e, which a linear fit
+     * misses entirely. Discrete predictors are unaffected.
+     * <p>
+     * Caveats: the model is still additive, so a pure interaction (y = x * w + e) is not captured; each continuous
+     * predictor now costs d terms against the row limit (see {@link #setRowsPerPredictor(int)}), so fewer
+     * variables may be used on small samples; and this only helps where the dependence shows in the mean of the
+     * variable being imputed given the predictor, which for y = x^2 + e is true of y given x but not of x given y.
+     *
+     * @param predictorDegree the degree, from 1 to 5
+     */
+    public void setPredictorDegree(int predictorDegree) {
+        if (predictorDegree < 1 || predictorDegree > 5) {
+            throw new IllegalArgumentException("Predictor degree must be from 1 to 5: " + predictorDegree);
+        }
+
+        this.predictorDegree = predictorDegree;
+    }
+
+    /**
+     * Sets the number of powers of a continuous variable whose fitted values donors are matched on when that
+     * variable is imputed. With degree d, a regression is fit for each of z, z^2, ..., z^d, where z is the variable
+     * standardized by the mean and standard deviation of its observed values, and donors are the observed rows
+     * nearest in the resulting vector of fitted values. Each power is scaled to unit variance, so a power the
+     * predictors cannot predict contributes little to the distance. The default, 1, is ordinary predictive mean
+     * matching.
+     * <p>
+     * A degree of 2 matches on the fitted spread as well as the fitted mean, which matters when the predictors say
+     * nothing about the variable's mean but do say how far from it the variable is. The case in point is imputing x
+     * where y = x^2 + e and x is symmetric about zero: the mean of x given y is zero whatever y is, so matching on
+     * the mean picks donors without regard to y, while the mean of x^2 given y tracks y. Since every variable in a
+     * chain is imputed from its effects as well as its causes, this is the counterpart of
+     * {@link #setPredictorDegree(int)} for the other direction. Discrete variables are unaffected.
+     * <p>
+     * Caveat: the powers of the variable are themselves fit by regressions that are linear in the predictor terms,
+     * so this pays off most with the predictor degree raised as well.
+     *
+     * @param targetDegree the degree, from 1 to 4
+     */
+    public void setTargetDegree(int targetDegree) {
+        if (targetDegree < 1 || targetDegree > 4) {
+            throw new IllegalArgumentException("Target degree must be from 1 to 4: " + targetDegree);
+        }
+
+        this.targetDegree = targetDegree;
+    }
+
+    /**
      * What went less than cleanly in the last call to impute: fallbacks to marginal hot-deck draws, predictors left
      * out as constant, and fits that were possible only because of the ridge. Each entry names the variable being
      * imputed and says in how many of its updates the event occurred. Empty if every regression was well posed.
@@ -256,6 +339,29 @@ public final class MiceLiteImputer implements MultipleImputer {
                 throw new IllegalArgumentException("Variable " + dataSet.getVariables().get(j).getName()
                         + " has no observed values; it cannot be imputed.");
             }
+        }
+
+        this.powers = new int[p];
+        this.moments = new int[p];
+        this.center = new double[p];
+        this.spread = new double[p];
+
+        for (int j = 0; j < p; j++) {
+            this.powers[j] = discrete[j] ? 1 : this.predictorDegree;
+            this.moments[j] = discrete[j] ? 1 : this.targetDegree;
+            this.spread[j] = 1.0;
+            List<Integer> obs = obsRows.get(j);
+            if (discrete[j] || obs.isEmpty()) continue;
+
+            double mu = 0.0;
+            for (int i : obs) mu += base[i][j];
+            mu /= obs.size();
+            double ss = 0.0;
+            for (int i : obs) ss += (base[i][j] - mu) * (base[i][j] - mu);
+            double sd = Math.sqrt(ss / obs.size());
+
+            this.center[j] = mu;
+            if (sd > 1e-12 * (1.0 + Math.abs(mu))) this.spread[j] = sd;
         }
 
         this.events.clear();
@@ -347,14 +453,15 @@ public final class MiceLiteImputer implements MultipleImputer {
             return;
         }
 
-        // Candidate predictor features: a column as a number, or one indicator per non-reference category.
+        // Candidate predictor features: a column as a number (and, for a continuous column, its higher powers), or
+        // one indicator per non-reference category.
         List<int[]> candidates = new ArrayList<>();
 
         for (int k = 0; k < p; k++) {
             if (!eligible[k]) continue;
 
             if (numCategories[k] == 0) {
-                candidates.add(new int[]{k, -1});
+                for (int d = 1; d <= this.powers[k]; d++) candidates.add(new int[]{k, -d});
             } else {
                 for (int c = 1; c < numCategories[k]; c++) candidates.add(new int[]{k, c});
             }
@@ -457,15 +564,33 @@ public final class MiceLiteImputer implements MultipleImputer {
             event(names[j], "its predictors are nearly collinear; the fit was stabilized by the ridge penalty");
         }
 
-        // One regression per target: the variable itself, or each of its category indicators.
-        int numTargets = numCategories[j] == 0 ? 1 : numCategories[j];
+        // One regression per target: the variable itself (and, for a continuous variable, its higher powers if
+        // asked for), or each of its category indicators.
+        int numTargets = numCategories[j] == 0 ? this.moments[j] : numCategories[j];
         double[] meanY = new double[numTargets];
         double[][] b = new double[numTargets][q];
 
+        // The weight of each target in the donor distance. Powers of a variable are on different scales, so each
+        // is weighted by the inverse of its variance; its share of the distance then grows with how well it is
+        // predicted. Otherwise 1, as before.
+        double[] weight = new double[numTargets];
+
         for (int t = 0; t < numTargets; t++) {
-            int category = numCategories[j] == 0 ? -1 : t;
+            int category = numCategories[j] == 0 ? -(t + 1) : t;
             for (int row : obs) meanY[t] += feature(work, row, j, category);
             meanY[t] /= nObs;
+            weight[t] = 1.0;
+
+            if (numCategories[j] == 0 && numTargets > 1) {
+                double ss = 0.0;
+
+                for (int row : obs) {
+                    double d = feature(work, row, j, category) - meanY[t];
+                    ss += d * d;
+                }
+
+                weight[t] = ss > 0 ? nObs / ss : 0.0;
+            }
 
             double[] x = b[t];
 
@@ -538,7 +663,7 @@ public final class MiceLiteImputer implements MultipleImputer {
 
                 for (int t = 0; t < numTargets; t++) {
                     double d = fittedObs[a][t] - fit[t];
-                    dist += d * d;
+                    dist += weight[t] * d * d;
                 }
 
                 for (int h = 0; h < k; h++) {
@@ -571,7 +696,7 @@ public final class MiceLiteImputer implements MultipleImputer {
         int allTerms = 0;
 
         for (int k = 0; k < p; k++) {
-            if (k != j) allTerms += numCategories[k] == 0 ? 1 : numCategories[k] - 1;
+            if (k != j) allTerms += numCategories[k] == 0 ? this.powers[k] : numCategories[k] - 1;
         }
 
         int maxTerms = this.rowsPerPredictor > 0 ? Math.max(1, nObs / this.rowsPerPredictor) : Integer.MAX_VALUE;
@@ -583,14 +708,14 @@ public final class MiceLiteImputer implements MultipleImputer {
         double[] score = new double[p];
         double[] a = new double[n];
         double[] b = new double[n];
-        int numTargets = numCategories[j] == 0 ? 1 : numCategories[j];
+        int numTargets = numCategories[j] == 0 ? this.moments[j] : numCategories[j];
 
         for (int k = 0; k < p; k++) {
             if (k == j) continue;
-            int numFeatures = numCategories[k] == 0 ? 1 : numCategories[k];
+            int numFeatures = numCategories[k] == 0 ? this.powers[k] : numCategories[k];
 
             for (int f = 0; f < numFeatures; f++) {
-                int category = numCategories[k] == 0 ? -1 : f;
+                int category = numCategories[k] == 0 ? -(f + 1) : f;
 
                 // With the indicator that j is missing, over the rows where k is observed.
                 int count = 0;
@@ -611,7 +736,7 @@ public final class MiceLiteImputer implements MultipleImputer {
                     for (int i : obs) {
                         if (miss[i][k]) continue;
                         a[count] = feature(base, i, k, category);
-                        b[count] = feature(base, i, j, numCategories[j] == 0 ? -1 : t);
+                        b[count] = feature(base, i, j, numCategories[j] == 0 ? -(t + 1) : t);
                         count++;
                     }
 
@@ -634,7 +759,7 @@ public final class MiceLiteImputer implements MultipleImputer {
         int terms = 0;
 
         for (int k : order) {
-            int width = numCategories[k] == 0 ? 1 : numCategories[k] - 1;
+            int width = numCategories[k] == 0 ? this.powers[k] : numCategories[k] - 1;
             if (terms + width > maxTerms && !chosen.isEmpty()) break;
             chosen.add(k);
             terms += width;
@@ -693,11 +818,20 @@ public final class MiceLiteImputer implements MultipleImputer {
     }
 
     /**
-     * The value of a column in a row as a regression feature: the number itself if category is negative, otherwise
-     * the indicator that the (discrete) value is that category.
+     * The value of a column in a row as a regression feature. If category is -1, the number itself; if it is -d
+     * for d of 2 or more, the dth power of the number standardized by the column's observed mean and standard
+     * deviation; otherwise the indicator that the (discrete) value is that category.
      */
-    private static double feature(double[][] work, int row, int column, int category) {
-        if (category < 0) return work[row][column];
+    private double feature(double[][] work, int row, int column, int category) {
+        if (category == -1) return work[row][column];
+
+        if (category < 0) {
+            double z = (work[row][column] - this.center[column]) / this.spread[column];
+            double value = z;
+            for (int d = 1; d < -category; d++) value *= z;
+            return value;
+        }
+
         return Math.round(work[row][column]) == category ? 1.0 : 0.0;
     }
 
