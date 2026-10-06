@@ -91,7 +91,8 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         this(graphWrapper.getGraph(), parameters);
         this.sourceResultName = resultNameOf(graphWrapper);
 
-        // A graph source that carries its own data (a search, a simulation, an estimator) supplies it.
+        // A graph source that carries its own data (a search, a simulation, a Markov or vertex checker)
+        // supplies it.
         this.dataSet = dataOf(graphWrapper);
         this.dataSets = dataSetsOf(graphWrapper);
     }
@@ -117,13 +118,12 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     private static DataSet dataOf(Object source) {
         try {
-            DataModelList list = null;
+            // A Markov or vertex checker: the data set it is checking, which need not be its first.
+            DataModel checked = source instanceof VertexCheckIndTestModel vertexCheck ? vertexCheck.getDataModel()
+                    : source instanceof MarkovCheckIndTestModel markovCheck ? markovCheck.getDataModel() : null;
+            if (checked instanceof DataSet data && data.getNumRows() > 0) return data;
 
-            if (source instanceof DataWrapper dataWrapper) {
-                list = dataWrapper.getDataModelList();
-            } else if (source instanceof GeneralAlgorithmRunner runner) {
-                list = runner.getDataModelList();
-            }
+            List<? extends DataModel> list = dataModelsOf(source);
 
             if (list == null) return null;
 
@@ -144,6 +144,17 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return null;
     }
 
+    /**
+     * The data models the given session model carries, or null if it is not a kind of model that carries any.
+     */
+    private static List<? extends DataModel> dataModelsOf(Object source) {
+        if (source instanceof DataWrapper dataWrapper) return dataWrapper.getDataModelList();
+        if (source instanceof GeneralAlgorithmRunner runner) return runner.getDataModelList();
+        if (source instanceof VertexCheckIndTestModel vertexCheck) return vertexCheck.getDataModels();
+        if (source instanceof MarkovCheckIndTestModel markovCheck) return markovCheck.getDataModels();
+        return null;
+    }
+
     private static String resultNameOf(Object source) {
         return source instanceof GeneralAlgorithmRunner runner ? runner.getSelectedResultName() : null;
     }
@@ -161,13 +172,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         List<DataSet> dataSets = new ArrayList<>();
 
         try {
-            DataModelList list = null;
-
-            if (source instanceof DataWrapper dataWrapper) {
-                list = dataWrapper.getDataModelList();
-            } else if (source instanceof GeneralAlgorithmRunner runner) {
-                list = runner.getDataModelList();
-            }
+            List<? extends DataModel> list = dataModelsOf(source);
 
             if (list != null) {
                 for (DataModel model : list) {
