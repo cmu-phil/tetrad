@@ -1281,10 +1281,9 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
             Arrays.stream(AlgType.values()).forEach(item -> {
                 String name = item.name();
 
-                // These have been moved to the Latent Cluster and Latent Structure buttons.
-                if (name.equals(AlgType.search_for_structure_over_latents.name())) {
-                    return;
-                }
+                // The latent-cluster methods (BPC, FOFC, FTFC, TSC) now live in the Latent Clusters and Latent
+                // Structure boxes, but algorithms that find latents directly from data (Factor Analysis, RLCD) are
+                // still listed here under this type.
 
                 JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
                 radioButton.setActionCommand(name);

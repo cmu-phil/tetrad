@@ -6744,6 +6744,72 @@ Source:
             <span id="resolveAlmostCyclicPaths_value_type">Boolean</span></li>
     </ul>
 
+    === rlcdAllowNonLeafX ===
+    <h3 class="parameter_description" id="rlcdAllowNonLeafX">rlcdAllowNonLeafX</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdAllowNonLeafX_short_desc">RLCD: allow observed variables to act as non-sinks (parents) (default true)</span></li>
+        <li>Long Description: <span id="rlcdAllowNonLeafX_long_desc">If true, RLCD may condition on observed variables when testing rank constraints, so that an observed variable can be found to be a parent of a latent or of other observed variables. If false, observed variables are treated as pure indicators.</span></li>
+        <li>Default Value: <span id="rlcdAllowNonLeafX_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdAllowNonLeafX_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdAllowNonLeafX_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdAllowNonLeafX_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdCheckV ===
+    <h3 class="parameter_description" id="rlcdCheckV">rlcdCheckV</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdCheckV_short_desc">RLCD: discard a rank-deficient set when a proper subset is already deficient (default true)</span></li>
+        <li>Long Description: <span id="rlcdCheckV_long_desc">If true, a set of covers found rank deficient at rank k is discarded when one of its proper subsets is already rank deficient at the correspondingly lower rank, since the deficiency is then explained by the subset rather than by a shared latent over the whole set.</span></li>
+        <li>Default Value: <span id="rlcdCheckV_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdCheckV_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdCheckV_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdCheckV_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdMaxK ===
+    <h3 class="parameter_description" id="rlcdMaxK">rlcdMaxK</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdMaxK_short_desc">RLCD: maximum cluster cardinality to search (default 3; min 1)</span></li>
+        <li>Long Description: <span id="rlcdMaxK_long_desc">The largest rank k for which RLCD searches for rank-deficient sets of covers. A rank-k cluster is placed under k latent variables. Larger values allow more latents per cluster but increase the number of tests.</span></li>
+        <li>Default Value: <span id="rlcdMaxK_default_value">3</span></li>
+        <li>Lower Bound: <span id="rlcdMaxK_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="rlcdMaxK_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="rlcdMaxK_value_type">Integer</span></li>
+    </ul>
+
+    === rlcdPartitionCliqueThreshold ===
+    <h3 class="parameter_description" id="rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdPartitionCliqueThreshold_short_desc">RLCD: minimum stage-1 clique size for partitioning (default 3; min 1)</span></li>
+        <li>Long Description: <span id="rlcdPartitionCliqueThreshold_long_desc">In stage 1, maximal cliques of the skeleton of the stage-1 search result with at least this many members are merged when they share two or more variables, and merged groups with at least four variables become the partitions within which the stage-2 rank search runs.</span></li>
+        <li>Default Value: <span id="rlcdPartitionCliqueThreshold_default_value">3</span></li>
+        <li>Lower Bound: <span id="rlcdPartitionCliqueThreshold_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="rlcdPartitionCliqueThreshold_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="rlcdPartitionCliqueThreshold_value_type">Integer</span></li>
+    </ul>
+
+    === rlcdStage1Fges ===
+    <h3 class="parameter_description" id="rlcdStage1Fges">rlcdStage1Fges</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdStage1Fges_short_desc">RLCD: use FGES instead of BOSS for the stage-1 search (default false)</span></li>
+        <li>Long Description: <span id="rlcdStage1Fges_long_desc">RLCD first runs a score-based search over the observed variables to partition them. By default this is BOSS with the SEM BIC score; if true, FGES is used instead, which is closer to the GES stage of the causal-learn implementation.</span></li>
+        <li>Default Value: <span id="rlcdStage1Fges_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdStage1Fges_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdStage1Fges_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdStage1Fges_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdUnfoldCovers ===
+    <h3 class="parameter_description" id="rlcdUnfoldCovers">rlcdUnfoldCovers</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdUnfoldCovers_short_desc">RLCD: unfold discovered latent covers into their children for further tests (default true)</span></li>
+        <li>Long Description: <span id="rlcdUnfoldCovers_long_desc">If true, after latent covers are discovered, the search also considers replacing each subset of them by their children when forming candidate sets, which is how relations between a latent and the children of another latent are found. If false, only the covers themselves are used.</span></li>
+        <li>Default Value: <span id="rlcdUnfoldCovers_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdUnfoldCovers_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdUnfoldCovers_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdUnfoldCovers_value_type">Boolean</span></li>
+    </ul>
+
     === sampleSize ===
     <h3 class="parameter_description" id="sampleSize">sampleSize</h3>
     <ul class="parameter_description_list">

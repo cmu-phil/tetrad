@@ -4935,6 +4935,44 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#stableFAS">stableFAS</a>, <a href="#colliderOrientationStyle">colliderOrientationStyle</a>, <a href="#allowBidirected">allowBidirected</a>, <a href="#depth">depth</a>, <a href="#fdrQ">fdrQ</a>, <a href="#timeLag">timeLag</a>, <a href="#verbose">verbose</a></p>
 
+    <h3>The RLCD Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="rlcd">
+        <p>RLCD (Rank-based Latent Causal Discovery) learns a graph over the observed variables together with newly
+            introduced latent variables, under a linear model in which latent variables may be causes or effects of
+            one another and of observed variables. It uses rank constraints on sub-blocks of the covariance matrix: a
+            set of variables whose cross-covariance with the remaining variables has rank k is explained by k shared
+            latent parents. The reference is Dong, X., Huang, B., Ng, I., Song, X., Zheng, Y., Jin, S., Legaspi, R.,
+            Spirtes, P., and Zhang, K. (2024). A versatile causal discovery framework to allow causally-related hidden
+            variables. International Conference on Learning Representations. This implementation is a translation of
+            the one released in the causal-learn package.</p>
+        <p>The method has two stages. In stage 1 a score-based search over the observed variables (BOSS with the SEM
+            BIC score by default, or FGES) is run and its skeleton is used to partition the variables: maximal cliques
+            of at least rlcdPartitionCliqueThreshold members are merged when they share two or more variables, and
+            merged groups of at least four variables become partitions. In stage 2, within each partition, sets of
+            variables (and of previously found latent covers) are tested for rank deficiency against the remaining
+            variables with a canonical-correlation chi-square test at level alpha, for cardinalities up to
+            rlcdMaxK; each rank-deficient cluster is placed under new latent variables, and the search restarts with
+            the new covers available. Observed variables may be found to be parents rather than indicators
+            (rlcdAllowNonLeafX). The output is the stage-1 graph with, inside each partition in which latents were
+            introduced, the observed-observed edges replaced by what stage 2 found, plus the latent variables and their
+            edges. Latent variables are named L1, L2, and so on.</p>
+        <p>Some things to know about the output. A rank-k cluster with k greater than one is placed under k latents
+            that are not connected to each other. Edges between latents are found when one cluster is unfolded into
+            its indicators while the other is kept as a cover, but sets consisting only of latent covers are never
+            tested; when the search ends with several latent roots, they are connected in a chain whose orientation is
+            not determined by the data. Stage-1 edges between observed variables inside a partition are dropped
+            whether or not stage 2 explains them. Requires continuous data.</p>
+    </div>
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#rlcdMaxK">rlcdMaxK</a>, <a href="#rlcdAllowNonLeafX">rlcdAllowNonLeafX</a>,
+        <a href="#rlcdUnfoldCovers">rlcdUnfoldCovers</a>, <a href="#rlcdCheckV">rlcdCheckV</a>,
+        <a href="#rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</a>, <a href="#rlcdStage1Fges">rlcdStage1Fges</a>,
+        <a href="#penaltyDiscountDefault1">penaltyDiscountDefault1</a>, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
+
     <h2>Statistical Tests</h2>
 
     <p>All the below tests do testwise deletion as a default way of

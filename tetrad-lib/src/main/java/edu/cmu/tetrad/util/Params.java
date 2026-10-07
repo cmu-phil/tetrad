@@ -1606,6 +1606,30 @@ public final class Params {
      */
     public static final String RESCUE_ACTION = "rescueAction";
     /**
+     * Constant <code>RLCD_ALLOW_NON_LEAF_X="rlcdAllowNonLeafX"</code>
+     */
+    public static final String RLCD_ALLOW_NON_LEAF_X = "rlcdAllowNonLeafX";
+    /**
+     * Constant <code>RLCD_CHECK_V="rlcdCheckV"</code>
+     */
+    public static final String RLCD_CHECK_V = "rlcdCheckV";
+    /**
+     * Constant <code>RLCD_MAX_K="rlcdMaxK"</code>
+     */
+    public static final String RLCD_MAX_K = "rlcdMaxK";
+    /**
+     * Constant <code>RLCD_PARTITION_CLIQUE_THRESHOLD="rlcdPartitionCliqueThreshold"</code>
+     */
+    public static final String RLCD_PARTITION_CLIQUE_THRESHOLD = "rlcdPartitionCliqueThreshold";
+    /**
+     * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
+     */
+    public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";
+    /**
+     * Constant <code>RLCD_UNFOLD_COVERS="rlcdUnfoldCovers"</code>
+     */
+    public static final String RLCD_UNFOLD_COVERS = "rlcdUnfoldCovers";
+    /**
      * Constant <code>SAMPLE_SIZE="sampleSize"</code>
      */
     public static final String SAMPLE_SIZE = "sampleSize";
