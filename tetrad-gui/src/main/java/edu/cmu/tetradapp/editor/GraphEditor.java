@@ -119,6 +119,13 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     /** Set while applying an undo/redo so the change listener doesn't re-record it. */
     private boolean suppressUndoRecording = false;
 
+    /**
+     * True while the editor is being built. Building the Graph menu redraws the workbench (to apply PAG edge
+     * markups), and that redraw must not be taken for an edit: it would mark the model as changed every time the
+     * editor is opened.
+     */
+    private boolean initializing = true;
+
     //===========================CONSTRUCTOR========================//
 
     /**
@@ -296,6 +303,10 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         this.workbench.setEnableEditing(this.enableEditing);
 
         this.workbench.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            if (this.initializing) {
+                return;
+            }
+
             String propertyName = evt.getPropertyName();
             if (GraphEditor.EVENTS.contains(propertyName)) {
                 if (getWorkbench() != null) {
@@ -421,6 +432,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         }
 
         validate();
+
+        this.initializing = false;
     }
 
     /**

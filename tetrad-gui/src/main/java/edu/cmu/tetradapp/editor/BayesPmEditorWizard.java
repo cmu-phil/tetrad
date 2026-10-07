@@ -244,8 +244,14 @@ final class BayesPmEditorWizard extends JPanel {
     }
 
     private void setNumCategories(int numCategories) {
+        // The spinner is also reset when a different node is chosen, which changes nothing in the model.
+        boolean changed = numCategories != this.bayesPm.getNumCategories(this.categoryEditor.getNode());
+
         this.categoryEditor.setNumCategories(numCategories);
-        firePropertyChange("modelChanged", null, null);
+
+        if (changed) {
+            firePropertyChange("modelChanged", null, null);
+        }
     }
 
     private JMenuBar createMenuBar() {
@@ -395,7 +401,6 @@ final class BayesPmEditorWizard extends JPanel {
         this.categoryEditor.setNode(node);
         int numCategories = this.bayesPm.getNumCategories(node);
         this.spinnerModel.setValue(numCategories);
-        firePropertyChange("modelChanged", null, null);
         enableByNodeType();
     }
 
@@ -624,10 +629,14 @@ final class BayesPmEditorWizard extends JPanel {
             DiscreteVariable variable
                     = (DiscreteVariable) this.bayesPm.getVariable(getNode());
             List<String> categories = new ArrayList<>(variable.getCategories());
+            boolean changed = !value.equals(categories.get(index));
             categories.set(index, value);
             this.bayesPm.setCategories(this.node, categories);
 
-            firePropertyChange("modelChanged", null, null);
+            // Fired on the wizard, which is the component the session watches, not on this inner panel.
+            if (changed) {
+                BayesPmEditorWizard.this.firePropertyChange("modelChanged", null, null);
+            }
         }
 
         public void setCategories(List categories) {

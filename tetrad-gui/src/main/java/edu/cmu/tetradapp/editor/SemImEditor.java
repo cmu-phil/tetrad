@@ -1991,7 +1991,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             ));
             sorter.sort();
             table.setRowSorter(sorter);
-            this.tableModel.addTableModelListener((e) -> this.firePropertyChange("modelChanged", null, null));
+
+            // The table also refreshes for display options (means, intercepts, correlations), so only report a
+            // model change when a parameter value was actually set.
+            this.tableModel.addTableModelListener((e) -> {
+                if (this.tableModel.consumeEdited()) {
+                    this.firePropertyChange("modelChanged", null, null);
+                }
+            });
 
             add(new JScrollPane(table), BorderLayout.CENTER);
         }
@@ -2016,6 +2023,20 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     }
 
     final class ParamTableModel extends AbstractTableModel {
+
+        /**
+         * True if a parameter value has been set since the flag was last consumed.
+         */
+        private boolean edited;
+
+        /**
+         * True if a parameter value was set since the last call; resets the flag.
+         */
+        boolean consumeEdited() {
+            boolean wasEdited = this.edited;
+            this.edited = false;
+            return wasEdited;
+        }
 
         private static final long serialVersionUID = 2210883212769846304L;
 
@@ -2197,6 +2218,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
             if (columnIndex == 3) {
+                // Committing a cell without retyping it leaves the parameter alone. (Re-parsing the displayed,
+                // rounded text would otherwise change the parameter's value.)
+                if (String.valueOf(aValue).equals(String.valueOf(getValueAt(rowIndex, columnIndex)))) {
+                    return;
+                }
+
                 try {
                     double value = Double.parseDouble((String) aValue);
 
@@ -2219,7 +2246,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                             }
                         }
 
-                        this.editor.firePropertyChange("modelChanged", 0, 0);
+                        this.edited = true;
 
                     } else {
                         int index = rowIndex - semIm().getNumFreeParams();
@@ -2231,7 +2258,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                             } else {
                                 semIm().setMean(node, value);
                             }
-                            this.editor.firePropertyChange("modelChanged", 0, 0);
+                            this.edited = true;
 
                         }
                     }

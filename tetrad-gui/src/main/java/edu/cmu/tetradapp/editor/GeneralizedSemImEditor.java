@@ -93,6 +93,8 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         this.graphicalEditor.enableEditing(false);
 
         this.listEditor = new GeneralizedSemImListEditor(getSemIm(), this.launchedEditors);
+        forwardModelChanged(this.graphicalEditor);
+        forwardModelChanged(this.listEditor);
 
         initializeTabbedPane();
         initializeErrorTermsMenuBar(wrapper);
@@ -122,6 +124,8 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
         this.graphicalEditor.enableEditing(false);
 
         this.listEditor = new GeneralizedSemImListEditor(getSemIm(), this.launchedEditors);
+        forwardModelChanged(this.graphicalEditor);
+        forwardModelChanged(this.listEditor);
 
         this.setLayout(new BorderLayout());
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -345,7 +349,16 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      * @return the editing delegate component
      */
     public JComponent getEditDelegate() {
-        return graphicalEditor();
+        // This editor collects "modelChanged" from both of its tabs, so it is the component to watch.
+        return this;
+    }
+
+    private void forwardModelChanged(JComponent tab) {
+        tab.addPropertyChangeListener(event -> {
+            if ("modelChanged".equals(event.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
     }
 
     /**

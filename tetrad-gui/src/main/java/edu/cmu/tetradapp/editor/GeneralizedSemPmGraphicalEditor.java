@@ -203,8 +203,6 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
                 }
             }
         }
-
-        firePropertyChange("modelChanged", null, null);
     }
 
     private void addMouseListenerToGraphNodesMeasured() {

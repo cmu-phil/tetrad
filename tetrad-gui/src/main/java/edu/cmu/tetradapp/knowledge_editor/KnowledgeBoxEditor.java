@@ -126,6 +126,12 @@ public class KnowledgeBoxEditor extends JPanel {
     private Knowledge knowledge;
 
     /**
+     * The knowledge, as text, when a model change was last reported (or when the editor opened). Null during
+     * construction.
+     */
+    private String lastNotifiedKnowledge;
+
+    /**
      * The edge workbench.
      */
     private KnowledgeWorkbench edgeWorkbench;
@@ -237,6 +243,7 @@ public class KnowledgeBoxEditor extends JPanel {
         initComponents();
         resetTabbedPane();
         setNumDisplayTiers(this.knowledge.getNumTiers());
+        this.lastNotifiedKnowledge = this.knowledge.toString();
     }
 
     private static Color uiColor(String key, Color fallback) {
@@ -412,6 +419,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 setKnowledge(knowledge);
                 initComponents();
                 resetTabbedPane();
+                notifyKnowledge();
             } catch (Exception e1) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e1.getMessage());
                 e1.printStackTrace();
@@ -993,6 +1001,16 @@ public class KnowledgeBoxEditor extends JPanel {
         });
 
         this.edgeWorkbench = new KnowledgeWorkbench(graph);
+
+        // Adding or removing an edge in the Edges tab edits the knowledge. The workbench also
+        // reports "modelChanged" whenever its graph is merely redrawn (a layout, a "Show ..."
+        // checkbox), so only pass it on if the knowledge itself is different.
+        this.edgeWorkbench.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                notifyIfKnowledgeChanged();
+            }
+        });
+
         resetEdgeDisplay(null);
 
         JCheckBox showForbiddenByTiersCheckbox =
@@ -1223,12 +1241,27 @@ public class KnowledgeBoxEditor extends JPanel {
             LayoutUtil.defaultLayout(graph);
         }
 
+        // Redrawing the Edges tab is not a change to the knowledge.
         this.edgeWorkbench.setGraph(graph);
-        notifyKnowledge();
     }
 
     private void notifyKnowledge() {
+        this.lastNotifiedKnowledge = this.knowledge.toString();
         firePropertyChange("modelChanged", null, null);
+    }
+
+    /**
+     * Reports a model change only if the knowledge differs from what it was at the last report (or when the editor
+     * opened).
+     */
+    private void notifyIfKnowledgeChanged() {
+        if (this.lastNotifiedKnowledge == null) {
+            return; // Still constructing.
+        }
+
+        if (!this.knowledge.toString().equals(this.lastNotifiedKnowledge)) {
+            notifyKnowledge();
+        }
     }
 
     private Knowledge getKnowledge() {

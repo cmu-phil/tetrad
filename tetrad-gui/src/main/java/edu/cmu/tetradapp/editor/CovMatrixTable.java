@@ -183,12 +183,14 @@ class CovMatrixTable extends AbstractTableModel {
         if ((col == firstDataCol - 1) && (row >= firstDataRow) &&
             (row < lastDataRow)) {
             setVariableName(matrixRow, (String) aValue);
+            this.pcs.firePropertyChange("modelChanged", null, null);
             fireTableDataChanged();
         }
 
         if ((row == firstDataRow - 1) && (col >= firstDataCol) &&
             (col < lastDataCol)) {
             setVariableName(matrixCol, (String) aValue);
+            this.pcs.firePropertyChange("modelChanged", null, null);
             fireTableDataChanged();
         }
 

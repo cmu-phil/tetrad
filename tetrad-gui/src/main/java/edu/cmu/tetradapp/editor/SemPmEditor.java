@@ -377,7 +377,12 @@ class SemPmGraphicalEditor extends JPanel {
         Parameter parameter = getEdgeParameter(edge);
         ParameterEditor paramEditor = new ParameterEditor(parameter, semPm());
 
-        paramEditor.addPropertyChangeListener(evt -> firePropertyChange("modelChanged", null, null));
+        // Only pass on "modelChanged"; the dialog also fires ordinary Swing property changes just by being shown.
+        paramEditor.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
 
         int ret = JOptionPane.showOptionDialog(workbench(), paramEditor,
                 "Parameter Properties", JOptionPane.OK_CANCEL_OPTION,

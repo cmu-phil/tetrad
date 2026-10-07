@@ -44,6 +44,11 @@ public class DoubleTextField extends JTextField {
     private double value;
 
     /**
+     * The text this class last wrote into the field.
+     */
+    private String displayedText;
+
+    /**
      * The number formatter for the number displayed.
      */
     private NumberFormat format;
@@ -171,6 +176,10 @@ public class DoubleTextField extends JTextField {
         smartSetText(nf, this.value);
 
         addActionListener(e -> {
+            if (isTextUntouched()) {
+                return;
+            }
+
             try {
                 double value1 = Double.parseDouble(e.getActionCommand());
                 setValue(value1);
@@ -189,6 +198,10 @@ public class DoubleTextField extends JTextField {
             }
 
             public void focusLost(FocusEvent e) {
+                if (isTextUntouched()) {
+                    return;
+                }
+
                 try {
                     double value = Double.parseDouble(getText());
                     setValue(value);
@@ -216,6 +229,16 @@ public class DoubleTextField extends JTextField {
                 setText(nf.format(value));
             }
         }
+
+        this.displayedText = getText();
+    }
+
+    /**
+     * True if the field still shows the text this class last wrote into it. The displayed text is rounded, so
+     * re-parsing it when the user has typed nothing would replace the value with its rounded form.
+     */
+    private boolean isTextUntouched() {
+        return this.displayedText != null && this.displayedText.equals(getText());
     }
 
     /**

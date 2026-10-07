@@ -1358,6 +1358,10 @@ public class GridSearchEditor extends JPanel {
         if (graphFile.exists()) {
             Graph graph = GraphSaveLoadUtils.loadGraphTxt(graphFile);
             LayoutUtil.defaultLayoutConditional(graph);
+
+            // This also runs when the tab is merely redisplayed, in which case the same graph is selected again.
+            boolean selectionChanged = !graph.equals(model.getGraph());
+
             workbench.setGraph(graph);
             model.setSelectedGraph(graph);
 
@@ -1366,7 +1370,9 @@ public class GridSearchEditor extends JPanel {
             model.setSelectedAlgorithm((int) selectedAlgorithm);
             model.setSelectedGraphIndex((int) selectedGraphIndex);
 
-            firePropertyChange("modelChanged", null, null);
+            if (selectionChanged) {
+                firePropertyChange("modelChanged", null, null);
+            }
         }
     }
 
