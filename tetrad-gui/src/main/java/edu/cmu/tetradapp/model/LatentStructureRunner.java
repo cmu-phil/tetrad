@@ -176,11 +176,26 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
         }
 
         for (int i = 0; i < spec.blocks().size(); i++) {
-            Node var = spec.blockVariables().get(i);
+            // Use the graph's own node objects. The search may return latents that are equal to (same name
+            // and type) but not identical to the BlockSpec's nodes, and Edge.getDistalNode compares by identity,
+            // so an edge built from a non-identical node yields null adjacents.
+            Node specVar = spec.blockVariables().get(i);
+            Node var = graph.getNode(specVar.getName());
+
+            if (var == null) {
+                graph.addNode(specVar);
+                var = specVar;
+            }
 
             for (int j : spec.blocks().get(i)) {
-                Node node2 = spec.dataSet().getVariables().get(j);
-                graph.addNode(node2);
+                Node specNode2 = spec.dataSet().getVariables().get(j);
+                Node node2 = graph.getNode(specNode2.getName());
+
+                if (node2 == null) {
+                    graph.addNode(specNode2);
+                    node2 = specNode2;
+                }
+
                 graph.addDirectedEdge(var, node2);
             }
         }
