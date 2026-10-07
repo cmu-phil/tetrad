@@ -1107,6 +1107,11 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
             this.semImWrapper = wrapper;
             this.graphicalEditorTitle = graphicalEditorTitle;
             this.tabularEditorTitle = tabularEditorTitle;
+
+            // The SEM graph is shared with the SEM PM, so the flag may have been left on elsewhere.
+            // Error terms are hidden when the editor opens; "Show Error Terms" turns them on.
+            getSemGraph().setShowErrorTerms(false);
+
             displaySemIm(graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
         }
 

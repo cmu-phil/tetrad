@@ -124,11 +124,11 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
             if ("Hide Error Terms".equals(menuItem.getText())) {
                 menuItem.setText("Show Error Terms");
                 getSemGraph().setShowErrorTerms(false);
-                graphicalEditor().resetLabels();
+                graphicalEditor().resetGraph();
             } else if ("Show Error Terms".equals(menuItem.getText())) {
                 menuItem.setText("Hide Error Terms");
                 getSemGraph().setShowErrorTerms(true);
-                graphicalEditor().resetLabels();
+                graphicalEditor().resetGraph();
             }
         });
 
@@ -342,7 +342,8 @@ class SemPmGraphicalEditor extends JPanel {
         this.targetPanel.setLayout(new BorderLayout());
         add(this.targetPanel, BorderLayout.CENTER);
 
-        semPm().getGraph().setShowErrorTerms(true);
+        // Error terms are hidden when the editor opens; "Show Error Terms" turns them on.
+        semPm().getGraph().setShowErrorTerms(false);
 
         setSemPm();
     }
@@ -439,6 +440,16 @@ class SemPmGraphicalEditor extends JPanel {
             addMouseListenerToGraphNodesMeasured();
         }
         return getWorkbench();
+    }
+
+    /**
+     * Reloads the SEM graph into the workbench. The workbench displays a copy of the graph, so a change to which
+     * nodes the graph contains (error terms shown or hidden) is not visible until the graph is set again.
+     */
+    public void resetGraph() {
+        workbench().setGraph(graph());
+        resetLabels();
+        addMouseListenerToGraphNodesMeasured();
     }
 
     public void resetLabels() {
