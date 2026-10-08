@@ -39,7 +39,7 @@ import java.util.function.IntToDoubleFunction;
  * at a cardinality are merged into clusters, each cluster is placed under a cover of the rank found, and the search
  * restarts at k = 1. When no cardinality yields a cluster the finish step connects what remains: observed roots
  * become parents of the latent roots they are dependent on, or, if no observed roots remain, latent roots are
- * chained in a fixed order.
+ * chained in a fixed order by undirected edges.
  * <p>
  * Two properties of the released Python are preserved and worth knowing: (1) a candidate set A whose observed
  * members (plus non-sinks) are not connected in the stage-1 skeleton is skipped, and this skip also applies when A
@@ -47,8 +47,12 @@ import java.util.function.IntToDoubleFunction;
  * still found by the rank tests, because unfolding one cluster into its observed children while keeping the other as
  * a cover supplies observed members; what is never tested directly is a set of two or more un-unfolded latent
  * covers. (2) The chain over leftover latent roots in the finish step is not data driven: its order is set-iteration
- * order in the Python and sorted cover-name order here, and the orientation between two latent roots with pure
- * indicators is not identifiable from rank constraints in any case.
+ * order in the Python and sorted cover-name order here, and no test is made of whether consecutive roots in it are
+ * dependent.
+ * <p>
+ * One deliberate difference from the Python: it writes that chain as directed edges, in an order that depends on
+ * its hash seed. The orientation between two latent roots with pure indicators is not identifiable from rank
+ * constraints, so here the chain's edges are undirected. The adjacencies are as in the Python.
  * <p>
  * The Python runs the per-non-sink-set searches in parallel processes; the results are combined only after all
  * finish, so a sequential run is equivalent.
@@ -495,8 +499,10 @@ public final class RlcdClusterSearch {
                 if (!c.isObserved()) latents.add(c);
             }
             if (latents.size() >= 2) {
+                // Changed from the Python, which makes each of these a directed edge: nothing here tests which
+                // way the edge goes, so it is recorded as unoriented and comes out undirected.
                 for (int i = 0; i < latents.size() - 1; i++) {
-                    g.addOrUpdateCover(latents.get(i), new LinkedHashSet<>(Collections.singleton(latents.get(i + 1))));
+                    g.addUnorientedLink(latents.get(i), latents.get(i + 1));
                     g.updateActiveSet(false);
                 }
             }

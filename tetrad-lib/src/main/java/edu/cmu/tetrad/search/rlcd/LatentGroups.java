@@ -112,6 +112,11 @@ public final class LatentGroups {
     private final LinkedHashMap<Cover, Entry> latentDict = new LinkedHashMap<>();
     private final Map<Integer, List<RankDefSet>> rankDefSets = new TreeMap<>();
     private final Map<Integer, List<RankDefSet>> clusters = new TreeMap<>();
+    /**
+     * Parent-child links between covers that were added without the data deciding which is the parent; see
+     * {@link #addUnorientedLink(Cover, Cover)}.
+     */
+    private final List<Cover[]> unorientedLinks = new ArrayList<>();
     private Set<String> Xns;
     private Set<String> activeNonSinkSet;
     private Map<String, Cover> xDict;
@@ -801,6 +806,27 @@ public final class LatentGroups {
     }
 
     /**
+     * Links two covers as {@link #addOrUpdateCover(Cover, Set)} does, with the first as parent of the second, and
+     * records that the choice of parent was not made by the data, so that {@link #toAdjacency()} writes the link
+     * as an undirected edge. The cover structure itself stays a parent-child one, which is what the rest of this
+     * class works with.
+     *
+     * @param parent the cover placed as the parent.
+     * @param child  the cover placed as the child.
+     */
+    public void addUnorientedLink(Cover parent, Cover child) {
+        addOrUpdateCover(parent, new LinkedHashSet<>(Collections.singleton(child)));
+        unorientedLinks.add(new Cover[]{parent, child});
+    }
+
+    /**
+     * @return the links recorded by {@link #addUnorientedLink(Cover, Cover)}, each as {parent, child}.
+     */
+    public List<Cover[]> getUnorientedLinks() {
+        return Collections.unmodifiableList(unorientedLinks);
+    }
+
+    /**
      * Convenience overload with no fake children.
      *
      * @param l        the cover.
@@ -862,7 +888,9 @@ public final class LatentGroups {
      * Writes the discovered structure as a signed adjacency matrix over the partition's observed variables followed
      * by the latent variables (Python <code>getLfromLatentGroups</code>). Encoding: for a parent variable P and child
      * variable C, A[P][C] = −1 and A[C][P] = 1; co-members of an atomic cover with more than one variable are marked
-     * −2 in both directions (meaning "same atomic cover, no edge").
+     * −2 in both directions (meaning "same atomic cover, no edge"); and a link whose direction the data did not
+     * decide (see {@link #addUnorientedLink(Cover, Cover)}) is marked −1 in both directions, the encoding of an
+     * undirected edge.
      *
      * @return the matrix and the variable names it is indexed by.
      */
@@ -901,6 +929,16 @@ public final class LatentGroups {
                 }
             }
         }
+
+        for (Cover[] link : unorientedLinks) {
+            for (String a : link[0].getVars()) {
+                for (String c : link[1].getVars()) {
+                    A[index.get(a)][index.get(c)] = -1;
+                    A[index.get(c)][index.get(a)] = -1;
+                }
+            }
+        }
+
         return new AdjacencyResult(A, all);
     }
 

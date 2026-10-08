@@ -115,6 +115,11 @@ public class TestRlcd {
         assertTrue("Cluster {X4,X5,X6} not found: " + out, childSets.contains(Set.of("X4", "X5", "X6")));
         assertTrue("Latents should be adjacent: " + out, out.isAdjacentTo(latents.get(0), latents.get(1)));
 
+        // That edge comes from the finish step, which joins the two leftover latent roots without anything deciding
+        // which is the parent; rank constraints cannot tell L1 --> L2 from L2 --> L1 here. It must not be directed.
+        assertTrue("The edge between the latents should be undirected: " + out,
+                Edges.isUndirectedEdge(out.getEdge(latents.get(0), latents.get(1))));
+
         // No observed-observed edges should remain inside the measurement model.
         for (Edge e : out.getEdges()) {
             boolean bothObserved = e.getNode1().getNodeType() != NodeType.LATENT

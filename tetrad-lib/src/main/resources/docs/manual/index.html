@@ -4962,8 +4962,10 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         <p>Some things to know about the output. A rank-k cluster with k greater than one is placed under k latents
             that are not connected to each other. Edges between latents are found when one cluster is unfolded into
             its indicators while the other is kept as a cover, but sets consisting only of latent covers are never
-            tested; when the search ends with several latent roots, they are connected in a chain whose orientation is
-            not determined by the data. Stage-1 edges between observed variables inside a partition are dropped
+            tested; when the search ends with several latent roots, they are connected in a chain of undirected edges,
+            since the data do not determine which way those edges go (the causal-learn implementation directs them
+            arbitrarily), and the chain itself is a convention: no test is made of which of those latents are
+            dependent. Stage-1 edges between observed variables inside a partition are dropped
             whether or not stage 2 explains them. Requires continuous data.</p>
         <p>Background knowledge over the observed variables is honored in three places: the stage-1 search obeys it
             as any search does; in stage 2 an observed variable is never used as a parent of a cluster member it is

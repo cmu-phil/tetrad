@@ -51,19 +51,24 @@ import java.util.*;
  * plus the latent variables and their edges.
  * <p>
  * Output conventions follow causal-learn: a directed edge for each parent-child relation found; an undirected edge
- * where the stage-1 graph had an undirected edge between variables not inside a common partition; and no edge between
+ * where the stage-1 graph had an undirected edge between variables not inside a common partition, and between
+ * latent roots chained by the finish-up step; and no edge between
  * co-members of a multi-variable atomic cover (a rank-k cluster with k &gt; 1 is placed under k latents that are not
  * connected to one another). Latent nodes are of type {@link NodeType#LATENT} and named L1, L2, ...
  * <p>
  * Known limitations inherited from the released code: candidate sets with no observed member are never rank-tested
  * (see {@link RlcdClusterSearch}); the finish-up step chains leftover latent roots in an order that is arbitrary in
- * the Python and alphabetical here, and that orientation is not identifiable from rank constraints; and stage-1
+ * the Python and alphabetical here, without testing whether consecutive roots are dependent; and stage-1
  * edges within a partition in which at least one latent was introduced are dropped whether or not stage 2 explains
  * them, while a partition with no latent keeps its stage-1 edges unchanged.
  * <p>
  * The translation was checked against the causal-learn code on nine simulated structures (pure clusters, a latent
  * chain, a rank-2 cluster, an observed non-sink, an impure indicator, an observed DAG with no latents) by feeding both
  * the same stage-1 graph; all agreed exactly up to relabeling of latents and the finish-step chain order.
+ * <p>
+ * One deliberate difference from the released code: the edges of the finish-step chain are undirected here, where
+ * the Python directs them in an order that depends on its hash seed, since their orientation is not identifiable
+ * from rank constraints.
  *
  * @author josephramsey (translation)
  * @see RlcdClusterSearch
