@@ -439,6 +439,53 @@ public class TestRlcd {
     }
 
     /**
+     * A cover of two latents: T1 and T2 are jointly the parents of ten indicators. The output should have two
+     * latents whose indicators are, between them, all ten, and no edge between observed variables. Which of the
+     * two latents a given indicator is drawn under is not checked, since the two can be rotated. (Before the
+     * clusters of a round were added best-supported first, an observed variable was made a parent in place of one
+     * of the latents on this data.)
+     */
+    @Test
+    public void testCoverOfTwoLatents() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node t1 = new GraphNode("T1"), t2 = new GraphNode("T2");
+        t1.setNodeType(NodeType.LATENT);
+        t2.setNodeType(NodeType.LATENT);
+        g.addNode(t1);
+        g.addNode(t2);
+        for (int i = 1; i <= 10; i++) {
+            Node x = new GraphNode("X" + i);
+            g.addNode(x);
+            g.addDirectedEdge(t1, x);
+            g.addDirectedEdge(t2, x);
+        }
+
+        DataSet data = simulate(g, 10000, 3L);
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setMaxK(3);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        Graph out = rlcd.search();
+
+        int latents = 0;
+        Set<String> indicators = new HashSet<>();
+        for (Node node : out.getNodes()) {
+            if (node.getNodeType() != NodeType.LATENT) continue;
+            latents++;
+            for (Node adj : out.getAdjacentNodes(node)) {
+                if (adj.getNodeType() != NodeType.LATENT) indicators.add(adj.getName());
+            }
+        }
+        assertEquals("Two latents expected: " + out, 2, latents);
+        assertEquals("All ten indicators should be under them: " + out, 10, indicators.size());
+
+        for (Edge e : out.getEdges()) {
+            assertTrue("No edge between observed variables expected: " + e + " in " + out,
+                    e.getNode1().getNodeType() == NodeType.LATENT || e.getNode2().getNodeType() == NodeType.LATENT);
+        }
+    }
+
+    /**
      * Example run with verbose trace; hand-run from the IDE.
      *
      * @param args ignored.

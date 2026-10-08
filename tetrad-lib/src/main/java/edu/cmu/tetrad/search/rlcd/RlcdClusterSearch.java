@@ -49,14 +49,16 @@ import java.util.function.IntToDoubleFunction;
  * order in the Python and sorted cover-name order here, and no test is made of whether consecutive roots in it are
  * dependent.
  * <p>
- * Three deliberate differences from the Python. Sets consisting only of latent covers are tested, as just described;
+ * Deliberate differences from the Python. Sets consisting only of latent covers are tested, as just described;
  * the paper's search (Algorithm 3 of Dong et al.) draws its candidate sets from all active covers and has no such
  * exclusion. A set of covers found to have rank 0 against the rest, that is, not
  * found dependent on them at all, is not made a cluster; the Python makes it a 0-cluster under a cover with no
  * variables, which removes its members from the search and discards the clusters of higher rank found in the same
  * round. And the Python writes the finish-step chain as directed edges, in an order that depends on
  * its hash seed. The orientation between two latent roots with pure indicators is not identifiable from rank
- * constraints, so here the chain's edges are undirected. The adjacencies are as in the Python.
+ * constraints, so here the chain's edges are undirected. The adjacencies are as in the Python. Finally, the
+ * clusters found in one round are added in order of how many observed variables they account for, not in the order
+ * found; see {@link LatentGroups#confirmClusters()}.
  * <p>
  * The Python runs the per-non-sink-set searches in parallel processes; the results are combined only after all
  * finish, so a sequential run is equivalent.

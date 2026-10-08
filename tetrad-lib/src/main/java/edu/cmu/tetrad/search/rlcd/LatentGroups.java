@@ -327,6 +327,15 @@ public final class LatentGroups {
      * Adds each determined cluster as the children of a new (or updated) cover (Python
      * <code>confirmClusters</code>), and updates the leaf flags of observed variables: non-sinks used become known
      * non-leaves, singleton observed children become known leaves. Flags are set only when still undecided.
+     * <p>
+     * The clusters of a round are added in order of how many observed variables each accounts for (its measured
+     * members together with the non-sinks it was found with), most first. They compete: once one is added, a later
+     * one that overlaps it is usually rejected or reshaped by it. The Python adds them in the order found, which
+     * puts clusters found with more non-sinks first whatever their size. That let a few sets that happened to pass
+     * a rank test given some observed variable claim that variable as a parent, ahead of a cluster of the same rank
+     * built from many more sets and covering every variable; the result was an observed variable standing in for
+     * one of the latents of a cover with two or more latents. A cluster with an observed parent that is real covers
+     * as many variables as the all-latent reading of the same variables, ties with it, and still goes first.
      *
      * @return whether any cluster was successfully added.
      */
@@ -334,6 +343,17 @@ public final class LatentGroups {
         int k = Collections.min(clusters.keySet());
         boolean success = false;
         List<RankDefSet> cl = clusters.remove(k);
+
+        // The cluster that accounts for the most observed variables first; see the method comment. The sort is
+        // stable, so clusters that tie keep the order in which they were found, with more non-sinks first.
+        Map<RankDefSet, Integer> coverage = new IdentityHashMap<>();
+        for (RankDefSet c : cl) {
+            Set<String> covered = new TreeSet<>(CoverSets.vars(pickAllMeasures(c.vs)));
+            covered.addAll(c.nonsinks);
+            coverage.put(c, covered.size());
+        }
+        cl.sort((x, y) -> coverage.get(y) - coverage.get(x));
+
         for (RankDefSet c : cl) {
             boolean current = addCluster(new LinkedHashSet<>(c.vs), c.full, k, new ArrayList<>(c.nonsinks));
             if (current) {
