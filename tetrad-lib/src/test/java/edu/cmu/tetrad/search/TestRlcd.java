@@ -20,7 +20,10 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.BoxDataSet;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MvnImputer;
@@ -267,6 +270,38 @@ public class TestRlcd {
         single.setAlpha(0.01);
         single.setSeed(1L);
         assertEquals(single.search(), one.search());
+    }
+
+    /**
+     * A set of variables that the rank test does not find dependent on the rest at all (rank 0) is not a cluster.
+     * Here six independent variables are given a stage-1 graph that wrongly makes them one clique, with the collider
+     * check off so that the rank-0 sets reach the point of being queued. This used to throw "A cover must have at
+     * least one variable"; no latent should be introduced.
+     */
+    @Test
+    public void testRankZeroSetIsNotACluster() throws Exception {
+        List<Node> vars = new ArrayList<>();
+        for (int i = 1; i <= 6; i++) vars.add(new ContinuousVariable("X" + i));
+        DataSet data = new BoxDataSet(new DoubleDataBox(500, 6), vars);
+        Random random = new Random(3L);
+        for (int i = 0; i < 500; i++) {
+            for (int j = 0; j < 6; j++) data.setDouble(i, j, random.nextGaussian());
+        }
+
+        Graph stage1 = new EdgeListGraph(vars);
+        for (int i = 0; i < 6; i++) {
+            for (int j = i + 1; j < 6; j++) stage1.addUndirectedEdge(vars.get(i), vars.get(j));
+        }
+
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setStage1Graph(stage1);
+        rlcd.setMaxK(2);
+        rlcd.setCheckV(false);
+        Graph out = rlcd.search();
+
+        for (Node node : out.getNodes()) {
+            assertNotEquals("No latent expected: " + out, NodeType.LATENT, node.getNodeType());
+        }
     }
 
     /**

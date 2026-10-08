@@ -50,7 +50,10 @@ import java.util.function.IntToDoubleFunction;
  * order in the Python and sorted cover-name order here, and no test is made of whether consecutive roots in it are
  * dependent.
  * <p>
- * One deliberate difference from the Python: it writes that chain as directed edges, in an order that depends on
+ * Two deliberate differences from the Python. A set of covers found to have rank 0 against the rest, that is, not
+ * found dependent on them at all, is not made a cluster; the Python makes it a 0-cluster under a cover with no
+ * variables, which removes its members from the search and discards the clusters of higher rank found in the same
+ * round. And the Python writes the finish-step chain as directed edges, in an order that depends on
  * its hash seed. The orientation between two latent roots with pure indicators is not identifiable from rank
  * constraints, so here the chain's edges are undirected. The adjacencies are as in the Python.
  * <p>
@@ -368,7 +371,14 @@ public final class RlcdClusterSearch {
                         }
                     }
                 }
-                if (!vStructureFound) {
+                if (!vStructureFound && test[1] == 0) {
+                    // Rank 0: As was not found dependent on Bs at all, so there is no latent to put it under.
+                    // Queued as a 0-cluster it would be given a cover with no variables, and, being of the lowest
+                    // rank, it would also displace every cluster of rank 1 or more found in this round. (The
+                    // Python does queue it, and parks As under an empty cover.) Inside a stage-1 clique this is
+                    // usually a test without the power to see a weak dependence, not real independence.
+                    log.accept("   " + as + " is not dependent on Bs (rank 0); no cluster. Bs:" + bs);
+                } else if (!vStructureFound) {
                     res.toAdd.add(new Object[]{as, test[1], new ArrayList<>(nonsinks)});
                     res.found = true;
                 }
