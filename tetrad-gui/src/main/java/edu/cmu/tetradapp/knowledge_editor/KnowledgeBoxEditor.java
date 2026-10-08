@@ -142,6 +142,22 @@ public class KnowledgeBoxEditor extends JPanel {
     private JPanel tiersPanel;
 
     /**
+     * The model of the Tiers tab's "# Tiers" spinner, so that {@link #setNumDisplayTiers} can keep
+     * the spinner showing the number of tiers actually displayed. Before this, the spinner was
+     * built once with the field's value and never updated, so after Load or Apply it could show,
+     * say, 3 while four tiers were displayed -- and one down-click on that stale value silently
+     * emptied the tiers beyond it.
+     */
+    private SpinnerNumberModel tierSpinnerModel;
+
+    /**
+     * True while {@link #setNumDisplayTiers} is updating the spinner to match the display, so the
+     * spinner's listener does not treat the programmatic update as a user edit (which would fire a
+     * spurious model-changed notification).
+     */
+    private boolean adjustingTierSpinner;
+
+    /**
      * The wildcard expression last typed into the Tiers tab's pattern field. Held here because the
      * tier panel is rebuilt from scratch after every move, which would otherwise clear the field.
      */
@@ -665,12 +681,19 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private Box tierDisplay() {
-        if (getNumTiers() < 0) {
-            int numTiers = getKnowledge().getNumTiers();
+
+        // Show at least as many tiers as the knowledge has. Without this, rebuilding the tab
+        // after Load Knowledge or Apply in the Text tab used the stale display count, so a
+        // knowledge with more tiers than that showed only some of them and the variables in the
+        // hidden tiers were nowhere to be seen.
+        int numTiers = getNumTiers();
+
+        if (numTiers < 2) {
             int _default = (int) (TMath.pow(this.vars.size(), 0.5) + 1);
             numTiers = TMath.max(numTiers, _default);
-            setNumDisplayTiers(numTiers);
         }
+
+        setNumTiers(TMath.max(numTiers, getKnowledge().getNumTiers()));
 
         Box b = Box.createVerticalBox();
         applyPanelTheme(b);
@@ -689,13 +712,18 @@ public class KnowledgeBoxEditor extends JPanel {
         b1.add(numTiersLabel);
 
         SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(getNumTiers(), 2, 100, 1);
+        this.tierSpinnerModel = spinnerNumberModel;
         spinnerNumberModel.addChangeListener((e) -> {
-            SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-            int numTiers = model.getNumber().intValue();
+            if (this.adjustingTierSpinner) {
+                return;
+            }
 
-            setNumDisplayTiers(numTiers);
-            setNumTiers(numTiers);
-            model.setValue(numTiers);
+            SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
+            int numTiersSpun = model.getNumber().intValue();
+
+            setNumDisplayTiers(numTiersSpun);
+            setNumTiers(numTiersSpun);
+            model.setValue(numTiersSpun);
 
             for (int i = getNumTiers(); i <= getKnowledge().getMaxTierForbiddenWithin(); i++) {
                 getKnowledge().setTierForbiddenWithin(i, false);
@@ -746,6 +774,20 @@ public class KnowledgeBoxEditor extends JPanel {
         this.tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
         this.tiersPanel.revalidate();
         this.tiersPanel.repaint();
+
+        // Keep the spinner showing what is displayed; a stale spinner invited a "correction"
+        // that deleted the tiers beyond it.
+        if (this.tierSpinnerModel != null
+            && this.tierSpinnerModel.getNumber().intValue() != getNumTiers()
+            && getNumTiers() >= 2) {
+            this.adjustingTierSpinner = true;
+
+            try {
+                this.tierSpinnerModel.setValue(getNumTiers());
+            } finally {
+                this.adjustingTierSpinner = false;
+            }
+        }
     }
 
     /**

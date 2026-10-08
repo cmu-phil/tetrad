@@ -38,7 +38,7 @@ import java.awt.event.FocusEvent;
 import java.io.IOException;
 import java.io.Serial;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,10 +74,12 @@ class OtherTiersEditor extends JPanel {
     private final Runnable modelChange;
 
     /**
-     * The number of tiers displayed for each structure, which may exceed the number of nonempty
-     * tiers the structure has. Keyed by the structure object, which the spinner edits in place.
+     * The number of tiers displayed for each structure, which may exceed the number of tiers the
+     * structure has. Keyed by the structure object by IDENTITY: the structures are mutable and
+     * their hash codes change as tiers are edited, so a hash map would lose the entry after any
+     * edit -- which is what made the tier spinner snap back to its minimum.
      */
-    private final Map<KnowledgeTierStructure, Integer> displayTiers = new HashMap<>();
+    private final Map<KnowledgeTierStructure, Integer> displayTiers = new IdentityHashMap<>();
 
     /**
      * The wildcard expression last typed into this tab's pattern field, the status message it last
@@ -88,6 +90,14 @@ class OtherTiersEditor extends JPanel {
     private String globStatus = " ";
 
     private int globSlot = 0;
+
+    /**
+     * The scroll pane holding the structure boxes, and its last vertical scroll position,
+     * restored after a rebuild so that repeated spinner clicks and drags do not lose the place.
+     */
+    private JScrollPane structuresScrollPane;
+
+    private int structuresScrollValue;
 
     /**
      * Constructs the editor.
@@ -230,11 +240,21 @@ class OtherTiersEditor extends JPanel {
     //===================== Building =====================//
 
     private void rebuild() {
+        if (this.structuresScrollPane != null) {
+            this.structuresScrollValue = this.structuresScrollPane.getVerticalScrollBar().getValue();
+        }
+
         removeAll();
         themePanel(this);
         add(buildComponent());
         revalidate();
         repaint();
+
+        if (this.structuresScrollPane != null) {
+            int value = this.structuresScrollValue;
+            JScrollPane pane = this.structuresScrollPane;
+            SwingUtilities.invokeLater(() -> pane.getVerticalScrollBar().setValue(value));
+        }
     }
 
     /**
@@ -290,6 +310,7 @@ class OtherTiersEditor extends JPanel {
         JScrollPane pane = new JScrollPane(structureBoxes);
         pane.setPreferredSize(new Dimension(500, 400));
         themeScrollPane(pane);
+        this.structuresScrollPane = pane;
         vBox.add(pane);
 
         JLabel help = new JLabel("Use shift key to select multiple items.");
@@ -443,8 +464,12 @@ class OtherTiersEditor extends JPanel {
             tierHeader.add(Box.createHorizontalGlue());
 
             int _tier = tier;
-            JCheckBox forbidWithin = new JCheckBox("Forbid Within Tier",
-                    structure.isTierForbiddenWithin(tier));
+
+            // Rendering must not edit the structure: rows beyond its tiers are displayed empty
+            // without creating tiers in it (creating them changed its hash code mid-display,
+            // which is also why the display map is now keyed by identity).
+            boolean forbidden = tier < structure.getNumTiers() && structure.isTierForbiddenWithin(tier);
+            JCheckBox forbidWithin = new JCheckBox("Forbid Within Tier", forbidden);
             styleCheckBox(forbidWithin);
             forbidWithin.addActionListener(e -> {
                 structure.setTierForbiddenWithin(_tier, forbidWithin.isSelected());
@@ -454,8 +479,10 @@ class OtherTiersEditor extends JPanel {
 
             vBox.add(tierHeader);
 
+            List<String> tierContents = tier < structure.getNumTiers()
+                    ? structure.getTier(tier) : new ArrayList<>();
             JScrollPane tierPane = new JScrollPane(
-                    new StructureDragDropList(structure, tier, structure.getTier(tier)));
+                    new StructureDragDropList(structure, tier, tierContents));
             tierPane.setPreferredSize(new Dimension(460, 50));
             themeScrollPane(tierPane);
             vBox.add(tierPane);
