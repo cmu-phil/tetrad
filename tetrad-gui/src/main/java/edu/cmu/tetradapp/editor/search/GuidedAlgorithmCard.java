@@ -114,6 +114,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
 
     private final GeneralAlgorithmRunner algorithmRunner;
     private final BlockSpec blockSpec;
+    private final AlgorithmChooserLogic.BoxMode mode;
     private final DataType dataType;
     private final Parameters parameters;
     private final List<AlgorithmModel> allModels;
@@ -160,11 +161,12 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
      * Constructs the card.
      *
      * @param algorithmRunner the runner holding data, knowledge, and persisted selections.
-     * @param blockSpec       non-null only for block (latent-structure) searches.
+     * @param blockSpec       non-null only when a Latent Clusters parent supplies clusters.
      */
     public GuidedAlgorithmCard(GeneralAlgorithmRunner algorithmRunner, BlockSpec blockSpec) {
         this.algorithmRunner = algorithmRunner;
         this.blockSpec = blockSpec;
+        this.mode = AlgorithmChooserLogic.modeFor(algorithmRunner, blockSpec);
         this.dataType = getDataType(algorithmRunner);
         this.parameters = algorithmRunner.getParameters();
         this.allModels = AlgorithmChooserLogic.allModels();
@@ -286,7 +288,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
      * @return the algorithms currently listed, in display order.
      */
     public List<AlgorithmModel> getListedAlgorithms() {
-        return AlgorithmChooserLogic.filter(this.allModels, this.dataType, this.blockSpec != null, answers());
+        return AlgorithmChooserLogic.filter(this.allModels, this.dataType, this.mode, answers());
     }
 
     /**
@@ -402,8 +404,8 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         left.add(boxed(dataStatement));
         left.add(Box.createVerticalStrut(16));
 
-        // 2. Latents. Hidden for block searches, where the family is fixed by the runner.
-        if (this.blockSpec == null) {
+        // 2. Latents. Hidden in the Latent Structure box, where the family is fixed by the box.
+        if (this.mode == AlgorithmChooserLogic.BoxMode.SEARCH) {
             left.add(questionTitle("2 \u00b7 Could something unmeasured cause two of them?"));
             left.add(Box.createVerticalStrut(4));
             ButtonGroup latentGroup = new ButtonGroup();
@@ -430,7 +432,8 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         }
 
         // 3. Design facets.
-        left.add(questionTitle((this.blockSpec == null ? "3" : "2") + " \u00b7 Anything special about the design?"));
+        left.add(questionTitle((this.mode == AlgorithmChooserLogic.BoxMode.SEARCH ? "3" : "2")
+                               + " \u00b7 Anything special about the design?"));
         left.add(Box.createVerticalStrut(4));
         JPanel extraBox = new JPanel();
         extraBox.setLayout(new BoxLayout(extraBox, BoxLayout.Y_AXIS));
@@ -575,7 +578,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     }
 
     private int countWith(Answers a) {
-        return AlgorithmChooserLogic.filter(this.allModels, this.dataType, this.blockSpec != null,
+        return AlgorithmChooserLogic.filter(this.allModels, this.dataType, this.mode,
                 a.withoutQuery()).size();
     }
 
@@ -1333,6 +1336,16 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
             sb.append(": ").append(vars).append(" variables, n = ").append(cov.getSampleSize());
         }
         sb.append(". Read from the connected data box.");
+        if (this.mode == AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA) {
+            sb.append("\n\nLatent Structure box with data alone: the algorithms listed find latent variables "
+                      + "directly from the data. To run a search over clusters you supply or edit, add a Latent "
+                      + "Clusters box between the data and this box.");
+        } else if (this.mode == AlgorithmChooserLogic.BoxMode.LATENTS_FROM_CLUSTERS) {
+            sb.append("\n\nLatent Structure box with ").append(this.blockSpec.blocks().size())
+                    .append(this.blockSpec.blocks().size() == 1 ? " cluster" : " clusters")
+                    .append(" from the Latent Clusters box: the algorithms listed search over the clusters' latent "
+                            + "variables, and the measurement edges are added to the result.");
+        }
         if (list.size() > 1) {
             sb.append("\n\n").append(list.size())
                     .append(" data sets are connected. Test- and score-based searches can pool them; ")

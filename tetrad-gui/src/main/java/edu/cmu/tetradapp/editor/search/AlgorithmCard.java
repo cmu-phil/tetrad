@@ -22,8 +22,6 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
-import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
@@ -195,6 +193,7 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
      */
     private final boolean multiDataAlgo;
     private final BlockSpec blockSpec;
+    private final AlgorithmChooserLogic.BoxMode mode;
     private final Parameters parameters;
     // Persisted UI selections (stored in Parameters)
 //    private static final String UI_IND_TEST = "ui.search.ind_test";
@@ -228,6 +227,7 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner, BlockSpec blockSpec) {
         this.algorithmRunner = algorithmRunner;
         this.blockSpec = blockSpec; // typically null, only non-null for block tests and scores.
+        this.mode = AlgorithmChooserLogic.modeFor(algorithmRunner, blockSpec);
         this.dataType = getDataType(algorithmRunner);
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.multiDataAlgo = algorithmRunner.getSourceGraph() == null && algorithmRunner.getDataModelList().size() > 1;
@@ -560,11 +560,17 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
         this.knowledgeChkBox.setSelected(getSavedKnowledgeFlag(userAlgoSelections));
 
         String algoType = getSavedAlgoType(userAlgoSelections);
+        boolean matched = false;
         for (JRadioButton btn : this.algoTypeOpts) {
             if (algoType.equals(btn.getActionCommand())) {
                 btn.setSelected(true);
+                matched = true;
                 break;
             }
+        }
+        // A saved type that is not offered (e.g. in the Latent Structure box) falls back to "show all".
+        if (!matched && !this.algoTypeOpts.isEmpty()) {
+            this.algoTypeOpts.get(0).setSelected(true);
         }
 
         refreshAlgorithmList();
@@ -750,19 +756,11 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
                         AcceptsKnowledge.class.isAssignableFrom(m.getAlgorithm().clazz()));
             }
 
-            // Block-mode gating:
-            // If blockSpec != null, keep ONLY algorithms that can accept block wrappers or are tagged.
-            if (this.blockSpec != null) {
-                baseStream = baseStream.filter(m -> {
-                    Class<?> c = m.getAlgorithm().clazz();
-                    return LatentStructureAlgorithm.class.isAssignableFrom(c);
-                });
-            } else {
-                baseStream = baseStream.filter(m -> {
-                    Class<?> c = m.getAlgorithm().clazz();
-                    return !ExtraLatentStructureAlgorithm.class.isAssignableFrom(c);
-                });
-            }
+            // Box-mode gating: the Search box lists algorithms over observed variables; the Latent Structure box
+            // lists algorithms that find latents from data alone, or block-based algorithms when clusters are
+            // supplied. See AlgorithmChooserLogic.BoxMode.
+            baseStream = baseStream.filter(m -> AlgorithmChooserLogic.fitsMode(
+                    m.getAlgorithm().clazz(), m.getAlgorithm().annotation(), this.mode));
 
             // Populate list model
             baseStream.forEach(this.algoModels::addElement);
@@ -1278,12 +1276,16 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
             algoTypeOpts.add(showAllRadBtn);
             algoFilterBtnGrp.add(showAllRadBtn);
 
+            // In the Latent Structure box the family is fixed by the box, so only "show all" is offered.
+            if (mode != AlgorithmChooserLogic.BoxMode.SEARCH) return;
+
             Arrays.stream(AlgType.values()).forEach(item -> {
                 String name = item.name();
 
-                // The latent-cluster methods (BPC, FOFC, FTFC, TSC) now live in the Latent Clusters and Latent
-                // Structure boxes, but algorithms that find latents directly from data (Factor Analysis, RLCD) are
-                // still listed here under this type.
+                // Algorithms whose output contains latent variables are listed in the Latent Structure box.
+                if (name.equals(AlgType.search_for_structure_over_latents.name())) {
+                    return;
+                }
 
                 JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
                 radioButton.setActionCommand(name);

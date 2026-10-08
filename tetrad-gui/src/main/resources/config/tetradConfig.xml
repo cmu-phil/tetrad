@@ -1318,9 +1318,12 @@
         </model-chooser>
         <node-specific-message>
             <![CDATA[
-               <html> This box assumes certain inputs; please see the manual. Possible inputs are:
-                 <br> (1) Data or Simulation, OR
-                 <br> (2) Graph (searches directly over graph) OR
+               <html> This box produces graphs that contain latent variables. Possible inputs are:
+                 <br> (1) Data or Simulation alone: lists algorithms that find latent variables directly
+                 <br> from the data (for example RLCD and Factor Analysis), OR
+                 <br> (2) Data or Simulation plus a Latent Clusters box: lists searches over the latent
+                 <br> variables of the supplied clusters; the measurement edges are added to the result.
+                 <br> A Knowledge box may be added in either case.
                  <br> Note that for the parent boxes, models need to have been created.
                </html>
             ]]>

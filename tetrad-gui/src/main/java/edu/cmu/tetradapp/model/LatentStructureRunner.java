@@ -28,17 +28,92 @@ import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.util.Parameters;
 
+import java.io.Serial;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * Runner for the Block Search session node. Requires an upstream BlockSpec (from a ClusterRunner) and ensures it is
- * present before running.
+ * Runner for the Latent Structure session node: searches that produce graphs with latent variables.
+ * <p>
+ * The box runs in one of two modes, decided by its parents. With a Latent Clusters parent, the upstream
+ * {@link BlockSpec} is handed to block-aware scores, tests, and algorithms, and the measurement edges from each block's
+ * latent to its indicators are appended to the result. With data alone, the algorithms listed are those that find
+ * latent variables directly from the data (for example RLCD and Factor Analysis), and the result is returned as the
+ * algorithm produced it.
  */
 public class LatentStructureRunner extends GeneralAlgorithmRunner {
 
+    /**
+     * Pinned to the value Java computed for this class before the data-only constructors were added, so that
+     * sessions saved with earlier versions still load. The serialized field set has not changed.
+     */
+    @Serial
+    private static final long serialVersionUID = -2594453365685352496L;
+
+    /**
+     * The upstream clusters runner, or null when the box was given data alone.
+     */
     private final LatentClustersRunner runner;
+
+    /**
+     * Constructs a runner over data alone: lists the algorithms that find latent variables directly from data.
+     *
+     * @param data       the data wrapper containing the dataset to be used
+     * @param parameters parameters for the session node
+     * @throws ParseException if any
+     */
+    public LatentStructureRunner(DataWrapper data, Parameters parameters) throws ParseException {
+        super(data, parameters);
+        this.runner = null;
+    }
+
+    /**
+     * Constructs a runner over data and knowledge alone: lists the algorithms that find latent variables directly
+     * from data.
+     *
+     * @param data       the data wrapper containing the dataset to be used
+     * @param knowledge  the KnowledgeBoxModel containing background knowledge relevant to the process
+     * @param parameters parameters for the session node
+     * @throws ParseException if any
+     */
+    public LatentStructureRunner(DataWrapper data, KnowledgeBoxModel knowledge, Parameters parameters)
+            throws ParseException {
+        super(data, knowledge, parameters);
+        this.runner = null;
+    }
+
+    /**
+     * Constructs a runner over data alone, taking its algorithm from a previous latent structure runner.
+     *
+     * @param data                  the data wrapper containing the dataset to be used
+     * @param latentStructureRunner the runner providing the algorithm to be used
+     * @param parameters            parameters for the session node
+     * @throws ParseException if any
+     */
+    public LatentStructureRunner(DataWrapper data, LatentStructureRunner latentStructureRunner, Parameters parameters)
+            throws ParseException {
+        super(data, parameters);
+        this.runner = null;
+        setAlgorithm(latentStructureRunner.getAlgorithm());
+    }
+
+    /**
+     * Constructs a runner over data and knowledge alone, taking its algorithm from a previous latent structure
+     * runner.
+     *
+     * @param data                  the data wrapper containing the dataset to be used
+     * @param latentStructureRunner the runner providing the algorithm to be used
+     * @param knowledge             the KnowledgeBoxModel containing background knowledge relevant to the process
+     * @param parameters            parameters for the session node
+     * @throws ParseException if any
+     */
+    public LatentStructureRunner(DataWrapper data, LatentStructureRunner latentStructureRunner,
+                                 KnowledgeBoxModel knowledge, Parameters parameters) throws ParseException {
+        super(data, knowledge, parameters);
+        this.runner = null;
+        setAlgorithm(latentStructureRunner.getAlgorithm());
+    }
 
     /**
      * Constructs a LatentStructureRunner instance, which requires a data wrapper, a latent clusters runner, and search
@@ -147,6 +222,13 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
      */
     @Override
     public void execute() {
+        // Data-only mode: the algorithm finds its own latents; nothing to validate or append.
+        if (runner == null) {
+            setBlockSpec(null);
+            super.execute();
+            return;
+        }
+
         // 1) Fetch BlockSpec from upstream
         BlockSpec spec = runner.getBlockSpec();
         if (spec == null) {
