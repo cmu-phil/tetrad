@@ -26,9 +26,11 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
 import edu.cmu.tetrad.search.rlcd.LatentGroups;
+import edu.cmu.tetrad.search.rlcd.PooledRankTest;
 import edu.cmu.tetrad.search.rlcd.RankTester;
 import edu.cmu.tetrad.search.rlcd.RlcdClusterSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -84,6 +86,10 @@ public class Rlcd {
     }
 
     private final DataSet dataSet;
+    /**
+     * The imputations searched over as one; just the data set when there is only one.
+     */
+    private final List<DataSet> imputations;
     private final List<Node> variables;
     private RankTester rankTester;
     private double alpha = 0.01;
@@ -115,7 +121,44 @@ public class Rlcd {
         if (dataSet == null) throw new NullPointerException("Data set is null.");
         if (!dataSet.isContinuous()) throw new IllegalArgumentException("RLCD requires continuous data.");
         this.dataSet = dataSet;
+        this.imputations = List.of(dataSet);
         this.variables = new ArrayList<>(dataSet.getVariables());
+    }
+
+    /**
+     * Constructs ONE search over several imputations of a data set with missing values. Stage 1 is run on the
+     * average of the imputations' covariance matrices, and the stage-2 rank tests are pooled over the imputations
+     * by {@link PooledRankTest}, so that every decision is made once, from all of the imputations. With a single
+     * data set this is the same as {@link #Rlcd(DataSet)}.
+     * <p>
+     * The average covariance matrix is a consistent estimate of the covariance matrix when the values are missing
+     * at random and the imputation model is right, but stage 1 scores it at the full sample size, which overstates
+     * the information in it by the fraction that was imputed.
+     *
+     * @param imputations the imputed data sets: continuous, with the same variables in the same order and the same
+     *                    number of rows.
+     */
+    public Rlcd(List<DataSet> imputations) {
+        if (imputations == null || imputations.isEmpty()) {
+            throw new IllegalArgumentException("At least one data set is required.");
+        }
+
+        DataSet first = imputations.getFirst();
+
+        for (DataSet dataSet : imputations) {
+            if (dataSet == null) throw new NullPointerException("Data set is null.");
+            if (!dataSet.isContinuous()) throw new IllegalArgumentException("RLCD requires continuous data.");
+
+            if (!dataSet.getVariableNames().equals(first.getVariableNames())
+                || dataSet.getNumRows() != first.getNumRows()) {
+                throw new IllegalArgumentException("To be pooled as imputations, the data sets must have the same "
+                                                   + "variables, in the same order, and the same number of rows.");
+            }
+        }
+
+        this.dataSet = first;
+        this.imputations = new ArrayList<>(imputations);
+        this.variables = new ArrayList<>(first.getVariables());
     }
 
     /**
@@ -267,7 +310,9 @@ public class Rlcd {
         List<String> xvars = new ArrayList<>();
         for (Node v : variables) xvars.add(v.getName());
 
-        if (rankTester == null) rankTester = new Chi2RankTest(dataSet);
+        if (rankTester == null) {
+            rankTester = imputations.size() > 1 ? new PooledRankTest(imputations) : new Chi2RankTest(dataSet);
+        }
 
         // Stage 1.
         Graph g1 = stage1Graph != null ? stage1Graph : runStage1();
@@ -445,7 +490,7 @@ public class Rlcd {
     }
 
     private Graph runStage1() throws InterruptedException {
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
+        SemBicScore score = new SemBicScore(stage1Covariance());
         score.setPenaltyDiscount(penaltyDiscount);
         if (stage1Method == Stage1Method.FGES) {
             Fges fges = new Fges(score);
@@ -460,6 +505,24 @@ public class Rlcd {
             if (seed != -1) ps.setSeed(seed);
             return ps.search();
         }
+    }
+
+    /**
+     * The covariance matrix stage 1 is scored on: the data set's, or with several imputations the average of
+     * theirs, at the common sample size.
+     */
+    private CovarianceMatrix stage1Covariance() {
+        CovarianceMatrix first = new CovarianceMatrix(dataSet);
+        if (imputations.size() == 1) return first;
+
+        Matrix sum = first.getMatrix();
+
+        for (int i = 1; i < imputations.size(); i++) {
+            sum = sum.plus(new CovarianceMatrix(imputations.get(i)).getMatrix());
+        }
+
+        return new CovarianceMatrix(first.getVariables(), sum.scalarMult(1.0 / imputations.size()),
+                first.getSampleSize());
     }
 
     /**

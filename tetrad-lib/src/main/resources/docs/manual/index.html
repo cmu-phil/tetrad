@@ -4971,13 +4971,21 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             rejected; and required edges between observed variables are kept in the output, oriented as required.
             Knowledge cannot refer to the latent variables, which are created by the search, so it cannot prevent an
             observed variable from being placed under a latent.</p>
+        <p>Given several imputations of a data set with missing values, RLCD by default returns one graph per
+            imputation, and these can differ a great deal, since the search is a sequence of yes-or-no decisions and
+            each imputation perturbs the ones near their thresholds. With poolImputations set, one search is run
+            instead: stage 1 is scored on the average of the imputations' covariance matrices, and each stage-2 rank
+            statistic is computed on every imputation and combined by the rule of Li, Meng, Raghunathan, and Rubin
+            (1991), which shrinks the statistic by the disagreement among the imputations. The combining rule is an
+            approximation; it assumes values missing at random, and stage 1 still scores at the full sample
+            size.</p>
     </div>
     <h4>Parameters</h4>
 
     <p><a href="#alpha">alpha</a>, <a href="#rlcdMaxK">rlcdMaxK</a>, <a href="#rlcdAllowNonLeafX">rlcdAllowNonLeafX</a>,
         <a href="#rlcdUnfoldCovers">rlcdUnfoldCovers</a>, <a href="#rlcdCheckV">rlcdCheckV</a>,
         <a href="#rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</a>, <a href="#rlcdStage1Fges">rlcdStage1Fges</a>,
-        <a href="#penaltyDiscountDefault1">penaltyDiscountDefault1</a>, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
+        <a href="#poolImputations">poolImputations</a>, <a href="#penaltyDiscountDefault1">penaltyDiscountDefault1</a>, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
 
     <h2>Statistical Tests</h2>
 

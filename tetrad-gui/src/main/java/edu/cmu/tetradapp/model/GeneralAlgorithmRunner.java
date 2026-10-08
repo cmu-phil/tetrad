@@ -33,6 +33,7 @@ import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.PoolsImputations;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
@@ -601,6 +602,33 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+                }
+            }
+            // ----- 2A') Imputations: several imputations of one data set, ONE search, when requested -----
+            // Not 2B' below: imputations share their observed values, so they are not pooled as independent data
+            // sets; the algorithm combines each of its tests over them. See PoolsImputations.
+            else if (dataModelList.size() > 1 && algo instanceof PoolsImputations poolsImputations
+                     && this.parameters.getBoolean(Params.POOL_IMPUTATIONS, false)) {
+                if (knowledge == null) {
+                    Knowledge knowledgeFromData = dataModelList.getFirst().getKnowledge();
+                    if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
+                        this.knowledge = knowledgeFromData;
+                    }
+                }
+
+                if (this.algorithm instanceof AcceptsKnowledge && this.knowledge != null) {
+                    ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                }
+
+                try {
+                    Graph graph = GraphUtils.detachNodes(poolsImputations.searchImputations(
+                            new ArrayList<>(dataModelList), this.parameters));
+                    graphList.add(graph);
+                    // Not noteForAggregate: its total sample size would count each row once per imputation.
+                    graphSubtitle.put(graph, "pooled over " + dataModelList.size() + " imputations");
+                    resultNames.add("Pooled (" + dataModelList.size() + " imputations)");
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
             // ----- 2B') Pooled search: several data sets, ONE search (IMaGES-style), when requested -----

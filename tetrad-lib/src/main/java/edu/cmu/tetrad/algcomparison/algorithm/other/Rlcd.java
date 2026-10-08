@@ -22,6 +22,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.other;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.PoolsImputations;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -52,7 +53,7 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents,
         dataType = DataType.Continuous
 )
-public class Rlcd implements Algorithm, AcceptsKnowledge {
+public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
     @Serial
     private static final long serialVersionUID = 23L;
 
@@ -77,7 +78,33 @@ public class Rlcd implements Algorithm, AcceptsKnowledge {
             throw new IllegalArgumentException("RLCD requires a continuous tabular data set.");
         }
 
-        edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(dataSet);
+        return run(new edu.cmu.tetrad.search.Rlcd(dataSet), parameters);
+    }
+
+    /**
+     * Runs ONE RLCD search over several imputations of a data set with missing values; see
+     * {@link edu.cmu.tetrad.search.Rlcd#Rlcd(List)}.
+     *
+     * @param imputations the imputed data sets; continuous tabular data sets with the same variables and rows.
+     * @param parameters  the parameters.
+     * @return the graph over observed and latent variables.
+     */
+    @Override
+    public Graph searchImputations(List<DataModel> imputations, Parameters parameters) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel dataModel : imputations) {
+            if (!(dataModel instanceof DataSet dataSet && dataModel.isContinuous())) {
+                throw new IllegalArgumentException("RLCD requires continuous tabular data sets.");
+            }
+
+            dataSets.add(dataSet);
+        }
+
+        return run(new edu.cmu.tetrad.search.Rlcd(dataSets), parameters);
+    }
+
+    private Graph run(edu.cmu.tetrad.search.Rlcd rlcd, Parameters parameters) {
         rlcd.setAlpha(parameters.getDouble(Params.ALPHA));
         rlcd.setMaxK(parameters.getInt(Params.RLCD_MAX_K));
         rlcd.setAllowNonLeafX(parameters.getBoolean(Params.RLCD_ALLOW_NON_LEAF_X));
@@ -141,6 +168,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge {
         parameters.add(Params.RLCD_CHECK_V);
         parameters.add(Params.RLCD_PARTITION_CLIQUE_THRESHOLD);
         parameters.add(Params.RLCD_STAGE1_FGES);
+        parameters.add(Params.POOL_IMPUTATIONS);
         parameters.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
         parameters.add(Params.SEED);
         parameters.add(Params.VERBOSE);

@@ -22,18 +22,23 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MvnImputer;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
+import edu.cmu.tetrad.search.rlcd.PooledRankTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -192,6 +197,71 @@ public class TestRlcd {
         int[] ac = {0, 1, 2}, bc = {0, 3, 4, 5};
         assertTrue(test.failToReject(ac, bc, 2, 0.01));
         assertFalse(test.failToReject(ac, bc, 1, 0.01));
+    }
+
+    /**
+     * The rule for pooling chi-square statistics over imputations: with imputations that agree it is the ordinary
+     * chi-square test, and disagreement among them, at the same mean statistic, makes it harder to reject.
+     */
+    @Test
+    public void testPooledPValue() {
+        double chi2 = 1.0 - new ChiSquaredDistribution(3).cumulativeProbability(12.0);
+        assertEquals(chi2, PooledRankTest.pooledPValue(new double[]{12.0}, 3), 1e-12);
+        assertEquals(chi2, PooledRankTest.pooledPValue(new double[]{12.0, 12.0, 12.0, 12.0}, 3), 1e-12);
+
+        double mild = PooledRankTest.pooledPValue(new double[]{10.0, 11.0, 13.0, 14.0}, 3);
+        double wild = PooledRankTest.pooledPValue(new double[]{2.0, 6.0, 16.0, 24.0}, 3);
+        assertTrue(mild > chi2);
+        assertTrue(wild > mild);
+        assertTrue(wild <= 1.0);
+    }
+
+    /**
+     * One search over several imputations of data with missing values recovers the two clusters of the two-latent
+     * model, and gives the same answer as the single-data-set search when there is only one data set.
+     */
+    @Test
+    public void testPooledImputations() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 3000, 4242L);
+        DataSet holes = full.copy();
+        Random random = new Random(4242L);
+
+        // A fifth of the values missing completely at random, the first column kept whole.
+        for (int i = 0; i < holes.getNumRows(); i++) {
+            for (int j = 1; j < holes.getNumColumns(); j++) {
+                if (random.nextDouble() < 0.2) holes.setDouble(i, j, Double.NaN);
+            }
+        }
+
+        List<DataSet> imputations = new MvnImputer(MissingDataSpec.multipleImputation(5)).impute(holes, 5, 4242L);
+
+        Rlcd rlcd = new Rlcd(imputations);
+        rlcd.setMaxK(2);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        Graph out = rlcd.search();
+
+        Set<Set<String>> childSets = new HashSet<>();
+        for (Node node : out.getNodes()) {
+            if (node.getNodeType() != NodeType.LATENT) continue;
+            Set<String> children = new HashSet<>();
+            for (Node c : out.getChildren(node)) {
+                if (c.getNodeType() != NodeType.LATENT) children.add(c.getName());
+            }
+            childSets.add(children);
+        }
+        assertEquals("Two clusters expected, got " + out, Set.of(Set.of("X1", "X2", "X3"), Set.of("X4", "X5", "X6")),
+                childSets);
+
+        Rlcd one = new Rlcd(List.of(full));
+        one.setMaxK(2);
+        one.setAlpha(0.01);
+        one.setSeed(1L);
+        Rlcd single = new Rlcd(full);
+        single.setMaxK(2);
+        single.setAlpha(0.01);
+        single.setSeed(1L);
+        assertEquals(single.search(), one.search());
     }
 
     /**

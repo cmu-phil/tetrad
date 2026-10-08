@@ -1622,6 +1622,13 @@ public final class Params {
      */
     public static final String RLCD_PARTITION_CLIQUE_THRESHOLD = "rlcdPartitionCliqueThreshold";
     /**
+     * Constant <code>POOL_IMPUTATIONS="poolImputations"</code> Whether, given several data sets that are
+     * imputations of one data set with missing values, to run ONE search over them with the imputation uncertainty
+     * carried into each test, rather than one search per imputation. Not the same as {@link #POOL_DATA_SETS}, which
+     * treats the data sets as independent.
+     */
+    public static final String POOL_IMPUTATIONS = "poolImputations";
+    /**
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";

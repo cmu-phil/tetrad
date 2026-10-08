@@ -105,6 +105,24 @@ public final class Chi2RankTest implements RankTester {
         // is false and the null is rejected.
         if (r < 0 || r >= m || df <= 0) return false;
 
+        double stat = statistic(pcols, qcols, r);
+
+        double critical = new ChiSquaredDistribution(df).inverseCumulativeProbability(1 - alpha);
+        return stat <= critical;
+    }
+
+    /**
+     * The statistic T of the class comment for the rank ≤ r test, to be referred to a chi-square distribution with
+     * (|P| − r)(|Q| − r) degrees of freedom. The caller is responsible for those degrees of freedom being positive.
+     *
+     * @param pcols column indices of the first set.
+     * @param qcols column indices of the second set.
+     * @param r     the hypothesized maximum rank; 0 ≤ r &lt; min(|P|, |Q|).
+     * @return the statistic.
+     */
+    public double statistic(int[] pcols, int[] qcols, int r) {
+        int p = pcols.length, q = qcols.length;
+        int m = Math.min(p, q);
         double[] rho = canonicalCorrelations(pcols, qcols);
 
         double stat = 0.0;
@@ -118,10 +136,7 @@ public final class Chi2RankTest implements RankTester {
             ratio += 1.0 / (li * li) - 1.0;
         }
         ratio += sampleSize * nScaling - r - 0.5 * (p + q + 1);
-        stat *= ratio;
-
-        double critical = new ChiSquaredDistribution(df).inverseCumulativeProbability(1 - alpha);
-        return stat <= critical;
+        return stat * ratio;
     }
 
     /**
@@ -138,16 +153,7 @@ public final class Chi2RankTest implements RankTester {
         int m = Math.min(p, q);
         int df = (p - r) * (q - r);
         if (p == 0 || q == 0 || r < 0 || r >= m || df <= 0) return 0.0;
-        double[] rho = canonicalCorrelations(pcols, qcols);
-        double stat = 0.0;
-        for (int i = r; i < m; i++) {
-            double li = Math.min(rho[i], 1 - 1e-15);
-            stat += -Math.log(1 - li * li);
-        }
-        double ratio = 0.0;
-        for (int i = 0; i < r; i++) ratio += 1.0 / (rho[i] * rho[i]) - 1.0;
-        ratio += sampleSize * nScaling - r - 0.5 * (p + q + 1);
-        stat *= ratio;
+        double stat = statistic(pcols, qcols, r);
         return 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(stat);
     }
 
