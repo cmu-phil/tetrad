@@ -305,6 +305,61 @@ public class TestRlcd {
     }
 
     /**
+     * A latent all of whose children are latent: T0 over T1, ..., T4, each with three pure indicators. Finding T0
+     * takes a rank test on a set of latent covers, which the Python never makes. The four lower latents should each
+     * be adjacent to one further latent that has no observed neighbors, and to no other latent.
+     */
+    @Test
+    public void testLatentOverLatents() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node top = new GraphNode("T0");
+        top.setNodeType(NodeType.LATENT);
+        g.addNode(top);
+        int x = 1;
+        for (int i = 1; i <= 4; i++) {
+            Node t = new GraphNode("T" + i);
+            t.setNodeType(NodeType.LATENT);
+            g.addNode(t);
+            g.addDirectedEdge(top, t);
+            for (int j = 0; j < 3; j++) {
+                Node o = new GraphNode("X" + x++);
+                g.addNode(o);
+                g.addDirectedEdge(t, o);
+            }
+        }
+
+        DataSet data = simulate(g, 10000, 31L);
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setMaxK(2);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        Graph out = rlcd.search();
+
+        List<Node> lower = new ArrayList<>();
+        List<Node> upper = new ArrayList<>();
+        for (Node node : out.getNodes()) {
+            if (node.getNodeType() != NodeType.LATENT) continue;
+            boolean hasObserved = false;
+            for (Node adj : out.getAdjacentNodes(node)) {
+                if (adj.getNodeType() != NodeType.LATENT) hasObserved = true;
+            }
+            (hasObserved ? lower : upper).add(node);
+        }
+
+        assertEquals("Four latents with indicators expected: " + out, 4, lower.size());
+        assertEquals("One latent over them expected: " + out, 1, upper.size());
+
+        for (Node node : lower) {
+            assertTrue("Each lower latent should be adjacent to the upper one: " + out,
+                    out.isAdjacentTo(node, upper.getFirst()));
+            for (Node other : lower) {
+                if (other != node) assertFalse("Lower latents should not be adjacent: " + out,
+                        out.isAdjacentTo(node, other));
+            }
+        }
+    }
+
+    /**
      * Example run with verbose trace; hand-run from the IDE.
      *
      * @param args ignored.

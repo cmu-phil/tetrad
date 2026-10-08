@@ -41,16 +41,17 @@ import java.util.function.IntToDoubleFunction;
  * become parents of the latent roots they are dependent on, or, if no observed roots remain, latent roots are
  * chained in a fixed order by undirected edges.
  * <p>
- * Two properties of the released Python are preserved and worth knowing: (1) a candidate set A whose observed
- * members (plus non-sinks) are not connected in the stage-1 skeleton is skipped, and this skip also applies when A
- * has no observed members at all, so sets consisting only of latent covers are never tested. Latent-latent edges are
- * still found by the rank tests, because unfolding one cluster into its observed children while keeping the other as
- * a cover supplies observed members; what is never tested directly is a set of two or more un-unfolded latent
- * covers. (2) The chain over leftover latent roots in the finish step is not data driven: its order is set-iteration
+ * Two properties of the released Python are worth knowing: (1) a candidate set A whose observed members (plus
+ * non-sinks) are not connected in the stage-1 skeleton is skipped. In the Python this skip also applies when A has
+ * no observed members at all, so sets consisting only of latent covers are never tested, and a latent all of whose
+ * children are latent is never found; here such a set is checked through its measured descendants and then tested
+ * (see below). (2) The chain over leftover latent roots in the finish step is not data driven: its order is set-iteration
  * order in the Python and sorted cover-name order here, and no test is made of whether consecutive roots in it are
  * dependent.
  * <p>
- * Two deliberate differences from the Python. A set of covers found to have rank 0 against the rest, that is, not
+ * Three deliberate differences from the Python. Sets consisting only of latent covers are tested, as just described;
+ * the paper's search (Algorithm 3 of Dong et al.) draws its candidate sets from all active covers and has no such
+ * exclusion. A set of covers found to have rank 0 against the rest, that is, not
  * found dependent on them at all, is not made a cluster; the Python makes it a 0-cluster under a cover with no
  * variables, which removes its members from the search and discards the clusters of higher rank found in the same
  * round. And the Python writes the finish-step chain as directed edges, in an order that depends on
@@ -343,6 +344,15 @@ public final class RlcdClusterSearch {
             Set<String> observedInAs = new TreeSet<>();
             for (Cover x : as) if (x.isObserved()) observedInAs.addAll(x.getVars());
             observedInAs.addAll(nonsinks);
+
+            // A set made only of latent covers, with no non-sinks, has no observed members to check. The Python
+            // skips every such set, apparently by accident (its connectivity check returns false for an empty
+            // list), so a latent whose children are all latent can never be found. Here the check is made on the
+            // measured descendants of the covers instead.
+            if (observedInAs.isEmpty()) {
+                observedInAs.addAll(CoverSets.vars(g.pickAllMeasures(as)));
+            }
+
             if (!connectedInLocalAdj(g, observedInAs)) continue;
 
             if (CoverSets.setLength(bs) <= k - numNonsinks) continue;
