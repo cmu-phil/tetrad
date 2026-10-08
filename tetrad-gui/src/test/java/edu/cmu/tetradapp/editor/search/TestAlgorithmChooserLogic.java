@@ -196,6 +196,25 @@ public class TestAlgorithmChooserLogic {
     }
 
     @Test
+    public void latentAnswerDoesNotApplyInTheLatentStructureBox() {
+        // The Latent Structure box does not ask the latent-confounder question, so whatever answer is carried over
+        // from a Search box (NO by default) must leave its list as it is.
+        for (LatentChoice choice : LatentChoice.values()) {
+            Answers answers = new Answers(choice, false, false, false, null);
+
+            for (AlgorithmChooserLogic.BoxMode mode : List.of(AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA,
+                    AlgorithmChooserLogic.BoxMode.LATENTS_FROM_CLUSTERS)) {
+                assertEquals(AlgorithmChooserLogic.filter(all(), DataType.Continuous, mode, ANY),
+                        AlgorithmChooserLogic.filter(all(), DataType.Continuous, mode, answers));
+            }
+        }
+
+        assertTrue(has(AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA,
+                new Answers(LatentChoice.NO, false, false, false, null)), "RLCD"));
+    }
+
+    @Test
     public void boxModesPartitionTheRegistry() {
         List<AlgorithmModel> search = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
                 AlgorithmChooserLogic.BoxMode.SEARCH, ANY);

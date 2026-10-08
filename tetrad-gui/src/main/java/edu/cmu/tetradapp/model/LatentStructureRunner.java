@@ -57,6 +57,17 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
     private final LatentClustersRunner runner;
 
     /**
+     * Takes the algorithm of the previous runner of this box, if it had one. It has none when the box was opened
+     * and closed without an algorithm being chosen, and the session still hands that runner to the next one;
+     * {@link #setAlgorithm} rejects null, which made the box impossible to recreate from then on.
+     */
+    private void copyAlgorithm(LatentStructureRunner previous) {
+        if (previous != null && previous.getAlgorithm() != null) {
+            setAlgorithm(previous.getAlgorithm());
+        }
+    }
+
+    /**
      * Constructs a runner over data alone: lists the algorithms that find latent variables directly from data.
      *
      * @param data       the data wrapper containing the dataset to be used
@@ -95,7 +106,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
             throws ParseException {
         super(data, parameters);
         this.runner = null;
-        setAlgorithm(latentStructureRunner.getAlgorithm());
+        copyAlgorithm(latentStructureRunner);
     }
 
     /**
@@ -112,7 +123,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
                                  KnowledgeBoxModel knowledge, Parameters parameters) throws ParseException {
         super(data, knowledge, parameters);
         this.runner = null;
-        setAlgorithm(latentStructureRunner.getAlgorithm());
+        copyAlgorithm(latentStructureRunner);
     }
 
     /**
@@ -154,7 +165,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
         super(data, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();
-        setAlgorithm(latentStructureRunner.getAlgorithm());
+        copyAlgorithm(latentStructureRunner);
     }
 
     /**
@@ -200,7 +211,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
         super(data, knowledge, parameters);
         this.runner = Objects.requireNonNull(latentClustersRunner, "ClusterRunner required");
         super.blockSpec = latentClustersRunner.getBlockSpec();
-        setAlgorithm(latentStructureRunner.getAlgorithm());
+        copyAlgorithm(latentStructureRunner);
     }
 
     private static void ensureSpecMatchesRunnerData(BlockSpec spec, DataModel runnerData) {

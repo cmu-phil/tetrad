@@ -226,7 +226,11 @@ public final class AlgorithmChooserLogic {
             if (!fitsData(a.dataType(), dataType)) continue;
             if (!fitsMode(c, a, mode)) continue;
 
-            switch (answers.latent()) {
+            // The latent-confounder question belongs to the Search box. The Latent Structure box does not show it,
+            // and its family is fixed by the box, so the answer carried over from a Search box (NO by default) must
+            // not apply there: every algorithm that finds structure over latents has an algorithm type that is
+            // neither of the two the question selects, so applying it emptied the list.
+            switch (mode == BoxMode.SEARCH ? answers.latent() : LatentChoice.ANY) {
                 case NO -> {
                     if (a.algoType() != AlgType.forbid_latent_common_causes) continue;
                 }

@@ -667,8 +667,9 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     private String filterSummary() {
         List<String> parts = new ArrayList<>();
         parts.add(dataTypeLabel(this.dataType).toLowerCase(Locale.ROOT) + " data");
-        if (this.latent == LatentChoice.NO) parts.add("no latents");
-        if (this.latent == LatentChoice.YES) parts.add("latents allowed");
+        boolean asksLatents = this.mode == AlgorithmChooserLogic.BoxMode.SEARCH;
+        if (asksLatents && this.latent == LatentChoice.NO) parts.add("no latents");
+        if (asksLatents && this.latent == LatentChoice.YES) parts.add("latents allowed");
         if (this.timeSeries) parts.add("time series");
         if (this.knowledge) parts.add("knowledge");
         if (this.experimental) parts.add("experimental shown");
