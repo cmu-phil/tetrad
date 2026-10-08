@@ -4965,6 +4965,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             tested; when the search ends with several latent roots, they are connected in a chain whose orientation is
             not determined by the data. Stage-1 edges between observed variables inside a partition are dropped
             whether or not stage 2 explains them. Requires continuous data.</p>
+        <p>Background knowledge over the observed variables is honored in three places: the stage-1 search obeys it
+            as any search does; in stage 2 an observed variable is never used as a parent of a cluster member it is
+            forbidden to cause, and a cluster whose cover would create a forbidden edge between observed variables is
+            rejected; and required edges between observed variables are kept in the output, oriented as required.
+            Knowledge cannot refer to the latent variables, which are created by the search, so it cannot prevent an
+            observed variable from being placed under a latent.</p>
     </div>
     <h4>Parameters</h4>
 

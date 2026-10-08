@@ -21,10 +21,12 @@
 package edu.cmu.tetrad.algcomparison.algorithm.other;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -37,7 +39,9 @@ import java.util.List;
 /**
  * Wrapper for the RLCD algorithm (Rank-based Latent Causal Discovery; Dong et al., ICLR 2024), which learns a graph
  * over the observed variables and newly introduced latent variables from rank constraints on the covariance matrix.
- * The output graph contains the observed variables and the discovered latents, marked as latent nodes.
+ * The output graph contains the observed variables and the discovered latents, marked as latent nodes. Background
+ * knowledge over the observed variables is honored in stage 1, restricts which observed variables may act as parents
+ * in stage 2, and restores required observed edges; it cannot refer to the latents.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.search.Rlcd
@@ -48,9 +52,11 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents,
         dataType = DataType.Continuous
 )
-public class Rlcd implements Algorithm {
+public class Rlcd implements Algorithm, AcceptsKnowledge {
     @Serial
     private static final long serialVersionUID = 23L;
+
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Constructs a new instance of the algorithm.
@@ -84,6 +90,7 @@ public class Rlcd implements Algorithm {
         rlcd.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT_DEFAULT_1));
         rlcd.setSeed(parameters.getLong(Params.SEED));
         rlcd.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        rlcd.setKnowledge(this.knowledge);
 
         try {
             return rlcd.search();
@@ -112,6 +119,16 @@ public class Rlcd implements Algorithm {
     @Override
     public DataType getDataType() {
         return DataType.Continuous;
+    }
+
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override

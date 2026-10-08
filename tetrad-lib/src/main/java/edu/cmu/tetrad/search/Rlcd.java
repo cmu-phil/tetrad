@@ -22,6 +22,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
 import edu.cmu.tetrad.search.rlcd.LatentGroups;
@@ -97,6 +98,7 @@ public class Rlcd {
     private Graph stage1Graph = null;
     private long seed = -1;
     private boolean verbose = false;
+    private Knowledge knowledge = new Knowledge();
 
     private Graph stage1Result;
     private List<List<Node>> partition;
@@ -232,6 +234,20 @@ public class Rlcd {
     }
 
     /**
+     * Sets background knowledge over the observed variables. Knowledge is applied in three places: the stage-1
+     * search honors it as any search does; in stage 2 an observed variable is never used as a non-sink (parent) of a
+     * candidate member it is forbidden to cause, and a cluster whose cover would create a forbidden observed-to-
+     * observed edge is rejected; and required edges between observed variables are restored in the output if stage
+     * 2 dropped them, oriented as required. Knowledge cannot refer to latent variables, which are created by the
+     * search, so it cannot keep an observed variable from being placed under a latent.
+     *
+     * @param knowledge the knowledge; null means none.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge == null ? new Knowledge() : knowledge;
+    }
+
+    /**
      * Whether to log the search trace through {@link TetradLogger}.
      *
      * @param verbose the flag.
@@ -269,6 +285,7 @@ public class Rlcd {
         this.latentGroups = new ArrayList<>();
         RlcdClusterSearch search = new RlcdClusterSearch(xvars, rankTester, this::alphaFor, maxK,
                 allowNonLeafX, unfoldCovers, checkV);
+        search.setKnowledge(knowledge);
         if (verbose) search.setLog(this::log);
 
         for (List<Node> group : partition) {
@@ -296,7 +313,21 @@ public class Rlcd {
                 }
             }
 
-            LatentGroups current = new LatentGroups(currentXvars, currentXvars, neighbourSet, localAdj, latentPrefix);
+            // A variable that knowledge forbids from being a parent of every other member cannot be a non-sink.
+            List<String> nonSinkCandidates = new ArrayList<>();
+            for (String c : currentXvars) {
+                boolean canParentSomething = false;
+                for (String x : currentXvars) {
+                    if (!x.equals(c) && !knowledge.isForbidden(c, x)) {
+                        canParentSomething = true;
+                        break;
+                    }
+                }
+                if (canParentSomething) nonSinkCandidates.add(c);
+            }
+
+            LatentGroups current = new LatentGroups(currentXvars, nonSinkCandidates, neighbourSet, localAdj,
+                    latentPrefix);
             current = search.findClusters(current);
             latentGroups.add(current);
 
@@ -334,6 +365,22 @@ public class Rlcd {
             allVars.add(name);
         }
         this.allVariableNames = allVars;
+
+        // Required edges between observed variables are kept, oriented as required, if stage 2 dropped them.
+        for (int i = 0; i < nx; i++) {
+            for (int j = 0; j < nx; j++) {
+                if (i == j || !knowledge.isRequired(xvars.get(i), xvars.get(j))) continue;
+                if (adj[i][j] == -1 && adj[j][i] == 1) continue;             // already i --> j
+                if (adj[i][j] == 1 && adj[j][i] == -1) {                      // found j --> i: conflict, keep
+                    log("Knowledge requires " + xvars.get(i) + " --> " + xvars.get(j)
+                        + " but the search oriented it the other way; left as found.");
+                    continue;
+                }
+                adj[i][j] = -1;
+                adj[j][i] = 1;
+                log("Adding required edge " + xvars.get(i) + " --> " + xvars.get(j) + " from knowledge.");
+            }
+        }
 
         // Co-members of an atomic cover (−2) get no edge.
         for (int i = 0; i < adj.length; i++) {
@@ -402,12 +449,14 @@ public class Rlcd {
         score.setPenaltyDiscount(penaltyDiscount);
         if (stage1Method == Stage1Method.FGES) {
             Fges fges = new Fges(score);
+            fges.setKnowledge(knowledge);
             fges.setVerbose(false);
             return fges.search();
         } else {
             Boss boss = new Boss(score);
             boss.setVerbose(false);
             PermutationSearch ps = new PermutationSearch(boss);
+            ps.setKnowledge(knowledge);
             if (seed != -1) ps.setSeed(seed);
             return ps.search();
         }

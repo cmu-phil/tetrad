@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.search.rlcd;
 
+import edu.cmu.tetrad.data.Knowledge;
+
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.IntToDoubleFunction;
@@ -63,6 +65,7 @@ public final class RlcdClusterSearch {
     private final boolean checkV;
     private Consumer<String> log = s -> {
     };
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Constructs the search.
@@ -97,6 +100,18 @@ public final class RlcdClusterSearch {
     }
 
     /**
+     * Sets background knowledge over the observed variables. A non-sink c is not tested as a parent of a candidate
+     * set containing an observed variable a when c → a is forbidden, and a cluster whose new cover would create a
+     * forbidden observed-to-observed edge is rejected. Knowledge cannot refer to latent variables, which are created
+     * by the search.
+     *
+     * @param knowledge the knowledge; null means none.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge == null ? new Knowledge() : knowledge;
+    }
+
+    /**
      * Runs the full stage-2 search on the structure (Python <code>findClusters</code> followed by the finish step).
      *
      * @param g the structure for one partition; modified in place.
@@ -105,6 +120,7 @@ public final class RlcdClusterSearch {
      */
     public LatentGroups findClusters(LatentGroups g) throws InterruptedException {
         g.setLog(log);
+        g.setKnowledge(knowledge);
         int k = 1;
         while (true) {
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
@@ -327,6 +343,7 @@ public final class RlcdClusterSearch {
             if (g.overlapPaCh(as)) continue;
             if (g.measuredHasNonSinks(as, nonsinks)) continue;
             if (g.checkNonSinksAreAsChildren(as, nonsinks)) continue;
+            if (knowledgeForbids(as, nonsinks)) continue;
             // Bs must have parent cardinality > k - |nonsinks|, otherwise rank <= k regardless of As.
             if (g.parentCardinality(bs) <= k - numNonsinks) continue;
 
@@ -354,6 +371,23 @@ public final class RlcdClusterSearch {
             }
         }
         return res;
+    }
+
+    /**
+     * Whether background knowledge forbids some non-sink from being a parent of some observed member of As. The
+     * non-sinks of a confirmed cluster become parents of its members, so such a candidate is not tested.
+     */
+    private boolean knowledgeForbids(Set<Cover> as, List<String> nonsinks) {
+        if (nonsinks.isEmpty()) return false;
+        for (Cover a : as) {
+            if (!a.isObserved()) continue;
+            for (String av : a.getVars()) {
+                for (String c : nonsinks) {
+                    if (knowledge.isForbidden(c, av)) return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

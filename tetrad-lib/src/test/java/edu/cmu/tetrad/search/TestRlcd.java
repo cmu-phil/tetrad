@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
 import edu.cmu.tetrad.sem.SemIm;
@@ -114,6 +115,66 @@ public class TestRlcd {
             boolean bothObserved = e.getNode1().getNodeType() != NodeType.LATENT
                                    && e.getNode2().getNodeType() != NodeType.LATENT;
             assertFalse("Unexpected observed-observed edge " + e + " in " + out, bothObserved);
+        }
+    }
+
+    /**
+     * An observed DAG with no latents, dense enough that RLCD finds spurious clusters with observed non-sinks.
+     */
+    private static Graph observedDag() {
+        Graph g = new EdgeListGraph();
+        Node[] x = new Node[6];
+        for (int i = 0; i < 6; i++) {
+            x[i] = new GraphNode("X" + (i + 1));
+            g.addNode(x[i]);
+        }
+        g.addDirectedEdge(x[0], x[1]);
+        g.addDirectedEdge(x[0], x[2]);
+        g.addDirectedEdge(x[1], x[2]);
+        g.addDirectedEdge(x[2], x[3]);
+        g.addDirectedEdge(x[1], x[4]);
+        g.addDirectedEdge(x[3], x[4]);
+        return g;
+    }
+
+    /**
+     * Knowledge over the observed variables must be honored in the output: no forbidden observed-to-observed edge
+     * may appear (whether from stage 1 or from a stage-2 non-sink), and required observed edges must be present.
+     * Knowledge cannot refer to latents, so edges at latent nodes are unconstrained.
+     */
+    @Test
+    public void testKnowledgeIsHonored() throws Exception {
+        DataSet data = simulate(observedDag(), 2000, 31L);
+
+        Knowledge knowledge = new Knowledge();
+        knowledge.addToTier(0, "X1");
+        for (int i = 2; i <= 6; i++) knowledge.addToTier(1, "X" + i);
+        knowledge.setForbidden("X4", "X2");
+        knowledge.setForbidden("X4", "X5");
+        knowledge.setRequired("X1", "X2");
+
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setMaxK(2);
+        rlcd.setSeed(1L);
+        rlcd.setKnowledge(knowledge);
+        Graph out = rlcd.search();
+
+        Node x1 = out.getNode("X1"), x2 = out.getNode("X2");
+        assertTrue("Required edge X1 --> X2 missing: " + out, out.isParentOf(x1, x2));
+
+        for (Edge e : out.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            if (a.getNodeType() == NodeType.LATENT || b.getNodeType() == NodeType.LATENT) continue;
+            if (Edges.isDirectedEdge(e)) {
+                Node tail = Edges.getDirectedEdgeTail(e), head = Edges.getDirectedEdgeHead(e);
+                assertFalse("Forbidden edge in output: " + e + " in " + out,
+                        knowledge.isForbidden(tail.getName(), head.getName()));
+            } else {
+                // An undirected observed edge is allowed only if at least one orientation is permitted.
+                assertFalse("Edge forbidden in both directions: " + e,
+                        knowledge.isForbidden(a.getName(), b.getName())
+                        && knowledge.isForbidden(b.getName(), a.getName()));
+            }
         }
     }
 

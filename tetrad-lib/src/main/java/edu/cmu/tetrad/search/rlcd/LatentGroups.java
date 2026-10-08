@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.search.rlcd;
 
+import edu.cmu.tetrad.data.Knowledge;
+
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -118,6 +120,7 @@ public final class LatentGroups {
     private final boolean[][] localAdj;
     private Consumer<String> log = s -> {
     };
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Constructs the structure over a partition of observed variables.
@@ -153,6 +156,15 @@ public final class LatentGroups {
     public void setLog(Consumer<String> log) {
         this.log = log == null ? s -> {
         } : log;
+    }
+
+    /**
+     * Sets background knowledge over the observed variables; see {@link #addCluster}.
+     *
+     * @param knowledge the knowledge; null means none.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge == null ? new Knowledge() : knowledge;
     }
 
     // ---------------------------------------------------------------- accessors
@@ -376,7 +388,9 @@ public final class LatentGroups {
     /**
      * For a discovered cluster Vs of rank k, creates a new cover over it, or extends an existing one (Python
      * <code>addCluster</code>). The new cover's variables are the variables of the existing parents of Vs, then the
-     * used non-sinks not already among them, then fresh latent names, up to k variables in total.
+     * used non-sinks not already among them, then fresh latent names, up to k variables in total. The cluster is
+     * rejected if a used non-sink is already a child of it (a cycle), or if an observed variable of the new cover
+     * is forbidden by knowledge from being a parent of an observed child.
      *
      * @param vs           the cluster.
      * @param fullVs       the original rank-deficient sets merged into it (unused, as in the Python).
@@ -446,6 +460,19 @@ public final class LatentGroups {
             if (c != null) vsWork.remove(c);
         }
         vsWork = CoverSets.deduplicate(vsWork);
+
+        // Observed variables in the new cover become parents of the children; reject if knowledge forbids one.
+        for (String c : newCoverNames) {
+            if (!xDict.containsKey(c)) continue;
+            for (Cover ch : vsWork) {
+                for (String a : ch.getVars()) {
+                    if (xDict.containsKey(a) && knowledge.isForbidden(c, a)) {
+                        log.accept("Rejecting " + vs + " as a cluster because knowledge forbids " + c + " --> " + a);
+                        return false;
+                    }
+                }
+            }
+        }
 
         return addOrUpdateCover(newCover, vsWork, vs2);
     }
