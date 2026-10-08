@@ -919,6 +919,10 @@ public class KnowledgeBoxEditor extends JPanel {
         tiersScrollPane.setPreferredSize(new Dimension(640, 400));
         applyScrollTheme(tiersScrollPane);
 
+        // A Box view gives the scroll pane a unit increment of one pixel, which makes wheel
+        // scrolling to the tiers below the fold all but impossible.
+        tiersScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
         if (!this.firstTierVars.isEmpty() && !forbiddenCheckboxes.isEmpty()) {
             forbiddenCheckboxes.get(0).setSelected(true);
             getKnowledge().setTierForbiddenWithin(0, true);

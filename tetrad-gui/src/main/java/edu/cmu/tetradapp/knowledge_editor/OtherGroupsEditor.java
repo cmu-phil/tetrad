@@ -305,6 +305,7 @@ class OtherGroupsEditor extends JPanel {
         JScrollPane pane2 = new JScrollPane(groupBoxes);
         pane2.setPreferredSize(new Dimension(500, 400));
         themeScrollPane(pane2);
+        pane2.getVerticalScrollBar().setUnitIncrement(16);
 
         vBox.add(pane2);
 

@@ -100,6 +100,19 @@ class OtherTiersEditor extends JPanel {
     private int structuresScrollValue;
 
     /**
+     * True when the next rebuild follows adding a structure, in which case the view scrolls to
+     * the new structure (at the bottom) and focuses its name field instead of staying where it
+     * was. Without this, the new box appeared below the fold -- the first two boxes fill the
+     * viewport -- and the Add button looked like it had stopped working.
+     */
+    private boolean showNewestOnRebuild;
+
+    /**
+     * The name field of the last (newest) structure box, focused after an add.
+     */
+    private JTextField newestNameField;
+
+    /**
      * Constructs the editor.
      *
      * @param knowledge   the knowledge whose tier structures are edited
@@ -251,9 +264,26 @@ class OtherTiersEditor extends JPanel {
         repaint();
 
         if (this.structuresScrollPane != null) {
+            boolean showNewest = this.showNewestOnRebuild;
+            this.showNewestOnRebuild = false;
             int value = this.structuresScrollValue;
             JScrollPane pane = this.structuresScrollPane;
-            SwingUtilities.invokeLater(() -> pane.getVerticalScrollBar().setValue(value));
+            JTextField nameField = this.newestNameField;
+
+            SwingUtilities.invokeLater(() -> {
+                JScrollBar bar = pane.getVerticalScrollBar();
+
+                if (showNewest) {
+                    bar.setValue(bar.getMaximum());
+
+                    if (nameField != null) {
+                        nameField.requestFocusInWindow();
+                        nameField.selectAll();
+                    }
+                } else {
+                    bar.setValue(value);
+                }
+            });
         }
     }
 
@@ -279,6 +309,7 @@ class OtherTiersEditor extends JPanel {
             String name = "Structure " + (this.knowledge.getNumTierStructures() + 1);
             this.knowledge.addTierStructure(new KnowledgeTierStructure(name));
             changed();
+            this.showNewestOnRebuild = true;
             rebuild();
         });
 
@@ -310,6 +341,11 @@ class OtherTiersEditor extends JPanel {
         JScrollPane pane = new JScrollPane(structureBoxes);
         pane.setPreferredSize(new Dimension(500, 400));
         themeScrollPane(pane);
+
+        // A Box view gives the scroll pane a unit increment of one pixel, which makes wheel
+        // scrolling to the structures below the fold all but impossible.
+        pane.getVerticalScrollBar().setUnitIncrement(16);
+
         this.structuresScrollPane = pane;
         vBox.add(pane);
 
@@ -374,6 +410,8 @@ class OtherTiersEditor extends JPanel {
                 commitName.run();
             }
         });
+
+        this.newestNameField = nameField; // boxes build in order, so the last one built wins
 
         header.add(nameField);
         header.add(Box.createHorizontalGlue());
