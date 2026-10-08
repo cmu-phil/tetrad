@@ -462,7 +462,10 @@ public class KnowledgeBoxEditor extends JPanel {
     public void resetTabbedPane() {
         this.tabbedPane.removeAll();
         this.tabbedPane.add("Tiers", tierDisplay());
-        this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge, this.knowledge.getVariables()));
+        this.tabbedPane.add("Other Tiers",
+                new OtherTiersEditor(this.knowledge, this::notifyIfKnowledgeChanged));
+        this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge,
+                this.knowledge.getVariables(), this::notifyIfKnowledgeChanged));
         this.tabbedPane.add("Edges", edgeDisplay());
         this.tabbedPane.add("Text", textDisplay());
 
@@ -477,9 +480,9 @@ public class KnowledgeBoxEditor extends JPanel {
             JTabbedPane pane = (JTabbedPane) e.getSource();
             if (pane.getSelectedIndex() == 0) {
                 setNumDisplayTiers(TMath.max(getNumTiers(), this.knowledge.getNumTiers()));
-            } else if (pane.getSelectedIndex() == 2) {
-                resetEdgeDisplay(null);
             } else if (pane.getSelectedIndex() == 3) {
+                resetEdgeDisplay(null);
+            } else if (pane.getSelectedIndex() == 4) {
                 refreshTextDisplay();
             }
         });
@@ -568,10 +571,16 @@ public class KnowledgeBoxEditor extends JPanel {
             "//   addtemporal        one line per tier: <tier> <var> <var> ...",
             "//                      e.g.  1 X1 X2      2 X3      (append * to a tier, e.g. 2*, to forbid",
             "//                      edges within that tier)",
+            "//   tierstructure <name>  an additional, independent tier structure; tier lines as above",
+            "//   forbiddengroup     one group per pair of lines: the from-variables, then the to-variables",
+            "//   requiredgroup      same, requiring the edges",
             "//   forbiddirect       one <from> <to> pair per line, forbidding from -> to",
             "//   requiredirect      one <from> <to> pair per line, requiring from -> to",
             "//",
-            "// The Tiers and Edges tabs are rebuilt from the text after Apply.",
+            "// A header of '/knowledge comma' switches to comma-separated names, for variable",
+            "// names containing spaces.",
+            "//",
+            "// The other tabs are rebuilt from the text after Apply.",
             "") + "\n";
 
     private void markTextDirty() {
@@ -617,8 +626,8 @@ public class KnowledgeBoxEditor extends JPanel {
 
         // Rebuilding replaced the tab contents; return the user to the Text tab, now
         // showing the canonical rendering of what was just parsed.
-        if (this.tabbedPane.getTabCount() > 3) {
-            this.tabbedPane.setSelectedIndex(3);
+        if (this.tabbedPane.getTabCount() > 4) {
+            this.tabbedPane.setSelectedIndex(4);
         }
     }
 

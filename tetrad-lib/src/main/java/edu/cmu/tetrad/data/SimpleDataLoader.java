@@ -496,7 +496,10 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Reads a knowledge file in tetrad2 format (almost--only does temporal tiers currently). Format is:
+     * Reads a knowledge file in tetrad2 format. The sections are addtemporal (the main tiers),
+     * tierstructure (additional named tier structures, one section per structure), forbiddengroup
+     * and requiredgroup (one from-line and one to-line per group), and forbiddirect and
+     * requiredirect (one from/to pair per line). For example:
      * <pre>
      * /knowledge
      * addtemporal
@@ -504,6 +507,13 @@ public class SimpleDataLoader {
      * 1 x3 x4
      * 4 x5
      * </pre>
+     * A header line of {@code /knowledge comma} switches the file to the comma-delimited variant,
+     * in which names in tier and group lines are separated by commas (the tier index remains the
+     * first whitespace-delimited token of its line), the from- and to-names of a forbiddirect or
+     * requiredirect line are separated by a comma, and a name containing a comma is written in
+     * double quotes. This is the variant that represents variable names containing spaces; in the
+     * whitespace-delimited variant, spaces in tier and group names are replaced by periods, as
+     * they always were.
      */
     private static Knowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
         Knowledge knowledge = new Knowledge();
@@ -515,12 +525,26 @@ public class SimpleDataLoader {
             return new Knowledge();
         }
 
+        boolean commaMode = false;
+
         if (line.startsWith("/knowledge")) {
+            commaMode = line.substring("/knowledge".length()).toLowerCase().contains("comma");
             line = lineizer.nextLine();
             firstLine = line;
         }
 
+        if (commaMode) {
+
+            // Spaces around the commas are eaten with the delimiter, so that a quoted name is
+            // recognized after ", " and tokens come back without surrounding spaces.
+            delimiter = Pattern.compile("\\s*,\\s*");
+        }
+
         TetradLogger.getInstance().log("\nLoading knowledge.");
+
+        // "Can cause only next tier" rules are applied after the whole file is read, since they
+        // forbid edges into tiers that may not have been read yet when their line is.
+        List<Integer> onlyCauseNextTiers = new ArrayList<>();
 
         SECTIONS:
         while (lineizer.hasMoreLines()) {
@@ -530,292 +554,319 @@ public class SimpleDataLoader {
                 line = firstLine;
             }
 
+            String trimmed = line.trim();
+
             // "addtemp" is the original in Tetrad 2.
-            if ("addtemporal".equalsIgnoreCase(line.trim())) {
+            if ("addtemporal".equalsIgnoreCase(trimmed)) {
                 while (lineizer.hasMoreLines()) {
                     line = lineizer.nextLine();
 
-                    if (line.startsWith("forbiddirect")) {
+                    if (isSectionHeader(line)) {
                         firstLine = line;
                         continue SECTIONS;
                     }
 
-                    if (line.startsWith("requiredirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
+                    TierLine tierLine = parseTierLine(line, delimiter, commaMode,
+                            lineizer.getLineNumber());
+
+                    if (tierLine.forbiddenWithin) {
+                        knowledge.setTierForbiddenWithin(tierLine.tier, true);
                     }
 
-                    if (line.startsWith("forbiddengroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
+                    if (tierLine.onlyCauseNext) {
+                        onlyCauseNextTiers.add(tierLine.tier);
                     }
 
-                    if (line.startsWith("requiredgroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    int tier = -1;
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-                    if (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        boolean forbiddenWithin = false;
-                        if (token.endsWith("*")) {
-                            forbiddenWithin = true;
-                            token = token.substring(0, token.length() - 1);
-                        }
-
-                        tier = Integer.parseInt(token);
-                        if (tier < 0) {
-                            throw new IllegalArgumentException(
-                                    lineizer.getLineNumber() + ": Tiers must be 0, 1, 2...");
-                        }
-                        if (forbiddenWithin) {
-                            knowledge.setTierForbiddenWithin(tier, true);
-                        }
-                    }
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-
-                        if (token.isEmpty()) {
-                            continue;
-                        }
-
-                        String name = substitutePeriodsForSpaces(token);
-
+                    for (String name : tierLine.names) {
                         addVariable(knowledge, name);
-
-                        knowledge.addToTier(tier, name);
-
-                        TetradLogger.getInstance().log("Adding to tier " + (tier) + " " + name);
+                        knowledge.addToTier(tierLine.tier, name);
+                        TetradLogger.getInstance().log("Adding to tier " + tierLine.tier + " " + name);
                     }
                 }
-            } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {
-                while (lineizer.hasMoreLines()) {
-                    line = lineizer.nextLine();
+            } else if (trimmed.toLowerCase().startsWith("tierstructure")) {
+                String name = trimmed.substring("tierstructure".length()).trim();
 
-                    if (line.startsWith("forbiddirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("addtemporal")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredgroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    Set<String> from = new HashSet<>();
-                    Set<String> to = new HashSet<>();
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-                        String name = substitutePeriodsForSpaces(token);
-
-                        addVariable(knowledge, name);
-
-                        from.add(name);
-                    }
-
-                    line = lineizer.nextLine();
-
-                    st = new RegexTokenizer(line, delimiter, '"');
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-                        String name = substitutePeriodsForSpaces(token);
-
-                        addVariable(knowledge, name);
-
-                        to.add(name);
-                    }
-
-                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, from, to);
-
-                    knowledge.addKnowledgeGroup(group);
+                if (name.isEmpty()) {
+                    name = "Structure " + (knowledge.getNumTierStructures() + 1);
                 }
-            } else if ("requiredgroup".equalsIgnoreCase(line.trim())) {
+
+                KnowledgeTierStructure structure = new KnowledgeTierStructure(name);
+                knowledge.addTierStructure(structure);
+
                 while (lineizer.hasMoreLines()) {
                     line = lineizer.nextLine();
 
-                    if (line.startsWith("forbiddirect")) {
+                    if (isSectionHeader(line)) {
                         firstLine = line;
                         continue SECTIONS;
                     }
 
-                    if (line.startsWith("requiredirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
+                    TierLine tierLine = parseTierLine(line, delimiter, commaMode,
+                            lineizer.getLineNumber());
+
+                    if (tierLine.onlyCauseNext) {
+                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                                + ": The '-' (can cause only next tier) flag is not supported in "
+                                + "a tier structure.");
                     }
 
-                    if (line.startsWith("forbiddengroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
+                    if (tierLine.forbiddenWithin) {
+                        structure.setTierForbiddenWithin(tierLine.tier, true);
                     }
 
-                    if (line.startsWith("addtemporal")) {
-                        firstLine = line;
-                        continue SECTIONS;
+                    for (String varName : tierLine.names) {
+                        addVariable(knowledge, varName);
+                        structure.addToTier(tierLine.tier, varName);
+                        TetradLogger.getInstance().log("Adding to tier " + tierLine.tier
+                                + " of structure " + name + " " + varName);
                     }
-
-                    Set<String> from = new HashSet<>();
-                    Set<String> to = new HashSet<>();
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-                        String name = substitutePeriodsForSpaces(token);
-
-                        addVariable(knowledge, name);
-
-                        from.add(name);
-                    }
-
-                    line = lineizer.nextLine();
-
-                    st = new RegexTokenizer(line, delimiter, '"');
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-                        String name = substitutePeriodsForSpaces(token);
-
-                        addVariable(knowledge, name);
-
-                        to.add(name);
-                    }
-
-                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.REQUIRED, from, to);
-
-                    knowledge.addKnowledgeGroup(group);
                 }
-            } else if ("forbiddirect".equalsIgnoreCase(line.trim())) {
+            } else if ("forbiddengroup".equalsIgnoreCase(trimmed)) {
+                firstLine = readGroupSection(lineizer, delimiter, commaMode, knowledge,
+                        KnowledgeGroup.FORBIDDEN);
+                if (firstLine != null) continue SECTIONS;
+            } else if ("requiredgroup".equalsIgnoreCase(trimmed)) {
+                firstLine = readGroupSection(lineizer, delimiter, commaMode, knowledge,
+                        KnowledgeGroup.REQUIRED);
+                if (firstLine != null) continue SECTIONS;
+            } else if ("forbiddirect".equalsIgnoreCase(trimmed)) {
                 while (lineizer.hasMoreLines()) {
                     line = lineizer.nextLine();
 
-                    if (line.startsWith("addtemporal")) {
+                    if (isSectionHeader(line)) {
                         firstLine = line;
                         continue SECTIONS;
                     }
 
-                    if (line.startsWith("requiredirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
+                    String[] pair = readEdgeLine(line, delimiter, lineizer.getLineNumber());
 
-                    if (line.startsWith("forbiddengroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
+                    addVariable(knowledge, pair[0]);
+                    addVariable(knowledge, pair[1]);
 
-                    if (line.startsWith("requiredgroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-                    String from = null, to = null;
-
-                    if (st.hasMoreTokens()) {
-                        from = st.nextToken();
-                    }
-
-                    if (st.hasMoreTokens()) {
-                        to = st.nextToken();
-                    }
-
-                    if (st.hasMoreTokens()) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                                           + ": Lines contains more than two elements.");
-                    }
-
-                    if (from == null || to == null) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                                           + ": Line contains fewer than two elements.");
-                    }
-
-                    addVariable(knowledge, from);
-
-                    addVariable(knowledge, to);
-
-                    knowledge.setForbidden(from, to);
+                    knowledge.setForbidden(pair[0], pair[1]);
                 }
-            } else if ("requiredirect".equalsIgnoreCase(line.trim())) {
+            } else if ("requiredirect".equalsIgnoreCase(trimmed)) {
                 while (lineizer.hasMoreLines()) {
                     line = lineizer.nextLine();
 
-                    if (line.startsWith("forbiddirect")) {
+                    if (isSectionHeader(line)) {
                         firstLine = line;
                         continue SECTIONS;
                     }
 
-                    if (line.startsWith("addtemporal")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
+                    String[] pair = readEdgeLine(line, delimiter, lineizer.getLineNumber());
 
-                    if (line.startsWith("forbiddengroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
+                    addVariable(knowledge, pair[0]);
+                    addVariable(knowledge, pair[1]);
 
-                    if (line.startsWith("requiredgroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-                    String from = null, to = null;
-
-                    if (st.hasMoreTokens()) {
-                        from = st.nextToken();
-                    }
-
-                    if (st.hasMoreTokens()) {
-                        to = st.nextToken();
-                    }
-
-                    if (st.hasMoreTokens()) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                                           + ": Lines contains more than two elements.");
-                    }
-
-                    if (from == null || to == null) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                                           + ": Line contains fewer than two elements.");
-                    }
-
-                    addVariable(knowledge, from);
-                    addVariable(knowledge, to);
-
-                    knowledge.removeForbidden(from, to);
-                    knowledge.setRequired(from, to);
+                    knowledge.removeForbidden(pair[0], pair[1]);
+                    knowledge.setRequired(pair[0], pair[1]);
                 }
             } else {
                 throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                                   + ": Expecting 'addtemporal', 'forbiddirect' or 'requiredirect'.");
+                                                   + ": Expecting 'addtemporal', 'tierstructure', "
+                                                   + "'forbiddengroup', 'requiredgroup', "
+                                                   + "'forbiddirect' or 'requiredirect'.");
             }
         }
 
+        for (int tier : onlyCauseNextTiers) {
+            knowledge.setOnlyCanCauseNextTier(tier, true);
+        }
+
         return knowledge;
+    }
+
+    /**
+     * True iff the line opens one of the knowledge sections. Matched by prefix on the trimmed
+     * line, as the original per-section checks were.
+     */
+    private static boolean isSectionHeader(String line) {
+        String trimmed = line.trim().toLowerCase();
+        return trimmed.startsWith("addtemporal")
+               || trimmed.startsWith("tierstructure")
+               || trimmed.startsWith("forbiddengroup")
+               || trimmed.startsWith("requiredgroup")
+               || trimmed.startsWith("forbiddirect")
+               || trimmed.startsWith("requiredirect");
+    }
+
+    /**
+     * The parse of one tier line: the tier index, its flags, and the names on the line.
+     */
+    private static final class TierLine {
+        int tier;
+        boolean forbiddenWithin;
+        boolean onlyCauseNext;
+        final List<String> names = new ArrayList<>();
+    }
+
+    /**
+     * Parses one tier line. The first whitespace-delimited token is the tier index, optionally
+     * suffixed by '*' (edges forbidden within the tier) and/or '-' (the tier can cause only the
+     * next tier); the remaining names are delimited by the given pattern. In the
+     * whitespace-delimited variant, spaces within names are replaced by periods, as the loader
+     * always did; in the comma-delimited variant names are taken as written.
+     */
+    private static TierLine parseTierLine(String line, Pattern delimiter, boolean commaMode,
+                                          int lineNumber) {
+        TierLine result = new TierLine();
+        String spec;
+        RegexTokenizer st;
+
+        if (commaMode) {
+
+            // The tier index is the first whitespace-delimited token of the line; the names
+            // after it are comma-delimited.
+            String trimmed = line.trim();
+            int space = indexOfWhitespace(trimmed);
+            String rest;
+
+            if (space < 0) {
+                spec = trimmed;
+                rest = "";
+            } else {
+                spec = trimmed.substring(0, space);
+                rest = trimmed.substring(space + 1);
+            }
+
+            st = new RegexTokenizer(rest, delimiter, '"');
+        } else {
+
+            // The whole line is tokenized by the file's delimiter, and the first token is the
+            // tier index, as the loader always did.
+            st = new RegexTokenizer(line, delimiter, '"');
+            spec = st.hasMoreTokens() ? st.nextToken().trim() : "";
+        }
+
+        while (spec.endsWith("*") || spec.endsWith("-")) {
+            if (spec.endsWith("*")) {
+                result.forbiddenWithin = true;
+            } else {
+                result.onlyCauseNext = true;
+            }
+
+            spec = spec.substring(0, spec.length() - 1);
+        }
+
+        try {
+            result.tier = Integer.parseInt(spec);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(lineNumber
+                    + ": Expecting a tier index (0, 1, 2...) at the start of the line, possibly "
+                    + "followed by '*' or '-': " + line);
+        }
+
+        if (result.tier < 0) {
+            throw new IllegalArgumentException(lineNumber + ": Tiers must be 0, 1, 2...");
+        }
+
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken().trim();
+
+            if (token.isEmpty()) {
+                continue;
+            }
+
+            result.names.add(commaMode ? token : substitutePeriodsForSpaces(token));
+        }
+
+        return result;
+    }
+
+    private static int indexOfWhitespace(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            if (Character.isWhitespace(s.charAt(i))) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Reads a forbiddengroup or requiredgroup section: one from-line and one to-line per group,
+     * repeated until another section begins or the file ends. Returns the header line of the next
+     * section, or null at the end of the file.
+     */
+    private static String readGroupSection(Lineizer lineizer, Pattern delimiter, boolean commaMode,
+                                           Knowledge knowledge, int type) {
+        while (lineizer.hasMoreLines()) {
+            String line = lineizer.nextLine();
+
+            if (isSectionHeader(line)) {
+                return line;
+            }
+
+            Set<String> from = readNameLine(line, delimiter, commaMode, knowledge);
+
+            if (!lineizer.hasMoreLines()) {
+                throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                        + ": A group needs a from-line and a to-line; the to-line is missing.");
+            }
+
+            String toLine = lineizer.nextLine();
+
+            if (isSectionHeader(toLine)) {
+                throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
+                        + ": A group needs a from-line and a to-line; the to-line is missing.");
+            }
+
+            Set<String> to = readNameLine(toLine, delimiter, commaMode, knowledge);
+
+            knowledge.addKnowledgeGroup(new KnowledgeGroup(type, from, to));
+        }
+
+        return null;
+    }
+
+    private static Set<String> readNameLine(String line, Pattern delimiter, boolean commaMode,
+                                            Knowledge knowledge) {
+        Set<String> names = new HashSet<>();
+        RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken().trim();
+
+            if (token.isEmpty()) {
+                continue;
+            }
+
+            String name = commaMode ? token : substitutePeriodsForSpaces(token);
+            addVariable(knowledge, name);
+            names.add(name);
+        }
+
+        return names;
+    }
+
+    /**
+     * Reads a forbiddirect or requiredirect line: exactly a from-name and a to-name, delimited by
+     * the given pattern.
+     */
+    private static String[] readEdgeLine(String line, Pattern delimiter, int lineNumber) {
+        RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
+        String from = null, to = null;
+
+        if (st.hasMoreTokens()) {
+            from = st.nextToken().trim();
+        }
+
+        if (st.hasMoreTokens()) {
+            to = st.nextToken().trim();
+        }
+
+        if (st.hasMoreTokens()) {
+            throw new IllegalArgumentException("Line " + lineNumber
+                                               + ": Lines contains more than two elements.");
+        }
+
+        if (from == null || to == null || from.isEmpty() || to.isEmpty()) {
+            throw new IllegalArgumentException("Line " + lineNumber
+                                               + ": Line contains fewer than two elements.");
+        }
+
+        return new String[]{from, to};
     }
 
     private static void addVariable(Knowledge knowledge, String from) {
@@ -830,4 +881,3 @@ public class SimpleDataLoader {
 
 
 }
-

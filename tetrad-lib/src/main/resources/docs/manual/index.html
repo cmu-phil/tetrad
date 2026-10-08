@@ -2133,6 +2133,26 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         variables in Tier 1. If you have information about the effects of the
         intervention variables you can use the groups tab to indicate this.</p>
 
+    <h3>Other Tiers</h3>
+
+    <p>Some data sets carry several temporal orderings at once. In a course
+        data set, for example, the exams are ordered among themselves, the
+        module checkpoints among themselves, and the unit completions among
+        themselves, but a single tier list cannot hold all three orderings
+        without also forbidding edges between them. The Other Tiers tab holds
+        any number of additional, named tier structures, each an independent
+        set of tiers over its own variables. Within one structure, edges from
+        a later tier to an earlier tier are forbidden, and a tier can forbid
+        edges within itself; structures place no constraints on one another,
+        and a variable may appear in several structures (and in the main
+        tiers) at the same time.</p>
+
+    <p>Add a structure with the button at the top, name it, and drag
+        variables from the structure's "Not in this structure" list into its
+        tiers, or move them in bulk with the pattern bar, as in the Tiers
+        tab. These constraints are saved with the knowledge, under
+        tierstructure sections of the knowledge text format.</p>
+
     <h3>Groups</h3>
 
     <p>The groups tab for a graph with four variables looks like this:
@@ -2167,6 +2187,19 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         bottom of the window. You can adjust the layout to mimic the layout of
         the source (by clicking “source layout”) or to see the variables in their
         timeline tiers (by clicking “knowledge layout”).</p>
+
+    <h3>Text</h3>
+
+    <p>The Text tab shows the knowledge in the same text form that Save
+        Knowledge writes and Load Knowledge reads, and the text can be edited
+        or pasted over and applied. Names in this format are ordinarily
+        separated by whitespace, so a variable name containing spaces cannot
+        be written that way; when some name needs it, the file is written in
+        a comma-separated variant instead, marked by the header line
+        "/knowledge comma", in which the names in tier and group lines are
+        separated by commas and a name containing a comma is put in double
+        quotes. Both variants load from either the Text tab or Load
+        Knowledge.</p>
 
     <h2>Forbidden Graph</h2>
 

@@ -57,6 +57,13 @@ class OtherGroupsEditor extends JPanel {
     private final List<String> variables;
 
     /**
+     * Called after every edit of the knowledge, so the surrounding editor can report a model
+     * change. (Edits in this tab formerly went unreported, so downstream boxes went stale
+     * silently.)
+     */
+    private final Runnable modelChange;
+
+    /**
      * The wildcard expression last typed into this tab's pattern field, and the status message it
      * last produced. Held here because the tab is rebuilt from scratch after every add, which would
      * otherwise clear both.
@@ -75,10 +82,11 @@ class OtherGroupsEditor extends JPanel {
     /**
      * <p>Constructor for OtherGroupsEditor.</p>
      *
-     * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
-     * @param vars      a {@link java.util.List} object
+     * @param knowledge   a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param vars        a {@link java.util.List} object
+     * @param modelChange called after every edit of the knowledge; may be null
      */
-    public OtherGroupsEditor(Knowledge knowledge, List<String> vars) {
+    public OtherGroupsEditor(Knowledge knowledge, List<String> vars, Runnable modelChange) {
         if (knowledge == null) {
             throw new NullPointerException("The given knowledge must not be null");
         }
@@ -88,6 +96,8 @@ class OtherGroupsEditor extends JPanel {
 
         this.knowledge = knowledge;
         this.variables = new ArrayList<>(vars);
+        this.modelChange = modelChange == null ? () -> {
+        } : modelChange;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -257,6 +267,7 @@ class OtherGroupsEditor extends JPanel {
         addForbidden.addActionListener(e -> {
             KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN);
             OtherGroupsEditor.this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
+            OtherGroupsEditor.this.modelChange.run();
             rebuild();
         });
 
@@ -265,6 +276,7 @@ class OtherGroupsEditor extends JPanel {
         addRequired.addActionListener(e -> {
             KnowledgeGroup targetKnowledgeGroup = new KnowledgeGroup(KnowledgeGroup.REQUIRED);
             OtherGroupsEditor.this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
+            OtherGroupsEditor.this.modelChange.run();
             rebuild();
         });
 
@@ -344,6 +356,7 @@ class OtherGroupsEditor extends JPanel {
                     new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, fromGroup, toForbiddenGroup);
 
             this.knowledge.addKnowledgeGroup(targetKnowledgeGroup);
+            this.modelChange.run();
             rebuild();
         });
 
@@ -359,6 +372,7 @@ class OtherGroupsEditor extends JPanel {
         remove.setMargin(new Insets(3, 4, 3, 4));
         remove.addActionListener(e -> {
             OtherGroupsEditor.this.knowledge.removeKnowledgeGroup(index);
+            OtherGroupsEditor.this.modelChange.run();
             rebuild();
         });
 
@@ -528,6 +542,7 @@ class OtherGroupsEditor extends JPanel {
 
             try {
                 this.knowledge.setKnowledgeGroup(groupIndex, updated);
+                this.modelChange.run();
             } catch (IllegalArgumentException ex) {
                 JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());
                 rebuild();
@@ -757,6 +772,7 @@ class OtherGroupsEditor extends JPanel {
 
                 try {
                     OtherGroupsEditor.this.knowledge.setKnowledgeGroup(this.index, g);
+                    OtherGroupsEditor.this.modelChange.run();
                     dtde.getDropTargetContext().dropComplete(true);
                     rebuild();
                 } catch (IllegalArgumentException ex) {
@@ -792,6 +808,7 @@ class OtherGroupsEditor extends JPanel {
 
                     try {
                         OtherGroupsEditor.this.knowledge.setKnowledgeGroup(this.index, g);
+                        OtherGroupsEditor.this.modelChange.run();
                         rebuild();
                     } catch (IllegalArgumentException ex) {
                         JOptionPane.showMessageDialog(OtherGroupsEditor.this, ex.getMessage());
