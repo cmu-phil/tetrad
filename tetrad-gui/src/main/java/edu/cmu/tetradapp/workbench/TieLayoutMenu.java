@@ -20,7 +20,9 @@
 
 package edu.cmu.tetradapp.workbench;
 
+import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.app.SessionEditor;
 import edu.cmu.tetradapp.app.TetradDesktop;
@@ -42,16 +44,24 @@ import java.util.List;
 import java.util.*;
 
 /**
- * A submenu for the Layout menu that lets the user tie the layout of the current graph workbench to the layout of the
- * graph in another session node. Selecting a session node from the submenu immediately lays out the current graph using
- * the node positions of that node's graph (matching nodes by name), and the choice is remembered in the session, so
- * that the layout is reapplied from the reference node each time an editor for this session node is reopened.
- * Selecting "None" removes the tie.
+ * A submenu for the Layout menu that says which session node the graph in the current workbench inherits its layout
+ * from, its <i>reference</i>. By default the reference is the nearest session node upstream of this one that has a
+ * graph sharing a node name with this one, so that a box starts with, and keeps following, the layout of its parent.
+ * The user may instead pick any other session node with a graph, or "None" to inherit from nothing.
  * <p>
- * Ties are stored in the session wrapper's attribute map under the key "layoutTies", as a map from the display name of
- * the tied session node to the display name of its reference session node. Since the attribute map is serialized with
- * the session, ties persist across save and load. Ties are keyed by display name, so renaming or deleting a session
- * node silently drops any tie involving it.
+ * Inheriting does not undo what is done locally. Each time an editor for this session node is opened, and each time
+ * a search puts a new result in it, the nodes that have been moved in this box since the last time (dragged, laid
+ * out, pasted, put back by an undo) stay where they are, and the rest take the positions the reference now has,
+ * matched by name; see {@link LayoutInheritance}. "Reset to Inherited Layout" discards the local changes. The
+ * reference's positions are themselves resolved this way, so a box follows a layout changed two boxes upstream even
+ * if the box in between has not been opened since.
+ * <p>
+ * Two maps are stored in the session wrapper's attribute map, and so are saved with the session. "layoutTies" maps
+ * the display name of a session node to the display name of the reference chosen for it, or to the empty string for
+ * "None"; a node with no entry uses the default. "layoutInherited" maps the display name of a session node to the
+ * positions its nodes were given when it was last synchronized, which is what tells a local change from an inherited
+ * position. Both are keyed by display name, so renaming a session node drops its entries: it goes back to the
+ * default reference, and the next synchronization gives it the whole layout of that reference.
  *
  * @author josephramsey
  * @version $Id: $Id
@@ -62,6 +72,18 @@ public class TieLayoutMenu extends JMenu {
      * The attribute key in the session wrapper under which layout ties are stored.
      */
     private static final String LAYOUT_TIES = "layoutTies";
+
+    /**
+     * The attribute key in the session wrapper under which the positions given to the nodes of each session node's
+     * graph at its last synchronization are stored.
+     */
+    private static final String LAYOUT_RECORDS = "layoutInherited";
+
+    /**
+     * The reference recorded for a session node that is to inherit its layout from nothing. No session node has the
+     * empty string for a display name.
+     */
+    private static final String NO_TIE = "";
 
     /**
      * Client property key on the editor window's root pane recording that the tie layout has already been applied for
@@ -82,7 +104,7 @@ public class TieLayoutMenu extends JMenu {
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
     public TieLayoutMenu(LayoutEditable layoutEditable) {
-        super("Tie Layout To");
+        super("Inherit Layout From");
 
         if (layoutEditable == null) {
             throw new NullPointerException();
@@ -107,11 +129,11 @@ public class TieLayoutMenu extends JMenu {
     }
 
     /**
-     * If a layout tie has been recorded in the session for the session node whose editor contains the given layout
-     * editable, applies the layout of the reference node's graph to the layout editable. This is applied at most once
-     * per opening of the editor window, and is a no-op if the layout editable is not inside an editor window, no tie
-     * is recorded, or the reference node no longer exists or has no graph. Runs later on the event thread, since the
-     * editor's name (from which the owning session node is identified) is set only after the editor is constructed.
+     * Synchronizes the layout of the given layout editable with the layout of the reference of the session node
+     * whose editor contains it, keeping the local changes (see the class comment). This is done at most once per
+     * opening of the editor window, and is a no-op if the layout editable is not inside an editor window or the
+     * session node has no reference. Runs later on the event thread, since the editor's name (from which the owning
+     * session node is identified) is set only after the editor is constructed.
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
@@ -120,12 +142,11 @@ public class TieLayoutMenu extends JMenu {
     }
 
     /**
-     * Applies any recorded layout tie to the given layout editable even if the tie has already been applied for this
-     * opening of the editor window. This is for a workbench newly created for a search result while the editor stays
-     * open (the once-per-opening guard has already fired for the window, but the workbench and its graph are new), so
-     * that a finished search is laid out by its reference node without the user reselecting the "Tie Layout To" item.
-     * The guard is set afterwards, so reconstructing a LayoutMenu later (e.g., for a right-click popup) still does not
-     * undo manual adjustments.
+     * Synchronizes the layout of the given layout editable with its reference even if that has already been done for
+     * this opening of the editor window. This is for a workbench newly created for a search result while the editor
+     * stays open (the once-per-opening guard has already fired for the window, but the workbench and its graph are
+     * new), so that a finished search is laid out by its reference node without the user asking for it. The guard is
+     * set afterwards, so constructing a LayoutMenu later does not synchronize again.
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
@@ -163,28 +184,240 @@ public class TieLayoutMenu extends JMenu {
                 return;
             }
 
-            Object attribute = session.getAttribute(TieLayoutMenu.LAYOUT_TIES);
-
-            if (!(attribute instanceof Map<?, ?> ties)) {
-                return;
-            }
-
-            Object refName = ties.get(ownerName);
-
-            if (refName == null) {
-                return;
-            }
-
-            SessionNodeWrapper refWrapper = TieLayoutMenu.findNodeByName(session, refName.toString());
-            Graph refGraph = refWrapper == null ? null : TieLayoutMenu.graphOf(refWrapper);
-
-            if (refGraph == null) {
-                return;
-            }
-
-            layoutEditable.layoutByGraph(refGraph);
+            TieLayoutMenu.synchronize(layoutEditable, session, ownerName, false);
             root.putClientProperty(TieLayoutMenu.TIE_APPLIED, Boolean.TRUE);
         });
+    }
+
+    /**
+     * Synchronizes the layout of the given layout editable, which shows the graph of the session node with the given
+     * display name, with the layout of that session node's reference: the nodes not moved locally since the last
+     * synchronization take the reference's positions, and the rest stay where they are. Does nothing if the session
+     * node has no reference.
+     *
+     * @param reset True to discard the local changes first, so that every node the reference has takes its position.
+     */
+    private static void synchronize(LayoutEditable layoutEditable, SessionWrapper session, String ownerName,
+                                    boolean reset) {
+        Map<String, Map<String, int[]>> records = TieLayoutMenu.getLayoutRecords(session);
+        SessionNodeWrapper owner = TieLayoutMenu.findNodeByName(session, ownerName);
+        Graph graph = layoutEditable.getGraph();
+
+        if (owner == null || graph == null) {
+            return;
+        }
+
+        SessionNodeWrapper refWrapper = TieLayoutMenu.referenceOf(session, owner, graph);
+
+        if (refWrapper == null) {
+            return;
+        }
+
+        Set<String> visited = new HashSet<>();
+        visited.add(ownerName);
+        Map<String, Point> reference = TieLayoutMenu.effectivePositions(session, refWrapper, visited);
+
+        Map<String, int[]> record = reset ? null : records.get(ownerName);
+        Map<String, Point> before = LayoutInheritance.positionsOf(graph);
+        Map<String, Point> resolved = LayoutInheritance.resolve(before, reference, record);
+        boolean moved = !resolved.equals(before);
+
+        if (moved) {
+            Graph layoutGraph = new EdgeListGraph();
+
+            for (Map.Entry<String, Point> entry : resolved.entrySet()) {
+                Node node = new GraphNode(entry.getKey());
+                node.setCenter(entry.getValue().x, entry.getValue().y);
+                layoutGraph.addNode(node);
+            }
+
+            layoutEditable.layoutByGraph(layoutGraph);
+        }
+
+        // Read back rather than recording the resolved positions: the workbench moves overlapping nodes apart.
+        Map<String, Point> after = LayoutInheritance.positionsOf(layoutEditable.getGraph());
+        boolean firstTime = !records.containsKey(ownerName);
+        records.put(ownerName, LayoutInheritance.updatedRecord(before, after, reference, record));
+
+        if (moved || reset || firstTime) {
+            session.setSessionChanged(true);
+        }
+    }
+
+    /**
+     * @return the session node the given session node inherits its layout from, or null if there is none: the one
+     * chosen for it, if it still exists and has a graph, and otherwise, unless "None" was chosen, the nearest session
+     * node upstream with a graph sharing a node name with the given graph.
+     */
+    private static SessionNodeWrapper referenceOf(SessionWrapper session, SessionNodeWrapper wrapper, Graph graph) {
+        Object tie = null;
+
+        if (session.getAttribute(TieLayoutMenu.LAYOUT_TIES) instanceof Map<?, ?> ties) {
+            tie = ties.get(wrapper.getSessionName());
+        }
+
+        if (TieLayoutMenu.NO_TIE.equals(tie)) {
+            return null;
+        }
+
+        if (tie != null) {
+            SessionNodeWrapper chosen = TieLayoutMenu.findNodeByName(session, tie.toString());
+
+            if (chosen != null && chosen != wrapper && TieLayoutMenu.graphOf(chosen) != null) {
+                return chosen;
+            }
+        }
+
+        return TieLayoutMenu.nearestAncestorWithGraph(session, wrapper, graph);
+    }
+
+    /**
+     * @return the nearest session node upstream of the given one whose graph shares a node name with the given
+     * graph, or null if there is none. Parents are considered before grandparents, and so on; among session nodes
+     * at the same distance, the one sharing the most node names is taken, and among those the first by display name.
+     */
+    private static SessionNodeWrapper nearestAncestorWithGraph(SessionWrapper session, SessionNodeWrapper wrapper,
+                                                               Graph graph) {
+        if (wrapper.getSessionNode() == null) {
+            return null;
+        }
+
+        Map<SessionNode, SessionNodeWrapper> wrappers = new IdentityHashMap<>();
+
+        for (Node node : session.getNodes()) {
+            if (node instanceof SessionNodeWrapper w && w.getSessionNode() != null) {
+                wrappers.put(w.getSessionNode(), w);
+            }
+        }
+
+        Set<String> names = new HashSet<>(graph.getNodeNames());
+        Set<SessionNode> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        visited.add(wrapper.getSessionNode());
+        List<SessionNode> level = new ArrayList<>();
+
+        for (SessionNode parent : wrapper.getSessionNode().getParents()) {
+            if (visited.add(parent)) level.add(parent);
+        }
+
+        while (!level.isEmpty()) {
+            SessionNodeWrapper best = null;
+            int bestCount = 0;
+
+            for (SessionNode sessionNode : level) {
+                SessionNodeWrapper candidate = wrappers.get(sessionNode);
+                Graph candidateGraph = candidate == null ? null : TieLayoutMenu.graphOf(candidate);
+
+                if (candidateGraph == null || candidate.getSessionName() == null) {
+                    continue;
+                }
+
+                int count = 0;
+
+                for (String name : candidateGraph.getNodeNames()) {
+                    if (names.contains(name)) count++;
+                }
+
+                if (count > bestCount || (count > 0 && count == bestCount
+                                          && candidate.getSessionName().compareTo(best.getSessionName()) < 0)) {
+                    best = candidate;
+                    bestCount = count;
+                }
+            }
+
+            if (best != null) {
+                return best;
+            }
+
+            List<SessionNode> next = new ArrayList<>();
+
+            for (SessionNode sessionNode : level) {
+                for (SessionNode parent : sessionNode.getParents()) {
+                    if (visited.add(parent)) next.add(parent);
+                }
+            }
+
+            level = next;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param visited the display names of the session nodes already on the chain being resolved, to stop at a cycle
+     *                of chosen references.
+     * @return the positions the nodes of the given session node's graph would have if it were synchronized with its
+     * reference now, by node name. Nothing is changed; this is what lets a layout be inherited through a session
+     * node that has not been opened since the layout upstream of it changed.
+     */
+    private static Map<String, Point> effectivePositions(SessionWrapper session, SessionNodeWrapper wrapper,
+                                                         Set<String> visited) {
+        Graph graph = TieLayoutMenu.graphOf(wrapper);
+
+        if (graph == null) {
+            return new HashMap<>();
+        }
+
+        Map<String, Point> own = LayoutInheritance.positionsOf(graph);
+        String name = wrapper.getSessionName();
+
+        if (name == null || !visited.add(name)) {
+            return own;
+        }
+
+        SessionNodeWrapper refWrapper = TieLayoutMenu.referenceOf(session, wrapper, graph);
+
+        if (refWrapper == null) {
+            return own;
+        }
+
+        Map<String, int[]> record = null;
+
+        if (session.getAttribute(TieLayoutMenu.LAYOUT_RECORDS) instanceof Map<?, ?> records
+            && records.get(name) instanceof Map<?, ?> found) {
+            @SuppressWarnings("unchecked") Map<String, int[]> _record = (Map<String, int[]>) found;
+            record = _record;
+        }
+
+        return LayoutInheritance.resolve(own, TieLayoutMenu.effectivePositions(session, refWrapper, visited), record);
+    }
+
+    /**
+     * @return the mutable map of layout records stored in the given session wrapper, from session node display
+     * names to the positions their nodes were given at their last synchronization, creating and storing it if
+     * necessary. When it is created for a session that was loaded from a file, which is to say one saved before
+     * layouts were inherited, every session node is given the record that leaves its layout as it is (see
+     * {@link LayoutInheritance#recordAsIs(Map, Map)}), so that opening an old session does not rearrange it.
+     */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Map<String, int[]>> getLayoutRecords(SessionWrapper session) {
+        Object attribute = session.getAttribute(TieLayoutMenu.LAYOUT_RECORDS);
+
+        if (attribute instanceof Map) {
+            return (Map<String, Map<String, int[]>>) attribute;
+        }
+
+        Map<String, Map<String, int[]>> records = new HashMap<>();
+
+        if (!session.isNewSession()) {
+            for (Node node : session.getNodes()) {
+                if (!(node instanceof SessionNodeWrapper wrapper) || wrapper.getSessionName() == null) {
+                    continue;
+                }
+
+                Graph graph = TieLayoutMenu.graphOf(wrapper);
+                SessionNodeWrapper refWrapper = graph == null ? null
+                        : TieLayoutMenu.referenceOf(session, wrapper, graph);
+                Graph refGraph = refWrapper == null ? null : TieLayoutMenu.graphOf(refWrapper);
+
+                if (refGraph != null) {
+                    records.put(wrapper.getSessionName(), LayoutInheritance.recordAsIs(
+                            LayoutInheritance.positionsOf(graph), LayoutInheritance.positionsOf(refGraph)));
+                }
+            }
+        }
+
+        session.addAttribute(TieLayoutMenu.LAYOUT_RECORDS, records);
+        return records;
     }
 
     /**
@@ -363,7 +596,7 @@ public class TieLayoutMenu extends JMenu {
         }
 
         // Drop a stale tie whose reference node no longer exists or no longer has a graph.
-        if (currentRef != null) {
+        if (currentRef != null && !TieLayoutMenu.NO_TIE.equals(currentRef)) {
             String finalCurrentRef = currentRef;
 
             if (candidates.stream().noneMatch(w -> finalCurrentRef.equals(w.getSessionName()))) {
@@ -376,24 +609,37 @@ public class TieLayoutMenu extends JMenu {
         ButtonGroup group = new ButtonGroup();
         String finalOwnerName = ownerName;
 
+        // The default: the nearest session node upstream with a graph, named here so the user can see which it is.
+        SessionNodeWrapper owner = ownerName == null ? null : TieLayoutMenu.findNodeByName(session, ownerName);
+        Graph ownGraph = this.layoutEditable.getGraph();
+        SessionNodeWrapper parent = owner == null || ownGraph == null ? null
+                : TieLayoutMenu.nearestAncestorWithGraph(session, owner, ownGraph);
+
+        JRadioButtonMenuItem automatic = new JRadioButtonMenuItem(parent == null
+                ? "Parent Box (none has a graph)" : "Parent Box (" + parent.getSessionName() + ")");
+        automatic.setSelected(currentRef == null);
+        group.add(automatic);
+        add(automatic);
+
+        automatic.addActionListener(e -> {
+            if (finalOwnerName != null) {
+                TieLayoutMenu.getLayoutTies(session).remove(finalOwnerName);
+                session.setSessionChanged(true);
+                resetToInherited(session, finalOwnerName);
+            }
+        });
+
         JRadioButtonMenuItem none = new JRadioButtonMenuItem("None");
-        none.setSelected(currentRef == null);
+        none.setSelected(TieLayoutMenu.NO_TIE.equals(currentRef));
         group.add(none);
         add(none);
 
         none.addActionListener(e -> {
             if (finalOwnerName != null) {
-                TieLayoutMenu.getLayoutTies(session).remove(finalOwnerName);
+                TieLayoutMenu.getLayoutTies(session).put(finalOwnerName, TieLayoutMenu.NO_TIE);
                 session.setSessionChanged(true);
             }
         });
-
-        if (candidates.isEmpty()) {
-            JMenuItem item = new JMenuItem("(No other session nodes with graphs)");
-            item.setEnabled(false);
-            add(item);
-            return;
-        }
 
         for (SessionNodeWrapper wrapper : candidates) {
             String refName = wrapper.getSessionName();
@@ -407,17 +653,39 @@ public class TieLayoutMenu extends JMenu {
                 if (finalOwnerName != null) {
                     TieLayoutMenu.getLayoutTies(session).put(finalOwnerName, refName);
                     session.setSessionChanged(true);
-                }
+                    resetToInherited(session, finalOwnerName);
+                } else {
+                    // The session node this editor belongs to could not be identified, so nothing can be
+                    // recorded for it; just take the layout.
+                    Graph refGraph = TieLayoutMenu.graphOf(wrapper);
 
-                Graph refGraph = TieLayoutMenu.graphOf(wrapper);
-
-                if (refGraph != null) {
-                    this.layoutEditable.layoutByGraph(refGraph);
-
-                    // Copy the laid out graph to the clipboard, as the other layout menu items do.
-                    new CopyLayoutAction(this.layoutEditable).actionPerformed(null);
+                    if (refGraph != null) {
+                        this.layoutEditable.layoutByGraph(refGraph);
+                        new CopyLayoutAction(this.layoutEditable).actionPerformed(null);
+                    }
                 }
             });
         }
+
+        addSeparator();
+
+        JMenuItem reset = new JMenuItem("Reset to Inherited Layout");
+        reset.setToolTipText("Discards the layout changes made in this box and takes the layout of the box it"
+                             + " inherits from");
+        reset.setEnabled(finalOwnerName != null && !TieLayoutMenu.NO_TIE.equals(currentRef)
+                         && (currentRef != null || parent != null));
+        add(reset);
+
+        reset.addActionListener(e -> resetToInherited(session, finalOwnerName));
+    }
+
+    /**
+     * Gives this menu's layout editable the layout of its reference, discarding the local changes.
+     */
+    private void resetToInherited(SessionWrapper session, String ownerName) {
+        TieLayoutMenu.synchronize(this.layoutEditable, session, ownerName, true);
+
+        // Copy the laid out graph to the clipboard, as the other layout menu items do.
+        new CopyLayoutAction(this.layoutEditable).actionPerformed(null);
     }
 }

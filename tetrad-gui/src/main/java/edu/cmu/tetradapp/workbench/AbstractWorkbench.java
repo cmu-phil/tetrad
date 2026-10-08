@@ -107,6 +107,24 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private final LinkedList<Graph> redoStack = new LinkedList<>();
     /**
+     * The most layouts kept for {@link #undoLayout()}.
+     */
+    private static final int MAX_LAYOUT_HISTORY = 100;
+    /**
+     * The layouts to go back to with {@link #undoLayout()}, most recent last; each maps node names to the centers
+     * of their display nodes. Null until first needed, as it is not serialized.
+     */
+    private transient LinkedList<Map<String, Point>> layoutUndoStack;
+    /**
+     * The layouts to return to with {@link #redoLayout()}, most recent last.
+     */
+    private transient LinkedList<Map<String, Point>> layoutRedoStack;
+    /**
+     * The layout when the mouse went down on a node, kept until the mouse is released, so that a drag is undone
+     * as one step.
+     */
+    private transient Map<String, Point> layoutBeforeDrag;
+    /**
      * The workbench which this workbench displays.
      */
     private Graph graph;
@@ -507,6 +525,99 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             setGraph(graph);
         } while (graph.equals(oldGraph));
+    }
+
+    /**
+     * @return the current layout: the centers of the display nodes, by node name. Read from the display nodes rather
+     * than the model nodes because the layouts in the Layout menu move the model nodes first and the display nodes
+     * afterwards, through {@link #layoutByGraph(Graph)}, so that at that point only the display nodes still have
+     * the layout being replaced.
+     */
+    private Map<String, Point> layoutSnapshot() {
+        Map<String, Point> snapshot = new HashMap<>();
+
+        for (Node modelNode : this.graph.getNodes()) {
+            if (getModelNodesToDisplay().get(modelNode) instanceof DisplayNode displayNode) {
+                Dimension dim = displayNode.getSize();
+                if (dim.width <= 0 || dim.height <= 0) dim = displayNode.getPreferredSize();
+                snapshot.put(modelNode.getName(), new Point(displayNode.getX() + dim.width / 2,
+                        displayNode.getY() + dim.height / 2));
+            }
+        }
+
+        return snapshot;
+    }
+
+    /**
+     * Makes the given layout, which was the layout before some change, available to {@link #undoLayout()}, if the
+     * layout is now different from it. A new change discards the layouts available to {@link #redoLayout()}.
+     */
+    private void recordLayoutChange(Map<String, Point> before) {
+        if (before == null || before.equals(layoutSnapshot())) {
+            return;
+        }
+
+        if (this.layoutUndoStack == null) this.layoutUndoStack = new LinkedList<>();
+        this.layoutUndoStack.addLast(before);
+        if (this.layoutUndoStack.size() > MAX_LAYOUT_HISTORY) this.layoutUndoStack.removeFirst();
+        if (this.layoutRedoStack != null) this.layoutRedoStack.clear();
+    }
+
+    /**
+     * Puts the display nodes, and the model nodes with them, exactly where the given layout has them. Nodes the
+     * layout does not mention (added since it was recorded) stay where they are. Unlike
+     * {@link #layoutByGraph(Graph)}, overlapping nodes are not moved apart, since the point is to get back the
+     * layout that was there.
+     */
+    private void restoreLayout(Map<String, Point> layout) {
+        for (Node modelNode : this.graph.getNodes()) {
+            Point center = layout.get(modelNode.getName());
+
+            if (center == null || !(getModelNodesToDisplay().get(modelNode) instanceof DisplayNode displayNode)) {
+                continue;
+            }
+
+            Dimension dim = displayNode.getSize();
+            if (dim.width <= 0 || dim.height <= 0) dim = displayNode.getPreferredSize();
+            displayNode.setLocation(center.x - dim.width / 2, center.y - dim.height / 2);
+            modelNode.setCenter(center.x, center.y);
+        }
+
+        fitCanvasToNodes();
+    }
+
+    /**
+     * Goes back to the layout before the last change to the positions of the nodes, whether that was a layout from
+     * the Layout menu, a pasted or inherited layout, or nodes being dragged. Edges and nodes are not changed; this
+     * is separate from {@link #undo()}, which undoes changes to the graph.
+     *
+     * @return True if there was a layout to go back to.
+     */
+    public boolean undoLayout() {
+        if (this.graph == null || this.layoutUndoStack == null || this.layoutUndoStack.isEmpty()) {
+            return false;
+        }
+
+        if (this.layoutRedoStack == null) this.layoutRedoStack = new LinkedList<>();
+        this.layoutRedoStack.addLast(layoutSnapshot());
+        restoreLayout(this.layoutUndoStack.removeLast());
+        return true;
+    }
+
+    /**
+     * Returns to the layout that the last {@link #undoLayout()} went back from.
+     *
+     * @return True if there was a layout to return to.
+     */
+    public boolean redoLayout() {
+        if (this.graph == null || this.layoutRedoStack == null || this.layoutRedoStack.isEmpty()) {
+            return false;
+        }
+
+        if (this.layoutUndoStack == null) this.layoutUndoStack = new LinkedList<>();
+        this.layoutUndoStack.addLast(layoutSnapshot());
+        restoreLayout(this.layoutRedoStack.removeLast());
+        return true;
     }
 
     public void setToOriginal() {
@@ -1084,6 +1195,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param layoutGraph the graph used for layouting the nodes. Must not be null.
      */
     public void layoutByGraph(Graph layoutGraph) {
+        Map<String, Point> before = layoutSnapshot();
+
         LayoutUtil.arrangeBySourceGraph(this.graph, layoutGraph);
 
         for (Node modelNode : this.graph.getNodes()) {
@@ -1104,6 +1217,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         separateNodes();
         fitCanvasToNodes();
+        recordLayoutChange(before);
 
         // setGraphWithoutNotify(graph);
     }
@@ -2385,6 +2499,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         this.clickPoint = p;
         this.dragNodes = getSelectedNodes();
         this.dragGroupMoved = false;
+        this.layoutBeforeDrag = layoutSnapshot();
     }
 
     /**
@@ -2640,7 +2755,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     private void launchPopup(MouseEvent e) {
         JPopupMenu popup = new JPopupMenu();
-        popup.add(new LayoutMenu(this));
+        popup.add(new LayoutMenu(this, false));
         if (this instanceof GraphWorkbench) {
             popup.add(new EnsembleMenu((GraphWorkbench) this));
         }
@@ -2691,6 +2806,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                         // scrollRectToVisible(rect);
                     }
+
+                    // After the snapping above, so that undoing a drag puts the nodes back where they were
+                    // before it; a click that moved nothing records nothing.
+                    recordLayoutChange(this.layoutBeforeDrag);
+                    this.layoutBeforeDrag = null;
                 }
                 break;
 

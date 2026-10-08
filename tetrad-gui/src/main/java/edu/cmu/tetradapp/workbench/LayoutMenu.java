@@ -26,6 +26,9 @@ import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * Builds a menu for layout operations on graphs. Interacts with classes that implement the LayoutEditable interface.
@@ -51,8 +54,52 @@ public class LayoutMenu extends JMenu {
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
     public LayoutMenu(LayoutEditable layoutEditable) {
+        this(layoutEditable, true);
+    }
+
+    /**
+     * <p>Constructor for LayoutMenu.</p>
+     *
+     * @param layoutEditable    a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     * @param synchronizeOnOpen True if constructing the menu should synchronize the layout with the layout it is
+     *                          inherited from, if that has not been done yet for this opening of the editor (see
+     *                          {@link TieLayoutMenu}). False for a menu built on demand, such as the workbench's
+     *                          right-click popup, where that would move the nodes under the user's hands.
+     */
+    public LayoutMenu(LayoutEditable layoutEditable, boolean synchronizeOnOpen) {
         super("Layout");
         this.layoutEditable = layoutEditable;
+
+        // Undo and redo for node positions, whatever changed them: a layout from this menu, a pasted or inherited
+        // layout, or dragging. Always enabled, since the accelerators must work without the menu having been opened
+        // to refresh them; with nothing to undo or redo they beep, as the graph editor's undo does.
+        JMenuItem undoLayout = new JMenuItem("Undo Layout Change");
+        undoLayout.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,
+                InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+        add(undoLayout);
+
+        undoLayout.addActionListener(e -> {
+            AbstractWorkbench workbench = LayoutMenu.workbenchOf(getLayoutEditable());
+
+            if (workbench == null || !workbench.undoLayout()) {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        });
+
+        JMenuItem redoLayout = new JMenuItem("Redo Layout Change");
+        redoLayout.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y,
+                InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+        add(redoLayout);
+
+        redoLayout.addActionListener(e -> {
+            AbstractWorkbench workbench = LayoutMenu.workbenchOf(getLayoutEditable());
+
+            if (workbench == null || !workbench.redoLayout()) {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        });
+
+        addSeparator();
 
         if (layoutEditable.getGraph().isTimeLagModel()) {
 
@@ -221,7 +268,10 @@ public class LayoutMenu extends JMenu {
         addSeparator();
 
         add(new TieLayoutMenu(layoutEditable));
-        TieLayoutMenu.applyTieOnOpen(layoutEditable);
+
+        if (synchronizeOnOpen) {
+            TieLayoutMenu.applyTieOnOpen(layoutEditable);
+        }
 
         addSeparator();
 
@@ -232,6 +282,31 @@ public class LayoutMenu extends JMenu {
 
     private LayoutEditable getLayoutEditable() {
         return this.layoutEditable;
+    }
+
+    /**
+     * @return the workbench that displays the graph of the given layout editable, or null if there is none. The
+     * editors that implement LayoutEditable each wrap a workbench in their own way; the display nodes they hand out
+     * are children of it. Looked up when needed, since an editor may replace its workbench.
+     */
+    private static AbstractWorkbench workbenchOf(LayoutEditable layoutEditable) {
+        if (layoutEditable instanceof AbstractWorkbench workbench) {
+            return workbench;
+        }
+
+        java.util.Map<edu.cmu.tetrad.graph.Node, Object> displayNodes = layoutEditable.getModelNodesToDisplay();
+
+        if (displayNodes == null) {
+            return null;
+        }
+
+        for (Object displayNode : displayNodes.values()) {
+            if (displayNode instanceof Component component) {
+                return (AbstractWorkbench) SwingUtilities.getAncestorOfClass(AbstractWorkbench.class, component);
+            }
+        }
+
+        return null;
     }
 
     private CopyLayoutAction getCopyLayoutAction() {

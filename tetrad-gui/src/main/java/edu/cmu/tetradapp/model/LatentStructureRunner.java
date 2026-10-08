@@ -39,7 +39,7 @@ import java.util.Objects;
  * The box runs in one of two modes, decided by its parents. With a Latent Clusters parent, the upstream
  * {@link BlockSpec} is handed to block-aware scores, tests, and algorithms, and the measurement edges from each block's
  * latent to its indicators are appended to the result. With data alone, the algorithms listed are those that find
- * latent variables directly from the data (for example RLCD and Factor Analysis), and the result is returned as the
+ * latent variables directly from the   data (for example RLCD and Factor Analysis), and the result is returned as the
  * algorithm produced it.
  */
 public class LatentStructureRunner extends GeneralAlgorithmRunner {
