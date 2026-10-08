@@ -110,6 +110,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         rlcd.setAllowNonLeafX(parameters.getBoolean(Params.RLCD_ALLOW_NON_LEAF_X));
         rlcd.setUnfoldCovers(parameters.getBoolean(Params.RLCD_UNFOLD_COVERS));
         rlcd.setCheckV(parameters.getBoolean(Params.RLCD_CHECK_V));
+        rlcd.setLatentGate(parameters.getBoolean(Params.RLCD_LATENT_GATE));
         rlcd.setPartitionCliqueThreshold(parameters.getInt(Params.RLCD_PARTITION_CLIQUE_THRESHOLD));
         rlcd.setStage1Method(parameters.getBoolean(Params.RLCD_STAGE1_FGES)
                 ? edu.cmu.tetrad.search.Rlcd.Stage1Method.FGES
@@ -166,6 +167,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         parameters.add(Params.RLCD_ALLOW_NON_LEAF_X);
         parameters.add(Params.RLCD_UNFOLD_COVERS);
         parameters.add(Params.RLCD_CHECK_V);
+        parameters.add(Params.RLCD_LATENT_GATE);
         parameters.add(Params.RLCD_PARTITION_CLIQUE_THRESHOLD);
         parameters.add(Params.RLCD_STAGE1_FGES);
         parameters.add(Params.POOL_IMPUTATIONS);

@@ -1629,6 +1629,10 @@ public final class Params {
      */
     public static final String POOL_IMPUTATIONS = "poolImputations";
     /**
+     * Constant <code>RLCD_LATENT_GATE="rlcdLatentGate"</code>
+     */
+    public static final String RLCD_LATENT_GATE = "rlcdLatentGate";
+    /**
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";

@@ -360,6 +360,85 @@ public class TestRlcd {
     }
 
     /**
+     * Three latents in a chain, T1 --> T2 --> T3, with four pure indicators each. The Markov equivalence class of
+     * that structure has no collider, so neither edge between latents has a determined direction, and neither may
+     * come out directed. (Stage 2 builds one of them as a cover over a cluster, which used to be reported as a
+     * directed edge, pointing against the truth.)
+     */
+    @Test
+    public void testLatentEdgesNotDirectedWithoutCollider() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node[] t = new Node[3];
+        int x = 1;
+        for (int i = 0; i < 3; i++) {
+            t[i] = new GraphNode("T" + (i + 1));
+            t[i].setNodeType(NodeType.LATENT);
+            g.addNode(t[i]);
+            if (i > 0) g.addDirectedEdge(t[i - 1], t[i]);
+            for (int j = 0; j < 4; j++) {
+                Node o = new GraphNode("X" + x++);
+                g.addNode(o);
+                g.addDirectedEdge(t[i], o);
+            }
+        }
+
+        DataSet data = simulate(g, 5000, 99L);
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setMaxK(2);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        Graph out = rlcd.search();
+
+        int latentEdges = 0;
+        for (Edge e : out.getEdges()) {
+            if (e.getNode1().getNodeType() == NodeType.LATENT && e.getNode2().getNodeType() == NodeType.LATENT) {
+                latentEdges++;
+                assertTrue("Edge between latents should be undirected: " + e + " in " + out,
+                        Edges.isUndirectedEdge(e));
+            } else if (e.getNode1().getNodeType() == NodeType.LATENT
+                       || e.getNode2().getNodeType() == NodeType.LATENT) {
+                assertTrue("Edge from a latent to an observed variable should stay directed: " + e,
+                        Edges.isDirectedEdge(e));
+            }
+        }
+        assertEquals("Two edges between latents expected: " + out, 2, latentEdges);
+    }
+
+    /**
+     * A DAG over observed variables only, with three triangles sharing an edge, so that stage 1 gives stage 2 a
+     * partition to search. No latent is behind it. With the check for whether a latent is indicated, none should be
+     * reported; without it, stage 2 reports one on this data.
+     */
+    @Test
+    public void testNoLatentWhereNoneIsIndicated() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node[] x = new Node[8];
+        for (int i = 1; i <= 7; i++) {
+            x[i] = new GraphNode("X" + i);
+            g.addNode(x[i]);
+        }
+        int[][] edges = {{1, 2}, {1, 3}, {1, 6}, {1, 7}, {2, 6}, {3, 4}, {3, 6}, {6, 7}};
+        for (int[] e : edges) g.addDirectedEdge(x[e[0]], x[e[1]]);
+
+        DataSet data = simulate(g, 20000, 11L);
+
+        for (boolean gate : new boolean[]{true, false}) {
+            Rlcd rlcd = new Rlcd(data);
+            rlcd.setMaxK(3);
+            rlcd.setAlpha(0.01);
+            rlcd.setSeed(1L);
+            rlcd.setLatentGate(gate);
+            Graph out = rlcd.search();
+
+            boolean latent = false;
+            for (Node node : out.getNodes()) latent = latent || node.getNodeType() == NodeType.LATENT;
+
+            if (gate) assertFalse("No latent expected with the check: " + out, latent);
+            else assertTrue("This data is expected to produce a spurious latent without the check: " + out, latent);
+        }
+    }
+
+    /**
      * Example run with verbose trace; hand-run from the IDE.
      *
      * @param args ignored.

@@ -4959,6 +4959,18 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             (rlcdAllowNonLeafX). The output is the stage-1 graph with, inside each partition in which latents were
             introduced, the observed-observed edges replaced by what stage 2 found, plus the latent variables and their
             edges. Latent variables are named L1, L2, and so on.</p>
+        <p>An edge between two latent variables is directed in the output only when its direction is determined, that
+            is, when every graph in the Markov equivalence class of the estimated structure has it that way, which
+            requires a collider; otherwise it is undirected. Rank constraints cannot tell L1 &rarr; L2 from
+            L2 &rarr; L1 for two latents with their own indicators. (The causal-learn implementation reports the
+            direction in which the search happened to build each such edge.) Edges from a latent to its observed
+            variables are drawn directed by convention; the data do not distinguish an indicator of a latent from an
+            observed cause of it.</p>
+        <p>Stage 2 is run on a partition only if a latent is indicated there (rlcdLatentGate): the partition must
+            contain two sets of mutually adjacent variables whose cross-covariance, possibly given a neighbor, is rank
+            deficient, which is the paper's condition for the existence of a latent. Otherwise the partition keeps
+            its stage-1 edges. This keeps a dense group of observed variables with no latent behind them from being
+            given one.</p>
         <p>Some things to know about the output. A rank-k cluster with k greater than one is placed under k latents
             that are not connected to each other. Edges between latents are found when one cluster is unfolded into
             its indicators while the other is kept as a cover, but sets consisting only of latent covers are never
@@ -4986,6 +4998,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p><a href="#alpha">alpha</a>, <a href="#rlcdMaxK">rlcdMaxK</a>, <a href="#rlcdAllowNonLeafX">rlcdAllowNonLeafX</a>,
         <a href="#rlcdUnfoldCovers">rlcdUnfoldCovers</a>, <a href="#rlcdCheckV">rlcdCheckV</a>,
+        <a href="#rlcdLatentGate">rlcdLatentGate</a>,
         <a href="#rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</a>, <a href="#rlcdStage1Fges">rlcdStage1Fges</a>,
         <a href="#poolImputations">poolImputations</a>, <a href="#penaltyDiscountDefault1">penaltyDiscountDefault1</a>, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
 

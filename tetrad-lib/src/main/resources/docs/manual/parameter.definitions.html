@@ -6766,6 +6766,17 @@ Source:
         <li>Value Type: <span id="rlcdCheckV_value_type">Boolean</span></li>
     </ul>
 
+    === rlcdLatentGate ===
+    <h3 class="parameter_description" id="rlcdLatentGate">rlcdLatentGate</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdLatentGate_short_desc">RLCD: look for latents in a group of variables only if its rank constraints call for one (default true)</span></li>
+        <li>Long Description: <span id="rlcdLatentGate_long_desc">Before RLCD searches a group of observed variables for latent clusters, it checks whether the group has the kind of rank deficiency that only a latent variable can produce: two sets of variables, all adjacent to one another in the stage-1 graph, whose cross-covariance (possibly after conditioning on a neighbor) has lower rank than their size. This is the condition of Theorems 5 and 9 of Dong et al. (2024). If no such deficiency is found, no latent is introduced in that group and its stage-1 edges are kept. Without the check, a dense group of observed variables with no latent behind them is sometimes given a latent that stands in for structure among the observed variables. The check is an approximation (it uses the stage-1 graph and a limited set of conditioning variables) and errs toward allowing the search. Set to false to search every group, as the causal-learn implementation does.</span></li>
+        <li>Default Value: <span id="rlcdLatentGate_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdLatentGate_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdLatentGate_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdLatentGate_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdMaxK ===
     <h3 class="parameter_description" id="rlcdMaxK">rlcdMaxK</h3>
     <ul class="parameter_description_list">

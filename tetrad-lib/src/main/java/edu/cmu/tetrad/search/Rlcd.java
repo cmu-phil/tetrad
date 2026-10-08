@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.rlcd.PooledRankTest;
 import edu.cmu.tetrad.search.rlcd.RankTester;
 import edu.cmu.tetrad.search.rlcd.RlcdClusterSearch;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -66,9 +67,13 @@ import java.util.*;
  * chain, a rank-2 cluster, an observed non-sink, an impure indicator, an observed DAG with no latents) by feeding both
  * the same stage-1 graph; all agreed exactly up to relabeling of latents and the finish-step chain order.
  * <p>
- * One deliberate difference from the released code: the edges of the finish-step chain are undirected here, where
- * the Python directs them in an order that depends on its hash seed, since their orientation is not identifiable
- * from rank constraints.
+ * Deliberate differences from the released code. The edges of the finish-step chain are undirected here, where
+ * the Python directs them in an order that depends on its hash seed. And an edge between two latents is directed in
+ * the output only if the Markov equivalence class of the estimated structure determines its direction, as the last
+ * step of the paper's Algorithm 1 prescribes; the Python reports the direction in which stage 2 happened to build
+ * it. And stage 2 is run on a partition only if the paper's condition for the existence of a latent holds somewhere
+ * in it (see {@link #setLatentGate(boolean)}). See also {@link RlcdClusterSearch} for the differences inside
+ * stage 2.
  *
  * @author josephramsey (translation)
  * @see RlcdClusterSearch
@@ -100,6 +105,11 @@ public class Rlcd {
     private double alpha = 0.01;
     private double[] alphaByRank = null;
     private int maxK = 3;
+    /**
+     * The most rank tests {@link #latentIndicated} makes on one partition before giving up and letting stage 2 run.
+     */
+    private static final int MAX_GATE_TESTS = 20000;
+    private boolean latentGate = true;
     private boolean allowNonLeafX = true;
     private boolean unfoldCovers = true;
     private boolean checkV = true;
@@ -193,6 +203,19 @@ public class Rlcd {
      */
     public void setAlphaByRank(double[] alphaByRank) {
         this.alphaByRank = alphaByRank == null ? null : alphaByRank.clone();
+    }
+
+    /**
+     * Sets whether a partition is searched for latents only if its rank constraints call for one (default true).
+     * Before stage 2 is run on a partition, the condition of Theorems 5 and 9 of Dong et al. for the existence of
+     * a latent is checked on it; where no latent is indicated, the partition keeps its stage-1 edges. Without the
+     * check, stage 2 run on a dense group of observed variables with no latent behind them can report a latent that
+     * stands in for structure among the observed variables. The Python has no such check.
+     *
+     * @param latentGate true to make the check.
+     */
+    public void setLatentGate(boolean latentGate) {
+        this.latentGate = latentGate;
     }
 
     /**
@@ -378,6 +401,14 @@ public class Rlcd {
 
             LatentGroups current = new LatentGroups(currentXvars, nonSinkCandidates, neighbourSet, localAdj,
                     latentPrefix);
+
+            if (latentGate && !latentIndicated(currentIdx, adjStage1, nx)) {
+                // Nothing in this partition calls for a latent; its stage-1 edges stand.
+                log("No latent is indicated among " + currentXvars + "; keeping the stage-1 edges.");
+                latentGroups.add(current);
+                continue;
+            }
+
             current = search.findClusters(current);
             latentGroups.add(current);
 
@@ -446,7 +477,9 @@ public class Rlcd {
             latent.setNodeType(NodeType.LATENT);
             nodes.add(latent);
         }
-        return adjacencyToGraph(adj, nodes);
+        Graph graph = adjacencyToGraph(adj, nodes);
+        orientLatentEdgesByEquivalenceClass(graph);
+        return graph;
     }
 
     /**
@@ -471,8 +504,59 @@ public class Rlcd {
     }
 
     /**
-     * The final signed adjacency over observed then latent variables, in causal-learn's encoding: A[i][j] = −1 and
-     * A[j][i] = 1 for i → j; −1 both ways for an undirected edge.
+     * Leaves an edge between two latents directed only if every graph in the Markov equivalence class of the
+     * estimated structure directs it that way; otherwise makes it undirected. This is the last step of Algorithm 1
+     * of Dong et al. (convert the estimated graph to its Markov equivalence class and keep the directions that
+     * follow from v-structures), applied to the edges among latents, and it is not done by the Python.
+     * <p>
+     * Stage 2 builds its structure by placing each cluster under a cover, so every link it finds comes out as a
+     * directed edge from the cover to the cluster. Between two latents that direction records which cluster was
+     * built first, not anything the rank constraints determine: L1 --> L2 and L2 --> L1 imply the same ranks unless a
+     * collider is involved.
+     * <p>
+     * The equivalence class is computed in the usual way: start from the skeleton, orient the unshielded colliders
+     * the estimated structure has among its directed edges, and close under the Meek rules. Only edges between two
+     * latents are then changed. An edge from a latent to an observed variable is left directed by convention,
+     * although the same argument applies to it: rank constraints do not tell an indicator of a latent from an
+     * observed cause of it.
+     */
+    private static void orientLatentEdgesByEquivalenceClass(Graph graph) {
+        Graph pattern = new EdgeListGraph(graph.getNodes());
+        for (Edge edge : graph.getEdges()) pattern.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+
+        for (Node child : graph.getNodes()) {
+            List<Node> parents = graph.getParents(child);
+
+            for (int i = 0; i < parents.size(); i++) {
+                for (int j = i + 1; j < parents.size(); j++) {
+                    if (graph.isAdjacentTo(parents.get(i), parents.get(j))) continue;
+
+                    for (Node parent : List.of(parents.get(i), parents.get(j))) {
+                        pattern.removeEdge(parent, child);
+                        pattern.addDirectedEdge(parent, child);
+                    }
+                }
+            }
+        }
+
+        new MeekRules().orientImplied(pattern);
+
+        for (Edge edge : new ArrayList<>(graph.getEdges())) {
+            Node a = edge.getNode1(), b = edge.getNode2();
+            if (a.getNodeType() != NodeType.LATENT || b.getNodeType() != NodeType.LATENT) continue;
+
+            Edge implied = pattern.getEdge(a, b);
+            if (implied == null || implied.equals(edge)) continue;
+
+            graph.removeEdge(edge);
+            graph.addEdge(implied);
+        }
+    }
+
+    /**
+     * The signed adjacency over observed then latent variables as stage 2 left it, in causal-learn's encoding:
+     * A[i][j] = −1 and A[j][i] = 1 for i → j; −1 both ways for an undirected edge. Edges between latents are as the
+     * search built them, before the returned graph's are reduced to what the equivalence class determines.
      *
      * @return the matrix; null before {@link #search()}.
      */
@@ -488,6 +572,102 @@ public class Rlcd {
     }
 
     // ---------------------------------------------------------------- stage 1
+
+    /**
+     * Whether the rank constraints call for a latent variable somewhere among the given observed variables, by the
+     * condition of Theorems 5 and 9 of Dong et al.: there are disjoint sets A, B and C of observed variables with
+     * |B| &ge; |A| &ge; 2, the members of A pairwise adjacent in the skeleton, every member of A adjacent to every
+     * member of B, every member of C adjacent to some member of A or B, and rank(&Sigma;[A &cup; C, B &cup; C]) less
+     * than |A| + |C|. The paper shows that condition sufficient for a latent on a trek between A and B and, under
+     * its Condition 1, necessary as well, so where it fails stage 2 has nothing to find, and anything it did find
+     * would be a latent standing in for structure among the observed variables.
+     * <p>
+     * The skeleton here is the stage-1 skeleton, not the paper's CI skeleton, and the search is limited to |B| = |A|
+     * &le; maxK + 1 and |C| &le; 1, so the check is an approximation of the condition. It errs toward saying that a
+     * latent is indicated: the answer is yes as soon as one test fails to reject a rank deficiency, and also if the
+     * number of tests passes a limit.
+     *
+     * @param members  the columns of the observed variables in the partition.
+     * @param skeleton the stage-1 adjacency over the observed variables.
+     * @param nx       the number of observed variables.
+     */
+    private boolean latentIndicated(List<Integer> members, int[][] skeleton, int nx) {
+        int[] budget = {MAX_GATE_TESTS};
+
+        for (int size = 2; size <= maxK + 1 && 2 * size <= members.size(); size++) {
+            for (List<Integer> a : combinations(members, size)) {
+                if (!pairwiseAdjacent(a, skeleton)) continue;
+
+                List<Integer> common = new ArrayList<>();
+                for (int v : members) {
+                    if (a.contains(v)) continue;
+                    boolean all = true;
+                    for (int u : a) all = all && (skeleton[u][v] != 0 || skeleton[v][u] != 0);
+                    if (all) common.add(v);
+                }
+                if (common.size() < size) continue;
+
+                for (List<Integer> b : combinations(common, size)) {
+                    List<Integer> neighbours = new ArrayList<>();
+                    for (int v = 0; v < nx; v++) {
+                        if (a.contains(v) || b.contains(v)) continue;
+                        boolean adjacent = false;
+                        for (int u : a) adjacent = adjacent || skeleton[u][v] != 0 || skeleton[v][u] != 0;
+                        for (int u : b) adjacent = adjacent || skeleton[u][v] != 0 || skeleton[v][u] != 0;
+                        if (adjacent) neighbours.add(v);
+                    }
+
+                    List<List<Integer>> conditioning = new ArrayList<>();
+                    conditioning.add(List.of());
+                    for (int v : neighbours) conditioning.add(List.of(v));
+
+                    for (List<Integer> c : conditioning) {
+                        if (--budget[0] < 0) return true;
+
+                        int[] p = new int[size + c.size()], q = new int[size + c.size()];
+                        for (int i = 0; i < size; i++) {
+                            p[i] = a.get(i);
+                            q[i] = b.get(i);
+                        }
+                        for (int i = 0; i < c.size(); i++) p[size + i] = q[size + i] = c.get(i);
+
+                        int rank = size + c.size() - 1;
+                        if (rankTester.failToReject(p, q, rank, alphaFor(rank))) return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean pairwiseAdjacent(List<Integer> vars, int[][] skeleton) {
+        for (int i = 0; i < vars.size(); i++) {
+            for (int j = i + 1; j < vars.size(); j++) {
+                if (skeleton[vars.get(i)][vars.get(j)] == 0 && skeleton[vars.get(j)][vars.get(i)] == 0) return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<List<Integer>> combinations(List<Integer> items, int r) {
+        List<List<Integer>> out = new ArrayList<>();
+        combine(items, r, 0, new ArrayList<>(), out);
+        return out;
+    }
+
+    private static void combine(List<Integer> items, int r, int start, List<Integer> current,
+                                List<List<Integer>> out) {
+        if (current.size() == r) {
+            out.add(new ArrayList<>(current));
+            return;
+        }
+        for (int i = start; i < items.size(); i++) {
+            current.add(items.get(i));
+            combine(items, r, i + 1, current, out);
+            current.remove(current.size() - 1);
+        }
+    }
 
     private double alphaFor(int rank) {
         if (alphaByRank != null && rank >= 0 && rank < alphaByRank.length) return alphaByRank[rank];
