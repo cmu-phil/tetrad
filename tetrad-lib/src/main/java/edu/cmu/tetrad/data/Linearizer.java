@@ -191,6 +191,8 @@ public final class Linearizer {
     }
 
     /**
+     * Returns the fitted Yeo-Johnson lambdas, in variable order.
+     *
      * @return the fitted Yeo-Johnson lambda per variable (1.0 = identity).
      */
     public double[] getLambdas() {
@@ -198,6 +200,8 @@ public final class Linearizer {
     }
 
     /**
+     * Returns the pre-transform nonlinearity measures, in variable order.
+     *
      * @return the mean directed nonlinearity per variable before the transform.
      */
     public double[] getNonlinearityBefore() {
@@ -205,6 +209,8 @@ public final class Linearizer {
     }
 
     /**
+     * Returns the post-transform nonlinearity measures, in variable order.
+     *
      * @return the mean directed nonlinearity per variable after the transform.
      */
     public double[] getNonlinearityAfter() {

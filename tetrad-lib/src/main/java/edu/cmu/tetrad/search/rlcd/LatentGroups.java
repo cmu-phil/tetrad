@@ -59,6 +59,8 @@ public final class LatentGroups {
         }
 
         /**
+         * Returns the covers found.
+         *
          * @return the covers.
          */
         public Set<Cover> getVs() {
@@ -66,6 +68,8 @@ public final class LatentGroups {
         }
 
         /**
+         * Returns the non-sink variables used as conditioning variables.
+         *
          * @return the non-sinks used.
          */
         public Set<String> getNonsinks() {

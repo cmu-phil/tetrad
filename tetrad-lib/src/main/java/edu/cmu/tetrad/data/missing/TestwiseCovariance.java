@@ -107,6 +107,11 @@ public final class TestwiseCovariance {
         if (removed != null) removed.cache.clear();
     }
 
+    /**
+     * Returns the number of rows of the underlying data set.
+     *
+     * @return the number of rows.
+     */
     public int getNumRows() {
         return this.data.getNumRows();
     }

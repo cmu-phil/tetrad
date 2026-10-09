@@ -200,6 +200,10 @@ public final class Knowledge implements TetradSerializable {
      * editing or removing a group behaves as it does for newly built objects. This matches the old
      * {@code removeKnowledgeGroup}, which removed the mirrored rule on removal. Also ensures every
      * group has a cached extent.
+     *
+     * @param in the stream to read from.
+     * @throws IOException            if the stream cannot be read.
+     * @throws ClassNotFoundException if a class in the stream cannot be found.
      */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {

@@ -57,6 +57,9 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * The background knowledge passed to the search.
+     */
     private Knowledge knowledge = new Knowledge();
 
     /**

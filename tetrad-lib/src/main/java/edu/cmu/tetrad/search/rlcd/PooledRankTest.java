@@ -76,6 +76,8 @@ public final class PooledRankTest implements RankTester {
     }
 
     /**
+     * Returns the number of imputed data sets being pooled.
+     *
      * @return the number of imputations pooled.
      */
     public int getNumImputations() {

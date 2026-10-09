@@ -403,6 +403,8 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
     }
 
     /**
+     * Returns the rank engine supplied to this test, if any.
+     *
      * @return the supplied rank engine, or null when the default engine is in use.
      */
     public RankTester getRankTester() {

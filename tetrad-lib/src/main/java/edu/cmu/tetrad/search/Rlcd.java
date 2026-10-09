@@ -489,6 +489,8 @@ public class Rlcd {
     }
 
     /**
+     * Returns the stage-1 graph.
+     *
      * @return the stage-1 graph used (either supplied or searched); null before {@link #search()}.
      */
     public Graph getStage1Graph() {
@@ -496,6 +498,8 @@ public class Rlcd {
     }
 
     /**
+     * Returns the stage-2 partition.
+     *
      * @return the partition of observed variables searched in stage 2; null before {@link #search()}.
      */
     public List<List<Node>> getPartition() {
@@ -503,6 +507,8 @@ public class Rlcd {
     }
 
     /**
+     * Returns the per-partition latent structures.
+     *
      * @return the per-partition latent structures, for inspection; null before {@link #search()}.
      */
     public List<LatentGroups> getLatentGroups() {
@@ -734,6 +740,8 @@ public class Rlcd {
     }
 
     /**
+     * Returns the variable names for the adjacency matrix.
+     *
      * @return observed variable names followed by latent names, indexing {@link #getAdjacency()}.
      */
     public List<String> getAllVariableNames() {
