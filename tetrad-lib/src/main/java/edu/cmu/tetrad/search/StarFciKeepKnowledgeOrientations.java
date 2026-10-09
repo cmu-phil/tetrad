@@ -96,10 +96,15 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  *
  * @author josephramsey
  * @author bryanandrews
- * @see StarFciGuaranteePag
+ * @see StarFci
  * @see #getMarkovDag(boolean)
  * @see Knowledge
+ * @deprecated The knowledge handling of this class has been consolidated into {@link StarFci} (formerly
+ * StarFciGuaranteePag); with empty knowledge the two already coincided. This standalone copy is retained only
+ * for the hand-run comparison harness (TestStarFciKeepKnowledgeOrientations) and receives no further changes;
+ * extend {@link StarFci} instead.
  */
+@Deprecated
 public abstract class StarFciKeepKnowledgeOrientations implements IGraphSearch {
     /**
      * The independence test used in search.
