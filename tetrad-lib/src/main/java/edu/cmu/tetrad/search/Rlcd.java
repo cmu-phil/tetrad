@@ -68,12 +68,14 @@ import java.util.*;
  * the same stage-1 graph; all agreed exactly up to relabeling of latents and the finish-step chain order.
  * <p>
  * Deliberate differences from the released code. The edges of the finish-step chain are undirected here, where
- * the Python directs them in an order that depends on its hash seed. And an edge between two latents is directed in
- * the output only if the Markov equivalence class of the estimated structure determines its direction, as the last
- * step of the paper's Algorithm 1 prescribes; the Python reports the direction in which stage 2 happened to build
- * it. And stage 2 is run on a partition only if the paper's condition for the existence of a latent holds somewhere
- * in it (see {@link #setLatentGate(boolean)}). See also {@link RlcdClusterSearch} for the differences inside
- * stage 2.
+ * the Python directs them in an order that depends on its hash seed. And the directions of edges between latents
+ * are decided by rank tests rather than by the order in which stage 2 happened to build the covers: the skeleton
+ * among the latent covers is kept, unshielded colliders are found by a PC-style search for separating sets with the
+ * rank test as the conditional-independence oracle, and the Meek rules are closed over, so the latent part of the
+ * output is a CPDAG (see {@link #orientLatentEdgesByRankTests}). The Python reports the direction in which stage 2
+ * built each edge. And stage 2 is run on a partition only if the paper's condition for the existence of a latent
+ * holds somewhere in it (see {@link #setLatentGate(boolean)}). See also {@link RlcdClusterSearch} for the
+ * differences inside stage 2.
  *
  * @author josephramsey (translation)
  * @see RlcdClusterSearch
@@ -478,7 +480,7 @@ public class Rlcd {
             nodes.add(latent);
         }
         Graph graph = adjacencyToGraph(adj, nodes);
-        orientLatentEdgesByEquivalenceClass(graph);
+        orientLatentEdgesByRankTests(graph);
         return graph;
     }
 
@@ -504,53 +506,217 @@ public class Rlcd {
     }
 
     /**
-     * Leaves an edge between two latents directed only if every graph in the Markov equivalence class of the
-     * estimated structure directs it that way; otherwise makes it undirected. This is the last step of Algorithm 1
-     * of Dong et al. (convert the estimated graph to its Markov equivalence class and keep the directions that
-     * follow from v-structures), applied to the edges among latents, and it is not done by the Python.
-     * <p>
-     * Stage 2 builds its structure by placing each cluster under a cover, so every link it finds comes out as a
-     * directed edge from the cover to the cluster. Between two latents that direction records which cluster was
-     * built first, not anything the rank constraints determine: L1 --> L2 and L2 --> L1 imply the same ranks unless a
-     * collider is involved.
-     * <p>
-     * The equivalence class is computed in the usual way: start from the skeleton, orient the unshielded colliders
-     * the estimated structure has among its directed edges, and close under the Meek rules. Only edges between two
-     * latents are then changed. An edge from a latent to an observed variable is left directed by convention,
-     * although the same argument applies to it: rank constraints do not tell an indicator of a latent from an
-     * observed cause of it.
+     * The largest number of latent covers conditioned on at once when searching for a separating set between two
+     * nonadjacent latent covers.
      */
-    private static void orientLatentEdgesByEquivalenceClass(Graph graph) {
-        Graph pattern = new EdgeListGraph(graph.getNodes());
-        for (Edge edge : graph.getEdges()) pattern.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+    private static final int LATENT_ORIENTATION_DEPTH = 3;
 
-        for (Node child : graph.getNodes()) {
-            List<Node> parents = graph.getParents(child);
+    /**
+     * Decides the directions of the edges between latents by rank tests, replacing the directions stage 2 built,
+     * which record only the order in which covers were found (L1 --> L2 and L2 --> L1 imply the same rank
+     * constraints unless a collider is involved, so the search cannot have chosen between them).
+     * <p>
+     * The latents are first grouped into covers: latents with identical child sets and no edge between them are
+     * co-members of one atomic cover of cardinality k. The skeleton among covers is the one stage 2 found. For each
+     * pair of nonadjacent covers a separating set is sought among the covers adjacent to either, of size up to
+     * {@link #LATENT_ORIENTATION_DEPTH}. Of the candidate sets, the one whose rank test has the largest p-value is
+     * taken as the separating set if that p-value exceeds alpha (the max-p rule, as in PC-Max), rather than the
+     * first set that is not rejected: a conditioning set that is a common descendant of the pair, such as a
+     * collider below both, can leave only a weak dependence that a single test at alpha fails to reject. A cover A
+     * is separated from a cover B by a set S of covers when rank(Σ[A' ∪ S₁, B' ∪ S₂]) ≤ Σ_{C∈S} k_C, where A' and
+     * B' are the pure indicators of A and B and
+     * each conditioning cover C contributes two disjoint sets S₁ and S₂ of k_C of its pure indicators, one to each
+     * side. This is the rank form of A ⊥ B | S: by trek separation the rank equals Σ k_C exactly when every trek
+     * between A and B passes through S as a non-collider, and exceeds it when S contains a collider or leaves a path
+     * open. A pure indicator is an observed child of the cover with no other parent. A cover with fewer than 2k pure
+     * indicators cannot be conditioned on and is skipped as a conditioner.
+     * <p>
+     * An unshielded triple A — C — B is oriented as a collider when C is not in the separating set found for A and
+     * B; conflicting collider orientations leave the edge undirected; the Meek rules are then closed over the cover
+     * graph; and the result is written back onto the edges between latents. An edge between a latent and an
+     * observed variable is left as stage 2 built it: by convention latent --> indicator, and observed --> latent
+     * where an observed variable was placed as a cause. Pairs for which no separating set is found within the depth
+     * limit leave their triples unoriented.
+     *
+     * @param graph the output graph; its latent-latent edges are rewritten in place.
+     */
+    private void orientLatentEdgesByRankTests(Graph graph) {
+        List<String> xvars = new ArrayList<>();
+        for (Node v : variables) xvars.add(v.getName());
 
-            for (int i = 0; i < parents.size(); i++) {
-                for (int j = i + 1; j < parents.size(); j++) {
-                    if (graph.isAdjacentTo(parents.get(i), parents.get(j))) continue;
+        // Group latents into covers by identical child sets.
+        List<Node> latents = new ArrayList<>();
+        for (Node v : graph.getNodes()) if (v.getNodeType() == NodeType.LATENT) latents.add(v);
+        if (latents.size() < 2) return;
 
-                    for (Node parent : List.of(parents.get(i), parents.get(j))) {
-                        pattern.removeEdge(parent, child);
-                        pattern.addDirectedEdge(parent, child);
+        List<List<Node>> covers = new ArrayList<>();
+        Map<Node, Integer> coverOf = new HashMap<>();
+        for (Node l : latents) {
+            if (coverOf.containsKey(l)) continue;
+            Set<Node> children = new HashSet<>(graph.getChildren(l));
+            List<Node> cover = new ArrayList<>(List.of(l));
+            for (Node m : latents) {
+                if (m == l || coverOf.containsKey(m) || graph.isAdjacentTo(l, m)) continue;
+                if (children.equals(new HashSet<>(graph.getChildren(m)))) cover.add(m);
+            }
+            for (Node m : cover) coverOf.put(m, covers.size());
+            covers.add(cover);
+        }
+        int nc = covers.size();
+        if (nc < 2) return;
+
+        // Pure indicators of each cover: observed children whose parents are exactly the cover's members.
+        List<int[]> pure = new ArrayList<>();
+        List<int[]> anyChildren = new ArrayList<>();
+        for (List<Node> cover : covers) {
+            Set<Node> members = new HashSet<>(cover);
+            List<Integer> p = new ArrayList<>(), a = new ArrayList<>();
+            for (Node c : graph.getChildren(cover.get(0))) {
+                if (c.getNodeType() == NodeType.LATENT) continue;
+                int idx = xvars.indexOf(c.getName());
+                if (idx < 0) continue;
+                a.add(idx);
+                if (members.equals(new HashSet<>(graph.getParents(c)))) p.add(idx);
+            }
+            pure.add(p.stream().mapToInt(Integer::intValue).toArray());
+            anyChildren.add(a.stream().mapToInt(Integer::intValue).toArray());
+        }
+
+        // Skeleton among covers.
+        boolean[][] adjacent = new boolean[nc][nc];
+        for (Edge e : graph.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            if (a.getNodeType() != NodeType.LATENT || b.getNodeType() != NodeType.LATENT) continue;
+            int i = coverOf.get(a), j = coverOf.get(b);
+            if (i != j) adjacent[i][j] = adjacent[j][i] = true;
+        }
+
+        // Separating sets by a PC-style search.
+        Map<Long, Set<Integer>> sepsets = new HashMap<>();
+        for (int i = 0; i < nc; i++) {
+            for (int j = i + 1; j < nc; j++) {
+                if (adjacent[i][j]) continue;
+                List<Integer> candidates = new ArrayList<>();
+                for (int c = 0; c < nc; c++) {
+                    if (c != i && c != j && (adjacent[i][c] || adjacent[j][c])
+                        && pure.get(c).length >= 2 * covers.get(c).size()) {
+                        candidates.add(c);
                     }
+                }
+                Set<Integer> found = null;
+                double bestP = -1;
+                for (int depth = 0; depth <= Math.min(LATENT_ORIENTATION_DEPTH, candidates.size()); depth++) {
+                    for (List<Integer> s : combinations(candidates, depth)) {
+                        double pv = separationPValue(i, j, s, covers, pure, anyChildren);
+                        if (pv > bestP) {
+                            bestP = pv;
+                            found = new HashSet<>(s);
+                        }
+                    }
+                }
+                if (found != null && bestP > alphaFor(conditioningRank(found, covers))) {
+                    sepsets.put(pairKey(i, j), found);
+                    log("Latent covers " + covers.get(i) + " and " + covers.get(j) + " separated by "
+                        + found.stream().map(covers::get).toList() + " (p = " + bestP + ")");
                 }
             }
         }
 
-        new MeekRules().orientImplied(pattern);
+        // Cover graph: skeleton, colliders, Meek.
+        List<Node> coverNodes = new ArrayList<>();
+        for (int i = 0; i < nc; i++) coverNodes.add(new GraphNode("C" + i));
+        Graph coverGraph = new EdgeListGraph(coverNodes);
+        for (int i = 0; i < nc; i++) {
+            for (int j = i + 1; j < nc; j++) {
+                if (adjacent[i][j]) coverGraph.addUndirectedEdge(coverNodes.get(i), coverNodes.get(j));
+            }
+        }
+        Set<Long> colliderInto = new HashSet<>();   // directed cover edges a --> c requested by colliders
+        for (int c = 0; c < nc; c++) {
+            for (int a = 0; a < nc; a++) {
+                if (a == c || !adjacent[a][c]) continue;
+                for (int b = a + 1; b < nc; b++) {
+                    if (b == c || !adjacent[b][c] || adjacent[a][b]) continue;
+                    Set<Integer> sep = sepsets.get(pairKey(a, b));
+                    if (sep == null || sep.contains(c)) continue;
+                    colliderInto.add(dirKey(a, c));
+                    colliderInto.add(dirKey(b, c));
+                    log("Latent collider " + covers.get(a) + " --> " + covers.get(c) + " <-- " + covers.get(b));
+                }
+            }
+        }
+        for (long key : colliderInto) {
+            int from = (int) (key >> 32), to = (int) key;
+            if (colliderInto.contains(dirKey(to, from))) continue;  // conflict: leave undirected
+            Node f = coverNodes.get(from), t = coverNodes.get(to);
+            if (coverGraph.getEdge(f, t) != null && Edges.isUndirectedEdge(coverGraph.getEdge(f, t))) {
+                coverGraph.removeEdge(f, t);
+                coverGraph.addDirectedEdge(f, t);
+            }
+        }
+        new MeekRules().orientImplied(coverGraph);
 
+        // Write back onto the latent-latent edges.
         for (Edge edge : new ArrayList<>(graph.getEdges())) {
             Node a = edge.getNode1(), b = edge.getNode2();
             if (a.getNodeType() != NodeType.LATENT || b.getNodeType() != NodeType.LATENT) continue;
-
-            Edge implied = pattern.getEdge(a, b);
-            if (implied == null || implied.equals(edge)) continue;
-
-            graph.removeEdge(edge);
-            graph.addEdge(implied);
+            int i = coverOf.get(a), j = coverOf.get(b);
+            if (i == j) continue;
+            Edge ce = coverGraph.getEdge(coverNodes.get(i), coverNodes.get(j));
+            if (ce == null) continue;
+            Edge wanted;
+            if (Edges.isUndirectedEdge(ce)) {
+                wanted = Edges.undirectedEdge(a, b);
+            } else if (Edges.getDirectedEdgeTail(ce) == coverNodes.get(i)) {
+                wanted = Edges.directedEdge(a, b);
+            } else {
+                wanted = Edges.directedEdge(b, a);
+            }
+            if (!wanted.equals(edge)) {
+                graph.removeEdge(edge);
+                graph.addEdge(wanted);
+            }
         }
+    }
+
+    private static int conditioningRank(Collection<Integer> s, List<List<Node>> covers) {
+        int rank = 0;
+        for (int c : s) rank += covers.get(c).size();
+        return rank;
+    }
+
+    /**
+     * The p-value of the test that covers i and j are separated by the covers in s, by the rank test described in
+     * {@link #orientLatentEdgesByRankTests}; −1 when the test cannot be formed.
+     */
+    private double separationPValue(int i, int j, List<Integer> s, List<List<Node>> covers, List<int[]> pure,
+                                    List<int[]> anyChildren) {
+        List<Integer> p = new ArrayList<>(), q = new ArrayList<>();
+        int[] ai = pure.get(i).length >= covers.get(i).size() ? pure.get(i) : anyChildren.get(i);
+        int[] bj = pure.get(j).length >= covers.get(j).size() ? pure.get(j) : anyChildren.get(j);
+        if (ai.length == 0 || bj.length == 0) return -1;
+        for (int x : ai) p.add(x);
+        for (int x : bj) q.add(x);
+        int rank = 0;
+        for (int c : s) {
+            int k = covers.get(c).size();
+            int[] ind = pure.get(c);
+            for (int t = 0; t < k; t++) p.add(ind[t]);
+            for (int t = k; t < 2 * k; t++) q.add(ind[t]);
+            rank += k;
+        }
+        int[] pc = p.stream().mapToInt(Integer::intValue).toArray();
+        int[] qc = q.stream().mapToInt(Integer::intValue).toArray();
+        if (rank >= Math.min(pc.length, qc.length)) return -1;  // nothing left to test
+        return rankTester.pValue(pc, qc, rank);
+    }
+
+    private static long pairKey(int i, int j) {
+        return dirKey(Math.min(i, j), Math.max(i, j));
+    }
+
+    private static long dirKey(int from, int to) {
+        return ((long) from << 32) | (to & 0xffffffffL);
     }
 
     /**

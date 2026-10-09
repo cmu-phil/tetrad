@@ -100,6 +100,7 @@ public final class PooledRankTest implements RankTester {
      * @param r     the hypothesized maximum rank.
      * @return the p-value, or 0 when the degrees of freedom are not positive.
      */
+    @Override
     public double pValue(int[] pcols, int[] qcols, int r) {
         int p = pcols.length, q = qcols.length;
         int df = (p - r) * (q - r);

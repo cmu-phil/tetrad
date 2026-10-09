@@ -40,4 +40,18 @@ public interface RankTester {
      * @return true if the null is NOT rejected (rank deficiency is consistent with the data), false if rejected.
      */
     boolean failToReject(int[] pcols, int[] qcols, int r, double alpha);
+
+    /**
+     * The p-value of the test that the cross-covariance has rank at most <code>r</code>. The default, for
+     * implementations that provide only a decision, returns 1 when the null is not rejected at level 0.05 and 0
+     * otherwise, which keeps max-p comparisons meaningful only in the crudest sense; implementations should override.
+     *
+     * @param pcols column indices of the first set.
+     * @param qcols column indices of the second set.
+     * @param r     the hypothesized maximum rank.
+     * @return the p-value.
+     */
+    default double pValue(int[] pcols, int[] qcols, int r) {
+        return failToReject(pcols, qcols, r, 0.05) ? 1.0 : 0.0;
+    }
 }

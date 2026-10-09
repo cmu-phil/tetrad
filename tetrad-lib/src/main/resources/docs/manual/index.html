@@ -4998,10 +4998,15 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             (rlcdAllowNonLeafX). The output is the stage-1 graph with, inside each partition in which latents were
             introduced, the observed-observed edges replaced by what stage 2 found, plus the latent variables and their
             edges. Latent variables are named L1, L2, and so on.</p>
-        <p>An edge between two latent variables is directed in the output only when its direction is determined, that
-            is, when every graph in the Markov equivalence class of the estimated structure has it that way, which
-            requires a collider; otherwise it is undirected. Rank constraints cannot tell L1 &rarr; L2 from
-            L2 &rarr; L1 for two latents with their own indicators. (The causal-learn implementation reports the
+        <p>The directions of edges between latent variables are decided by rank tests, in the manner of PC. Rank
+            constraints cannot tell L1 &rarr; L2 from L2 &rarr; L1 for two latents with their own indicators, so the
+            direction in which stage 2 built an edge carries no information; instead the skeleton among the latents is
+            kept, and for each pair of nonadjacent latents a separating set is sought among their neighbours, using
+            the rank test as the test of conditional independence (a latent in the conditioning set is represented by
+            two disjoint sets of its pure indicators, one on each side of the test). Among the candidate sets the one
+            with the largest p-value is taken, as in PC-Max. Unshielded colliders are then oriented where the middle
+            latent is not in the separating set, and the Meek rules are applied, so the latent part of the output is a
+            CPDAG: an edge is directed only when a collider determines it. (The causal-learn implementation reports the
             direction in which the search happened to build each such edge.) Edges from a latent to its observed
             variables are drawn directed by convention; the data do not distinguish an indicator of a latent from an
             observed cause of it.</p>
