@@ -278,6 +278,27 @@ public class LayoutMenu extends JMenu {
         this.copyLayoutAction = new CopyLayoutAction(getLayoutEditable());
         add(getCopyLayoutAction());
         add(new PasteLayoutAction(getLayoutEditable()));
+
+        addSeparator();
+
+        // Rendering option rather than a layout proper, but this menu is the one display menu present in every
+        // graph editor and in the workbench right-click popup. The preference is per user and applies to every
+        // graph workbench; each edge adjusts its own bounds when it next paints, so repainting the open windows
+        // is all that is needed here.
+        JCheckBoxMenuItem curvedEdges = new JCheckBoxMenuItem("Curved Edges");
+        curvedEdges.setSelected(DisplayEdge.isBezierEdges());
+        curvedEdges.setToolTipText("Render edges as curves that bend around other nodes; "
+                                   + "click a curve to select it as usual.");
+        add(curvedEdges);
+
+        curvedEdges.addActionListener(e -> {
+            java.util.prefs.Preferences.userRoot().putBoolean(DisplayEdge.BEZIER_EDGES_PREF,
+                    curvedEdges.isSelected());
+
+            for (Frame frame : Frame.getFrames()) {
+                frame.repaint();
+            }
+        });
     }
 
     private LayoutEditable getLayoutEditable() {

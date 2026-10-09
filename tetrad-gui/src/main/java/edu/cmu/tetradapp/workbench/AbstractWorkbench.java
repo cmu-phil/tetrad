@@ -2066,7 +2066,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             List<Edge> edges = graph.getEdges(node1, node2);
 
             for (int i = 0; i < edges.size(); i++) {
-                Edge edge = edges.iterator().next();
+                // This used to take edges.iterator().next() each time through, i.e. always the first edge, so only
+                // one edge of a multi-edge pair ever received an offset and the rest sat at zero, nearly on top of
+                // it. Index by i so each edge gets its own slot.
+                Edge edge = edges.get(i);
                 Node _node1 = edge.getNode1();
                 boolean awayFrom = (_node1 == node1);
 
