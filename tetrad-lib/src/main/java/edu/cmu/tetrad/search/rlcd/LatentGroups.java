@@ -94,6 +94,8 @@ public final class LatentGroups {
         }
 
         /**
+         * Returns the children of this entry's cover.
+         *
          * @return the children (mutable view).
          */
         public Set<Cover> getChildren() {
@@ -101,6 +103,8 @@ public final class LatentGroups {
         }
 
         /**
+         * Returns the strict subcovers of this entry's cover.
+         *
          * @return the strict subcovers.
          */
         public Set<Cover> getSubcovers() {
@@ -179,6 +183,8 @@ public final class LatentGroups {
     // ---------------------------------------------------------------- accessors
 
     /**
+     * Returns the latent dictionary.
+     *
      * @return the dictionary from covers to their entries (insertion-ordered).
      */
     public LinkedHashMap<Cover, Entry> getLatentDict() {
@@ -186,6 +192,8 @@ public final class LatentGroups {
     }
 
     /**
+     * Returns the observed covers of this partition.
+     *
      * @return the observed covers.
      */
     public Set<Cover> getX() {
@@ -193,6 +201,8 @@ public final class LatentGroups {
     }
 
     /**
+     * Returns the active set of covers.
+     *
      * @return the current active set.
      */
     public Set<Cover> getActiveSet() {
@@ -209,6 +219,8 @@ public final class LatentGroups {
     }
 
     /**
+     * Returns the children of non-atomic covers.
+     *
      * @return the children of non-atomic covers, as of the last {@link #updateActiveSet(boolean)}.
      */
     public Set<Cover> getChildrenOfNonAtomicsSet() {
@@ -216,6 +228,8 @@ public final class LatentGroups {
     }
 
     /**
+     * Returns the active non-sink names.
+     *
      * @return the current active non-sink names.
      */
     public Set<String> getActiveNonSinkSet() {
@@ -232,6 +246,8 @@ public final class LatentGroups {
     }
 
     /**
+     * Returns the observed variable names.
+     *
      * @return the names of observed variables in this partition, in index order of the local adjacency.
      */
     public List<String> getXNames() {
@@ -239,6 +255,9 @@ public final class LatentGroups {
     }
 
     /**
+     * Looks up the observed cover for a variable name.
+     *
+     * @param name the variable name.
      * @return the observed cover for a name, or null if the name is not an observed variable of this partition.
      */
     public Cover getObservedCoverByName(String name) {
@@ -246,6 +265,8 @@ public final class LatentGroups {
     }
 
     /**
+     * Returns the observed-name dictionary.
+     *
      * @return the map from observed name to its cover.
      */
     public Map<String, Cover> getXDict() {
@@ -253,6 +274,8 @@ public final class LatentGroups {
     }
 
     /**
+     * Returns the stage-1 neighbours of the partition.
+     *
      * @return the observed names outside the partition adjacent to a member in the stage-1 graph.
      */
     public Set<String> getAllNbSet() {
@@ -844,6 +867,8 @@ public final class LatentGroups {
     }
 
     /**
+     * Returns the links to be written as unoriented edges.
+     *
      * @return the links recorded by {@link #addUnorientedLink(Cover, Cover)}, each as {parent, child}.
      */
     public List<Cover[]> getUnorientedLinks() {

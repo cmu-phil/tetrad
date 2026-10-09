@@ -141,6 +141,8 @@ public final class Cover {
     }
 
     /**
+     * Tests whether this cover intersects another.
+     *
      * @param other another cover.
      * @return whether the two covers share at least one variable.
      */
@@ -152,6 +154,8 @@ public final class Cover {
     }
 
     /**
+     * Tests whether this cover is a strict subset of another.
+     *
      * @param other another cover.
      * @return whether this cover's variables are a strict subset of the other's.
      */
@@ -160,6 +164,8 @@ public final class Cover {
     }
 
     /**
+     * Tests whether this cover is a subset of another.
+     *
      * @param other another cover.
      * @return whether this cover's variables are a subset (not necessarily strict) of the other's.
      */
