@@ -158,6 +158,23 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean adjustingTierSpinner;
 
     /**
+     * Preference keys for whether the Other Tiers and Other Groups tabs are shown. Most knowledge
+     * boxes use neither, so both are hidden by default and turned on in the Show menu; a tab is
+     * always shown, with its menu item checked and disabled, while the knowledge actually
+     * contains tier structures or groups, so active constraints are never invisible.
+     */
+    private static final String SHOW_OTHER_TIERS_PREF = "knowledgeEditorShowOtherTiers";
+
+    private static final String SHOW_OTHER_GROUPS_PREF = "knowledgeEditorShowOtherGroups";
+
+    /**
+     * The Show menu's items, restated by {@link #resetTabbedPane()} whenever the tabs are rebuilt.
+     */
+    private JCheckBoxMenuItem showOtherTiersItem;
+
+    private JCheckBoxMenuItem showOtherGroupsItem;
+
+    /**
      * The wildcard expression last typed into the Tiers tab's pattern field. Held here because the
      * tier panel is rebuilt from scratch after every move, which would otherwise clear the field.
      */
@@ -410,6 +427,29 @@ public class KnowledgeBoxEditor extends JPanel {
         file.add(loadKnowledge);
         file.add(saveKnowledge);
 
+        JMenu show = new JMenu("Show");
+        menuBar.add(show);
+
+        this.showOtherTiersItem = new JCheckBoxMenuItem("Other Tiers");
+        this.showOtherGroupsItem = new JCheckBoxMenuItem("Other Groups");
+
+        this.showOtherTiersItem.addActionListener((e) -> {
+            Preferences.userRoot().putBoolean(SHOW_OTHER_TIERS_PREF,
+                    this.showOtherTiersItem.isSelected());
+            resetTabbedPane();
+            if (this.showOtherTiersItem.isSelected()) selectTab("Other Tiers");
+        });
+
+        this.showOtherGroupsItem.addActionListener((e) -> {
+            Preferences.userRoot().putBoolean(SHOW_OTHER_GROUPS_PREF,
+                    this.showOtherGroupsItem.isSelected());
+            resetTabbedPane();
+            if (this.showOtherGroupsItem.isSelected()) selectTab("Other Groups");
+        });
+
+        show.add(this.showOtherTiersItem);
+        show.add(this.showOtherGroupsItem);
+
         loadKnowledge.addActionListener((e) -> {
             JFileChooser chooser = new JFileChooser();
             String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
@@ -478,12 +518,21 @@ public class KnowledgeBoxEditor extends JPanel {
     public void resetTabbedPane() {
         this.tabbedPane.removeAll();
         this.tabbedPane.add("Tiers", tierDisplay());
-        this.tabbedPane.add("Other Tiers",
-                new OtherTiersEditor(this.knowledge, this::notifyIfKnowledgeChanged));
-        this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge,
-                this.knowledge.getVariables(), this::notifyIfKnowledgeChanged));
+
+        if (isOtherTiersShown()) {
+            this.tabbedPane.add("Other Tiers",
+                    new OtherTiersEditor(this.knowledge, this::notifyIfKnowledgeChanged));
+        }
+
+        if (isOtherGroupsShown()) {
+            this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge,
+                    this.knowledge.getVariables(), this::notifyIfKnowledgeChanged));
+        }
+
         this.tabbedPane.add("Edges", edgeDisplay());
         this.tabbedPane.add("Text", textDisplay());
+
+        updateShowMenuState();
 
         // removeAll() does not remove change listeners, and this method now runs on every
         // Apply from the Text tab as well as on Load, so clear them first; otherwise the
@@ -492,16 +541,77 @@ public class KnowledgeBoxEditor extends JPanel {
             this.tabbedPane.removeChangeListener(cl);
         }
 
+        // The Other Tiers and Other Groups tabs are optional, so the tabs are identified by
+        // title, not by index.
         this.tabbedPane.addChangeListener((e) -> {
             JTabbedPane pane = (JTabbedPane) e.getSource();
-            if (pane.getSelectedIndex() == 0) {
+            int index = pane.getSelectedIndex();
+
+            if (index < 0) {
+                return;
+            }
+
+            String title = pane.getTitleAt(index);
+
+            if ("Tiers".equals(title)) {
                 setNumDisplayTiers(TMath.max(getNumTiers(), this.knowledge.getNumTiers()));
-            } else if (pane.getSelectedIndex() == 3) {
+            } else if ("Edges".equals(title)) {
                 resetEdgeDisplay(null);
-            } else if (pane.getSelectedIndex() == 4) {
+            } else if ("Text".equals(title)) {
                 refreshTextDisplay();
             }
         });
+    }
+
+    /**
+     * Whether the Other Tiers tab is shown: it is while the knowledge contains tier structures,
+     * and otherwise follows the Show menu.
+     */
+    private boolean isOtherTiersShown() {
+        return this.knowledge.getNumTierStructures() > 0
+               || Preferences.userRoot().getBoolean(SHOW_OTHER_TIERS_PREF, false);
+    }
+
+    /**
+     * Whether the Other Groups tab is shown: it is while the knowledge contains groups, and
+     * otherwise follows the Show menu.
+     */
+    private boolean isOtherGroupsShown() {
+        return !this.knowledge.getKnowledgeGroups().isEmpty()
+               || Preferences.userRoot().getBoolean(SHOW_OTHER_GROUPS_PREF, false);
+    }
+
+    /**
+     * Restates the Show menu: an item is checked when its tab is shown, and disabled, with a
+     * tooltip saying why, while the knowledge forces the tab to be shown.
+     */
+    private void updateShowMenuState() {
+        if (this.showOtherTiersItem != null) {
+            boolean forced = this.knowledge.getNumTierStructures() > 0;
+            this.showOtherTiersItem.setSelected(isOtherTiersShown());
+            this.showOtherTiersItem.setEnabled(!forced);
+            this.showOtherTiersItem.setToolTipText(forced
+                    ? "Shown because the knowledge contains tier structures." : null);
+        }
+
+        if (this.showOtherGroupsItem != null) {
+            boolean forced = !this.knowledge.getKnowledgeGroups().isEmpty();
+            this.showOtherGroupsItem.setSelected(isOtherGroupsShown());
+            this.showOtherGroupsItem.setEnabled(!forced);
+            this.showOtherGroupsItem.setToolTipText(forced
+                    ? "Shown because the knowledge contains groups." : null);
+        }
+    }
+
+    /**
+     * Selects the tab with the given title, if present.
+     */
+    private void selectTab(String title) {
+        int index = this.tabbedPane.indexOfTab(title);
+
+        if (index >= 0) {
+            this.tabbedPane.setSelectedIndex(index);
+        }
     }
 
     /**
@@ -642,9 +752,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         // Rebuilding replaced the tab contents; return the user to the Text tab, now
         // showing the canonical rendering of what was just parsed.
-        if (this.tabbedPane.getTabCount() > 4) {
-            this.tabbedPane.setSelectedIndex(4);
-        }
+        selectTab("Text");
     }
 
     /**
