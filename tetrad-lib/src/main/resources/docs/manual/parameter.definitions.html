@@ -6150,6 +6150,17 @@ Source:
             Type: <span id="pooledTestMethod_value_type">String</span></li>
     </ul>
 
+    === poolImputations ===
+    <h3 class="parameter_description" id="poolImputations">poolImputations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="poolImputations_short_desc">Yes if several imputations of one data set should be searched as one, pooling each test over them (default no)</span></li>
+        <li>Long Description: <span id="poolImputations_long_desc">When the data are several imputations of one data set with missing values (for example, from the Impute Missing Values box with more than one imputation), Yes runs the algorithm ONCE. Each statistical test is computed on every imputation and the results are combined by the rule of Li, Meng, Raghunathan, and Rubin (1991) for chi-square statistics from multiply imputed data, so that disagreement among the imputations counts against rejecting; any score-based stage uses the average of the imputations' covariance matrices. No (the default) runs the algorithm separately on each imputation and returns one graph per imputation, which can differ a great deal. This is not the poolDataSets option: imputations share their observed values and are not independent data sets. The combining rule is an approximation that assumes values missing at random and improves with more imputations; ten or more is a reasonable number. It has no effect with a single data set.</span></li>
+        <li>Default Value: <span id="poolImputations_default_value">false</span></li>
+        <li>Lower Bound: <span id="poolImputations_lower_bound"></span></li>
+        <li>Upper Bound: <span id="poolImputations_upper_bound"></span></li>
+        <li>Value Type: <span id="poolImputations_value_type">Boolean</span></li>
+    </ul>
+
     === precomputeCovariances ===
     <h3 class="parameter_description" id="precomputeCovariances">precomputeCovariances</h3>
     <ul class="parameter_description_list">
@@ -6797,17 +6808,6 @@ Source:
         <li>Lower Bound: <span id="rlcdPartitionCliqueThreshold_lower_bound">1</span></li>
         <li>Upper Bound: <span id="rlcdPartitionCliqueThreshold_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="rlcdPartitionCliqueThreshold_value_type">Integer</span></li>
-    </ul>
-
-    === poolImputations ===
-    <h3 class="parameter_description" id="poolImputations">poolImputations</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description: <span id="poolImputations_short_desc">Yes if several imputations of one data set should be searched as one, pooling each test over them (default no)</span></li>
-        <li>Long Description: <span id="poolImputations_long_desc">When the data are several imputations of one data set with missing values (for example, from the Impute Missing Values box with more than one imputation), Yes runs the algorithm ONCE. Each statistical test is computed on every imputation and the results are combined by the rule of Li, Meng, Raghunathan, and Rubin (1991) for chi-square statistics from multiply imputed data, so that disagreement among the imputations counts against rejecting; any score-based stage uses the average of the imputations' covariance matrices. No (the default) runs the algorithm separately on each imputation and returns one graph per imputation, which can differ a great deal. This is not the poolDataSets option: imputations share their observed values and are not independent data sets. The combining rule is an approximation that assumes values missing at random and improves with more imputations; ten or more is a reasonable number. It has no effect with a single data set.</span></li>
-        <li>Default Value: <span id="poolImputations_default_value">false</span></li>
-        <li>Lower Bound: <span id="poolImputations_lower_bound"></span></li>
-        <li>Upper Bound: <span id="poolImputations_upper_bound"></span></li>
-        <li>Value Type: <span id="poolImputations_value_type">Boolean</span></li>
     </ul>
 
     === rlcdStage1Fges ===

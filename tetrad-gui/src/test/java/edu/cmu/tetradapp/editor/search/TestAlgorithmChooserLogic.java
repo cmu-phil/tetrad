@@ -44,6 +44,10 @@ public class TestAlgorithmChooserLogic {
         return AlgorithmChooserLogic.allModels();
     }
 
+    private static List<String> names(List<AlgorithmModel> list) {
+        return list.stream().map(m -> m.getAlgorithm().annotation().name()).toList();
+    }
+
     private static boolean has(List<AlgorithmModel> list, String name) {
         return list.stream().anyMatch(m -> name.equals(m.getAlgorithm().annotation().name()));
     }
@@ -204,8 +208,10 @@ public class TestAlgorithmChooserLogic {
 
             for (AlgorithmChooserLogic.BoxMode mode : List.of(AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA,
                     AlgorithmChooserLogic.BoxMode.LATENTS_FROM_CLUSTERS)) {
-                assertEquals(AlgorithmChooserLogic.filter(all(), DataType.Continuous, mode, ANY),
-                        AlgorithmChooserLogic.filter(all(), DataType.Continuous, mode, answers));
+                // allModels() builds fresh AlgorithmModel objects on each call and AlgorithmModel has no equals,
+                // so compare the lists by name rather than by object identity.
+                assertEquals(names(AlgorithmChooserLogic.filter(all(), DataType.Continuous, mode, ANY)),
+                        names(AlgorithmChooserLogic.filter(all(), DataType.Continuous, mode, answers)));
             }
         }
 
