@@ -3612,6 +3612,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                 this.workbench.adjustPreferredSize();
 
+                // A curved edge's shape depends on every node near its chord, not only on the two endpoint nodes
+                // it listens to, so moving any node can change curves that receive no event of their own. Left
+                // alone, such an edge is repainted only inside the moving node's dirty region, which mixes
+                // fragments of the old and new curve on screen and can freeze a stale bow once the mover leaves
+                // the corridor. Repainting the whole workbench marks every edge's full bounds dirty; Swing
+                // coalesces these during a drag, so it is one full redraw per event batch. Straight rendering
+                // keeps the old, cheaper behavior, since a straight edge's geometry depends only on the two
+                // nodes it already listens to.
+                if (DisplayEdge.isBezierEdges()) {
+                    this.workbench.repaint();
+                }
+
                 // This causes wierdness when nodes are dragged off to the
                 // right. Replacing with a scroll to rect on mouseup.
                 // jdramsey 4/29/2005
