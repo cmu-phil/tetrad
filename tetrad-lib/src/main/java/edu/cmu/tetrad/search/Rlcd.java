@@ -20,6 +20,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
@@ -29,7 +30,10 @@ import edu.cmu.tetrad.search.rlcd.LatentGroups;
 import edu.cmu.tetrad.search.rlcd.PooledRankTest;
 import edu.cmu.tetrad.search.rlcd.RankTester;
 import edu.cmu.tetrad.search.rlcd.RlcdClusterSearch;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.TrekSeparationBlocksIndependence;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -512,31 +516,37 @@ public class Rlcd {
     private static final int LATENT_ORIENTATION_DEPTH = 3;
 
     /**
+     * The number of random splits of each conditioning cover's indicators tried per test; the split giving the
+     * smallest estimated rank is kept.
+     */
+    private static final int LATENT_ORIENTATION_SPLIT_TRIALS = 3;
+
+    /**
      * Decides the directions of the edges between latents by rank tests, replacing the directions stage 2 built,
      * which record only the order in which covers were found (L1 --> L2 and L2 --> L1 imply the same rank
      * constraints unless a collider is involved, so the search cannot have chosen between them).
      * <p>
      * The latents are first grouped into covers: latents with identical child sets and no edge between them are
-     * co-members of one atomic cover of cardinality k. The skeleton among covers is the one stage 2 found. For each
-     * pair of nonadjacent covers a separating set is sought among the covers adjacent to either, of size up to
-     * {@link #LATENT_ORIENTATION_DEPTH}. Of the candidate sets, the one whose rank test has the largest p-value is
-     * taken as the separating set if that p-value exceeds alpha (the max-p rule, as in PC-Max), rather than the
-     * first set that is not rejected: a conditioning set that is a common descendant of the pair, such as a
-     * collider below both, can leave only a weak dependence that a single test at alpha fails to reject. A cover A
-     * is separated from a cover B by a set S of covers when rank(Σ[A' ∪ S₁, B' ∪ S₂]) ≤ Σ_{C∈S} k_C, where A' and
-     * B' are the pure indicators of A and B and
-     * each conditioning cover C contributes two disjoint sets S₁ and S₂ of k_C of its pure indicators, one to each
-     * side. This is the rank form of A ⊥ B | S: by trek separation the rank equals Σ k_C exactly when every trek
-     * between A and B passes through S as a non-collider, and exceeds it when S contains a collider or leaves a path
-     * open. A pure indicator is an observed child of the cover with no other parent. A cover with fewer than 2k pure
-     * indicators cannot be conditioned on and is skipped as a conditioner.
+     * co-members of one atomic cover of cardinality k. Each cover becomes a block of a {@link BlockSpec}, its
+     * block being its pure indicators (observed children with no other parent), or all its observed children if
+     * it has fewer pure indicators than its cardinality, and its block rank being its cardinality. The skeleton
+     * among covers is the one stage 2 found. Conditional independence between covers is then tested by
+     * {@link TrekSeparationBlocksIndependence}, the trek-separation blocks test of Brodie and Spirtes: a
+     * conditioning cover's indicators are split into two halves, one joined to each side, and the pair is
+     * separated when the rank of the cross-covariance is at most the sum of the conditioning covers' ranks. The
+     * test runs on this search's rank tester, so that with multiple imputations it is pooled in the same way as
+     * stage 2. A cover with fewer than 2k indicators is not used as a conditioner.
      * <p>
-     * An unshielded triple A — C — B is oriented as a collider when C is not in the separating set found for A and
-     * B; conflicting collider orientations leave the edge undirected; the Meek rules are then closed over the cover
-     * graph; and the result is written back onto the edges between latents. An edge between a latent and an
-     * observed variable is left as stage 2 built it: by convention latent --> indicator, and observed --> latent
-     * where an observed variable was placed as a cause. Pairs for which no separating set is found within the depth
-     * limit leave their triples unoriented.
+     * For each pair of nonadjacent covers a separating set is sought among the covers adjacent to either, of size
+     * up to {@link #LATENT_ORIENTATION_DEPTH}; of the candidate sets, the one whose test has the largest p-value is
+     * taken if that p-value exceeds alpha (the max-p rule, as in PC-Max), rather than the first set that is not
+     * rejected, since a conditioning set that is a common descendant of the pair can leave only a weak dependence
+     * that a single test at alpha fails to reject. An unshielded triple A — C — B is oriented as a collider when
+     * C is not in the separating set found for A and B; conflicting collider orientations leave the edge
+     * undirected; the Meek rules are then closed over the cover graph; and the result is written back onto the
+     * edges between latents. An edge between a latent and an observed variable is left as stage 2 built it: by
+     * convention latent --> indicator, and observed --> latent where an observed variable was placed as a cause.
+     * Pairs for which no separating set is found within the depth limit leave their triples unoriented.
      *
      * @param graph the output graph; its latent-latent edges are rewritten in place.
      */
@@ -565,22 +575,33 @@ public class Rlcd {
         int nc = covers.size();
         if (nc < 2) return;
 
-        // Pure indicators of each cover: observed children whose parents are exactly the cover's members.
-        List<int[]> pure = new ArrayList<>();
-        List<int[]> anyChildren = new ArrayList<>();
+        // One block per cover: its pure indicators, or all its observed children if too few are pure.
+        List<List<Integer>> blocks = new ArrayList<>();
+        List<Node> blockVars = new ArrayList<>();
+        List<Integer> ranks = new ArrayList<>();
         for (List<Node> cover : covers) {
             Set<Node> members = new HashSet<>(cover);
-            List<Integer> p = new ArrayList<>(), a = new ArrayList<>();
+            List<Integer> pure = new ArrayList<>(), all = new ArrayList<>();
             for (Node c : graph.getChildren(cover.get(0))) {
                 if (c.getNodeType() == NodeType.LATENT) continue;
                 int idx = xvars.indexOf(c.getName());
                 if (idx < 0) continue;
-                a.add(idx);
-                if (members.equals(new HashSet<>(graph.getParents(c)))) p.add(idx);
+                all.add(idx);
+                if (members.equals(new HashSet<>(graph.getParents(c)))) pure.add(idx);
             }
-            pure.add(p.stream().mapToInt(Integer::intValue).toArray());
-            anyChildren.add(a.stream().mapToInt(Integer::intValue).toArray());
+            blocks.add(pure.size() >= cover.size() ? pure : all);
+            // Block variables must be ContinuousVariables: BlockSpec records each block's rank on its node.
+            Node blockVar = new ContinuousVariable(cover.size() == 1 ? cover.get(0).getName()
+                    : cover.stream().map(Node::getName).reduce((a, b) -> a + "," + b).orElse(""));
+            blockVar.setNodeType(NodeType.LATENT);
+            blockVars.add(blockVar);
+            ranks.add(cover.size());
         }
+        TrekSeparationBlocksIndependence test = new TrekSeparationBlocksIndependence(
+                new BlockSpec(dataSet, blocks, blockVars, ranks), rankTester);
+        test.setAlpha(alpha);
+        test.setNumTrials(LATENT_ORIENTATION_SPLIT_TRIALS);
+        test.setRandomizeSplits(true, seed == -1 ? 17L : seed);
 
         // Skeleton among covers.
         boolean[][] adjacent = new boolean[nc][nc];
@@ -591,15 +612,16 @@ public class Rlcd {
             if (i != j) adjacent[i][j] = adjacent[j][i] = true;
         }
 
-        // Separating sets by a PC-style search.
+        // Separating sets by a PC-style search with the max-p rule.
         Map<Long, Set<Integer>> sepsets = new HashMap<>();
         for (int i = 0; i < nc; i++) {
             for (int j = i + 1; j < nc; j++) {
                 if (adjacent[i][j]) continue;
+                if (blocks.get(i).isEmpty() || blocks.get(j).isEmpty()) continue;
                 List<Integer> candidates = new ArrayList<>();
                 for (int c = 0; c < nc; c++) {
                     if (c != i && c != j && (adjacent[i][c] || adjacent[j][c])
-                        && pure.get(c).length >= 2 * covers.get(c).size()) {
+                        && blocks.get(c).size() >= 2 * ranks.get(c)) {
                         candidates.add(c);
                     }
                 }
@@ -607,7 +629,14 @@ public class Rlcd {
                 double bestP = -1;
                 for (int depth = 0; depth <= Math.min(LATENT_ORIENTATION_DEPTH, candidates.size()); depth++) {
                     for (List<Integer> s : combinations(candidates, depth)) {
-                        double pv = separationPValue(i, j, s, covers, pure, anyChildren);
+                        Set<Node> z = new HashSet<>();
+                        int target = 0;
+                        for (int c : s) {
+                            z.add(blockVars.get(c));
+                            target += ranks.get(c);
+                        }
+                        IndependenceResult res = test.checkIndependence(blockVars.get(i), blockVars.get(j), z);
+                        double pv = res.getPValue();
                         if (pv > bestP) {
                             bestP = pv;
                             found = new HashSet<>(s);
@@ -683,32 +712,6 @@ public class Rlcd {
         int rank = 0;
         for (int c : s) rank += covers.get(c).size();
         return rank;
-    }
-
-    /**
-     * The p-value of the test that covers i and j are separated by the covers in s, by the rank test described in
-     * {@link #orientLatentEdgesByRankTests}; −1 when the test cannot be formed.
-     */
-    private double separationPValue(int i, int j, List<Integer> s, List<List<Node>> covers, List<int[]> pure,
-                                    List<int[]> anyChildren) {
-        List<Integer> p = new ArrayList<>(), q = new ArrayList<>();
-        int[] ai = pure.get(i).length >= covers.get(i).size() ? pure.get(i) : anyChildren.get(i);
-        int[] bj = pure.get(j).length >= covers.get(j).size() ? pure.get(j) : anyChildren.get(j);
-        if (ai.length == 0 || bj.length == 0) return -1;
-        for (int x : ai) p.add(x);
-        for (int x : bj) q.add(x);
-        int rank = 0;
-        for (int c : s) {
-            int k = covers.get(c).size();
-            int[] ind = pure.get(c);
-            for (int t = 0; t < k; t++) p.add(ind[t]);
-            for (int t = k; t < 2 * k; t++) q.add(ind[t]);
-            rank += k;
-        }
-        int[] pc = p.stream().mapToInt(Integer::intValue).toArray();
-        int[] qc = q.stream().mapToInt(Integer::intValue).toArray();
-        if (rank >= Math.min(pc.length, qc.length)) return -1;  // nothing left to test
-        return rankTester.pValue(pc, qc, rank);
     }
 
     private static long pairKey(int i, int j) {

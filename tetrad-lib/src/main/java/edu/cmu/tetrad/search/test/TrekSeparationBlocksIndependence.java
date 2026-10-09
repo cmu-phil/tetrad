@@ -22,10 +22,13 @@ package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.rlcd.PooledRankTest;
+import edu.cmu.tetrad.search.rlcd.RankTester;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.ejml.simple.SimpleMatrix;
@@ -63,7 +66,19 @@ import java.util.concurrent.locks.ReentrantLock;
  *   rank(Σ_{L,R}) = sum of ranks(Zi)
  * </pre>
  * where the rank of each Zi block is specified externally via {@link BlockSpec#ranks()}.
- * The test declares independence when the estimated rank equals this target sum.
+ * The test declares independence when the estimated rank equals this target sum. The p-value reported with
+ * each result is that of the hypothesis that the rank is at most the target, so that callers choosing among
+ * conditioning sets by p-value (max-p) can do so.
+ *
+ * <h2>Rank engines</h2>
+ * By default the rank is estimated from the correlation matrix of the block specification's data set by
+ * {@link RankTests#estimateWilksRank} (Bartlett's chi-square approximation to Wilks' lambda) at the effective
+ * sample size. Alternatively a {@link RankTester} may be supplied, in which case the rank is the smallest r whose
+ * test of rank at most r is not rejected at alpha, and the p-value comes from the tester. This is how the test is
+ * pooled over multiple imputations of one data set: {@link #TrekSeparationBlocksIndependence(BlockSpec, List)}
+ * builds a {@link PooledRankTest}, which computes the rank statistic on every imputation and combines them by the
+ * rule of Li, Meng, Raghunathan, and Rubin (1991), so that disagreement among the imputations counts against
+ * rejecting. The effective sample size is not used by a supplied tester, which has its own.
  *
  * <h2>Splitting strategy</h2>
  * Each conditioning block Zi is split either deterministically or randomly:
@@ -131,6 +146,9 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
     private boolean leftGetsSmallerHalfWhenOdd = true; // if true and |Zi| is odd, left gets floor(|Zi|/2)
     private int nEff;
 
+    // Optional rank engine; null means RankTests on S at nEff.
+    private final RankTester rankTester;
+
     /**
      * Constructs an instance of IndTestBlocksTs using the provided block specification. Validates the input and
      * initializes various internal properties required for the block-based independence test, including correlation
@@ -143,7 +161,32 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
      *                                  null variables, or invalid block column references.
      */
     public TrekSeparationBlocksIndependence(BlockSpec blockSpec) {
+        this(blockSpec, (RankTester) null);
+    }
+
+    /**
+     * Constructs the test pooled over several imputations of one data set. The block specification's data set
+     * gives the variables and blocks; the rank statistic of each query is computed on every imputation and
+     * combined (see the class description).
+     *
+     * @param blockSpec   the block specification; its data set must have the same variables as the imputations.
+     * @param imputations the imputed data sets, at least one.
+     */
+    public TrekSeparationBlocksIndependence(BlockSpec blockSpec, List<DataSet> imputations) {
+        this(blockSpec, new PooledRankTest(checkImputations(blockSpec, imputations)));
+    }
+
+    /**
+     * Constructs the test with a supplied rank engine.
+     *
+     * @param blockSpec  the block specification.
+     * @param rankTester the rank test over the columns of the block specification's data set, or null for the
+     *                   default engine (Bartlett's Wilks test on the correlation matrix at the effective sample
+     *                   size).
+     */
+    public TrekSeparationBlocksIndependence(BlockSpec blockSpec, RankTester rankTester) {
         if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
+        this.rankTester = rankTester;
 
         for (Node v : blockSpec.dataSet().getVariables()) {
             if (v instanceof DiscreteVariable) {
@@ -359,6 +402,13 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
         return blockSpec;
     }
 
+    /**
+     * @return the supplied rank engine, or null when the default engine is in use.
+     */
+    public RankTester getRankTester() {
+        return rankTester;
+    }
+
     // === Build L/R from blocks and Z split ===
 
     /**
@@ -378,16 +428,30 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
         // Read once; never written. Thread-safe.
         long baseSeed = this.splitSeed;
 
+        int target = 0;
+        for (Node _z : z) {
+            Integer i = nodeHash.get(_z);
+            if (i == null) throw new IllegalArgumentException("Conditioning node not found: " + _z);
+            Integer rk = blockSpec.ranks().get(i);
+            if (rk == null) throw new IllegalStateException(
+                    "Missing rank for block index " + i + " (node=" + _z + ")");
+            target += rk;
+        }
+
         int bestRank = Integer.MAX_VALUE;
+        double bestP = -1.0;
         Build bestBuild = null;
 
+        // The best trial has the smallest estimated rank; among equals, the largest p-value for rank <= target.
         for (int trial = 0; trial < TMath.max(1, numTrials); trial++) {
             long effectiveSeed = randomizeSplits ? baseSeed + trial : baseSeed;
             Build b = buildSides(x, y, z, effectiveSeed);
             int r = getRank(b.Lcols, b.Rcols);
+            double pv = pValueRankAtMost(b.Lcols, b.Rcols, target);
 
-            if (r < bestRank) {
+            if (r < bestRank || (r == bestRank && pv > bestP)) {
                 bestRank = r;
+                bestP = pv;
                 bestBuild = b;
             }
 
@@ -398,27 +462,19 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
             boolean indep = true;
 
             return new IndependenceResult(
-                    new IndependenceFact(x, y, z), indep, Double.NaN, Double.NaN);
+                    new IndependenceFact(x, y, z), indep, 1.0, alpha - 1.0);
         }
 
         // Defensive guard: reachable only if numTrials <= 0.
         if (bestBuild == null) {
             bestBuild = buildSides(x, y, z, baseSeed);
             bestRank = getRank(bestBuild.Lcols, bestBuild.Rcols);
+            bestP = pValueRankAtMost(bestBuild.Lcols, bestBuild.Rcols, target);
         }
 
         // bestRank is already the minimum over all trials; no second pass needed.
         int estRank = bestRank;
-
-        int target = 0;
-        for (Node _z : z) {
-            Integer i = nodeHash.get(_z);
-            if (i == null) throw new IllegalArgumentException("Conditioning node not found: " + _z);
-            Integer rk = blockSpec.ranks().get(i);
-            if (rk == null) throw new IllegalStateException(
-                    "Missing rank for block index " + i + " (node=" + _z + ")");
-            target += rk;
-        }
+        double pValue = bestP;
 
         boolean indep = estRank == target;
 
@@ -432,29 +488,68 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
                             + " | " + bestBuild.zNames
                             + " ? estRank(min over trials)=" + estRank
                             + ", target(sum ranks)=" + target
+                            + ", p(rank<=target)=" + pValue
                             + " -> " + (indep ? "INDEP" : "DEP"));
         }
 
         if (verbose) {
             if (indep) {
-                System.out.println(LogUtilsSearch.independenceFactMsg(x, y, z, Double.NaN));
+                System.out.println(LogUtilsSearch.independenceFactMsg(x, y, z, pValue));
             } else {
-                System.out.println(LogUtilsSearch.dependenceFactMsg(x, y, z, Double.NaN));
+                System.out.println(LogUtilsSearch.dependenceFactMsg(x, y, z, pValue));
             }
         }
 
         return new IndependenceResult(
-                new IndependenceFact(x, y, z), indep, Double.NaN, Double.NaN);
+                new IndependenceFact(x, y, z), indep, pValue, alpha - pValue);
+    }
+
+    private static List<DataSet> checkImputations(BlockSpec blockSpec, List<DataSet> imputations) {
+        if (blockSpec == null) throw new IllegalArgumentException("blockspec == null");
+        if (imputations == null || imputations.isEmpty()) {
+            throw new IllegalArgumentException("At least one imputation is required.");
+        }
+        List<String> names = blockSpec.dataSet().getVariableNames();
+        for (DataSet d : imputations) {
+            if (!d.getVariableNames().equals(names)) {
+                throw new IllegalArgumentException("Every imputation must have the block specification's variables, "
+                                                   + "in the same order.");
+            }
+        }
+        return imputations;
     }
 
     private int getRank(int[] L, int[] R) {
         RKey key = new RKey(L, R, nEff, alpha, splitSeed, randomizeSplits, numTrials);
         Integer cached = rankCache.get(key);
         if (cached != null) return cached;
-        int rank = RankTests.estimateWilksRank(S, L, R, nEff, alpha);
+        int rank;
+        if (rankTester == null) {
+            rank = RankTests.estimateWilksRank(S, L, R, nEff, alpha);
+        } else {
+            int m = TMath.min(L.length, R.length);
+            rank = m;
+            for (int r = 0; r < m; r++) {
+                if (rankTester.failToReject(L, R, r, alpha)) {
+                    rank = r;
+                    break;
+                }
+            }
+        }
         if (rank < 0) rank = 0;
         rankCache.put(key, rank);
         return rank;
+    }
+
+    /**
+     * The p-value of the hypothesis that rank(Σ[L, R]) is at most r; 1 when r is at least min(|L|, |R|).
+     */
+    private double pValueRankAtMost(int[] L, int[] R, int r) {
+        int m = TMath.min(L.length, R.length);
+        if (r >= m) return 1.0;
+        if (r < 0) return 0.0;
+        if (rankTester == null) return RankTests.rankLeByWilks(S, L, R, nEff, r);
+        return rankTester.pValue(L, R, r);
     }
 
     private Build buildSides(Node x, Node y, Set<Node> z, long effectiveSeed) {
