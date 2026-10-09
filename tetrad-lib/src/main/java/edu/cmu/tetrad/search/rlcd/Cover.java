@@ -81,6 +81,8 @@ public final class Cover {
     }
 
     /**
+     * Returns the variable names of this cover.
+     *
      * @return the (sorted, unmodifiable) variable names in this cover.
      */
     public SortedSet<String> getVars() {
@@ -88,6 +90,8 @@ public final class Cover {
     }
 
     /**
+     * Returns the size of this cover.
+     *
      * @return the number of variables in this cover (Python <code>len(cover)</code>).
      */
     public int size() {
@@ -95,6 +99,8 @@ public final class Cover {
     }
 
     /**
+     * Returns a representative variable name.
+     *
      * @return one variable name from this cover; for singleton covers this is the only name.
      */
     public String takeOne() {
@@ -102,6 +108,8 @@ public final class Cover {
     }
 
     /**
+     * Returns the atomic flag.
+     *
      * @return whether this cover is atomic.
      */
     public boolean isAtomic() {
@@ -118,6 +126,8 @@ public final class Cover {
     }
 
     /**
+     * Returns the observed flag.
+     *
      * @return whether this cover consists only of observed variables.
      */
     public boolean isObserved() {
@@ -125,6 +135,8 @@ public final class Cover {
     }
 
     /**
+     * Returns the leaf flag.
+     *
      * @return the tri-state leaf flag; null means undecided.
      */
     public Boolean getLeaf() {

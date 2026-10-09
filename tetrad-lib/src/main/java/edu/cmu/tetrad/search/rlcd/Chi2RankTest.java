@@ -89,6 +89,8 @@ public final class Chi2RankTest implements RankTester {
     }
 
     /**
+     * Returns the sample size.
+     *
      * @return the sample size used in the statistic.
      */
     public int getSampleSize() {
