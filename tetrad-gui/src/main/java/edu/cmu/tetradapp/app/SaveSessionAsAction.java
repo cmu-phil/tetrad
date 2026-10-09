@@ -74,8 +74,12 @@ public final class SaveSessionAsAction extends AbstractAction {
         SessionWrapper sessionWrapper = workbench.getSessionWrapper();
         TetradMetadata metadata = new TetradMetadata();
 
-        String sessionSaveLocation =
-                Preferences.userRoot().get("sessionSaveLocation", "");
+        // Open the chooser in the session's own directory when it has one; the global preference (the directory
+        // last touched by any session) is only the fallback for sessions that have not touched disk in this run.
+        File sessionFile = sessionWrapper.getSessionFile();
+        String sessionSaveLocation = sessionFile != null && sessionFile.getParent() != null
+                ? sessionFile.getParent()
+                : Preferences.userRoot().get("sessionSaveLocation", "");
 
         // If the session already has a name, default the dialog to it (and request
         // overwrite so the suggestion is exactly that name, not name{n}); otherwise
@@ -114,6 +118,7 @@ public final class SaveSessionAsAction extends AbstractAction {
 
             sessionWrapper.setSessionChanged(false);
             sessionWrapper.setNewSession(false);
+            sessionWrapper.setSessionFile(file);
             saved = true;
         } catch (IOException exception) {
             exception.printStackTrace(System.err);

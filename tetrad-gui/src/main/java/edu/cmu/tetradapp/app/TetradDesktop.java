@@ -467,8 +467,12 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
             assert sessionEditor != null;
 
             if (sessionEditor.getSessionWorkbench().getSessionWrapper().isSessionChanged()) {
-                new SaveSessionAsAction().actionPerformed(new ActionEvent(sessionEditor,
-                        ActionEvent.ACTION_PERFORMED, "Save as"));
+                // Re-save each changed session to its own file; SaveSessionAction falls back to a Save As dialog
+                // only for a session that has not touched disk in this run. Previously every changed session went
+                // straight to a Save As dialog seeded from the single global save-location preference, so on quit
+                // they all offered to save into the same directory, whichever was touched last.
+                new SaveSessionAction().actionPerformed(new ActionEvent(sessionEditor,
+                        ActionEvent.ACTION_PERFORMED, "Save"));
             }
 
             closeFrontmostSession();

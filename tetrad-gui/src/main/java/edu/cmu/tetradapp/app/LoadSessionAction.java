@@ -154,6 +154,9 @@ final class LoadSessionAction extends AbstractAction {
 
                     SessionEditor editor = new SessionEditor(name, graph);
 
+                    // The session keeps its own file, so Save and save-on-quit write it back where it came from.
+                    sessionWrapper.setSessionFile(file);
+
                     DesktopController.getInstance().addSessionEditor(editor);
                     DesktopController.getInstance().closeEmptySessions();
                     DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
