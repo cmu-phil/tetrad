@@ -73,6 +73,44 @@ public class TestPooledDataSets {
         return tp / (double) (tp + fn);
     }
 
+    /**
+     * Data sets with the same variables in different column orders are pooled as if they were in the order of the
+     * first; data sets with different variables are still refused.
+     */
+    @Test
+    public void testPooledReordersVariables() throws Exception {
+        DataModelList list = fiveSmallDataSets(1);
+        Parameters p = params();
+
+        Graph expected = new Boss(new SemBicScore()).search(list, p);
+
+        DataModelList shuffled = new DataModelList();
+        shuffled.add(list.getFirst());
+
+        for (int i = 1; i < list.size(); i++) {
+            DataSet d = (DataSet) list.get(i);
+            java.util.List<edu.cmu.tetrad.graph.Node> vars = new ArrayList<>(d.getVariables());
+            java.util.Collections.shuffle(vars, new java.util.Random(i));
+            DataSet s = d.subsetColumns(vars);
+            s.setName(d.getName());
+            shuffled.add(s);
+        }
+
+        assertEquals(expected, new Boss(new SemBicScore()).search(shuffled, p));
+
+        DataSet last = (DataSet) list.get(4);
+        DataModelList different = new DataModelList();
+        different.add(list.getFirst());
+        different.add(last.subsetColumns(new ArrayList<>(last.getVariables().subList(0, 10))));
+
+        try {
+            new Boss(new SemBicScore()).search(different, p);
+            org.junit.Assert.fail("Expected different variables to be refused.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage(), e.getMessage().contains("lacks"));
+        }
+    }
+
     @Test
     public void testBossPooledEqualsImagesWrapper() throws Exception {
         DataModelList list = fiveSmallDataSets(1);
