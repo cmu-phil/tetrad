@@ -92,13 +92,25 @@ public class Ftfc {
      * @param ess     The equivalent sample size to be set.
      */
     public Ftfc(DataSet dataSet, double alpha, int ess) {
-        this.variables = dataSet.getVariables();
+        this(new CorrelationMatrix(dataSet), alpha, ess);
+    }
+
+    /**
+     * Constructs an instance of the Ftfc class from a correlation matrix, for use when the correlations do not come
+     * from a single raw data set--for example, the pooled correlations of several imputations of a data set with
+     * missing values. The matrix's sample size is used as the sample size.
+     *
+     * @param correlationMatrix The correlation matrix over the variables.
+     * @param alpha   The significance level used for statistical testing.
+     * @param ess     The equivalent sample size to be set.
+     */
+    public Ftfc(CorrelationMatrix correlationMatrix, double alpha, int ess) {
+        this.variables = correlationMatrix.getVariables();
         this.alpha = alpha;
-        CorrelationMatrix correlationMatrix = new CorrelationMatrix(dataSet);
         this.S = correlationMatrix.getMatrix().getSimpleMatrix();
-        this.n = dataSet.getNumRows();
-        this.tsc = new Tsc(dataSet.getVariables(), correlationMatrix);
-        this.sampleSize = dataSet.getNumRows();
+        this.n = correlationMatrix.getSampleSize();
+        this.tsc = new Tsc(correlationMatrix.getVariables(), correlationMatrix);
+        this.sampleSize = correlationMatrix.getSampleSize();
         setEss(ess);
     }
 

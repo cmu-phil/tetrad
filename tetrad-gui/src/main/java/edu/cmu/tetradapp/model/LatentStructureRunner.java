@@ -229,6 +229,39 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
     }
 
     /**
+     * Picks, from the data handed to this box, the data model the upstream clusters were derived from. With a single
+     * data model it must be the spec's data set; with several (for example, several imputations of one data set from
+     * the Impute Missing Values box), the spec's data set must be among them--the clusters box ran on one member of
+     * the same list.
+     *
+     * @param spec  the upstream block spec.
+     * @param model the data model this runner was given: a single model, or a {@link edu.cmu.tetrad.data.DataModelList}.
+     * @return the member the spec was derived from.
+     * @throws IllegalStateException if the spec's data set is not (among) the given data.
+     */
+    private static DataModel resolveSpecDataModel(BlockSpec spec, DataModel model) {
+        if (model instanceof edu.cmu.tetrad.data.DataModelList list) {
+            for (DataModel member : list) {
+                if (member == spec.dataSet() || spec.dataSet().equals(member)) {
+                    return member;
+                }
+            }
+
+            throw new IllegalStateException("The data given to this box holds " + list.size() + " data sets, and "
+                    + "the supplied latent clusters were not derived from any of them. Make sure this box and the "
+                    + "Latent Clusters box share the same data parent, and re-run the clusters if the data has "
+                    + "changed.");
+        }
+
+        if (model == spec.dataSet() || spec.dataSet().equals(model)) {
+            return model;
+        }
+
+        throw new IllegalStateException("The dataset for the supplied latent clusters is not the " +
+                "dataset given as a parent to this box.");
+    }
+
+    /**
      * Called by editor when user presses âRun.â
      */
     @Override
@@ -247,14 +280,13 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
                     "No BlockSpec is available. Run a clustering algorithm first and/or click Apply in the blocks editor.");
         }
 
-        if (!spec.dataSet().equals(getDataModel())) {
-            throw new IllegalStateException("The dataset for the supplied latent clusters is not the " +
-                    "dataset given as a parent to this box.");
-        }
+        // The data box may hold several data sets--for example, several imputations of one data set with missing
+        // values. The clusters were derived from one of them; find it, or fail with a clear message.
+        DataModel specDataModel = resolveSpecDataModel(spec, getDataModel());
 
         // 2) Defensive validations
         BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
-        ensureSpecMatchesRunnerData(spec, getDataModel());
+        ensureSpecMatchesRunnerData(spec, specDataModel);
 
         // 3) Cache for factories/wrappers
         setBlockSpec(spec);

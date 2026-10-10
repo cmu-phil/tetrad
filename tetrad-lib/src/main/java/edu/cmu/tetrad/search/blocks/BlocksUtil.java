@@ -21,9 +21,12 @@
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RankTests;
 import edu.cmu.tetrad.util.TMath;
 
@@ -36,6 +39,154 @@ import java.util.*;
  */
 public final class BlocksUtil {
     private BlocksUtil() {
+    }
+
+    /**
+     * Pools several imputations of one data set into a single covariance matrix: the elementwise average of the
+     * imputations' covariance matrices, at the imputations' (shared) sample size. This is the multiple-imputation
+     * point estimate of the covariance; the between-imputation variance is not carried into it, so tests run on the
+     * pooled matrix at the full sample size act as if the pooled covariance had been estimated from complete data.
+     * The effective-sample-size parameter of the consuming method is the knob for compensating.
+     * <p>
+     * The variables of the returned matrix are the first imputation's variable objects, so a {@link BlockSpec} built
+     * over the first imputation and blocks discovered from the pooled matrix refer to the same nodes.
+     *
+     * @param imputations the imputed data sets: the same variables, in the same order, with the same number of rows.
+     * @return the averaged covariance matrix at the shared sample size.
+     * @throws IllegalArgumentException if the list is empty, a member is not continuous tabular data, or the members
+     *                                  differ in their variables or row counts.
+     */
+    public static CovarianceMatrix pooledCovariance(List<DataSet> imputations) {
+        if (imputations == null || imputations.isEmpty()) {
+            throw new IllegalArgumentException("No data sets to pool.");
+        }
+
+        DataSet first = imputations.getFirst();
+        List<String> names = first.getVariableNames();
+        int n = first.getNumRows();
+
+        for (DataSet dataSet : imputations) {
+            if (!dataSet.isContinuous()) {
+                throw new IllegalArgumentException("Pooling imputations requires continuous tabular data; '"
+                        + dataSet.getName() + "' is not continuous.");
+            }
+            if (!dataSet.getVariableNames().equals(names)) {
+                throw new IllegalArgumentException("Pooling imputations requires the same variables in the same "
+                        + "order in every data set; '" + dataSet.getName() + "' differs. Pooling is for several "
+                        + "imputations of one data set, not for unrelated data sets.");
+            }
+            if (dataSet.getNumRows() != n) {
+                throw new IllegalArgumentException("Pooling imputations requires the same number of rows in every "
+                        + "data set; '" + dataSet.getName() + "' has " + dataSet.getNumRows() + " rows, not " + n + ".");
+            }
+            if (dataSet.existsMissingValue()) {
+                throw new IllegalArgumentException("Data set '" + dataSet.getName() + "' still contains missing "
+                        + "values; pooling expects completed imputations.");
+            }
+        }
+
+        Matrix sum = new CovarianceMatrix(first).getMatrix();
+
+        for (int k = 1; k < imputations.size(); k++) {
+            Matrix cov = new CovarianceMatrix(imputations.get(k)).getMatrix();
+            for (int i = 0; i < sum.getNumRows(); i++) {
+                for (int j = 0; j < sum.getNumColumns(); j++) {
+                    sum.set(i, j, sum.get(i, j) + cov.get(i, j));
+                }
+            }
+        }
+
+        double m = imputations.size();
+        for (int i = 0; i < sum.getNumRows(); i++) {
+            for (int j = 0; j < sum.getNumColumns(); j++) {
+                sum.set(i, j, sum.get(i, j) / m);
+            }
+        }
+
+        return new CovarianceMatrix(first.getVariables(), sum, n);
+    }
+
+    /**
+     * Estimates an effective sample size for analyses run on the pooled covariance of several imputations, from the
+     * disagreement among the imputations themselves. For each pair of variables, the correlation is Fisher-z
+     * transformed in each imputation; its within-imputation variance is 1/(n-3) and its between-imputation variance
+     * B is observed, so by Rubin's rules the pooled estimate has the precision of a complete sample of about
+     * (n-3)/(1 + (1 + 1/M) B (n-3)) + 3 observations. The SMALLEST of these pairwise sizes is returned: a rank
+     * test's precision is limited by its least well determined correlation, and in calibration runs on simulated
+     * missing-at-random data the per-pair sizes consistently understated the imputation noise that rank tests react
+     * to, so the conservative end of their distribution recovered clusters best at every missingness level tried,
+     * with no cost at low missingness. With many variables the minimum leans low (it is a minimum over many noisy
+     * ratios), which fails toward less power rather than toward spurious structure.
+     * <p>
+     * Improper imputers (which do not redraw the imputation model's parameters) understate B, so this estimate leans
+     * large; it is nevertheless far closer to the truth than the full n, which treats the pooled covariance as if it
+     * had been estimated from complete data.
+     *
+     * @param imputations the imputed data sets, as for {@link #pooledCovariance(List)}.
+     * @return the estimated effective sample size, at least 10 and at most n.
+     * @throws IllegalArgumentException as for {@link #pooledCovariance(List)}, and if fewer than two imputations are
+     *                                  given.
+     */
+    public static int pooledEffectiveSampleSize(List<DataSet> imputations) {
+        if (imputations == null || imputations.size() < 2) {
+            throw new IllegalArgumentException("Estimating an effective sample size from imputation disagreement "
+                    + "requires at least two imputations.");
+        }
+
+        int n = imputations.getFirst().getNumRows();
+        int p = imputations.getFirst().getNumColumns();
+        int m = imputations.size();
+
+        if (n <= 4) {
+            return Math.max(2, n);
+        }
+
+        List<Matrix> correlations = new ArrayList<>();
+        for (DataSet dataSet : imputations) {
+            correlations.add(new CorrelationMatrix(dataSet).getMatrix());
+        }
+
+        double w = 1.0 / (n - 3);
+        List<Double> sizes = new ArrayList<>();
+
+        for (int i = 0; i < p; i++) {
+            for (int j = i + 1; j < p; j++) {
+                double mean = 0;
+                double[] z = new double[m];
+                for (int k = 0; k < m; k++) {
+                    double r = Math.max(-0.9999, Math.min(0.9999, correlations.get(k).get(i, j)));
+                    z[k] = 0.5 * Math.log((1 + r) / (1 - r));
+                    mean += z[k];
+                }
+                mean /= m;
+                double b = 0;
+                for (int k = 0; k < m; k++) b += (z[k] - mean) * (z[k] - mean);
+                b /= (m - 1);
+
+                double rIncrease = (1 + 1.0 / m) * b / w;
+                sizes.add((n - 3) / (1 + rIncrease) + 3);
+            }
+        }
+
+        double smallest = Collections.min(sizes);
+
+        return (int) Math.max(10, Math.min(n, Math.round(smallest)));
+    }
+
+    /**
+     * Checks that a pooled covariance matrix handed to a block discoverer covers the same variables, in the same
+     * order, as the discoverer's representative data set, which anchors the resulting {@link BlockSpec}.
+     *
+     * @param pooled  the pooled covariance matrix, or null (no check).
+     * @param dataSet the representative data set.
+     * @throws IllegalArgumentException if the variable names differ.
+     */
+    static void checkPooledMatchesData(CovarianceMatrix pooled, DataSet dataSet) {
+        if (pooled == null) return;
+        if (!pooled.getVariableNames().equals(dataSet.getVariableNames())) {
+            throw new IllegalArgumentException("The pooled covariance matrix does not cover the same variables, in "
+                    + "the same order, as the representative data set.");
+        }
     }
 
     /**

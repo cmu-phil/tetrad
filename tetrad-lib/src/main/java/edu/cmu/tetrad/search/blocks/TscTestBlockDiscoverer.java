@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search.blocks;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Tsc;
 import edu.cmu.tetrad.util.RankTests;
@@ -44,6 +45,7 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
     private final boolean verbose;
     private final int rMax;
     private final int minRedundancy;
+    private final CovarianceMatrix pooledCovariance;
 
     /**
      * Constructs a TscTestBlockDiscoverer instance with the specified parameters for discovering and analyzing blocks
@@ -62,13 +64,41 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
      */
     public TscTestBlockDiscoverer(DataSet dataSet, double alpha, int ess, double ridge, int rMax,
                                   SingletonClusterPolicy policy, int minRedundancy, boolean verbose) {
+        this(dataSet, null, alpha, ess, ridge, rMax, policy, minRedundancy, verbose);
+    }
+
+    /**
+     * Constructs a TscTestBlockDiscoverer over a pooled covariance matrix--for example, the averaged covariance of
+     * several imputations of a data set with missing values (see {@code BlocksUtil.pooledCovariance}). The
+     * representative data set anchors the resulting {@code BlockSpec} and must have the same variables, in the same
+     * order, as the pooled matrix.
+     *
+     * @param dataSet          The representative data set for the resulting BlockSpec.
+     * @param pooledCovariance The covariance matrix to run TSC on, or null to compute it from the data set.
+     * @param alpha            A significance level parameter used for hypothesis testing, must be in the range (0, 1).
+     * @param ess              The equivalent sample size used in certain scoring or prior adjustments.
+     * @param ridge            A regularization parameter for ridge regression; must be greater than or equal to 0.
+     * @param rMax             The maximum number of iterations or search radius used in the discovery process.
+     * @param policy           The single cluster policy dictating the criteria for canonicalizing discovered clusters.
+     * @param minRedundancy    The minimum allowed redundancy level among variables in discovered clusters.
+     * @param verbose          A flag indicating whether to output detailed logging or debugging information during
+     *                         processing.
+     * @throws IllegalArgumentException If the ridge parameter is less than 0, or the pooled matrix's variables do not
+     *                                  match the data set's.
+     */
+    public TscTestBlockDiscoverer(DataSet dataSet, CovarianceMatrix pooledCovariance, double alpha, int ess,
+                                  double ridge, int rMax, SingletonClusterPolicy policy, int minRedundancy,
+                                  boolean verbose) {
         this.dataSet = dataSet;
+        this.pooledCovariance = pooledCovariance;
         this.alpha = alpha;
         this.ess = ess;
         this.rMax = rMax;
         this.policy = policy;
         this.minRedundancy = minRedundancy;
         this.verbose = verbose;
+
+        BlocksUtil.checkPooledMatchesData(pooledCovariance, dataSet);
 
         if (ridge < 0) {
             throw new IllegalArgumentException("Ridge must be >= 0");
@@ -94,7 +124,8 @@ public class TscTestBlockDiscoverer implements BlockDiscoverer {
             throw new IllegalArgumentException("alpha must be in (0,1)");
         }
 
-        Tsc tsc = new Tsc(dataSet.getVariables(), new CorrelationMatrix(dataSet));
+        Tsc tsc = new Tsc(dataSet.getVariables(), pooledCovariance != null
+                ? new CorrelationMatrix(pooledCovariance) : new CorrelationMatrix(dataSet));
         tsc.setAlpha(alpha);
         tsc.setEffectiveSampleSize(ess);
         tsc.setRmax(rMax);

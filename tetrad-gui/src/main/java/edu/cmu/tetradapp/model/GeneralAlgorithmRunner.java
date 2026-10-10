@@ -712,8 +712,24 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             // ----- 2B) Standard algorithms: run once PER DATASET and collect graphs -----
             else { // NEW
                 // (Removed the old single-dataset assertion; now we iterate all datasets.)
-                for (int i = 0; i < dataModelList.size(); i++) {
-                    DataModel data = dataModelList.get(i);
+
+                // In blocks mode (a BlockSpec is present; the Latent Structure box with a Latent Clusters parent),
+                // the block-aware scores and tests are built from the BlockSpec's own data set and ignore the data
+                // model handed to each run, so running once per data model would produce identical copies of one
+                // result. With several data models (for example, several imputations of one data set), run ONCE,
+                // on the BlockSpec's data set.
+                List<DataModel> modelsToRun;
+                boolean collapsedToSpecData = this.blockSpec != null && dataModelList.size() > 1;
+
+                if (collapsedToSpecData) {
+                    modelsToRun = new ArrayList<>();
+                    modelsToRun.add(this.blockSpec.dataSet());
+                } else {
+                    modelsToRun = new ArrayList<>(dataModelList);
+                }
+
+                for (int i = 0; i < modelsToRun.size(); i++) {
+                    DataModel data = modelsToRun.get(i);
 
                     if (knowledge == null) {
 
@@ -781,7 +797,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     try {
                         graph = GraphUtils.detachNodes(algo.search(data, this.parameters));
                         graphList.add(graph);
-                        graphSubtitle.put(graph, noteFor(data));
+                        graphSubtitle.put(graph, noteFor(data) + (collapsedToSpecData
+                                ? "; the clusters' data set, one of " + dataModelList.size() + " in the data box"
+                                : ""));
 
                         // Name = dataset/covariance name, if present
                         String nm = data.getName() != null ? data.getName() : "Result" + (i + 1);
