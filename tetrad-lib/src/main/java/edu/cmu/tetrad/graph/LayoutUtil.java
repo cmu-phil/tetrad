@@ -902,7 +902,12 @@ public class LayoutUtil {
      * barycenter of a node is the mean position of its neighbors in the
      * sweep direction; all edge types vote here, including edges that span
      * more than one layer. The ordering with the fewest straight-line
-     * crossings seen over all sweeps is kept.</li>
+     * crossings seen over all sweeps is kept. Crossings are counted here with
+     * every layer spread over the same width; after the coordinates are
+     * assigned and sheared, neighbors in a layer are exchanged once more
+     * wherever that reduces the crossings of the edges as actually placed,
+     * which matters for edges that span more than one layer; this is done
+     * before and again after the nudge described below.</li>
      * <li><b>Coordinate assignment.</b> Within each layer, nodes are packed
      * by their actual box widths, then pulled toward the mean x of their
      * neighbors over several relaxation passes, preserving the layer order
@@ -1177,7 +1182,22 @@ public class LayoutUtil {
             }
         }
 
+        // The ordering above counts crossings with every layer spread over
+        // the same width; now that the nodes have their coordinates, an edge
+        // spanning several layers may cross other edges than it did there.
+        if (trackCrossings) {
+            transposeByCoordinates(tiers, crossEdges, edgesAt, tierOf, x, size);
+        }
+
         if (nudge) {
+            nudgeOffEdgeLines(tiers, tierOf, crossEdges, x, size, xGap);
+        }
+
+        // The nudge moves nodes, which can open exchanges that reduce the
+        // crossings further; and an exchange can put a node back on an edge
+        // line, so nudge once more afterwards.
+        if (trackCrossings && nudge) {
+            transposeByCoordinates(tiers, crossEdges, edgesAt, tierOf, x, size);
             nudgeOffEdgeLines(tiers, tierOf, crossEdges, x, size, xGap);
         }
 
@@ -1575,6 +1595,64 @@ public class LayoutUtil {
 
                 if (!improved) break;
             }
+        }
+    }
+
+    /**
+     * The transpose step again, on the coordinates the nodes have been given
+     * rather than on their ranks within their tiers. The ordering stage draws
+     * every tier across the same width, which is exact for edges between
+     * neighboring tiers (they cross according to order alone) but not for an
+     * edge spanning several tiers, whose crossings depend on where the nodes
+     * actually are. Here the tiers are walked down and then up, repeatedly;
+     * two neighbors in a tier exchange places, keeping the stretch of the row
+     * the two of them occupy, whenever that strictly reduces the number of
+     * crossings of straight edges in (x, tier) space, until a full round
+     * over all tiers makes no exchange. The tiers and x are modified in
+     * place.
+     */
+    private static void transposeByCoordinates(List<List<Node>> tiers, List<Node[]> crossEdges,
+                                               Map<Node, List<Integer>> edgesAt, Map<Node, Integer> tierOf,
+                                               Map<Node, Double> x, NodeSize size) {
+        // Each exchange lowers the total count, so the rounds end on their
+        // own; the cap is a guard.
+        final int maxRounds = 20;
+
+        for (int round = 0; round < maxRounds; round++) {
+            boolean improved = false;
+            boolean down = round % 2 == 0;
+
+            for (int ti = 0; ti < tiers.size(); ti++) {
+                List<Node> tier = tiers.get(down ? ti : tiers.size() - 1 - ti);
+
+                for (int i = 0; i + 1 < tier.size(); i++) {
+                    Node u = tier.get(i);
+                    Node v = tier.get(i + 1);
+
+                    if (edgesAt.get(u).isEmpty() && edgesAt.get(v).isEmpty()) continue;
+
+                    int before = crossingsInvolving(u, v, crossEdges, edgesAt, tierOf, x);
+
+                    double xu = x.get(u);
+                    double xv = x.get(v);
+                    double left = xu - size.width(u) / 2.0;
+                    double right = xv + size.width(v) / 2.0;
+
+                    x.put(v, left + size.width(v) / 2.0);
+                    x.put(u, right - size.width(u) / 2.0);
+
+                    if (crossingsInvolving(u, v, crossEdges, edgesAt, tierOf, x) < before) {
+                        tier.set(i, v);
+                        tier.set(i + 1, u);
+                        improved = true;
+                    } else {
+                        x.put(u, xu);
+                        x.put(v, xv);
+                    }
+                }
+            }
+
+            if (!improved) break;
         }
     }
 
