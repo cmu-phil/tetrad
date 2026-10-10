@@ -77,8 +77,18 @@ public final class WorkbenchStyle {
     /** Okabe-Ito orange E69F00: the highlight in both modes, and dark-mode regression and reference lines. */
     public static final Color OI_ORANGE = new Color(0xE6, 0x9F, 0x00);
 
-    /** Tetrad's classic node blue 94C6E2: the light-mode fill of measured and latent graph nodes. */
-    public static final Color CLASSIC_NODE_BLUE = new Color(0x94, 0xC6, 0xE2);
+    /**
+     * The light-mode fill of measured and latent graph nodes, as painted at {@link #NODE_FILL_ALPHA}.
+     * <p>
+     * Node fills are now painted translucent so that an edge passing behind a node shows through it. Painted at
+     * alpha 0.8, the old value 94C6E2 came out lighter, about A9D1E8 on white. The value was changed to 79B8DB so
+     * that the node comes out as Tetrad's classic node blue 94C6E2 on a white background, as before: each channel
+     * is (old - 255 * (1 - 0.8)) / 0.8. The value is tied to an alpha of 0.8 and to a white background; if
+     * NODE_FILL_ALPHA is changed, recompute it by the same formula. Opaque uses of the node blue (toolbar icons,
+     * knowledge editor nodes, the log area) should use {@link #measuredFillOpaque()}, which gives 94C6E2.
+     */
+//    public static final Color CLASSIC_NODE_BLUE = new Color(0x94, 0xC6, 0xE2);
+    public static final Color CLASSIC_NODE_BLUE = new Color(0x79, 0xB8, 0xDB);
 
     /** Tetrad's classic selection red F40014: selected edges, lightened in dark mode to read on the panel. */
     public static final Color CLASSIC_SELECTION_RED = new Color(0xF4, 0x00, 0x14);
@@ -315,6 +325,16 @@ public final class WorkbenchStyle {
      */
     public static Color measuredFill() {
         return isDarkMode() ? cardFill() : CLASSIC_NODE_BLUE;
+    }
+
+    /**
+     * The fill of a measured node as it appears on a white background, for drawing it opaque: in light mode the
+     * classic node blue 94C6E2, which is {@link #CLASSIC_NODE_BLUE} at {@link #NODE_FILL_ALPHA} over white.
+     *
+     * @return the opaque fill color.
+     */
+    public static Color measuredFillOpaque() {
+        return isDarkMode() ? cardFill() : blend(CLASSIC_NODE_BLUE, Color.WHITE, 1.0 - NODE_FILL_ALPHA);
     }
 
     /**

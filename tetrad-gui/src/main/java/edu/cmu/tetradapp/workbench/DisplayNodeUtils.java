@@ -42,7 +42,7 @@ public class DisplayNodeUtils {
      * @return the fill color.
      */
     public static Color getNodeFillColor() {
-        return WorkbenchStyle.measuredFill();
+        return WorkbenchStyle.measuredFillOpaque();
     }
 
     /**
