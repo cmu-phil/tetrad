@@ -1423,6 +1423,14 @@ public final class Params {
      */
     public static final String PARALLELIZED = "parallelized";
     /**
+     * Constant <code>PC_ORDER_REFINEMENT="pcOrderRefinement"</code>
+     */
+    public static final String PC_ORDER_REFINEMENT = "pcOrderRefinement";
+    /**
+     * Constant <code>PC_REFINEMENT_ALPHA="pcRefinementAlpha"</code>
+     */
+    public static final String PC_REFINEMENT_ALPHA = "pcRefinementAlpha";
+    /**
      * Constant <code>PENALTY_DISCOUNT="penaltyDiscount"</code>
      */
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";

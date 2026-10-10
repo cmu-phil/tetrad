@@ -223,6 +223,17 @@ public class Pc implements IGraphSearch {
     private boolean forbidDirectedCycles = true;
 
     /**
+     * If true, the CPDAG found by PC is used only to supply a starting permutation for GRaSP, run with the same
+     * independence test (no score), and the CPDAG of the refined permutation is returned. Off by default.
+     */
+    private boolean orderRefinement = false;
+
+    /**
+     * The alpha the test uses during order refinement; a value &lt;= 0 leaves the test's alpha unchanged.
+     */
+    private double refinementAlpha = 0.001;
+
+    /**
      * Constructs a new instance of the Pc algorithm with the specified independence test.
      *
      * @param test the independence test to be used by the Pc algorithm
@@ -364,6 +375,36 @@ public class Pc implements IGraphSearch {
      */
     public void setForbidDirectedCycles(boolean enabled) { this.forbidDirectedCycles = enabled; }
 
+    /**
+     * Sets whether the PC result should be refined by a permutation search over causal orders that uses the same
+     * independence test. PC removes an edge when any subset of neighbors renders its endpoints independent, which
+     * loses true edges whenever such a subset contains a descendant of an endpoint (the partial correlation is
+     * attenuated) and cannot use the extra power of conditioning on the other parents. With refinement on, a causal
+     * order is read off the PC result and handed to GRaSP as its starting permutation; GRaSP decides each adjacency by
+     * tests given candidate parents of the later variable. Large-sample correctness is GRaSP's (under faithfulness,
+     * given a correct test); the finite-sample gain is empirical. The refined graph need not contain or be contained
+     * in the PC graph. Ignored for replicating (time-lag) graphs and when searching over a proper subset of the
+     * test's variables.
+     *
+     * @param orderRefinement true to refine, false (the default) for unmodified PC.
+     * @see Grasp
+     */
+    public void setOrderRefinement(boolean orderRefinement) {
+        this.orderRefinement = orderRefinement;
+    }
+
+    /**
+     * Sets the alpha used by the independence test during order refinement. In that step each retained edge rests
+     * on a single test rather than on surviving many, so a stricter cutoff than PC's own alpha is usually wanted.
+     *
+     * @param refinementAlpha the cutoff; a value &lt;= 0 leaves the test's alpha unchanged.
+     * @see #setOrderRefinement(boolean)
+     */
+    public void setRefinementAlpha(double refinementAlpha) {
+        if (refinementAlpha > 1.0) throw new IllegalArgumentException("Refinement alpha should be <= 1.");
+        this.refinementAlpha = refinementAlpha;
+    }
+
     // ----- Entry points -----
 
     /**
@@ -406,6 +447,12 @@ public class Pc implements IGraphSearch {
 
         // Phase 3: Meek R1-R4 to closure
         applyMeekRules(g);
+
+        // Optional phase 4: refine the causal order with the same test.
+        if (orderRefinement && !replicatingGraph
+                && new HashSet<>(nodes).containsAll(test.getVariables())) {
+            g = refineOrder(g);
+        }
 
         return g;
     }
@@ -786,6 +833,104 @@ public class Pc implements IGraphSearch {
         meekRules.setMeekPreventCycles(forbidDirectedCycles);
         meekRules.setRevertToUnshieldedColliders(false);
         meekRules.orientImplied(g);
+    }
+
+    // ------------------------------------------------------------------------------------
+    // Order refinement
+    // ------------------------------------------------------------------------------------
+
+    /**
+     * Runs GRaSP with this search's independence test, starting from a causal order read off the given PC result,
+     * and returns the CPDAG of the permutation GRaSP ends on.
+     */
+    private Graph refineOrder(Graph pcGraph) throws InterruptedException {
+        List<Node> order = causalOrder(pcGraph);
+
+        double savedAlpha = Double.NaN;
+        boolean alphaChanged = false;
+
+        if (refinementAlpha > 0) {
+            try {
+                savedAlpha = test.getAlpha();
+                if (savedAlpha != refinementAlpha) {
+                    test.setAlpha(refinementAlpha);
+                    alphaChanged = true;
+                }
+            } catch (UnsupportedOperationException e) {
+                // The test has no adjustable alpha; refine at whatever cutoff it uses.
+            }
+        }
+
+        try {
+            Grasp grasp = new Grasp(test);
+            grasp.setUseRaskuttiUhler(false); // grow-shrink parents rather than conditioning on the whole prefix
+            grasp.setUseScore(false);
+            grasp.setKnowledge(knowledge);
+            grasp.setUseDataOrder(true);      // start from the order given, not a shuffle
+            grasp.setNumStarts(1);
+            grasp.setVerbose(false);
+            grasp.bestOrder(order);
+            Graph refined = grasp.getGraph(true);
+
+            if (verbose) {
+                TetradLogger.getInstance().log("PC order refinement: " + pcGraph.getNumEdges()
+                        + " edges before, " + refined.getNumEdges() + " after.");
+            }
+
+            return refined;
+        } finally {
+            if (alphaChanged) test.setAlpha(savedAlpha);
+        }
+    }
+
+    /**
+     * Returns an order of the nodes consistent with the directed edges of the given graph, extending undirected
+     * edges one at a time (closing under the Meek rules after each). PC output need not be a CPDAG, so any
+     * directed cycle is broken by taking, among the nodes not yet placed, one with the fewest unplaced parents.
+     */
+    private List<Node> causalOrder(Graph graph) {
+        Graph d = new EdgeListGraph(graph);
+
+        MeekRules meekRules = new MeekRules();
+        meekRules.setMeekPreventCycles(true);
+        meekRules.setRevertToUnshieldedColliders(false);
+
+        while (true) {
+            Edge undirected = null;
+            for (Edge e : d.getEdges()) {
+                if (!e.isDirected()) {
+                    undirected = e;
+                    break;
+                }
+            }
+            if (undirected == null) break;
+
+            Node a = undirected.getNode1(), b = undirected.getNode2();
+            d.removeEdge(undirected);
+            if (d.paths().existsDirectedPath(b, a)) d.addDirectedEdge(b, a);
+            else d.addDirectedEdge(a, b);
+            meekRules.orientImplied(d);
+        }
+
+        List<Node> remaining = new ArrayList<>(d.getNodes());
+        List<Node> order = new ArrayList<>();
+
+        while (!remaining.isEmpty()) {
+            Node best = null;
+            int fewest = Integer.MAX_VALUE;
+            for (Node v : remaining) {
+                int count = 0;
+                for (Node parent : d.getParents(v)) if (remaining.contains(parent)) count++;
+                if (count < fewest) {
+                    fewest = count;
+                    best = v;
+                }
+            }
+            order.add(best);
+            remaining.remove(best);
+        }
+
+        return order;
     }
 
     // ------------------------------------------------------------------------------------

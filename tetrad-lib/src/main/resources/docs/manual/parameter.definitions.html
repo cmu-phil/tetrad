@@ -5908,6 +5908,53 @@ Source:
         <li>Value Type: <span id="pcHeuristic_value_type">Integer</span></li>
     </ul>
 
+    === pcOrderRefinement ===
+    <h3 class="parameter_description" id="pcOrderRefinement">pcOrderRefinement</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="pcOrderRefinement_short_desc">Yes if
+                PC's result should be refined by a permutation search using
+                the same independence test</span></li>
+        <li>Long Description: <span id="pcOrderRefinement_long_desc"> If Yes,
+        a causal order is read off the PC result and used as the starting
+        permutation for GRaSP, run with the same independence test and no
+        score; the CPDAG of the refined permutation is returned. Each
+        adjacency is then decided by a test given the candidate parents
+        of the later variable instead of by any accepting subset of
+        neighbors, which recovers edges PC removes by conditioning on
+        descendants. The result need not contain or be contained in the PC
+        result. Not applied to time-lag (replicating) searches. </span></li>
+        <li>Default Value:
+            <span id="pcOrderRefinement_default_value">false</span></li>
+        <li>Lower Bound:
+            <span id="pcOrderRefinement_lower_bound"></span></li>
+        <li>Upper Bound:
+            <span id="pcOrderRefinement_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="pcOrderRefinement_value_type">Boolean</span></li>
+    </ul>
+
+    === pcRefinementAlpha ===
+    <h3 class="parameter_description" id="pcRefinementAlpha">pcRefinementAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="pcRefinementAlpha_short_desc">Cutoff
+                for p values in PC's order refinement step (0 = use
+                alpha)</span></li>
+        <li>Long Description: <span id="pcRefinementAlpha_long_desc"> The
+        alpha used by the independence test during PC's order refinement
+        step. In that step each retained edge rests on a single test, so a
+        stricter cutoff than PC's own alpha is usually appropriate. A value
+        of 0 uses the test's alpha unchanged. Ignored unless
+        pcOrderRefinement is Yes. </span></li>
+        <li>Default Value:
+            <span id="pcRefinementAlpha_default_value">0.001</span></li>
+        <li>Lower Bound:
+            <span id="pcRefinementAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound:
+            <span id="pcRefinementAlpha_upper_bound">1.0</span></li>
+        <li>Value Type:
+            <span id="pcRefinementAlpha_value_type">Double</span></li>
+    </ul>
+
     === penaltyDiscount ===
     <h3 class="parameter_description" id="penaltyDiscount">penaltyDiscount</h3>
     <ul class="parameter_description_list">

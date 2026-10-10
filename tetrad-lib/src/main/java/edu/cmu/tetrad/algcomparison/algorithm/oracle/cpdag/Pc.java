@@ -128,6 +128,8 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, Accepts
         search.setColliderOrientationStyle(colliderOrientationStyle);
         search.setAllowBidirected(allowBidirected ? edu.cmu.tetrad.search.Pc.AllowBidirected.ALLOW
                 : edu.cmu.tetrad.search.Pc.AllowBidirected.DISALLOW);
+        search.setOrderRefinement(parameters.getBoolean(Params.PC_ORDER_REFINEMENT));
+        search.setRefinementAlpha(parameters.getDouble(Params.PC_REFINEMENT_ALPHA));
 
         double fdrQ = parameters.getDouble(Params.FDR_Q);
 
@@ -179,6 +181,8 @@ public class Pc extends AbstractBootstrapAlgorithm implements Algorithm, Accepts
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.COLLIDER_ORIENTATION_STYLE);
         parameters.add(Params.ALLOW_BIDIRECTED);
+        parameters.add(Params.PC_ORDER_REFINEMENT);
+        parameters.add(Params.PC_REFINEMENT_ALPHA);
         parameters.add(Params.DEPTH);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
