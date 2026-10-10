@@ -315,6 +315,18 @@ public class GraphCard extends JPanel {
     }
 
     private JPanel createGraphPanel(Graph graph) {
+
+        // Whether the result arrives without a layout, noted before the workbench lays it out by default. See
+        // TieLayoutMenu.reapplyTie(LayoutEditable, boolean).
+        boolean unpositioned = false;
+
+        for (Node node : graph.getNodes()) {
+            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
+                unpositioned = true;
+                break;
+            }
+        }
+
         GraphWorkbench graphWorkbench = new GraphWorkbench(graph);
         graphWorkbench.setKnowledge(knowledge);
 //        graphWorkbench.setEnableEditing(false);
@@ -331,7 +343,7 @@ public class GraphCard extends JPanel {
         // the "Tie Layout To" menu item. (The once-per-opening application in
         // TieLayoutMenu fires only when the editor window opens; a search finishing in
         // an already-open editor replaces the workbench without reopening the window.)
-        TieLayoutMenu.reapplyTie(graphWorkbench);
+        TieLayoutMenu.reapplyTie(graphWorkbench, unpositioned);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setPreferredSize(new Dimension(825, 406));

@@ -531,6 +531,16 @@ public class Fges implements IGraphSearch, DagScorer {
             }
 
             if (!validInsert(x, y, arrow.getHOrT(), getNaYX(x, y))) {
+                // The Insert was valid when it was queued but the graph has changed since. Some other T may give
+                // a valid Insert for this pair now, so re-evaluate the pair rather than dropping it.
+                arrowsMap.remove(directedEdge(x, y));
+
+                try {
+                    calculateArrowsForward(x, y);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
                 continue;
             }
 
@@ -703,6 +713,7 @@ public class Fges implements IGraphSearch, DagScorer {
 
         Set<Node> bestT = null;
         double bestBump = Double.NEGATIVE_INFINITY;
+        boolean skippedInvalid = false;
 
         int[] choice;
         while ((choice = gen.next()) != null) {
@@ -712,10 +723,24 @@ public class Fges implements IGraphSearch, DagScorer {
 
             final double bump = insertBump(a, b, T, naYX, parents, hashIndices);
 
-            if (bump > bestBump) {
-                bestBump = bump;
-                bestT = T;
+            // Choose the best T among the valid Inserts only. Previously the best-scoring T was chosen whether or
+            // not Insert(a, b, T) was valid, and if it turned out to be invalid when dequeued, the arrow was
+            // dropped, even if some other T gave a valid Insert with a positive bump. With tied bumps (as for
+            // an m-separation oracle, where every bump is +1 or -1) this lost true adjacencies.
+            if (bump > bestBump && bump > 0) {
+                if (validInsert(a, b, T, naYX)) {
+                    bestBump = bump;
+                    bestT = T;
+                } else {
+                    skippedInvalid = true;
+                }
             }
+        }
+
+        // Validity depends on paths elsewhere in the graph, which the cached configuration does not record. If
+        // validity affected the choice, don't let the cache suppress a later re-evaluation of this pair.
+        if (skippedInvalid) {
+            arrowsMap.remove(e);
         }
 
         if (bestBump > 0) {

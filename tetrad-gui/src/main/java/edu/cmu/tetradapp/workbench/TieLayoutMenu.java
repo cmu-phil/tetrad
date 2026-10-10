@@ -138,7 +138,7 @@ public class TieLayoutMenu extends JMenu {
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
     public static void applyTieOnOpen(LayoutEditable layoutEditable) {
-        TieLayoutMenu.applyTie(layoutEditable, false);
+        TieLayoutMenu.applyTie(layoutEditable, false, false);
     }
 
     /**
@@ -151,10 +151,25 @@ public class TieLayoutMenu extends JMenu {
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
     public static void reapplyTie(LayoutEditable layoutEditable) {
-        TieLayoutMenu.applyTie(layoutEditable, true);
+        TieLayoutMenu.applyTie(layoutEditable, true, false);
     }
 
-    private static void applyTie(LayoutEditable layoutEditable, boolean force) {
+    /**
+     * As {@link #reapplyTie(LayoutEditable)}, for a workbench newly created for a search result, saying whether the
+     * result arrived without a layout. The layout record is kept by session node name, so it outlives the graph it
+     * was made for. A result that arrives unpositioned is a new graph that the workbench has just laid out by
+     * default; measured against the record of an earlier result, every one of its nodes would look as if it had
+     * been moved locally, and none would take the reference's position. Such a result has no local changes to
+     * keep, so the old record is discarded and it takes the whole layout of its reference.
+     *
+     * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     * @param unpositioned   True if the graph had no layout when it was given to the workbench.
+     */
+    public static void reapplyTie(LayoutEditable layoutEditable, boolean unpositioned) {
+        TieLayoutMenu.applyTie(layoutEditable, true, unpositioned);
+    }
+
+    private static void applyTie(LayoutEditable layoutEditable, boolean force, boolean reset) {
         SwingUtilities.invokeLater(() -> {
             if (!(layoutEditable instanceof Component comp)) {
                 return;
@@ -184,7 +199,7 @@ public class TieLayoutMenu extends JMenu {
                 return;
             }
 
-            TieLayoutMenu.synchronize(layoutEditable, session, ownerName, false);
+            TieLayoutMenu.synchronize(layoutEditable, session, ownerName, reset);
             root.putClientProperty(TieLayoutMenu.TIE_APPLIED, Boolean.TRUE);
         });
     }
