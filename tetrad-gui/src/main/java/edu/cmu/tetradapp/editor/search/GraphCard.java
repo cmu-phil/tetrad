@@ -33,6 +33,7 @@ import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.GraphUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
+import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.LayoutMenu;
@@ -67,6 +68,11 @@ public class GraphCard extends JPanel {
      * The workbench.
      */
     private GraphWorkbench workbench;
+
+    /**
+     * The workbenches of the results, in order, when there are several; the menu bar acts on the one in view.
+     */
+    private final java.util.List<GraphWorkbench> workbenches = new java.util.ArrayList<>();
 
     /**
      * The index of the result whose panel is being built; its data set is the one its plot matrix opens on.
@@ -134,6 +140,8 @@ public class GraphCard extends JPanel {
         java.util.List<Graph> graphs = this.algorithmRunner.getGraphs();
         java.util.List<String> names = this.algorithmRunner.getResultNames();
 
+        this.workbenches.clear();
+
         if (graphs != null && graphs.size() > 1) {
             // Multi-graph UI
             JTabbedPane tabs = new JTabbedPane(SwingConstants.LEFT);
@@ -147,6 +155,8 @@ public class GraphCard extends JPanel {
                 // Reuse your existing single-graph panel builder
                 this.resultIndex = i;
                 JPanel graphPanel = new PaddingPanel(createGraphPanel(g));
+                GraphWorkbench resultWorkbench = this.workbench;
+                this.workbenches.add(resultWorkbench);
 
                 Graph graph = this.algorithmRunner.getGraphs().get(i);
 
@@ -163,7 +173,7 @@ public class GraphCard extends JPanel {
                 inner.addTab("Text", textScroll);
                 inner.addChangeListener(ev -> {
                     if (inner.getSelectedComponent() == edgePanel) {
-                        Graph wbGraph = this.workbench.getGraph();
+                        Graph wbGraph = resultWorkbench.getGraph();
                         if (edgePanel.getGraph() != wbGraph) edgePanel.update(wbGraph);
                     }
                 });
@@ -184,6 +194,24 @@ public class GraphCard extends JPanel {
             tabs.setSelectedIndex(this.algorithmRunner.getSelectedResultIndex());
             downstream.setText(downstreamNote(tabs.getTitleAt(tabs.getSelectedIndex()), false));
 
+            // The menu bar acts on the result in view, not on the last one built, so it is rebuilt for the
+            // workbench of the tab selected. The results keep the same layout: a layout applied to the one in
+            // view is given to the others.
+            AbstractWorkbench.shareLayout(this.workbenches);
+            this.workbench = this.workbenches.get(tabs.getSelectedIndex());
+            JMenuBar[] menuBar = {menuBar()};
+
+            tabs.addChangeListener(ev -> {
+                int index = tabs.getSelectedIndex();
+                if (index < 0 || this.workbenches.get(index) == this.workbench) return;
+                this.workbench = this.workbenches.get(index);
+                remove(menuBar[0]);
+                menuBar[0] = menuBar();
+                add(menuBar[0], BorderLayout.NORTH);
+                revalidate();
+                repaint();
+            });
+
             tabs.addChangeListener(ev -> {
                 int index = tabs.getSelectedIndex();
                 if (index < 0 || index == this.algorithmRunner.getSelectedResultIndex()) return;
@@ -192,7 +220,7 @@ public class GraphCard extends JPanel {
                 firePropertyChange("modelChanged", null, null);
             });
 
-            add(menuBar(), BorderLayout.NORTH);
+            add(menuBar[0], BorderLayout.NORTH);
             add(tabs, BorderLayout.CENTER);
             add(downstream, BorderLayout.SOUTH);
         } else {

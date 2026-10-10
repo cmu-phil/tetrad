@@ -2394,6 +2394,14 @@ public class LayoutUtil {
      * Lays out a graph by linearly summing repulsive force between all nodes
      * and attractive force between adjacent nodes.  Includes a linear cooling
      * schedule and early termination when the layout stabilizes.
+     * <p>
+     * Two departures from the textbook forces keep edge lengths even. Each
+     * node repels in proportion to the square root of its degree plus one, so
+     * a leaf is pushed less than a hub; and each edge's pull is divided by the
+     * square root of the smaller degree of its two endpoints, so edges inside
+     * densely connected regions relax while an edge to a leaf keeps its full
+     * strength. A final pass separates any node boxes that still overlap, and
+     * components are packed in rows under the largest one.
      *
      * @author josephramsey
      */
@@ -2448,6 +2456,32 @@ public class LayoutUtil {
          */
         private double leftmostX = -50.;
 
+        /**
+         * Gap in pixels kept between node boxes by the overlap pass.
+         */
+        private static final double BOX_GAP = 12.0;
+
+        /**
+         * Gap in pixels between components, across and down.
+         */
+        private static final double COMPONENT_GAP = 100.0;
+
+        /**
+         * Top of the current row of components.
+         */
+        private double rowTop = 40.;
+
+        /**
+         * Bottom of the current row of components.
+         */
+        private double rowBottom = 40.;
+
+        /**
+         * The x position past which a component wraps to a new row; negative
+         * until the first (largest) component has been placed.
+         */
+        private double rowLimit = -1.;
+
         //==============================CONSTRUCTORS===========================//
 
         /**
@@ -2480,8 +2514,12 @@ public class LayoutUtil {
                 return Integer.compare(i2, i1);
             });
 
+            this.leftmostX = -50.;
+            this.rowTop = 40.;
+            this.rowBottom = 40.;
+            this.rowLimit = -1.;
+
             for (List<Node> component1 : components) {
-                components.sort(NaturalSort.naturalComparator());
                 layoutComponent(component1);
             }
         }
@@ -2513,6 +2551,36 @@ public class LayoutUtil {
                 this.edges()[i][1] = u;
             }
 
+            // Degrees within the component, with parallel edges collapsed.
+            int[] degree = new int[numNodes];
+
+            for (int[] edge : this.edges()) {
+                degree[edge[0]]++;
+                degree[edge[1]]++;
+            }
+
+            // Repulsive charge sqrt(degree + 1), scaled to average one.
+            double[] charge = new double[numNodes];
+            double meanCharge = 0.0;
+
+            for (int v = 0; v < numNodes; v++) {
+                charge[v] = TMath.sqrt(degree[v] + 1.0);
+                meanCharge += charge[v] / numNodes;
+            }
+
+            for (int v = 0; v < numNodes; v++) {
+                charge[v] /= meanCharge;
+            }
+
+            // An edge's pull is divided by sqrt of its smaller end degree.
+            double[] edgeSlack = new double[edgeList.size()];
+
+            for (int j = 0; j < edgeList.size(); j++) {
+                edgeSlack[j] = TMath.sqrt(Math.min(
+                        degree[this.edges()[j][0]],
+                        degree[this.edges()[j][1]]));
+            }
+
             double avgDegree = 2 * this.graph.getNumEdges()
                     / (double) this.graph.getNumNodes();
 
@@ -2534,11 +2602,20 @@ public class LayoutUtil {
 
                         double norm = norm(deltaX, deltaY);
 
-                        if (norm == 0.0) {
-                            norm = 0.1;
+                        if (u == v) {
+                            continue;
                         }
 
-                        double repulsiveForce = fr(norm);
+                        if (norm == 0.0) {
+
+                            // Coincident nodes: separate them in a fixed
+                            // direction, opposite for the two nodes.
+                            norm = 0.1;
+                            deltaX = u > v ? 0.1 : -0.1;
+                        }
+
+                        double repulsiveForce =
+                                fr(norm) * charge[u] * charge[v];
 
                         nodeDisposition()[v][0] +=
                                 (deltaX / norm) * repulsiveForce;
@@ -2563,7 +2640,7 @@ public class LayoutUtil {
                         norm = 0.1;
                     }
 
-                    double attractiveForce = fa(norm);
+                    double attractiveForce = fa(norm) / edgeSlack[j];
                     double attractX = (deltaX / norm) * attractiveForce;
                     double attractY = (deltaY / norm) * attractiveForce;
 
@@ -2619,26 +2696,91 @@ public class LayoutUtil {
                 }
             }
 
+            removeOverlaps(nodes);
             shiftComponentToRight(nodes);
+        }
+
+        /**
+         * Pushes apart any two nodes whose estimated boxes, padded by
+         * BOX_GAP, overlap, along whichever axis needs the smaller move.
+         */
+        private void removeOverlaps(List<Node> componentNodes) {
+            NodeSize size = estimatedNodeSize();
+            int numNodes = componentNodes.size();
+
+            for (int pass = 0; pass < 200; pass++) {
+                boolean moved = false;
+
+                for (int i = 0; i < numNodes; i++) {
+                    for (int j = i + 1; j < numNodes; j++) {
+                        double w = (size.width(componentNodes.get(i))
+                                + size.width(componentNodes.get(j))) / 2.
+                                + BOX_GAP;
+                        double h = (size.height(componentNodes.get(i))
+                                + size.height(componentNodes.get(j))) / 2.
+                                + BOX_GAP;
+                        double deltaX =
+                                nodePosition()[j][0] - nodePosition()[i][0];
+                        double deltaY =
+                                nodePosition()[j][1] - nodePosition()[i][1];
+                        double overlapX = w - Math.abs(deltaX);
+                        double overlapY = h - Math.abs(deltaY);
+
+                        if (overlapX <= 0.0 || overlapY <= 0.0) {
+                            continue;
+                        }
+
+                        moved = true;
+
+                        if (overlapX / w < overlapY / h) {
+                            double shift = (deltaX >= 0 ? 1 : -1)
+                                    * overlapX / 2.;
+                            nodePosition()[i][0] -= shift;
+                            nodePosition()[j][0] += shift;
+                        } else {
+                            double shift = (deltaY >= 0 ? 1 : -1)
+                                    * overlapY / 2.;
+                            nodePosition()[i][1] -= shift;
+                            nodePosition()[j][1] += shift;
+                        }
+                    }
+                }
+
+                if (!moved) {
+                    break;
+                }
+            }
         }
 
         private void shiftComponentToRight(List<Node> componentNodes) {
             double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+            double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
 
             for (int i = 0; i < componentNodes.size(); i++) {
-                if (nodePosition()[i][0] < minX) {
-                    minX = nodePosition()[i][0];
-                }
-                if (nodePosition()[i][1] < minY) {
-                    minY = nodePosition()[i][1];
-                }
+                minX = Math.min(minX, nodePosition()[i][0]);
+                minY = Math.min(minY, nodePosition()[i][1]);
+                maxX = Math.max(maxX, nodePosition()[i][0]);
+                maxY = Math.max(maxY, nodePosition()[i][1]);
             }
 
-            this.leftmostX = leftmostX() + 100.;
+            this.leftmostX = leftmostX() + COMPONENT_GAP;
+
+            // Components come largest first; the first sets the row width,
+            // and later ones wrap to a new row rather than run past it.
+            if (this.rowLimit < 0.) {
+                this.rowLimit = Math.max(leftmostX() + (maxX - minX), 800.);
+            } else if (leftmostX() > 50.
+                    && leftmostX() + (maxX - minX) > this.rowLimit) {
+                this.leftmostX = 50.;
+                this.rowTop = this.rowBottom + COMPONENT_GAP;
+            }
+
+            this.rowBottom = Math.max(this.rowBottom,
+                    this.rowTop + (maxY - minY));
 
             for (int i = 0; i < componentNodes.size(); i++) {
                 nodePosition()[i][0] += leftmostX() - minX;
-                nodePosition()[i][1] += 40.0 - minY;
+                nodePosition()[i][1] += this.rowTop - minY;
             }
 
             for (int i = 0; i < componentNodes.size(); i++) {

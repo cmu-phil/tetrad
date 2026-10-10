@@ -125,6 +125,16 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private transient Map<String, Point> layoutBeforeDrag;
     /**
+     * The workbenches, this one included, that keep the same layout (see {@link #shareLayout(List)}), or null if
+     * this workbench is laid out on its own.
+     */
+    private transient List<AbstractWorkbench> layoutGroup;
+    /**
+     * True while this workbench is taking the layout of another workbench of its group, so that it does not hand
+     * the layout on in turn.
+     */
+    private transient boolean followingLayout;
+    /**
      * The workbench which this workbench displays.
      */
     private Graph graph;
@@ -552,15 +562,56 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Makes the given layout, which was the layout before some change, available to {@link #undoLayout()}, if the
      * layout is now different from it. A new change discards the layouts available to {@link #redoLayout()}.
      */
-    private void recordLayoutChange(Map<String, Point> before) {
+    private boolean recordLayoutChange(Map<String, Point> before) {
         if (before == null || before.equals(layoutSnapshot())) {
-            return;
+            return false;
         }
 
         if (this.layoutUndoStack == null) this.layoutUndoStack = new LinkedList<>();
         this.layoutUndoStack.addLast(before);
         if (this.layoutUndoStack.size() > MAX_LAYOUT_HISTORY) this.layoutUndoStack.removeFirst();
         if (this.layoutRedoStack != null) this.layoutRedoStack.clear();
+        return true;
+    }
+
+    /**
+     * Makes the given workbenches keep the same layout from now on: when the nodes of one of them are laid out,
+     * dragged, or put back by a layout undo or redo, the nodes of the others with the same names take the same
+     * positions. This is for an editor that shows several graphs over the same variables side by side, such as
+     * the results of one search, so that a layout chosen for the graph in view applies to all of them. The graphs
+     * are not made alike at this point, only at the next change.
+     *
+     * @param workbenches the workbenches; a list of fewer than two does nothing.
+     */
+    public static void shareLayout(List<? extends AbstractWorkbench> workbenches) {
+        List<AbstractWorkbench> group = workbenches.size() < 2 ? null : new ArrayList<>(workbenches);
+
+        for (AbstractWorkbench workbench : workbenches) {
+            workbench.layoutGroup = group;
+        }
+    }
+
+    /**
+     * Gives the layout of this workbench to the other workbenches of its group, if it has one.
+     */
+    private void layoutFollowers() {
+        if (this.layoutGroup == null || this.followingLayout || this.graph == null) {
+            return;
+        }
+
+        for (AbstractWorkbench other : this.layoutGroup) {
+            if (other == this || other.graph == null) {
+                continue;
+            }
+
+            other.followingLayout = true;
+
+            try {
+                other.layoutByGraph(this.graph);
+            } finally {
+                other.followingLayout = false;
+            }
+        }
     }
 
     /**
@@ -601,6 +652,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         if (this.layoutRedoStack == null) this.layoutRedoStack = new LinkedList<>();
         this.layoutRedoStack.addLast(layoutSnapshot());
         restoreLayout(this.layoutUndoStack.removeLast());
+        layoutFollowers();
         return true;
     }
 
@@ -617,6 +669,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         if (this.layoutUndoStack == null) this.layoutUndoStack = new LinkedList<>();
         this.layoutUndoStack.addLast(layoutSnapshot());
         restoreLayout(this.layoutRedoStack.removeLast());
+        layoutFollowers();
         return true;
     }
 
@@ -1218,6 +1271,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         separateNodes();
         fitCanvasToNodes();
         recordLayoutChange(before);
+        layoutFollowers();
 
         // setGraphWithoutNotify(graph);
     }
@@ -2812,7 +2866,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                     // After the snapping above, so that undoing a drag puts the nodes back where they were
                     // before it; a click that moved nothing records nothing.
-                    recordLayoutChange(this.layoutBeforeDrag);
+                    if (recordLayoutChange(this.layoutBeforeDrag)) {
+                        layoutFollowers();
+                    }
+
                     this.layoutBeforeDrag = null;
                 }
                 break;

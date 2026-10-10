@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.util.ArrowKeyNavigation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.workbench.AbstractWorkbench;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -47,6 +48,11 @@ public final class SimulationGraphEditor extends JPanel {
      * The data wrapper being displayed.
      */
     private List<Graph> graphs;
+
+    /**
+     * The workbenches of the graphs displayed, in order.
+     */
+    private final List<GraphWorkbench> workbenches = new java.util.ArrayList<>();
 
     /**
      * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
@@ -87,6 +93,7 @@ public final class SimulationGraphEditor extends JPanel {
 
         // now rebuild
         removeAll();
+        this.workbenches.clear();
 
         if (graphs.isEmpty()) {
 
@@ -96,6 +103,7 @@ public final class SimulationGraphEditor extends JPanel {
                 this.tabbedPane.addTab(SimulationGraphEditor.tabName(i + 1), graphDisplay(graphs.get(i)));
             }
 
+            AbstractWorkbench.shareLayout(this.workbenches);
             add(this.tabbedPane, BorderLayout.CENTER);
         } else {
             this.tabbedPane.addTab(SimulationGraphEditor.tabName(1), graphDisplay(graphs.get(0)));
@@ -121,10 +129,15 @@ public final class SimulationGraphEditor extends JPanel {
 
         final int selectedIndex = -1;
 
+        this.workbenches.clear();
+
         for (int i = 0; i < this.graphs.size(); i++) {
             Graph graph = this.graphs.get(i);
             tabbedPane().addTab(SimulationGraphEditor.tabName(i + 1), graphDisplay(graph));
         }
+
+        // The graphs keep the same layout: a layout applied to the one in view is given to the others.
+        AbstractWorkbench.shareLayout(this.workbenches);
 
         tabbedPane().setSelectedIndex(selectedIndex);
 
@@ -173,6 +186,7 @@ public final class SimulationGraphEditor extends JPanel {
         graphEditor.setEnableEditing(false);
 
         GraphWorkbench workbench = graphEditor.getWorkbench();
+        this.workbenches.add(workbench);
 
         JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
         tabbedPane.addTab("Graph", new JScrollPane(workbench));
