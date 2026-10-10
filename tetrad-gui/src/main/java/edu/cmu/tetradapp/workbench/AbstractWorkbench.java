@@ -1174,6 +1174,94 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * The apexes of the curved edges, as last chosen together by {@link #routedApex(DisplayEdge)}; null until first
+     * needed.
+     */
+    private transient Map<DisplayEdge, Double> routedApexes;
+
+    /**
+     * A digest of the node bounds and edges that {@link #routedApexes} was chosen for.
+     */
+    private transient long routingSignature;
+
+    /**
+     * The apex chosen for the given edge when the sides of all the curved edges of this workbench are chosen
+     * together to cross as little as possible (see {@link BezierRouter}). The choice is kept until a node moves or
+     * changes size, or an edge is added, removed, or given a different offset; this is checked on each call rather
+     * than tracked by events, so that no change can be missed. When the choice is made anew the whole workbench is
+     * repainted, since edges other than the one that changed may have changed sides.
+     *
+     * @param edge an edge of this workbench.
+     * @return its signed apex, or null if the edge is not one of the edges routed (it is not anchored at both ends).
+     */
+    Double routedApex(DisplayEdge edge) {
+        Component[] components = getComponents();
+        long signature = 17;
+
+        for (Component component : components) {
+            if (component instanceof DisplayNode) {
+                Rectangle b = component.getBounds();
+                signature = 31 * signature + b.x;
+                signature = 31 * signature + b.y;
+                signature = 31 * signature + b.width;
+                signature = 31 * signature + b.height;
+            } else if (component instanceof DisplayEdge e && AbstractWorkbench.isRouted(e)) {
+                signature = 31 * signature + System.identityHashCode(e);
+                signature = 31 * signature + System.identityHashCode(e.getNode1());
+                signature = 31 * signature + System.identityHashCode(e.getNode2());
+                signature = 31 * signature + Double.hashCode(e.getOffset());
+            }
+        }
+
+        if (this.routedApexes == null || signature != this.routingSignature) {
+            List<Rectangle> nodes = new ArrayList<>();
+            Map<Component, Integer> indices = new IdentityHashMap<>();
+            List<DisplayEdge> routed = new ArrayList<>();
+
+            for (Component component : components) {
+                if (component instanceof DisplayNode) {
+                    indices.put(component, nodes.size());
+                    nodes.add(component.getBounds());
+                } else if (component instanceof DisplayEdge e && AbstractWorkbench.isRouted(e)) {
+                    routed.add(e);
+                }
+            }
+
+            // An edge to a node that is not a component of this workbench is left to choose its own side.
+            routed.removeIf(e -> !indices.containsKey(e.getNode1()) || !indices.containsKey(e.getNode2()));
+
+            int[][] edges = new int[routed.size()][];
+            double[] offsets = new double[routed.size()];
+
+            for (int i = 0; i < routed.size(); i++) {
+                edges[i] = new int[]{indices.get(routed.get(i).getNode1()), indices.get(routed.get(i).getNode2())};
+                offsets[i] = routed.get(i).getOffset();
+            }
+
+            double[] apexes = BezierRouter.route(nodes.toArray(new Rectangle[0]), edges, offsets);
+            Map<DisplayEdge, Double> byEdge = new IdentityHashMap<>();
+
+            for (int i = 0; i < routed.size(); i++) {
+                byEdge.put(routed.get(i), apexes[i]);
+            }
+
+            boolean first = this.routedApexes == null;
+            this.routedApexes = byEdge;
+            this.routingSignature = signature;
+
+            if (!first) {
+                repaint();
+            }
+        }
+
+        return this.routedApexes.get(edge);
+    }
+
+    private static boolean isRouted(DisplayEdge edge) {
+        return edge.getMode() != DisplayEdge.HALF_ANCHORED && edge.getNode1() != null && edge.getNode2() != null;
+    }
+
+    /**
      * Scrolls the workbench image so that the given node is in view, then selects that node.
      *
      * @param modelNode the model node to show.

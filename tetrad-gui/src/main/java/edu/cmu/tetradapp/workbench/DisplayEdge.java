@@ -460,6 +460,17 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * the side of the chord: positive bows toward the unit normal (nx, ny).
      */
     private double chooseApex(Point2D.Double c1, double ux, double uy, double nx, double ny, double len) {
+        // In a workbench the sides of all the curves are chosen together, so that they cross as little as
+        // possible; see BezierRouter. What follows is the choice this edge makes on its own, for an edge that is
+        // not in a workbench.
+        if (getParent() instanceof AbstractWorkbench workbench) {
+            Double routed = workbench.routedApex(this);
+
+            if (routed != null) {
+                return routed;
+            }
+        }
+
         double base = Math.min(16.0, Math.max(5.0, 0.06 * len));
         double maxApex = Math.min(DisplayEdge.BEZIER_MAX_APEX, 0.35 * len);
 
