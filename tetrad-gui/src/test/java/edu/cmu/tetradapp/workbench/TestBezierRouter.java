@@ -86,6 +86,37 @@ public class TestBezierRouter {
         assertTrue(routedTotal < soloTotal);
     }
 
+    /**
+     * An edge whose chord runs cleanly through a gap between two nodes keeps a gentle bow and stays clear of both.
+     * It used to count as blocked on both sides, since each side had to go around the outside of the node on it,
+     * and was bowed as far as allowed, which put it behind one of the two nodes.
+     */
+    @Test
+    public void testEdgeThroughGapKeepsGentleBow() {
+        Rectangle[] nodes = {box(0, 0), box(0, 300), box(-70, 150), box(70, 150)};
+
+        double solo = BezierRouter.soloApex(nodes, 0, 1, 0.0);
+        double routed = BezierRouter.route(nodes, new int[][]{{0, 1}}, new double[1])[0];
+
+        // The gap is 40 pixels on either side of the chord, so a bow under 30 leaves the node margin free.
+        assertTrue(Math.abs(solo) < 30.0);
+        assertTrue(Math.abs(routed) < 30.0);
+    }
+
+    /**
+     * A node sitting on the chord is still gone around: the bow is large enough to clear it.
+     */
+    @Test
+    public void testNodeOnChordIsCleared() {
+        Rectangle[] nodes = {box(0, 0), box(0, 300), box(0, 150)};
+
+        double solo = BezierRouter.soloApex(nodes, 0, 1, 0.0);
+
+        // The node is 60 wide, so the curve must pass more than 30 pixels from the chord at its middle.
+        assertTrue(Math.abs(solo) > 30.0);
+        assertTrue(Math.abs(solo) <= BezierRouter.MAX_APEX);
+    }
+
     private static Rectangle box(int centerX, int centerY) {
         return new Rectangle(centerX - 30, centerY - 15, 60, 30);
     }

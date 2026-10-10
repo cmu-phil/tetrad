@@ -22,6 +22,9 @@ package edu.cmu.tetradapp.workbench;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Chooses, for all the curved edges of a workbench together, the side to which each one bows, so that the curves
@@ -50,7 +53,7 @@ public final class BezierRouter {
     public static final double MAX_APEX = 70.0;
 
     /**
-     * Clearance, in pixels, that a curve tries to keep from the boundary of a node it bends around.
+     * Clearance, in pixels, that a curve tries to keep from the rectangle of a node it passes.
      */
     public static final double NODE_MARGIN = 10.0;
 
@@ -76,6 +79,22 @@ public final class BezierRouter {
      * for.
      */
     private static final double BLOCKED_COST = 1.0e9;
+
+    /**
+     * What it costs for a curve to clear the nodes on the side taken by less than NODE_MARGIN: less than a
+     * crossing, so that of two sides with the same crossings the roomier one is taken.
+     */
+    private static final double TIGHT_COST = 200.0;
+
+    /**
+     * The number of straight pieces a curve is cut into for testing it against the node rectangles.
+     */
+    private static final int CLEAR_PIECES = 16;
+
+    /**
+     * The step, in pixels, between the bows tried on a side.
+     */
+    private static final double APEX_STEP = 2.0;
 
     private BezierRouter() {
     }
@@ -179,28 +198,36 @@ public final class BezierRouter {
 
     /**
      * @return for the edge between the given nodes: the apex for the plus side, the apex for the minus side, and
-     * the cost of each of those sides on its own (the size of the bow, plus BLOCKED_COST if the bow allowed cannot
-     * clear a node on that side); or null if the two nodes have the same center. With a nonzero offset the side
-     * the offset does not point to gets an infinite cost.
+     * the cost of each of those sides on its own; or null if the two nodes have the same center. With a nonzero
+     * offset the side the offset does not point to gets an infinite cost.
+     * <p>
+     * On each side the bow taken is the one nearest the gentle base bow whose curve stays clear of every other
+     * node, tested against the node rectangles themselves: larger bows are tried first, up to the largest allowed,
+     * and then smaller ones, down to a straight line. A curve may therefore pass between its chord and a node
+     * beside it. (Previously each side had to go around the outside of every node within reach of it, each taken
+     * as a circle, so that an edge whose chord ran cleanly through a gap between two nodes counted as blocked on
+     * both sides and was bowed as far as allowed, often behind some other node; on Richard's Layout of random
+     * graphs the curves ran behind nodes more often than straight edges did.) The cost of a side is the size of
+     * its bow, plus TIGHT_COST if the curve clears the nodes but not by NODE_MARGIN, or plus BLOCKED_COST if no bow
+     * allowed on that side clears them, in which case the bow overlapping the nodes least is taken.
      */
     private static double[] sideApexes(Rectangle[] nodes, int from, int to, double offset) {
         double x1 = nodes[from].getCenterX(), y1 = nodes[from].getCenterY();
-        double dx = nodes[to].getCenterX() - x1, dy = nodes[to].getCenterY() - y1;
-        double len = Math.hypot(dx, dy);
+        double x2 = nodes[to].getCenterX(), y2 = nodes[to].getCenterY();
+        double len = Math.hypot(x2 - x1, y2 - y1);
 
         if (len < 1e-6) {
             return null;
         }
 
-        double ux = dx / len, uy = dy / len;
-        double nx = -uy, ny = ux;
-
         double base = Math.min(16.0, Math.max(5.0, 0.06 * len));
         double maxApex = Math.min(MAX_APEX, 0.35 * len);
 
-        // Deflection needed on each side to clear the nodes sitting in the chord's corridor.
-        double needPlus = 0.0;
-        double needMinus = 0.0;
+        // Only the nodes within reach of some curve allowed can matter.
+        double reach = maxApex + NODE_MARGIN;
+        double minX = Math.min(x1, x2) - reach, maxX = Math.max(x1, x2) + reach;
+        double minY = Math.min(y1, y2) - reach, maxY = Math.max(y1, y2) + reach;
+        List<Rectangle> near = new ArrayList<>();
 
         for (int k = 0; k < nodes.length; k++) {
             if (k == from || k == to) {
@@ -208,44 +235,112 @@ public final class BezierRouter {
             }
 
             Rectangle b = nodes[k];
-            double px = b.getCenterX() - x1, py = b.getCenterY() - y1;
-            double u = (px * ux + py * uy) / len;
 
-            if (u < 0.08 || u > 0.92) {
-                continue;
+            if (b.x <= maxX && b.x + b.width >= minX && b.y <= maxY && b.y + b.height >= minY) {
+                near.add(b);
             }
-
-            double d = px * nx + py * ny;
-            double r = Math.max(b.width, b.height) / 2.0 + NODE_MARGIN;
-
-            if (Math.abs(d) > r + maxApex) {
-                continue;
-            }
-
-            // A curve with apex a passes 4u(1 - u)a from the chord near chord fraction u.
-            double w = 4.0 * u * (1.0 - u);
-
-            if (d + r > 0.0) needPlus = Math.max(needPlus, (d + r) / w);
-            if (r - d > 0.0) needMinus = Math.max(needMinus, (r - d) / w);
         }
 
         if (offset != 0.0) {
             // One of several edges between the same pair: bow to the offset's side, at least far enough to
             // separate them.
             boolean plus = offset > 0.0;
-            double a = Math.min(maxApex, Math.max(base, Math.max(Math.abs(offset), plus ? needPlus : needMinus)));
-            return new double[]{a, -a, plus ? 0.0 : Double.POSITIVE_INFINITY,
+            double[] side = sideApex(x1, y1, x2, y2, plus ? 1.0 : -1.0, Math.min(maxApex, Math.max(base,
+                    Math.abs(offset))), maxApex, false, near);
+            return new double[]{side[0], -side[0], plus ? 0.0 : Double.POSITIVE_INFINITY,
                     plus ? Double.POSITIVE_INFINITY : 0.0};
         }
 
-        double plusApex = Math.min(maxApex, Math.max(base, needPlus));
-        double minusApex = Math.min(maxApex, Math.max(base, needMinus));
+        double[] plusSide = sideApex(x1, y1, x2, y2, 1.0, base, maxApex, true, near);
+        double[] minusSide = sideApex(x1, y1, x2, y2, -1.0, base, maxApex, true, near);
 
-        // Costed by the bow needed rather than the bow allowed, so that of two sides that both need more than is
-        // allowed the one needing less is taken, as an edge on its own does.
-        return new double[]{plusApex, -minusApex,
-                needPlus + (needPlus > maxApex ? BLOCKED_COST : 0.0),
-                needMinus + (needMinus > maxApex ? BLOCKED_COST : 0.0)};
+        return new double[]{plusSide[0], -minusSide[0], plusSide[1], minusSide[1]};
+    }
+
+    /**
+     * @param sign    1 for the plus side, -1 for the minus side.
+     * @param start   the bow to try first.
+     * @param smaller whether bows smaller than the starting one may be taken.
+     * @return the size of the bow for the given side of the chord from (x1, y1) to (x2, y2), and its cost; see
+     * sideApexes.
+     */
+    private static double[] sideApex(double x1, double y1, double x2, double y2, double sign, double start,
+                                     double maxApex, boolean smaller, List<Rectangle> near) {
+        if (near.isEmpty()) {
+            return new double[]{start, start};
+        }
+
+        for (double margin : new double[]{NODE_MARGIN, 0.0}) {
+            double tight = margin == 0.0 ? TIGHT_COST : 0.0;
+
+            for (double a = start; a < maxApex; a += APEX_STEP) {
+                if (overlap(x1, y1, x2, y2, sign * a, margin, near, true) == 0) return new double[]{a, a + tight};
+            }
+
+            if (overlap(x1, y1, x2, y2, sign * maxApex, margin, near, true) == 0) {
+                return new double[]{maxApex, maxApex + tight};
+            }
+
+            if (smaller) {
+                for (double a = start - APEX_STEP; a > -APEX_STEP; a -= APEX_STEP) {
+                    double _a = Math.max(0.0, a);
+                    if (overlap(x1, y1, x2, y2, sign * _a, margin, near, true) == 0) return new double[]{_a, _a + tight};
+                }
+            }
+        }
+
+        // No bow allowed on this side clears the nodes: take the one that overlaps them least, and of those the
+        // one nearest the starting bow.
+        double best = start;
+        int bestOverlap = Integer.MAX_VALUE;
+
+        for (double a = smaller ? 0.0 : start; a <= maxApex; a += APEX_STEP) {
+            int overlap = overlap(x1, y1, x2, y2, sign * a, 0.0, near, false);
+
+            if (overlap < bestOverlap || (overlap == bestOverlap && Math.abs(a - start) < Math.abs(best - start))) {
+                bestOverlap = overlap;
+                best = a;
+            }
+        }
+
+        return new double[]{best, BLOCKED_COST + 10.0 * bestOverlap + best};
+    }
+
+    /**
+     * @param firstOnly whether to stop at the first piece found to overlap a node.
+     * @return the number of the CLEAR_PIECES straight pieces of the curve with the given apex, from (x1, y1) to
+     * (x2, y2), that touch one of the given node rectangles grown by the given margin.
+     */
+    private static int overlap(double x1, double y1, double x2, double y2, double apex, double margin,
+                               List<Rectangle> near, boolean firstOnly) {
+        double len = Math.hypot(x2 - x1, y2 - y1);
+
+        // The control point is displaced twice the apex from the chord's midpoint.
+        double cx = (x1 + x2) / 2.0 - (y2 - y1) / len * 2.0 * apex;
+        double cy = (y1 + y2) / 2.0 + (x2 - x1) / len * 2.0 * apex;
+
+        int count = 0;
+        double px = x1, py = y1;
+
+        for (int i = 1; i <= CLEAR_PIECES; i++) {
+            double t = i / (double) CLEAR_PIECES, s = 1.0 - t;
+            double x = s * s * x1 + 2.0 * s * t * cx + t * t * x2;
+            double y = s * s * y1 + 2.0 * s * t * cy + t * t * y2;
+
+            for (Rectangle b : near) {
+                if (new Rectangle2D.Double(b.x - margin, b.y - margin, b.width + 2.0 * margin,
+                        b.height + 2.0 * margin).intersectsLine(px, py, x, y)) {
+                    count++;
+                    if (firstOnly) return count;
+                    break;
+                }
+            }
+
+            px = x;
+            py = y;
+        }
+
+        return count;
     }
 
     /**
