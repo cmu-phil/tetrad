@@ -291,6 +291,23 @@ public final class WorkbenchStyle {
     }
 
     /**
+     * The opacity of a node's fill, from 0 (fully transparent) to 1 (fully opaque). Below 1, an edge that passes
+     * behind a node shows through it faintly, so that it can be told apart from two edges that end at the node.
+     * Only the fill is affected; the border and the name are drawn fully opaque.
+     */
+    public static final float NODE_FILL_ALPHA = 0.8f;
+
+    /**
+     * The given fill color at the node fill opacity.
+     *
+     * @param fill the fill color.
+     * @return the same color with alpha {@link #NODE_FILL_ALPHA}.
+     */
+    public static Color translucentFill(Color fill) {
+        return new Color(fill.getRed(), fill.getGreen(), fill.getBlue(), Math.round(255 * NODE_FILL_ALPHA));
+    }
+
+    /**
      * Fill of a measured-variable node: in light mode, Tetrad's classic node blue 94C6E2; in dark mode, the plain
      * card fill, where the border and shape carry the node.
      *

@@ -113,7 +113,7 @@ public class DisplayNodeUtils {
     static void paintNode(Graphics2D g2, Shape shape, String name, Dimension size, Color fill, boolean selected) {
         if (name == null) name = "";
 
-        g2.setColor(selected ? WorkbenchStyle.selectedFill(fill) : fill);
+        g2.setColor(WorkbenchStyle.translucentFill(selected ? WorkbenchStyle.selectedFill(fill) : fill));
         g2.fill(shape);
 
         g2.setStroke(new BasicStroke(selected ? 2f : 1f));
