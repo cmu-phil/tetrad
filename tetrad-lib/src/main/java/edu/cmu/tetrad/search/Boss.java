@@ -72,6 +72,12 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * However, knowledge of required and forbidden edges is correctly implemented
  * for arbitrary such knowledge.
  * <p>
+ * BOSS can be run in oracle mode by giving it a GraphScore, which answers m-separation queries on a graph (or
+ * looks them up in a list of independence facts) instead of scoring data. In oracle mode a permutation is scored by
+ * minus the number of edges in the DAG built from it by grow-shrink, so the search is for a sparsest permutation;
+ * see GrowShrinkTree. With a d-separation oracle for a DAG and no knowledge, the BES step guarantees that the
+ * CPDAG of that DAG is returned. Without the BES step the search can stop at a permutation with extra edges.
+ * <p>
  * A parameter is included to restart the search a certain number of times.
  * The idea is that the goal is to optimize a BIC score, so if several runs
  * are done of the algorithm for the same data, the model with the highest
@@ -661,6 +667,11 @@ public class Boss implements SuborderSearch {
     private void bes(List<Node> prefix, List<Node> suborder) throws InterruptedException {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
+
+        // Bring this.parents up to date with the current suborder, so that BES starts from the graph the
+        // permutation search arrived at. (Previously the parents were refreshed before this point only in verbose
+        // mode, so otherwise BES was run on a stale graph, on the first start the empty graph.)
+        update(prefix, suborder);
 
         Graph graph = PermutationSearch.getGraph(all, this.parents, this.knowledge, true);
         this.bes.bes(graph, all, suborder);
