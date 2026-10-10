@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
@@ -156,8 +157,8 @@ public class Rlcd {
      * at random and the imputation model is right, but stage 1 scores it at the full sample size, which overstates
      * the information in it by the fraction that was imputed.
      *
-     * @param imputations the imputed data sets: continuous, with the same variables in the same order and the same
-     *                    number of rows.
+     * @param imputations the imputed data sets: continuous, with the same variables and the same number of rows.
+     *                    One with the variables in a different order is put in the order of the first.
      */
     public Rlcd(List<DataSet> imputations) {
         if (imputations == null || imputations.isEmpty()) {
@@ -165,6 +166,8 @@ public class Rlcd {
         }
 
         DataSet first = imputations.getFirst();
+        if (first == null) throw new NullPointerException("Data set is null.");
+        imputations = DataTransforms.alignVariableOrder(imputations, first.getVariableNames());
 
         for (DataSet dataSet : imputations) {
             if (dataSet == null) throw new NullPointerException("Data set is null.");
@@ -173,7 +176,7 @@ public class Rlcd {
             if (!dataSet.getVariableNames().equals(first.getVariableNames())
                 || dataSet.getNumRows() != first.getNumRows()) {
                 throw new IllegalArgumentException("To be pooled as imputations, the data sets must have the same "
-                                                   + "variables, in the same order, and the same number of rows.");
+                                                   + "variables and the same number of rows.");
             }
         }
 

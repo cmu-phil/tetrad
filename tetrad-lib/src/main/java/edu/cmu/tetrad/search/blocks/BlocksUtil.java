@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Matrix;
@@ -51,7 +52,8 @@ public final class BlocksUtil {
      * The variables of the returned matrix are the first imputation's variable objects, so a {@link BlockSpec} built
      * over the first imputation and blocks discovered from the pooled matrix refer to the same nodes.
      *
-     * @param imputations the imputed data sets: the same variables, in the same order, with the same number of rows.
+     * @param imputations the imputed data sets: the same variables, with the same number of rows. One with the
+     *                    variables in a different order is put in the order of the first.
      * @return the averaged covariance matrix at the shared sample size.
      * @throws IllegalArgumentException if the list is empty, a member is not continuous tabular data, or the members
      *                                  differ in their variables or row counts.
@@ -64,6 +66,7 @@ public final class BlocksUtil {
         DataSet first = imputations.getFirst();
         List<String> names = first.getVariableNames();
         int n = first.getNumRows();
+        imputations = DataTransforms.alignVariableOrder(imputations, names);
 
         for (DataSet dataSet : imputations) {
             if (!dataSet.isContinuous()) {
@@ -71,8 +74,8 @@ public final class BlocksUtil {
                         + dataSet.getName() + "' is not continuous.");
             }
             if (!dataSet.getVariableNames().equals(names)) {
-                throw new IllegalArgumentException("Pooling imputations requires the same variables in the same "
-                        + "order in every data set; '" + dataSet.getName() + "' differs. Pooling is for several "
+                throw new IllegalArgumentException("Pooling imputations requires the same variables in every "
+                        + "data set; '" + dataSet.getName() + "' differs. Pooling is for several "
                         + "imputations of one data set, not for unrelated data sets.");
             }
             if (dataSet.getNumRows() != n) {
@@ -132,6 +135,9 @@ public final class BlocksUtil {
             throw new IllegalArgumentException("Estimating an effective sample size from imputation disagreement "
                     + "requires at least two imputations.");
         }
+
+        // The correlations are compared entry by entry, so the variables must be in one order.
+        imputations = DataTransforms.alignVariableOrder(imputations, imputations.getFirst().getVariableNames());
 
         int n = imputations.getFirst().getNumRows();
         int p = imputations.getFirst().getNumColumns();

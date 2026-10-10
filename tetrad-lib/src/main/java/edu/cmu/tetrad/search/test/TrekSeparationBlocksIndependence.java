@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -512,10 +513,11 @@ public class TrekSeparationBlocksIndependence implements IndependenceTest, Effec
             throw new IllegalArgumentException("At least one imputation is required.");
         }
         List<String> names = blockSpec.dataSet().getVariableNames();
+        imputations = DataTransforms.alignVariableOrder(imputations, names);
         for (DataSet d : imputations) {
             if (!d.getVariableNames().equals(names)) {
-                throw new IllegalArgumentException("Every imputation must have the block specification's variables, "
-                                                   + "in the same order.");
+                throw new IllegalArgumentException("Every imputation must have the block specification's "
+                                                   + "variables.");
             }
         }
         return imputations;

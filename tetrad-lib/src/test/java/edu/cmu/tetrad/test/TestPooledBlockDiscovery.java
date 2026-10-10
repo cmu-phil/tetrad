@@ -70,6 +70,36 @@ public class TestPooledBlockDiscovery {
     }
 
     /**
+     * An imputation with the same variables in a different column order is put in the order of the first, so pooling
+     * a data set with a column-shuffled copy of itself gives the single covariance, an effective sample size of n,
+     * and an RLCD search that accepts the pair.
+     */
+    @Test
+    public void testPooledReordersVariables() {
+        DataSet dataSet = simulateChainMim(500, 3, new Random(7), null);
+
+        List<Node> shuffledVars = new ArrayList<>(dataSet.getVariables());
+        java.util.Collections.shuffle(shuffledVars, new Random(3));
+        DataSet shuffled = dataSet.subsetColumns(shuffledVars);
+        assertTrue(!shuffled.getVariableNames().equals(dataSet.getVariableNames()));
+
+        CovarianceMatrix single = new CovarianceMatrix(dataSet);
+        CovarianceMatrix pooled = BlocksUtil.pooledCovariance(List.of(dataSet, shuffled));
+
+        assertEquals(dataSet.getVariableNames(), pooled.getVariableNames());
+
+        for (int i = 0; i < single.getDimension(); i++) {
+            for (int j = 0; j < single.getDimension(); j++) {
+                assertEquals(single.getMatrix().get(i, j), pooled.getMatrix().get(i, j), 1e-12);
+            }
+        }
+
+        assertEquals(500, BlocksUtil.pooledEffectiveSampleSize(List.of(dataSet, shuffled)));
+
+        new edu.cmu.tetrad.search.Rlcd(List.of(dataSet, shuffled));
+    }
+
+    /**
      * Pooling rejects data sets that differ in their variables, with a message saying pooling is for imputations of
      * one data set.
      */
