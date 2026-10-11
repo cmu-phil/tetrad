@@ -42,8 +42,24 @@ public class LayoutUtil {
     // Gap kept between the boxes of any two nodes, in pixels. Mirrors the
     // workbench's overlap margin so lib and GUI agree on what "not touching" means.
     private static final double NODE_GAP = 10.0;
+    // The shortest an edge between two nodes of the circle may be, in pixels, measured from box to box along the
+    // line between their centers. Without it the circle is only as large as keeps the boxes NODE_GAP apart, which
+    // leaves an edge between neighbors about as long as its own arrowhead; with two or three nodes the whole
+    // picture is cramped.
+    private static final double MIN_EDGE_LENGTH = 50.0;
+    // The largest radius the circle is given for the sake of MIN_EDGE_LENGTH alone. The minimum is for circles of
+    // a few nodes; applied to every circle it would make the large ones nearly half again as wide (20 nodes: about
+    // 800 pixels across instead of 560), so beyond this radius only the boxes' not overlapping sets the size, as
+    // before.
+    private static final double MIN_EDGE_LENGTH_MAX_RADIUS = 160.0;
     // Margin between the canvas edge and the nearest node box.
     private static final double LAYOUT_MARGIN = 20.0;
+
+    // ---- Causal order layout constants ----
+    // Gap between the boxes of neighboring nodes in a row, and between one row's boxes and the next row's, in
+    // pixels.
+    private static final double CAUSAL_ORDER_X_GAP = 25.0;
+    private static final double CAUSAL_ORDER_Y_GAP = 30.0;
 
     // ---- Latent placement constants ----
     // Ring search steps outward from the anchor by RING_STEP until it finds a
@@ -451,7 +467,9 @@ public class LayoutUtil {
 
     /**
      * Arranges the non-latent nodes in a circle just large enough that no two
-     * node boxes overlap, places each latent near its adjacent nodes without
+     * node boxes overlap and, for a circle of a few nodes, an edge between any two of them would be at least
+     * {@code MIN_EDGE_LENGTH} long from box to box (see {@code MIN_EDGE_LENGTH_MAX_RADIUS}), places each latent
+     * near its adjacent nodes without
      * overlapping anything, and shifts the result so the bounding box of all
      * node boxes sits at ({@code LAYOUT_MARGIN}, {@code LAYOUT_MARGIN}) — i.e.
      * comfortably in the top-left of the canvas.
@@ -463,6 +481,13 @@ public class LayoutUtil {
      * computed for every pair (not only neighbors — with wide labels and few
      * nodes, the node across the circle is the binding one), and the radius is
      * the largest of those.
+     *
+     * <p>The edge between two nodes runs along the line between their centers,
+     * which are r times the unit-circle distance d between their angles apart,
+     * and the part of it inside a w by h box is the lesser of (w / 2) / |ux|
+     * and (h / 2) / |uy| for the line's unit direction (ux, uy). The direction
+     * does not depend on r, so the smallest r that leaves the edge the minimum
+     * length is (minimum + the two parts inside the boxes) / d.
      *
      * @param graph the graph to be arranged.
      * @param size  supplies each node's rendered box size.
@@ -492,6 +517,7 @@ public class LayoutUtil {
             }
 
             double radius = 0.0;
+            double edgeRadius = 0.0;
 
             for (int i = 0; i < n; i++) {
                 for (int j = i + 1; j < n; j++) {
@@ -508,8 +534,19 @@ public class LayoutUtil {
                     if (Double.isFinite(pairRadius)) {
                         radius = Math.max(radius, pairRadius);
                     }
+
+                    // Large enough also that an edge between these two would not be too short.
+                    double d = Math.hypot(dcos, dsin);
+
+                    if (d > 1e-9) {
+                        double inside = boxExit(size.width(ring.get(i)), size.height(ring.get(i)), dcos / d, dsin / d)
+                                        + boxExit(size.width(ring.get(j)), size.height(ring.get(j)), dcos / d, dsin / d);
+                        edgeRadius = Math.max(edgeRadius, (MIN_EDGE_LENGTH + inside) / d);
+                    }
                 }
             }
+
+            radius = Math.max(radius, Math.min(edgeRadius, MIN_EDGE_LENGTH_MAX_RADIUS));
 
             // Provisional center; the whole layout is shifted to the margin below.
             // Positions are rounded to integers, which can shave a pixel off the
@@ -535,6 +572,16 @@ public class LayoutUtil {
 
         repositionLatents(graph, size);
         shiftToMargin(graph, size);
+    }
+
+    /**
+     * @return how far it is from the center of a box of the given width and height to its boundary, along the
+     * direction with the given components (both nonnegative, not both zero).
+     */
+    private static double boxExit(double width, double height, double ux, double uy) {
+        double byWidth = ux > 1e-9 ? width / 2.0 / ux : Double.POSITIVE_INFINITY;
+        double byHeight = uy > 1e-9 ? height / 2.0 / uy : Double.POSITIVE_INFINITY;
+        return Math.min(byWidth, byHeight);
     }
 
     /**
@@ -653,38 +700,63 @@ public class LayoutUtil {
     }
 
     /**
-     * <p>layoutByCausalOrder.</p>
+     * Lays the graph out in rows by causal order, using an estimate of each node's rendered size. See
+     * {@link #layoutByCausalOrder(Graph, NodeSize)}.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
     public static void  layoutByCausalOrder(Graph graph) {
+        layoutByCausalOrder(graph, estimatedNodeSize());
+    }
+
+    /**
+     * Lays the graph out in rows by causal order: the nodes with no parents in the top row, then the nodes all of
+     * whose parents are above, and so on down. Each row is centered on the widest row. (The rows used to all start
+     * at the left margin, so that a row of one or two nodes sat at the far left above or below a wide row, and the
+     * edges between them ran at a long slant.)
+     *
+     * <p>The nodes of a row are spaced by their own box widths, with {@code CAUSAL_ORDER_X_GAP} between neighbors,
+     * and the rows by the tallest box, with {@code CAUSAL_ORDER_Y_GAP} between rows. (Every node used to be
+     * allowed 80 pixels whatever its label, so that nodes with long names overlapped.) For boxes of the default
+     * size, 60 by 30, the spacing is what it was.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param size  supplies each node's rendered box size.
+     */
+    public static void layoutByCausalOrder(Graph graph, NodeSize size) {
         List<List<Node>> tiers = getTiers(graph);
 
-        int y = 0;
+        double[] tierWidths = new double[tiers.size()];
+        double widest = 0.0;
+        double tallest = 0.0;
 
-        for (List<Node> tier : tiers) {
-            y += 60;
+        for (int t = 0; t < tiers.size(); t++) {
+            List<Node> tier = tiers.get(t);
 
-            if (tier.isEmpty()) continue;
+            for (Node node : tier) {
+                tierWidths[t] += size.width(node);
+                tallest = Math.max(tallest, size.height(node));
+            }
 
-            Node node = tier.get(0);
+            tierWidths[t] += CAUSAL_ORDER_X_GAP * Math.max(0, tier.size() - 1);
+            widest = Math.max(widest, tierWidths[t]);
+        }
 
-            int width = 80;
+        // The center line of the first row leaves the same space above it as there is between rows.
+        double y = CAUSAL_ORDER_Y_GAP + tallest / 2.0;
 
-            int x = width / 2 + 10;
+        for (int t = 0; t < tiers.size(); t++) {
+            // The left edge of this row, then of each node in turn.
+            double left = LAYOUT_MARGIN + (widest - tierWidths[t]) / 2.0;
 
-            node.setCenterX(x);
-            node.setCenterY(y);
+            for (Node node : tiers.get(t)) {
+                double width = size.width(node);
+                node.setCenter((int) Math.round(left + width / 2.0), (int) Math.round(y));
+                left += width + CAUSAL_ORDER_X_GAP;
+            }
 
-            int lastHalf = width / 2;
-
-            for (int i = 1; i < tier.size(); i++) {
-                node = tier.get(i);
-                int thisHalf = width / 2;
-                x += lastHalf + thisHalf + 5;
-                node.setCenterX(x);
-                node.setCenterY(y);
-                lastHalf = thisHalf;
+            if (!tiers.get(t).isEmpty()) {
+                y += tallest + CAUSAL_ORDER_Y_GAP;
             }
         }
     }

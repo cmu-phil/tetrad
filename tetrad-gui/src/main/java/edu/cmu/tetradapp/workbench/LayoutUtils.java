@@ -929,7 +929,8 @@ public class LayoutUtils {
     }
 
     /**
-     * <p>layoutByCausalOrder.</p>
+     * Lays the graph out in rows by causal order, each row centered on the widest, spacing the nodes by their real
+     * display sizes. See {@link LayoutUtil#layoutByCausalOrder(Graph, LayoutUtil.NodeSize)}.
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
@@ -942,7 +943,7 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.layoutByCausalOrder(graph);
+        LayoutUtil.layoutByCausalOrder(graph, displayNodeSizes(layoutEditable));
         layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.layered;
     }
