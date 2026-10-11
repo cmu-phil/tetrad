@@ -44,6 +44,7 @@ import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
@@ -88,6 +89,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     private transient List<Graph> layoutReference;
     BlockSpec blockSpec = null;
+    /**
+     * The upstream Latent Clusters runner, non-null only when this search box was given a Latent Clusters box as a
+     * parent. When present, {@link #execute()} refreshes the {@link BlockSpec} from it before the search and appends
+     * the measurement edges (each block's latent to its indicators) to the result, as the Latent Structure box did.
+     * Added 2026-10-11; absent from sessions saved earlier, which read it as null (serialVersionUID is pinned).
+     */
+    private LatentClustersRunner latentClustersRunner;
     /**
      * The data model.
      */
@@ -195,6 +203,84 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters)
             throws ParseException {
         this(dataWrapper, graphSource, parameters, null, null);
+    }
+
+    /**
+     * Constructs a search-box runner over data and supplied clusters: the upstream {@link BlockSpec} is handed to
+     * block-aware tests, scores, and algorithms, and the measurement edges are appended to the result. The chooser
+     * lists the algorithms that can take such a configuration (see
+     * {@link edu.cmu.tetradapp.editor.search.AlgorithmChooserLogic.BoxMode#LATENTS_FROM_CLUSTERS}).
+     *
+     * @param dataWrapper          the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the Latent Clusters parent providing the upstream BlockSpec; must not be null
+     * @param parameters           parameters for the session node
+     * @throws ParseException if any.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, LatentClustersRunner latentClustersRunner,
+                                  Parameters parameters) throws ParseException {
+        this(dataWrapper, null, parameters, null, null);
+        this.latentClustersRunner = Objects.requireNonNull(latentClustersRunner, "ClustersRunner required");
+        this.blockSpec = latentClustersRunner.getBlockSpec();
+    }
+
+    /**
+     * Constructs a search-box runner over data, supplied clusters, and knowledge.
+     *
+     * @param dataWrapper          the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the Latent Clusters parent providing the upstream BlockSpec; must not be null
+     * @param knowledgeBoxModel    the knowledge box
+     * @param parameters           parameters for the session node
+     * @throws ParseException if any.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, LatentClustersRunner latentClustersRunner,
+                                  KnowledgeBoxModel knowledgeBoxModel, Parameters parameters) throws ParseException {
+        this(dataWrapper, null, parameters, knowledgeBoxModel, null);
+        this.latentClustersRunner = Objects.requireNonNull(latentClustersRunner, "ClustersRunner required");
+        this.blockSpec = latentClustersRunner.getBlockSpec();
+    }
+
+    /**
+     * Constructs a search-box runner over data and supplied clusters, taking its algorithm and chooser selections
+     * from the previous runner of this box, if it had any.
+     *
+     * @param dataWrapper          the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the Latent Clusters parent providing the upstream BlockSpec; must not be null
+     * @param runner               the previous runner of this box
+     * @param parameters           parameters for the session node
+     * @throws ParseException if any.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, LatentClustersRunner latentClustersRunner,
+                                  GeneralAlgorithmRunner runner, Parameters parameters) throws ParseException {
+        this(dataWrapper, latentClustersRunner, parameters);
+        if (runner != null && runner.getAlgorithm() != null) {
+            this.algorithm = runner.getAlgorithm();
+        }
+        if (runner != null) {
+            this.userAlgoSelections.putAll(runner.userAlgoSelections);
+        }
+    }
+
+    /**
+     * Constructs a search-box runner over data, supplied clusters, and knowledge, taking its algorithm and chooser
+     * selections from the previous runner of this box, if it had any.
+     *
+     * @param dataWrapper          the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the Latent Clusters parent providing the upstream BlockSpec; must not be null
+     * @param runner               the previous runner of this box
+     * @param knowledgeBoxModel    the knowledge box
+     * @param parameters           parameters for the session node
+     * @throws ParseException if any.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, LatentClustersRunner latentClustersRunner,
+                                  GeneralAlgorithmRunner runner, KnowledgeBoxModel knowledgeBoxModel,
+                                  Parameters parameters) throws ParseException {
+        this(dataWrapper, latentClustersRunner, knowledgeBoxModel, parameters);
+        if (runner != null && runner.getAlgorithm() != null) {
+            this.algorithm = runner.getAlgorithm();
+        }
+        if (runner != null) {
+            this.userAlgoSelections.putAll(runner.userAlgoSelections);
+        }
     }
 
     /**
@@ -464,6 +550,23 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     @Override
     public void execute() {
+        // Clusters-parent mode (Search box with a Latent Clusters parent): re-fetch the BlockSpec from the parent,
+        // since the clusters may have been re-run or edited since this runner was built, and validate it against
+        // this box's data before anything runs.
+        if (this.latentClustersRunner != null) {
+            BlockSpec spec = this.latentClustersRunner.getBlockSpec();
+
+            if (spec == null) {
+                throw new IllegalStateException("No BlockSpec is available. Run a clustering algorithm first and/or "
+                        + "click Apply in the blocks editor.");
+            }
+
+            DataModel specDataModel = resolveSpecDataModel(spec, getDataModel());
+            BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
+            ensureSpecMatchesRunnerData(spec, specDataModel);
+            setBlockSpec(spec);
+        }
+
         long start = System.currentTimeMillis();
 
         // The results of the previous search in this box, for laying out the new ones; see the layout pass below.
@@ -857,7 +960,108 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         }
 
+        // Clusters-parent mode: append the measurement edges to the selected result and collapse the result list to
+        // that one graph, exactly as the Latent Structure box does.
+        if (this.latentClustersRunner != null) {
+            Graph graph = getGraph();
+
+            if (graph != null) {
+                attachMeasurementEdges(getBlockSpec(), graph);
+                LayoutUtil.fruchtermanReingoldLayout(graph);
+                this.graphList.clear();
+                this.graphList.add(graph);
+            }
+        }
+
 //        this.graphList = graphList;
+    }
+
+    /**
+     * Checks that the spec's data set is the runner's data, by identity or, failing that, by variable names.
+     *
+     * @param spec       the upstream block spec.
+     * @param runnerData the data model the search will run on.
+     * @throws IllegalStateException if they do not match.
+     */
+    static void ensureSpecMatchesRunnerData(BlockSpec spec, DataModel runnerData) {
+        if (spec.dataSet() == runnerData) return; // exact same object
+
+        // Fallback: compare by variable names and count
+        List<String> specNames = spec.dataSet().getVariableNames();
+        List<String> runNames = runnerData.getVariableNames();
+
+        if (specNames.size() != runNames.size() || !specNames.equals(runNames)) {
+            throw new IllegalStateException(
+                    "BlockSpec dataset does not match the runner's dataset. " +
+                            "Ensure the clusters were derived from the same data used for this search node.");
+        }
+    }
+
+    /**
+     * Picks, from the data handed to this box, the data model the upstream clusters were derived from. With a single
+     * data model it must be the spec's data set; with several (for example, several imputations of one data set from
+     * the Impute Missing Values box), the spec's data set must be among them--the clusters box ran on one member of
+     * the same list.
+     *
+     * @param spec  the upstream block spec.
+     * @param model the data model this runner was given: a single model, or a {@link edu.cmu.tetrad.data.DataModelList}.
+     * @return the member the spec was derived from.
+     * @throws IllegalStateException if the spec's data set is not (among) the given data.
+     */
+    static DataModel resolveSpecDataModel(BlockSpec spec, DataModel model) {
+        if (model instanceof DataModelList list) {
+            for (DataModel member : list) {
+                if (member == spec.dataSet() || spec.dataSet().equals(member)) {
+                    return member;
+                }
+            }
+
+            throw new IllegalStateException("The data given to this box holds " + list.size() + " data sets, and "
+                    + "the supplied latent clusters were not derived from any of them. Make sure this box and the "
+                    + "Latent Clusters box share the same data parent, and re-run the clusters if the data has "
+                    + "changed.");
+        }
+
+        if (model == spec.dataSet() || spec.dataSet().equals(model)) {
+            return model;
+        }
+
+        throw new IllegalStateException("The dataset for the supplied latent clusters is not the " +
+                "dataset given as a parent to this box.");
+    }
+
+    /**
+     * Appends the measurement edges of the spec--each block's latent (or block variable) directed into each of its
+     * indicators--to the given result graph, adding any missing nodes.
+     *
+     * @param spec  the upstream block spec.
+     * @param graph the result graph of the search over the block variables.
+     */
+    static void attachMeasurementEdges(BlockSpec spec, Graph graph) {
+        for (int i = 0; i < spec.blocks().size(); i++) {
+            // Use the graph's own node objects. The search may return latents that are equal to (same name
+            // and type) but not identical to the BlockSpec's nodes, and Edge.getDistalNode compares by identity,
+            // so an edge built from a non-identical node yields null adjacents.
+            Node specVar = spec.blockVariables().get(i);
+            Node var = graph.getNode(specVar.getName());
+
+            if (var == null) {
+                graph.addNode(specVar);
+                var = specVar;
+            }
+
+            for (int j : spec.blocks().get(i)) {
+                Node specNode2 = spec.dataSet().getVariables().get(j);
+                Node node2 = graph.getNode(specNode2.getName());
+
+                if (node2 == null) {
+                    graph.addNode(specNode2);
+                    node2 = specNode2;
+                }
+
+                graph.addDirectedEdge(var, node2);
+            }
+        }
     }
 
     public String getGraphSubtitle(Graph g, int indexHint) {

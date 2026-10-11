@@ -83,16 +83,22 @@ public class TestAlgorithmChooserLogic {
         for (AlgorithmModel m : no) {
             assertEquals(m.getName(), AlgType.forbid_latent_common_causes, m.getAlgorithm().annotation().algoType());
         }
+        // YES takes the possibility of latents seriously, so it holds both the PAG family and the algorithms that
+        // find latent variables directly from the data (2026-10-11).
         for (AlgorithmModel m : yes) {
-            assertEquals(m.getName(), AlgType.allow_latent_common_causes, m.getAlgorithm().annotation().algoType());
+            AlgType t = m.getAlgorithm().annotation().algoType();
+            assertTrue(m.getName(), t == AlgType.allow_latent_common_causes
+                                    || t == AlgType.search_for_structure_over_latents);
         }
         assertTrue(has(no, "BOSS"));
         assertTrue(has(no, "FGES"));
         assertTrue(has(no, "PC"));
         assertTrue(has(yes, "FCI"));
         assertTrue(has(yes, "GFCI"));
+        assertTrue(has(yes, "RLCD"));
         assertFalse(has(yes, "BOSS"));
         assertFalse(has(no, "FCI"));
+        assertFalse(has(no, "RLCD"));
     }
 
     @Test
@@ -221,7 +227,7 @@ public class TestAlgorithmChooserLogic {
     }
 
     @Test
-    public void boxModesPartitionTheRegistry() {
+    public void boxModesListTheRightFamilies() {
         List<AlgorithmModel> search = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
                 AlgorithmChooserLogic.BoxMode.SEARCH, ANY);
         List<AlgorithmModel> fromData = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
@@ -229,19 +235,21 @@ public class TestAlgorithmChooserLogic {
         List<AlgorithmModel> fromClusters = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
                 AlgorithmChooserLogic.BoxMode.LATENTS_FROM_CLUSTERS, ANY);
 
-        // The Search box lists searches over observed variables and nothing that outputs latents or needs clusters.
+        // The Search box with data alone lists every algorithm that runs on data alone (2026-10-11), including the
+        // ones that find latent variables directly from the data; only the cluster-requiring ones are excluded.
         assertTrue(has(search, "BOSS"));
-        assertFalse(has(search, "RLCD"));
-        assertFalse(has(search, "Factor Analysis"));
+        assertTrue(has(search, "RLCD"));
+        assertTrue(has(search, "Factor Analysis"));
         assertFalse(has(search, "Mimbuild (Bollen)"));
 
-        // The Latent Structure box with data alone lists the algorithms that find latents from data.
+        // The legacy Latent Structure box with data alone lists the algorithms that find latents from data.
         assertTrue(has(fromData, "RLCD"));
         assertTrue(has(fromData, "Factor Analysis"));
         assertFalse(has(fromData, "BOSS"));
         assertFalse(has(fromData, "Mimbuild (Bollen)"));
 
-        // With clusters it lists block-capable searches and the cluster-taking algorithms, not the data-only ones.
+        // With clusters a box lists block-capable searches and the cluster-taking algorithms, not the data-only
+        // ones.
         assertTrue(has(fromClusters, "BOSS"));
         assertTrue(has(fromClusters, "Mimbuild (Bollen)"));
         assertFalse(has(fromClusters, "RLCD"));

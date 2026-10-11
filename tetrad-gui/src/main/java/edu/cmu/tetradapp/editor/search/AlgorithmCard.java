@@ -518,13 +518,7 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
     }
 
     private DataType getEffectiveDataType() {
-        if (this.generalRadBtn.isSelected() && this.dataType == DataType.Continuous) {
-            return DataType.ContinuousGeneral;
-        }
-        if (this.mixedRadBtn.isSelected()) {
-            return DataType.Mixed;
-        }
-        return this.dataType;
+        return effectiveDataTypeFor(currentDatasetFilterKey());
     }
 
     /**
@@ -784,19 +778,15 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
     }
 
     private String getUiIndTestKey() {
-        if (this.generalRadBtn.isSelected()) return UI_IND_TEST + ".general";
-        if (this.linearGaussianRadBtn.isSelected()) return UI_IND_TEST + ".linear-gaussian";
-        if (this.mixedRadBtn.isSelected()) return UI_IND_TEST + ".mixed";
-        if (this.allRadBtn.isSelected()) return UI_IND_TEST + ".all";
-        return UI_IND_TEST;
+        // With supplied clusters the dataset filter does not apply, so the remembered block-test choice is keyed
+        // independently of whichever radio happens to be selected.
+        if (this.blockSpec != null) return UI_IND_TEST + ".blocks";
+        return UI_IND_TEST + "." + currentDatasetFilterKey();
     }
 
     private String getUiScoreKey() {
-        if (this.generalRadBtn.isSelected()) return UI_SCORE + ".general";
-        if (this.linearGaussianRadBtn.isSelected()) return UI_SCORE + ".linear-gaussian";
-        if (this.mixedRadBtn.isSelected()) return UI_SCORE + ".mixed";
-        if (this.allRadBtn.isSelected()) return UI_SCORE + ".all";
-        return UI_SCORE;
+        if (this.blockSpec != null) return UI_SCORE + ".blocks";
+        return UI_SCORE + "." + currentDatasetFilterKey();
     }
 
     private void saveGlobalPreferences() {
@@ -878,48 +868,130 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
         saveGlobalPreferences();
     }
 
+    /**
+     * The action command of the selected dataset-properties radio: "linear-gaussian", "mixed", "general", or "all".
+     */
+    private String currentDatasetFilterKey() {
+        if (this.linearGaussianRadBtn.isSelected()) return "linear-gaussian";
+        if (this.mixedRadBtn.isSelected()) return "mixed";
+        if (this.generalRadBtn.isSelected()) return "general";
+        return "all";
+    }
+
+    private DataType effectiveDataTypeFor(String filterKey) {
+        if ("general".equals(filterKey) && this.dataType == DataType.Continuous) {
+            return DataType.ContinuousGeneral;
+        }
+        if ("mixed".equals(filterKey)) {
+            return DataType.Mixed;
+        }
+        return this.dataType;
+    }
+
+    private static boolean passesDatasetFilter(Class<?> c, String filterKey) {
+        return switch (filterKey) {
+            case "linear-gaussian" -> c.isAnnotationPresent(LinearGaussian.class);
+            case "mixed" -> c.isAnnotationPresent(Mixed.class);
+            case "general" -> c.isAnnotationPresent(General.class);
+            default -> true;
+        };
+    }
+
+    /**
+     * The tests the combo would list for the given algorithm under the given dataset filter. With supplied clusters
+     * (2026-10-11) the block tests are the only candidates, and they are registered under one data type, so they
+     * are fetched across all data types and the dataset filter does not apply: previously, with continuous data,
+     * only the Mixed filter listed them, and the others listed nothing.
+     */
+    private List<IndependenceTestModel> listTestsFor(AlgorithmModel algoModel, String filterKey) {
+        if (algoModel == null || !algoModel.isRequiredTest()) return new ArrayList<>();
+
+        List<IndependenceTestModel> candidates = this.blockSpec != null
+                ? IndependenceTestModels.getInstance().getModels()
+                : IndependenceTestModels.getInstance().getModels(effectiveDataTypeFor(filterKey));
+
+        List<IndependenceTestModel> out = new ArrayList<>();
+        for (IndependenceTestModel m : candidates) {
+            Class<?> c = m.getIndependenceTest().clazz();
+            if (DeprecationUtils.isClassDeprecated(c)) continue;
+            boolean isBlocks = BlockIndependenceWrapper.class.isAssignableFrom(c);
+            if ((this.blockSpec == null) == isBlocks) continue;
+            if (this.blockSpec == null && !passesDatasetFilter(c, filterKey)) continue;
+            out.add(m);
+        }
+        return out;
+    }
+
+    /**
+     * The scores the combo would list for the given algorithm under the given dataset filter; see
+     * {@link #listTestsFor}.
+     */
+    private List<ScoreModel> listScoresFor(AlgorithmModel algoModel, String filterKey) {
+        if (algoModel == null || !algoModel.isRequiredScore()) return new ArrayList<>();
+
+        List<ScoreModel> candidates = this.blockSpec != null
+                ? ScoreModels.getInstance().getModels()
+                : ScoreModels.getInstance().getModels(effectiveDataTypeFor(filterKey));
+
+        List<ScoreModel> out = new ArrayList<>();
+        for (ScoreModel m : candidates) {
+            Class<?> c = m.getScore().clazz();
+            if (DeprecationUtils.isClassDeprecated(c)) continue;
+            boolean isBlocks = BlockScoreWrapper.class.isAssignableFrom(c);
+            if ((this.blockSpec == null) == isBlocks) continue;
+            if (this.blockSpec == null && !passesDatasetFilter(c, filterKey)) continue;
+            out.add(m);
+        }
+        return out;
+    }
+
+    /**
+     * Whether the given dataset filter lists something for everything the algorithm requires.
+     */
+    private boolean datasetFilterIsViable(AlgorithmModel algoModel, String filterKey) {
+        if (algoModel == null) return true;
+        if (algoModel.isRequiredTest() && listTestsFor(algoModel, filterKey).isEmpty()) return false;
+        return !algoModel.isRequiredScore() || !listScoresFor(algoModel, filterKey).isEmpty();
+    }
+
+    /**
+     * Keeps the dataset-properties radios honest for the selected algorithm (2026-10-11): an option that would show
+     * an empty required test or score list is disabled, and if the selected option is such a one while another is
+     * not, the selection moves to the first option that lists something. So the user never has to click around to
+     * discover which filter holds the tests and scores the algorithm can use. With supplied clusters the radios are
+     * hidden (the block tests and scores are listed unconditionally), so there is nothing to do.
+     */
+    private void updateDatasetFilterOptions() {
+        if (this.blockSpec != null) return;
+
+        AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+        JRadioButton[] buttons = {this.linearGaussianRadBtn, this.mixedRadBtn, this.generalRadBtn, this.allRadBtn};
+        String[] keys = {"linear-gaussian", "mixed", "general", "all"};
+
+        int firstViable = -1;
+        boolean selectedViable = false;
+        for (int i = 0; i < buttons.length; i++) {
+            boolean viable = datasetFilterIsViable(algoModel, keys[i]);
+            buttons[i].setEnabled(viable);
+            buttons[i].setToolTipText(viable ? null
+                    : "<html><div style='width:300px'>Nothing the selected algorithm requires is registered "
+                      + "under this filter for your data type.</div></html>");
+            if (viable && firstViable < 0) firstViable = i;
+            if (viable && buttons[i].isSelected()) selectedViable = true;
+        }
+
+        if (!selectedViable && firstViable >= 0) {
+            // setSelected does not fire the action listeners; the caller refreshes the lists right after.
+            this.datasetFilterBtnGrp.setSelected(buttons[firstViable].getModel(), true);
+        }
+    }
+
     private void refreshTestList() {
         this.updatingTestModels = true;
         this.indTestComboBox.removeAllItems();
 
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
-        if (algoModel != null && algoModel.isRequiredTest()) {
-            List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(getEffectiveDataType());
-
-            java.util.function.Predicate<IndependenceTestModel> typeFilter = m -> {
-                Class<?> c = m.getIndependenceTest().clazz();
-
-                if (DeprecationUtils.isClassDeprecated(c)) {
-                    return false;
-                }
-
-                if (this.linearGaussianRadBtn.isSelected()) {
-                    return c.isAnnotationPresent(LinearGaussian.class);
-                } else if (this.mixedRadBtn.isSelected()) {
-                    return c.isAnnotationPresent(Mixed.class);
-                } else if (this.generalRadBtn.isSelected()) {
-                    return c.isAnnotationPresent(General.class);
-                } else if (this.allRadBtn.isSelected()) {
-                    return true;
-                }
-                return true;
-            };
-
-            java.util.function.Predicate<IndependenceTestModel> blocksGate = m -> {
-                Class<?> c = m.getIndependenceTest().clazz();
-                boolean isBlocks = BlockIndependenceWrapper.class.isAssignableFrom(c);
-                if (this.blockSpec == null) {
-                    return !isBlocks;
-                } else {
-                    return isBlocks;
-                }
-            };
-
-            models.stream()
-                    .filter(typeFilter)
-                    .filter(blocksGate)
-                    .forEach(this.indTestComboBox::addItem);
-        }
+        listTestsFor(algoModel, currentDatasetFilterKey()).forEach(this.indTestComboBox::addItem);
 
         this.updatingTestModels = false;
 
@@ -970,43 +1042,7 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
         this.scoreComboBox.removeAllItems();
 
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
-        if (algoModel != null && algoModel.isRequiredScore()) {
-            List<ScoreModel> models = ScoreModels.getInstance().getModels(getEffectiveDataType());
-
-            java.util.function.Predicate<ScoreModel> typeFilter = m -> {
-                Class<?> c = m.getScore().clazz();
-
-                if (DeprecationUtils.isClassDeprecated(c)) {
-                    return false;
-                }
-
-                if (this.linearGaussianRadBtn.isSelected()) {
-                    return c.isAnnotationPresent(LinearGaussian.class);
-                } else if (this.mixedRadBtn.isSelected()) {
-                    return c.isAnnotationPresent(Mixed.class);
-                } else if (this.generalRadBtn.isSelected()) {
-                    return c.isAnnotationPresent(General.class);
-                } else if (this.allRadBtn.isSelected()) {
-                    return true;
-                }
-                return true;
-            };
-
-            java.util.function.Predicate<ScoreModel> blocksGate = m -> {
-                Class<?> c = m.getScore().clazz();
-                boolean isBlocks = BlockScoreWrapper.class.isAssignableFrom(c);
-                if (this.blockSpec == null) {
-                    return !isBlocks;
-                } else {
-                    return isBlocks;
-                }
-            };
-
-            models.stream()
-                    .filter(typeFilter)
-                    .filter(blocksGate)
-                    .forEach(this.scoreComboBox::addItem);
-        }
+        listScoresFor(algoModel, currentDatasetFilterKey()).forEach(this.scoreComboBox::addItem);
 
         this.updatingScoreModels = false;
 
@@ -1074,7 +1110,51 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
         return null;
     }
 
+    /**
+     * @return the names of the tests currently in the test combo (empty if the selected algorithm needs none). For
+     * tests.
+     */
+    List<String> listedTestNames() {
+        List<String> out = new ArrayList<>();
+        for (int i = 0; i < this.indTestComboBox.getItemCount(); i++) {
+            out.add(this.indTestComboBox.getItemAt(i).getName());
+        }
+        return out;
+    }
+
+    /**
+     * @return the names of the scores currently in the score combo (empty if the selected algorithm needs none).
+     * For tests.
+     */
+    List<String> listedScoreNames() {
+        List<String> out = new ArrayList<>();
+        for (int i = 0; i < this.scoreComboBox.getItemCount(); i++) {
+            out.add(this.scoreComboBox.getItemAt(i).getName());
+        }
+        return out;
+    }
+
+    /**
+     * @return the action command of the selected dataset-properties radio. For tests.
+     */
+    String selectedDatasetFilterKey() {
+        return currentDatasetFilterKey();
+    }
+
+    /**
+     * @return whether the dataset-properties radio for the given key is enabled. For tests.
+     */
+    boolean datasetFilterOptionEnabled(String key) {
+        return switch (key) {
+            case "linear-gaussian" -> this.linearGaussianRadBtn.isEnabled();
+            case "mixed" -> this.mixedRadBtn.isEnabled();
+            case "general" -> this.generalRadBtn.isEnabled();
+            default -> this.allRadBtn.isEnabled();
+        };
+    }
+
     private void refreshTestAndScoreList() {
+        updateDatasetFilterOptions();
         refreshTestList();
         refreshScoreList();
     }
@@ -1276,16 +1356,12 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
             algoTypeOpts.add(showAllRadBtn);
             algoFilterBtnGrp.add(showAllRadBtn);
 
-            // In the Latent Structure box the family is fixed by the box, so only "show all" is offered.
+            // In the latent-structure modes the family is fixed by the box or the clusters parent, so only
+            // "show all" is offered.
             if (mode != AlgorithmChooserLogic.BoxMode.SEARCH) return;
 
             Arrays.stream(AlgType.values()).forEach(item -> {
                 String name = item.name();
-
-                // Algorithms whose output contains latent variables are listed in the Latent Structure box.
-                if (name.equals(AlgType.search_for_structure_over_latents.name())) {
-                    return;
-                }
 
                 JRadioButton radioButton = new JRadioButton(name.replace("_", " "));
                 radioButton.setActionCommand(name);
@@ -1329,6 +1405,17 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
             this.setBorder(BorderFactory.createTitledBorder("Choose Statistical Test and Score"));
 
             assumptionsLabel.setText("Filter by dataset properties:");
+
+            // With supplied clusters the only candidates are the block tests and scores, so the dataset filter
+            // would filter nothing and (worse) could hide them all; it is not shown (2026-10-11). GroupLayout
+            // honors visibility, so the space collapses.
+            if (AlgorithmCard.this.blockSpec != null) {
+                assumptionsLabel.setVisible(false);
+                linearGaussianRadBtn.setVisible(false);
+                mixedRadBtn.setVisible(false);
+                generalRadBtn.setVisible(false);
+                allRadBtn.setVisible(false);
+            }
 
             testLabel.setText("Test:");
             scoreLabel.setText("Score:");

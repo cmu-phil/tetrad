@@ -23,14 +23,12 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
 import java.text.ParseException;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -214,53 +212,6 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
         copyAlgorithm(latentStructureRunner);
     }
 
-    private static void ensureSpecMatchesRunnerData(BlockSpec spec, DataModel runnerData) {
-        if (spec.dataSet() == runnerData) return; // exact same object
-
-        // Fallback: compare by variable names and count
-        List<String> specNames = spec.dataSet().getVariableNames();
-        List<String> runNames = runnerData.getVariableNames();
-
-        if (specNames.size() != runNames.size() || !specNames.equals(runNames)) {
-            throw new IllegalStateException(
-                    "BlockSpec dataset does not match the runnerâs dataset. " +
-                            "Ensure the clusters were derived from the same data used for this search node.");
-        }
-    }
-
-    /**
-     * Picks, from the data handed to this box, the data model the upstream clusters were derived from. With a single
-     * data model it must be the spec's data set; with several (for example, several imputations of one data set from
-     * the Impute Missing Values box), the spec's data set must be among them--the clusters box ran on one member of
-     * the same list.
-     *
-     * @param spec  the upstream block spec.
-     * @param model the data model this runner was given: a single model, or a {@link edu.cmu.tetrad.data.DataModelList}.
-     * @return the member the spec was derived from.
-     * @throws IllegalStateException if the spec's data set is not (among) the given data.
-     */
-    private static DataModel resolveSpecDataModel(BlockSpec spec, DataModel model) {
-        if (model instanceof edu.cmu.tetrad.data.DataModelList list) {
-            for (DataModel member : list) {
-                if (member == spec.dataSet() || spec.dataSet().equals(member)) {
-                    return member;
-                }
-            }
-
-            throw new IllegalStateException("The data given to this box holds " + list.size() + " data sets, and "
-                    + "the supplied latent clusters were not derived from any of them. Make sure this box and the "
-                    + "Latent Clusters box share the same data parent, and re-run the clusters if the data has "
-                    + "changed.");
-        }
-
-        if (model == spec.dataSet() || spec.dataSet().equals(model)) {
-            return model;
-        }
-
-        throw new IllegalStateException("The dataset for the supplied latent clusters is not the " +
-                "dataset given as a parent to this box.");
-    }
-
     /**
      * Called by editor when user presses âRun.â
      */
@@ -300,30 +251,7 @@ public class LatentStructureRunner extends GeneralAlgorithmRunner {
             return;
         }
 
-        for (int i = 0; i < spec.blocks().size(); i++) {
-            // Use the graph's own node objects. The search may return latents that are equal to (same name
-            // and type) but not identical to the BlockSpec's nodes, and Edge.getDistalNode compares by identity,
-            // so an edge built from a non-identical node yields null adjacents.
-            Node specVar = spec.blockVariables().get(i);
-            Node var = graph.getNode(specVar.getName());
-
-            if (var == null) {
-                graph.addNode(specVar);
-                var = specVar;
-            }
-
-            for (int j : spec.blocks().get(i)) {
-                Node specNode2 = spec.dataSet().getVariables().get(j);
-                Node node2 = graph.getNode(specNode2.getName());
-
-                if (node2 == null) {
-                    graph.addNode(specNode2);
-                    node2 = specNode2;
-                }
-
-                graph.addDirectedEdge(var, node2);
-            }
-        }
+        attachMeasurementEdges(spec, graph);
 
         LayoutUtil.fruchtermanReingoldLayout(graph);
 

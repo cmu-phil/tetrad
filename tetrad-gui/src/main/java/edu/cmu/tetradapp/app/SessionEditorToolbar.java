@@ -113,8 +113,11 @@ final class SessionEditorToolbar extends JPanel {
                 new ButtonInfo("Data",           "Data",              "data",        "<html>Add a node for a data object.</html>"),
                 new ButtonInfo("Knowledge",      "Knowledge",         "knowledge",   "<html>Add a knowledge box node.</html>"),
                 new ButtonInfo("Search",         "Search",            "search",      "<html>Add a node for a search algorithm.</html>"),
-                new ButtonInfo("Latent_Clusters","Latent Clusters",   "cluster",     "<html>Add a node for a clustering algorithm.</html>"),
-                new ButtonInfo("Latent_Structure","Latent Structure", "clustersearch","<html>Add a node for a block search.</html>"),
+                new ButtonInfo("Latent_Clusters","Latent Clusters",   "cluster",     "<html>Add a node for a clustering algorithm."
+                        + "<br>To search over the clusters, make this node a parent of a Search node.</html>"),
+                // The Latent Structure button was removed 2026-10-11: all search algorithms live in the Search box,
+                // and a block search is a Search box with a Latent Clusters parent. The Latent_Structure session
+                // node stays in the configuration so sessions saved with that box still load and run.
                 new ButtonInfo("Graph",          "Graph",             "graph",       "<html>Add a graph node.</html>"),
                 new ButtonInfo("Compare",        "Compare",           "compare",     "<html>Add a node to compare graphs or SEM IM's.</html>"),
                 GROUP_GAP,

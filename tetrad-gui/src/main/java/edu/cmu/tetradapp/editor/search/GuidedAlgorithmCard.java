@@ -342,6 +342,13 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         return listScores(this.selectedAlgo).stream().map(ScoreModel::getName).toList();
     }
 
+    /**
+     * @return the current family filter key. For tests.
+     */
+    String currentFamily() {
+        return this.family;
+    }
+
     //=========================== Scrollable ===========================//
     // The editor wraps each card in a JScrollPane; tracking the viewport in both directions makes the card fill it
     // so the inner list scrolls instead of the whole card.
@@ -404,7 +411,8 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         left.add(boxed(dataStatement));
         left.add(Box.createVerticalStrut(16));
 
-        // 2. Latents. Hidden in the Latent Structure box, where the family is fixed by the box.
+        // 2. Latents. Hidden when the family is fixed for the box--by a Latent Clusters parent, or by the legacy
+        // Latent Structure box.
         if (this.mode == AlgorithmChooserLogic.BoxMode.SEARCH) {
             left.add(questionTitle("2 \u00b7 Could something unmeasured cause two of them?"));
             left.add(Box.createVerticalStrut(4));
@@ -419,9 +427,11 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
                     + "measured variables is itself measured (causal sufficiency). Algorithms in this family "
                     + "return a CPDAG or a DAG over the measured variables.</div></html>");
             this.latentYesBtn.setToolTipText("<html><div style='width:300px'>Allow that two measured variables "
-                    + "may share an unmeasured common cause. Algorithms in this family return a PAG, whose "
-                    + "circle and bidirected marks record what the data leave undetermined.</div></html>");
-            this.latentYesBtn.setText(twoLine("Yes, possibly", "latent-tolerant search; PAG output"));
+                    + "may share an unmeasured common cause. This family holds the latent-tolerant searches, which "
+                    + "return a PAG whose circle and bidirected marks record what the data leave undetermined, and "
+                    + "the algorithms that find latent variables directly from the data (for example RLCD and "
+                    + "Factor Analysis).</div></html>");
+            this.latentYesBtn.setText(twoLine("Yes, possibly", "latent-tolerant search, or latents found from data"));
             JPanel latentBox = new JPanel();
             latentBox.setLayout(new BoxLayout(latentBox, BoxLayout.Y_AXIS));
             latentBox.add(optionRow(this.latentAnyBtn, this.latentAnyCount));
@@ -806,7 +816,9 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
 
         boolean wantsTest = m.isRequiredTest();
         boolean wantsScore = m.isRequiredScore();
-        if (wantsTest || wantsScore) {
+        // With supplied clusters the only candidates are the block tests and scores, so a family filter would
+        // filter nothing and (worse) could hide them all; it is not shown (2026-10-11).
+        if ((wantsTest || wantsScore) && this.blockSpec == null) {
             detail.add(Box.createVerticalStrut(10));
             detail.add(buildFamilyRow(wantsTest, wantsScore));
         }
@@ -817,7 +829,11 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
             detail.add(subHeading("It needs an independence test \u2014 " + tests.size()
                     + (tests.size() == 1 ? " fits" : " fit") + " your data"));
             if (tests.isEmpty()) {
-                detail.add(noneNote("No test fits this data type and family. Choose a different family above."));
+                // The family moves off an empty filter automatically, so an empty list here means nothing is
+                // registered at all for this configuration.
+                detail.add(noneNote(this.blockSpec != null
+                        ? "No block-based test is registered."
+                        : "No registered test fits this data type."));
             } else {
                 ButtonGroup g = new ButtonGroup();
                 for (IndependenceTestModel t : tests) {
@@ -840,7 +856,9 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
             detail.add(subHeading("It needs a score \u2014 " + scores.size()
                     + (scores.size() == 1 ? " fits" : " fit") + " your data"));
             if (scores.isEmpty()) {
-                detail.add(noneNote("No score fits this data type and family. Choose a different family above."));
+                detail.add(noneNote(this.blockSpec != null
+                        ? "No block-based score is registered."
+                        : "No registered score fits this data type."));
             } else {
                 ButtonGroup g = new ButtonGroup();
                 for (ScoreModel s : scores) {
@@ -895,7 +913,13 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         b.setFont(smallFont());
         b.setOpaque(false);
         b.setSelected(key.equals(this.family));
-        b.setToolTipText(tip);
+        // A family that would list nothing the selected algorithm requires is not offered (2026-10-11): clicking
+        // it could only produce an empty test or score list.
+        boolean viable = familyViable(this.selectedAlgo, key);
+        b.setEnabled(viable);
+        b.setToolTipText(viable ? tip
+                : "<html><div style='width:300px'>Nothing the selected algorithm requires is registered under "
+                  + "this filter for your data type.</div></html>");
         g.add(b);
         b.addActionListener(e -> {
             if (!key.equals(this.family)) {
@@ -960,17 +984,21 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     //=========================== Tests and scores ===========================//
 
     private DataType effectiveDataType() {
-        if (FAMILY_GENERAL.equals(this.family) && this.dataType == DataType.Continuous) {
+        return effectiveDataTypeFor(this.family);
+    }
+
+    private DataType effectiveDataTypeFor(String family) {
+        if (FAMILY_GENERAL.equals(family) && this.dataType == DataType.Continuous) {
             return DataType.ContinuousGeneral;
         }
-        if (FAMILY_MIXED.equals(this.family)) {
+        if (FAMILY_MIXED.equals(family)) {
             return DataType.Mixed;
         }
         return this.dataType;
     }
 
-    private boolean familyPasses(Class<?> c) {
-        return switch (this.family) {
+    private static boolean familyPasses(Class<?> c, String family) {
+        return switch (family) {
             case FAMILY_LINEAR_GAUSSIAN -> c.isAnnotationPresent(LinearGaussian.class);
             case FAMILY_MIXED -> c.isAnnotationPresent(Mixed.class);
             case FAMILY_GENERAL -> c.isAnnotationPresent(General.class);
@@ -979,44 +1007,85 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     }
 
     private List<IndependenceTestModel> listTests(AlgorithmModel m) {
+        return listTests(m, this.family);
+    }
+
+    private List<IndependenceTestModel> listTests(AlgorithmModel m, String family) {
         if (m == null || !m.isRequiredTest()) return List.of();
         List<IndependenceTestModel> out = new ArrayList<>();
         // Changed 2026-8-24: the card's own experimental switch selects the registry, so experimental tests are
         // listed when it is on even if the global preference is off (previously they were never in the list).
-        for (IndependenceTestModel t : IndependenceTestModels.getInstance(this.experimental).getModels(effectiveDataType())) {
+        //
+        // With supplied clusters (2026-10-11) the block tests are the only candidates, and they are registered
+        // under one data type, so they are fetched across all data types and the family filter does not apply:
+        // previously, with continuous data, only the Mixed family listed them, and the others listed nothing.
+        List<IndependenceTestModel> candidates = this.blockSpec != null
+                ? IndependenceTestModels.getInstance(this.experimental).getModels()
+                : IndependenceTestModels.getInstance(this.experimental).getModels(effectiveDataTypeFor(family));
+        for (IndependenceTestModel t : candidates) {
             Class<?> c = t.getIndependenceTest().clazz();
             if (DeprecationUtils.isClassDeprecated(c)) continue;
-            if (!familyPasses(c)) continue;
             boolean isBlocks = BlockIndependenceWrapper.class.isAssignableFrom(c);
             if ((this.blockSpec == null) == isBlocks) continue;
+            if (this.blockSpec == null && !familyPasses(c, family)) continue;
             out.add(t);
         }
         return out;
     }
 
     private List<ScoreModel> listScores(AlgorithmModel m) {
+        return listScores(m, this.family);
+    }
+
+    private List<ScoreModel> listScores(AlgorithmModel m, String family) {
         if (m == null || !m.isRequiredScore()) return List.of();
         List<ScoreModel> out = new ArrayList<>();
-        for (ScoreModel s : ScoreModels.getInstance(this.experimental).getModels(effectiveDataType())) {
+        List<ScoreModel> candidates = this.blockSpec != null
+                ? ScoreModels.getInstance(this.experimental).getModels()
+                : ScoreModels.getInstance(this.experimental).getModels(effectiveDataTypeFor(family));
+        for (ScoreModel s : candidates) {
             Class<?> c = s.getScore().clazz();
             if (DeprecationUtils.isClassDeprecated(c)) continue;
-            if (!familyPasses(c)) continue;
             boolean isBlocks = BlockScoreWrapper.class.isAssignableFrom(c);
             if ((this.blockSpec == null) == isBlocks) continue;
+            if (this.blockSpec == null && !familyPasses(c, family)) continue;
             out.add(s);
         }
         return out;
     }
 
     /**
+     * Whether the given family filter lists something for everything the selected algorithm requires. A family that
+     * would show an empty required test or score list is not offered (its button is disabled), and the current
+     * family moves off it automatically, so the user never faces a filter choice that lists nothing.
+     */
+    private boolean familyViable(AlgorithmModel m, String family) {
+        if (m == null) return true;
+        if (m.isRequiredTest() && listTests(m, family).isEmpty()) return false;
+        if (m.isRequiredScore() && listScores(m, family).isEmpty()) return false;
+        return true;
+    }
+
+    /**
      * Chooses the test and score for the selected algorithm: the cross-session saved command if it is listed, else
-     * the per-algorithm remembered choice, else the registry default for the data type, else the first listed.
+     * the per-algorithm remembered choice, else the registry default for the data type, else the first listed. If
+     * the current family lists nothing the algorithm requires while another family does, the family moves to the
+     * first one that does, so a required list is never empty when a non-empty one exists.
      */
     private void refreshTestAndScoreSelection() {
         AlgorithmModel m = this.selectedAlgo;
         this.selectedTest = null;
         this.selectedScore = null;
         if (m == null) return;
+
+        if (this.blockSpec == null && !familyViable(m, this.family)) {
+            for (String family : List.of(FAMILY_LINEAR_GAUSSIAN, FAMILY_MIXED, FAMILY_GENERAL, FAMILY_ALL)) {
+                if (familyViable(m, family)) {
+                    this.family = family;
+                    break;
+                }
+            }
+        }
 
         List<IndependenceTestModel> tests = listTests(m);
         if (!tests.isEmpty()) {
@@ -1096,11 +1165,13 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
     }
 
     private String uiIndTestKey() {
-        return UI_IND_TEST + "." + this.family;
+        // With supplied clusters the family filter does not apply, so the remembered block-test choice is keyed
+        // independently of whatever family happens to be saved.
+        return UI_IND_TEST + "." + (this.blockSpec != null ? "blocks" : this.family);
     }
 
     private String uiScoreKey() {
-        return UI_SCORE + "." + this.family;
+        return UI_SCORE + "." + (this.blockSpec != null ? "blocks" : this.family);
     }
 
     //=========================== Validation ===========================//
@@ -1188,6 +1259,7 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
                 if (at instanceof String s) {
                     if (AlgType.forbid_latent_common_causes.name().equals(s)) this.latent = LatentChoice.NO;
                     else if (AlgType.allow_latent_common_causes.name().equals(s)) this.latent = LatentChoice.YES;
+                    else if (AlgType.search_for_structure_over_latents.name().equals(s)) this.latent = LatentChoice.YES;
                     else this.latent = LatentChoice.ANY;
                 } else {
                     this.latent = defaultLatentChoice();
@@ -1244,10 +1316,15 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
         sel.put(EXPERIMENTAL_PARAM, this.experimental);
         sel.put(KNOWLEDGE_PARAM, this.knowledge);
         sel.put(DATASET_FILTER, this.family);
-        // Keep the classic card's filter key coherent so a session opened there behaves sensibly.
+        // Keep the classic card's filter key coherent so a session opened there behaves sensibly. Under YES the
+        // guided family spans two algorithm types, so the classic key follows the selected algorithm's own type.
         sel.put(ALGO_TYPE_PARAM, switch (this.latent) {
             case NO -> AlgType.forbid_latent_common_causes.name();
-            case YES -> AlgType.allow_latent_common_causes.name();
+            case YES -> this.selectedAlgo != null
+                        && this.selectedAlgo.getAlgorithm().annotation().algoType()
+                           == AlgType.search_for_structure_over_latents
+                    ? AlgType.search_for_structure_over_latents.name()
+                    : AlgType.allow_latent_common_causes.name();
             default -> "all";
         });
         if (this.selectedAlgo != null) sel.put(ALGO_PARAM, this.selectedAlgo.toString());
@@ -1342,10 +1419,11 @@ public class GuidedAlgorithmCard extends JPanel implements AlgorithmChooser, Scr
                       + "directly from the data. To run a search over clusters you supply or edit, add a Latent "
                       + "Clusters box between the data and this box.");
         } else if (this.mode == AlgorithmChooserLogic.BoxMode.LATENTS_FROM_CLUSTERS) {
-            sb.append("\n\nLatent Structure box with ").append(this.blockSpec.blocks().size())
+            sb.append("\n\nThis box has ").append(this.blockSpec.blocks().size())
                     .append(this.blockSpec.blocks().size() == 1 ? " cluster" : " clusters")
-                    .append(" from the Latent Clusters box: the algorithms listed search over the clusters' latent "
-                            + "variables, and the measurement edges are added to the result.");
+                    .append(" from its Latent Clusters parent: the algorithms listed are the ones that can search "
+                            + "over the clusters' latent variables, and the measurement edges are added to the "
+                            + "result.");
         }
         if (list.size() > 1) {
             sb.append("\n\n").append(list.size())
