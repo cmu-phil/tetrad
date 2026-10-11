@@ -1615,9 +1615,84 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * Grows the workbench's preferred size (and scrollable maximum) to hold every display node, and repaints.
+     * The space kept between the top and left of the workbench and any curved edge, in pixels: room for the line's
+     * width and its endpoint decorations, and a little more.
+     */
+    private static final int CURVE_VIEW_MARGIN = 14;
+
+    /**
+     * Moves every display node down and to the right by the same amount, if need be, so that no curved edge runs
+     * off the top or the left of the workbench. A layout puts the nodes inside the workbench, but an edge that has
+     * to bend around a node bows outside the box of its two endpoints, and for nodes near the top or left that can
+     * put part of the curve at negative coordinates, where it cannot be scrolled to. (To the right and below, the
+     * workbench grows to hold its edges, so nothing is needed there.) Moving all the nodes together changes no
+     * curve, since which edges bend and how depends only on where the nodes are relative to one another.
+     *
+     * @return True if the nodes were moved.
+     */
+    private boolean shiftCurvesIntoView() {
+        refreshRouting();
+
+        if (this.straightOnly || this.routedApexes == null) {
+            return false;
+        }
+
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+
+        for (Map.Entry<DisplayEdge, Double> entry : this.routedApexes.entrySet()) {
+            double apex = entry.getValue();
+            DisplayEdge edge = entry.getKey();
+
+            if (apex == 0.0 || edge.getNode1() == null || edge.getNode2() == null) {
+                continue;
+            }
+
+            Rectangle r1 = edge.getNode1().getBounds();
+            Rectangle r2 = edge.getNode2().getBounds();
+            double x1 = r1.getCenterX(), y1 = r1.getCenterY(), x2 = r2.getCenterX(), y2 = r2.getCenterY();
+            double len = Math.hypot(x2 - x1, y2 - y1);
+
+            if (len < 1e-6) {
+                continue;
+            }
+
+            // The curve's control point is displaced twice the apex from the chord's midpoint, toward the chord's
+            // left normal; see BezierRouter. Its leftmost and topmost points are found by stepping along it.
+            double cx = (x1 + x2) / 2.0 - (y2 - y1) / len * 2.0 * apex;
+            double cy = (y1 + y2) / 2.0 + (x2 - x1) / len * 2.0 * apex;
+
+            for (int i = 1; i < 16; i++) {
+                double t = i / 16.0, u = 1.0 - t;
+                minX = Math.min(minX, u * u * x1 + 2.0 * u * t * cx + t * t * x2);
+                minY = Math.min(minY, u * u * y1 + 2.0 * u * t * cy + t * t * y2);
+            }
+        }
+
+        int dx = minX < CURVE_VIEW_MARGIN ? (int) Math.ceil(CURVE_VIEW_MARGIN - minX) : 0;
+        int dy = minY < CURVE_VIEW_MARGIN ? (int) Math.ceil(CURVE_VIEW_MARGIN - minY) : 0;
+
+        if (dx == 0 && dy == 0) {
+            return false;
+        }
+
+        // Moving a display node moves its model node with it (see ComponentHandler), so the layout as saved
+        // moves too.
+        for (Component component : getComponents()) {
+            if (component instanceof DisplayNode) {
+                component.setLocation(component.getX() + dx, component.getY() + dy);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Grows the workbench's preferred size (and scrollable maximum) to hold every display node and edge, first
+     * moving the nodes, if need be, so that no curved edge runs off the top or left; and repaints.
      */
     private void fitCanvasToNodes() {
+        shiftCurvesIntoView();
         adjustPreferredSize();
         if (getPreferredSize().getWidth() > getMaxX()) setMaxX((int) getPreferredSize().getWidth());
         if (getPreferredSize().getHeight() > getMaxY()) setMaxY((int) getPreferredSize().getHeight());
@@ -2988,6 +3063,12 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                         }
 
                         // scrollRectToVisible(rect);
+                    }
+
+                    // The drag may have made an edge bend off the top or left of the workbench, where it could not
+                    // be scrolled to; if so, bring everything back into view.
+                    if (shiftCurvesIntoView()) {
+                        adjustPreferredSize();
                     }
 
                     // After the snapping above, so that undoing a drag puts the nodes back where they were
