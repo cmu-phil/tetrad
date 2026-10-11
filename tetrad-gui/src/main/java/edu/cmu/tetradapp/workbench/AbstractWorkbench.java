@@ -1170,12 +1170,16 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         if (g instanceof Graphics2D g2) {
             WorkbenchStyle.applyHints(g2);
         }
+
+        // Before any edge is painted, bring the choice of which edges bend, and how, up to date with the nodes as
+        // they now stand. Done here rather than when an edge asks, so that it is done once per painting and is not
+        // missed when the region being painted happens to contain no edge.
+        refreshRouting();
         super.paint(g);
     }
 
     /**
-     * The apexes of the curved edges, as last chosen together by {@link #routedApex(DisplayEdge)}; null until first
-     * needed.
+     * The apexes of the edges, as last chosen together by {@link #refreshRouting()}; null until first needed.
      */
     private transient Map<DisplayEdge, Double> routedApexes;
 
@@ -1185,18 +1189,46 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private transient long routingSignature;
 
     /**
-     * The apex chosen for the given edge when the sides of all the curved edges of this workbench are chosen
-     * together to cross as little as possible (see {@link BezierRouter}). The choice is kept until a node moves or
-     * changes size, or an edge is added, removed, or given a different offset; this is checked on each call rather
-     * than tracked by events, so that no change can be missed. When the choice is made anew the whole workbench is
-     * repainted, since edges other than the one that changed may have changed sides.
+     * True if this workbench has too many edges for any of them to be drawn curved; see
+     * {@link BezierRouter#MAX_CURVED_EDGES}.
+     */
+    private transient boolean straightOnly;
+
+    /**
+     * The apex chosen for the given edge when the bows of all the edges of this workbench are chosen together (see
+     * {@link BezierRouter}): zero for an edge that is to be drawn straight, which is every edge that does not have
+     * to bend around a node. The choice is brought up to date each time the workbench is painted.
      *
      * @param edge an edge of this workbench.
-     * @return its signed apex, or null if the edge is not one of the edges routed (it is not anchored at both ends).
+     * @return its signed apex, or null if the edge is not one of the edges routed (it is not anchored at both ends,
+     * or it was added since the workbench was last painted).
      */
     Double routedApex(DisplayEdge edge) {
+        if (this.routedApexes == null) {
+            refreshRouting();
+        }
+
+        return this.straightOnly ? Double.valueOf(0.0) : this.routedApexes.get(edge);
+    }
+
+    /**
+     * @return true if edges of this workbench may be drawn curved, so that moving one node can change the shape of
+     * edges that are not attached to it.
+     */
+    boolean isCurvedEdges() {
+        return !this.straightOnly;
+    }
+
+    /**
+     * Chooses the bows of the edges anew if a node has moved or changed size, or an edge has been added, removed,
+     * or given a different offset, since they were last chosen; this is checked rather than tracked by events, so
+     * that no change can be missed. When the choice is made anew the whole workbench is repainted, since edges
+     * other than the one that changed may have changed shape.
+     */
+    private void refreshRouting() {
         Component[] components = getComponents();
         long signature = 17;
+        int numEdges = 0;
 
         for (Component component : components) {
             if (component instanceof DisplayNode) {
@@ -1210,10 +1242,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 signature = 31 * signature + System.identityHashCode(e.getNode1());
                 signature = 31 * signature + System.identityHashCode(e.getNode2());
                 signature = 31 * signature + Double.hashCode(e.getOffset());
+                numEdges++;
             }
         }
 
-        if (this.routedApexes == null || signature != this.routingSignature) {
+        if (this.routedApexes != null && signature == this.routingSignature) {
+            return;
+        }
+
+        Map<DisplayEdge, Double> byEdge = new IdentityHashMap<>();
+        boolean straightOnly = numEdges > BezierRouter.MAX_CURVED_EDGES;
+
+        if (!straightOnly) {
             List<Rectangle> nodes = new ArrayList<>();
             Map<Component, Integer> indices = new IdentityHashMap<>();
             List<DisplayEdge> routed = new ArrayList<>();
@@ -1239,22 +1279,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
 
             double[] apexes = BezierRouter.route(nodes.toArray(new Rectangle[0]), edges, offsets);
-            Map<DisplayEdge, Double> byEdge = new IdentityHashMap<>();
 
             for (int i = 0; i < routed.size(); i++) {
                 byEdge.put(routed.get(i), apexes[i]);
             }
-
-            boolean first = this.routedApexes == null;
-            this.routedApexes = byEdge;
-            this.routingSignature = signature;
-
-            if (!first) {
-                repaint();
-            }
         }
 
-        return this.routedApexes.get(edge);
+        boolean first = this.routedApexes == null;
+        this.routedApexes = byEdge;
+        this.routingSignature = signature;
+        this.straightOnly = straightOnly;
+
+        if (!first) {
+            repaint();
+        }
     }
 
     private static boolean isRouted(DisplayEdge edge) {
@@ -3757,15 +3795,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                 this.workbench.adjustPreferredSize();
 
-                // A curved edge's shape depends on every node near its chord, not only on the two endpoint nodes
-                // it listens to, so moving any node can change curves that receive no event of their own. Left
+                // Whether an edge bends, and how, depends on every node near its chord, not only on the two endpoint
+                // nodes it listens to, so moving any node can change edges that receive no event of their own. Left
                 // alone, such an edge is repainted only inside the moving node's dirty region, which mixes
-                // fragments of the old and new curve on screen and can freeze a stale bow once the mover leaves
+                // fragments of the old and new shape on screen and can freeze a stale bow once the mover leaves
                 // the corridor. Repainting the whole workbench marks every edge's full bounds dirty; Swing
-                // coalesces these during a drag, so it is one full redraw per event batch. Straight rendering
-                // keeps the old, cheaper behavior, since a straight edge's geometry depends only on the two
-                // nodes it already listens to.
-                if (DisplayEdge.isBezierEdges()) {
+                // coalesces these during a drag, so it is one full redraw per event batch. A workbench with too
+                // many edges for any to be curved keeps the old, cheaper behavior, since a straight edge's
+                // geometry depends only on the two nodes it already listens to.
+                if (this.workbench.isCurvedEdges()) {
                     this.workbench.repaint();
                 }
 

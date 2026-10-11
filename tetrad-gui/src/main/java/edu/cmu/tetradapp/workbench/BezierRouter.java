@@ -65,6 +65,14 @@ public final class BezierRouter {
     public static final int MAX_EDGES = 250;
 
     /**
+     * The most edges a workbench may have for any of them to be drawn curved; beyond this all are drawn straight.
+     * Finding the bow for an edge means testing curves against the nodes near it, and it is redone for every edge
+     * whenever a node moves, so that on a large graph it would make dragging a node sluggish (about a tenth of a
+     * second per move at 2,000 edges). A graph that large is not made more readable by a few bent edges anyway.
+     */
+    public static final int MAX_CURVED_EDGES = 600;
+
+    /**
      * The number of straight pieces a curve is cut into for counting crossings.
      */
     private static final int PIECES = 8;
@@ -336,7 +344,15 @@ public final class BezierRouter {
             double x = s * s * x1 + 2.0 * s * t * cx + t * t * x2;
             double y = s * s * y1 + 2.0 * s * t * cy + t * t * y2;
 
+            double loX = Math.min(px, x), hiX = Math.max(px, x), loY = Math.min(py, y), hiY = Math.max(py, y);
+
             for (Rectangle b : near) {
+                // Most pieces are nowhere near most nodes; pass over those without building anything.
+                if (hiX < b.x - margin || loX > b.x + b.width + margin
+                    || hiY < b.y - margin || loY > b.y + b.height + margin) {
+                    continue;
+                }
+
                 if (new Rectangle2D.Double(b.x - margin, b.y - margin, b.width + 2.0 * margin,
                         b.height + 2.0 * margin).intersectsLine(px, py, x, y)) {
                     count++;

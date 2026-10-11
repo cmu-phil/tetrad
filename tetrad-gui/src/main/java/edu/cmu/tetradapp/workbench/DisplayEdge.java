@@ -14,7 +14,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.prefs.Preferences;
 
 /**
  * This component has three modes: <ul> <li> UNANCHORED <li> NORMAL <li> SELECTED </ul> In the unanchored mode, it
@@ -47,12 +46,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     protected static final int ANCHORED_SELECTED = 2;
 
     /**
-     * Preference key for rendering edges as quadratic Bezier curves. Read per user from
-     * {@code Preferences.userRoot()}; toggled from the Layout menu.
-     */
-    public static final String BEZIER_EDGES_PREF = "bezierEdges";
-
-    /**
      * The largest deflection, in pixels, of a curved edge's apex from the straight chord between its endpoints. Caps
      * obstacle avoidance so a curve never loops around far-off nodes.
      */
@@ -65,8 +58,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     private static final double BEZIER_NODE_MARGIN = 10.0;
 
     /**
-     * How far the component bounds are grown beyond the union of the two node rectangles when curved rendering is on,
-     * so the bow (plus endpoint decorations) is not clipped. Must exceed BEZIER_MAX_APEX.
+     * How far the component bounds are grown beyond the union of the two node rectangles when the edge is drawn as
+     * a curve, so the bow (plus endpoint decorations) is not clipped. Must exceed BEZIER_MAX_APEX.
      */
     private static final int BEZIER_BOUNDS_PAD = (int) BEZIER_MAX_APEX + 26;
 
@@ -84,8 +77,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     private boolean showAdjacenciesOnly;
 
     /**
-     * Whether the current bounds were computed for curved rendering. When the user toggles the preference, paint()
-     * notices the mismatch and recomputes the bounds, so no external wiring is needed.
+     * Whether the current bounds were computed for this edge drawn as a curve. An edge is drawn straight unless it
+     * has to bend around a node, and which it is can change when any node moves; paint() notices the mismatch and
+     * recomputes the bounds, so no external wiring is needed.
      */
     private boolean boundsForBezier;
     private double offset;
@@ -240,14 +234,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         return WorkbenchStyle.circleInterior();
     }
 
-    /**
-     * @return true if edges should be rendered as quadratic Bezier curves, per the user preference toggled in the
-     * Layout menu.
-     */
-    public static boolean isBezierEdges() {
-        return Preferences.userRoot().getBoolean(DisplayEdge.BEZIER_EDGES_PREF, false);
-    }
-
     @Override
     public void updateUI() {
         super.updateUI();
@@ -284,11 +270,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     @Override
     public void paint(Graphics g) {
-        // If the curved-edges preference changed since the bounds were last computed, the bounds may be too small
-        // for the bow (or needlessly padded); fix them before drawing.
-        if (this.boundsForBezier != DisplayEdge.isBezierEdges()) {
-            resetBounds();
-        }
+        checkCurveBounds();
 
         switch (this.mode) {
             case DisplayEdge.HALF_ANCHORED:
@@ -345,11 +327,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
             g2d.setColor(this.getSelectedColor());
         }
 
-        // Curved rendering, when turned on, applies only to edges anchored to two nodes; a tracking edge stays
-        // straight. If the curve cannot be built (coincident or overlapping nodes), fall through to the straight
-        // rendering.
-        if (this.mode != DisplayEdge.HALF_ANCHORED && getNode2() != null && DisplayEdge.isBezierEdges()
-            && drawBezierEdge(g2d)) {
+        // An edge anchored to two nodes is drawn as a curve if it has to bend around a node; a tracking edge stays
+        // straight. If the edge need not bend, or the curve cannot be built (coincident or overlapping nodes), fall
+        // through to the straight rendering.
+        if (drawBezierEdge(g2d)) {
             return;
         }
 
@@ -386,52 +367,11 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * to the straight rendering and nothing has been changed.
      */
     private boolean drawBezierEdge(Graphics2D g2d) {
-        Rectangle r1 = getNode1().getBounds();
-        Rectangle r2 = getNode2().getBounds();
+        QuadCurve2D.Double curve = bezierCurve();
 
-        Point2D.Double c1 = new Point2D.Double(r1.getCenterX(), r1.getCenterY());
-        Point2D.Double c2 = new Point2D.Double(r2.getCenterX(), r2.getCenterY());
-
-        double dx = c2.x - c1.x;
-        double dy = c2.y - c1.y;
-        double len = Math.hypot(dx, dy);
-
-        if (len < 1e-6) {
+        if (curve == null) {
             return false;
         }
-
-        double ux = dx / len;
-        double uy = dy / len;
-
-        // Unit normal; positive apex bows to this side.
-        double nx = -uy;
-        double ny = ux;
-
-        double apex = chooseApex(c1, ux, uy, nx, ny, len);
-
-        // A quadratic Bezier with its control point displaced h from the chord midpoint passes h / 2 from the chord
-        // at its apex, so the control displacement is twice the requested apex.
-        double h = 2.0 * apex;
-        Point2D.Double ctrl = new Point2D.Double((c1.x + c2.x) / 2.0 + nx * h, (c1.y + c2.y) / 2.0 + ny * h);
-
-        // Trim the curve to the node boundaries by bisection in the curve parameter.
-        double t0 = exitParameter(getNode1(), c1, ctrl, c2, 0.0);
-        double t1 = exitParameter(getNode2(), c1, ctrl, c2, 1.0);
-
-        if (Double.isNaN(t0) || Double.isNaN(t1) || t0 >= t1) {
-            return false;
-        }
-
-        // Restrict the curve to [t0, t1] (de Casteljau, via the polar form); then move to local coordinates.
-        Point2D.Double q0 = bezierPoint(c1, ctrl, c2, t0);
-        Point2D.Double q1 = blossom(c1, ctrl, c2, t0, t1);
-        Point2D.Double q2 = bezierPoint(c1, ctrl, c2, t1);
-
-        int lx = getLocation().x;
-        int ly = getLocation().y;
-
-        QuadCurve2D.Double curve = new QuadCurve2D.Double(q0.x - lx, q0.y - ly, q1.x - lx, q1.y - ly,
-                q2.x - lx, q2.y - ly);
 
         g2d.draw(curve);
 
@@ -439,9 +379,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         setClickRegion(new BasicStroke(sleeveWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
                 .createStrokedShape(curve));
 
-        Point p0 = new Point((int) Math.round(q0.x) - lx, (int) Math.round(q0.y) - ly);
-        Point pc = new Point((int) Math.round(q1.x) - lx, (int) Math.round(q1.y) - ly);
-        Point p2 = new Point((int) Math.round(q2.x) - lx, (int) Math.round(q2.y) - ly);
+        Point p0 = new Point((int) Math.round(curve.x1), (int) Math.round(curve.y1));
+        Point pc = new Point((int) Math.round(curve.ctrlx), (int) Math.round(curve.ctrly));
+        Point p2 = new Point((int) Math.round(curve.x2), (int) Math.round(curve.y2));
 
         setConnectedPoints(new PointPair(p0, p2));
 
@@ -453,6 +393,88 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
         firePropertyChange("newPointPair", null, getConnectedPoints());
         return true;
+    }
+
+    /**
+     * Recomputes the bounds if this edge has changed between straight and curved since they were last computed,
+     * since they may now be too small for the bow or needlessly padded. To be called at the start of painting.
+     */
+    protected final void checkCurveBounds() {
+        if (this.boundsForBezier != (bezierApex() != 0.0)) {
+            resetBounds();
+        }
+    }
+
+    /**
+     * @return the signed apex of this edge (see chooseApex), which is zero if the edge is to be drawn straight: it
+     * is not anchored to two nodes, or the two nodes coincide, or it does not have to bend around any node.
+     */
+    private double bezierApex() {
+        if (this.mode == DisplayEdge.HALF_ANCHORED || getNode1() == null || getNode2() == null) {
+            return 0.0;
+        }
+
+        Rectangle r1 = getNode1().getBounds();
+        Rectangle r2 = getNode2().getBounds();
+
+        double dx = r2.getCenterX() - r1.getCenterX();
+        double dy = r2.getCenterY() - r1.getCenterY();
+        double len = Math.hypot(dx, dy);
+
+        if (len < 1e-6) {
+            return 0.0;
+        }
+
+        return chooseApex(new Point2D.Double(r1.getCenterX(), r1.getCenterY()), dx / len, dy / len, -dy / len,
+                dx / len, len);
+    }
+
+    /**
+     * @return this edge as a quadratic Bezier curve between its two nodes, trimmed to their boundaries, in this
+     * component's coordinates; or null if the edge is to be drawn straight: it does not have to bend around any
+     * node (see bezierApex), or the curve cannot be built.
+     */
+    protected final QuadCurve2D.Double bezierCurve() {
+        double apex = bezierApex();
+
+        if (apex == 0.0) {
+            return null;
+        }
+
+        Rectangle r1 = getNode1().getBounds();
+        Rectangle r2 = getNode2().getBounds();
+
+        Point2D.Double c1 = new Point2D.Double(r1.getCenterX(), r1.getCenterY());
+        Point2D.Double c2 = new Point2D.Double(r2.getCenterX(), r2.getCenterY());
+
+        double len = Math.hypot(c2.x - c1.x, c2.y - c1.y);
+
+        // Unit normal; positive apex bows to this side.
+        double nx = -(c2.y - c1.y) / len;
+        double ny = (c2.x - c1.x) / len;
+
+        // A quadratic Bezier with its control point displaced h from the chord midpoint passes h / 2 from the chord
+        // at its apex, so the control displacement is twice the requested apex.
+        double h = 2.0 * apex;
+        Point2D.Double ctrl = new Point2D.Double((c1.x + c2.x) / 2.0 + nx * h, (c1.y + c2.y) / 2.0 + ny * h);
+
+        // Trim the curve to the node boundaries by bisection in the curve parameter.
+        double t0 = exitParameter(getNode1(), c1, ctrl, c2, 0.0);
+        double t1 = exitParameter(getNode2(), c1, ctrl, c2, 1.0);
+
+        if (Double.isNaN(t0) || Double.isNaN(t1) || t0 >= t1) {
+            return null;
+        }
+
+        // Restrict the curve to [t0, t1] (de Casteljau, via the polar form); then move to local coordinates.
+        Point2D.Double q0 = bezierPoint(c1, ctrl, c2, t0);
+        Point2D.Double q1 = blossom(c1, ctrl, c2, t0, t1);
+        Point2D.Double q2 = bezierPoint(c1, ctrl, c2, t1);
+
+        int lx = getLocation().x;
+        int ly = getLocation().y;
+
+        return new QuadCurve2D.Double(q0.x - lx, q0.y - ly, q1.x - lx, q1.y - ly, q2.x - lx, q2.y - ly);
     }
 
     /**
@@ -954,7 +976,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     private void resetBounds() {
-        this.boundsForBezier = DisplayEdge.isBezierEdges();
+        this.boundsForBezier = bezierApex() != 0.0;
 
         switch (this.mode) {
             case DisplayEdge.HALF_ANCHORED:

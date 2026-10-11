@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.QuadCurve2D;
 
 /**
  * Presents an edge in the Tetrad SessionWorkbench.
@@ -165,13 +166,26 @@ final class SessionEditorEdge extends DisplayEdge {
      *
      * @return the array of points
      */
+    /**
+     * @return where the die goes: the middle of the curve if this edge was last drawn as one, and otherwise the
+     * middle of the straight line between its connected points. (At its middle a curve runs parallel to that line,
+     * so the die is turned the same way in both cases.)
+     */
+    private Point getDiceCenter() {
+        if (this.curveMiddle != null) {
+            return new Point(this.curveMiddle);
+        }
+
+        PointPair pp = getConnectedPoints();
+        return new Point((pp.getFrom().x + pp.getTo().x) / 2, (pp.getFrom().y + pp.getTo().y) / 2);
+    }
+
     private Point[] getDiceArea() {
         int[] xpoint = new int[4];
         int[] ypoint = new int[4];
         PointPair pp = getConnectedPoints();
 
-        Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
-                (pp.getFrom().y + pp.getTo().y) / 2);
+        Point midPoint = getDiceCenter();
         double d = DisplayEdge.distance(pp.getFrom(), pp.getTo());
 
         if (d < 1) {
@@ -200,9 +214,7 @@ final class SessionEditorEdge extends DisplayEdge {
     }
 
     private Circle[] getDiceDot() {
-        PointPair pp = getConnectedPoints();
-        Point midPoint = new Point((pp.getFrom().x + pp.getTo().x) / 2,
-                (pp.getFrom().y + pp.getTo().y) / 2);
+        Point midPoint = getDiceCenter();
         Point[] dice = getDiceArea();
         Circle[] dot = new Circle[5];
 
@@ -228,6 +240,8 @@ final class SessionEditorEdge extends DisplayEdge {
      */
     @Override
     public void paint(Graphics g) {
+        checkCurveBounds();
+
         Graphics2D g2d = (Graphics2D) g.create();
 
         try {
@@ -235,7 +249,11 @@ final class SessionEditorEdge extends DisplayEdge {
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
             PointPair pp;
+            this.curveMiddle = null;
 
+            // As for the edges of a graph, an edge between two boxes is drawn straight unless it has to bend around
+            // a third box, in which case it is drawn as a curve; see DisplayEdge.bezierCurve. An edge still being
+            // dragged out stays straight.
             switch (getMode()) {
                 case DisplayEdge.HALF_ANCHORED:
                     pp = calculateEdge(getNode1(), getRelativeMouseTrackPoint());
@@ -243,13 +261,23 @@ final class SessionEditorEdge extends DisplayEdge {
                     break;
 
                 case DisplayEdge.ANCHORED_UNSELECTED:
-                    pp = calculateEdge(getNode1(), getNode2());
-                    drawSessionEdge(g2d, pp, getLineColor());
+                    pp = drawSessionCurve(g2d, getLineColor());
+
+                    if (pp == null) {
+                        pp = calculateEdge(getNode1(), getNode2());
+                        drawSessionEdge(g2d, pp, getLineColor());
+                    }
+
                     break;
 
                 case DisplayEdge.ANCHORED_SELECTED:
-                    pp = calculateEdge(getNode1(), getNode2());
-                    drawSessionEdge(g2d, pp, getSelectedColor());
+                    pp = drawSessionCurve(g2d, getSelectedColor());
+
+                    if (pp == null) {
+                        pp = calculateEdge(getNode1(), getNode2());
+                        drawSessionEdge(g2d, pp, getSelectedColor());
+                    }
+
                     break;
 
                 default:
@@ -275,6 +303,12 @@ final class SessionEditorEdge extends DisplayEdge {
      * heavier than workbench edges so session edges (dataflow) cannot be
      * mistaken for causal or Markov edges.
      */
+    /**
+     * The middle of the curve this edge was last drawn as, in this component's coordinates, or null if it was last
+     * drawn straight.
+     */
+    private transient Point curveMiddle;
+
     private static final float SHAFT_WIDTH = 5f;
 
     /**
@@ -342,6 +376,84 @@ final class SessionEditorEdge extends DisplayEdge {
     /**
      * Holds the radius and center of a circle.
      */
+    /**
+     * Draws this edge as a curve, if it has to bend around a box: a thick shaft along the curve, stopping at the base
+     * of a filled arrowhead that points along the curve's direction where it arrives.
+     *
+     * @return the ends of the curve, in this component's coordinates; or null if the edge is to be drawn straight
+     * instead, in which case nothing has been drawn or changed.
+     */
+    private PointPair drawSessionCurve(Graphics2D g2d, Color color) {
+        QuadCurve2D.Double curve = bezierCurve();
+
+        if (curve == null) {
+            return null;
+        }
+
+        // The point of the curve at parameter t, and its distance from the tip.
+        double tipX = curve.x2, tipY = curve.y2;
+
+        if (Math.hypot(tipX - curve.x1, tipY - curve.y1) <= HEAD_LENGTH) {
+            return null;
+        }
+
+        // Where the arrowhead's base sits: the last point of the curve that is the head's length from the tip.
+        double lo = 0.0, hi = 1.0;
+
+        for (int i = 0; i < 24; i++) {
+            double t = (lo + hi) / 2.0, s = 1.0 - t;
+            double x = s * s * curve.x1 + 2.0 * s * t * curve.ctrlx + t * t * curve.x2;
+            double y = s * s * curve.y1 + 2.0 * s * t * curve.ctrly + t * t * curve.y2;
+
+            if (Math.hypot(tipX - x, tipY - y) > HEAD_LENGTH) {
+                lo = t;
+            } else {
+                hi = t;
+            }
+        }
+
+        double tb = lo, sb = 1.0 - tb;
+        double baseX = sb * sb * curve.x1 + 2.0 * sb * tb * curve.ctrlx + tb * tb * curve.x2;
+        double baseY = sb * sb * curve.y1 + 2.0 * sb * tb * curve.ctrly + tb * tb * curve.y2;
+
+        double len = Math.hypot(tipX - baseX, tipY - baseY);
+
+        if (len < 1e-6) {
+            return null;
+        }
+
+        double ux = (tipX - baseX) / len;
+        double uy = (tipY - baseY) / len;
+
+        // The curve from its start to the base of the head; its control point lies that fraction of the way from
+        // the start to the whole curve's control point.
+        QuadCurve2D.Double shaft = new QuadCurve2D.Double(curve.x1, curve.y1,
+                sb * curve.x1 + tb * curve.ctrlx, sb * curve.y1 + tb * curve.ctrly, baseX, baseY);
+
+        g2d.setColor(color);
+        g2d.setStroke(new BasicStroke(SHAFT_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.draw(shaft);
+
+        Path2D.Double head = new Path2D.Double();
+        head.moveTo(tipX, tipY);
+        head.lineTo(baseX - uy * HEAD_HALF_WIDTH, baseY + ux * HEAD_HALF_WIDTH);
+        head.lineTo(baseX + uy * HEAD_HALF_WIDTH, baseY - ux * HEAD_HALF_WIDTH);
+        head.closePath();
+        g2d.fill(head);
+
+        setClickRegion(new BasicStroke(SHAFT_WIDTH + 12f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+                .createStrokedShape(curve));
+
+        this.curveMiddle = new Point((int) Math.round(0.25 * curve.x1 + 0.5 * curve.ctrlx + 0.25 * curve.x2),
+                (int) Math.round(0.25 * curve.y1 + 0.5 * curve.ctrly + 0.25 * curve.y2));
+
+        PointPair pp = new PointPair(new Point((int) Math.round(curve.x1), (int) Math.round(curve.y1)),
+                new Point((int) Math.round(tipX), (int) Math.round(tipY)));
+
+        firePropertyChange("newPointPair", null, pp);
+        return pp;
+    }
+
     private static final class Circle {
         public final int radius;
         public final Point center;
