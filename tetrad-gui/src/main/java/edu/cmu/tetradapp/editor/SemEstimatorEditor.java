@@ -102,6 +102,12 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
     private final SemEstimatorWrapper wrapper;
 
     /**
+     * The robust (Satorra-Bentler) statistics for the current estimate, or null when robust statistics are switched
+     * off, no tabular data set is available, or the computation failed.
+     */
+    private transient SemSandwichEstimator sandwich;
+
+    /**
      * The title for the graphical editor tab.
      */
     private final String graphicalEditorTitle = "Graphical Editor";
@@ -201,6 +207,38 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         scoreBox.setSelectedItem(scoreType.toString());
         restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
 
+        JCheckBox robustCheck = new JCheckBox("Robust stats");
+        robustCheck.setToolTipText("<html>Satorra-Bentler robust (sandwich) standard errors and scaled chi-square,"
+                                   + "<br>for data with non-normal (e.g., heavy-tailed) variables. Requires a tabular"
+                                   + "<br>data set, since fourth moments are estimated from the data. Coefficient"
+                                   + "<br>standard errors change little; standard errors of variance parameters and"
+                                   + "<br>the model chi-square are corrected for kurtosis.</html>");
+        robustCheck.setSelected(wrapper.getParams().getBoolean("semRobustStatistics", false));
+        robustCheck.setEnabled(this.dataSet != null);
+
+        robustCheck.addActionListener((e) -> {
+            wrapper.getParams().set("semRobustStatistics", robustCheck.isSelected());
+
+            class RobustProcess extends WatchedProcess {
+                @Override
+                public void watch() {
+                    try {
+                        applyRobustStatistics();
+                        resetSemImEditor();
+                    } catch (Exception ex) {
+                        wrapper.getParams().set("semRobustStatistics", false);
+                        robustCheck.setSelected(false);
+                        SemEstimatorEditor.this.sandwich = null;
+                        resetSemImEditor();
+                        JOptionPane.showMessageDialog(robustCheck,
+                                "Could not compute robust statistics for these data:\n" + ex.getMessage());
+                    }
+                }
+            }
+
+            new RobustProcess();
+        });
+
         JButton estimateButton = new JButton("Estimate Again");
 
         estimateButton.addActionListener((e) -> {
@@ -251,6 +289,15 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
                     try {
                         wrapper.setDataIndex(index);
                         SemEstimatorEditor.this.dataSet = wrapper.getSemEstimator().getDataSet();
+                        robustCheck.setEnabled(SemEstimatorEditor.this.dataSet != null);
+
+                        try {
+                            applyRobustStatistics();
+                        } catch (Exception ex) {
+                            SemEstimatorEditor.this.sandwich = null;
+                            TetradLogger.getInstance().log("Robust statistics not computed: " + ex.getMessage());
+                        }
+
                         resetSemImEditor();
                         firePropertyChange("modelChanged", null, null);
                     } catch (Exception ex) {
@@ -281,6 +328,8 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         lowerBar.add(new JLabel("Random restarts:"));
         lowerBar.add(Box.createHorizontalStrut(4));
         lowerBar.add(fixSize(restarts));
+        lowerBar.add(Box.createHorizontalStrut(12));
+        lowerBar.add(robustCheck);
         lowerBar.add(Box.createHorizontalGlue());
         if (this.dataSet != null) {
             lowerBar.add(PlotMatrixForSelected.button(
@@ -341,7 +390,36 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         add(lowerBar, BorderLayout.SOUTH);
 
         updateSettingEnabling(optimizerCombo, scoreBox, restarts);
+
+        try {
+            applyRobustStatistics();
+        } catch (Exception e) {
+            this.sandwich = null;
+            TetradLogger.getInstance().log("Robust statistics not computed: " + e.getMessage());
+        }
+
         resetSemImEditor();
+    }
+
+    /**
+     * Computes or clears the robust (Satorra-Bentler) statistics for the current estimate, according to the
+     * robust-statistics setting and the availability of a tabular data set, and installs or clears the robust standard
+     * errors on the estimated SEM so that the tabular editor and the report show them.
+     */
+    private void applyRobustStatistics() {
+        SemIm estSem = this.wrapper.getEstimatedSemIm();
+        this.sandwich = null;
+
+        if (estSem == null) {
+            return;
+        }
+
+        if (this.wrapper.getParams().getBoolean("semRobustStatistics", false) && this.dataSet != null) {
+            this.sandwich = new SemSandwichEstimator(estSem, this.dataSet);
+            estSem.setRobustStandardErrors(this.sandwich.getRobustStdErrs());
+        } else {
+            estSem.setRobustStandardErrors(null);
+        }
     }
 
     /**
@@ -467,6 +545,11 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
 
         StringBuilder builder = new StringBuilder();
         builder.append("Dataset: ").append(this.dataSet.getName()).append("\n\n");
+
+        if (this.sandwich != null) {
+            builder.append("Standard errors are robust (Satorra-Bentler sandwich) estimates.\n\n");
+        }
+
         builder.append(String.format(rowFormat, "From", "To", "Type", "Value", "SE", "T", "P"));
 
         // Maximum number of free parameters for which statistics will be calculated. (Calculating standard errors
@@ -574,6 +657,14 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         estimator.setScoreType(this.wrapper.getScoreType());
 
         estimator.estimate();
+
+        try {
+            applyRobustStatistics();
+        } catch (Exception e) {
+            this.sandwich = null;
+            TetradLogger.getInstance().log("Robust statistics not computed: " + e.getMessage());
+        }
+
         resetSemImEditor();
     }
 
@@ -791,10 +882,10 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         private static final long serialVersionUID = -9096723049787232471L;
 
         private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        private final SemEstimatorWrapper wrapper;
+        private final SemEstimatorEditor editor;
 
-        public ModelStatisticsPanel(SemEstimatorWrapper wrapper) {
-            this.wrapper = wrapper;
+        public ModelStatisticsPanel(SemEstimatorEditor editor) {
+            this.editor = editor;
             setEditable(false);
             setMargin(new Insets(8, 8, 8, 8));
             reset();
@@ -860,6 +951,22 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
                         + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
             }
 
+            SemSandwichEstimator sandwich = this.editor.sandwich;
+
+            if (sandwich != null && modelDof > 0) {
+                append("\n\nSatorra-Bentler scaled Chi Square = " + this.nf.format(sandwich.getScaledChiSquare()));
+                append("\nSatorra-Bentler scaling factor c = " + this.nf.format(sandwich.getScalingFactor()));
+                double sp = sandwich.getScaledPValue();
+                String spString = sp > 0.001 ? this.nf.format(sp) : new DecimalFormat("0.0000E0").format(sp);
+                append("\nScaled P Value = " + (Double.isNaN(sp) ? "undefined" : spString));
+                append("\n\nRobust statistics are showing: the scaled chi square divides the "
+                       + "chi square by the scaling factor c, which corrects the test for "
+                       + "non-normality using fourth moments estimated from the data (Satorra "
+                       + "and Bentler, 1994), and the standard errors in the tabular editor "
+                       + "and the report are robust (sandwich) estimates. Under normal data "
+                       + "c is close to 1 and the two tests agree.");
+            }
+
             append("\n\nThe above chi square test assumes that the maximum "
                     + "likelihood function over the measured variables has been "
                     + "minimized. Under that assumption, the null hypothesis for "
@@ -881,7 +988,7 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         }
 
         private ISemIm semIm() {
-            return this.wrapper.getEstimatedSemIm();
+            return this.editor.wrapper.getEstimatedSemIm();
         }
     }
 
@@ -1483,7 +1590,7 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
 
         private ModelStatisticsPanel modelStatisticsPanel() {
             if (this.modelStatisticsPanel == null) {
-                this.modelStatisticsPanel = new ModelStatisticsPanel(SemEstimatorEditor.this.wrapper);
+                this.modelStatisticsPanel = new ModelStatisticsPanel(SemEstimatorEditor.this);
             }
             return this.modelStatisticsPanel;
         }

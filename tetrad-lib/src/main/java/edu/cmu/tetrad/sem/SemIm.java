@@ -144,6 +144,13 @@ public final class SemIm implements Im, ISemIm {
      */
     private double[] standardErrors;
     /**
+     * Robust (sandwich) standard errors for the free parameters, set externally, e.g., Satorra-Bentler standard errors
+     * computed by {@link SemSandwichEstimator}. When non-null these take precedence over the normal-theory standard
+     * errors in getStandardError. Transient: never serialized, so a session saved while robust standard errors are
+     * showing loads with normal-theory ones until they are recomputed. Cleared whenever a parameter value changes.
+     */
+    private transient double[] robustStandardErrors;
+    /**
      * True iff setting freeParameters to out-of-bound values throws exceptions.
      */
     private boolean parameterBoundsEnforced = true;
@@ -736,6 +743,7 @@ public final class SemIm implements Im, ISemIm {
 
         this.implCovar = null;
         this.standardErrors = null;
+        this.robustStandardErrors = null;
     }
 
     /**
@@ -785,11 +793,13 @@ public final class SemIm implements Im, ISemIm {
             mapping.setValue(value);
             this.implCovar = null;          // force recompute next time
             this.standardErrors = null;     // invalidate SE cache
+            this.robustStandardErrors = null;
         } else if (getMeanParameters().contains(parameter)) {
             int index = getMeanParameters().indexOf(parameter);
             this.variableMeans[index] = value;
             this.implCovar = null;          // force recompute next time
             this.standardErrors = null;     // invalidate SE cache
+            this.robustStandardErrors = null;
         } else {
             throw new IllegalArgumentException("That parameter cannot be set in "
                     + "this model: " + parameter);
@@ -826,6 +836,7 @@ public final class SemIm implements Im, ISemIm {
         // Invalidate derived caches
         this.implCovar = null;
         this.standardErrors = null;
+        this.robustStandardErrors = null;
     }
 
     /**
@@ -2168,6 +2179,15 @@ public final class SemIm implements Im, ISemIm {
         }
 
         if (getFreeParameters().contains(parameter)) {
+
+            // Robust (sandwich) standard errors, when set, take precedence over all the
+            // normal-theory calculations below; see setRobustStandardErrors.
+            if (this.robustStandardErrors != null) {
+                int index = getFreeParameters().indexOf(parameter);
+                return index < this.robustStandardErrors.length
+                        ? this.robustStandardErrors[index] : Double.NaN;
+            }
+
             if (getNumFreeParams() <= maxFreeParams) {
                 if (parameter.getNodeA() != parameter.getNodeB()) {
                     Node nodeA = parameter.getNodeA();
@@ -2691,6 +2711,29 @@ public final class SemIm implements Im, ISemIm {
 
     private Matrix edgeCoef() {
         return this.edgeCoef;
+    }
+
+    /**
+     * Sets robust (sandwich) standard errors for the free parameters, e.g., Satorra-Bentler standard errors computed
+     * by {@link SemSandwichEstimator}. When set, these are returned by getStandardError in place of the normal-theory
+     * standard errors, and t and p values flow from them. The array must be in the order of getFreeParameters(). Pass
+     * null to return to normal-theory standard errors. The setting is transient: it is not serialized, and it is
+     * cleared whenever a parameter value changes.
+     *
+     * @param robustStandardErrors the robust standard errors, or null to clear them.
+     */
+    public void setRobustStandardErrors(double[] robustStandardErrors) {
+        this.robustStandardErrors = robustStandardErrors;
+    }
+
+    /**
+     * Reports whether robust (sandwich) standard errors are currently set, in which case getStandardError returns them
+     * in place of the normal-theory standard errors.
+     *
+     * @return true if robust standard errors are in use.
+     */
+    public boolean isUsingRobustStandardErrors() {
+        return this.robustStandardErrors != null;
     }
 
     private double[] standardErrors() {
