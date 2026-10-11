@@ -111,35 +111,11 @@ final class DistanceFromSelected {
 
         List<List<Node>> tiers = placeInTiers(this.graph, this.selected);
 
-        int y = 0;
-
-        for (List<Node> tier : tiers) {
-            y += 60;
-
-            if (tier.isEmpty()) continue;
-
-            Node node = tier.get(0);
-
-            DisplayNode displayNode = (DisplayNode) this.layoutEditable.getModelNodesToDisplay().get(node);
-            Rectangle r = displayNode.getBounds();
-            int x = r.width / 2 + 10;
-
-            node.setCenterX(x);
-            node.setCenterY(y);
-
-            int lastHalf = r.width / 2;
-
-            for (int i = 1; i < tier.size(); i++) {
-                node = tier.get(i);
-                displayNode = (DisplayNode) this.layoutEditable.getModelNodesToDisplay().get(node);
-                r = displayNode.getBounds();
-                int thisHalf = r.width / 2;
-                x += lastHalf + thisHalf + 5;
-                node.setCenterX(x);
-                node.setCenterY(y);
-                lastHalf = thisHalf;
-            }
-        }
+        // One row for each distance from the selected nodes, each row centered on the widest and spaced by the
+        // nodes' sizes on screen, as in the causal order layout. (The rows used to all start at the left margin,
+        // so that the selected nodes, usually a short top row, sat at the far left above the wide rows of their
+        // neighbors.)
+        LayoutUtil.layoutInCenteredRows(tiers, LayoutUtils.displayNodeSizes(this.layoutEditable));
     }
 
     private List<List<Node>> placeInTiers(Graph graph, List<Node> selected) {

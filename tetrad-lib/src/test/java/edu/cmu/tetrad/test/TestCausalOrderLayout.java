@@ -105,4 +105,45 @@ public class TestCausalOrderLayout {
         assertEquals(cause.getCenterX(), (rowLeft + rowRight) / 2.0, 1.5);
         assertTrue(cause.getCenterY() < first.getCenterY());
     }
+
+    /**
+     * Rows given directly are centered on the widest, top row first, and an empty row takes no space.
+     */
+    @Test
+    public void testCenteredRowsGivenDirectly() {
+        List<List<Node>> rows = new ArrayList<>();
+        int[] sizes = {2, 0, 5, 1};
+        int count = 0;
+
+        for (int size : sizes) {
+            List<Node> row = new ArrayList<>();
+            for (int i = 0; i < size; i++) row.add(new GraphNode("X" + (++count)));
+            rows.add(row);
+        }
+
+        LayoutUtil.layoutInCenteredRows(rows, LayoutUtil.estimatedNodeSize());
+
+        double middle = Double.NaN;
+        int lastY = Integer.MIN_VALUE;
+        int rowPitch = -1;
+
+        for (List<Node> row : rows) {
+            if (row.isEmpty()) continue;
+
+            int y = row.get(0).getCenterY();
+            for (Node node : row) assertEquals(y, node.getCenterY());
+
+            double rowMiddle = (row.get(0).getCenterX() + row.get(row.size() - 1).getCenterX()) / 2.0;
+            if (Double.isNaN(middle)) middle = rowMiddle;
+            assertEquals(middle, rowMiddle, 1.0);
+
+            if (lastY != Integer.MIN_VALUE) {
+                assertTrue(y > lastY);
+                if (rowPitch < 0) rowPitch = y - lastY;
+                assertEquals(rowPitch, y - lastY);
+            }
+
+            lastY = y;
+        }
+    }
 }

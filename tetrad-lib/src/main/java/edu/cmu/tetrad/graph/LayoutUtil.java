@@ -724,8 +724,20 @@ public class LayoutUtil {
      * @param size  supplies each node's rendered box size.
      */
     public static void layoutByCausalOrder(Graph graph, NodeSize size) {
-        List<List<Node>> tiers = getTiers(graph);
+        layoutInCenteredRows(getTiers(graph), size);
+    }
 
+    /**
+     * Places the given rows of nodes one under another, top row first, each row centered on the widest row. The
+     * nodes of a row are spaced by their own box widths, with {@code CAUSAL_ORDER_X_GAP} between neighbors, and the
+     * rows by the tallest box of all, with {@code CAUSAL_ORDER_Y_GAP} between rows; an empty row takes no space.
+     * This is the arrangement of the causal order layout, and of any other layout that sorts the nodes into rows
+     * (the workbench's distance-from-selected layout, for one).
+     *
+     * @param tiers the rows, top row first; nodes not in any row are not moved.
+     * @param size  supplies each node's rendered box size.
+     */
+    public static void layoutInCenteredRows(List<List<Node>> tiers, NodeSize size) {
         double[] tierWidths = new double[tiers.size()];
         double widest = 0.0;
         double tallest = 0.0;
