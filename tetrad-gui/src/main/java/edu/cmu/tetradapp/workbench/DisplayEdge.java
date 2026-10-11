@@ -270,7 +270,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     @Override
     public void paint(Graphics g) {
-        checkCurveBounds();
+        if (checkCurveBounds()) {
+            return;
+        }
 
         switch (this.mode) {
             case DisplayEdge.HALF_ANCHORED:
@@ -397,9 +399,35 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Recomputes the bounds if this edge has changed between straight and curved since they were last computed,
-     * since they may now be too small for the bow or needlessly padded. To be called at the start of painting.
+     * since they may now be too small for the bow or needlessly padded. To be called at the start of painting; if
+     * it returns true the edge must not be painted this time.
+     * <p>
+     * Changing the bounds moves this component, but the graphics it has been handed to paint with was set up for
+     * where the component was. Painting on after the change drew the edge displaced by the amount the bounds had
+     * moved, which is the padding of a curved edge up and to the left: a stray copy of the edge, parallel to the
+     * real one, for one frame each time an edge straightened or bent as a node was dragged. The change of bounds
+     * schedules a repaint of the edge where it now is, so nothing is lost by not painting here.
+     * <p>
+     * A workbench brings the bounds of its edges up to date before it paints any of them (see
+     * {@link #syncCurveBounds()}), so in a workbench this finds nothing to do.
+     *
+     * @return True if the bounds were changed.
      */
-    protected final void checkCurveBounds() {
+    protected final boolean checkCurveBounds() {
+        if (this.boundsForBezier != (bezierApex() != 0.0)) {
+            resetBounds();
+            repaint();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Recomputes the bounds if this edge has changed between straight and curved since they were last computed.
+     * For the workbench to call when it has chosen anew which edges bend, before it paints them.
+     */
+    final void syncCurveBounds() {
         if (this.boundsForBezier != (bezierApex() != 0.0)) {
             resetBounds();
         }

@@ -240,7 +240,9 @@ final class SessionEditorEdge extends DisplayEdge {
      */
     @Override
     public void paint(Graphics g) {
-        checkCurveBounds();
+        if (checkCurveBounds()) {
+            return;
+        }
 
         Graphics2D g2d = (Graphics2D) g.create();
 

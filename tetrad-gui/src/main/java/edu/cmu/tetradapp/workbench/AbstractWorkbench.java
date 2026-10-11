@@ -1290,6 +1290,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         this.routingSignature = signature;
         this.straightOnly = straightOnly;
 
+        // An edge that has just straightened or bent needs different bounds. Give it them now, before any edge is
+        // painted, and not while it is being painted; see DisplayEdge.checkCurveBounds.
+        for (Component component : components) {
+            if (component instanceof DisplayEdge e) {
+                e.syncCurveBounds();
+            }
+        }
+
         if (!first) {
             repaint();
         }
