@@ -14,8 +14,10 @@ import static org.junit.Assert.assertTrue;
 public class TestBezierRouter {
 
     /**
-     * Two edges leave one node for two nodes side by side below it. Each on its own bows to its left, which makes
-     * the one on the right swing across the one on the left; chosen together they do not cross.
+     * Two edges leave one node for two nodes side by side below it. Nothing is in the way of either, so each is
+     * drawn straight or nearly so, on its own and chosen together, and they do not cross. (When every edge was given
+     * a gentle bow to its left, the one on the right swung across the one on the left unless the sides were chosen
+     * together.)
      */
     @Test
     public void testFanDoesNotCross() {
@@ -27,8 +29,23 @@ public class TestBezierRouter {
         double[] routed = BezierRouter.route(nodes, edges, offsets);
 
         assertEquals(0, BezierRouter.countCrossings(nodes, edges, new double[2]));
-        assertEquals(1, BezierRouter.countCrossings(nodes, edges, solo));
+        assertEquals(0, BezierRouter.countCrossings(nodes, edges, solo));
         assertEquals(0, BezierRouter.countCrossings(nodes, edges, routed));
+    }
+
+    /**
+     * An edge with nothing near its chord is drawn straight: a bow means the edge is going around something.
+     */
+    @Test
+    public void testClearEdgeIsStraight() {
+        Rectangle[] nodes = {box(0, 0), box(0, 300), box(200, 150)};
+
+        assertEquals(0.0, BezierRouter.soloApex(nodes, 0, 1, 0.0), 0.0);
+        assertEquals(0.0, BezierRouter.route(nodes, new int[][]{{0, 1}}, new double[1])[0], 0.0);
+
+        // One of two edges between the same pair still bows, to its offset's side, so that the two are apart.
+        assertTrue(BezierRouter.soloApex(nodes, 0, 1, 12.0) >= 12.0);
+        assertTrue(BezierRouter.soloApex(nodes, 0, 1, -12.0) <= -12.0);
     }
 
     /**

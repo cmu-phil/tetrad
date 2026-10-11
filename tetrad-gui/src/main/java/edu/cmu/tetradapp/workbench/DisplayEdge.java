@@ -377,9 +377,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     /**
      * Draws this edge as a quadratic Bezier curve between its two nodes, trimmed to their boundaries, with endpoint
      * decorations aligned to the curve's tangents and a click region following the curve. The curve bows away from
-     * the straight chord: a gentle base bow always, more when other nodes sit in the chord's corridor (bowing to
-     * whichever side needs less deflection, capped at BEZIER_MAX_APEX), and, for multiple edges between the same
-     * pair of nodes, to opposite sides per the edge offset.
+     * the straight chord only as far as it has to: not at all when the chord is clear of the other nodes, more when
+     * nodes sit in its way (bowing to whichever side needs less deflection, capped at BEZIER_MAX_APEX), and, for
+     * multiple edges between the same pair of nodes, to opposite sides per the edge offset.
      *
      * @param g2d the graphics to draw on, with stroke and color already set.
      * @return true if the curve was drawn; false if it could not be built, in which case the caller should fall back
@@ -471,7 +471,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
             }
         }
 
-        double base = Math.min(16.0, Math.max(5.0, 0.06 * len));
+        // As in BezierRouter: an edge is drawn straight unless it has to bend, so there is no bow to start from,
+        // except for separating several edges between the same two nodes.
+//        double base = Math.min(16.0, Math.max(5.0, 0.06 * len));
+        double base = getOffset() != 0.0 ? Math.min(16.0, Math.max(5.0, 0.06 * len)) : 0.0;
         double maxApex = Math.min(DisplayEdge.BEZIER_MAX_APEX, 0.35 * len);
 
         // Deflection needed on each side to clear sibling nodes sitting in the chord's corridor.

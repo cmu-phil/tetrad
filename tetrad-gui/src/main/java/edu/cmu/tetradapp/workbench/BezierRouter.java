@@ -34,8 +34,9 @@ import java.util.List;
  * An edge drawn as a quadratic Bezier curve is described by its signed apex: how far the curve is from the straight
  * chord between its two node centers at the chord's midpoint, positive toward the chord's left normal (-uy, ux) for
  * the unit chord direction (ux, uy) from the first node to the second. Each edge has two candidate apexes, one per
- * side, each just large enough to clear the nodes sitting in the chord's corridor on that side (and at least a
- * gentle base bow). An edge on its own takes the side that needs the smaller bow; that is the starting point here.
+ * side, each just large enough to clear the other nodes on that side, and none at all (a straight edge) when the
+ * chord is already clear of them. An edge on its own takes the side that needs the smaller bow; that is the
+ * starting point here.
  * Then, edge by edge, the side with fewer crossings against the other curves as they currently stand is taken, and
  * this is repeated until no edge changes. Each change lowers the total cost, so the passes end; the result is a
  * local minimum, not a guaranteed global one.
@@ -201,9 +202,9 @@ public final class BezierRouter {
      * the cost of each of those sides on its own; or null if the two nodes have the same center. With a nonzero
      * offset the side the offset does not point to gets an infinite cost.
      * <p>
-     * On each side the bow taken is the one nearest the gentle base bow whose curve stays clear of every other
-     * node, tested against the node rectangles themselves: larger bows are tried first, up to the largest allowed,
-     * and then smaller ones, down to a straight line. A curve may therefore pass between its chord and a node
+     * On each side the bow taken is the smallest whose curve stays clear of every other node, tested against the
+     * node rectangles themselves, starting from no bow at all (for one of several edges between the same two
+     * nodes, starting from the bow that separates them). A curve may therefore pass between its chord and a node
      * beside it. (Previously each side had to go around the outside of every node within reach of it, each taken
      * as a circle, so that an edge whose chord ran cleanly through a gap between two nodes counted as blocked on
      * both sides and was bowed as far as allowed, often behind some other node; on Richard's Layout of random
@@ -220,7 +221,15 @@ public final class BezierRouter {
             return null;
         }
 
-        double base = Math.min(16.0, Math.max(5.0, 0.06 * len));
+        // An edge is drawn straight unless it has to bend: the bow to start from is none at all, so that an edge
+        // whose chord is clear of the other nodes by NODE_MARGIN stays straight, and one that is not takes the
+        // smallest bow that clears them. A bow then means the edge is going around something. Previously every
+        // edge was given a gentle bow of 5 to 16 pixels by its length even when nothing was in its way, which made
+        // pictures curvier than they needed to be; that bow is kept below only for separating several edges
+        // between the same two nodes.
+//        double base = Math.min(16.0, Math.max(5.0, 0.06 * len));
+        double base = 0.0;
+        double multiBase = Math.min(16.0, Math.max(5.0, 0.06 * len));
         double maxApex = Math.min(MAX_APEX, 0.35 * len);
 
         // Only the nodes within reach of some curve allowed can matter.
@@ -245,7 +254,7 @@ public final class BezierRouter {
             // One of several edges between the same pair: bow to the offset's side, at least far enough to
             // separate them.
             boolean plus = offset > 0.0;
-            double[] side = sideApex(x1, y1, x2, y2, plus ? 1.0 : -1.0, Math.min(maxApex, Math.max(base,
+            double[] side = sideApex(x1, y1, x2, y2, plus ? 1.0 : -1.0, Math.min(maxApex, Math.max(multiBase,
                     Math.abs(offset))), maxApex, false, near);
             return new double[]{side[0], -side[0], plus ? 0.0 : Double.POSITIVE_INFINITY,
                     plus ? Double.POSITIVE_INFINITY : 0.0};
