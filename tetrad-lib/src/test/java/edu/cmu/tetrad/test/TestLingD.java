@@ -21,7 +21,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
+import edu.cmu.tetrad.algcomparison.simulation.NonGaussianSemSimulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
@@ -68,13 +68,13 @@ public class TestLingD {
         parameters.set(Params.NUM_MEASURES, 6);
         parameters.set(Params.AVG_DEGREE, 2);
 
-        // Using Exp(1) for the non-Gaussian error for all variables.
-        parameters.set(Params.CUSTOM_NOISE_OPTION, 2);
+        // Using Exp(1) for the non-Gaussian error for all variables. The Linear Non-Gaussian SEM
+        // simulation forces the custom noise option itself, so only the expression is set here.
         parameters.set(Params.CUSTOM_NOISE_EXPRESSION, "Exp(1)");
 
         parameters.set(Params.SEED, seed);
 
-        SemSimulation sim = new SemSimulation(new RandomForward());
+        NonGaussianSemSimulation sim = new NonGaussianSemSimulation(new RandomForward());
         sim.createData(parameters, true);
         DataSet dataSet = (DataSet) sim.getDataModel(0);
         Graph trueGraph = sim.getTrueGraph(0);
