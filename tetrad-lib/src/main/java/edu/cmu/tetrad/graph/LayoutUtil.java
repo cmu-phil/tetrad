@@ -2301,141 +2301,165 @@ public class LayoutUtil {
             }
         }
 
+        /**
+         * Settles the nodes one at a time: the node with the largest energy
+         * gradient is moved until its gradient is at most the cutoff, then
+         * the next, until every node's gradient is at most the cutoff.
+         * <p>
+         * A node is moved by Newton's method where the energy is locally
+         * convex in the node's position and down the gradient where it is
+         * not, and a move is shortened until it lowers the energy. So the
+         * energy falls with every move, and the settling cannot go round in
+         * a cycle, as unguarded Newton steps can where the energy is not
+         * convex. A node that cannot be moved to lower the energy is set
+         * aside until some other node has moved. The number of moves is
+         * capped as a last guard.
+         */
         private void optimize(double deltaCutoff) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
+            int n = getComponentNodes().size();
             double initialMaxDelta = -1.;
-            double maxDelta;
-            final int jump = 100;
-            Matrix a = new Matrix(2, 2);
-            Matrix b = new Matrix(2, 1);
-            int oldM = -1;
+            boolean[] stuck = new boolean[n];
+            int movesLeft = 200 * n + 1000;
 
-            do {
+            while (true) {
                 if (this.progressListener.isCanceled()) {
                     return;
                 }
 
-                int[] m = new int[1];
-                maxDelta = maxDelta(m);
+                // The node with the largest gradient among those not set aside.
+                int m = -1;
+                double maxDelta = Double.NEGATIVE_INFINITY;
+
+                for (int i = 0; i < n; i++) {
+                    if (stuck[i]) {
+                        continue;
+                    }
+
+                    double delta = delta(i);
+
+                    if (delta > maxDelta) {
+                        maxDelta = delta;
+                        m = i;
+                    }
+                }
+
+                if (m == -1 || maxDelta <= deltaCutoff) {
+                    return;
+                }
 
                 if (initialMaxDelta == -1) {
                     initialMaxDelta = maxDelta;
                 }
 
-                if (m[0] == oldM) {
-                    this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
-                            2 * jump) - jump;
-                    this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
-                            2 * jump) - jump;
-                    continue;
-                }
-
-                oldM = m[0];
-
                 int progress =
                         (int) (99.0 - 98.0 * maxDelta / (0.5 * initialMaxDelta));
+
                 if (progress < 1) {
                     progress = 1;
                 }
+
                 if (progress > 99) {
                     progress = 99;
                 }
+
                 this.progressListener.onProgress(progress,
                         "Energy = " + nf.format(maxDelta));
 
-                if (m[0] == -1) {
-                    throw new IllegalStateException();
-                }
+                boolean moved = false;
 
-                double oldDelta = Double.NaN;
-                double delta;
-
-                while ((delta = delta(m[0])) > deltaCutoff) {
-                    Thread.yield();
-                    if (this.progressListener.isCanceled()) {
+                while (delta(m) > deltaCutoff) {
+                    if (this.progressListener.isCanceled() || movesLeft-- <= 0) {
                         return;
                     }
 
-                    if (TMath.abs(delta - oldDelta) < 0.001) {
-                        this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
-                                2 * jump) - jump;
-                        this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
-                                2 * jump) - jump;
-                        continue;
+                    if (!moveToLowerEnergy(m)) {
+                        break;
                     }
 
-                    double partialXX = secondPartial(m[0], 0, 0);
-                    double partialXY = secondPartial(m[0], 0, 1);
-                    double partialX = firstPartial(m[0], 0);
-                    double partialYY = secondPartial(m[0], 1, 1);
-                    double partialY = firstPartial(m[0], 1);
-
-                    a.set(0, 0, partialXX);
-                    a.set(0, 1, partialXY);
-                    a.set(1, 0, partialXY);
-                    a.set(1, 1, partialYY);
-
-                    b.set(0, 0, -partialX);
-                    b.set(1, 0, -partialY);
-
-                    Matrix c;
-
-                    try {
-                        c = new Matrix(a.getSimpleMatrix().solve(
-                                b.getSimpleMatrix()));
-                    } catch (Exception e) {
-                        this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
-                                2 * jump) - jump;
-                        this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
-                                2 * jump) - jump;
-                        continue;
-                    }
-
-                    double dx = c.get(0, 0);
-                    double dy = c.get(1, 0);
-
-                    this.p[m[0]][0] += dx;
-                    this.p[m[0]][1] += dy;
-
-                    oldDelta = delta;
+                    moved = true;
                 }
-            } while (maxDelta > deltaCutoff);
+
+                if (moved) {
+                    Arrays.fill(stuck, false);
+                }
+
+                // Still above the cutoff: it could not be moved further.
+                if (delta(m) > deltaCutoff) {
+                    stuck[m] = true;
+                }
+            }
         }
 
-        private double energy() {
-            int n = this.p.length;
+        /**
+         * Moves node m once so as to lower the energy: by the Newton step if
+         * the energy is convex in the node's position there, otherwise down
+         * the gradient by a comparable distance; the step is halved until
+         * the energy is lower than where it started.
+         *
+         * @return true if the node was moved; false if no step along that
+         * direction lowers the energy, in which case it is left where it was.
+         */
+        private boolean moveToLowerEnergy(int m) {
+            double gx = firstPartial(m, 0);
+            double gy = firstPartial(m, 1);
+            double hxx = secondPartial(m, 0, 0);
+            double hxy = secondPartial(m, 0, 1);
+            double hyy = secondPartial(m, 1, 1);
+            double det = hxx * hyy - hxy * hxy;
+
+            double dx;
+            double dy;
+
+            if (hxx > 0.0 && det > 1e-12) {
+                dx = -(hyy * gx - hxy * gy) / det;
+                dy = -(hxx * gy - hxy * gx) / det;
+            } else {
+                double scale = Math.max(Math.max(Math.abs(hxx), Math.abs(hyy)), 1e-6);
+                dx = -gx / scale;
+                dy = -gy / scale;
+            }
+
+            double x = this.p[m][0];
+            double y = this.p[m][1];
+            double energy = nodeEnergy(m);
+
+            for (int halving = 0; halving < 30; halving++) {
+                this.p[m][0] = x + dx;
+                this.p[m][1] = y + dy;
+
+                if (nodeEnergy(m) < energy) {
+                    return true;
+                }
+
+                dx /= 2.0;
+                dy /= 2.0;
+            }
+
+            this.p[m][0] = x;
+            this.p[m][1] = y;
+            return false;
+        }
+
+        /**
+         * The energy of the springs at node m. The other springs do not
+         * depend on where node m is, so differences of this are differences
+         * of the total energy as node m moves.
+         */
+        private double nodeEnergy(int m) {
             double sum = 0.0;
 
-            for (int i = 0; i < n - 1; i++) {
-                for (int j = i + 1; j < n; j++) {
-                    sum += 0.5 * this.k[i][j]
-                            * TMath.pow(distance(i, j) - this.l[i][j], 2.0);
+            for (int j = 0; j < this.p.length; j++) {
+                if (j == m) {
+                    continue;
                 }
+
+                sum += 0.5 * this.k[m][j]
+                        * TMath.pow(distance(m, j) - this.l[m][j], 2.0);
             }
 
             return sum;
-        }
-
-        private double maxDelta(int[] index) {
-            double maxDelta = Double.NEGATIVE_INFINITY;
-            int m = -1;
-
-            for (int i = 0; i < getComponentNodes().size(); i++) {
-                double delta = delta(i);
-
-                if (delta == Double.NEGATIVE_INFINITY) {
-                    throw new IllegalStateException();
-                }
-
-                if (delta > maxDelta) {
-                    maxDelta = delta;
-                    m = i;
-                }
-            }
-
-            index[0] = m;
-            return maxDelta;
         }
 
         private double delta(int i) {
@@ -2452,10 +2476,10 @@ public class LayoutUtil {
             double storedCoord = this.p[i][var];
 
             this.p[i][var] -= FIRST_PARTIAL_H;
-            double energy1 = energy();
+            double energy1 = nodeEnergy(i);
 
             this.p[i][var] += 2.0 * FIRST_PARTIAL_H;
-            double energy2 = energy();
+            double energy2 = nodeEnergy(i);
 
             this.p[i][var] = storedCoord;
             return (energy2 - energy1) / (2.0 * FIRST_PARTIAL_H);
@@ -2470,17 +2494,17 @@ public class LayoutUtil {
 
             this.p[m][i] += SECOND_PARTIAL_H;
             this.p[m][j] += SECOND_PARTIAL_H;
-            double ff1 = energy();
+            double ff1 = nodeEnergy(m);
 
             this.p[m][j] -= 2 * SECOND_PARTIAL_H;
-            double ff2 = energy();
+            double ff2 = nodeEnergy(m);
 
             this.p[m][i] -= 2 * SECOND_PARTIAL_H;
             this.p[m][j] += 2 * SECOND_PARTIAL_H;
-            double ff3 = energy();
+            double ff3 = nodeEnergy(m);
 
             this.p[m][j] -= 2 * SECOND_PARTIAL_H;
-            double ff4 = energy();
+            double ff4 = nodeEnergy(m);
 
             this.p[m][0] = storedX;
             this.p[m][1] = storedY;
