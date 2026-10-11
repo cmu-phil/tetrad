@@ -474,6 +474,23 @@ public class RandomUtil {
     }
 
     /**
+     * Generates a random sample from the Laplace (double exponential) distribution with the specified location and
+     * scale parameters. The variance of this distribution is 2 * beta^2.
+     *
+     * @param mu   the location parameter of the Laplace distribution
+     * @param beta the scale parameter of the Laplace distribution; must be greater than 0
+     * @return a random sample from the Laplace distribution
+     * @throws IllegalArgumentException if the scale parameter beta is not greater than 0
+     */
+    public double nextLaplace(double mu, double beta) {
+        if (!(beta > 0.0)) {
+            throw new IllegalArgumentException("Beta must be > 0: " + beta);
+        }
+
+        return new LaplaceDistribution(this.math3RandomGenerator, mu, beta).sample();
+    }
+
+    /**
      * Generates a random value from a chi-squared distribution with the specified degrees of freedom.
      *
      * @param df The degrees of freedom for the chi-squared distribution. Must be greater than zero.

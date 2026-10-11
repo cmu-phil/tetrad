@@ -1488,6 +1488,17 @@ Source:
             Type: <span id="cyclicRadius_value_type">Double</span></li>
     </ul>
 
+    === daoErrorDistribution ===
+    <h3 class="parameter_description" id="daoErrorDistribution">daoErrorDistribution</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="daoErrorDistribution_short_desc">Error distribution: 1 = Gaussian, 2 = Exponential, 3 = Gumbel, 4 = Laplace, 5 = Uniform</span></li>
+        <li>Long Description: <span id="daoErrorDistribution_long_desc">The distribution family the exogenous errors are drawn from, following the reference DaO implementation. Each family is scaled so that the error variance equals the variance the DaO method calibrated for that variable, so the standardized correlation structure of the data is preserved whichever family is chosen. As in the reference implementation, the Exponential and Gumbel errors are not centered, so variable means shift under those choices; the Gaussian, Laplace, and Uniform errors have mean zero.</span></li>
+        <li>Default Value: <span id="daoErrorDistribution_default_value">1</span></li>
+        <li>Lower Bound: <span id="daoErrorDistribution_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="daoErrorDistribution_upper_bound">5</span></li>
+        <li>Value Type: <span id="daoErrorDistribution_value_type">Integer</span></li>
+    </ul>
+
     === daoRandomizeOrder ===
     <h3 class="parameter_description" id="daoRandomizeOrder">daoRandomizeOrder</h3>
     <ul class="parameter_description_list">

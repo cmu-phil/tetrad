@@ -34,7 +34,10 @@ import java.util.*;
 
 /**
  * Implements the DAG-adaptation of the Onion (DaO) simulation method for
- * generating linear Gaussian data from a DAG, as described in:
+ * generating linear data from a DAG, with exogenous errors drawn from one of
+ * the reference implementation's five variance-matched families (Gaussian by
+ * default; Exponential, Gumbel, Laplace, or Uniform via
+ * {@code daoErrorDistribution}), as described in:
  * <p>
  * Andrews, B. &amp; Kummerfeld, E. (2024). "Better Simulations for Validating
  * Causal Discovery with the DAG-Adaptation of the Onion Method."
@@ -182,7 +185,8 @@ public class DaoSimulation implements Simulation {
             // ------------------------------------------------------------------
             // 5. Simulate n samples in topological order
             // ------------------------------------------------------------------
-            double[][] X = simulate(result.B, result.O, p, sampleSize);
+            int errorDistribution = parameters.getInt(Params.DAO_ERROR_DISTRIBUTION, 1);
+            double[][] X = simulate(result.B, result.O, p, sampleSize, errorDistribution);
 
             // ------------------------------------------------------------------
             // 6. Wrap into a Tetrad DataSet
@@ -290,6 +294,7 @@ public class DaoSimulation implements Simulation {
         params.add(Params.DAO_SF_OUT);
         params.add(Params.DAO_SF_IN);
         params.add(Params.DAO_RANDOMIZE_ORDER);
+        params.add(Params.DAO_ERROR_DISTRIBUTION);
 
         params.add(Params.MEASUREMENT_VARIANCE);
         params.add(Params.PROB_REMOVE_COLUMN);
@@ -430,17 +435,19 @@ public class DaoSimulation implements Simulation {
      * Simulates {@code n} samples from the linear SEM defined by B and O,
      * processing variables in topological order (B is lower-triangular).
      * <p>
-     * Faithful translation of Python {@code simulate(B, O, n, err, rng)}
-     * with Gaussian errors. B and O are already in topological order so no
-     * internal re-sorting is needed.
+     * Faithful translation of Python {@code simulate(B, O, n, err, rng)},
+     * where {@code err} is one of the five error functions of the reference
+     * implementation, selected by {@code errorDistribution}. B and O are
+     * already in topological order so no internal re-sorting is needed.
      *
      * @param B p×p lower-triangular structural coefficient matrix
      * @param O length-p error variance vector
      * @param p number of variables
      * @param n number of samples
+     * @param errorDistribution 1 = Gaussian, 2 = Exponential, 3 = Gumbel, 4 = Laplace, 5 = Uniform
      * @return n×p data matrix X
      */
-    private static double[][] simulate(double[][] B, double[] O, int p, int n) {
+    private static double[][] simulate(double[][] B, double[] O, int p, int n, int errorDistribution) {
         double[][] X = new double[n][p];
 
         for (int s = 0; s < n; s++) {
@@ -449,12 +456,42 @@ public class DaoSimulation implements Simulation {
                 for (int j = 0; j < i; j++) {
                     if (B[i][j] != 0.0) xi += B[i][j] * X[s][j];
                 }
-                xi += Math.sqrt(O[i]) * RandomUtil.getInstance().nextGaussian();
+                xi += drawError(errorDistribution, O[i]);
                 X[s][i] = xi;
             }
         }
 
         return X;
+    }
+
+    /**
+     * Draws one error term with variance {@code s2} from the chosen family,
+     * using the exact scalings of the reference implementation's error
+     * functions ({@code gaus_err}, {@code exp_err}, {@code gumb_err},
+     * {@code lapl_err}, {@code unif_err} in dao.py). Every family has
+     * variance s2, so the standardized correlation structure the DaO method
+     * calibrated is preserved whichever family is chosen. As in the
+     * reference, the Exponential draw has mean sqrt(s2) and the Gumbel draw
+     * has mean gamma * sqrt(6 s2) / pi; neither is centered.
+     *
+     * @param errorDistribution 1 = Gaussian, 2 = Exponential, 3 = Gumbel, 4 = Laplace, 5 = Uniform
+     * @param s2 the target error variance
+     * @return one error draw
+     */
+    private static double drawError(int errorDistribution, double s2) {
+        RandomUtil r = RandomUtil.getInstance();
+        double sd = Math.sqrt(s2);
+
+        return switch (errorDistribution) {
+            case 1 -> r.nextGaussian(0, sd);
+            case 2 -> r.nextExponential(sd);
+            case 3 -> r.nextGumbel(0, Math.sqrt(6.0) * sd / Math.PI);
+            case 4 -> r.nextLaplace(0, sd / Math.sqrt(2.0));
+            case 5 -> r.nextUniform(-Math.sqrt(3.0) * sd, Math.sqrt(3.0) * sd);
+            default -> throw new IllegalArgumentException(
+                    "daoErrorDistribution must be 1 (Gaussian), 2 (Exponential), 3 (Gumbel), 4 (Laplace), "
+                    + "or 5 (Uniform): " + errorDistribution);
+        };
     }
 
     // -----------------------------------------------------------------------

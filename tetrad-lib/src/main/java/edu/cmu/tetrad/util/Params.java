@@ -389,6 +389,10 @@ public final class Params {
      */
     public static final String CYCLIC_RADIUS = "cyclicRadius";
     /**
+     * Constant <code>DAO_ERROR_DISTRIBUTION="daoErrorDistribution"</code>
+     */
+    public static final String DAO_ERROR_DISTRIBUTION = "daoErrorDistribution";
+    /**
      * Constant <code>DAO_RANDOMIZE_ORDER="daoRandomizeOrder"</code>
      */
     public static final String DAO_RANDOMIZE_ORDER = "daoRandomizeOrder";
