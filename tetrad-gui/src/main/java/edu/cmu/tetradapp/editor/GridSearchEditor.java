@@ -1107,19 +1107,22 @@ public class GridSearchEditor extends JPanel {
     }
 
     private static GridSearchModel.@NotNull SimulationSpec getSimulationSpec(String simulationString, Class<? extends RandomGraph> graphClazz) {
-        List<String> simulationTypeStrings = Arrays.asList(ParameterTab.MODEL_TYPE_ITEMS);
-
-        Class<? extends Simulation> simulationClass = switch (simulationTypeStrings.indexOf(simulationString)) {
-            case 0 -> BayesNetSimulation.class;
-            case 1 -> SemSimulation.class;
-            case 2 -> LinearFisherModel.class;
-            case 3 -> GeneralAdditiveModel.class;
-            case 4 -> GeneralNoiseSimulation.class;
-            case 5 -> AdditiveNoiseSimulation.class;
-            case 6 -> PostnonlinearSem.class;
-            case 7 -> LeeHastieSimulation.class;
-            case 8 -> ConditionalGaussianSimulation.class;
-            case 9 -> TimeSeriesSemSimulation.class;
+        // Mapped by name rather than by index into ParameterTab.MODEL_TYPE_ITEMS, since the index-based
+        // version silently went stale whenever that list changed.
+        Class<? extends Simulation> simulationClass = switch (simulationString) {
+            case SimulationTypes.BAYS_NET -> BayesNetSimulation.class;
+            case SimulationTypes.LINEAR_GAUSSIAN_SEM, SimulationTypes.STRUCTURAL_EQUATION_MODEL ->
+                    SemSimulation.class;
+            case SimulationTypes.LINEAR_NON_GAUSSIAN_SEM -> NonGaussianSemSimulation.class;
+            case SimulationTypes.DAO_SIMULATION -> DaoSimulation.class;
+            case SimulationTypes.GENERAL_ADDITIVE_MODEL -> GeneralAdditiveModel.class;
+            case SimulationTypes.GENERAL_NOISE_SEM -> GeneralNoiseSimulation.class;
+            case SimulationTypes.ADDITIVE_NOISE_SEM -> AdditiveNoiseSimulation.class;
+            case SimulationTypes.DESIGNED_EXPERIMENT -> DesignedExperimentSimulation.class;
+            case SimulationTypes.OBSERVATIONAL_STUDY -> ObservationalStudySimulation.class;
+            case SimulationTypes.LEE_AND_HASTIE -> LeeHastieSimulation.class;
+            case SimulationTypes.CONDITIONAL_GAUSSIAN -> ConditionalGaussianSimulation.class;
+            case SimulationTypes.TIME_SERIES -> TimeSeriesSemSimulation.class;
             default -> SemSimulation.class;
         };
 

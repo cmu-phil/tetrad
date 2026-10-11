@@ -1328,14 +1328,17 @@ Source:
     <h3 class="parameter_description" id="customNoiseExpression">customNoiseExpression</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="customNoiseExpression_short_desc">
-            Exogenous Noises: Custom exogenous noise distribution expression
+            Exogenous noise distribution, e.g. Exp(1), Gumbel(0, 1), U(0, 1)
         </span></li>
 
         <li>Long Description: <span id="customNoiseExpression_long_desc">
-             Custom exogenous noise distribution expression
+            The distribution expression each exogenous noise term is drawn from, independently per variable
+            and record, when custom (non-Gaussian) noise is in effect. In the Linear Non-Gaussian SEM
+            simulation this expression is always used; the noise scale comes from the expression itself, so
+            the Gaussian error variance bounds do not apply, and correlated errors are ignored.
         </span></li>
 
-        <li>Default Value: <span id="customNoiseExpression_default_value">N(0, Uniform(1, 3))</span></li>
+        <li>Default Value: <span id="customNoiseExpression_default_value">Exp(1)</span></li>
         <li>Lower Bound: <span id="customNoiseExpression_lower_bound"></span></li>
         <li>Upper Bound: <span id="customNoiseExpression_upper_bound"></span></li>
         <li>Value Type: <span id="customNoiseExpression_value_type">String</span></li>
@@ -1349,7 +1352,8 @@ Source:
         </span></li>
 
         <li>Long Description: <span id="customNoiseOption_long_desc">
-            If true, the specified custom exogenous noise distribution will be used.
+            If 2, the custom exogenous noise distribution expression will be used. The Linear Gaussian SEM
+            and Linear Non-Gaussian SEM simulations set this themselves and do not list it.
         </span></li>
 
         <li>Default Value: <span id="customNoiseOption_default_value">1</span></li>

@@ -54,7 +54,9 @@ public final class SimulationUtils {
      *
      * @param simulationType the type of simulation to create. Must be one of:
      *                       SimulationTypes.BAYS_NET,
-     *                       SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+     *                       SimulationTypes.LINEAR_GAUSSIAN_SEM,
+     *                       SimulationTypes.LINEAR_NON_GAUSSIAN_SEM,
+     *                       SimulationTypes.STRUCTURAL_EQUATION_MODEL (legacy name for the Linear Gaussian SEM),
      *                       SimulationTypes.GENERAL_ADDITIVE_MODEL,
      *                       SimulationTypes.GENERAL_NOISE_SEM,
      *                       SimulationTypes.ADDITIVE_NOISE_SEM,
@@ -71,7 +73,10 @@ public final class SimulationUtils {
     public static Simulation create(String simulationType, RandomGraph randomGraph, Knowledge knowledge) {
         return switch (simulationType) {
             case SimulationTypes.BAYS_NET -> new BayesNetSimulation(randomGraph);
-            case SimulationTypes.STRUCTURAL_EQUATION_MODEL -> new SemSimulation(randomGraph);
+            // The legacy "Linear Structural Equation Model" name maps to the Linear Gaussian SEM.
+            case SimulationTypes.LINEAR_GAUSSIAN_SEM, SimulationTypes.STRUCTURAL_EQUATION_MODEL ->
+                    new SemSimulation(randomGraph);
+            case SimulationTypes.LINEAR_NON_GAUSSIAN_SEM -> new NonGaussianSemSimulation(randomGraph);
             case SimulationTypes.GENERAL_ADDITIVE_MODEL -> new GeneralAdditiveModel(randomGraph);
             case SimulationTypes.GENERAL_NOISE_SEM -> new GeneralNoiseSimulation(randomGraph);
             case SimulationTypes.ADDITIVE_NOISE_SEM -> new AdditiveNoiseSimulation(randomGraph);

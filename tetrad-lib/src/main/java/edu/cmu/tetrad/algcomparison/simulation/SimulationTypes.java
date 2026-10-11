@@ -34,8 +34,21 @@ public final class SimulationTypes {
     public static final String BAYS_NET = "Bayes Net (Multinomial)";
     /**
      * Constant <code>STRUCTURAL_EQUATION_MODEL="Linear Structural Equation Model"</code>
+     *
+     * @deprecated This name covered both the Gaussian and the non-Gaussian linear SEM simulations, which was
+     * confusing. It is kept so that scripts and saved selections using the old name still resolve (to the
+     * Linear Gaussian SEM); use {@link #LINEAR_GAUSSIAN_SEM} or {@link #LINEAR_NON_GAUSSIAN_SEM} instead.
      */
+    @Deprecated
     public static final String STRUCTURAL_EQUATION_MODEL = "Linear Structural Equation Model";
+    /**
+     * Constant <code>LINEAR_GAUSSIAN_SEM="Linear Gaussian SEM"</code>
+     */
+    public static final String LINEAR_GAUSSIAN_SEM = "Linear Gaussian SEM";
+    /**
+     * Constant <code>LINEAR_NON_GAUSSIAN_SEM="Linear Non-Gaussian SEM"</code>
+     */
+    public static final String LINEAR_NON_GAUSSIAN_SEM = "Linear Non-Gaussian SEM";
 //    /**
 //     * Constant <code>LINEAR_FISHER_MODEL="Linear Fisher Model"</code>
 //     */
