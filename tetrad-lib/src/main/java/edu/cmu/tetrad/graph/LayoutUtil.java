@@ -800,7 +800,8 @@ public class LayoutUtil {
 
     /**
      * Lays the graph out in rows by causal order: the nodes with no parents in the top row, then the nodes all of
-     * whose parents are above, and so on down. Each row is centered on the widest row. (The rows used to all start
+     * whose parents are above, and so on down. The nodes within each row are ordered to reduce edge crossings, by
+     * the ordering step of Richard's layout. Each row is centered on the widest row. (The rows used to all start
      * at the left margin, so that a row of one or two nodes sat at the far left above or below a wide row, and the
      * edges between them ran at a long slant.)
      *
@@ -813,7 +814,21 @@ public class LayoutUtil {
      * @param size  supplies each node's rendered box size.
      */
     public static void layoutByCausalOrder(Graph graph, NodeSize size) {
-        layoutInCenteredRows(getTiers(graph), size);
+        List<Node> allNodes = graph.getNodes();
+        Map<Node, Integer> nodeIndex = new HashMap<>();
+        for (int i = 0; i < allNodes.size(); i++) nodeIndex.put(allNodes.get(i), i);
+
+        // A deterministic start, in the graph's node order; then the rows are ordered to reduce the crossings of
+        // the edges between them, as in Richard's layout. (The rows used to come out in hash order.)
+        List<List<Node>> tiers = new ArrayList<>();
+
+        for (List<Node> tier : getTiers(graph)) {
+            List<Node> sorted = new ArrayList<>(tier);
+            sorted.sort(Comparator.comparingInt(nodeIndex::get));
+            tiers.add(sorted);
+        }
+
+        layoutInCenteredRows(orderTiers(graph, allNodes, tiers).tiers(), size);
     }
 
     /**
@@ -1156,123 +1171,15 @@ public class LayoutUtil {
         // into sub-rows so that no edge joins two nodes in the same row.
         tiers = splitTiersForSameTierEdges(graph, tiers, nodeIndex);
 
-        Map<Node, Integer> tierOf = new HashMap<>();
-        for (int t = 0; t < tiers.size(); t++) {
-            for (Node n : tiers.get(t)) tierOf.put(n, t);
-        }
-
-        // Neighbor lists over all edges that connect different tiers. Every
-        // edge type votes in the ordering; only the tier assignment above is
-        // restricted to the directed structure.
-        Map<Node, List<Node>> upNbrs = new HashMap<>();
-        Map<Node, List<Node>> downNbrs = new HashMap<>();
-        for (Node n : allNodes) {
-            upNbrs.put(n, new ArrayList<>());
-            downNbrs.put(n, new ArrayList<>());
-        }
-
-        List<Node[]> crossEdges = new ArrayList<>();
-
-        for (Edge e : graph.getEdges()) {
-            Node a = e.getNode1();
-            Node b = e.getNode2();
-            Integer ta = tierOf.get(a);
-            Integer tb = tierOf.get(b);
-            if (ta == null || tb == null || ta.intValue() == tb.intValue()) continue;
-            Node hi = ta < tb ? a : b;
-            Node lo = ta < tb ? b : a;
-            downNbrs.get(hi).add(lo);
-            upNbrs.get(lo).add(hi);
-            crossEdges.add(new Node[]{hi, lo});
-        }
-
-        // Barycenter sweeps; keep the ordering with the fewest crossings.
-        // Crossing counting is O(E^2), so above this many cross-tier edges
-        // the sweeps still run but the keep-best bookkeeping, and the
-        // transpose step that depends on counting, are skipped.
-        final int maxEdgesForCrossingCounts = 2000;
-        boolean trackCrossings = crossEdges.size() <= maxEdgesForCrossingCounts;
-
-        // The cross-tier edges at each node, by index into crossEdges, for the
-        // transpose step: exchanging two nodes changes only crossings that
-        // involve an edge at one of them.
-        Map<Node, List<Integer>> edgesAt = new HashMap<>();
-        for (Node n : allNodes) edgesAt.put(n, new ArrayList<>());
-
-        for (int i = 0; i < crossEdges.size(); i++) {
-            edgesAt.get(crossEdges.get(i)[0]).add(i);
-            edgesAt.get(crossEdges.get(i)[1]).add(i);
-        }
-
-        int bestCrossings = trackCrossings
-                ? countCrossings(crossEdges, tierOf, normalizedPositions(tiers))
-                : Integer.MAX_VALUE;
-        List<List<Node>> bestTiers = copyTiers(tiers);
-        List<List<Node>> startTiers = copyTiers(tiers);
-
-        // Two runs of the sweeps from the same start, the second with the
-        // transpose step after each sweep. The transpose step usually ends
-        // lower, but it also changes the ordering the next sweep starts from,
-        // and on some graphs that path ends higher; the best over both runs
-        // is never worse than the sweeps alone. Without crossing counts
-        // there is no transpose step and nothing to choose by, so one run.
-        for (int run = 0; run < (trackCrossings ? 2 : 1); run++) {
-            boolean transpose = run == 1;
-            if (run > 0) tiers = copyTiers(startTiers);
-
-            for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
-                boolean downSweep = sweep % 2 == 0;
-
-                for (int ti = 0; ti < tiers.size(); ti++) {
-                    int t = downSweep ? ti : tiers.size() - 1 - ti;
-                    List<Node> tier = tiers.get(t);
-                    if (tier.size() < 2) continue;
-
-                    Map<Node, Double> pos = normalizedPositions(tiers);
-                    Map<Node, Double> key = new HashMap<>();
-
-                    for (Node n : tier) {
-                        List<Node> nbrs = downSweep ? upNbrs.get(n) : downNbrs.get(n);
-
-                        if (nbrs.isEmpty()) {
-                            nbrs = new ArrayList<>(upNbrs.get(n));
-                            nbrs.addAll(downNbrs.get(n));
-                        }
-
-                        if (nbrs.isEmpty()) {
-                            key.put(n, pos.get(n));
-                        } else {
-                            double s = 0.0;
-                            for (Node m : nbrs) s += pos.get(m);
-                            key.put(n, s / nbrs.size());
-                        }
-                    }
-
-                    tier.sort(Comparator.comparingDouble(key::get));
-                }
-
-                // The barycenter sort does not look at crossings, so it can leave
-                // a layer where exchanging two neighbors would remove some (ties
-                // in the barycenter, above all). Exchange adjacent nodes while
-                // that strictly reduces the count.
-                if (transpose) {
-                    transposeTiers(tiers, crossEdges, edgesAt, tierOf);
-                }
-
-                if (trackCrossings) {
-                    int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
-
-                    if (c < bestCrossings) {
-                        bestCrossings = c;
-                        bestTiers = copyTiers(tiers);
-                    }
-                }
-            }
-        }
-
-        if (trackCrossings) {
-            tiers = bestTiers;
-        }
+        // Order each tier to reduce edge crossings; see orderTiers.
+        TierOrder order = orderTiers(graph, allNodes, tiers);
+        tiers = order.tiers();
+        Map<Node, Integer> tierOf = order.tierOf();
+        Map<Node, List<Node>> upNbrs = order.upNbrs();
+        Map<Node, List<Node>> downNbrs = order.downNbrs();
+        List<Node[]> crossEdges = order.crossEdges();
+        Map<Node, List<Integer>> edgesAt = order.edgesAt();
+        boolean trackCrossings = order.trackCrossings();
 
         // Coordinate assignment: pack each tier by real widths, then pull
         // nodes toward the mean x of their neighbors, preserving order and
@@ -1404,6 +1311,165 @@ public class LayoutUtil {
 
             placeIsolatedGrid(isolated, size, maxRight + 2 * xGap, xGap);
         }
+    }
+
+    /**
+     * Orders the nodes within each of the given rows to reduce the crossings of the edges between rows, by the
+     * ordering step of Richard's layout (see {@link #orderTiers(Graph, List, List)}). Edges within a row are not
+     * counted. The given lists are not changed.
+     *
+     * @param graph the graph; every node in the rows must be one of its nodes.
+     * @param rows  the rows, top first.
+     * @return the rows, reordered, as new lists.
+     */
+    public static List<List<Node>> orderRowsToReduceCrossings(Graph graph, List<List<Node>> rows) {
+        List<List<Node>> copies = new ArrayList<>();
+        for (List<Node> row : rows) copies.add(new ArrayList<>(row));
+        return orderTiers(graph, graph.getNodes(), copies).tiers();
+    }
+
+    /**
+     * The result of {@link #orderTiers(Graph, List, List)}: the reordered tiers, and the bookkeeping built for
+     * them, which Richard's layout goes on to use.
+     */
+    private record TierOrder(List<List<Node>> tiers, Map<Node, Integer> tierOf, Map<Node, List<Node>> upNbrs,
+                             Map<Node, List<Node>> downNbrs, List<Node[]> crossEdges,
+                             Map<Node, List<Integer>> edgesAt, boolean trackCrossings) {
+    }
+
+    /**
+     * Orders the nodes within each tier to reduce the crossings of the edges between tiers: alternating down and
+     * up barycenter sweeps, twice from the same start, the second time with the transpose step after each sweep,
+     * keeping the ordering with the fewest crossings seen. Crossings are counted with every tier spread over the
+     * same width, which is exact for edges between neighboring tiers. This is the ordering step of Richard's
+     * layout (see {@link #richardsLayout(Graph, NodeSize, double, double, double, boolean)}), also used by the
+     * causal order layout.
+     *
+     * @param graph    the graph.
+     * @param allNodes the nodes of the graph.
+     * @param tiers    the tiers, in their starting order; the lists may be reordered.
+     * @return the ordered tiers and the bookkeeping built for them.
+     */
+    private static TierOrder orderTiers(Graph graph, List<Node> allNodes, List<List<Node>> tiers) {
+        Map<Node, Integer> tierOf = new HashMap<>();
+        for (int t = 0; t < tiers.size(); t++) {
+            for (Node n : tiers.get(t)) tierOf.put(n, t);
+        }
+
+        // Neighbor lists over all edges that connect different tiers. Every
+        // edge type votes in the ordering; only the tier assignment above is
+        // restricted to the directed structure.
+        Map<Node, List<Node>> upNbrs = new HashMap<>();
+        Map<Node, List<Node>> downNbrs = new HashMap<>();
+        for (Node n : allNodes) {
+            upNbrs.put(n, new ArrayList<>());
+            downNbrs.put(n, new ArrayList<>());
+        }
+
+        List<Node[]> crossEdges = new ArrayList<>();
+
+        for (Edge e : graph.getEdges()) {
+            Node a = e.getNode1();
+            Node b = e.getNode2();
+            Integer ta = tierOf.get(a);
+            Integer tb = tierOf.get(b);
+            if (ta == null || tb == null || ta.intValue() == tb.intValue()) continue;
+            Node hi = ta < tb ? a : b;
+            Node lo = ta < tb ? b : a;
+            downNbrs.get(hi).add(lo);
+            upNbrs.get(lo).add(hi);
+            crossEdges.add(new Node[]{hi, lo});
+        }
+
+        // Barycenter sweeps; keep the ordering with the fewest crossings.
+        // Crossing counting is O(E^2), so above this many cross-tier edges
+        // the sweeps still run but the keep-best bookkeeping, and the
+        // transpose step that depends on counting, are skipped.
+        final int maxEdgesForCrossingCounts = 2000;
+        boolean trackCrossings = crossEdges.size() <= maxEdgesForCrossingCounts;
+
+        // The cross-tier edges at each node, by index into crossEdges, for the
+        // transpose step: exchanging two nodes changes only crossings that
+        // involve an edge at one of them.
+        Map<Node, List<Integer>> edgesAt = new HashMap<>();
+        for (Node n : allNodes) edgesAt.put(n, new ArrayList<>());
+
+        for (int i = 0; i < crossEdges.size(); i++) {
+            edgesAt.get(crossEdges.get(i)[0]).add(i);
+            edgesAt.get(crossEdges.get(i)[1]).add(i);
+        }
+
+        int bestCrossings = trackCrossings
+                ? countCrossings(crossEdges, tierOf, normalizedPositions(tiers))
+                : Integer.MAX_VALUE;
+        List<List<Node>> bestTiers = copyTiers(tiers);
+        List<List<Node>> startTiers = copyTiers(tiers);
+
+        // Two runs of the sweeps from the same start, the second with the
+        // transpose step after each sweep. The transpose step usually ends
+        // lower, but it also changes the ordering the next sweep starts from,
+        // and on some graphs that path ends higher; the best over both runs
+        // is never worse than the sweeps alone. Without crossing counts
+        // there is no transpose step and nothing to choose by, so one run.
+        for (int run = 0; run < (trackCrossings ? 2 : 1); run++) {
+            boolean transpose = run == 1;
+            if (run > 0) tiers = copyTiers(startTiers);
+
+            for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
+                boolean downSweep = sweep % 2 == 0;
+
+                for (int ti = 0; ti < tiers.size(); ti++) {
+                    int t = downSweep ? ti : tiers.size() - 1 - ti;
+                    List<Node> tier = tiers.get(t);
+                    if (tier.size() < 2) continue;
+
+                    Map<Node, Double> pos = normalizedPositions(tiers);
+                    Map<Node, Double> key = new HashMap<>();
+
+                    for (Node n : tier) {
+                        List<Node> nbrs = downSweep ? upNbrs.get(n) : downNbrs.get(n);
+
+                        if (nbrs.isEmpty()) {
+                            nbrs = new ArrayList<>(upNbrs.get(n));
+                            nbrs.addAll(downNbrs.get(n));
+                        }
+
+                        if (nbrs.isEmpty()) {
+                            key.put(n, pos.get(n));
+                        } else {
+                            double s = 0.0;
+                            for (Node m : nbrs) s += pos.get(m);
+                            key.put(n, s / nbrs.size());
+                        }
+                    }
+
+                    tier.sort(Comparator.comparingDouble(key::get));
+                }
+
+                // The barycenter sort does not look at crossings, so it can leave
+                // a layer where exchanging two neighbors would remove some (ties
+                // in the barycenter, above all). Exchange adjacent nodes while
+                // that strictly reduces the count.
+                if (transpose) {
+                    transposeTiers(tiers, crossEdges, edgesAt, tierOf);
+                }
+
+                if (trackCrossings) {
+                    int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
+
+                    if (c < bestCrossings) {
+                        bestCrossings = c;
+                        bestTiers = copyTiers(tiers);
+                    }
+                }
+            }
+        }
+
+        if (trackCrossings) {
+            tiers = bestTiers;
+        }
+
+        return new TierOrder(tiers, tierOf, upNbrs, downNbrs, crossEdges, edgesAt, trackCrossings);
     }
 
     /**

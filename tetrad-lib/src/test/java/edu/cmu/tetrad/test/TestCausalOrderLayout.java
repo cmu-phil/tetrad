@@ -1,12 +1,16 @@
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests that the causal order layout centers its rows on one another.
+ * Tests that the causal order layout centers its rows on one another and orders them to reduce crossings.
  */
 public class TestCausalOrderLayout {
 
@@ -145,5 +149,87 @@ public class TestCausalOrderLayout {
 
             lastY = y;
         }
+    }
+
+    /**
+     * Every directed edge points down, the layout is the same when run again, and the straight-line crossings over
+     * the ten graphs stay under a bound that the layout met once the rows were ordered to reduce crossings (1893
+     * before that, 743 after).
+     */
+    @Test
+    public void testRowsAndCrossings() {
+        int crossings = 0;
+
+        for (int seed = 0; seed < 10; seed++) {
+            RandomUtil.getInstance().setSeed(1000 + seed);
+            Graph graph = RandomGraph.randomGraph(30, 0, 45, 100, 100, 100, false);
+            LayoutUtil.layoutByCausalOrder(graph);
+
+            List<Node> nodes = graph.getNodes();
+            List<Edge> edges = new ArrayList<>(graph.getEdges());
+
+            for (Edge edge : edges) {
+                assertTrue(edge + " does not point down",
+                        edge.getNode1().getCenterY() < edge.getNode2().getCenterY());
+            }
+
+            int[] before = new int[2 * nodes.size()];
+
+            for (int i = 0; i < nodes.size(); i++) {
+                before[2 * i] = nodes.get(i).getCenterX();
+                before[2 * i + 1] = nodes.get(i).getCenterY();
+            }
+
+            LayoutUtil.layoutByCausalOrder(graph);
+
+            for (int i = 0; i < nodes.size(); i++) {
+                assertEquals(before[2 * i], nodes.get(i).getCenterX());
+                assertEquals(before[2 * i + 1], nodes.get(i).getCenterY());
+            }
+
+            for (int i = 0; i < edges.size(); i++) {
+                for (int j = i + 1; j < edges.size(); j++) {
+                    Node a = edges.get(i).getNode1(), b = edges.get(i).getNode2();
+                    Node c = edges.get(j).getNode1(), d = edges.get(j).getNode2();
+
+                    if (a == c || a == d || b == c || b == d) continue;
+
+                    if (Line2D.linesIntersect(a.getCenterX(), a.getCenterY(), b.getCenterX(), b.getCenterY(),
+                            c.getCenterX(), c.getCenterY(), d.getCenterX(), d.getCenterY())) {
+                        crossings++;
+                    }
+                }
+            }
+        }
+
+        assertTrue("Crossings: " + crossings, crossings <= 900);
+    }
+
+    /**
+     * Two rows whose edges cross, A to D and B to C with A left of B and C left of D, come back ordered so that
+     * they do not, with the same nodes in each row, and the given rows are left as they were.
+     */
+    @Test
+    public void testOrderRowsToReduceCrossings() {
+        Graph graph = new EdgeListGraph();
+        Node a = new GraphNode("A"), b = new GraphNode("B"), c = new GraphNode("C"), d = new GraphNode("D");
+        for (Node node : List.of(a, b, c, d)) graph.addNode(node);
+        graph.addDirectedEdge(a, d);
+        graph.addDirectedEdge(b, c);
+
+        List<List<Node>> rows = List.of(new ArrayList<>(List.of(a, b)), new ArrayList<>(List.of(c, d)));
+        List<List<Node>> ordered = LayoutUtil.orderRowsToReduceCrossings(graph, rows);
+
+        assertEquals(List.of(a, b), rows.get(0));
+        assertEquals(List.of(c, d), rows.get(1));
+
+        assertEquals(2, ordered.size());
+        assertEquals(java.util.Set.of(a, b), new java.util.HashSet<>(ordered.get(0)));
+        assertEquals(java.util.Set.of(c, d), new java.util.HashSet<>(ordered.get(1)));
+
+        // No crossing: the node joined to the left one above is on the left below.
+        Node topLeft = ordered.get(0).get(0);
+        Node bottomLeft = ordered.get(1).get(0);
+        assertTrue(graph.isAdjacentTo(topLeft, bottomLeft));
     }
 }

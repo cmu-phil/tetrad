@@ -109,7 +109,10 @@ final class DistanceFromSelected {
             return;
         }
 
-        List<List<Node>> tiers = placeInTiers(this.graph, this.selected);
+        // The nodes within each row are ordered to reduce the crossings of the edges between rows, as in the
+        // causal order layout. (They used to come in the order they were reached.)
+        List<List<Node>> tiers = LayoutUtil.orderRowsToReduceCrossings(this.graph,
+                placeInTiers(this.graph, this.selected));
 
         // One row for each distance from the selected nodes, each row centered on the widest and spaced by the
         // nodes' sizes on screen, as in the causal order layout. (The rows used to all start at the left margin,
