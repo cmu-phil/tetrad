@@ -34,6 +34,7 @@ import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -53,19 +54,30 @@ import java.util.Map;
  * Mooij &amp; Claassen, 2020), and the pairwise orientation phase may
  * produce cycles in the final graph.
  *
- * <p>The algorithm proceeds iteratively until the PAG stabilizes:
+ * <p>The algorithm runs in one pass:
  * <ol>
  *   <li><b>Pairwise forbidden knowledge construction.</b> For every pair of
  *       variables (X, Y), a pairwise left-right statistic is computed on
  *       standardized data. If the statistic favors X → Y, the reverse edge
- *       Y → X is added to a forbidden knowledge object. This internal
- *       knowledge is passed to FCI to bias skeleton orientation without
- *       hard-constraining the independence tests.</li>
+ *       Y → X is added to a forbidden knowledge object, which is passed to
+ *       FCI. Note that these forbids do constrain the search beyond
+ *       orientation: FCI's adjacency phase excludes a variable forbidden as
+ *       a cause of X from X's separating-set candidates, so the skeleton
+ *       itself is steered by the pairwise statistic (empirically a net
+ *       benefit on skewed linear data; dropping the knowledge costs
+ *       accuracy on every structure tested).</li>
  *   <li><b>FCI search.</b> FCI is run with the pairwise forbidden knowledge,
  *       producing a PAG. The collider orientation strategy (SEPSETS,
  *       CONSERVATIVE, or MAX_P) and other FCI parameters are configurable.
  *       Optionally an FDR correction loop is applied to the independence
  *       tests.</li>
+ *   <li><b>Two-cycle detection.</b> When the two-cycle alpha is positive,
+ *       each adjacent pair (other than a bidirected one) is first given
+ *       FASK's two-cycle test, conditioning on the pair's adjacents in the
+ *       PAG; a pair that passes is output as a 2-cycle (X → Y and Y → X)
+ *       and is exempt from the pairwise orientation below. This is what
+ *       lets CPW represent the smallest cycles at all: the pairwise rule
+ *       by itself always commits to a single direction.</li>
  *   <li><b>Pairwise edge orientation.</b> Edges left ambiguous by FCI are
  *       further oriented using the pairwise left-right rule on standardized
  *       data, subject to the following case analysis:
@@ -178,6 +190,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         // Default rule is FASK 2 from harness.
         int pwRule = parameters.getInt(Params.FASK_LEFT_RIGHT_RULE, 2);
         boolean verbose = parameters.getBoolean(Params.VERBOSE);
+        double twoCycleAlpha = parameters.getDouble(Params.TWO_CYCLE_ALPHA);
 
         // Standardize once; reuse for knowledge + all pairwise decisions
         DataSet z = DataTransforms.standardizeData(dataSet);
@@ -188,15 +201,15 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         Map<String, Integer> nameToIdx = new HashMap<>();
         for (int k = 0; k < nodes.size(); k++) nameToIdx.put(nodes.get(k).getName(), k);
 
-        Graph pag = new EdgeListGraph();
+        Graph pag;
 
-        Graph _pag;
-
-        do {
-            _pag = new EdgeListGraph(pag);
+        {
+            // A single pass. (An earlier fixed-point loop here recomputed an identical PAG from
+            // unchanged inputs -- the knowledge never depended on the evolving graph -- so FCI,
+            // the expensive step, ran twice for nothing; verified identical output in simulation.)
 
             // --- Phase 0: Build PW-forbidden knowledge (internal only) ---
-            Knowledge internalKnowledge = buildPwForbiddenKnowledge(pwRule, pag, nodes, data, verbose);
+            Knowledge internalKnowledge = buildPwForbiddenKnowledge(pwRule, nodes, data, verbose);
 
             // --- Phase 1: Run FCI with that knowledge ---
             edu.cmu.tetrad.search.Fci.ColliderRule colliderOrientationStyle = switch (parameters.getInt(Params.COLLIDER_ORIENTATION_STYLE)) {
@@ -232,12 +245,24 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                     Node x = e.getNode1();
                     Node y = e.getNode2();
 
+                    if (pag.getEdges(x, y).size() > 1) continue; // already output as a 2-cycle
+
                     Endpoint exy = pag.getEndpoint(x, y); // endpoint at y
                     Endpoint eyx = pag.getEndpoint(y, x); // endpoint at x
 
                     Integer ix = nameToIdx.get(x.getName());
                     Integer iy = nameToIdx.get(y.getName());
                     if (ix == null || iy == null) continue;
+
+                    if (twoCycleAlpha > 0
+                            && !(exy == Endpoint.ARROW && eyx == Endpoint.ARROW)
+                            && isTwoCycle(pag, x, y, data, nameToIdx, twoCycleAlpha)) {
+                        pag.removeEdges(x, y);
+                        pag.addDirectedEdge(x, y);
+                        pag.addDirectedEdge(y, x);
+                        if (verbose) TetradLogger.getInstance().log("CPW 2-cycle: " + x + " <=> " + y);
+                        continue;
+                    }
 
                     double diff = Fask.leftRightDiff(data[ix], data[iy], pwRule);
 
@@ -308,7 +333,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                     }
                 }
             }
-        } while (!pag.equals(_pag));
+        }
 
         return pag;
     }
@@ -319,7 +344,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      * Build forbidden knowledge from standardized data using pairwise left-right: For each pair (i,j), if
      * diff(i,j,pwRule) > 0 forbid j->i; else forbid i->j. (No thresholding.)
      */
-    private Knowledge buildPwForbiddenKnowledge(int pwRule, Graph graph,
+    private Knowledge buildPwForbiddenKnowledge(int pwRule,
                                                 List<Node> nodes, double[][] data, boolean verbose) {
         Knowledge knowledge = new Knowledge();
 
@@ -328,10 +353,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
                 Node xi = nodes.get(i);
                 Node xj = nodes.get(j);
 
-                int i_xi = nodes.indexOf(xi);
-                int i_xj = nodes.indexOf(xj);
-
-                double diff = Fask.leftRightDiff(data[i_xi], data[i_xj], pwRule);
+                double diff = Fask.leftRightDiff(data[i], data[j], pwRule);
 
                 if (diff > 0) {
                     // prefer i_xi -> i_xj  ⇒ forbid xj -> xi
@@ -347,6 +369,28 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
             }
         }
         return knowledge;
+    }
+
+    /**
+     * FASK's two-cycle test for the pair, conditioning on the pair's adjacents in the PAG
+     * (continuous columns only -- all columns are continuous here, since CPW requires a
+     * continuous data set).
+     */
+    private static boolean isTwoCycle(Graph pag, Node x, Node y, double[][] data,
+                                      Map<String, Integer> nameToIdx, double twoCycleAlpha) {
+        List<Node> cand = new ArrayList<>(pag.getAdjacentNodes(x));
+        for (Node nd : pag.getAdjacentNodes(y)) if (!cand.contains(nd)) cand.add(nd);
+        cand.remove(x);
+        cand.remove(y);
+
+        List<double[]> cols = new ArrayList<>();
+        for (Node nd : cand) {
+            Integer k = nameToIdx.get(nd.getName());
+            if (k != null) cols.add(data[k]);
+        }
+
+        return Fask.twoCycleTest(data[nameToIdx.get(x.getName())], data[nameToIdx.get(y.getName())],
+                cols.toArray(new double[0][]), StatUtils.getZForAlpha(twoCycleAlpha));
     }
 
     // --------------------------- Boilerplate parity with Fci ---------------------------
@@ -412,6 +456,7 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         parameters.add(Params.DO_POSSIBLE_DSEP);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.FASK_LEFT_RIGHT_RULE);
+        parameters.add(Params.TWO_CYCLE_ALPHA);
         parameters.add(Params.FDR_Q);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.VERBOSE);
