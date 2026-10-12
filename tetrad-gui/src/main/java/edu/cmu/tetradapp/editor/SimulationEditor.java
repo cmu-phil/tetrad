@@ -12,6 +12,8 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.KnowledgeEditable;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import edu.cmu.tetradapp.workbench.LayoutMenu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -193,6 +195,16 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         JMenu file = new JMenu("File");
         file.add(saveSimulation);
 
+        // Saving the true graph in view, as from its workbench's right-click popup, and its image.
+        JMenu saveGraph = new JMenu("Save True Graph");
+        file.add(saveGraph);
+        fillOnOpen(saveGraph, (menu, workbench) -> {
+            JMenu formats = (JMenu) new GraphFileMenu(workbench).getMenuComponent(0);
+            for (Component item : formats.getMenuComponents()) menu.add(item);
+            menu.addSeparator();
+            menu.add(new SaveComponentImage(workbench, "Graph Image..."));
+        });
+
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(file);
 
@@ -207,11 +219,56 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         data.add(new CheckIndependenceFacts(this));
         menuBar.add(data);
 
+        // The Graph and Layout menus act on the true graph in view, so they are filled when opened, from that
+        // graph's workbench, with the items of its right-click popup.
         JMenu graph = new JMenu("Graph");
-        graph.add(new CheckMSeparationFacts(this.simulationGraphEditor));
         menuBar.add(graph);
+        fillOnOpen(graph, (menu, workbench) -> {
+            menu.add(new CheckMSeparationFacts(this.simulationGraphEditor));
+            menu.addSeparator();
+            for (Component item : workbench.createGraphMenu().getMenuComponents()) menu.add(item);
+        });
+
+        JMenu layout = new JMenu("Layout");
+        menuBar.add(layout);
+        fillOnOpen(layout, (menu, workbench) -> {
+            for (Component item : new LayoutMenu(workbench, false).getMenuComponents()) menu.add(item);
+        });
 
         return menuBar;
+    }
+
+    /**
+     * Makes the given menu be filled, each time it is opened, with items for the workbench of the true graph in
+     * view; with no graph in view it holds one disabled item saying so.
+     */
+    private void fillOnOpen(JMenu menu, java.util.function.BiConsumer<JMenu, GraphWorkbench> fill) {
+        menu.addMenuListener(new javax.swing.event.MenuListener() {
+            @Override
+            public void menuSelected(javax.swing.event.MenuEvent e) {
+                menu.removeAll();
+                GraphWorkbench workbench = SimulationEditor.this.simulationGraphEditor.getSelectedWorkbench();
+
+                if (workbench == null) {
+                    JMenuItem none = new JMenuItem("No graph simulated yet");
+                    none.setEnabled(false);
+                    menu.add(none);
+                } else {
+                    fill.accept(menu, workbench);
+                }
+
+                // The menu's items changed while it was opening.
+                menu.getPopupMenu().pack();
+            }
+
+            @Override
+            public void menuDeselected(javax.swing.event.MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(javax.swing.event.MenuEvent e) {
+            }
+        });
     }
 
     private ActionListener createSaveSimulationActionListener() {

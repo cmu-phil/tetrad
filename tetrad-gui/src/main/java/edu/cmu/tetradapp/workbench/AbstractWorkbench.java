@@ -298,10 +298,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * nodes' centers.
      */
     private void widenDefaultLayout() {
-        // Re-run the default (Richard's) layout with the display nodes' real box sizes; the default layout above
-        // only had the lib's name-length estimate. (This previously re-ran the OLD default -- a circle up to 20
-        // nodes, a square beyond -- which clobbered Richard's layout every time a graph arrived unpositioned.)
-        LayoutUtil.richardsLayout(this.graph, LayoutUtils.displayNodeSizes(this));
+        // Re-run the default layout (the one checked in the Layout menu; Richard's unless the user chose another)
+        // with the display nodes' real box sizes; the default layout above only had the lib's name-length estimate.
+        LayoutUtil.defaultLayout(this.graph, LayoutUtils.displayNodeSizes(this));
 
         for (Node node : this.graph.getNodes()) {
             DisplayNode d = (DisplayNode) getModelNodesToDisplay().get(node);
@@ -3650,7 +3649,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
-    private JMenu createGraphMenu() {
+    /**
+     * The Graph menu of this workbench's right-click popup, for a window that shows the same items in its own menu
+     * bar.
+     *
+     * @return the menu.
+     */
+    public JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
         JMenuItem graphProperties = new JMenuItem(new GraphPropertiesAction(((GraphWorkbench) this)));

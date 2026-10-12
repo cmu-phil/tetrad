@@ -425,34 +425,123 @@ public class LayoutUtil {
     }
 
     /**
-     * Arranges the nodes using Richard's layout unless it's laid out.
+     * The layouts that can serve as the default layout: the ones that need
+     * nothing but the graph. See {@link #setDefaultLayout(DefaultLayout)}.
+     */
+    public enum DefaultLayout {
+
+        /**
+         * Richard's layout; see {@link #richardsLayout(Graph, NodeSize)}.
+         */
+        RICHARDS,
+
+        /**
+         * The circle; see {@link #circleLayout(Graph, NodeSize)}.
+         */
+        CIRCLE,
+
+        /**
+         * The square; see {@link #squareLayout(Graph)}.
+         */
+        SQUARE,
+
+        /**
+         * Fruchterman-Reingold; see {@link FruchtermanReingoldLayout}.
+         */
+        FRUCHTERMAN_REINGOLD,
+
+        /**
+         * Rows by causal order; see {@link #layoutByCausalOrder(Graph, NodeSize)}.
+         */
+        CAUSAL_ORDER
+    }
+
+    /**
+     * The layout used by {@link #defaultLayout(Graph)} and
+     * {@link #defaultLayoutConditional(Graph)}. Richard's layout unless an
+     * application sets another; the Tetrad interface sets it from the user's
+     * choice in the Layout menu.
+     */
+    private static volatile DefaultLayout defaultLayout = DefaultLayout.RICHARDS;
+
+    /**
+     * Returns the layout used for graphs that have not been laid out.
+     *
+     * @return the default layout.
+     */
+    public static DefaultLayout getDefaultLayout() {
+        return LayoutUtil.defaultLayout;
+    }
+
+    /**
+     * Sets the layout used for graphs that have not been laid out, for this
+     * process. It starts as Richard's layout.
+     *
+     * @param layout the default layout; null for Richard's layout.
+     */
+    public static void setDefaultLayout(DefaultLayout layout) {
+        LayoutUtil.defaultLayout = layout == null ? DefaultLayout.RICHARDS : layout;
+    }
+
+    /**
+     * Arranges the nodes using the default layout unless they all have
+     * positions already.
      *
      * @param graph the graph to be arranged.
      */
     public static void defaultLayoutConditional(Graph graph) {
-        boolean allOriented = true;
-
-        for (Node node : graph.getNodes()) {
-            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
-                allOriented = false;
-            }
+        if (!isLaidOut(graph)) {
+            defaultLayout(graph);
         }
-
-        if (allOriented) {
-            return;
-        }
-
-        richardsLayout(graph);
     }
 
     /**
-     * Arranges the nodes in the graph in a circle if there are 20 or fewer
-     * nodes, otherwise arranges them in a square.
+     * Arranges the nodes using Richard's layout unless they all have
+     * positions already. The force-directed layouts start from this, not from
+     * the default layout, which may be one of them.
+     */
+    private static void seedLayoutConditional(Graph graph) {
+        if (!isLaidOut(graph)) {
+            richardsLayout(graph);
+        }
+    }
+
+    private static boolean isLaidOut(Graph graph) {
+        for (Node node : graph.getNodes()) {
+            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Arranges the nodes in the graph by the default layout (see
+     * {@link #setDefaultLayout(DefaultLayout)}), with estimated node sizes.
      *
      * @param graph the graph to be arranged.
      */
     public static void defaultLayout(Graph graph) {
-        richardsLayout(graph);
+        defaultLayout(graph, estimatedNodeSize());
+    }
+
+    /**
+     * Arranges the nodes in the graph by the default layout (see
+     * {@link #setDefaultLayout(DefaultLayout)}), with the given node sizes
+     * for the layouts that use them.
+     *
+     * @param graph the graph to be arranged.
+     * @param size  supplies the rendered box size of each node.
+     */
+    public static void defaultLayout(Graph graph, NodeSize size) {
+        switch (LayoutUtil.defaultLayout) {
+            case CIRCLE -> circleLayout(graph, size);
+            case SQUARE -> squareLayout(graph);
+            case FRUCHTERMAN_REINGOLD -> fruchtermanReingoldLayout(graph);
+            case CAUSAL_ORDER -> layoutByCausalOrder(graph, size);
+            default -> richardsLayout(graph, size);
+        }
     }
 
     /**
@@ -2112,7 +2201,7 @@ public class LayoutUtil {
          * Lays out the graph.
          */
         public void doLayout() {
-            defaultLayoutConditional(this.graph);
+            seedLayoutConditional(this.graph);
 
             // Default to SwingProgressListener for backward compatibility.
             if (this.progressListener == null) {
@@ -2689,7 +2778,7 @@ public class LayoutUtil {
          * Lays out the graph.
          */
         public void doLayout() {
-            defaultLayoutConditional(this.graph);
+            seedLayoutConditional(this.graph);
 
             List<List<Node>> components =
                     this.graph.paths().connectedComponents();

@@ -49,6 +49,17 @@ public class LayoutMenu extends JMenu {
     private final CopyLayoutAction copyLayoutAction;
 
     /**
+     * The group of the check box items for the layouts that can be the default layout.
+     */
+    private final ButtonGroup defaultLayoutGroup = new ButtonGroup();
+
+    /**
+     * Those items, by layout.
+     */
+    private final java.util.Map<LayoutUtil.DefaultLayout, JCheckBoxMenuItem> defaultLayoutItems =
+            new java.util.EnumMap<>(LayoutUtil.DefaultLayout.class);
+
+    /**
      * <p>Constructor for LayoutMenu.</p>
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
@@ -69,6 +80,23 @@ public class LayoutMenu extends JMenu {
     public LayoutMenu(LayoutEditable layoutEditable, boolean synchronizeOnOpen) {
         super("Layout");
         this.layoutEditable = layoutEditable;
+
+        // Another menu may have changed the default since this one was built.
+        addMenuListener(new javax.swing.event.MenuListener() {
+            @Override
+            public void menuSelected(javax.swing.event.MenuEvent e) {
+                JCheckBoxMenuItem item = LayoutMenu.this.defaultLayoutItems.get(LayoutUtil.getDefaultLayout());
+                if (item != null) item.setSelected(true);
+            }
+
+            @Override
+            public void menuDeselected(javax.swing.event.MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(javax.swing.event.MenuEvent e) {
+            }
+        });
 
         // Undo and redo for node positions, whatever changed them: a layout from this menu, a pasted or inherited
         // layout, or dragging. Always enabled, since the accelerators must work without the menu having been opened
@@ -168,7 +196,12 @@ public class LayoutMenu extends JMenu {
             this.addSeparator();
         }
 
-        JMenuItem richardsLayout = new JMenuItem("Richard's Layout");
+        // The layouts that can be the default layout, the one given to graphs that arrive without positions,
+        // are check box items in one group, with the current default checked. Choosing one lays out the graph
+        // and makes it the default, here and in later runs of Tetrad, even if its parameter dialog is then
+        // cancelled. Every Layout menu shows the same default; a menu built earlier is brought up to date when it
+        // is opened.
+        JCheckBoxMenuItem richardsLayout = defaultLayoutItem("Richard's Layout", LayoutUtil.DefaultLayout.RICHARDS);
         this.add(richardsLayout);
 
         richardsLayout.addActionListener(e -> {
@@ -178,7 +211,7 @@ public class LayoutMenu extends JMenu {
             getCopyLayoutAction().actionPerformed(null);
         });
 
-        JMenuItem circleLayout = new JMenuItem("Circle");
+        JCheckBoxMenuItem circleLayout = defaultLayoutItem("Circle", LayoutUtil.DefaultLayout.CIRCLE);
         this.add(circleLayout);
 
         circleLayout.addActionListener(e -> {
@@ -188,7 +221,7 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
-        JMenuItem squareLayout = new JMenuItem("Square");
+        JCheckBoxMenuItem squareLayout = defaultLayoutItem("Square", LayoutUtil.DefaultLayout.SQUARE);
         this.add(squareLayout);
 
         squareLayout.addActionListener(e -> {
@@ -199,7 +232,8 @@ public class LayoutMenu extends JMenu {
         });
 
 
-        JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");
+        JCheckBoxMenuItem fruchtermanReingold = defaultLayoutItem("Fruchterman-Reingold",
+                LayoutUtil.DefaultLayout.FRUCHTERMAN_REINGOLD);
         this.add(fruchtermanReingold);
 
         fruchtermanReingold.addActionListener(e -> {
@@ -231,7 +265,7 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
-        JMenuItem causalOrder = new JMenuItem("Causal Order");
+        JCheckBoxMenuItem causalOrder = defaultLayoutItem("Causal Order", LayoutUtil.DefaultLayout.CAUSAL_ORDER);
         this.add(causalOrder);
 
         causalOrder.addActionListener(e -> {
@@ -278,6 +312,20 @@ public class LayoutMenu extends JMenu {
         this.copyLayoutAction = new CopyLayoutAction(getLayoutEditable());
         add(getCopyLayoutAction());
         add(new PasteLayoutAction(getLayoutEditable()));
+    }
+
+    /**
+     * @return a check box item for a layout that can be the default layout, in this menu's group, checked if it is
+     * the default; choosing it makes it the default before its own action lays out the graph.
+     */
+    private JCheckBoxMenuItem defaultLayoutItem(String label, LayoutUtil.DefaultLayout choice) {
+        JCheckBoxMenuItem item = new JCheckBoxMenuItem(label);
+        item.setToolTipText("Lays out this graph, and makes this the layout for graphs that arrive without one.");
+        item.setSelected(LayoutUtil.getDefaultLayout() == choice);
+        item.addActionListener(e -> LayoutUtils.setDefaultLayout(choice));
+        this.defaultLayoutGroup.add(item);
+        this.defaultLayoutItems.put(choice, item);
+        return item;
     }
 
     private LayoutEditable getLayoutEditable() {

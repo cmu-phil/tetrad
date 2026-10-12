@@ -205,6 +205,14 @@ public final class SimulationGraphEditor extends JPanel {
         return this.tabbedPane;
     }
 
+    /**
+     * @return the workbench of the graph in view, or null if no graph is shown.
+     */
+    public GraphWorkbench getSelectedWorkbench() {
+        int index = tabbedPane().getSelectedIndex();
+        return index >= 0 && index < this.workbenches.size() ? this.workbenches.get(index) : null;
+    }
+
     public Graph getSelectedGraph(){
         return this.graphs.get(tabbedPane().getSelectedIndex());
     }
