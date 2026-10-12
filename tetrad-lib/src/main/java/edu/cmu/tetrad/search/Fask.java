@@ -681,11 +681,11 @@ public final class Fask {
         GraphSearchUtils.pcOrientbk(knowledge, G0, G0.getNodes(), false);
 
         Graph graph = new EdgeListGraph(variables);
-        Graph _graph;
 
-        do {
-            _graph = new EdgeListGraph(graph);
-            graph = new EdgeListGraph(variables);  // reset each iteration
+        {
+            // A single pass. (An earlier fixed-point loop here recomputed the identical graph from
+            // unchanged inputs -- nothing in the body read the evolving graph -- and with the
+            // override bootstrap on, its termination depended on the resampler's randomness.)
 
             for (int i = 0; i < variables.size(); i++) {
                 for (int j = i + 1; j < variables.size(); j++) {
@@ -720,11 +720,15 @@ public final class Fask {
                     final double[] x = pair[0];
                     final double[] y = pair[1];
 
-                    double skewX = StatUtils.cov(x, y, x, 0, +1)[1];
-                    double skewY = StatUtils.cov(x, y, y, 0, +1)[1];
+                    // The skew-edge criterion of the original FASK (Algorithm 1): the difference of the
+                    // UNcentered conditional correlations corrExp, the same statistic the left-right rule
+                    // uses. (A previous version used the centered conditional correlation from
+                    // StatUtils.cov, for which the extraEdgeThreshold default of 0.3 is not calibrated.)
+                    double corrExpX = corrExp(x, y, x);
+                    double corrExpY = corrExp(x, y, y);
 
                     if ((useFasAdjacencies && G0.isAdjacentTo(X, Y)) ||
-                            (useSkewAdjacencies && TMath.abs(skewX - skewY) > extraEdgeThreshold)) {
+                            (useSkewAdjacencies && TMath.abs(corrExpX - corrExpY) > extraEdgeThreshold)) {
                         if (knowledgeOrients(X, Y)) {
                             graph.addDirectedEdge(X, Y);
                         } else if (knowledgeOrients(Y, X)) {
@@ -768,7 +772,7 @@ public final class Fask {
                     }
                 }
             }
-        } while (!graph.equals(_graph));
+        }
 
         return graph;
     }
@@ -1018,8 +1022,6 @@ public final class Fask {
         // Partial correlations are for continuous variables; a discrete neighbor is not conditioned on.
         cand.removeIf(node -> !(node instanceof ContinuousVariable));
 
-        if (cand.isEmpty()) return false;
-
         double[][] candCols = new double[cand.size()][];
         for (int i = 0; i < cand.size(); i++) {
             candCols[i] = this.data[this.dataSet.getColumnIndex(cand.get(i))];
@@ -1031,22 +1033,27 @@ public final class Fask {
     /**
      * The FASK two-cycle test, in static form so that multi-dataset algorithms (e.g.,
      * {@link FaskPool}) can run it per dataset. The pair is judged a two-cycle when the
-     * two-cycle pattern (both conditional correlations shifting significantly from the
-     * unconditional correlation, in the same direction) holds unconditionally and
-     * persists under every conditioning subset of the candidate columns up to size 2.
-     * Skew-sign correction is applied internally, so pass uncorrected (standardized)
-     * columns.
+     * two-cycle pattern of the original FASK (Sanchez-Romero et al. 2019, Algorithm 3)
+     * holds unconditionally and persists under every conditioning subset of the candidate
+     * columns up to size 2: for each conditioning set, either one of the two conditional
+     * correlations shifts significantly from the unconditional one while the two shifts
+     * have opposite signs, or both shifts are significant. With no candidates the
+     * unconditional pattern alone decides, matching the original implementation, whose
+     * subset enumeration includes the empty set -- so an isolated two-cycle, whose pair
+     * has no other adjacents, is still detectable. A conditioning set under which the
+     * partial correlations cannot be computed (a singularity) is skipped, not treated as
+     * disconfirming, again matching the original. Skew-sign correction is applied
+     * internally, so pass uncorrected (standardized) columns.
      *
      * @param x        standardized series for X
      * @param y        standardized series for Y
      * @param candCols columns for the conditioning candidates (typically the adjacents
-     *                 of X and Y other than X and Y themselves); with no candidates the
-     *                 test returns false, matching single-dataset FASK
+     *                 of X and Y other than X and Y themselves)
      * @param cutoff   the z cutoff corresponding to the two-cycle alpha
      * @return true just in case the pair passes the two-cycle test
      */
     public static boolean twoCycleTest(double[] x, double[] y, double[][] candCols, double cutoff) {
-        if (candCols == null || candCols.length == 0) return false;
+        if (candCols == null) candCols = new double[0][];
 
         x = correctSkewness(x, skewness(completeRows(x)[0]));
         y = correctSkewness(y, skewness(completeRows(y)[0]));
@@ -1057,18 +1064,22 @@ public final class Fask {
         final double clampEps = 1e-6;
         final int maxSize = 2;// (depth < 0) ? cand.size() : TMath.min(depth, cand.size());
 
-        // Baseline: must show two-cycle pattern unconditionally
-        if (!showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps, cutoff)) {
+        // Baseline: must show the two-cycle pattern unconditionally. An unassessable
+        // baseline (singular, or positive parts too small) is not a two-cycle.
+        Boolean base = showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps, cutoff);
+        if (base == null || !base) {
             return false;
         }
 
-        // Must persist under ALL conditioning sets
+        // Must persist under every assessable conditioning set.
         SublistGenerator gen = new SublistGenerator(candCols.length, maxSize);
         int[] choice;
         while ((choice = gen.next()) != null) {
+            if (choice.length == 0) continue; // the baseline above
             double[][] Z = new double[choice.length][];
             for (int i = 0; i < choice.length; i++) Z[i] = candCols[choice[i]];
-            if (!showsTwoCyclePattern(x, y, Z, minPart, ridge, clampEps, cutoff)) {
+            Boolean shows = showsTwoCyclePattern(x, y, Z, minPart, ridge, clampEps, cutoff);
+            if (shows != null && !shows) {
                 return false;
             }
         }
@@ -1076,7 +1087,13 @@ public final class Fask {
         return true;
     }
 
-    private static boolean showsTwoCyclePattern(double[] x, double[] y, double[][] zCols,
+    /**
+     * Whether the pair shows the two-cycle pattern under the given conditioning columns: true or false when the
+     * pattern can be assessed, null when it cannot (the partial correlations are singular, or a positive part is
+     * smaller than minPart) -- the caller skips an unassessable conditioning set rather than treating it as
+     * disconfirming.
+     */
+    private static Boolean showsTwoCyclePattern(double[] x, double[] y, double[][] zCols,
                                                 int minPart, double ridge, double clampEps,
                                                 double cutoff) {
 
@@ -1102,12 +1119,12 @@ public final class Fask {
             pc1 = partialCorrelation(x, y, Z, x, 0, +1, ridge);
             pc2 = partialCorrelation(x, y, Z, y, 0, +1, ridge);
         } catch (Exception e) {
-            return false;
+            return null;
         }
 
         int nxPos = StatUtils.getRows(x, x, 0, +1).size();
         int nyPos = StatUtils.getRows(y, y, 0, +1).size();
-        if (nxPos < minPart || nyPos < minPart) return false;
+        if (nxPos < minPart || nyPos < minPart) return null;
 
         double _pc = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
         double _pc1 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc1));
@@ -1121,12 +1138,17 @@ public final class Fask {
         double zv1 = (z - z1) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nxPos - 3)));
         double zv2 = (z - z2) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nyPos - 3)));
 
-        // Both shift significantly, in the SAME direction, by similar amounts
+        // The original FASK acceptance (Sanchez-Romero et al. 2019, Algorithm 3): a significant
+        // shift on one side with the two shifts opposing, or significant shifts on both sides.
+        // (A previous version here required both shifts significant AND in the same direction,
+        // which is strictly stronger; it could never accept a mixed-sign two-cycle, whose shifts
+        // oppose.)
         boolean sig1 = TMath.abs(zv1) > cutoff;
         boolean sig2 = TMath.abs(zv2) > cutoff;
-        boolean sameDirection = (zv1 > 0) == (zv2 > 0);
 
-        return sig1 && sig2 && sameDirection;
+        if (zv1 < 0 && zv2 > 0 && sig1) return true;
+        if (zv1 > 0 && zv2 < 0 && sig2) return true;
+        return sig1 && sig2;
     }
 
     // === Returns true if conditioning on Z BREAKS the cycle opposition pattern (i.e., destroys it) ===
