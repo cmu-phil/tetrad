@@ -950,6 +950,14 @@ public final class Params {
      */
     public static final String LINEAR_LOW = "linearLow";
     /**
+     * Constant <code>LINGAM_PRUNE_ALPHA="lingamPruneAlpha"</code>
+     */
+    public static final String LINGAM_PRUNE_ALPHA = "lingamPruneAlpha";
+    /**
+     * Constant <code>LINGAM_REFIT_AND_PRUNE="lingamRefitAndPrune"</code>
+     */
+    public static final String LINGAM_REFIT_AND_PRUNE = "lingamRefitAndPrune";
+    /**
      * Constant <code>LOG_FINAL_ORIENTATIONS="logFinalOrientations"</code>
      */
     public static final String LOG_FINAL_ORIENTATIONS = "logFinalOrientations";

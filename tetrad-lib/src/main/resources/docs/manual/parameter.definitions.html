@@ -3864,6 +3864,28 @@ Source:
         <li>Value Type: <span id="linearLow_value_type">Double</span></li>
     </ul>
 
+    === lingamPruneAlpha ===
+    <h3 class="parameter_description" id="lingamPruneAlpha">lingamPruneAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lingamPruneAlpha_short_desc">Alpha for the t-test in LiNGAM's regression pruning step</span></li>
+        <li>Long Description: <span id="lingamPruneAlpha_long_desc">Significance level for the per-coefficient two-sided t-test in LiNGAM's regression refit-and-prune step (see lingamRefitAndPrune). A coefficient is kept when its p-value falls below this alpha. Smaller values prune more aggressively; 0.001 worked well at sample sizes of 1000 to 5000 in simulation.</span></li>
+        <li>Default Value: <span id="lingamPruneAlpha_default_value">0.001</span></li>
+        <li>Lower Bound: <span id="lingamPruneAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="lingamPruneAlpha_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="lingamPruneAlpha_value_type">Double</span></li>
+    </ul>
+
+    === lingamRefitAndPrune ===
+    <h3 class="parameter_description" id="lingamRefitAndPrune">lingamRefitAndPrune</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lingamRefitAndPrune_short_desc">Yes to refit LiNGAM coefficients by regression and prune by t-test</span></li>
+        <li>Long Description: <span id="lingamRefitAndPrune_long_desc">Yes to follow LiNGAM's acyclicity trimming with the pruning step of Shimizu et al. (2006), step 5: the trimmed model fixes the causal order, each variable is regressed on all its predecessors in that order, and coefficients are kept when significant by a t-test at lingamPruneAlpha. This replaces the noisier ICA-derived coefficients with regression estimates and prunes in a scale-free way, where the Threshold B cut alone depends on the units of the data. The Threshold B parameter still governs the trimming stage that fixes the order. No to return the ICA-derived trimmed coefficients as before.</span></li>
+        <li>Default Value: <span id="lingamRefitAndPrune_default_value">true</span></li>
+        <li>Lower Bound: <span id="lingamRefitAndPrune_lower_bound"></span></li>
+        <li>Upper Bound: <span id="lingamRefitAndPrune_upper_bound"></span></li>
+        <li>Value Type: <span id="lingamRefitAndPrune_value_type">Boolean</span></li>
+    </ul>
+
     === logFinalOrientations ===
     <h3 class="parameter_description" id="logFinalOrientations">logFinalOrientations</h3>
     <ul class="parameter_description_list">

@@ -98,7 +98,12 @@ public class Lingam extends AbstractBootstrapAlgorithm implements Algorithm, Ret
         edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
         lingam.setVerbose(parameters.getBoolean(Params.VERBOSE));
         lingam.setBThreshold(parameters.getDouble(Params.THRESHOLD_B));
+        lingam.setPruneAlpha(parameters.getDouble(Params.LINGAM_PRUNE_ALPHA));
         bHat = lingam.getAcyclicTrimmedBHat(W);
+
+        if (parameters.getBoolean(Params.LINGAM_REFIT_AND_PRUNE)) {
+            bHat = lingam.regressAndPrune(bHat, data);
+        }
         Graph graph = LingD.makeGraph(bHat, data.getVariables());
 
         if (parameters.getBoolean(Params.VERBOSE)) {
@@ -153,6 +158,8 @@ public class Lingam extends AbstractBootstrapAlgorithm implements Algorithm, Ret
         parameters.add(Params.FAST_ICA_A);
         parameters.add(Params.FAST_ICA_TOLERANCE);
         parameters.add(Params.THRESHOLD_B);
+        parameters.add(Params.LINGAM_REFIT_AND_PRUNE);
+        parameters.add(Params.LINGAM_PRUNE_ALPHA);
         return parameters;
     }
 
