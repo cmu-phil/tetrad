@@ -101,6 +101,11 @@ public class MagRicfBicScorer {
     private final double logN;
 
     /**
+     * Variable name to covariance index, built once; getValue lookups go through it.
+     */
+    private final Map<String, Integer> indexByName = new HashMap<>();
+
+    /**
      * Cache of district subproblem fits, keyed by a canonical description of the subproblem
      * (district variables, parent variables, and the local edges). Values are {logLik, edgeCount}.
      */
@@ -132,6 +137,15 @@ public class MagRicfBicScorer {
     private int maxIters = RicfEjml.DEFAULT_MAX_ITERS;
 
     /**
+     * When true, {@link #score(Graph)} skips the per-call node replacement and validation (the graph
+     * copy and the cycle check), trusting the caller to supply graphs whose nodes are the covariance
+     * variables and whose edges are directed or bidirected with an acyclic directed part. Searches
+     * that maintain those invariants themselves (such as the order projection) set this; the per-call
+     * copy and cycle check otherwise dominate the cost of candidate scans.
+     */
+    private boolean skipChecks = false;
+
+    /**
      * Constructs the scorer for a covariance matrix.
      *
      * @param cov the sample covariance matrix; must be positive definite on every scored submatrix.
@@ -141,6 +155,9 @@ public class MagRicfBicScorer {
         this.cov = cov;
         this.n = cov.getSampleSize();
         this.logN = Math.log(this.n);
+
+        List<String> names = cov.getVariableNames();
+        for (int i = 0; i < names.size(); i++) this.indexByName.put(names.get(i), i);
     }
 
     /**
@@ -195,8 +212,14 @@ public class MagRicfBicScorer {
      * @return the BIC score.
      */
     public double fullScore(Graph mag) {
-        Graph g = replaced(mag);
-        validate(g);
+        Graph g;
+        if (this.skipChecks) {
+            if (mag == null) throw new NullPointerException("Graph not specified.");
+            g = mag;
+        } else {
+            g = replaced(mag);
+            validate(g);
+        }
         RicfEjml.RicfResult r = new RicfEjml().ricf(g, this.cov, this.tolerance, this.maxIters);
         return 2.0 * r.getLogLik() - this.penaltyDiscount * g.getNumEdges() * this.logN;
     }
@@ -206,8 +229,14 @@ public class MagRicfBicScorer {
     // ------------------------------------------------------------------
 
     private double[] logLikAndDof(Graph mag) {
-        Graph g = replaced(mag);
-        validate(g);
+        Graph g;
+        if (this.skipChecks) {
+            if (mag == null) throw new NullPointerException("Graph not specified.");
+            g = mag;
+        } else {
+            g = replaced(mag);
+            validate(g);
+        }
 
         double ll = 0.0;
         int dof = 0;
@@ -435,11 +464,10 @@ public class MagRicfBicScorer {
     }
 
     private double value(String a, String b) {
-        List<String> names = this.cov.getVariableNames();
-        int i = names.indexOf(a);
-        int j = names.indexOf(b);
-        if (i < 0 || j < 0) {
-            throw new IllegalArgumentException("Variable not in the covariance matrix: " + (i < 0 ? a : b));
+        Integer i = this.indexByName.get(a);
+        Integer j = this.indexByName.get(b);
+        if (i == null || j == null) {
+            throw new IllegalArgumentException("Variable not in the covariance matrix: " + (i == null ? a : b));
         }
         return this.cov.getValue(i, j);
     }
@@ -525,6 +553,24 @@ public class MagRicfBicScorer {
     public void setMaxIters(int maxIters) {
         if (maxIters < 1) throw new IllegalArgumentException("Max iterations must be at least 1.");
         this.maxIters = maxIters;
+    }
+
+    /**
+     * Turns the trusted-caller fast path on or off; see the field. Default off.
+     *
+     * @param skipChecks true to skip the per-call node replacement and validation.
+     */
+    public void setSkipChecks(boolean skipChecks) {
+        this.skipChecks = skipChecks;
+    }
+
+    /**
+     * Whether the trusted-caller fast path is on.
+     *
+     * @return true iff per-call node replacement and validation are skipped.
+     */
+    public boolean isSkipChecks() {
+        return this.skipChecks;
     }
 
     /**

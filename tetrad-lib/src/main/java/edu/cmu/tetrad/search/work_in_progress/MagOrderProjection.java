@@ -143,6 +143,22 @@ public class MagOrderProjection {
      * @return the projected graph, over the given order's nodes.
      */
     public Graph project(List<Node> order) {
+        return project(order, null);
+    }
+
+    /**
+     * Projects the order, warm-started from an earlier projection's graph: the warm start's
+     * order-consistent edges (directed edges whose tail precedes their head in the new order, and all
+     * bidirected edges) seed the state, the forward phases are skipped, and only the polish and
+     * plateau-escape phases run. Intended for the outer order search, where successive orders differ
+     * by one relocation and most of the previous graph remains both legal and right.
+     *
+     * @param order     a total order of the scorer's variables.
+     * @param warmStart a graph from an earlier projection over the same variables, or null for a cold
+     *                  projection (the full four phases).
+     * @return the projected graph, over the given order's nodes.
+     */
+    public Graph project(List<Node> order, Graph warmStart) {
         List<Node> nodes = checkOrder(order);
         int p = nodes.size();
 
@@ -151,41 +167,82 @@ public class MagOrderProjection {
         this.plateauEscapes = 0;
         this.unscorableMoves = 0;
 
-        Graph g = new EdgeListGraph(nodes);
-        double score = this.scorer.score(g);
+        boolean priorSkip = this.scorer.isSkipChecks();
+        this.scorer.setSkipChecks(true);
 
-        // Phase 0: forward grow-shrink with DIRECTED moves only -- BOSS's projection under the order.
-        // On DAG-generated data at a true order this recovers the true DAG, and the later phases then
-        // find no improving bidirected move; without this phase, the typed grow drifts into
-        // over-complete bidirected representations that fit exactly with extra edges and sit on
-        // plateaus too long to walk back.
-        for (int t = 1; t < p; t++) {
-            List<int[]> pairs = new ArrayList<>();
-            for (int s = 0; s < t; s++) pairs.add(new int[]{s, t});
-            score = bestMoveLoop(g, nodes, pairs, score, Integer.MAX_VALUE, true);
+        try {
+            Graph g = new EdgeListGraph(nodes);
+
+            if (warmStart != null) {
+                seedFromWarmStart(g, nodes, warmStart);
+            }
+
+            double score = this.scorer.score(g);
+
+            if (warmStart == null) {
+                // Phase 0: forward grow-shrink with DIRECTED moves only -- BOSS's projection under the
+                // order. On DAG-generated data at a true order this recovers the true DAG, and the later
+                // phases then find no improving bidirected move; without this phase, the typed grow
+                // drifts into over-complete bidirected representations that fit exactly with extra edges
+                // and sit on plateaus too long to walk back.
+                for (int t = 1; t < p; t++) {
+                    List<int[]> pairs = new ArrayList<>();
+                    for (int s = 0; s < t; s++) pairs.add(new int[]{s, t});
+                    score = bestMoveLoop(g, nodes, pairs, score, Integer.MAX_VALUE, true);
+                }
+
+                // Phase 1: forward typed grow-shrink, one node at a time over its predecessors.
+                for (int t = 1; t < p; t++) {
+                    List<int[]> pairs = new ArrayList<>();
+                    for (int s = 0; s < t; s++) pairs.add(new int[]{s, t});
+                    score = bestMoveLoop(g, nodes, pairs, score, Integer.MAX_VALUE, false);
+                }
+            }
+
+            // Phase 2: polish over all order-respecting pairs, with plateau escapes between hill climbs.
+            List<int[]> allPairs = new ArrayList<>();
+            for (int t = 1; t < p; t++) {
+                for (int s = 0; s < t; s++) allPairs.add(new int[]{s, t});
+            }
+
+            while (true) {
+                score = bestMoveLoop(g, nodes, allPairs, score, this.maxPolishMoves, false);
+                Double escaped = plateauEscape(g, nodes, allPairs, score);
+                if (escaped == null) break;
+                score = escaped;
+            }
+
+            return g;
+        } finally {
+            this.scorer.setSkipChecks(priorSkip);
         }
+    }
 
-        // Phase 1: forward typed grow-shrink, one node at a time over its predecessors.
-        for (int t = 1; t < p; t++) {
-            List<int[]> pairs = new ArrayList<>();
-            for (int s = 0; s < t; s++) pairs.add(new int[]{s, t});
-            score = bestMoveLoop(g, nodes, pairs, score, Integer.MAX_VALUE, false);
+    /**
+     * Seeds the graph with the warm start's order-consistent edges: every bidirected edge (always
+     * order-consistent, and dropping directed edges only removes ancestries, so ancestrality is
+     * preserved), and every directed edge whose tail precedes its head in the new order.
+     */
+    private static void seedFromWarmStart(Graph g, List<Node> nodes, Graph warmStart) {
+        Map<String, Integer> pos = new LinkedHashMap<>();
+        for (int i = 0; i < nodes.size(); i++) pos.put(nodes.get(i).getName(), i);
+
+        for (Edge e : warmStart.getEdges()) {
+            Integer p1 = pos.get(e.getNode1().getName());
+            Integer p2 = pos.get(e.getNode2().getName());
+            if (p1 == null || p2 == null) continue;
+
+            if (Edges.isBidirectedEdge(e)) {
+                g.addEdge(Edges.bidirectedEdge(nodes.get(Math.min(p1, p2)), nodes.get(Math.max(p1, p2))));
+            } else if (Edges.isDirectedEdge(e)) {
+                Node tail = Edges.getDirectedEdgeTail(e);
+                int tailPos = pos.get(tail.getName());
+                int headPos = tailPos == p1 ? p2 : p1;
+                if (tailPos < headPos) {
+                    g.addEdge(Edges.directedEdge(nodes.get(tailPos), nodes.get(headPos)));
+                }
+            }
         }
-
-        // Phase 2: polish over all order-respecting pairs, with plateau escapes between hill climbs.
-        List<int[]> allPairs = new ArrayList<>();
-        for (int t = 1; t < p; t++) {
-            for (int s = 0; s < t; s++) allPairs.add(new int[]{s, t});
-        }
-
-        while (true) {
-            score = bestMoveLoop(g, nodes, allPairs, score, this.maxPolishMoves, false);
-            Double escaped = plateauEscape(g, nodes, allPairs, score);
-            if (escaped == null) break;
-            score = escaped;
-        }
-
-        return g;
     }
 
     /**
