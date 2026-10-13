@@ -66,12 +66,12 @@ import java.util.List;
  * @see edu.cmu.tetrad.search.work_in_progress.LvBossExperimental
  * @see edu.cmu.tetrad.search.work_in_progress.MagOrderProjection
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-BOSS",
-        command = "lv-boss",
-        algoType = AlgType.allow_latent_common_causes,
-        dataType = DataType.Continuous
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "LV-BOSS",
+//        command = "lv-boss",
+//        algoType = AlgType.allow_latent_common_causes,
+//        dataType = DataType.Continuous
+//)
 @Bootstrapping
 @Experimental
 public class LvBossExperimental extends AbstractBootstrapAlgorithm implements Algorithm, ReturnsBootstrapGraphs,
