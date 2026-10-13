@@ -366,7 +366,8 @@ public final class MissingDataUtils {
                             + "support for '" + canonical + "' (test-wise: Fisher Z, SEM BIC, BGe, EBIC, GIC, "
                             + "Poisson Prior, ZS Bound, HT SEM BIC, RFF BIC, TRFF BIC, KCV BIC, FFML, BDeu, "
                             + "Discrete BIC, CG-BIC, DG-BIC, DG-BGe, BF-BIC, BF-BGe, CG-LRT, DG-LRT, BF-LRT, "
-                            + "Blocks-Test, Chi-Square, G-Square, KCI, RCIT, CCI, GCM, Poisson Prior Test; EM "
+                            + "Blocks-Test, Chi-Square, G-Square, KCI, RCIT, FFCI, FFCI-Continuous, CCI, GCM, "
+                            + "Poisson Prior Test; EM "
                             + "covariance: Fisher Z, SEM BIC, BGe, EBIC, GIC, Poisson Prior, ZS Bound).");
                 }
             }

@@ -185,7 +185,8 @@ public final class Rcit implements IndependenceTest, RowsSettable {
      * Constructs an instance with an explicit missing-data specification. On a data set with missing values the
      * supported policies are LISTWISE and TESTWISE; under TESTWISE each test is computed on the active rows that
      * are complete on x, y, and z (by a temporary row override, which invalidates the feature cache for that test).
-     * A null spec leaves the legacy behavior in place.
+     * Under TESTWISE, concurrent checkIndependence calls on one instance are
+     * serialized. A null spec leaves the legacy behavior in place.
      *
      * @param dataSet the dataset; must not be null.
      * @param params  the parameters; must not be null.
@@ -502,16 +503,24 @@ public final class Rcit implements IndependenceTest, RowsSettable {
         Objects.requireNonNull(y, "y");
 
         if (this.testwiseDeletion) {
-            List<Integer> complete = completeRows(x, y, z);
+            // Searches (e.g., StarFci's sepset sweep) call checkIndependence from parallel streams on one
+            // instance, and the row override below mutates shared state. Without this lock, concurrent calls
+            // crash (IndexOutOfBounds in activeRowIndex) or, worse, compute on the wrong rows; with it, calls
+            // are serialized while test-wise deletion is active. Complete data pays nothing.
+            synchronized (this) {
+                List<Integer> complete = completeRows(x, y, z);
 
-            if (complete.size() < getActiveRowCount()) {
-                List<Integer> saved = this.rows;
-                try {
-                    setRows(complete);
-                    return checkIndependenceOnActiveRows(x, y, z);
-                } finally {
-                    setRows(saved);
+                if (complete.size() < getActiveRowCount()) {
+                    List<Integer> saved = this.rows;
+                    try {
+                        setRows(complete);
+                        return checkIndependenceOnActiveRows(x, y, z);
+                    } finally {
+                        setRows(saved);
+                    }
                 }
+
+                return checkIndependenceOnActiveRows(x, y, z);
             }
         }
 

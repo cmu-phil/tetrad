@@ -63,8 +63,9 @@ public class FfCi implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, false, "FFCI (Fourier Features Conditional Independence)");
-        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi((DataSet) dataSet);
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "FFCI (Fourier Features Conditional Independence)");
+        edu.cmu.tetrad.search.test.FfCi test = new edu.cmu.tetrad.search.test.FfCi((DataSet) dataSet,
+                new Parameters(), MissingDataUtils.fromParameters(parameters));
 
         test.setAlpha(parameters.getDouble(Params.ALPHA));
 
