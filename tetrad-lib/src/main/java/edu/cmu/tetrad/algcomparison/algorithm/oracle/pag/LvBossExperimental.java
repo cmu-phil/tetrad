@@ -67,8 +67,8 @@ import java.util.List;
  * @see edu.cmu.tetrad.search.work_in_progress.MagOrderProjection
  */
 //@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "LV-BOSS",
-//        command = "lv-boss",
+//        name = "LV-BOSS-Experimental",
+//        command = "lv-boss-experimental",
 //        algoType = AlgType.allow_latent_common_causes,
 //        dataType = DataType.Continuous
 //)
