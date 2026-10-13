@@ -20,6 +20,9 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataModelList;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
@@ -66,8 +69,139 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      * @param graphWrapper a {@link edu.cmu.tetradapp.model.GraphSource} object
      * @param parameters   a {@link edu.cmu.tetrad.util.Parameters} object
      */
+    /**
+     * The data the graph is about, if any could be found among the parents; null otherwise. Used only for
+     * display (the plot matrix).
+     */
+    private DataSet dataSet;
+
+    /**
+     * All the data sets the parent that supplied the data carries, for choosing among in the plot matrix; holds
+     * just the one above if there is only one. Null in sessions saved before this field existed.
+     */
+    private List<DataSet> dataSets;
+
+    /**
+     * If the graph came from a search with several results, the name of the result it is; null otherwise. Used
+     * only for display.
+     */
+    private String sourceResultName;
+
     public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
+        this.sourceResultName = resultNameOf(graphWrapper);
+
+        // A graph source that carries its own data (a search, a simulation, a Markov or vertex checker)
+        // supplies it.
+        this.dataSet = dataOf(graphWrapper);
+        this.dataSets = dataSetsOf(graphWrapper);
+    }
+
+    /**
+     * Constructs the wrapper from a graph source and a separate data box, whose data is made available for
+     * display.
+     *
+     * @param graphWrapper the source of the graph
+     * @param dataWrapper  the source of the data
+     * @param parameters   the parameters
+     */
+    public GraphSelectionWrapper(GraphSource graphWrapper, DataWrapper dataWrapper, Parameters parameters) {
+        this(graphWrapper.getGraph(), parameters);
+        this.sourceResultName = resultNameOf(graphWrapper);
+        DataSet fromDataBox = dataOf(dataWrapper);
+        this.dataSet = fromDataBox != null ? fromDataBox : dataOf(graphWrapper);
+        this.dataSets = dataSetsOf(fromDataBox != null ? dataWrapper : graphWrapper);
+    }
+
+    /**
+     * The first non-empty tabular data set the given session model carries, or null if it carries none.
+     */
+    private static DataSet dataOf(Object source) {
+        try {
+            // A Markov or vertex checker: the data set it is checking, which need not be its first.
+            DataModel checked = source instanceof VertexCheckIndTestModel vertexCheck ? vertexCheck.getDataModel()
+                    : source instanceof MarkovCheckIndTestModel markovCheck ? markovCheck.getDataModel() : null;
+            if (checked instanceof DataSet data && data.getNumRows() > 0) return data;
+
+            List<? extends DataModel> list = dataModelsOf(source);
+
+            if (list == null) return null;
+
+            // A search over several data sets with one result per data set: the data for the selected result.
+            if (source instanceof GeneralAlgorithmRunner runner && runner.getGraphs() != null
+                && runner.getGraphs().size() == list.size()
+                && list.get(runner.getSelectedResultIndex()) instanceof DataSet data && data.getNumRows() > 0) {
+                return data;
+            }
+
+            for (DataModel model : list) {
+                if (model instanceof DataSet data && data.getNumRows() > 0) return data;
+            }
+        } catch (RuntimeException e) {
+            // No data to be had from this source; the plot matrix is simply not offered.
+        }
+
+        return null;
+    }
+
+    /**
+     * The data models the given session model carries, or null if it is not a kind of model that carries any.
+     */
+    private static List<? extends DataModel> dataModelsOf(Object source) {
+        if (source instanceof DataWrapper dataWrapper) return dataWrapper.getDataModelList();
+        if (source instanceof GeneralAlgorithmRunner runner) return runner.getDataModelList();
+        if (source instanceof VertexCheckIndTestModel vertexCheck) return vertexCheck.getDataModels();
+        if (source instanceof MarkovCheckIndTestModel markovCheck) return markovCheck.getDataModels();
+        return null;
+    }
+
+    private static String resultNameOf(Object source) {
+        return source instanceof GeneralAlgorithmRunner runner ? runner.getSelectedResultName() : null;
+    }
+
+    /**
+     * The name of the search result this graph is, if it came from a search with several results.
+     *
+     * @return the name, or null
+     */
+    public String getSourceResultName() {
+        return this.sourceResultName;
+    }
+
+    private static List<DataSet> dataSetsOf(Object source) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        try {
+            List<? extends DataModel> list = dataModelsOf(source);
+
+            if (list != null) {
+                for (DataModel model : list) {
+                    if (model instanceof DataSet data && data.getNumRows() > 0) dataSets.add(data);
+                }
+            }
+        } catch (RuntimeException e) {
+            // As for dataOf: no choice of data is offered.
+        }
+
+        return dataSets;
+    }
+
+    /**
+     * All the data sets available to plot from, of which getDataSet() is the one to show first.
+     *
+     * @return the data sets; empty if there are none
+     */
+    public List<DataSet> getDataSets() {
+        return this.dataSets == null ? new ArrayList<>() : this.dataSets;
+    }
+
+    /**
+     * The data the graph is about, if any was available from the parents.
+     *
+     * @return the data set, or null
+     */
+    public DataSet getDataSet() {
+        return this.dataSet;
     }
 
     /**
@@ -131,7 +265,11 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     private void init(Parameters params, List<Graph> graphs) {
-        setGraphs(graphs);
+        // Own node objects: the graphs come from another box (usually a search), and the subgraph shown here is
+        // laid out on its own, which must not lay out that box's graph too. Node positions live on node objects.
+        List<Graph> own = new ArrayList<>();
+        for (Graph graph : graphs) own.add(new EdgeListGraph(graph, true));
+        setGraphs(own);
 
         calculateSelection();
         List<Graph> selectionGraphs = getSelectionGraphs(params);
@@ -164,6 +302,12 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
      */
     public void setSelectedVariables(List<Node> variables) {
         this.selectedNodes = variables;
+
+        // The names are kept in the parameters, which outlive this wrapper, so that the selection carries over
+        // when the box is re-executed on a new graph (see setGraphs).
+        List<String> names = new ArrayList<>();
+        if (variables != null) for (Node node : variables) names.add(node.getName());
+        this.params.set("selectedVariableNames", names);
     }
 
     private List<Graph> getSelectionGraphs(Parameters params) {
@@ -214,7 +358,17 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             selectionGraphs.add(new EdgeListGraph());
         }
 
-        setSelectedVariables(new ArrayList<>());
+        // Start from the selection last made in this box, by name, keeping the variables the new graph has.
+        List<Node> restored = new ArrayList<>();
+
+        if (!graphs.isEmpty() && this.params.get("selectedVariableNames", new ArrayList<String>()) instanceof List<?> names) {
+            for (Object name : names) {
+                Node node = graphs.getFirst().getNode(String.valueOf(name));
+                if (node != null && !restored.contains(node)) restored.add(node);
+            }
+        }
+
+        setSelectedVariables(restored);
         this.params.set("selectionGraphs", selectionGraphs);
 
         List<Node> highlighted = (List<Node>) this.params.get("highlightInEditor", new ArrayList<>());

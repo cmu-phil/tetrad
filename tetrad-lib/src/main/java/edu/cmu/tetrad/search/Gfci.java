@@ -22,7 +22,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -48,7 +47,7 @@ import java.io.PrintStream;
  * @see Fges
  * @see Knowledge
  */
-public final class Gfci extends StarFciGuaranteePag {
+public final class Gfci extends StarFci {
     /**
      * The score used in search.
      */
@@ -86,12 +85,13 @@ public final class Gfci extends StarFciGuaranteePag {
 
     /**
      * Executes the FGES algorithm to compute the Markov equivalence class in the form of a completed partially directed
-     * acyclic graph (CPDAG) based on the provided score and algorithm configuration.
+     * acyclic graph (CPDAG) based on the provided score and algorithm configuration (paper, Alg. 1 line 1).
      *
      * @return The resulting CPDAG representing the Markov equivalence class.
      * @throws InterruptedException if the operation is interrupted.
      */
-    public Graph getMarkovDag(boolean verbose) throws InterruptedException {
+    @Override
+    public Graph getMarkovCpdag(boolean verbose) throws InterruptedException {
         if (isVerbose()) {
             TetradLogger.getInstance().log("Starting FGES.");
         }
@@ -105,7 +105,6 @@ public final class Gfci extends StarFciGuaranteePag {
         fges.setNumThreads(numThreads);
         fges.setVerbose(verbose);
         Graph graph = fges.search();
-        graph = GraphTransforms.dagFromCpdag(graph);
 
         if (isVerbose()) {
             TetradLogger.getInstance().log("Finished FGES.");

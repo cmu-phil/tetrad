@@ -95,7 +95,9 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         if (graph == null) {
             throw new NullPointerException("Tetrad dag must not be null.");
         }
-        setGraph(graph);
+        // Own node objects: the DAG usually comes from another box (a graph box, a PM, an IM), and laying it out
+        // here must not lay out that box too. See EdgeListGraph(Graph, boolean).
+        setGraph(new EdgeListGraph(graph, true));
         this.parameters = new Parameters();
         log();
     }
@@ -133,14 +135,14 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
             this.dags = new ArrayList<>();
 
             for (Graph graph : graphs) {
-                this.dags.add(new Dag(graph));
+                this.dags.add(new Dag(new EdgeListGraph(graph, true)));
             }
 
             this.numModels = this.dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(graphSource.getGraph()));
+            setGraph(new EdgeListGraph(graphSource.getGraph(), true));
         }
 
         log();
@@ -167,14 +169,16 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
             this.dags = new ArrayList<>();
 
             for (Graph graph : graphs) {
-                this.dags.add(new Dag(graph));
+                this.dags.add(new Dag(new EdgeListGraph(graph, true)));
             }
 
             this.numModels = this.dags.size();
             this.modelIndex = 0;
             this.modelSourceName = simulation.getName();
         } else {
-            setGraph(new EdgeListGraph(wrapper.getVariables()));
+            // Fresh node objects, not the data set's variables, which every graph built from that data set shares:
+            // positions set on them here would otherwise be seen by every other box on the data.
+            setGraph(new EdgeListGraph(new EdgeListGraph(wrapper.getVariables()), true));
         }
 
         LayoutUtil.defaultLayout(getGraph());

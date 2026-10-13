@@ -107,6 +107,34 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private final LinkedList<Graph> redoStack = new LinkedList<>();
     /**
+     * The most layouts kept for {@link #undoLayout()}.
+     */
+    private static final int MAX_LAYOUT_HISTORY = 100;
+    /**
+     * The layouts to go back to with {@link #undoLayout()}, most recent last; each maps node names to the centers
+     * of their display nodes. Null until first needed, as it is not serialized.
+     */
+    private transient LinkedList<Map<String, Point>> layoutUndoStack;
+    /**
+     * The layouts to return to with {@link #redoLayout()}, most recent last.
+     */
+    private transient LinkedList<Map<String, Point>> layoutRedoStack;
+    /**
+     * The layout when the mouse went down on a node, kept until the mouse is released, so that a drag is undone
+     * as one step.
+     */
+    private transient Map<String, Point> layoutBeforeDrag;
+    /**
+     * The workbenches, this one included, that keep the same layout (see {@link #shareLayout(List)}), or null if
+     * this workbench is laid out on its own.
+     */
+    private transient List<AbstractWorkbench> layoutGroup;
+    /**
+     * True while this workbench is taking the layout of another workbench of its group, so that it does not hand
+     * the layout on in turn.
+     */
+    private transient boolean followingLayout;
+    /**
      * The workbench which this workbench displays.
      */
     private Graph graph;
@@ -144,6 +172,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * to be moved in sync during the drag.
      */
     private List<DisplayNode> dragNodes;
+    /**
+     * True if the selected nodes have been moved as a group since the current drag started, so that releasing
+     * the mouse snaps the group to the grid only after an actual drag.
+     */
+    private boolean dragGroupMoved;
+    /**
+     * The spacing of the grid that dropped nodes snap to, in pixels.
+     */
+    private static final int GRID_SIZE = 20;
     /**
      * For selecting multiple nodes using a rubberband, a rubberband is needed; this is it.
      */
@@ -220,6 +257,19 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
+                // Not while the search field is being typed in: the keys would then go to the workbench, where
+                // Backspace deletes the selected nodes. A click on the workbench takes the focus as usual.
+                Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+
+                if (owner instanceof JComponent component
+                    && component.getClientProperty(WorkbenchSearchBar.FIELD_KEY) != null) {
+                    return;
+                }
+
+                grabFocus();
+            }
+
+            public void mousePressed(MouseEvent e) {
                 grabFocus();
             }
         });
@@ -233,11 +283,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
         }
 
-        LayoutUtil.defaultLayout(graph);
+        LayoutUtil.defaultLayoutConditional(graph);
 
         // The display nodes were created by setGraph above, before the default layout assigned positions. If the
-        // default layout ran (a circle up to 20 nodes, a square beyond), widen it for the display nodes' label
-        // sizes and place them; a graph that arrived with positions (e.g., from a saved session) is left as is.
+        // default layout ran (Richard's layout), re-run it with the display nodes' real label sizes and place
+        // them; a graph that arrived with positions (e.g., from a saved session) is left as is.
         if (unpositioned) {
             widenDefaultLayout();
         }
@@ -248,13 +298,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * nodes' centers.
      */
     private void widenDefaultLayout() {
-        if (this.graph.getNumNodes() <= 20) {
-            // Re-run the circle with the display nodes' real box sizes; the default layout above only had the
-            // lib's name-length estimate.
-            LayoutUtil.circleLayout(this.graph, LayoutUtils.displayNodeSizes(this));
-        } else {
-            LayoutUtils.respaceSquareForLabels(this.graph, this);
-        }
+        // Re-run the default layout (the one checked in the Layout menu; Richard's unless the user chose another)
+        // with the display nodes' real box sizes; the default layout above only had the lib's name-length estimate.
+        LayoutUtil.defaultLayout(this.graph, LayoutUtils.displayNodeSizes(this));
 
         for (Node node : this.graph.getNodes()) {
             DisplayNode d = (DisplayNode) getModelNodesToDisplay().get(node);
@@ -488,6 +534,142 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             setGraph(graph);
         } while (graph.equals(oldGraph));
+    }
+
+    /**
+     * @return the current layout: the centers of the display nodes, by node name. Read from the display nodes rather
+     * than the model nodes because the layouts in the Layout menu move the model nodes first and the display nodes
+     * afterwards, through {@link #layoutByGraph(Graph)}, so that at that point only the display nodes still have
+     * the layout being replaced.
+     */
+    private Map<String, Point> layoutSnapshot() {
+        Map<String, Point> snapshot = new HashMap<>();
+
+        for (Node modelNode : this.graph.getNodes()) {
+            if (getModelNodesToDisplay().get(modelNode) instanceof DisplayNode displayNode) {
+                Dimension dim = displayNode.getSize();
+                if (dim.width <= 0 || dim.height <= 0) dim = displayNode.getPreferredSize();
+                snapshot.put(modelNode.getName(), new Point(displayNode.getX() + dim.width / 2,
+                        displayNode.getY() + dim.height / 2));
+            }
+        }
+
+        return snapshot;
+    }
+
+    /**
+     * Makes the given layout, which was the layout before some change, available to {@link #undoLayout()}, if the
+     * layout is now different from it. A new change discards the layouts available to {@link #redoLayout()}.
+     */
+    private boolean recordLayoutChange(Map<String, Point> before) {
+        if (before == null || before.equals(layoutSnapshot())) {
+            return false;
+        }
+
+        if (this.layoutUndoStack == null) this.layoutUndoStack = new LinkedList<>();
+        this.layoutUndoStack.addLast(before);
+        if (this.layoutUndoStack.size() > MAX_LAYOUT_HISTORY) this.layoutUndoStack.removeFirst();
+        if (this.layoutRedoStack != null) this.layoutRedoStack.clear();
+        return true;
+    }
+
+    /**
+     * Makes the given workbenches keep the same layout from now on: when the nodes of one of them are laid out,
+     * dragged, or put back by a layout undo or redo, the nodes of the others with the same names take the same
+     * positions. This is for an editor that shows several graphs over the same variables side by side, such as
+     * the results of one search, so that a layout chosen for the graph in view applies to all of them. The graphs
+     * are not made alike at this point, only at the next change.
+     *
+     * @param workbenches the workbenches; a list of fewer than two does nothing.
+     */
+    public static void shareLayout(List<? extends AbstractWorkbench> workbenches) {
+        List<AbstractWorkbench> group = workbenches.size() < 2 ? null : new ArrayList<>(workbenches);
+
+        for (AbstractWorkbench workbench : workbenches) {
+            workbench.layoutGroup = group;
+        }
+    }
+
+    /**
+     * Gives the layout of this workbench to the other workbenches of its group, if it has one.
+     */
+    private void layoutFollowers() {
+        if (this.layoutGroup == null || this.followingLayout || this.graph == null) {
+            return;
+        }
+
+        for (AbstractWorkbench other : this.layoutGroup) {
+            if (other == this || other.graph == null) {
+                continue;
+            }
+
+            other.followingLayout = true;
+
+            try {
+                other.layoutByGraph(this.graph);
+            } finally {
+                other.followingLayout = false;
+            }
+        }
+    }
+
+    /**
+     * Puts the display nodes, and the model nodes with them, exactly where the given layout has them. Nodes the
+     * layout does not mention (added since it was recorded) stay where they are. Unlike
+     * {@link #layoutByGraph(Graph)}, overlapping nodes are not moved apart, since the point is to get back the
+     * layout that was there.
+     */
+    private void restoreLayout(Map<String, Point> layout) {
+        for (Node modelNode : this.graph.getNodes()) {
+            Point center = layout.get(modelNode.getName());
+
+            if (center == null || !(getModelNodesToDisplay().get(modelNode) instanceof DisplayNode displayNode)) {
+                continue;
+            }
+
+            Dimension dim = displayNode.getSize();
+            if (dim.width <= 0 || dim.height <= 0) dim = displayNode.getPreferredSize();
+            displayNode.setLocation(center.x - dim.width / 2, center.y - dim.height / 2);
+            modelNode.setCenter(center.x, center.y);
+        }
+
+        fitCanvasToNodes();
+    }
+
+    /**
+     * Goes back to the layout before the last change to the positions of the nodes, whether that was a layout from
+     * the Layout menu, a pasted or inherited layout, or nodes being dragged. Edges and nodes are not changed; this
+     * is separate from {@link #undo()}, which undoes changes to the graph.
+     *
+     * @return True if there was a layout to go back to.
+     */
+    public boolean undoLayout() {
+        if (this.graph == null || this.layoutUndoStack == null || this.layoutUndoStack.isEmpty()) {
+            return false;
+        }
+
+        if (this.layoutRedoStack == null) this.layoutRedoStack = new LinkedList<>();
+        this.layoutRedoStack.addLast(layoutSnapshot());
+        restoreLayout(this.layoutUndoStack.removeLast());
+        layoutFollowers();
+        return true;
+    }
+
+    /**
+     * Returns to the layout that the last {@link #undoLayout()} went back from.
+     *
+     * @return True if there was a layout to return to.
+     */
+    public boolean redoLayout() {
+        if (this.graph == null || this.layoutRedoStack == null || this.layoutRedoStack.isEmpty()) {
+            return false;
+        }
+
+        if (this.layoutUndoStack == null) this.layoutUndoStack = new LinkedList<>();
+        this.layoutUndoStack.addLast(layoutSnapshot());
+        restoreLayout(this.layoutRedoStack.removeLast());
+        layoutFollowers();
+        return true;
     }
 
     public void setToOriginal() {
@@ -849,6 +1031,43 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * When the workbench comes to be shown in a scroll pane, gives the scroll pane the bar for selecting variables
+     * by name (see {@link WorkbenchSearchBar}). This is done just afterwards, not here, since the scroll pane is
+     * itself in the middle of being shown.
+     */
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        SwingUtilities.invokeLater(() -> WorkbenchSearchBar.install(this));
+    }
+
+    /**
+     * Whether the search bar may select nodes here: selection must be allowed, and of more than one node.
+     */
+    final boolean isSearchSelectable() {
+        return isAllowNodeEdgeSelection() && isAllowMultipleNodeSelection();
+    }
+
+    /**
+     * Selects or deselects one node for the search bar, leaving the rest of the selection as it is.
+     */
+    final void setNodeSelectedBySearch(Node modelNode, boolean selected) {
+        if (getModelNodesToDisplay().get(modelNode) instanceof DisplayNode displayNode) {
+            displayNode.setSelected(selected);
+        }
+    }
+
+    /**
+     * Tells selection listeners that the search bar has changed the selection, and repaints.
+     */
+    final void fireSearchSelection() {
+        if (isSearchSelectable()) fireNodeSelection();
+        repaint();
+    }
+
+    /**
      * Selects the editor node corresponding to the given model node.
      *
      * @param modelNode a {@link edu.cmu.tetrad.graph.Node} object
@@ -950,7 +1169,141 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         if (g instanceof Graphics2D g2) {
             WorkbenchStyle.applyHints(g2);
         }
+
+        // Before any edge is painted, bring the choice of which edges bend, and how, up to date with the nodes as
+        // they now stand. Done here rather than when an edge asks, so that it is done once per painting and is not
+        // missed when the region being painted happens to contain no edge.
+        refreshRouting();
         super.paint(g);
+    }
+
+    /**
+     * The apexes of the edges, as last chosen together by {@link #refreshRouting()}; null until first needed.
+     */
+    private transient Map<DisplayEdge, Double> routedApexes;
+
+    /**
+     * A digest of the node bounds and edges that {@link #routedApexes} was chosen for.
+     */
+    private transient long routingSignature;
+
+    /**
+     * True if this workbench has too many edges for any of them to be drawn curved; see
+     * {@link BezierRouter#MAX_CURVED_EDGES}.
+     */
+    private transient boolean straightOnly;
+
+    /**
+     * The apex chosen for the given edge when the bows of all the edges of this workbench are chosen together (see
+     * {@link BezierRouter}): zero for an edge that is to be drawn straight, which is every edge that does not have
+     * to bend around a node. The choice is brought up to date each time the workbench is painted.
+     *
+     * @param edge an edge of this workbench.
+     * @return its signed apex, or null if the edge is not one of the edges routed (it is not anchored at both ends,
+     * or it was added since the workbench was last painted).
+     */
+    Double routedApex(DisplayEdge edge) {
+        if (this.routedApexes == null) {
+            refreshRouting();
+        }
+
+        return this.straightOnly ? Double.valueOf(0.0) : this.routedApexes.get(edge);
+    }
+
+    /**
+     * @return true if edges of this workbench may be drawn curved, so that moving one node can change the shape of
+     * edges that are not attached to it.
+     */
+    boolean isCurvedEdges() {
+        return !this.straightOnly;
+    }
+
+    /**
+     * Chooses the bows of the edges anew if a node has moved or changed size, or an edge has been added, removed,
+     * or given a different offset, since they were last chosen; this is checked rather than tracked by events, so
+     * that no change can be missed. When the choice is made anew the whole workbench is repainted, since edges
+     * other than the one that changed may have changed shape.
+     */
+    private void refreshRouting() {
+        Component[] components = getComponents();
+        long signature = 17;
+        int numEdges = 0;
+
+        for (Component component : components) {
+            if (component instanceof DisplayNode) {
+                Rectangle b = component.getBounds();
+                signature = 31 * signature + b.x;
+                signature = 31 * signature + b.y;
+                signature = 31 * signature + b.width;
+                signature = 31 * signature + b.height;
+            } else if (component instanceof DisplayEdge e && AbstractWorkbench.isRouted(e)) {
+                signature = 31 * signature + System.identityHashCode(e);
+                signature = 31 * signature + System.identityHashCode(e.getNode1());
+                signature = 31 * signature + System.identityHashCode(e.getNode2());
+                signature = 31 * signature + Double.hashCode(e.getOffset());
+                numEdges++;
+            }
+        }
+
+        if (this.routedApexes != null && signature == this.routingSignature) {
+            return;
+        }
+
+        Map<DisplayEdge, Double> byEdge = new IdentityHashMap<>();
+        boolean straightOnly = numEdges > BezierRouter.MAX_CURVED_EDGES;
+
+        if (!straightOnly) {
+            List<Rectangle> nodes = new ArrayList<>();
+            Map<Component, Integer> indices = new IdentityHashMap<>();
+            List<DisplayEdge> routed = new ArrayList<>();
+
+            for (Component component : components) {
+                if (component instanceof DisplayNode) {
+                    indices.put(component, nodes.size());
+                    nodes.add(component.getBounds());
+                } else if (component instanceof DisplayEdge e && AbstractWorkbench.isRouted(e)) {
+                    routed.add(e);
+                }
+            }
+
+            // An edge to a node that is not a component of this workbench is left to choose its own side.
+            routed.removeIf(e -> !indices.containsKey(e.getNode1()) || !indices.containsKey(e.getNode2()));
+
+            int[][] edges = new int[routed.size()][];
+            double[] offsets = new double[routed.size()];
+
+            for (int i = 0; i < routed.size(); i++) {
+                edges[i] = new int[]{indices.get(routed.get(i).getNode1()), indices.get(routed.get(i).getNode2())};
+                offsets[i] = routed.get(i).getOffset();
+            }
+
+            double[] apexes = BezierRouter.route(nodes.toArray(new Rectangle[0]), edges, offsets);
+
+            for (int i = 0; i < routed.size(); i++) {
+                byEdge.put(routed.get(i), apexes[i]);
+            }
+        }
+
+        boolean first = this.routedApexes == null;
+        this.routedApexes = byEdge;
+        this.routingSignature = signature;
+        this.straightOnly = straightOnly;
+
+        // An edge that has just straightened or bent needs different bounds. Give it them now, before any edge is
+        // painted, and not while it is being painted; see DisplayEdge.checkCurveBounds.
+        for (Component component : components) {
+            if (component instanceof DisplayEdge e) {
+                e.syncCurveBounds();
+            }
+        }
+
+        if (!first) {
+            repaint();
+        }
+    }
+
+    private static boolean isRouted(DisplayEdge edge) {
+        return edge.getMode() != DisplayEdge.HALF_ANCHORED && edge.getNode1() != null && edge.getNode2() != null;
     }
 
     /**
@@ -1028,6 +1381,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * @param layoutGraph the graph used for layouting the nodes. Must not be null.
      */
     public void layoutByGraph(Graph layoutGraph) {
+        Map<String, Point> before = layoutSnapshot();
+
         LayoutUtil.arrangeBySourceGraph(this.graph, layoutGraph);
 
         for (Node modelNode : this.graph.getNodes()) {
@@ -1048,6 +1403,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         separateNodes();
         fitCanvasToNodes();
+        recordLayoutChange(before);
+        layoutFollowers();
 
         // setGraphWithoutNotify(graph);
     }
@@ -1265,9 +1622,84 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     /**
-     * Grows the workbench's preferred size (and scrollable maximum) to hold every display node, and repaints.
+     * The space kept between the top and left of the workbench and any curved edge, in pixels: room for the line's
+     * width and its endpoint decorations, and a little more.
+     */
+    private static final int CURVE_VIEW_MARGIN = 14;
+
+    /**
+     * Moves every display node down and to the right by the same amount, if need be, so that no curved edge runs
+     * off the top or the left of the workbench. A layout puts the nodes inside the workbench, but an edge that has
+     * to bend around a node bows outside the box of its two endpoints, and for nodes near the top or left that can
+     * put part of the curve at negative coordinates, where it cannot be scrolled to. (To the right and below, the
+     * workbench grows to hold its edges, so nothing is needed there.) Moving all the nodes together changes no
+     * curve, since which edges bend and how depends only on where the nodes are relative to one another.
+     *
+     * @return True if the nodes were moved.
+     */
+    private boolean shiftCurvesIntoView() {
+        refreshRouting();
+
+        if (this.straightOnly || this.routedApexes == null) {
+            return false;
+        }
+
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+
+        for (Map.Entry<DisplayEdge, Double> entry : this.routedApexes.entrySet()) {
+            double apex = entry.getValue();
+            DisplayEdge edge = entry.getKey();
+
+            if (apex == 0.0 || edge.getNode1() == null || edge.getNode2() == null) {
+                continue;
+            }
+
+            Rectangle r1 = edge.getNode1().getBounds();
+            Rectangle r2 = edge.getNode2().getBounds();
+            double x1 = r1.getCenterX(), y1 = r1.getCenterY(), x2 = r2.getCenterX(), y2 = r2.getCenterY();
+            double len = Math.hypot(x2 - x1, y2 - y1);
+
+            if (len < 1e-6) {
+                continue;
+            }
+
+            // The curve's control point is displaced twice the apex from the chord's midpoint, toward the chord's
+            // left normal; see BezierRouter. Its leftmost and topmost points are found by stepping along it.
+            double cx = (x1 + x2) / 2.0 - (y2 - y1) / len * 2.0 * apex;
+            double cy = (y1 + y2) / 2.0 + (x2 - x1) / len * 2.0 * apex;
+
+            for (int i = 1; i < 16; i++) {
+                double t = i / 16.0, u = 1.0 - t;
+                minX = Math.min(minX, u * u * x1 + 2.0 * u * t * cx + t * t * x2);
+                minY = Math.min(minY, u * u * y1 + 2.0 * u * t * cy + t * t * y2);
+            }
+        }
+
+        int dx = minX < CURVE_VIEW_MARGIN ? (int) Math.ceil(CURVE_VIEW_MARGIN - minX) : 0;
+        int dy = minY < CURVE_VIEW_MARGIN ? (int) Math.ceil(CURVE_VIEW_MARGIN - minY) : 0;
+
+        if (dx == 0 && dy == 0) {
+            return false;
+        }
+
+        // Moving a display node moves its model node with it (see ComponentHandler), so the layout as saved
+        // moves too.
+        for (Component component : getComponents()) {
+            if (component instanceof DisplayNode) {
+                component.setLocation(component.getX() + dx, component.getY() + dy);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Grows the workbench's preferred size (and scrollable maximum) to hold every display node and edge, first
+     * moving the nodes, if need be, so that no curved edge runs off the top or left; and repaints.
      */
     private void fitCanvasToNodes() {
+        shiftCurvesIntoView();
         adjustPreferredSize();
         if (getPreferredSize().getWidth() > getMaxX()) setMaxX((int) getPreferredSize().getWidth());
         if (getPreferredSize().getHeight() > getMaxY()) setMaxY((int) getPreferredSize().getHeight());
@@ -1896,7 +2328,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             List<Edge> edges = graph.getEdges(node1, node2);
 
             for (int i = 0; i < edges.size(); i++) {
-                Edge edge = edges.iterator().next();
+                // This used to take edges.iterator().next() each time through, i.e. always the first edge, so only
+                // one edge of a multi-edge pair ever received an offset and the rest sat at zero, nearly on top of
+                // it. Index by i so each edge gets its own slot.
+                Edge edge = edges.get(i);
                 Node _node1 = edge.getNode1();
                 boolean awayFrom = (_node1 == node1);
 
@@ -2328,6 +2763,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         this.clickPoint = p;
         this.dragNodes = getSelectedNodes();
+        this.dragGroupMoved = false;
+        this.layoutBeforeDrag = layoutSnapshot();
     }
 
     /**
@@ -2351,7 +2788,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     private void snapNodeToGrid(DisplayNode node) {
-        final int gridSize = 20;
+        final int gridSize = GRID_SIZE;
 
         int x = node.getCenterPoint().x;
         int y = node.getCenterPoint().y;
@@ -2360,6 +2797,54 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         y = gridSize * ((y + gridSize / 2) / gridSize);
 
         node.setLocation(x - node.getSize().width / 2, y - node.getSize().height / 2);
+    }
+
+    /**
+     * Snaps a dragged group of nodes to the grid as a rigid body: the whole group is translated by the offset
+     * that puts the center of the anchor (the node the mouse was on) on a grid point, so the nodes keep their
+     * positions relative to one another. Snapping each node separately would instead distort any layout whose
+     * nodes are not already on the grid, such as a circle. If the translation would push a node off the top or
+     * left of the workbench, the group is moved back by whole grid steps.
+     *
+     * @param anchor the node that was dragged; a member of the drag group.
+     */
+    private void snapDragGroupToGrid(DisplayNode anchor) {
+        List<DisplayNode> dragNodes = this.dragNodes;
+
+        if (dragNodes == null || dragNodes.isEmpty()) {
+            return;
+        }
+
+        Point center = anchor.getCenterPoint();
+
+        int deltaX = GRID_SIZE * ((center.x + GRID_SIZE / 2) / GRID_SIZE) - center.x;
+        int deltaY = GRID_SIZE * ((center.y + GRID_SIZE / 2) / GRID_SIZE) - center.y;
+
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+
+        for (DisplayNode _node : dragNodes) {
+            minX = TMath.min(minX, _node.getLocation().x + deltaX);
+            minY = TMath.min(minY, _node.getLocation().y + deltaY);
+        }
+
+        while (minX < 0) {
+            minX += GRID_SIZE;
+            deltaX += GRID_SIZE;
+        }
+
+        while (minY < 0) {
+            minY += GRID_SIZE;
+            deltaY += GRID_SIZE;
+        }
+
+        if (deltaX == 0 && deltaY == 0) {
+            return;
+        }
+
+        for (DisplayNode _node : dragNodes) {
+            _node.setLocation(_node.getLocation().x + deltaX, _node.getLocation().y + deltaY);
+        }
     }
 
     private void handleMouseClicked(MouseEvent e) {
@@ -2535,7 +3020,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     private void launchPopup(MouseEvent e) {
         JPopupMenu popup = new JPopupMenu();
-        popup.add(new LayoutMenu(this));
+        popup.add(new LayoutMenu(this, false));
         if (this instanceof GraphWorkbench) {
             popup.add(new EnsembleMenu((GraphWorkbench) this));
         }
@@ -2561,12 +3046,22 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 } else if (source instanceof DisplayNode) {
                     List<DisplayNode> dragNodes = this.dragNodes;
 
-                    if (dragNodes != null && dragNodes.isEmpty()) {
+                    // The dragged node moved alone unless it was one of the selected nodes; see dragNodes(). This
+                    // was previously tested as dragNodes.isEmpty(), so an unselected node dragged while other
+                    // nodes were selected was not snapped.
+                    if (dragNodes != null && !dragNodes.contains(source)) {
                         snapSingleNodeFromNegative(source);
                         snapNodeToGrid((DisplayNode) source);
                         scrollRectToVisible(((DisplayNode) source).getBounds());
                     } else if (dragNodes != null) {
                         snapDragGroupFromNegative();
+
+                        // Only after an actual drag, so that a plain click on a selected node does not shift
+                        // the selection.
+                        if (this.dragGroupMoved) {
+                            snapDragGroupToGrid((DisplayNode) source);
+                            this.dragGroupMoved = false;
+                        }
 
                         Rectangle rect = dragNodes.getFirst().getBounds();
 
@@ -2576,6 +3071,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
                         // scrollRectToVisible(rect);
                     }
+
+                    // The drag may have made an edge bend off the top or left of the workbench, where it could not
+                    // be scrolled to; if so, bring everything back into view.
+                    if (shiftCurvesIntoView()) {
+                        adjustPreferredSize();
+                    }
+
+                    // After the snapping above, so that undoing a drag puts the nodes back where they were
+                    // before it; a click that moved nothing records nothing.
+                    if (recordLayoutChange(this.layoutBeforeDrag)) {
+                        layoutFollowers();
+                    }
+
+                    this.layoutBeforeDrag = null;
                 }
                 break;
 
@@ -2865,6 +3374,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             _node.setLocation(newX, newY);
         }
+
+        this.dragGroupMoved = true;
     }
 
     /**
@@ -3138,7 +3649,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         }
     }
 
-    private JMenu createGraphMenu() {
+    /**
+     * The Graph menu of this workbench's right-click popup, for a window that shows the same items in its own menu
+     * bar.
+     *
+     * @return the menu.
+     */
+    public JMenu createGraphMenu() {
         JMenu graph = new JMenu("Graph");
 
         JMenuItem graphProperties = new JMenuItem(new GraphPropertiesAction(((GraphWorkbench) this)));
@@ -3371,6 +3888,18 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 modelNode.setCenterY(centerY);
 
                 this.workbench.adjustPreferredSize();
+
+                // Whether an edge bends, and how, depends on every node near its chord, not only on the two endpoint
+                // nodes it listens to, so moving any node can change edges that receive no event of their own. Left
+                // alone, such an edge is repainted only inside the moving node's dirty region, which mixes
+                // fragments of the old and new shape on screen and can freeze a stale bow once the mover leaves
+                // the corridor. Repainting the whole workbench marks every edge's full bounds dirty; Swing
+                // coalesces these during a drag, so it is one full redraw per event batch. A workbench with too
+                // many edges for any to be curved keeps the old, cheaper behavior, since a straight edge's
+                // geometry depends only on the two nodes it already listens to.
+                if (this.workbench.isCurvedEdges()) {
+                    this.workbench.repaint();
+                }
 
                 // This causes wierdness when nodes are dragged off to the
                 // right. Replacing with a scroll to rect on mouseup.

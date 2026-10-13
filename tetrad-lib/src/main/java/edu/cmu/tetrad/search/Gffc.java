@@ -96,13 +96,26 @@ public class Gffc {
      * @param ess The effective sample size, used for statistical adjustments in computations.
      */
     public Gffc(DataSet dataSet, double alpha, int rMax, int ess) {
-        this.variables = dataSet.getVariables();
+        this(new CorrelationMatrix(dataSet), alpha, rMax, ess);
+    }
+
+    /**
+     * Constructs an instance of the Gffc class from a correlation matrix, for use when the correlations do not come
+     * from a single raw data set--for example, the pooled correlations of several imputations of a data set with
+     * missing values. The matrix's sample size is used as the sample size.
+     *
+     * @param correlationMatrix The correlation matrix over the variables.
+     * @param alpha The significance level, influencing the strictness of statistical tests.
+     * @param rMax The maximum rank for search operations, influencing the depth and computational expense.
+     * @param ess The effective sample size, used for statistical adjustments in computations.
+     */
+    public Gffc(CorrelationMatrix correlationMatrix, double alpha, int rMax, int ess) {
+        this.variables = correlationMatrix.getVariables();
         this.alpha = alpha;
-        CorrelationMatrix correlationMatrix = new CorrelationMatrix(dataSet);
         this.S = correlationMatrix.getMatrix().getSimpleMatrix();
-        this.n = dataSet.getNumRows();
-        this.tsc = new Tsc(dataSet.getVariables(), correlationMatrix);
-        this.sampleSize = dataSet.getNumRows();
+        this.n = correlationMatrix.getSampleSize();
+        this.tsc = new Tsc(correlationMatrix.getVariables(), correlationMatrix);
+        this.sampleSize = correlationMatrix.getSampleSize();
         setRMax(rMax);
         setEss(ess);
     }

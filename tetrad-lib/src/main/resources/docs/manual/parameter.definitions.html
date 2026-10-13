@@ -1328,14 +1328,17 @@ Source:
     <h3 class="parameter_description" id="customNoiseExpression">customNoiseExpression</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="customNoiseExpression_short_desc">
-            Exogenous Noises: Custom exogenous noise distribution expression
+            Exogenous noise distribution, e.g. Exp(1), Gumbel(0, 1), U(0, 1)
         </span></li>
 
         <li>Long Description: <span id="customNoiseExpression_long_desc">
-             Custom exogenous noise distribution expression
+            The distribution expression each exogenous noise term is drawn from, independently per variable
+            and record, when custom (non-Gaussian) noise is in effect. In the Linear Non-Gaussian SEM
+            simulation this expression is always used; the noise scale comes from the expression itself, so
+            the Gaussian error variance bounds do not apply, and correlated errors are ignored.
         </span></li>
 
-        <li>Default Value: <span id="customNoiseExpression_default_value">N(0, Uniform(1, 3))</span></li>
+        <li>Default Value: <span id="customNoiseExpression_default_value">Exp(1)</span></li>
         <li>Lower Bound: <span id="customNoiseExpression_lower_bound"></span></li>
         <li>Upper Bound: <span id="customNoiseExpression_upper_bound"></span></li>
         <li>Value Type: <span id="customNoiseExpression_value_type">String</span></li>
@@ -1349,7 +1352,8 @@ Source:
         </span></li>
 
         <li>Long Description: <span id="customNoiseOption_long_desc">
-            If true, the specified custom exogenous noise distribution will be used.
+            If 2, the custom exogenous noise distribution expression will be used. The Linear Gaussian SEM
+            and Linear Non-Gaussian SEM simulations set this themselves and do not list it.
         </span></li>
 
         <li>Default Value: <span id="customNoiseOption_default_value">1</span></li>
@@ -1482,6 +1486,17 @@ Source:
         <li>Upper Bound: <span id="cyclicRadius_upper_bound">1</span></li>
         <li>Value
             Type: <span id="cyclicRadius_value_type">Double</span></li>
+    </ul>
+
+    === daoErrorDistribution ===
+    <h3 class="parameter_description" id="daoErrorDistribution">daoErrorDistribution</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="daoErrorDistribution_short_desc">Error distribution: 1 = Gaussian, 2 = Exponential, 3 = Gumbel, 4 = Laplace, 5 = Uniform</span></li>
+        <li>Long Description: <span id="daoErrorDistribution_long_desc">The distribution family the exogenous errors are drawn from, following the reference DaO implementation. Each family is scaled so that the error variance equals the variance the DaO method calibrated for that variable, so the standardized correlation structure of the data is preserved whichever family is chosen. As in the reference implementation, the Exponential and Gumbel errors are not centered, so variable means shift under those choices; the Gaussian, Laplace, and Uniform errors have mean zero.</span></li>
+        <li>Default Value: <span id="daoErrorDistribution_default_value">1</span></li>
+        <li>Lower Bound: <span id="daoErrorDistribution_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="daoErrorDistribution_upper_bound">5</span></li>
+        <li>Value Type: <span id="daoErrorDistribution_value_type">Integer</span></li>
     </ul>
 
     === daoRandomizeOrder ===
@@ -3849,6 +3864,28 @@ Source:
         <li>Value Type: <span id="linearLow_value_type">Double</span></li>
     </ul>
 
+    === lingamPruneAlpha ===
+    <h3 class="parameter_description" id="lingamPruneAlpha">lingamPruneAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lingamPruneAlpha_short_desc">Alpha for the t-test in LiNGAM's regression pruning step</span></li>
+        <li>Long Description: <span id="lingamPruneAlpha_long_desc">Significance level for the per-coefficient two-sided t-test in LiNGAM's regression refit-and-prune step (see lingamRefitAndPrune). A coefficient is kept when its p-value falls below this alpha. Smaller values prune more aggressively; 0.001 worked well at sample sizes of 1000 to 5000 in simulation.</span></li>
+        <li>Default Value: <span id="lingamPruneAlpha_default_value">0.001</span></li>
+        <li>Lower Bound: <span id="lingamPruneAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="lingamPruneAlpha_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="lingamPruneAlpha_value_type">Double</span></li>
+    </ul>
+
+    === lingamRefitAndPrune ===
+    <h3 class="parameter_description" id="lingamRefitAndPrune">lingamRefitAndPrune</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="lingamRefitAndPrune_short_desc">Yes to refit LiNGAM coefficients by regression and prune by t-test</span></li>
+        <li>Long Description: <span id="lingamRefitAndPrune_long_desc">Yes to follow LiNGAM's acyclicity trimming with the pruning step of Shimizu et al. (2006), step 5: the trimmed model fixes the causal order, each variable is regressed on all its predecessors in that order, and coefficients are kept when significant by a t-test at lingamPruneAlpha. This replaces the noisier ICA-derived coefficients with regression estimates and prunes in a scale-free way, where the Threshold B cut alone depends on the units of the data. The Threshold B parameter still governs the trimming stage that fixes the order. No to return the ICA-derived trimmed coefficients as before.</span></li>
+        <li>Default Value: <span id="lingamRefitAndPrune_default_value">true</span></li>
+        <li>Lower Bound: <span id="lingamRefitAndPrune_lower_bound"></span></li>
+        <li>Upper Bound: <span id="lingamRefitAndPrune_upper_bound"></span></li>
+        <li>Value Type: <span id="lingamRefitAndPrune_value_type">Boolean</span></li>
+    </ul>
+
     === logFinalOrientations ===
     <h3 class="parameter_description" id="logFinalOrientations">logFinalOrientations</h3>
     <ul class="parameter_description_list">
@@ -4900,14 +4937,15 @@ Source:
     === missingNumImputations ===
     <h3 class="parameter_description" id="missingNumImputations">missingNumImputations</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="missingNumImputations_short_desc">Number of imputed datasets for multiple imputation (default 10; min 2)</span></li>
+        <li>Short Description: <span id="missingNumImputations_short_desc">Number of imputed datasets for multiple imputation (default 10; min 1)</span></li>
         <li>Long Description: <span id="missingNumImputations_long_desc">
         The number of completed datasets, m, generated under multiple imputation. The search is run
         on each imputed dataset and the resulting graphs are pooled by edge frequency. Larger
-        values give more stable pooled results at proportionally greater cost. Used only when
-        missingDataPolicy is "mi".</span></li>
+        values give more stable pooled results at proportionally greater cost. With 1 there is nothing
+        to pool: the result is the graph from one completed dataset, with no indication of how much it
+        depends on the imputed values. Used only when missingDataPolicy is "mi".</span></li>
         <li>Default Value: <span id="missingNumImputations_default_value">10</span></li>
-        <li>Lower Bound: <span id="missingNumImputations_lower_bound">2</span></li>
+        <li>Lower Bound: <span id="missingNumImputations_lower_bound">1</span></li>
         <li>Upper Bound: <span id="missingNumImputations_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="missingNumImputations_value_type">Integer</span></li>
     </ul>
@@ -5907,6 +5945,53 @@ Source:
         <li>Value Type: <span id="pcHeuristic_value_type">Integer</span></li>
     </ul>
 
+    === pcOrderRefinement ===
+    <h3 class="parameter_description" id="pcOrderRefinement">pcOrderRefinement</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="pcOrderRefinement_short_desc">Yes if
+                PC's result should be refined by a permutation search using
+                the same independence test</span></li>
+        <li>Long Description: <span id="pcOrderRefinement_long_desc"> If Yes,
+        a causal order is read off the PC result and used as the starting
+        permutation for GRaSP, run with the same independence test and no
+        score; the CPDAG of the refined permutation is returned. Each
+        adjacency is then decided by a test given the candidate parents
+        of the later variable instead of by any accepting subset of
+        neighbors, which recovers edges PC removes by conditioning on
+        descendants. The result need not contain or be contained in the PC
+        result. Not applied to time-lag (replicating) searches. </span></li>
+        <li>Default Value:
+            <span id="pcOrderRefinement_default_value">false</span></li>
+        <li>Lower Bound:
+            <span id="pcOrderRefinement_lower_bound"></span></li>
+        <li>Upper Bound:
+            <span id="pcOrderRefinement_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="pcOrderRefinement_value_type">Boolean</span></li>
+    </ul>
+
+    === pcRefinementAlpha ===
+    <h3 class="parameter_description" id="pcRefinementAlpha">pcRefinementAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="pcRefinementAlpha_short_desc">Cutoff
+                for p values in PC's order refinement step (0 = use
+                alpha)</span></li>
+        <li>Long Description: <span id="pcRefinementAlpha_long_desc"> The
+        alpha used by the independence test during PC's order refinement
+        step. In that step each retained edge rests on a single test, so a
+        stricter cutoff than PC's own alpha is usually appropriate. A value
+        of 0 uses the test's alpha unchanged. Ignored unless
+        pcOrderRefinement is Yes. </span></li>
+        <li>Default Value:
+            <span id="pcRefinementAlpha_default_value">0.001</span></li>
+        <li>Lower Bound:
+            <span id="pcRefinementAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound:
+            <span id="pcRefinementAlpha_upper_bound">1.0</span></li>
+        <li>Value Type:
+            <span id="pcRefinementAlpha_value_type">Double</span></li>
+    </ul>
+
     === penaltyDiscount ===
     <h3 class="parameter_description" id="penaltyDiscount">penaltyDiscount</h3>
     <ul class="parameter_description_list">
@@ -6147,6 +6232,17 @@ Source:
             Bound: <span id="pooledTestMethod_upper_bound"></span></li>
         <li>Value
             Type: <span id="pooledTestMethod_value_type">String</span></li>
+    </ul>
+
+    === poolImputations ===
+    <h3 class="parameter_description" id="poolImputations">poolImputations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="poolImputations_short_desc">Yes if several imputations of one data set should be searched as one, pooling each test over them (default no)</span></li>
+        <li>Long Description: <span id="poolImputations_long_desc">When the data are several imputations of one data set with missing values (for example, from the Impute Missing Values box with more than one imputation), Yes runs the algorithm ONCE. Each statistical test is computed on every imputation and the results are combined by the rule of Li, Meng, Raghunathan, and Rubin (1991) for chi-square statistics from multiply imputed data, so that disagreement among the imputations counts against rejecting; any score-based stage uses the average of the imputations' covariance matrices. No (the default) runs the algorithm separately on each imputation and returns one graph per imputation, which can differ a great deal. This is not the poolDataSets option: imputations share their observed values and are not independent data sets. The combining rule is an approximation that assumes values missing at random and improves with more imputations; ten or more is a reasonable number. It has no effect with a single data set. In the Latent Clusters box, where the clustering algorithms make all of their decisions from a covariance matrix, Yes runs the chosen algorithm on the average of the imputations' covariance matrices at the full sample size. That average is the multiple-imputation point estimate of the covariance; the disagreement among the imputations is not carried into it, so running the tests at the full sample size would treat the data as complete. When the effectiveSampleSize parameter is left at -1, the pooled run therefore estimates an effective sample size from the disagreement among the imputations (Rubin's rules applied to the Fisher-z correlations, taking the least well determined pair) and runs the tests at that size, reporting it in the log; setting effectiveSampleSize overrides the estimate.</span></li>
+        <li>Default Value: <span id="poolImputations_default_value">false</span></li>
+        <li>Lower Bound: <span id="poolImputations_lower_bound"></span></li>
+        <li>Upper Bound: <span id="poolImputations_upper_bound"></span></li>
+        <li>Value Type: <span id="poolImputations_value_type">Boolean</span></li>
     </ul>
 
     === precomputeCovariances ===
@@ -6741,6 +6837,83 @@ Source:
         <li>Upper Bound: <span id="resolveAlmostCyclicPaths_upper_bound"></span></li>
         <li>Value Type:
             <span id="resolveAlmostCyclicPaths_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdAllowNonLeafX ===
+    <h3 class="parameter_description" id="rlcdAllowNonLeafX">rlcdAllowNonLeafX</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdAllowNonLeafX_short_desc">RLCD: allow observed variables to act as non-sinks (parents) (default true)</span></li>
+        <li>Long Description: <span id="rlcdAllowNonLeafX_long_desc">If true, RLCD may condition on observed variables when testing rank constraints, so that an observed variable can be found to be a parent of a latent or of other observed variables. If false, observed variables are treated as pure indicators.</span></li>
+        <li>Default Value: <span id="rlcdAllowNonLeafX_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdAllowNonLeafX_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdAllowNonLeafX_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdAllowNonLeafX_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdCheckV ===
+    <h3 class="parameter_description" id="rlcdCheckV">rlcdCheckV</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdCheckV_short_desc">RLCD: discard a rank-deficient set when a proper subset is already deficient (default true)</span></li>
+        <li>Long Description: <span id="rlcdCheckV_long_desc">If true, a set of covers found rank deficient at rank k is discarded when one of its proper subsets is already rank deficient at the correspondingly lower rank, since the deficiency is then explained by the subset rather than by a shared latent over the whole set.</span></li>
+        <li>Default Value: <span id="rlcdCheckV_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdCheckV_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdCheckV_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdCheckV_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdLatentGate ===
+    <h3 class="parameter_description" id="rlcdLatentGate">rlcdLatentGate</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdLatentGate_short_desc">RLCD: look for latents in a group of variables only if its rank constraints call for one (default true)</span></li>
+        <li>Long Description: <span id="rlcdLatentGate_long_desc">Before RLCD searches a group of observed variables for latent clusters, it checks whether the group has the kind of rank deficiency that only a latent variable can produce: two sets of variables, all adjacent to one another in the stage-1 graph, whose cross-covariance (possibly after conditioning on a neighbor) has lower rank than their size. This is the condition of Theorems 5 and 9 of Dong et al. (2024). If no such deficiency is found, no latent is introduced in that group and its stage-1 edges are kept. Without the check, a dense group of observed variables with no latent behind them is sometimes given a latent that stands in for structure among the observed variables. The check is an approximation (it uses the stage-1 graph and a limited set of conditioning variables) and errs toward allowing the search. Set to false to search every group, as the causal-learn implementation does.</span></li>
+        <li>Default Value: <span id="rlcdLatentGate_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdLatentGate_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdLatentGate_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdLatentGate_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdMaxK ===
+    <h3 class="parameter_description" id="rlcdMaxK">rlcdMaxK</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdMaxK_short_desc">RLCD: maximum cluster cardinality to search (default 3; min 1)</span></li>
+        <li>Long Description: <span id="rlcdMaxK_long_desc">The largest rank k for which RLCD searches for rank-deficient sets of covers. A rank-k cluster is placed under k latent variables. Larger values allow more latents per cluster but increase the number of tests.</span></li>
+        <li>Default Value: <span id="rlcdMaxK_default_value">3</span></li>
+        <li>Lower Bound: <span id="rlcdMaxK_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="rlcdMaxK_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="rlcdMaxK_value_type">Integer</span></li>
+    </ul>
+
+    === rlcdPartitionCliqueThreshold ===
+    <h3 class="parameter_description" id="rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdPartitionCliqueThreshold_short_desc">RLCD: minimum stage-1 clique size for partitioning (default 3; min 1)</span></li>
+        <li>Long Description: <span id="rlcdPartitionCliqueThreshold_long_desc">In stage 1, maximal cliques of the skeleton of the stage-1 search result with at least this many members are merged when they share two or more variables, and merged groups with at least four variables become the partitions within which the stage-2 rank search runs.</span></li>
+        <li>Default Value: <span id="rlcdPartitionCliqueThreshold_default_value">3</span></li>
+        <li>Lower Bound: <span id="rlcdPartitionCliqueThreshold_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="rlcdPartitionCliqueThreshold_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="rlcdPartitionCliqueThreshold_value_type">Integer</span></li>
+    </ul>
+
+    === rlcdStage1Fges ===
+    <h3 class="parameter_description" id="rlcdStage1Fges">rlcdStage1Fges</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdStage1Fges_short_desc">RLCD: use FGES instead of BOSS for the stage-1 search (default false)</span></li>
+        <li>Long Description: <span id="rlcdStage1Fges_long_desc">RLCD first runs a score-based search over the observed variables to partition them. By default this is BOSS with the SEM BIC score; if true, FGES is used instead, which is closer to the GES stage of the causal-learn implementation.</span></li>
+        <li>Default Value: <span id="rlcdStage1Fges_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdStage1Fges_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdStage1Fges_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdStage1Fges_value_type">Boolean</span></li>
+    </ul>
+
+    === rlcdUnfoldCovers ===
+    <h3 class="parameter_description" id="rlcdUnfoldCovers">rlcdUnfoldCovers</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdUnfoldCovers_short_desc">RLCD: unfold discovered latent covers into their children for further tests (default true)</span></li>
+        <li>Long Description: <span id="rlcdUnfoldCovers_long_desc">If true, after latent covers are discovered, the search also considers replacing each subset of them by their children when forming candidate sets, which is how relations between a latent and the children of another latent are found. If false, only the covers themselves are used.</span></li>
+        <li>Default Value: <span id="rlcdUnfoldCovers_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdUnfoldCovers_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdUnfoldCovers_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdUnfoldCovers_value_type">Boolean</span></li>
     </ul>
 
     === sampleSize ===
@@ -7458,7 +7631,7 @@ Source:
                     is thresholded by setting small entries less than this threshold
                     to zero.</span>
         </li>
-        <li>Default Value: <span id="thresholdBHat_default_value">0.2</span></li>
+        <li>Default Value: <span id="thresholdBHat_default_value">0.1</span></li>
         <li>Lower Bound:
             <span id="thresholdBHat_lower_bound">0.0</span></li>
         <li>Upper
@@ -7923,7 +8096,7 @@ Source:
         <li>Long Description: <span id="twoCycleAlpha_long_desc"> The alpha level of a T-test used to
         determine where 2-cycles exist in the graph. A value of zero turns
         off 2-cycle detection. </span></li>
-        <li>Default Value: <span id="twoCycleAlpha_default_value">0.0</span></li>
+        <li>Default Value: <span id="twoCycleAlpha_default_value">0.01</span></li>
         <li>Lower Bound:
             <span id="twoCycleAlpha_lower_bound">0.0</span></li>
         <li>Upper Bound:

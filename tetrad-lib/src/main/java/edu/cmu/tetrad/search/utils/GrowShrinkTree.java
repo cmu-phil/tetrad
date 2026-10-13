@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,6 +30,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * <p>GrowShrinkTree class.</p>
+ * <p>
+ * If the score given is a {@link GraphScore} (an m-separation oracle, which supports only score differences), the tree
+ * runs in oracle mode: the grow step adds a variable just in case it is m-connected to the target node given the
+ * parents chosen so far, the shrink step removes a parent just in case it is m-separated from the target node given
+ * the remaining parents, and the value returned by trace is minus the number of parents retained. Summed over the
+ * nodes of a permutation this is minus the number of edges in the DAG built from that permutation, so maximizing it
+ * is the sparsest-permutation criterion of Raskutti and Uhler. For any other score the behavior is unchanged.
  *
  * @author bryanandrews
  * @version $Id: $Id
@@ -38,6 +46,10 @@ public class GrowShrinkTree {
     private final Map<Node, Integer> index;
     private final Node node;
     private final int nodeIndex;
+    /**
+     * The m-separation oracle, if the score is a GraphScore; null otherwise. Non-null means oracle mode.
+     */
+    private final GraphScore oracle;
     private List<Node> required;
     private List<Node> forbidden;
     private GSTNode root;
@@ -51,6 +63,7 @@ public class GrowShrinkTree {
      */
     public GrowShrinkTree(Score score, Map<Node, Integer> index, Node node) {
         this.score = score;
+        this.oracle = score instanceof GraphScore ? (GraphScore) score : null;
         this.index = index;
         this.node = node;
 
@@ -142,6 +155,30 @@ public class GrowShrinkTree {
     }
 
     /**
+     * Oracle mode only. Returns true if x is m-connected to this tree's node given z.
+     *
+     * @param x The other node.
+     * @param z The conditioning set.
+     * @return True if dependent according to the oracle.
+     */
+    private boolean oracleDependent(Node x, Set<Node> z) {
+        int i = 0;
+        int[] Z = new int[z.size()];
+        for (Node _z : z) Z[i++] = this.index.get(_z);
+        return this.oracle.localScoreDiff(this.index.get(x), this.nodeIndex, Z) > 0;
+    }
+
+    /**
+     * Oracle mode only. Returns the given nodes sorted by index, so that the tree built does not depend on hash
+     * order.
+     */
+    private List<Node> oracleSorted(Set<Node> nodes) {
+        List<Node> sorted = new ArrayList<>(nodes);
+        sorted.sort(Comparator.comparingInt(this.index::get));
+        return sorted;
+    }
+
+    /**
      * <p>isRequired.</p>
      *
      * @param node a {@link edu.cmu.tetrad.graph.Node} object
@@ -227,7 +264,7 @@ public class GrowShrinkTree {
             this.grow = new AtomicBoolean(false);
             this.shrink = new AtomicBoolean(false);
 
-            this.growScore = this.tree.localScore();
+            this.growScore = this.tree.oracle != null ? 0 : this.tree.localScore();
         }
 
         private GSTNode(GrowShrinkTree tree, Node add, Set<Node> parents) {
@@ -241,7 +278,7 @@ public class GrowShrinkTree {
             for (Node parent : parents) X[i++] = this.tree.getIndex(parent);
             X[i] = this.tree.getIndex(add);
 
-            this.growScore = this.tree.localScore(X);
+            this.growScore = this.tree.oracle != null ? 0 : this.tree.localScore(X);
         }
 
         private synchronized void grow(Set<Node> available, Set<Node> parents) {
@@ -249,6 +286,19 @@ public class GrowShrinkTree {
 
             this.branches = new ArrayList<>();
             List<GSTNode> required = new ArrayList<>();
+
+            if (this.tree.oracle != null) {
+                for (Node add : this.tree.oracleSorted(available)) {
+                    if (this.tree.isRequired(add)) required.add(new GSTNode(this.tree, add, parents));
+                    else if (this.tree.oracleDependent(add, parents)) {
+                        this.branches.add(new GSTNode(this.tree, add, parents));
+                    }
+                }
+
+                this.branches.addAll(0, required);
+                this.grow.set(true);
+                return;
+            }
 
             for (Node add : available) {
                 GSTNode branch = new GSTNode(this.tree, add, parents);
@@ -266,6 +316,33 @@ public class GrowShrinkTree {
             if (this.shrink.get()) return;
 
             this.remove = new HashSet<>();
+
+            if (this.tree.oracle != null) {
+                boolean removed;
+
+                do {
+                    removed = false;
+
+                    for (Node remove : this.tree.oracleSorted(parents)) {
+                        if (this.tree.isRequired(remove)) continue;
+                        parents.remove(remove);
+
+                        if (!this.tree.oracleDependent(remove, parents)) {
+                            this.remove.add(remove);
+                            removed = true;
+                            break;
+                        }
+
+                        parents.add(remove);
+                    }
+                } while (removed);
+
+                // Minus the number of parents, so that the sum over a permutation is minus the number of edges.
+                this.shrinkScore = -parents.size();
+                this.shrink.set(true);
+                return;
+            }
+
             this.shrinkScore = this.growScore;
             if (parents.isEmpty()) return;
 

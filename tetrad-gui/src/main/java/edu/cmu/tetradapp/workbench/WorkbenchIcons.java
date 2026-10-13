@@ -255,9 +255,9 @@ public final class WorkbenchIcons {
                 double nw = 30, nh = 18;
                 double nx = x + 22, ny = y + (H - nh) / 2.0;
                 if (latent) {
-                    miniNode(g2, new Ellipse2D.Double(nx, ny, nw, nh), WorkbenchStyle.latentFill(), "L");
+                    miniNode(g2, new Ellipse2D.Double(nx, ny, nw, nh), WorkbenchStyle.measuredFillOpaque(), "L");
                 } else {
-                    miniNode(g2, new RoundRectangle2D.Double(nx, ny, nw, nh, 6, 6), WorkbenchStyle.measuredFill(), "X");
+                    miniNode(g2, new RoundRectangle2D.Double(nx, ny, nw, nh, 6, 6), WorkbenchStyle.measuredFillOpaque(), "X");
                 }
             } finally {
                 g2.dispose();
@@ -299,8 +299,8 @@ public final class WorkbenchIcons {
                 double ey = y + H / 2.0;
                 double x1 = lx + nw, x2 = rx;
 
-                miniNode(g2, new RoundRectangle2D.Double(lx, ny, nw, nh, 5, 5), WorkbenchStyle.measuredFill(), "X");
-                miniNode(g2, new RoundRectangle2D.Double(rx, ny, nw, nh, 5, 5), WorkbenchStyle.measuredFill(), "Y");
+                miniNode(g2, new RoundRectangle2D.Double(lx, ny, nw, nh, 5, 5), WorkbenchStyle.measuredFillOpaque(), "X");
+                miniNode(g2, new RoundRectangle2D.Double(rx, ny, nw, nh, 5, 5), WorkbenchStyle.measuredFillOpaque(), "Y");
 
                 g2.setColor(WorkbenchStyle.edge());
                 g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));

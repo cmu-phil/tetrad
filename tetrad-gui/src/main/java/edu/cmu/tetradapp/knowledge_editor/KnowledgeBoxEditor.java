@@ -126,6 +126,12 @@ public class KnowledgeBoxEditor extends JPanel {
     private Knowledge knowledge;
 
     /**
+     * The knowledge, as text, when a model change was last reported (or when the editor opened). Null during
+     * construction.
+     */
+    private String lastNotifiedKnowledge;
+
+    /**
      * The edge workbench.
      */
     private KnowledgeWorkbench edgeWorkbench;
@@ -134,6 +140,39 @@ public class KnowledgeBoxEditor extends JPanel {
      * The number of tiers to display.
      */
     private JPanel tiersPanel;
+
+    /**
+     * The model of the Tiers tab's "# Tiers" spinner, so that {@link #setNumDisplayTiers} can keep
+     * the spinner showing the number of tiers actually displayed. Before this, the spinner was
+     * built once with the field's value and never updated, so after Load or Apply it could show,
+     * say, 3 while four tiers were displayed -- and one down-click on that stale value silently
+     * emptied the tiers beyond it.
+     */
+    private SpinnerNumberModel tierSpinnerModel;
+
+    /**
+     * True while {@link #setNumDisplayTiers} is updating the spinner to match the display, so the
+     * spinner's listener does not treat the programmatic update as a user edit (which would fire a
+     * spurious model-changed notification).
+     */
+    private boolean adjustingTierSpinner;
+
+    /**
+     * Preference keys for whether the Other Tiers and Other Groups tabs are shown. Most knowledge
+     * boxes use neither, so both are hidden by default and turned on in the Show menu; a tab is
+     * always shown, with its menu item checked and disabled, while the knowledge actually
+     * contains tier structures or groups, so active constraints are never invisible.
+     */
+    private static final String SHOW_OTHER_TIERS_PREF = "knowledgeEditorShowOtherTiers";
+
+    private static final String SHOW_OTHER_GROUPS_PREF = "knowledgeEditorShowOtherGroups";
+
+    /**
+     * The Show menu's items, restated by {@link #resetTabbedPane()} whenever the tabs are rebuilt.
+     */
+    private JCheckBoxMenuItem showOtherTiersItem;
+
+    private JCheckBoxMenuItem showOtherGroupsItem;
 
     /**
      * The wildcard expression last typed into the Tiers tab's pattern field. Held here because the
@@ -237,6 +276,7 @@ public class KnowledgeBoxEditor extends JPanel {
         initComponents();
         resetTabbedPane();
         setNumDisplayTiers(this.knowledge.getNumTiers());
+        this.lastNotifiedKnowledge = this.knowledge.toString();
     }
 
     private static Color uiColor(String key, Color fallback) {
@@ -387,6 +427,29 @@ public class KnowledgeBoxEditor extends JPanel {
         file.add(loadKnowledge);
         file.add(saveKnowledge);
 
+        JMenu show = new JMenu("Show");
+        menuBar.add(show);
+
+        this.showOtherTiersItem = new JCheckBoxMenuItem("Other Tiers");
+        this.showOtherGroupsItem = new JCheckBoxMenuItem("Other Groups");
+
+        this.showOtherTiersItem.addActionListener((e) -> {
+            Preferences.userRoot().putBoolean(SHOW_OTHER_TIERS_PREF,
+                    this.showOtherTiersItem.isSelected());
+            resetTabbedPane();
+            if (this.showOtherTiersItem.isSelected()) selectTab("Other Tiers");
+        });
+
+        this.showOtherGroupsItem.addActionListener((e) -> {
+            Preferences.userRoot().putBoolean(SHOW_OTHER_GROUPS_PREF,
+                    this.showOtherGroupsItem.isSelected());
+            resetTabbedPane();
+            if (this.showOtherGroupsItem.isSelected()) selectTab("Other Groups");
+        });
+
+        show.add(this.showOtherTiersItem);
+        show.add(this.showOtherGroupsItem);
+
         loadKnowledge.addActionListener((e) -> {
             JFileChooser chooser = new JFileChooser();
             String sessionSaveLocation = Preferences.userRoot().get("fileSaveLocation", "");
@@ -412,6 +475,7 @@ public class KnowledgeBoxEditor extends JPanel {
                 setKnowledge(knowledge);
                 initComponents();
                 resetTabbedPane();
+                notifyKnowledge();
             } catch (Exception e1) {
                 JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), e1.getMessage());
                 e1.printStackTrace();
@@ -454,9 +518,21 @@ public class KnowledgeBoxEditor extends JPanel {
     public void resetTabbedPane() {
         this.tabbedPane.removeAll();
         this.tabbedPane.add("Tiers", tierDisplay());
-        this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge, this.knowledge.getVariables()));
+
+        if (isOtherTiersShown()) {
+            this.tabbedPane.add("Other Tiers",
+                    new OtherTiersEditor(this.knowledge, this::notifyIfKnowledgeChanged));
+        }
+
+        if (isOtherGroupsShown()) {
+            this.tabbedPane.add("Other Groups", new OtherGroupsEditor(this.knowledge,
+                    this.knowledge.getVariables(), this::notifyIfKnowledgeChanged));
+        }
+
         this.tabbedPane.add("Edges", edgeDisplay());
         this.tabbedPane.add("Text", textDisplay());
+
+        updateShowMenuState();
 
         // removeAll() does not remove change listeners, and this method now runs on every
         // Apply from the Text tab as well as on Load, so clear them first; otherwise the
@@ -465,16 +541,77 @@ public class KnowledgeBoxEditor extends JPanel {
             this.tabbedPane.removeChangeListener(cl);
         }
 
+        // The Other Tiers and Other Groups tabs are optional, so the tabs are identified by
+        // title, not by index.
         this.tabbedPane.addChangeListener((e) -> {
             JTabbedPane pane = (JTabbedPane) e.getSource();
-            if (pane.getSelectedIndex() == 0) {
+            int index = pane.getSelectedIndex();
+
+            if (index < 0) {
+                return;
+            }
+
+            String title = pane.getTitleAt(index);
+
+            if ("Tiers".equals(title)) {
                 setNumDisplayTiers(TMath.max(getNumTiers(), this.knowledge.getNumTiers()));
-            } else if (pane.getSelectedIndex() == 2) {
+            } else if ("Edges".equals(title)) {
                 resetEdgeDisplay(null);
-            } else if (pane.getSelectedIndex() == 3) {
+            } else if ("Text".equals(title)) {
                 refreshTextDisplay();
             }
         });
+    }
+
+    /**
+     * Whether the Other Tiers tab is shown: it is while the knowledge contains tier structures,
+     * and otherwise follows the Show menu.
+     */
+    private boolean isOtherTiersShown() {
+        return this.knowledge.getNumTierStructures() > 0
+               || Preferences.userRoot().getBoolean(SHOW_OTHER_TIERS_PREF, false);
+    }
+
+    /**
+     * Whether the Other Groups tab is shown: it is while the knowledge contains groups, and
+     * otherwise follows the Show menu.
+     */
+    private boolean isOtherGroupsShown() {
+        return !this.knowledge.getKnowledgeGroups().isEmpty()
+               || Preferences.userRoot().getBoolean(SHOW_OTHER_GROUPS_PREF, false);
+    }
+
+    /**
+     * Restates the Show menu: an item is checked when its tab is shown, and disabled, with a
+     * tooltip saying why, while the knowledge forces the tab to be shown.
+     */
+    private void updateShowMenuState() {
+        if (this.showOtherTiersItem != null) {
+            boolean forced = this.knowledge.getNumTierStructures() > 0;
+            this.showOtherTiersItem.setSelected(isOtherTiersShown());
+            this.showOtherTiersItem.setEnabled(!forced);
+            this.showOtherTiersItem.setToolTipText(forced
+                    ? "Shown because the knowledge contains tier structures." : null);
+        }
+
+        if (this.showOtherGroupsItem != null) {
+            boolean forced = !this.knowledge.getKnowledgeGroups().isEmpty();
+            this.showOtherGroupsItem.setSelected(isOtherGroupsShown());
+            this.showOtherGroupsItem.setEnabled(!forced);
+            this.showOtherGroupsItem.setToolTipText(forced
+                    ? "Shown because the knowledge contains groups." : null);
+        }
+    }
+
+    /**
+     * Selects the tab with the given title, if present.
+     */
+    private void selectTab(String title) {
+        int index = this.tabbedPane.indexOfTab(title);
+
+        if (index >= 0) {
+            this.tabbedPane.setSelectedIndex(index);
+        }
     }
 
     /**
@@ -560,10 +697,16 @@ public class KnowledgeBoxEditor extends JPanel {
             "//   addtemporal        one line per tier: <tier> <var> <var> ...",
             "//                      e.g.  1 X1 X2      2 X3      (append * to a tier, e.g. 2*, to forbid",
             "//                      edges within that tier)",
+            "//   tierstructure <name>  an additional, independent tier structure; tier lines as above",
+            "//   forbiddengroup     one group per pair of lines: the from-variables, then the to-variables",
+            "//   requiredgroup      same, requiring the edges",
             "//   forbiddirect       one <from> <to> pair per line, forbidding from -> to",
             "//   requiredirect      one <from> <to> pair per line, requiring from -> to",
             "//",
-            "// The Tiers and Edges tabs are rebuilt from the text after Apply.",
+            "// A header of '/knowledge comma' switches to comma-separated names, for variable",
+            "// names containing spaces.",
+            "//",
+            "// The other tabs are rebuilt from the text after Apply.",
             "") + "\n";
 
     private void markTextDirty() {
@@ -609,9 +752,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         // Rebuilding replaced the tab contents; return the user to the Text tab, now
         // showing the canonical rendering of what was just parsed.
-        if (this.tabbedPane.getTabCount() > 3) {
-            this.tabbedPane.setSelectedIndex(3);
-        }
+        selectTab("Text");
     }
 
     /**
@@ -648,12 +789,19 @@ public class KnowledgeBoxEditor extends JPanel {
     }
 
     private Box tierDisplay() {
-        if (getNumTiers() < 0) {
-            int numTiers = getKnowledge().getNumTiers();
+
+        // Show at least as many tiers as the knowledge has. Without this, rebuilding the tab
+        // after Load Knowledge or Apply in the Text tab used the stale display count, so a
+        // knowledge with more tiers than that showed only some of them and the variables in the
+        // hidden tiers were nowhere to be seen.
+        int numTiers = getNumTiers();
+
+        if (numTiers < 2) {
             int _default = (int) (TMath.pow(this.vars.size(), 0.5) + 1);
             numTiers = TMath.max(numTiers, _default);
-            setNumDisplayTiers(numTiers);
         }
+
+        setNumTiers(TMath.max(numTiers, getKnowledge().getNumTiers()));
 
         Box b = Box.createVerticalBox();
         applyPanelTheme(b);
@@ -672,13 +820,18 @@ public class KnowledgeBoxEditor extends JPanel {
         b1.add(numTiersLabel);
 
         SpinnerNumberModel spinnerNumberModel = new SpinnerNumberModel(getNumTiers(), 2, 100, 1);
+        this.tierSpinnerModel = spinnerNumberModel;
         spinnerNumberModel.addChangeListener((e) -> {
-            SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
-            int numTiers = model.getNumber().intValue();
+            if (this.adjustingTierSpinner) {
+                return;
+            }
 
-            setNumDisplayTiers(numTiers);
-            setNumTiers(numTiers);
-            model.setValue(numTiers);
+            SpinnerNumberModel model = (SpinnerNumberModel) e.getSource();
+            int numTiersSpun = model.getNumber().intValue();
+
+            setNumDisplayTiers(numTiersSpun);
+            setNumTiers(numTiersSpun);
+            model.setValue(numTiersSpun);
 
             for (int i = getNumTiers(); i <= getKnowledge().getMaxTierForbiddenWithin(); i++) {
                 getKnowledge().setTierForbiddenWithin(i, false);
@@ -729,6 +882,20 @@ public class KnowledgeBoxEditor extends JPanel {
         this.tiersPanel.add(getTierBoxes(getNumTiers()), BorderLayout.CENTER);
         this.tiersPanel.revalidate();
         this.tiersPanel.repaint();
+
+        // Keep the spinner showing what is displayed; a stale spinner invited a "correction"
+        // that deleted the tiers beyond it.
+        if (this.tierSpinnerModel != null
+            && this.tierSpinnerModel.getNumber().intValue() != getNumTiers()
+            && getNumTiers() >= 2) {
+            this.adjustingTierSpinner = true;
+
+            try {
+                this.tierSpinnerModel.setValue(getNumTiers());
+            } finally {
+                this.adjustingTierSpinner = false;
+            }
+        }
     }
 
     /**
@@ -859,6 +1026,10 @@ public class KnowledgeBoxEditor extends JPanel {
         JScrollPane tiersScrollPane = new JScrollPane(tiersBox);
         tiersScrollPane.setPreferredSize(new Dimension(640, 400));
         applyScrollTheme(tiersScrollPane);
+
+        // A Box view gives the scroll pane a unit increment of one pixel, which makes wheel
+        // scrolling to the tiers below the fold all but impossible.
+        tiersScrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         if (!this.firstTierVars.isEmpty() && !forbiddenCheckboxes.isEmpty()) {
             forbiddenCheckboxes.get(0).setSelected(true);
@@ -993,6 +1164,16 @@ public class KnowledgeBoxEditor extends JPanel {
         });
 
         this.edgeWorkbench = new KnowledgeWorkbench(graph);
+
+        // Adding or removing an edge in the Edges tab edits the knowledge. The workbench also
+        // reports "modelChanged" whenever its graph is merely redrawn (a layout, a "Show ..."
+        // checkbox), so only pass it on if the knowledge itself is different.
+        this.edgeWorkbench.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                notifyIfKnowledgeChanged();
+            }
+        });
+
         resetEdgeDisplay(null);
 
         JCheckBox showForbiddenByTiersCheckbox =
@@ -1223,12 +1404,27 @@ public class KnowledgeBoxEditor extends JPanel {
             LayoutUtil.defaultLayout(graph);
         }
 
+        // Redrawing the Edges tab is not a change to the knowledge.
         this.edgeWorkbench.setGraph(graph);
-        notifyKnowledge();
     }
 
     private void notifyKnowledge() {
+        this.lastNotifiedKnowledge = this.knowledge.toString();
         firePropertyChange("modelChanged", null, null);
+    }
+
+    /**
+     * Reports a model change only if the knowledge differs from what it was at the last report (or when the editor
+     * opened).
+     */
+    private void notifyIfKnowledgeChanged() {
+        if (this.lastNotifiedKnowledge == null) {
+            return; // Still constructing.
+        }
+
+        if (!this.knowledge.toString().equals(this.lastNotifiedKnowledge)) {
+            notifyKnowledge();
+        }
     }
 
     private Knowledge getKnowledge() {

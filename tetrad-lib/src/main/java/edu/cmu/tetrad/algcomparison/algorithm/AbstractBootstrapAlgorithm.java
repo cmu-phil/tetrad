@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.PooledIndependenceWrapper;
@@ -36,6 +37,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -44,6 +46,7 @@ import org.apache.commons.math3.random.Well44497b;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -243,6 +246,45 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
     }
 
     /**
+     * @return the given data model with its variables in the given order of names, for pooling with a first data
+     * set that has them in that order.
+     * @throws IllegalArgumentException if it does not have exactly those variables, or is of a kind that cannot be
+     *                                  reordered.
+     */
+    private static DataModel inVariableOrder(DataModel dataModel, List<String> names, String firstName) {
+        List<String> own = dataModel.getVariableNames();
+
+        if (own.size() != names.size() || !new HashSet<>(own).equals(new HashSet<>(names))) {
+            List<String> missing = new ArrayList<>(names);
+            missing.removeAll(own);
+            List<String> extra = new ArrayList<>(own);
+            extra.removeAll(names);
+
+            throw new IllegalArgumentException("All pooled data sets must have the same variables; "
+                                               + dataModel.getName() + " differs from " + firstName
+                                               + (missing.isEmpty() ? "" : "; it lacks " + missing)
+                                               + (extra.isEmpty() ? "" : "; it adds " + extra) + ".");
+        }
+
+        DataModel reordered;
+
+        if (dataModel instanceof DataSet dataSet) {
+            List<Node> variables = new ArrayList<>();
+            for (String name : names) variables.add(dataSet.getVariable(name));
+            reordered = dataSet.subsetColumns(variables);
+        } else if (dataModel instanceof ICovarianceMatrix cov) {
+            reordered = cov.getSubmatrix(names);
+        } else {
+            throw new IllegalArgumentException("All pooled data sets must have the same variables in the same "
+                                               + "order; " + dataModel.getName() + " differs from " + firstName
+                                               + " and cannot be reordered.");
+        }
+
+        reordered.setName(dataModel.getName());
+        return reordered;
+    }
+
+    /**
      * Pools several data sets into one search, IMaGES-style. This is the general form of IMaGES: rather than a
      * separate algorithm, pooling is done by temporarily replacing the algorithm's score wrapper with a
      * {@link PooledScoreWrapper} (an IMaGES sum of the inner score over the data sets) and/or its independence
@@ -250,7 +292,8 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
      * ordinary core once. So BOSS + any score on a list of data sets IS IMaGES with that score, and PC + any test
      * is a pooled PC, with no per-combination wrapper classes.
      * <p>
-     * Requirements: all data sets have the same variables (by name). Time lag, if requested, is applied to each data
+     * Requirements: all data sets have the same variables (by name); one that has them in a different order is
+     * reordered to match the first. Time lag, if requested, is applied to each data
      * set separately from its own row order before pooling (so region or subject seams never become fake
      * transitions). Bootstrapping resamples rows WITHIN each data set for every replicate, so each data set
      * contributes its own rows to every replicate and rows never cross data sets; the pooled wrappers pick up each
@@ -270,12 +313,12 @@ public abstract class AbstractBootstrapAlgorithm implements Algorithm, ReturnsBo
             throw new IllegalArgumentException("Pooling data sets requires a score- or test-based algorithm.");
         }
 
+        // The data sets must have the same variables by name. One whose variables are in a different order is
+        // put in the order of the first, in this method's own list; the caller's data sets are not changed.
         List<String> names = dataSets.getFirst().getVariableNames();
-        for (DataModel dataModel : dataSets) {
-            if (!dataModel.getVariableNames().equals(names)) {
-                throw new IllegalArgumentException("All pooled data sets must have the same variables in the same "
-                                                   + "order; " + dataModel.getName() + " differs from "
-                                                   + dataSets.getFirst().getName() + ".");
+        for (int i = 1; i < dataSets.size(); i++) {
+            if (!dataSets.get(i).getVariableNames().equals(names)) {
+                dataSets.set(i, inVariableOrder(dataSets.get(i), names, dataSets.getFirst().getName()));
             }
         }
 

@@ -414,11 +414,13 @@ final class ConstructTemplateAction extends AbstractAction {
 
         String data = ConstructTemplateAction.nextName("Data");
         String cluster = ConstructTemplateAction.nextName("Latent Clusters");
-        String search = ConstructTemplateAction.nextName("Latent Structure");
+        String search = ConstructTemplateAction.nextName("Search");
 
         nodes.add(addNode("Data", data, origin.x, origin.y));
         nodes.add(addNode("Latent_Clusters", cluster, origin.x, origin.y + 125));
-        nodes.add(addNode("Latent_Structure", search, origin.x + 170, origin.y + 125));
+        // All search algorithms live in the Search box (2026-10-11); a Search box with a Latent Clusters parent
+        // lists the block searches the Latent Structure box used to hold.
+        nodes.add(addNode("Search", search, origin.x + 170, origin.y + 125));
 
         addEdge(data, cluster);
         addEdge(cluster, search);

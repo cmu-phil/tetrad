@@ -44,7 +44,7 @@ import java.util.*;
  *
  * <p><b>KEEP-KNOWLEDGE VARIANT.</b> This class is the knowledge-orientation-keeping
  * variant of Fcit, applying to FCIT the same treatment StarFciKeepKnowledgeOrientations
- * applies to StarFciGuaranteePag. In Fcit, background knowledge enters the initial PAG
+ * applies to StarFci (formerly StarFciGuaranteePag). In Fcit, background knowledge enters the initial PAG
  * (dagToPag is knowledge-aware) but is then lost at the first committed removal: the
  * from-scratch reorientation (redoGfciOrientation) does not apply fciOrientbk, and the
  * strict legality certificate (PagLegalityCheck.isLegalPag, whose final step is exact

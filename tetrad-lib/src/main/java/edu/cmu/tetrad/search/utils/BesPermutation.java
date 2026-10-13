@@ -118,7 +118,10 @@ public class BesPermutation {
         Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
         int[] arrowIndex = new int[1];
 
-        buildIndexing(order, hashIndices);
+        // The indices are passed to the score, so they must be indices into the score's variable list, not positions
+        // in the given order. (Positions in the order were used here previously, which scored the wrong variables
+        // whenever the order differed from the score's variable order.)
+        buildIndexing(this.variables, hashIndices);
 
         reevaluateBackward(new HashSet<>(order), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
 

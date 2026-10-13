@@ -116,6 +116,125 @@ public class TestMiceLiteImputer {
         assertEquals(ds.getNumColumns(), result.pooledGraph.getNumNodes());
     }
 
+    /**
+     * With y = x^2 + w + e and y partly missing, a linear fit of y on x and w gives x no weight, so donors are
+     * matched on w alone and imputed y is unrelated to x; with the predictor degree at 2, imputed y follows x^2.
+     * (The third variable matters: with x the only predictor, any nonzero slope makes the fitted value a
+     * one-to-one function of x, and matching on it is matching on x, which recovers the curve at degree 1.)
+     * Degree 1 set explicitly is the default, value for value.
+     */
+    @Test
+    public void testPredictorDegree() {
+        DataSet ds = simulateSquare(2000, new Random(73), 1);
+
+        MiceLiteImputer linear = new MiceLiteImputer();
+        DataSet byDefault = linear.impute(ds, 1, 11).get(0);
+        linear.setPredictorDegree(1);
+        DataSet degreeOne = linear.impute(ds, 1, 11).get(0);
+
+        for (int i = 0; i < ds.getNumRows(); i++) {
+            assertEquals(byDefault.getDouble(i, 1), degreeOne.getDouble(i, 1), 0.0);
+        }
+
+        MiceLiteImputer quadratic = new MiceLiteImputer();
+        quadratic.setPredictorDegree(2);
+        DataSet degreeTwo = quadratic.impute(ds, 1, 11).get(0);
+
+        double rLinear = squareCorrelation(ds, byDefault, 1);
+        double rQuadratic = squareCorrelation(ds, degreeTwo, 1);
+
+        assertTrue("Linear fit should lose the dependence: " + rLinear, Math.abs(rLinear) < 0.3);
+        assertTrue("Quadratic fit should keep the dependence: " + rQuadratic, rQuadratic > 0.9);
+    }
+
+    /**
+     * The other direction: with y = x^2 + w + e and x partly missing, the mean of x given y and w is zero, so
+     * matching on the fitted mean of x alone picks donors on noise (how much of the dependence survives varies
+     * from one dataset to the next, so nothing is asserted about it); matching on the fitted mean of x^2 as well
+     * gives imputed x the right size for y - w. Degree 1 set explicitly is the default, value for value.
+     */
+    @Test
+    public void testTargetDegree() {
+        DataSet ds = simulateSquare(2000, new Random(73), 0);
+
+        MiceLiteImputer mean = new MiceLiteImputer();
+        DataSet byDefault = mean.impute(ds, 1, 11).get(0);
+        mean.setTargetDegree(1);
+        DataSet degreeOne = mean.impute(ds, 1, 11).get(0);
+
+        for (int i = 0; i < ds.getNumRows(); i++) {
+            assertEquals(byDefault.getDouble(i, 0), degreeOne.getDouble(i, 0), 0.0);
+        }
+
+        MiceLiteImputer moments = new MiceLiteImputer();
+        moments.setTargetDegree(2);
+        DataSet degreeTwo = moments.impute(ds, 1, 11).get(0);
+
+        double r = squareCorrelation(ds, degreeTwo, 0);
+        assertTrue("Matching on two moments should keep the dependence: " + r, r > 0.9);
+    }
+
+    /**
+     * For data from simulateSquare, the correlation of x^2 with y - w in the completed data, over the rows where
+     * the given column was missing in the original. About 0.98 in fully observed rows.
+     */
+    private static double squareCorrelation(DataSet original, DataSet completed, int missingColumn) {
+        List<double[]> pairs = new ArrayList<>();
+
+        for (int i = 0; i < original.getNumRows(); i++) {
+            if (!MissingDataAudit.isMissing(original, i, missingColumn)) continue;
+            double x = completed.getDouble(i, 0);
+            pairs.add(new double[]{x * x, completed.getDouble(i, 1) - completed.getDouble(i, 2)});
+        }
+
+        double meanA = 0.0;
+        double meanB = 0.0;
+
+        for (double[] pair : pairs) {
+            meanA += pair[0] / pairs.size();
+            meanB += pair[1] / pairs.size();
+        }
+
+        double sab = 0.0;
+        double saa = 0.0;
+        double sbb = 0.0;
+
+        for (double[] pair : pairs) {
+            sab += (pair[0] - meanA) * (pair[1] - meanB);
+            saa += (pair[0] - meanA) * (pair[0] - meanA);
+            sbb += (pair[1] - meanB) * (pair[1] - meanB);
+        }
+
+        return sab / Math.sqrt(saa * sbb);
+    }
+
+    /**
+     * X and W independent standard normal and Y = X^2 + W + 0.3 e (columns X, Y, W), with 30% of the given
+     * column missing completely at random.
+     */
+    private static DataSet simulateSquare(int n, Random rand, int missingColumn) {
+        List<Node> vars = new ArrayList<>();
+        vars.add(new ContinuousVariable("X"));
+        vars.add(new ContinuousVariable("Y"));
+        vars.add(new ContinuousVariable("W"));
+
+        DataSet ds = new BoxDataSet(new MixedDataBox(vars, n), vars);
+
+        for (int i = 0; i < n; i++) {
+            double x = rand.nextGaussian();
+            double w = rand.nextGaussian();
+            ds.setDouble(i, 0, x);
+            ds.setDouble(i, 2, w);
+            ds.setDouble(i, 1, x * x + w + 0.3 * rand.nextGaussian());
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (rand.nextDouble() < 0.3) ds.setDouble(i, missingColumn, Double.NaN);
+        }
+
+        return ds;
+    }
+
     private static boolean valuesEqual(DataSet a, DataSet b, int i, int j, boolean disc) {
         return disc ? a.getInt(i, j) == b.getInt(i, j) : a.getDouble(i, j) == b.getDouble(i, j);
     }

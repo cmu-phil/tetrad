@@ -49,8 +49,8 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 /**
  * EXPERIMENTAL: BFCI with a per-removal SCORE CHECK ("tests propose, scores dispose").
  * <p>
- * This is a self-contained variant of {@link Bfci} / {@link StarFciGuaranteePag}: BOSS supplies the Markov CPDAG,
- * the *-FCI extra-edge-removal machinery runs with per-removal legality gating exactly as in StarFciGuaranteePag,
+ * This is a self-contained variant of {@link Bfci} / {@link StarFci}: BOSS supplies the Markov CPDAG,
+ * the *-FCI extra-edge-removal machinery runs with per-removal legality gating exactly as in StarFci,
  * and IN ADDITION every gated structural commitment (each single-edge removal in the adjacency-subset and
  * possible-D-SEP passes, and each joint batch in the saturating step) must not decrease a global model score:
  * the BIC of the Gaussian MAG implied by the candidate PAG, with the MAG likelihood maximized by RICF
@@ -68,7 +68,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * <p>
  * THE SCORE. bic(G) = 2 * logLik(RICF fit of zhangMagFromPag(G)) - penaltyDiscount * k * ln(n), where k = p (error
  * variances) + #directed + #bidirected edges of the MAG (one parameter per edge), higher is better. A candidate is
- * accepted iff legal (the StarFciGuaranteePag certificate, modulo knowledge) AND bic(candidate) &gt;= bic(current).
+ * accepted iff legal (the StarFci certificate, modulo knowledge) AND bic(candidate) &gt;= bic(current).
  * With penaltyDiscount = 1 this acceptance rule is the classical BIC test: a removal that deletes one edge is
  * accepted iff twice the log-likelihood drop is at most ln(n), i.e., iff the data do not insist on the edge.
  * <p>
@@ -76,19 +76,19 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * {@link #setCovarianceMatrix(ICovarianceMatrix)}) and a MAG with only directed and bidirected edges (RICF does not
  * fit undirected/selection blocks). Whenever the score cannot be computed (no covariance, undirected edges present,
  * RICF failure or non-finite likelihood), the check DEGRADES TO A PASS and the decision falls back to legality
- * alone, i.e., to exact StarFciGuaranteePag behavior; this is logged when verbose. The score check applies only on
+ * alone, i.e., to exact StarFci behavior; this is logged when verbose. The score check applies only on
  * the gated path (doLegalityGating == true, the default): on the ungated path removals are not individually
  * re-oriented, so no per-step implied MAG exists to score, and this class behaves exactly like Bfci there.
  * <p>
  * All non-score machinery (knowledge handling, the modulo-knowledge legality certificate, the saturating step, the
- * sepset bookkeeping) is copied verbatim from StarFciGuaranteePag; the score-check insertions are marked with
+ * sepset bookkeeping) is copied verbatim from StarFci; the score-check insertions are marked with
  * "SCORE CHECK" comments. This duplication is deliberate: the base class's gate internals are private, and this
  * class is an experimental fork meant to be diffed against it, not a maintained parallel implementation.
  *
  * @author josephramsey
  * @author bryanandrews
  * @see Bfci
- * @see StarFciGuaranteePag
+ * @see StarFci
  * @see RicfEjml
  */
 public final class BfciScoreCheck implements IGraphSearch {
@@ -313,7 +313,7 @@ public final class BfciScoreCheck implements IGraphSearch {
 
     /**
      * Finds a separating set that is a subset of the adjacency of nodes x or y in the input graph.
-     * (Verbatim from StarFciGuaranteePag.)
+     * (Verbatim from StarFci.)
      *
      * @param graph      The graph being analyzed.
      * @param x          The first node between which independence is checked.
@@ -363,7 +363,7 @@ public final class BfciScoreCheck implements IGraphSearch {
     }
 
     /**
-     * Finds a separating set for x and y as a subset of adjx. (Verbatim from StarFciGuaranteePag.)
+     * Finds a separating set for x and y as a subset of adjx. (Verbatim from StarFci.)
      */
     private @Nullable Set<Node> getSepset(Node x, Node y, Set<Node> containing, IndependenceTest test, int depth,
                                           List<Node> adjx, boolean useMaxP) throws InterruptedException {
@@ -419,7 +419,7 @@ public final class BfciScoreCheck implements IGraphSearch {
     }
 
     /**
-     * Runs the search and returns the PAG. Structure identical to StarFciGuaranteePag.search(), with the score
+     * Runs the search and returns the PAG. Structure identical to StarFci.search(), with the score
      * check applied inside the gated commitments.
      *
      * @return This PAG.
@@ -671,7 +671,7 @@ public final class BfciScoreCheck implements IGraphSearch {
     }
 
     /**
-     * Runs the full *-FCI orientation in place on {@code pag}. (Verbatim from StarFciGuaranteePag.)
+     * Runs the full *-FCI orientation in place on {@code pag}. (Verbatim from StarFci.)
      */
     private void gfciOrientPag(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
                                Set<Triple> unshieldedColliders, FciOrient fciOrient)
@@ -727,7 +727,7 @@ public final class BfciScoreCheck implements IGraphSearch {
 
     /**
      * Attempts to remove edge (a, c) using the given candidate sepset. Identical to
-     * StarFciGuaranteePag.commitRemoval, plus the SCORE CHECK on the gated path: after the legality certificate
+     * StarFci.commitRemoval, plus the SCORE CHECK on the gated path: after the legality certificate
      * passes, the candidate must additionally have a MAG BIC at least as large as the current committed graph's;
      * otherwise the removal is reverted. If the score is unavailable (see class javadoc), the check degrades to a
      * pass.
@@ -828,7 +828,7 @@ public final class BfciScoreCheck implements IGraphSearch {
 
     /**
      * Saturating step for the gated path, run once after the single-edge machinery has stalled. Identical to
-     * StarFciGuaranteePag.saturatingRemoval, plus the SCORE CHECK: an accepted batch must be legal AND have a MAG
+     * StarFci.saturatingRemoval, plus the SCORE CHECK: an accepted batch must be legal AND have a MAG
      * BIC at least as large as the stalled graph's (fail-soft as elsewhere).
      */
     private Graph saturatingRemoval(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
@@ -1030,7 +1030,7 @@ public final class BfciScoreCheck implements IGraphSearch {
 
     /**
      * Builds a fresh FCI orientation engine (complete rules, R4 on) bound to the given sepset map.
-     * (Verbatim from StarFciGuaranteePag.)
+     * (Verbatim from StarFci.)
      */
     private FciOrient buildFciOrient(SepsetMap sepsetMap) {
         R0R4StrategyTestBased strategy = (R0R4StrategyTestBased) R0R4StrategyTestBased.specialConfiguration(independenceTest, knowledge, verbose);
@@ -1053,7 +1053,7 @@ public final class BfciScoreCheck implements IGraphSearch {
     }
 
     /**
-     * The legality certificate: legal PAG modulo background knowledge. (Verbatim from StarFciGuaranteePag.)
+     * The legality certificate: legal PAG modulo background knowledge. (Verbatim from StarFci.)
      */
     private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Set<Node> selection, FciOrient orient)
             throws InterruptedException {
@@ -1118,7 +1118,7 @@ public final class BfciScoreCheck implements IGraphSearch {
 
     /**
      * Refines a graph with background knowledge and closes under the complete FCI final rules.
-     * (Verbatim from StarFciGuaranteePag.)
+     * (Verbatim from StarFci.)
      */
     private Graph refineWithKnowledge(Graph graph, FciOrient orient) throws InterruptedException {
         if (knowledge.isEmpty()) {

@@ -318,7 +318,16 @@ public class GridSearchEditor extends JPanel {
                 }
             }
             case Boolean ignored -> component = getBooleanSelectionBox(parameter, parameters, bothOptionAllowed);
-            case String s -> component = createStringField(parameter, parameters, s);
+            case String s -> {
+                // Parameters that declare a fixed set of allowed values (e.g., missingDataPolicy, missingEssMode)
+                // get a dropdown, as in AlgorithmParameterPanel; free-form strings keep the text field.
+                if (!paramDesc.getAllowedValues().isEmpty()) {
+                    component = ParameterComponents.getStringSelectionBox(parameter, parameters, s,
+                            paramDesc.getAllowedValues());
+                } else {
+                    component = createStringField(parameter, parameters, s);
+                }
+            }
             default -> throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
 
@@ -826,7 +835,14 @@ public class GridSearchEditor extends JPanel {
                 component = createLongTextField(parameter, parameters, l, lowerBoundLong, upperBoundLong);
             }
             case Boolean b -> component = createBooleanSelectionBox(parameter, parameters, b);
-            case String s -> component = getStringField(parameter, parameters, s);
+            case String s -> {
+                if (!paramDesc.getAllowedValues().isEmpty()) {
+                    component = ParameterComponents.getStringSelectionBox(parameter, parameters, s,
+                            paramDesc.getAllowedValues());
+                } else {
+                    component = getStringField(parameter, parameters, s);
+                }
+            }
             default -> throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
         }
 
@@ -1091,19 +1107,22 @@ public class GridSearchEditor extends JPanel {
     }
 
     private static GridSearchModel.@NotNull SimulationSpec getSimulationSpec(String simulationString, Class<? extends RandomGraph> graphClazz) {
-        List<String> simulationTypeStrings = Arrays.asList(ParameterTab.MODEL_TYPE_ITEMS);
-
-        Class<? extends Simulation> simulationClass = switch (simulationTypeStrings.indexOf(simulationString)) {
-            case 0 -> BayesNetSimulation.class;
-            case 1 -> SemSimulation.class;
-            case 2 -> LinearFisherModel.class;
-            case 3 -> GeneralAdditiveModel.class;
-            case 4 -> GeneralNoiseSimulation.class;
-            case 5 -> AdditiveNoiseSimulation.class;
-            case 6 -> PostnonlinearSem.class;
-            case 7 -> LeeHastieSimulation.class;
-            case 8 -> ConditionalGaussianSimulation.class;
-            case 9 -> TimeSeriesSemSimulation.class;
+        // Mapped by name rather than by index into ParameterTab.MODEL_TYPE_ITEMS, since the index-based
+        // version silently went stale whenever that list changed.
+        Class<? extends Simulation> simulationClass = switch (simulationString) {
+            case SimulationTypes.BAYS_NET -> BayesNetSimulation.class;
+            case SimulationTypes.LINEAR_GAUSSIAN_SEM, SimulationTypes.STRUCTURAL_EQUATION_MODEL ->
+                    SemSimulation.class;
+            case SimulationTypes.LINEAR_NON_GAUSSIAN_SEM -> NonGaussianSemSimulation.class;
+            case SimulationTypes.DAO_SIMULATION -> DaoSimulation.class;
+            case SimulationTypes.GENERAL_ADDITIVE_MODEL -> GeneralAdditiveModel.class;
+            case SimulationTypes.GENERAL_NOISE_SEM -> GeneralNoiseSimulation.class;
+            case SimulationTypes.ADDITIVE_NOISE_SEM -> AdditiveNoiseSimulation.class;
+            case SimulationTypes.DESIGNED_EXPERIMENT -> DesignedExperimentSimulation.class;
+            case SimulationTypes.OBSERVATIONAL_STUDY -> ObservationalStudySimulation.class;
+            case SimulationTypes.LEE_AND_HASTIE -> LeeHastieSimulation.class;
+            case SimulationTypes.CONDITIONAL_GAUSSIAN -> ConditionalGaussianSimulation.class;
+            case SimulationTypes.TIME_SERIES -> TimeSeriesSemSimulation.class;
             default -> SemSimulation.class;
         };
 
@@ -1341,7 +1360,11 @@ public class GridSearchEditor extends JPanel {
 
         if (graphFile.exists()) {
             Graph graph = GraphSaveLoadUtils.loadGraphTxt(graphFile);
-            LayoutUtil.defaultLayout(graph);
+            LayoutUtil.defaultLayoutConditional(graph);
+
+            // This also runs when the tab is merely redisplayed, in which case the same graph is selected again.
+            boolean selectionChanged = !graph.equals(model.getGraph());
+
             workbench.setGraph(graph);
             model.setSelectedGraph(graph);
 
@@ -1350,7 +1373,9 @@ public class GridSearchEditor extends JPanel {
             model.setSelectedAlgorithm((int) selectedAlgorithm);
             model.setSelectedGraphIndex((int) selectedGraphIndex);
 
-            firePropertyChange("modelChanged", null, null);
+            if (selectionChanged) {
+                firePropertyChange("modelChanged", null, null);
+            }
         }
     }
 

@@ -193,15 +193,43 @@ public final class DataWriter {
     }
 
     /**
-     * <p>saveKnowledge.</p>
+     * Saves knowledge in the tetrad2 text format that {@code SimpleDataLoader.loadKnowledge}
+     * reads. If every variable name mentioned by the knowledge is free of whitespace and commas,
+     * the format is the original whitespace-delimited one, unchanged. If some mentioned name
+     * contains whitespace -- which the whitespace-delimited format cannot represent -- the
+     * comma-delimited variant is written instead; see
+     * {@link #saveKnowledge(Knowledge, Writer, boolean)}.
      *
      * @param knowledge a {@link edu.cmu.tetrad.data.Knowledge} object
      * @param out       a {@link java.io.Writer} object
      * @throws java.io.IOException if any.
      */
     public static void saveKnowledge(Knowledge knowledge, Writer out) throws IOException {
+        saveKnowledge(knowledge, out, needsCommaDelimiter(knowledge));
+    }
+
+    /**
+     * Saves knowledge in the tetrad2 text format, choosing the delimiter explicitly. In the
+     * comma-delimited variant the header line is {@code /knowledge comma}, which the loader reads
+     * as an instruction to split names on commas rather than whitespace, so names containing
+     * spaces survive the round trip; in tier and group lines the names are separated by commas,
+     * and in forbiddirect and requiredirect lines the from- and to-names are separated by a
+     * comma. A name containing a comma is written in double quotes. Names may not contain the
+     * double-quote character in either variant.
+     *
+     * @param knowledge         a {@link edu.cmu.tetrad.data.Knowledge} object
+     * @param out               a {@link java.io.Writer} object
+     * @param useCommaDelimiter true to write the comma-delimited variant
+     * @throws java.io.IOException if any.
+     */
+    public static void saveKnowledge(Knowledge knowledge, Writer out, boolean useCommaDelimiter)
+            throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("/knowledge");
+
+        if (useCommaDelimiter) {
+            buf.append(" comma");
+        }
 
         buf.append("\naddtemporal\n");
 
@@ -213,15 +241,30 @@ public final class DataWriter {
             if (!tier.isEmpty()) {
                 buf.append("\n").append(i).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
                 buf.append(" ");
-                buf.append(String.join(" ", tier));
+                buf.append(joinNames(tier, useCommaDelimiter));
             }
         }
+
+        for (KnowledgeTierStructure structure : knowledge.getTierStructures()) {
+            buf.append("\n\ntierstructure ").append(structure.getName()).append("\n");
+
+            for (int i = 0; i < structure.getNumTiers(); i++) {
+                String forbiddenWithin = structure.isTierForbiddenWithin(i) ? "*" : "";
+                List<String> tier = structure.getTier(i);
+
+                if (!tier.isEmpty()) {
+                    buf.append("\n").append(i).append(forbiddenWithin).append("  ");
+                    buf.append(joinNames(tier, useCommaDelimiter));
+                }
+            }
+        }
+
+        appendGroups(buf, knowledge, KnowledgeGroup.FORBIDDEN, "forbiddengroup", useCommaDelimiter);
+        appendGroups(buf, knowledge, KnowledgeGroup.REQUIRED, "requiredgroup", useCommaDelimiter);
 
         buf.append("\n\nforbiddirect");
 
         for (KnowledgeEdge pair : knowledge.getListOfExplicitlyForbiddenEdges()) {
-//        for (Iterator<KnowledgeEdge> i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
-//            KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
 
@@ -229,7 +272,7 @@ public final class DataWriter {
                 continue;
             }
 
-            buf.append("\n").append(from).append(" ").append(to);
+            appendEdge(buf, from, to, useCommaDelimiter);
         }
 
         buf.append("\n\nrequiredirect");
@@ -238,11 +281,114 @@ public final class DataWriter {
             KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
-            buf.append("\n").append(from).append(" ").append(to);
+
+            if (knowledge.isRequiredByGroups(from, to)) {
+                continue;
+            }
+
+            appendEdge(buf, from, to, useCommaDelimiter);
         }
 
         out.write(buf.toString());
         out.flush();
+    }
+
+    /**
+     * True iff some variable name the knowledge mentions (in a tier, a tier structure, a group, or
+     * an explicit rule) contains whitespace, so that the whitespace-delimited format cannot
+     * represent it.
+     */
+    private static boolean needsCommaDelimiter(Knowledge knowledge) {
+        List<String> names = new java.util.ArrayList<>();
+
+        for (int i = 0; i < knowledge.getNumTiers(); i++) {
+            names.addAll(knowledge.getTier(i));
+        }
+
+        for (KnowledgeTierStructure structure : knowledge.getTierStructures()) {
+            names.addAll(structure.getVariables());
+        }
+
+        for (KnowledgeGroup group : knowledge.getKnowledgeGroups()) {
+            names.addAll(group.getFromVariables());
+            names.addAll(group.getToVariables());
+        }
+
+        for (KnowledgeEdge edge : knowledge.getListOfExplicitlyForbiddenEdges()) {
+            names.add(edge.getFrom());
+            names.add(edge.getTo());
+        }
+
+        for (Iterator<KnowledgeEdge> i = knowledge.requiredEdgesIterator(); i.hasNext(); ) {
+            KnowledgeEdge edge = i.next();
+            names.add(edge.getFrom());
+            names.add(edge.getTo());
+        }
+
+        return names.stream().anyMatch(name -> name.chars().anyMatch(Character::isWhitespace));
+    }
+
+    /**
+     * Appends the groups of the given type as a section: the section header, then for each group
+     * its from-names on one line and its to-names on the next, which is how the loader reads them
+     * back. Groups with an empty side impose nothing and are skipped, since a blank line cannot be
+     * written (the loader skips blank lines, which would misalign the from/to pairing).
+     */
+    private static void appendGroups(StringBuilder buf, Knowledge knowledge, int type,
+                                     String sectionName, boolean useCommaDelimiter) {
+        List<KnowledgeGroup> groups = knowledge.getKnowledgeGroups().stream()
+                .filter(g -> g.getType() == type)
+                .filter(g -> !g.getFromVariables().isEmpty() && !g.getToVariables().isEmpty())
+                .toList();
+
+        if (groups.isEmpty()) {
+            return;
+        }
+
+        buf.append("\n\n").append(sectionName).append("\n");
+
+        for (KnowledgeGroup group : groups) {
+            List<String> from = group.getFromVariables().stream().sorted().toList();
+            List<String> to = group.getToVariables().stream().sorted().toList();
+            buf.append("\n").append(joinNames(from, useCommaDelimiter));
+            buf.append("\n").append(joinNames(to, useCommaDelimiter));
+        }
+    }
+
+    private static void appendEdge(StringBuilder buf, String from, String to,
+                                   boolean useCommaDelimiter) {
+        if (useCommaDelimiter) {
+            buf.append("\n").append(quoteIfNeeded(from)).append(", ").append(quoteIfNeeded(to));
+        } else {
+            buf.append("\n").append(from).append(" ").append(to);
+        }
+    }
+
+    private static String joinNames(List<String> names, boolean useCommaDelimiter) {
+        if (useCommaDelimiter) {
+            StringBuilder b = new StringBuilder();
+
+            for (int i = 0; i < names.size(); i++) {
+                if (i > 0) b.append(", ");
+                b.append(quoteIfNeeded(names.get(i)));
+            }
+
+            return b.toString();
+        } else {
+            return String.join(" ", names);
+        }
+    }
+
+    /**
+     * In the comma-delimited variant, a name containing a comma is wrapped in double quotes so the
+     * tokenizer does not split it.
+     */
+    private static String quoteIfNeeded(String name) {
+        if (name.indexOf(',') >= 0) {
+            return "\"" + name + "\"";
+        }
+
+        return name;
     }
 }
 

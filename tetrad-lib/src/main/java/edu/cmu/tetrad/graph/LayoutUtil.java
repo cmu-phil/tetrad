@@ -42,8 +42,24 @@ public class LayoutUtil {
     // Gap kept between the boxes of any two nodes, in pixels. Mirrors the
     // workbench's overlap margin so lib and GUI agree on what "not touching" means.
     private static final double NODE_GAP = 10.0;
+    // The shortest an edge between two nodes of the circle may be, in pixels, measured from box to box along the
+    // line between their centers. Without it the circle is only as large as keeps the boxes NODE_GAP apart, which
+    // leaves an edge between neighbors about as long as its own arrowhead; with two or three nodes the whole
+    // picture is cramped.
+    private static final double MIN_EDGE_LENGTH = 50.0;
+    // The largest radius the circle is given for the sake of MIN_EDGE_LENGTH alone. The minimum is for circles of
+    // a few nodes; applied to every circle it would make the large ones nearly half again as wide (20 nodes: about
+    // 800 pixels across instead of 560), so beyond this radius only the boxes' not overlapping sets the size, as
+    // before.
+    private static final double MIN_EDGE_LENGTH_MAX_RADIUS = 160.0;
     // Margin between the canvas edge and the nearest node box.
     private static final double LAYOUT_MARGIN = 20.0;
+
+    // ---- Causal order layout constants ----
+    // Gap between the boxes of neighboring nodes in a row, and between one row's boxes and the next row's, in
+    // pixels.
+    private static final double CAUSAL_ORDER_X_GAP = 25.0;
+    private static final double CAUSAL_ORDER_Y_GAP = 30.0;
 
     // ---- Latent placement constants ----
     // Ring search steps outward from the anchor by RING_STEP until it finds a
@@ -409,32 +425,123 @@ public class LayoutUtil {
     }
 
     /**
-     * Arranges the nodes in the graph in a circle if there are 20 or fewer
-     * nodes, otherwise arranges them in a square.
+     * The layouts that can serve as the default layout: the ones that need
+     * nothing but the graph. See {@link #setDefaultLayout(DefaultLayout)}.
+     */
+    public enum DefaultLayout {
+
+        /**
+         * Richard's layout; see {@link #richardsLayout(Graph, NodeSize)}.
+         */
+        RICHARDS,
+
+        /**
+         * The circle; see {@link #circleLayout(Graph, NodeSize)}.
+         */
+        CIRCLE,
+
+        /**
+         * The square; see {@link #squareLayout(Graph)}.
+         */
+        SQUARE,
+
+        /**
+         * Fruchterman-Reingold; see {@link FruchtermanReingoldLayout}.
+         */
+        FRUCHTERMAN_REINGOLD,
+
+        /**
+         * Rows by causal order; see {@link #layoutByCausalOrder(Graph, NodeSize)}.
+         */
+        CAUSAL_ORDER
+    }
+
+    /**
+     * The layout used by {@link #defaultLayout(Graph)} and
+     * {@link #defaultLayoutConditional(Graph)}. Richard's layout unless an
+     * application sets another; the Tetrad interface sets it from the user's
+     * choice in the Layout menu.
+     */
+    private static volatile DefaultLayout defaultLayout = DefaultLayout.RICHARDS;
+
+    /**
+     * Returns the layout used for graphs that have not been laid out.
+     *
+     * @return the default layout.
+     */
+    public static DefaultLayout getDefaultLayout() {
+        return LayoutUtil.defaultLayout;
+    }
+
+    /**
+     * Sets the layout used for graphs that have not been laid out, for this
+     * process. It starts as Richard's layout.
+     *
+     * @param layout the default layout; null for Richard's layout.
+     */
+    public static void setDefaultLayout(DefaultLayout layout) {
+        LayoutUtil.defaultLayout = layout == null ? DefaultLayout.RICHARDS : layout;
+    }
+
+    /**
+     * Arranges the nodes using the default layout unless they all have
+     * positions already.
+     *
+     * @param graph the graph to be arranged.
+     */
+    public static void defaultLayoutConditional(Graph graph) {
+        if (!isLaidOut(graph)) {
+            defaultLayout(graph);
+        }
+    }
+
+    /**
+     * Arranges the nodes using Richard's layout unless they all have
+     * positions already. The force-directed layouts start from this, not from
+     * the default layout, which may be one of them.
+     */
+    private static void seedLayoutConditional(Graph graph) {
+        if (!isLaidOut(graph)) {
+            richardsLayout(graph);
+        }
+    }
+
+    private static boolean isLaidOut(Graph graph) {
+        for (Node node : graph.getNodes()) {
+            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Arranges the nodes in the graph by the default layout (see
+     * {@link #setDefaultLayout(DefaultLayout)}), with estimated node sizes.
      *
      * @param graph the graph to be arranged.
      */
     public static void defaultLayout(Graph graph) {
-        boolean allOriented = true;
+        defaultLayout(graph, estimatedNodeSize());
+    }
 
-        for (Node node : graph.getNodes()) {
-            if (node.getCenterX() == -1 || node.getCenterY() == -1) {
-                allOriented = false;
-            }
+    /**
+     * Arranges the nodes in the graph by the default layout (see
+     * {@link #setDefaultLayout(DefaultLayout)}), with the given node sizes
+     * for the layouts that use them.
+     *
+     * @param graph the graph to be arranged.
+     * @param size  supplies the rendered box size of each node.
+     */
+    public static void defaultLayout(Graph graph, NodeSize size) {
+        switch (LayoutUtil.defaultLayout) {
+            case CIRCLE -> circleLayout(graph, size);
+            case SQUARE -> squareLayout(graph);
+            case FRUCHTERMAN_REINGOLD -> fruchtermanReingoldLayout(graph);
+            case CAUSAL_ORDER -> layoutByCausalOrder(graph, size);
+            default -> richardsLayout(graph, size);
         }
-
-        if (allOriented) {
-            return;
-        }
-
-        // The previous defaults, kept for reference:
-//        if (graph.getNumNodes() <= 20) {
-//            circleLayout(graph);
-//        } else {
-//            squareLayout(graph);
-//        }
-
-        richardsLayout(graph);
     }
 
     /**
@@ -449,7 +556,9 @@ public class LayoutUtil {
 
     /**
      * Arranges the non-latent nodes in a circle just large enough that no two
-     * node boxes overlap, places each latent near its adjacent nodes without
+     * node boxes overlap and, for a circle of a few nodes, an edge between any two of them would be at least
+     * {@code MIN_EDGE_LENGTH} long from box to box (see {@code MIN_EDGE_LENGTH_MAX_RADIUS}), places each latent
+     * near its adjacent nodes without
      * overlapping anything, and shifts the result so the bounding box of all
      * node boxes sits at ({@code LAYOUT_MARGIN}, {@code LAYOUT_MARGIN}) — i.e.
      * comfortably in the top-left of the canvas.
@@ -461,6 +570,13 @@ public class LayoutUtil {
      * computed for every pair (not only neighbors — with wide labels and few
      * nodes, the node across the circle is the binding one), and the radius is
      * the largest of those.
+     *
+     * <p>The edge between two nodes runs along the line between their centers,
+     * which are r times the unit-circle distance d between their angles apart,
+     * and the part of it inside a w by h box is the lesser of (w / 2) / |ux|
+     * and (h / 2) / |uy| for the line's unit direction (ux, uy). The direction
+     * does not depend on r, so the smallest r that leaves the edge the minimum
+     * length is (minimum + the two parts inside the boxes) / d.
      *
      * @param graph the graph to be arranged.
      * @param size  supplies each node's rendered box size.
@@ -490,6 +606,7 @@ public class LayoutUtil {
             }
 
             double radius = 0.0;
+            double edgeRadius = 0.0;
 
             for (int i = 0; i < n; i++) {
                 for (int j = i + 1; j < n; j++) {
@@ -506,8 +623,19 @@ public class LayoutUtil {
                     if (Double.isFinite(pairRadius)) {
                         radius = Math.max(radius, pairRadius);
                     }
+
+                    // Large enough also that an edge between these two would not be too short.
+                    double d = Math.hypot(dcos, dsin);
+
+                    if (d > 1e-9) {
+                        double inside = boxExit(size.width(ring.get(i)), size.height(ring.get(i)), dcos / d, dsin / d)
+                                        + boxExit(size.width(ring.get(j)), size.height(ring.get(j)), dcos / d, dsin / d);
+                        edgeRadius = Math.max(edgeRadius, (MIN_EDGE_LENGTH + inside) / d);
+                    }
                 }
             }
+
+            radius = Math.max(radius, Math.min(edgeRadius, MIN_EDGE_LENGTH_MAX_RADIUS));
 
             // Provisional center; the whole layout is shifted to the margin below.
             // Positions are rounded to integers, which can shave a pixel off the
@@ -533,6 +661,16 @@ public class LayoutUtil {
 
         repositionLatents(graph, size);
         shiftToMargin(graph, size);
+    }
+
+    /**
+     * @return how far it is from the center of a box of the given width and height to its boundary, along the
+     * direction with the given components (both nonnegative, not both zero).
+     */
+    private static double boxExit(double width, double height, double ux, double uy) {
+        double byWidth = ux > 1e-9 ? width / 2.0 / ux : Double.POSITIVE_INFINITY;
+        double byHeight = uy > 1e-9 ? height / 2.0 / uy : Double.POSITIVE_INFINITY;
+        return Math.min(byWidth, byHeight);
     }
 
     /**
@@ -651,38 +789,90 @@ public class LayoutUtil {
     }
 
     /**
-     * <p>layoutByCausalOrder.</p>
+     * Lays the graph out in rows by causal order, using an estimate of each node's rendered size. See
+     * {@link #layoutByCausalOrder(Graph, NodeSize)}.
      *
      * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
      */
-    public static void layoutByCausalOrder(Graph graph) {
-        List<List<Node>> tiers = getTiers(graph);
+    public static void  layoutByCausalOrder(Graph graph) {
+        layoutByCausalOrder(graph, estimatedNodeSize());
+    }
 
-        int y = 0;
+    /**
+     * Lays the graph out in rows by causal order: the nodes with no parents in the top row, then the nodes all of
+     * whose parents are above, and so on down. The nodes within each row are ordered to reduce edge crossings, by
+     * the ordering step of Richard's layout. Each row is centered on the widest row. (The rows used to all start
+     * at the left margin, so that a row of one or two nodes sat at the far left above or below a wide row, and the
+     * edges between them ran at a long slant.)
+     *
+     * <p>The nodes of a row are spaced by their own box widths, with {@code CAUSAL_ORDER_X_GAP} between neighbors,
+     * and the rows by the tallest box, with {@code CAUSAL_ORDER_Y_GAP} between rows. (Every node used to be
+     * allowed 80 pixels whatever its label, so that nodes with long names overlapped.) For boxes of the default
+     * size, 60 by 30, the spacing is what it was.
+     *
+     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param size  supplies each node's rendered box size.
+     */
+    public static void layoutByCausalOrder(Graph graph, NodeSize size) {
+        List<Node> allNodes = graph.getNodes();
+        Map<Node, Integer> nodeIndex = new HashMap<>();
+        for (int i = 0; i < allNodes.size(); i++) nodeIndex.put(allNodes.get(i), i);
 
-        for (List<Node> tier : tiers) {
-            y += 60;
+        // A deterministic start, in the graph's node order; then the rows are ordered to reduce the crossings of
+        // the edges between them, as in Richard's layout. (The rows used to come out in hash order.)
+        List<List<Node>> tiers = new ArrayList<>();
 
-            if (tier.isEmpty()) continue;
+        for (List<Node> tier : getTiers(graph)) {
+            List<Node> sorted = new ArrayList<>(tier);
+            sorted.sort(Comparator.comparingInt(nodeIndex::get));
+            tiers.add(sorted);
+        }
 
-            Node node = tier.get(0);
+        layoutInCenteredRows(orderTiers(graph, allNodes, tiers).tiers(), size);
+    }
 
-            int width = 80;
+    /**
+     * Places the given rows of nodes one under another, top row first, each row centered on the widest row. The
+     * nodes of a row are spaced by their own box widths, with {@code CAUSAL_ORDER_X_GAP} between neighbors, and the
+     * rows by the tallest box of all, with {@code CAUSAL_ORDER_Y_GAP} between rows; an empty row takes no space.
+     * This is the arrangement of the causal order layout, and of any other layout that sorts the nodes into rows
+     * (the workbench's distance-from-selected layout, for one).
+     *
+     * @param tiers the rows, top row first; nodes not in any row are not moved.
+     * @param size  supplies each node's rendered box size.
+     */
+    public static void layoutInCenteredRows(List<List<Node>> tiers, NodeSize size) {
+        double[] tierWidths = new double[tiers.size()];
+        double widest = 0.0;
+        double tallest = 0.0;
 
-            int x = width / 2 + 10;
+        for (int t = 0; t < tiers.size(); t++) {
+            List<Node> tier = tiers.get(t);
 
-            node.setCenterX(x);
-            node.setCenterY(y);
+            for (Node node : tier) {
+                tierWidths[t] += size.width(node);
+                tallest = Math.max(tallest, size.height(node));
+            }
 
-            int lastHalf = width / 2;
+            tierWidths[t] += CAUSAL_ORDER_X_GAP * Math.max(0, tier.size() - 1);
+            widest = Math.max(widest, tierWidths[t]);
+        }
 
-            for (int i = 1; i < tier.size(); i++) {
-                node = tier.get(i);
-                int thisHalf = width / 2;
-                x += lastHalf + thisHalf + 5;
-                node.setCenterX(x);
-                node.setCenterY(y);
-                lastHalf = thisHalf;
+        // The center line of the first row leaves the same space above it as there is between rows.
+        double y = CAUSAL_ORDER_Y_GAP + tallest / 2.0;
+
+        for (int t = 0; t < tiers.size(); t++) {
+            // The left edge of this row, then of each node in turn.
+            double left = LAYOUT_MARGIN + (widest - tierWidths[t]) / 2.0;
+
+            for (Node node : tiers.get(t)) {
+                double width = size.width(node);
+                node.setCenter((int) Math.round(left + width / 2.0), (int) Math.round(y));
+                left += width + CAUSAL_ORDER_X_GAP;
+            }
+
+            if (!tiers.get(t).isEmpty()) {
+                y += tallest + CAUSAL_ORDER_Y_GAP;
             }
         }
     }
@@ -735,6 +925,121 @@ public class LayoutUtil {
     //==================== Richard's layout ==============================//
 
     /**
+     * Tiers by causal depth, like {@link #getTiers(Graph)}, but for graphs
+     * whose directed structure may be cyclic. The parent relation is the
+     * same (nodes with an arrow into a node, less those the node also has an
+     * arrow into, so two-cycles and bidirected edges do not count). A
+     * depth-first search from the parentless nodes, in graph node order,
+     * finds the back edges; with those set aside the relation is acyclic,
+     * and each node's tier is its longest-path depth in what remains. For
+     * an acyclic graph there are no back edges and the tiers are those of
+     * {@link #getTiers(Graph)}.
+     */
+    private static List<List<Node>> getTiersBreakingCycles(Graph graph) {
+        List<Node> nodes = graph.getNodes();
+        Map<Node, Integer> index = new HashMap<>();
+        for (int i = 0; i < nodes.size(); i++) index.put(nodes.get(i), i);
+
+        List<List<Integer>> children = new ArrayList<>();
+        boolean[] hasParent = new boolean[nodes.size()];
+        for (int i = 0; i < nodes.size(); i++) children.add(new ArrayList<>());
+
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            Set<Node> parents = new HashSet<>(graph.getNodesInTo(node, Endpoint.ARROW));
+            graph.getNodesOutTo(node, Endpoint.ARROW).forEach(parents::remove);
+            parents.remove(node);
+
+            for (Node p : parents) {
+                Integer pi = index.get(p);
+                if (pi == null) continue;
+                children.get(pi).add(i);
+                hasParent[i] = true;
+            }
+        }
+
+        for (List<Integer> c : children) sort(c);
+
+        int[] tier = layerBreakingCycles(children, hasParent);
+
+        int numTiers = 0;
+        for (int t : tier) numTiers = Math.max(numTiers, t + 1);
+
+        List<List<Node>> tiers = new ArrayList<>();
+        for (int t = 0; t < numTiers; t++) tiers.add(new ArrayList<>());
+        for (int i = 0; i < nodes.size(); i++) tiers.get(tier[i]).add(nodes.get(i));
+
+        return tiers;
+    }
+
+    /**
+     * Longest-path layering of a directed graph given by child lists, after
+     * setting aside the back edges of a depth-first search (iterative, so
+     * deep graphs do not overflow the stack). The search starts from the
+     * parentless nodes first, in index order, then from any node not yet
+     * reached, which happens only for cycles with no parentless ancestor.
+     *
+     * @return the tier of each node, zero-based.
+     */
+    static int[] layerBreakingCycles(List<List<Integer>> children, boolean[] hasParent) {
+        int n = children.size();
+        int[] state = new int[n];        // 0 = unvisited, 1 = on the stack, 2 = done
+        int[] next = new int[n];         // next child position to look at
+        int[] finished = new int[n];     // nodes in order of finishing
+        int numFinished = 0;
+        List<Set<Integer>> back = new ArrayList<>();
+        for (int i = 0; i < n; i++) back.add(new HashSet<>());
+
+        int[] stack = new int[n];
+
+        for (int pass = 0; pass < 2; pass++) {
+            for (int root = 0; root < n; root++) {
+                if (state[root] != 0) continue;
+                if (pass == 0 && hasParent[root]) continue;
+
+                int top = 0;
+                stack[top] = root;
+                state[root] = 1;
+
+                while (top >= 0) {
+                    int u = stack[top];
+                    List<Integer> ch = children.get(u);
+
+                    if (next[u] < ch.size()) {
+                        int v = ch.get(next[u]++);
+
+                        if (state[v] == 0) {
+                            state[v] = 1;
+                            stack[++top] = v;
+                        } else if (state[v] == 1) {
+                            back.get(u).add(v);
+                        }
+                    } else {
+                        state[u] = 2;
+                        finished[numFinished++] = u;
+                        top--;
+                    }
+                }
+            }
+        }
+
+        // Reverse finishing order is a topological order once the back
+        // edges are set aside.
+        int[] tier = new int[n];
+
+        for (int k = n - 1; k >= 0; k--) {
+            int u = finished[k];
+
+            for (int v : children.get(u)) {
+                if (back.get(u).contains(v)) continue;
+                tier[v] = Math.max(tier[v], tier[u] + 1);
+            }
+        }
+
+        return tier;
+    }
+
+    /**
      * Arranges the graph the way Richard lays out a graph for presentation:
      * layered by causal depth, with each layer shifted a bit further right
      * than the one above it, so that the flow reads down and to the right,
@@ -769,15 +1074,28 @@ public class LayoutUtil {
      * <ol>
      * <li><b>Layering.</b> Nodes are assigned to layers by causal depth
      * using the directed structure only (each node goes in the first layer
-     * where all of the nodes with arrows into it are already placed; a
-     * cyclic remainder, if any, becomes a final layer). For PAGs this means
+     * where all of the nodes with arrows into it are already placed). If
+     * the directed structure has cycles, one edge per cycle found by a
+     * depth-first search is set aside for the layering, so those edges, and
+     * only those, are drawn pointing up; everything downstream of a cycle is
+     * still layered by depth. For PAGs this means
      * an edge like x o-&gt; y places y below x, which matches the
      * "y is not an ancestor of x" reading of the arrowhead.</li>
      * <li><b>Crossing reduction.</b> Alternating down and up barycenter
      * sweeps reorder each layer by the mean position of its neighbors in the
+     * adjacent layer, and after each sweep every layer is walked and any two
+     * adjacent nodes whose exchange reduces the crossing count are exchanged,
+     * until no exchange helps (the transpose step of Gansner et al.), which
+     * removes the crossings the barycenter sort alone leaves behind. The
+     * barycenter of a node is the mean position of its neighbors in the
      * sweep direction; all edge types vote here, including edges that span
      * more than one layer. The ordering with the fewest straight-line
-     * crossings seen over all sweeps is kept.</li>
+     * crossings seen over all sweeps is kept. Crossings are counted here with
+     * every layer spread over the same width; after the coordinates are
+     * assigned and sheared, neighbors in a layer are exchanged once more
+     * wherever that reduces the crossings of the edges as actually placed,
+     * which matters for edges that span more than one layer; this is done
+     * before and again after the nudge described below.</li>
      * <li><b>Coordinate assignment.</b> Within each layer, nodes are packed
      * by their actual box widths, then pulled toward the mean x of their
      * neighbors over several relaxation passes, preserving the layer order
@@ -835,7 +1153,7 @@ public class LayoutUtil {
             if (!attached.contains(n)) isolated.add(n);
         }
 
-        List<List<Node>> tiers = getTiers(graph);
+        List<List<Node>> tiers = getTiersBreakingCycles(graph);
         for (List<Node> tier : tiers) tier.removeAll(isolated);
         tiers.removeIf(List::isEmpty);
 
@@ -853,91 +1171,15 @@ public class LayoutUtil {
         // into sub-rows so that no edge joins two nodes in the same row.
         tiers = splitTiersForSameTierEdges(graph, tiers, nodeIndex);
 
-        Map<Node, Integer> tierOf = new HashMap<>();
-        for (int t = 0; t < tiers.size(); t++) {
-            for (Node n : tiers.get(t)) tierOf.put(n, t);
-        }
-
-        // Neighbor lists over all edges that connect different tiers. Every
-        // edge type votes in the ordering; only the tier assignment above is
-        // restricted to the directed structure.
-        Map<Node, List<Node>> upNbrs = new HashMap<>();
-        Map<Node, List<Node>> downNbrs = new HashMap<>();
-        for (Node n : allNodes) {
-            upNbrs.put(n, new ArrayList<>());
-            downNbrs.put(n, new ArrayList<>());
-        }
-
-        List<Node[]> crossEdges = new ArrayList<>();
-
-        for (Edge e : graph.getEdges()) {
-            Node a = e.getNode1();
-            Node b = e.getNode2();
-            Integer ta = tierOf.get(a);
-            Integer tb = tierOf.get(b);
-            if (ta == null || tb == null || ta.intValue() == tb.intValue()) continue;
-            Node hi = ta < tb ? a : b;
-            Node lo = ta < tb ? b : a;
-            downNbrs.get(hi).add(lo);
-            upNbrs.get(lo).add(hi);
-            crossEdges.add(new Node[]{hi, lo});
-        }
-
-        // Barycenter sweeps; keep the ordering with the fewest crossings.
-        // Crossing counting is O(E^2), so above this many cross-tier edges
-        // the sweeps still run but the keep-best bookkeeping is skipped.
-        final int maxEdgesForCrossingCounts = 2000;
-        boolean trackCrossings = crossEdges.size() <= maxEdgesForCrossingCounts;
-
-        int bestCrossings = trackCrossings
-                ? countCrossings(crossEdges, tierOf, normalizedPositions(tiers))
-                : Integer.MAX_VALUE;
-        List<List<Node>> bestTiers = copyTiers(tiers);
-
-        for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
-            boolean downSweep = sweep % 2 == 0;
-
-            for (int ti = 0; ti < tiers.size(); ti++) {
-                int t = downSweep ? ti : tiers.size() - 1 - ti;
-                List<Node> tier = tiers.get(t);
-                if (tier.size() < 2) continue;
-
-                Map<Node, Double> pos = normalizedPositions(tiers);
-                Map<Node, Double> key = new HashMap<>();
-
-                for (Node n : tier) {
-                    List<Node> nbrs = downSweep ? upNbrs.get(n) : downNbrs.get(n);
-
-                    if (nbrs.isEmpty()) {
-                        nbrs = new ArrayList<>(upNbrs.get(n));
-                        nbrs.addAll(downNbrs.get(n));
-                    }
-
-                    if (nbrs.isEmpty()) {
-                        key.put(n, pos.get(n));
-                    } else {
-                        double s = 0.0;
-                        for (Node m : nbrs) s += pos.get(m);
-                        key.put(n, s / nbrs.size());
-                    }
-                }
-
-                tier.sort(Comparator.comparingDouble(key::get));
-            }
-
-            if (trackCrossings) {
-                int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
-
-                if (c < bestCrossings) {
-                    bestCrossings = c;
-                    bestTiers = copyTiers(tiers);
-                }
-            }
-        }
-
-        if (trackCrossings) {
-            tiers = bestTiers;
-        }
+        // Order each tier to reduce edge crossings; see orderTiers.
+        TierOrder order = orderTiers(graph, allNodes, tiers);
+        tiers = order.tiers();
+        Map<Node, Integer> tierOf = order.tierOf();
+        Map<Node, List<Node>> upNbrs = order.upNbrs();
+        Map<Node, List<Node>> downNbrs = order.downNbrs();
+        List<Node[]> crossEdges = order.crossEdges();
+        Map<Node, List<Integer>> edgesAt = order.edgesAt();
+        boolean trackCrossings = order.trackCrossings();
 
         // Coordinate assignment: pack each tier by real widths, then pull
         // nodes toward the mean x of their neighbors, preserving order and
@@ -1020,7 +1262,22 @@ public class LayoutUtil {
             }
         }
 
+        // The ordering above counts crossings with every layer spread over
+        // the same width; now that the nodes have their coordinates, an edge
+        // spanning several layers may cross other edges than it did there.
+        if (trackCrossings) {
+            transposeByCoordinates(tiers, crossEdges, edgesAt, tierOf, x, size);
+        }
+
         if (nudge) {
+            nudgeOffEdgeLines(tiers, tierOf, crossEdges, x, size, xGap);
+        }
+
+        // The nudge moves nodes, which can open exchanges that reduce the
+        // crossings further; and an exchange can put a node back on an edge
+        // line, so nudge once more afterwards.
+        if (trackCrossings && nudge) {
+            transposeByCoordinates(tiers, crossEdges, edgesAt, tierOf, x, size);
             nudgeOffEdgeLines(tiers, tierOf, crossEdges, x, size, xGap);
         }
 
@@ -1054,6 +1311,165 @@ public class LayoutUtil {
 
             placeIsolatedGrid(isolated, size, maxRight + 2 * xGap, xGap);
         }
+    }
+
+    /**
+     * Orders the nodes within each of the given rows to reduce the crossings of the edges between rows, by the
+     * ordering step of Richard's layout (see {@link #orderTiers(Graph, List, List)}). Edges within a row are not
+     * counted. The given lists are not changed.
+     *
+     * @param graph the graph; every node in the rows must be one of its nodes.
+     * @param rows  the rows, top first.
+     * @return the rows, reordered, as new lists.
+     */
+    public static List<List<Node>> orderRowsToReduceCrossings(Graph graph, List<List<Node>> rows) {
+        List<List<Node>> copies = new ArrayList<>();
+        for (List<Node> row : rows) copies.add(new ArrayList<>(row));
+        return orderTiers(graph, graph.getNodes(), copies).tiers();
+    }
+
+    /**
+     * The result of {@link #orderTiers(Graph, List, List)}: the reordered tiers, and the bookkeeping built for
+     * them, which Richard's layout goes on to use.
+     */
+    private record TierOrder(List<List<Node>> tiers, Map<Node, Integer> tierOf, Map<Node, List<Node>> upNbrs,
+                             Map<Node, List<Node>> downNbrs, List<Node[]> crossEdges,
+                             Map<Node, List<Integer>> edgesAt, boolean trackCrossings) {
+    }
+
+    /**
+     * Orders the nodes within each tier to reduce the crossings of the edges between tiers: alternating down and
+     * up barycenter sweeps, twice from the same start, the second time with the transpose step after each sweep,
+     * keeping the ordering with the fewest crossings seen. Crossings are counted with every tier spread over the
+     * same width, which is exact for edges between neighboring tiers. This is the ordering step of Richard's
+     * layout (see {@link #richardsLayout(Graph, NodeSize, double, double, double, boolean)}), also used by the
+     * causal order layout.
+     *
+     * @param graph    the graph.
+     * @param allNodes the nodes of the graph.
+     * @param tiers    the tiers, in their starting order; the lists may be reordered.
+     * @return the ordered tiers and the bookkeeping built for them.
+     */
+    private static TierOrder orderTiers(Graph graph, List<Node> allNodes, List<List<Node>> tiers) {
+        Map<Node, Integer> tierOf = new HashMap<>();
+        for (int t = 0; t < tiers.size(); t++) {
+            for (Node n : tiers.get(t)) tierOf.put(n, t);
+        }
+
+        // Neighbor lists over all edges that connect different tiers. Every
+        // edge type votes in the ordering; only the tier assignment above is
+        // restricted to the directed structure.
+        Map<Node, List<Node>> upNbrs = new HashMap<>();
+        Map<Node, List<Node>> downNbrs = new HashMap<>();
+        for (Node n : allNodes) {
+            upNbrs.put(n, new ArrayList<>());
+            downNbrs.put(n, new ArrayList<>());
+        }
+
+        List<Node[]> crossEdges = new ArrayList<>();
+
+        for (Edge e : graph.getEdges()) {
+            Node a = e.getNode1();
+            Node b = e.getNode2();
+            Integer ta = tierOf.get(a);
+            Integer tb = tierOf.get(b);
+            if (ta == null || tb == null || ta.intValue() == tb.intValue()) continue;
+            Node hi = ta < tb ? a : b;
+            Node lo = ta < tb ? b : a;
+            downNbrs.get(hi).add(lo);
+            upNbrs.get(lo).add(hi);
+            crossEdges.add(new Node[]{hi, lo});
+        }
+
+        // Barycenter sweeps; keep the ordering with the fewest crossings.
+        // Crossing counting is O(E^2), so above this many cross-tier edges
+        // the sweeps still run but the keep-best bookkeeping, and the
+        // transpose step that depends on counting, are skipped.
+        final int maxEdgesForCrossingCounts = 2000;
+        boolean trackCrossings = crossEdges.size() <= maxEdgesForCrossingCounts;
+
+        // The cross-tier edges at each node, by index into crossEdges, for the
+        // transpose step: exchanging two nodes changes only crossings that
+        // involve an edge at one of them.
+        Map<Node, List<Integer>> edgesAt = new HashMap<>();
+        for (Node n : allNodes) edgesAt.put(n, new ArrayList<>());
+
+        for (int i = 0; i < crossEdges.size(); i++) {
+            edgesAt.get(crossEdges.get(i)[0]).add(i);
+            edgesAt.get(crossEdges.get(i)[1]).add(i);
+        }
+
+        int bestCrossings = trackCrossings
+                ? countCrossings(crossEdges, tierOf, normalizedPositions(tiers))
+                : Integer.MAX_VALUE;
+        List<List<Node>> bestTiers = copyTiers(tiers);
+        List<List<Node>> startTiers = copyTiers(tiers);
+
+        // Two runs of the sweeps from the same start, the second with the
+        // transpose step after each sweep. The transpose step usually ends
+        // lower, but it also changes the ordering the next sweep starts from,
+        // and on some graphs that path ends higher; the best over both runs
+        // is never worse than the sweeps alone. Without crossing counts
+        // there is no transpose step and nothing to choose by, so one run.
+        for (int run = 0; run < (trackCrossings ? 2 : 1); run++) {
+            boolean transpose = run == 1;
+            if (run > 0) tiers = copyTiers(startTiers);
+
+            for (int sweep = 0; sweep < 12 && bestCrossings > 0; sweep++) {
+                boolean downSweep = sweep % 2 == 0;
+
+                for (int ti = 0; ti < tiers.size(); ti++) {
+                    int t = downSweep ? ti : tiers.size() - 1 - ti;
+                    List<Node> tier = tiers.get(t);
+                    if (tier.size() < 2) continue;
+
+                    Map<Node, Double> pos = normalizedPositions(tiers);
+                    Map<Node, Double> key = new HashMap<>();
+
+                    for (Node n : tier) {
+                        List<Node> nbrs = downSweep ? upNbrs.get(n) : downNbrs.get(n);
+
+                        if (nbrs.isEmpty()) {
+                            nbrs = new ArrayList<>(upNbrs.get(n));
+                            nbrs.addAll(downNbrs.get(n));
+                        }
+
+                        if (nbrs.isEmpty()) {
+                            key.put(n, pos.get(n));
+                        } else {
+                            double s = 0.0;
+                            for (Node m : nbrs) s += pos.get(m);
+                            key.put(n, s / nbrs.size());
+                        }
+                    }
+
+                    tier.sort(Comparator.comparingDouble(key::get));
+                }
+
+                // The barycenter sort does not look at crossings, so it can leave
+                // a layer where exchanging two neighbors would remove some (ties
+                // in the barycenter, above all). Exchange adjacent nodes while
+                // that strictly reduces the count.
+                if (transpose) {
+                    transposeTiers(tiers, crossEdges, edgesAt, tierOf);
+                }
+
+                if (trackCrossings) {
+                    int c = countCrossings(crossEdges, tierOf, normalizedPositions(tiers));
+
+                    if (c < bestCrossings) {
+                        bestCrossings = c;
+                        bestTiers = copyTiers(tiers);
+                    }
+                }
+            }
+        }
+
+        if (trackCrossings) {
+            tiers = bestTiers;
+        }
+
+        return new TierOrder(tiers, tierOf, upNbrs, downNbrs, crossEdges, edgesAt, trackCrossings);
     }
 
     /**
@@ -1092,9 +1508,12 @@ public class LayoutUtil {
      * intermediate layer, the node is pushed sideways until the line
      * clears its box. For each node, the forbidden horizontal intervals
      * from all such edge lines crossing its row are merged, and the node
-     * moves to the nearest point outside their union; a tie between sides
-     * is broken by the parity of the layer, which staggers chains whose
-     * skip edges would otherwise be drawn on top of them. After each round
+     * moves to one end of the block it sits in: the end at which its own
+     * edges cross fewer other edges, then, on a tie, the nearer end, then,
+     * on a tie, the end given by the parity of the layer, which staggers
+     * chains whose skip edges would otherwise be drawn on top of them.
+     * (With more cross-layer edges than crossings are counted for, only the
+     * last two rules apply.) After each round
      * of moves, within-layer order and minimum separation are re-imposed,
      * and the process repeats until there are no violations or the round
      * limit is reached, so clearance is best effort in crowded regions.
@@ -1102,6 +1521,20 @@ public class LayoutUtil {
     private static void nudgeOffEdgeLines(List<List<Node>> tiers, Map<Node, Integer> tierOf,
                                           List<Node[]> crossEdges, Map<Node, Double> x,
                                           NodeSize size, double xGap) {
+        // The cross-layer edges at each node, for choosing the side of a push by crossings. Counting is skipped
+        // above the same edge limit as in the ordering stage.
+        final int maxEdgesForCrossingCounts = 2000;
+        Map<Node, List<Integer>> edgesAt = null;
+
+        if (crossEdges.size() <= maxEdgesForCrossingCounts) {
+            edgesAt = new HashMap<>();
+
+            for (int i = 0; i < crossEdges.size(); i++) {
+                edgesAt.computeIfAbsent(crossEdges.get(i)[0], k -> new ArrayList<>()).add(i);
+                edgesAt.computeIfAbsent(crossEdges.get(i)[1], k -> new ArrayList<>()).add(i);
+            }
+        }
+
         for (int round = 0; round < 12; round++) {
             Map<Node, List<double[]>> forbidden = new HashMap<>();
 
@@ -1167,7 +1600,20 @@ public class LayoutUtil {
                     double moveRight = right - xv;
                     double target;
 
-                    if (Math.abs(moveLeft - moveRight) < 1e-9) {
+                    // The side at which the node's own edges cross fewer other edges, if that can be counted
+                    // and differs between the sides. Pushed to the wrong side, a node clears the lines through
+                    // its row only to have every one of its edges cross them.
+                    int crossLeft = -1;
+                    int crossRight = -1;
+
+                    if (edgesAt != null && edgesAt.containsKey(v)) {
+                        crossLeft = crossingsAtX(v, left, crossEdges, edgesAt, tierOf, x);
+                        crossRight = crossingsAtX(v, right, crossEdges, edgesAt, tierOf, x);
+                    }
+
+                    if (crossLeft != crossRight) {
+                        target = crossLeft < crossRight ? left : right;
+                    } else if (Math.abs(moveLeft - moveRight) < 1e-9) {
                         target = (t % 2 == 0) ? right : left;
                     } else {
                         target = moveLeft < moveRight ? left : right;
@@ -1308,6 +1754,186 @@ public class LayoutUtil {
     }
 
     /**
+     * The number of crossings the edges at v would have with the other cross-layer edges if v were at the given
+     * x, with the other nodes where they are: straight edges in (x, tier) space, pairs sharing an endpoint not
+     * counted. The position map is left as it was.
+     */
+    private static int crossingsAtX(Node v, double xv, List<Node[]> crossEdges, Map<Node, List<Integer>> edgesAt,
+                                    Map<Node, Integer> tierOf, Map<Node, Double> x) {
+        Double saved = x.get(v);
+        x.put(v, xv);
+        int count = 0;
+
+        try {
+            for (int i : edgesAt.get(v)) {
+                Node[] e1 = crossEdges.get(i);
+
+                for (int j = 0; j < crossEdges.size(); j++) {
+                    if (j == i) continue;
+                    Node[] e2 = crossEdges.get(j);
+
+                    if (e1[0] == e2[0] || e1[0] == e2[1] || e1[1] == e2[0] || e1[1] == e2[1]) {
+                        continue;
+                    }
+
+                    if (segmentsCross(x.get(e1[0]), tierOf.get(e1[0]), x.get(e1[1]), tierOf.get(e1[1]),
+                            x.get(e2[0]), tierOf.get(e2[0]), x.get(e2[1]), tierOf.get(e2[1]))) {
+                        count++;
+                    }
+                }
+            }
+        } finally {
+            x.put(v, saved);
+        }
+
+        return count;
+    }
+
+    /**
+     * The transpose step: for each tier, walks the adjacent pairs and exchanges
+     * the two nodes whenever that strictly reduces the number of crossings,
+     * repeating over the tier until a full walk makes no exchange. Only the
+     * crossings that involve an edge at one of the two nodes can change, so
+     * those are what is counted, before and after the exchange, with straight
+     * edges in (normalized position, tier) space as in countCrossings. The
+     * tiers are modified in place.
+     */
+    private static void transposeTiers(List<List<Node>> tiers, List<Node[]> crossEdges,
+                                       Map<Node, List<Integer>> edgesAt, Map<Node, Integer> tierOf) {
+        // Walks over one tier are capped, so a pathological tier cannot run
+        // away; in practice a tier settles in a few walks.
+        final int maxWalksPerTier = 20;
+
+        for (List<Node> tier : tiers) {
+            if (tier.size() < 2) continue;
+
+            for (int walk = 0; walk < maxWalksPerTier; walk++) {
+                boolean improved = false;
+
+                for (int i = 0; i + 1 < tier.size(); i++) {
+                    Node u = tier.get(i);
+                    Node v = tier.get(i + 1);
+
+                    // Nothing can change if neither node has a cross-tier edge.
+                    if (edgesAt.get(u).isEmpty() && edgesAt.get(v).isEmpty()) continue;
+
+                    Map<Node, Double> pos = normalizedPositions(tiers);
+                    int before = crossingsInvolving(u, v, crossEdges, edgesAt, tierOf, pos);
+
+                    double pu = pos.get(u);
+                    pos.put(u, pos.get(v));
+                    pos.put(v, pu);
+                    int after = crossingsInvolving(u, v, crossEdges, edgesAt, tierOf, pos);
+
+                    if (after < before) {
+                        tier.set(i, v);
+                        tier.set(i + 1, u);
+                        improved = true;
+                    }
+                }
+
+                if (!improved) break;
+            }
+        }
+    }
+
+    /**
+     * The transpose step again, on the coordinates the nodes have been given
+     * rather than on their ranks within their tiers. The ordering stage draws
+     * every tier across the same width, which is exact for edges between
+     * neighboring tiers (they cross according to order alone) but not for an
+     * edge spanning several tiers, whose crossings depend on where the nodes
+     * actually are. Here the tiers are walked down and then up, repeatedly;
+     * two neighbors in a tier exchange places, keeping the stretch of the row
+     * the two of them occupy, whenever that strictly reduces the number of
+     * crossings of straight edges in (x, tier) space, until a full round
+     * over all tiers makes no exchange. The tiers and x are modified in
+     * place.
+     */
+    private static void transposeByCoordinates(List<List<Node>> tiers, List<Node[]> crossEdges,
+                                               Map<Node, List<Integer>> edgesAt, Map<Node, Integer> tierOf,
+                                               Map<Node, Double> x, NodeSize size) {
+        // Each exchange lowers the total count, so the rounds end on their
+        // own; the cap is a guard.
+        final int maxRounds = 20;
+
+        for (int round = 0; round < maxRounds; round++) {
+            boolean improved = false;
+            boolean down = round % 2 == 0;
+
+            for (int ti = 0; ti < tiers.size(); ti++) {
+                List<Node> tier = tiers.get(down ? ti : tiers.size() - 1 - ti);
+
+                for (int i = 0; i + 1 < tier.size(); i++) {
+                    Node u = tier.get(i);
+                    Node v = tier.get(i + 1);
+
+                    if (edgesAt.get(u).isEmpty() && edgesAt.get(v).isEmpty()) continue;
+
+                    int before = crossingsInvolving(u, v, crossEdges, edgesAt, tierOf, x);
+
+                    double xu = x.get(u);
+                    double xv = x.get(v);
+                    double left = xu - size.width(u) / 2.0;
+                    double right = xv + size.width(v) / 2.0;
+
+                    x.put(v, left + size.width(v) / 2.0);
+                    x.put(u, right - size.width(u) / 2.0);
+
+                    if (crossingsInvolving(u, v, crossEdges, edgesAt, tierOf, x) < before) {
+                        tier.set(i, v);
+                        tier.set(i + 1, u);
+                        improved = true;
+                    } else {
+                        x.put(u, xu);
+                        x.put(v, xv);
+                    }
+                }
+            }
+
+            if (!improved) break;
+        }
+    }
+
+    /**
+     * Counts the crossings among pairs of cross-tier edges of which at least
+     * one has u or v as an endpoint, each pair once.
+     */
+    private static int crossingsInvolving(Node u, Node v, List<Node[]> crossEdges,
+                                          Map<Node, List<Integer>> edgesAt, Map<Node, Integer> tierOf,
+                                          Map<Node, Double> pos) {
+        List<Integer> involved = new ArrayList<>(edgesAt.get(u));
+        for (int i : edgesAt.get(v)) if (!involved.contains(i)) involved.add(i);
+
+        Set<Integer> involvedSet = new HashSet<>(involved);
+        int count = 0;
+
+        for (int i : involved) {
+            Node[] e1 = crossEdges.get(i);
+
+            for (int j = 0; j < crossEdges.size(); j++) {
+                if (j == i) continue;
+
+                // A pair of involved edges is seen from both sides; count it from one.
+                if (involvedSet.contains(j) && j < i) continue;
+
+                Node[] e2 = crossEdges.get(j);
+
+                if (e1[0] == e2[0] || e1[0] == e2[1] || e1[1] == e2[0] || e1[1] == e2[1]) {
+                    continue;
+                }
+
+                if (segmentsCross(pos.get(e1[0]), tierOf.get(e1[0]), pos.get(e1[1]), tierOf.get(e1[1]),
+                        pos.get(e2[0]), tierOf.get(e2[0]), pos.get(e2[1]), tierOf.get(e2[1]))) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    /**
      * Counts proper crossings between straight-line edges drawn in
      * (normalized position, tier) space. Edges sharing an endpoint do not
      * cross. O(E^2), fine at presentation scale.
@@ -1369,7 +1995,7 @@ public class LayoutUtil {
         }
 
         if (sourceGraph == null) {
-            defaultLayout(resultGraph);
+            defaultLayoutConditional(resultGraph);
             return true;
         }
 
@@ -1641,7 +2267,7 @@ public class LayoutUtil {
          * Lays out the graph.
          */
         public void doLayout() {
-            defaultLayout(this.graph);
+            seedLayoutConditional(this.graph);
 
             // Default to SwingProgressListener for backward compatibility.
             if (this.progressListener == null) {
@@ -1830,141 +2456,165 @@ public class LayoutUtil {
             }
         }
 
+        /**
+         * Settles the nodes one at a time: the node with the largest energy
+         * gradient is moved until its gradient is at most the cutoff, then
+         * the next, until every node's gradient is at most the cutoff.
+         * <p>
+         * A node is moved by Newton's method where the energy is locally
+         * convex in the node's position and down the gradient where it is
+         * not, and a move is shortened until it lowers the energy. So the
+         * energy falls with every move, and the settling cannot go round in
+         * a cycle, as unguarded Newton steps can where the energy is not
+         * convex. A node that cannot be moved to lower the energy is set
+         * aside until some other node has moved. The number of moves is
+         * capped as a last guard.
+         */
         private void optimize(double deltaCutoff) {
             NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
+            int n = getComponentNodes().size();
             double initialMaxDelta = -1.;
-            double maxDelta;
-            final int jump = 100;
-            Matrix a = new Matrix(2, 2);
-            Matrix b = new Matrix(2, 1);
-            int oldM = -1;
+            boolean[] stuck = new boolean[n];
+            int movesLeft = 200 * n + 1000;
 
-            do {
+            while (true) {
                 if (this.progressListener.isCanceled()) {
                     return;
                 }
 
-                int[] m = new int[1];
-                maxDelta = maxDelta(m);
+                // The node with the largest gradient among those not set aside.
+                int m = -1;
+                double maxDelta = Double.NEGATIVE_INFINITY;
+
+                for (int i = 0; i < n; i++) {
+                    if (stuck[i]) {
+                        continue;
+                    }
+
+                    double delta = delta(i);
+
+                    if (delta > maxDelta) {
+                        maxDelta = delta;
+                        m = i;
+                    }
+                }
+
+                if (m == -1 || maxDelta <= deltaCutoff) {
+                    return;
+                }
 
                 if (initialMaxDelta == -1) {
                     initialMaxDelta = maxDelta;
                 }
 
-                if (m[0] == oldM) {
-                    this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
-                            2 * jump) - jump;
-                    this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
-                            2 * jump) - jump;
-                    continue;
-                }
-
-                oldM = m[0];
-
                 int progress =
                         (int) (99.0 - 98.0 * maxDelta / (0.5 * initialMaxDelta));
+
                 if (progress < 1) {
                     progress = 1;
                 }
+
                 if (progress > 99) {
                     progress = 99;
                 }
+
                 this.progressListener.onProgress(progress,
                         "Energy = " + nf.format(maxDelta));
 
-                if (m[0] == -1) {
-                    throw new IllegalStateException();
-                }
+                boolean moved = false;
 
-                double oldDelta = Double.NaN;
-                double delta;
-
-                while ((delta = delta(m[0])) > deltaCutoff) {
-                    Thread.yield();
-                    if (this.progressListener.isCanceled()) {
+                while (delta(m) > deltaCutoff) {
+                    if (this.progressListener.isCanceled() || movesLeft-- <= 0) {
                         return;
                     }
 
-                    if (TMath.abs(delta - oldDelta) < 0.001) {
-                        this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
-                                2 * jump) - jump;
-                        this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
-                                2 * jump) - jump;
-                        continue;
+                    if (!moveToLowerEnergy(m)) {
+                        break;
                     }
 
-                    double partialXX = secondPartial(m[0], 0, 0);
-                    double partialXY = secondPartial(m[0], 0, 1);
-                    double partialX = firstPartial(m[0], 0);
-                    double partialYY = secondPartial(m[0], 1, 1);
-                    double partialY = firstPartial(m[0], 1);
-
-                    a.set(0, 0, partialXX);
-                    a.set(0, 1, partialXY);
-                    a.set(1, 0, partialXY);
-                    a.set(1, 1, partialYY);
-
-                    b.set(0, 0, -partialX);
-                    b.set(1, 0, -partialY);
-
-                    Matrix c;
-
-                    try {
-                        c = new Matrix(a.getSimpleMatrix().solve(
-                                b.getSimpleMatrix()));
-                    } catch (Exception e) {
-                        this.p[m[0]][0] += RandomUtil.getInstance().nextInt(
-                                2 * jump) - jump;
-                        this.p[m[0]][1] += RandomUtil.getInstance().nextInt(
-                                2 * jump) - jump;
-                        continue;
-                    }
-
-                    double dx = c.get(0, 0);
-                    double dy = c.get(1, 0);
-
-                    this.p[m[0]][0] += dx;
-                    this.p[m[0]][1] += dy;
-
-                    oldDelta = delta;
+                    moved = true;
                 }
-            } while (maxDelta > deltaCutoff);
+
+                if (moved) {
+                    Arrays.fill(stuck, false);
+                }
+
+                // Still above the cutoff: it could not be moved further.
+                if (delta(m) > deltaCutoff) {
+                    stuck[m] = true;
+                }
+            }
         }
 
-        private double energy() {
-            int n = this.p.length;
+        /**
+         * Moves node m once so as to lower the energy: by the Newton step if
+         * the energy is convex in the node's position there, otherwise down
+         * the gradient by a comparable distance; the step is halved until
+         * the energy is lower than where it started.
+         *
+         * @return true if the node was moved; false if no step along that
+         * direction lowers the energy, in which case it is left where it was.
+         */
+        private boolean moveToLowerEnergy(int m) {
+            double gx = firstPartial(m, 0);
+            double gy = firstPartial(m, 1);
+            double hxx = secondPartial(m, 0, 0);
+            double hxy = secondPartial(m, 0, 1);
+            double hyy = secondPartial(m, 1, 1);
+            double det = hxx * hyy - hxy * hxy;
+
+            double dx;
+            double dy;
+
+            if (hxx > 0.0 && det > 1e-12) {
+                dx = -(hyy * gx - hxy * gy) / det;
+                dy = -(hxx * gy - hxy * gx) / det;
+            } else {
+                double scale = Math.max(Math.max(Math.abs(hxx), Math.abs(hyy)), 1e-6);
+                dx = -gx / scale;
+                dy = -gy / scale;
+            }
+
+            double x = this.p[m][0];
+            double y = this.p[m][1];
+            double energy = nodeEnergy(m);
+
+            for (int halving = 0; halving < 30; halving++) {
+                this.p[m][0] = x + dx;
+                this.p[m][1] = y + dy;
+
+                if (nodeEnergy(m) < energy) {
+                    return true;
+                }
+
+                dx /= 2.0;
+                dy /= 2.0;
+            }
+
+            this.p[m][0] = x;
+            this.p[m][1] = y;
+            return false;
+        }
+
+        /**
+         * The energy of the springs at node m. The other springs do not
+         * depend on where node m is, so differences of this are differences
+         * of the total energy as node m moves.
+         */
+        private double nodeEnergy(int m) {
             double sum = 0.0;
 
-            for (int i = 0; i < n - 1; i++) {
-                for (int j = i + 1; j < n; j++) {
-                    sum += 0.5 * this.k[i][j]
-                            * TMath.pow(distance(i, j) - this.l[i][j], 2.0);
+            for (int j = 0; j < this.p.length; j++) {
+                if (j == m) {
+                    continue;
                 }
+
+                sum += 0.5 * this.k[m][j]
+                        * TMath.pow(distance(m, j) - this.l[m][j], 2.0);
             }
 
             return sum;
-        }
-
-        private double maxDelta(int[] index) {
-            double maxDelta = Double.NEGATIVE_INFINITY;
-            int m = -1;
-
-            for (int i = 0; i < getComponentNodes().size(); i++) {
-                double delta = delta(i);
-
-                if (delta == Double.NEGATIVE_INFINITY) {
-                    throw new IllegalStateException();
-                }
-
-                if (delta > maxDelta) {
-                    maxDelta = delta;
-                    m = i;
-                }
-            }
-
-            index[0] = m;
-            return maxDelta;
         }
 
         private double delta(int i) {
@@ -1981,10 +2631,10 @@ public class LayoutUtil {
             double storedCoord = this.p[i][var];
 
             this.p[i][var] -= FIRST_PARTIAL_H;
-            double energy1 = energy();
+            double energy1 = nodeEnergy(i);
 
             this.p[i][var] += 2.0 * FIRST_PARTIAL_H;
-            double energy2 = energy();
+            double energy2 = nodeEnergy(i);
 
             this.p[i][var] = storedCoord;
             return (energy2 - energy1) / (2.0 * FIRST_PARTIAL_H);
@@ -1999,17 +2649,17 @@ public class LayoutUtil {
 
             this.p[m][i] += SECOND_PARTIAL_H;
             this.p[m][j] += SECOND_PARTIAL_H;
-            double ff1 = energy();
+            double ff1 = nodeEnergy(m);
 
             this.p[m][j] -= 2 * SECOND_PARTIAL_H;
-            double ff2 = energy();
+            double ff2 = nodeEnergy(m);
 
             this.p[m][i] -= 2 * SECOND_PARTIAL_H;
             this.p[m][j] += 2 * SECOND_PARTIAL_H;
-            double ff3 = energy();
+            double ff3 = nodeEnergy(m);
 
             this.p[m][j] -= 2 * SECOND_PARTIAL_H;
-            double ff4 = energy();
+            double ff4 = nodeEnergy(m);
 
             this.p[m][0] = storedX;
             this.p[m][1] = storedY;
@@ -2085,6 +2735,14 @@ public class LayoutUtil {
      * Lays out a graph by linearly summing repulsive force between all nodes
      * and attractive force between adjacent nodes.  Includes a linear cooling
      * schedule and early termination when the layout stabilizes.
+     * <p>
+     * Two departures from the textbook forces keep edge lengths even. Each
+     * node repels in proportion to the square root of its degree plus one, so
+     * a leaf is pushed less than a hub; and each edge's pull is divided by the
+     * square root of the smaller degree of its two endpoints, so edges inside
+     * densely connected regions relax while an edge to a leaf keeps its full
+     * strength. A final pass separates any node boxes that still overlap, and
+     * components are packed in rows under the largest one.
      *
      * @author josephramsey
      */
@@ -2139,6 +2797,32 @@ public class LayoutUtil {
          */
         private double leftmostX = -50.;
 
+        /**
+         * Gap in pixels kept between node boxes by the overlap pass.
+         */
+        private static final double BOX_GAP = 12.0;
+
+        /**
+         * Gap in pixels between components, across and down.
+         */
+        private static final double COMPONENT_GAP = 100.0;
+
+        /**
+         * Top of the current row of components.
+         */
+        private double rowTop = 40.;
+
+        /**
+         * Bottom of the current row of components.
+         */
+        private double rowBottom = 40.;
+
+        /**
+         * The x position past which a component wraps to a new row; negative
+         * until the first (largest) component has been placed.
+         */
+        private double rowLimit = -1.;
+
         //==============================CONSTRUCTORS===========================//
 
         /**
@@ -2160,7 +2844,7 @@ public class LayoutUtil {
          * Lays out the graph.
          */
         public void doLayout() {
-            defaultLayout(this.graph);
+            seedLayoutConditional(this.graph);
 
             List<List<Node>> components =
                     this.graph.paths().connectedComponents();
@@ -2171,8 +2855,12 @@ public class LayoutUtil {
                 return Integer.compare(i2, i1);
             });
 
+            this.leftmostX = -50.;
+            this.rowTop = 40.;
+            this.rowBottom = 40.;
+            this.rowLimit = -1.;
+
             for (List<Node> component1 : components) {
-                components.sort(NaturalSort.naturalComparator());
                 layoutComponent(component1);
             }
         }
@@ -2204,6 +2892,36 @@ public class LayoutUtil {
                 this.edges()[i][1] = u;
             }
 
+            // Degrees within the component, with parallel edges collapsed.
+            int[] degree = new int[numNodes];
+
+            for (int[] edge : this.edges()) {
+                degree[edge[0]]++;
+                degree[edge[1]]++;
+            }
+
+            // Repulsive charge sqrt(degree + 1), scaled to average one.
+            double[] charge = new double[numNodes];
+            double meanCharge = 0.0;
+
+            for (int v = 0; v < numNodes; v++) {
+                charge[v] = TMath.sqrt(degree[v] + 1.0);
+                meanCharge += charge[v] / numNodes;
+            }
+
+            for (int v = 0; v < numNodes; v++) {
+                charge[v] /= meanCharge;
+            }
+
+            // An edge's pull is divided by sqrt of its smaller end degree.
+            double[] edgeSlack = new double[edgeList.size()];
+
+            for (int j = 0; j < edgeList.size(); j++) {
+                edgeSlack[j] = TMath.sqrt(Math.min(
+                        degree[this.edges()[j][0]],
+                        degree[this.edges()[j][1]]));
+            }
+
             double avgDegree = 2 * this.graph.getNumEdges()
                     / (double) this.graph.getNumNodes();
 
@@ -2225,11 +2943,20 @@ public class LayoutUtil {
 
                         double norm = norm(deltaX, deltaY);
 
-                        if (norm == 0.0) {
-                            norm = 0.1;
+                        if (u == v) {
+                            continue;
                         }
 
-                        double repulsiveForce = fr(norm);
+                        if (norm == 0.0) {
+
+                            // Coincident nodes: separate them in a fixed
+                            // direction, opposite for the two nodes.
+                            norm = 0.1;
+                            deltaX = u > v ? 0.1 : -0.1;
+                        }
+
+                        double repulsiveForce =
+                                fr(norm) * charge[u] * charge[v];
 
                         nodeDisposition()[v][0] +=
                                 (deltaX / norm) * repulsiveForce;
@@ -2254,7 +2981,7 @@ public class LayoutUtil {
                         norm = 0.1;
                     }
 
-                    double attractiveForce = fa(norm);
+                    double attractiveForce = fa(norm) / edgeSlack[j];
                     double attractX = (deltaX / norm) * attractiveForce;
                     double attractY = (deltaY / norm) * attractiveForce;
 
@@ -2310,26 +3037,91 @@ public class LayoutUtil {
                 }
             }
 
+            removeOverlaps(nodes);
             shiftComponentToRight(nodes);
+        }
+
+        /**
+         * Pushes apart any two nodes whose estimated boxes, padded by
+         * BOX_GAP, overlap, along whichever axis needs the smaller move.
+         */
+        private void removeOverlaps(List<Node> componentNodes) {
+            NodeSize size = estimatedNodeSize();
+            int numNodes = componentNodes.size();
+
+            for (int pass = 0; pass < 200; pass++) {
+                boolean moved = false;
+
+                for (int i = 0; i < numNodes; i++) {
+                    for (int j = i + 1; j < numNodes; j++) {
+                        double w = (size.width(componentNodes.get(i))
+                                + size.width(componentNodes.get(j))) / 2.
+                                + BOX_GAP;
+                        double h = (size.height(componentNodes.get(i))
+                                + size.height(componentNodes.get(j))) / 2.
+                                + BOX_GAP;
+                        double deltaX =
+                                nodePosition()[j][0] - nodePosition()[i][0];
+                        double deltaY =
+                                nodePosition()[j][1] - nodePosition()[i][1];
+                        double overlapX = w - Math.abs(deltaX);
+                        double overlapY = h - Math.abs(deltaY);
+
+                        if (overlapX <= 0.0 || overlapY <= 0.0) {
+                            continue;
+                        }
+
+                        moved = true;
+
+                        if (overlapX / w < overlapY / h) {
+                            double shift = (deltaX >= 0 ? 1 : -1)
+                                    * overlapX / 2.;
+                            nodePosition()[i][0] -= shift;
+                            nodePosition()[j][0] += shift;
+                        } else {
+                            double shift = (deltaY >= 0 ? 1 : -1)
+                                    * overlapY / 2.;
+                            nodePosition()[i][1] -= shift;
+                            nodePosition()[j][1] += shift;
+                        }
+                    }
+                }
+
+                if (!moved) {
+                    break;
+                }
+            }
         }
 
         private void shiftComponentToRight(List<Node> componentNodes) {
             double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+            double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
 
             for (int i = 0; i < componentNodes.size(); i++) {
-                if (nodePosition()[i][0] < minX) {
-                    minX = nodePosition()[i][0];
-                }
-                if (nodePosition()[i][1] < minY) {
-                    minY = nodePosition()[i][1];
-                }
+                minX = Math.min(minX, nodePosition()[i][0]);
+                minY = Math.min(minY, nodePosition()[i][1]);
+                maxX = Math.max(maxX, nodePosition()[i][0]);
+                maxY = Math.max(maxY, nodePosition()[i][1]);
             }
 
-            this.leftmostX = leftmostX() + 100.;
+            this.leftmostX = leftmostX() + COMPONENT_GAP;
+
+            // Components come largest first; the first sets the row width,
+            // and later ones wrap to a new row rather than run past it.
+            if (this.rowLimit < 0.) {
+                this.rowLimit = Math.max(leftmostX() + (maxX - minX), 800.);
+            } else if (leftmostX() > 50.
+                    && leftmostX() + (maxX - minX) > this.rowLimit) {
+                this.leftmostX = 50.;
+                this.rowTop = this.rowBottom + COMPONENT_GAP;
+            }
+
+            this.rowBottom = Math.max(this.rowBottom,
+                    this.rowTop + (maxY - minY));
 
             for (int i = 0; i < componentNodes.size(); i++) {
                 nodePosition()[i][0] += leftmostX() - minX;
-                nodePosition()[i][1] += 40.0 - minY;
+                nodePosition()[i][1] += this.rowTop - minY;
             }
 
             for (int i = 0; i < componentNodes.size(); i++) {

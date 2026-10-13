@@ -44,6 +44,10 @@ public class TestAlgorithmChooserLogic {
         return AlgorithmChooserLogic.allModels();
     }
 
+    private static List<String> names(List<AlgorithmModel> list) {
+        return list.stream().map(m -> m.getAlgorithm().annotation().name()).toList();
+    }
+
     private static boolean has(List<AlgorithmModel> list, String name) {
         return list.stream().anyMatch(m -> name.equals(m.getAlgorithm().annotation().name()));
     }
@@ -59,51 +63,57 @@ public class TestAlgorithmChooserLogic {
 
     @Test
     public void experimentalHiddenByDefaultAndShownOnRequest() {
-        List<AlgorithmModel> hidden = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false, ANY);
+        List<AlgorithmModel> hidden = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH, ANY);
         for (AlgorithmModel m : hidden) {
             assertFalse(m.getName(), m.getAlgorithm().clazz().isAnnotationPresent(Experimental.class));
         }
-        List<AlgorithmModel> shown = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false,
+        List<AlgorithmModel> shown = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH,
                 new Answers(LatentChoice.ANY, false, false, true, null));
         assertTrue(shown.size() > hidden.size());
     }
 
     @Test
     public void latentAnswerSelectsTheFamily() {
-        List<AlgorithmModel> no = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false,
+        List<AlgorithmModel> no = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH,
                 ANY.withLatent(LatentChoice.NO));
-        List<AlgorithmModel> yes = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false,
+        List<AlgorithmModel> yes = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH,
                 ANY.withLatent(LatentChoice.YES));
         assertFalse(no.isEmpty());
         assertFalse(yes.isEmpty());
         for (AlgorithmModel m : no) {
             assertEquals(m.getName(), AlgType.forbid_latent_common_causes, m.getAlgorithm().annotation().algoType());
         }
+        // YES takes the possibility of latents seriously, so it holds both the PAG family and the algorithms that
+        // find latent variables directly from the data (2026-10-11).
         for (AlgorithmModel m : yes) {
-            assertEquals(m.getName(), AlgType.allow_latent_common_causes, m.getAlgorithm().annotation().algoType());
+            AlgType t = m.getAlgorithm().annotation().algoType();
+            assertTrue(m.getName(), t == AlgType.allow_latent_common_causes
+                                    || t == AlgType.search_for_structure_over_latents);
         }
         assertTrue(has(no, "BOSS"));
         assertTrue(has(no, "FGES"));
         assertTrue(has(no, "PC"));
         assertTrue(has(yes, "FCI"));
         assertTrue(has(yes, "GFCI"));
+        assertTrue(has(yes, "RLCD"));
         assertFalse(has(yes, "BOSS"));
         assertFalse(has(no, "FCI"));
+        assertFalse(has(no, "RLCD"));
     }
 
     @Test
     public void anyShowsEveryFamilyIncludingMarkovBlanketAndPairwise() {
-        List<AlgorithmModel> any = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false, ANY);
+        List<AlgorithmModel> any = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH, ANY);
         assertTrue(any.stream().anyMatch(m -> m.getAlgorithm().annotation().algoType() == AlgType.search_for_Markov_blankets));
         assertTrue(any.stream().anyMatch(m -> m.getAlgorithm().annotation().algoType() == AlgType.orient_pairwise));
-        List<AlgorithmModel> no = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false, ANY.withLatent(LatentChoice.NO));
-        List<AlgorithmModel> yes = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false, ANY.withLatent(LatentChoice.YES));
+        List<AlgorithmModel> no = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH, ANY.withLatent(LatentChoice.NO));
+        List<AlgorithmModel> yes = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH, ANY.withLatent(LatentChoice.YES));
         assertTrue(any.size() >= no.size() + yes.size());
     }
 
     @Test
     public void timeSeriesFacetKeepsOnlyTimeSeriesAlgorithms() {
-        List<AlgorithmModel> ts = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false, ANY.withTimeSeries(true));
+        List<AlgorithmModel> ts = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH, ANY.withTimeSeries(true));
         for (AlgorithmModel m : ts) {
             assertTrue(m.getName(), m.getAlgorithm().clazz().isAnnotationPresent(TimeSeries.class));
         }
@@ -111,8 +121,8 @@ public class TestAlgorithmChooserLogic {
 
     @Test
     public void knowledgeFacetNarrowsButKeepsKnowledgeTakers() {
-        List<AlgorithmModel> any = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false, ANY);
-        List<AlgorithmModel> know = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false, ANY.withKnowledge(true));
+        List<AlgorithmModel> any = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH, ANY);
+        List<AlgorithmModel> know = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH, ANY.withKnowledge(true));
         assertTrue(know.size() <= any.size());
         assertTrue(has(know, "PC"));
         assertTrue(has(know, "FGES"));
@@ -120,14 +130,14 @@ public class TestAlgorithmChooserLogic {
 
     @Test
     public void queryMatchesNameOrCommandCaseInsensitively() {
-        List<AlgorithmModel> boss = AlgorithmChooserLogic.filter(all(), DataType.Continuous, false,
+        List<AlgorithmModel> boss = AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH,
                 new Answers(LatentChoice.ANY, false, false, false, "BoSs"));
         assertFalse(boss.isEmpty());
         for (AlgorithmModel m : boss) {
             String n = (m.getAlgorithm().annotation().name() + " " + m.getAlgorithm().annotation().command()).toLowerCase();
             assertTrue(n, n.contains("boss"));
         }
-        assertEquals(boss.toString(), AlgorithmChooserLogic.filter(all(), DataType.Continuous, false,
+        assertEquals(boss.toString(), AlgorithmChooserLogic.filter(all(), DataType.Continuous, AlgorithmChooserLogic.BoxMode.SEARCH,
                 new Answers(LatentChoice.ANY, false, false, false, "  boss ")).toString());
     }
 
@@ -151,7 +161,7 @@ public class TestAlgorithmChooserLogic {
         assertTrue(AlgorithmChooserLogic.fitsData(new DataType[]{DataType.All}, null));
         assertTrue(AlgorithmChooserLogic.fitsData(new DataType[]{DataType.Discrete}, DataType.All));
         // No data connected: only "All" algorithms, and there are some.
-        assertFalse(AlgorithmChooserLogic.filter(all(), null, false, ANY).isEmpty());
+        assertFalse(AlgorithmChooserLogic.filter(all(), null, AlgorithmChooserLogic.BoxMode.SEARCH, ANY).isEmpty());
     }
 
     @Test
@@ -193,5 +203,56 @@ public class TestAlgorithmChooserLogic {
         assertEquals("score", AlgorithmChooserLogic.needs(boss));
         assertEquals("test", AlgorithmChooserLogic.needs(pc));
         assertEquals("test + score", AlgorithmChooserLogic.needs(gfci));
+    }
+
+    @Test
+    public void latentAnswerDoesNotApplyInTheLatentStructureBox() {
+        // The Latent Structure box does not ask the latent-confounder question, so whatever answer is carried over
+        // from a Search box (NO by default) must leave its list as it is.
+        for (LatentChoice choice : LatentChoice.values()) {
+            Answers answers = new Answers(choice, false, false, false, null);
+
+            for (AlgorithmChooserLogic.BoxMode mode : List.of(AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA,
+                    AlgorithmChooserLogic.BoxMode.LATENTS_FROM_CLUSTERS)) {
+                // allModels() builds fresh AlgorithmModel objects on each call and AlgorithmModel has no equals,
+                // so compare the lists by name rather than by object identity.
+                assertEquals(names(AlgorithmChooserLogic.filter(all(), DataType.Continuous, mode, ANY)),
+                        names(AlgorithmChooserLogic.filter(all(), DataType.Continuous, mode, answers)));
+            }
+        }
+
+        assertTrue(has(AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA,
+                new Answers(LatentChoice.NO, false, false, false, null)), "RLCD"));
+    }
+
+    @Test
+    public void boxModesListTheRightFamilies() {
+        List<AlgorithmModel> search = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.SEARCH, ANY);
+        List<AlgorithmModel> fromData = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.LATENTS_FROM_DATA, ANY);
+        List<AlgorithmModel> fromClusters = AlgorithmChooserLogic.filter(all(), DataType.Continuous,
+                AlgorithmChooserLogic.BoxMode.LATENTS_FROM_CLUSTERS, ANY);
+
+        // The Search box with data alone lists every algorithm that runs on data alone (2026-10-11), including the
+        // ones that find latent variables directly from the data; only the cluster-requiring ones are excluded.
+        assertTrue(has(search, "BOSS"));
+        assertTrue(has(search, "RLCD"));
+        assertTrue(has(search, "Factor Analysis"));
+        assertFalse(has(search, "Mimbuild (Bollen)"));
+
+        // The legacy Latent Structure box with data alone lists the algorithms that find latents from data.
+        assertTrue(has(fromData, "RLCD"));
+        assertTrue(has(fromData, "Factor Analysis"));
+        assertFalse(has(fromData, "BOSS"));
+        assertFalse(has(fromData, "Mimbuild (Bollen)"));
+
+        // With clusters a box lists block-capable searches and the cluster-taking algorithms, not the data-only
+        // ones.
+        assertTrue(has(fromClusters, "BOSS"));
+        assertTrue(has(fromClusters, "Mimbuild (Bollen)"));
+        assertFalse(has(fromClusters, "RLCD"));
+        assertFalse(has(fromClusters, "Factor Analysis"));
     }
 }

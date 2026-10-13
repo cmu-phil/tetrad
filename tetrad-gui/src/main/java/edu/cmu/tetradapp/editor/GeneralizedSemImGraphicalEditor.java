@@ -161,7 +161,6 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
         String expressionString = this.semIm.getNodeSubstitutedString(node);
         if (expressionString == null) {
             workbench().setNodeLabel(node, null, 0, 0);
-            firePropertyChange("modelChanged", null, null);
             return;
         }
 
@@ -192,8 +191,6 @@ class GeneralizedSemImGraphicalEditor extends JPanel {
                 workbench().setNodeLabel(node, label, 0, 0);
             }
         }
-
-        firePropertyChange("modelChanged", null, null);
     }
 
     /**

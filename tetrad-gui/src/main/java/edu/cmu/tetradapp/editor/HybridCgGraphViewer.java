@@ -3,10 +3,12 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.hybridcg.HybridCgEdgeStrengths;
 import edu.cmu.tetrad.hybridcg.HybridCgEdgeStrengths.Kind;
 import edu.cmu.tetrad.hybridcg.HybridCgModel.HybridCgIm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import edu.cmu.tetradapp.workbench.WorkbenchStyle;
 
@@ -62,7 +64,9 @@ public final class HybridCgGraphViewer {
     /**
      * As {@link #update(HybridCgIm)}, additionally appending each edge's significance result (see
      * {@link edu.cmu.tetrad.hybridcg.HybridCgEdgeSignificance}) to its annotation, so the tooltip shows the LRT
-     * verdict alongside the strength.
+     * verdict alongside the strength. The node selection is carried across the update by variable name, so that
+     * recoloring for a re-estimate, a different data set, or a change of significance settings leaves the same
+     * variables selected.
      *
      * @param im  the instantiated model
      * @param sig per-edge significance results keyed by the edges of the model's graph, or null for strengths only
@@ -79,7 +83,19 @@ public final class HybridCgGraphViewer {
                 e.setAnnotation(a == null ? r.description() : a + " " + r.description());
             }
         }
+        // setGraph rebuilds the display nodes, which drops the selection; carry it across by name.
+        java.util.List<String> selected = new java.util.ArrayList<>();
+        for (DisplayNode displayNode : this.workbench.getSelectedNodes()) {
+            if (displayNode.getModelNode() != null) selected.add(displayNode.getModelNode().getName());
+        }
+
         this.workbench.setGraph(colored);
+
+        for (String name : selected) {
+            Node node = this.workbench.getGraph().getNode(name);
+            if (node != null) this.workbench.selectNode(node);
+        }
+
         setTooltips();
         this.component.revalidate();
         this.component.repaint();

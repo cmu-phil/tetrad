@@ -35,8 +35,9 @@ import java.util.Set;
 /**
  * Implements a pscudo-"score" that implmenets implements Chickering and Meek's (2002) locally consistent score
  * criterion. This is not a true score; rather, a -1 is returned in case mseparation holds and a 1 in case mseparation
- * does not hold. This is only meant to be used in the context of FGES, and allows the search to follow its path
- * prescribed by the locally consistent scoring criterion. For a reference to the latter, pleasee this article:
+ * does not hold. This is meant to be used in the context of FGES, where it allows the search to follow its path
+ * prescribed by the locally consistent scoring criterion, and in the context of BOSS and other searches built on
+ * GrowShrinkTree, which treat this class as an m-separation oracle. For a reference to the latter, pleasee this article:
  * <p>
  * Chickering (2002) "Optimal structure identification with greedy search" Journal of Machine Learning Research.
  * <p>

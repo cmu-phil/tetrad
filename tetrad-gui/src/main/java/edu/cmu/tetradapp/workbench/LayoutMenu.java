@@ -26,6 +26,9 @@ import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
 /**
  * Builds a menu for layout operations on graphs. Interacts with classes that implement the LayoutEditable interface.
@@ -46,13 +49,85 @@ public class LayoutMenu extends JMenu {
     private final CopyLayoutAction copyLayoutAction;
 
     /**
+     * The group of the check box items for the layouts that can be the default layout.
+     */
+    private final ButtonGroup defaultLayoutGroup = new ButtonGroup();
+
+    /**
+     * Those items, by layout.
+     */
+    private final java.util.Map<LayoutUtil.DefaultLayout, JCheckBoxMenuItem> defaultLayoutItems =
+            new java.util.EnumMap<>(LayoutUtil.DefaultLayout.class);
+
+    /**
      * <p>Constructor for LayoutMenu.</p>
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
     public LayoutMenu(LayoutEditable layoutEditable) {
+        this(layoutEditable, true);
+    }
+
+    /**
+     * <p>Constructor for LayoutMenu.</p>
+     *
+     * @param layoutEditable    a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     * @param synchronizeOnOpen True if constructing the menu should synchronize the layout with the layout it is
+     *                          inherited from, if that has not been done yet for this opening of the editor (see
+     *                          {@link TieLayoutMenu}). False for a menu built on demand, such as the workbench's
+     *                          right-click popup, where that would move the nodes under the user's hands.
+     */
+    public LayoutMenu(LayoutEditable layoutEditable, boolean synchronizeOnOpen) {
         super("Layout");
         this.layoutEditable = layoutEditable;
+
+        // Another menu may have changed the default since this one was built.
+        addMenuListener(new javax.swing.event.MenuListener() {
+            @Override
+            public void menuSelected(javax.swing.event.MenuEvent e) {
+                JCheckBoxMenuItem item = LayoutMenu.this.defaultLayoutItems.get(LayoutUtil.getDefaultLayout());
+                if (item != null) item.setSelected(true);
+            }
+
+            @Override
+            public void menuDeselected(javax.swing.event.MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(javax.swing.event.MenuEvent e) {
+            }
+        });
+
+        // Undo and redo for node positions, whatever changed them: a layout from this menu, a pasted or inherited
+        // layout, or dragging. Always enabled, since the accelerators must work without the menu having been opened
+        // to refresh them; with nothing to undo or redo they beep, as the graph editor's undo does.
+        JMenuItem undoLayout = new JMenuItem("Undo Layout Change");
+        undoLayout.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z,
+                InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+        add(undoLayout);
+
+        undoLayout.addActionListener(e -> {
+            AbstractWorkbench workbench = LayoutMenu.workbenchOf(getLayoutEditable());
+
+            if (workbench == null || !workbench.undoLayout()) {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        });
+
+        JMenuItem redoLayout = new JMenuItem("Redo Layout Change");
+        redoLayout.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y,
+                InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+        add(redoLayout);
+
+        redoLayout.addActionListener(e -> {
+            AbstractWorkbench workbench = LayoutMenu.workbenchOf(getLayoutEditable());
+
+            if (workbench == null || !workbench.redoLayout()) {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        });
+
+        addSeparator();
 
         if (layoutEditable.getGraph().isTimeLagModel()) {
 
@@ -121,8 +196,22 @@ public class LayoutMenu extends JMenu {
             this.addSeparator();
         }
 
+        // The layouts that can be the default layout, the one given to graphs that arrive without positions,
+        // are check box items in one group, with the current default checked. Choosing one lays out the graph
+        // and makes it the default, here and in later runs of Tetrad, even if its parameter dialog is then
+        // cancelled. Every Layout menu shows the same default; a menu built earlier is brought up to date when it
+        // is opened.
+        JCheckBoxMenuItem richardsLayout = defaultLayoutItem("Richard's Layout", LayoutUtil.DefaultLayout.RICHARDS);
+        this.add(richardsLayout);
 
-        JMenuItem circleLayout = new JMenuItem("Circle");
+        richardsLayout.addActionListener(e -> {
+            LayoutUtils.richardsLayout(LayoutMenu.this.getLayoutEditable());
+
+            // Copy the laid out graph to the clipboard.
+            getCopyLayoutAction().actionPerformed(null);
+        });
+
+        JCheckBoxMenuItem circleLayout = defaultLayoutItem("Circle", LayoutUtil.DefaultLayout.CIRCLE);
         this.add(circleLayout);
 
         circleLayout.addActionListener(e -> {
@@ -132,7 +221,7 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
-        JMenuItem squareLayout = new JMenuItem("Square");
+        JCheckBoxMenuItem squareLayout = defaultLayoutItem("Square", LayoutUtil.DefaultLayout.SQUARE);
         this.add(squareLayout);
 
         squareLayout.addActionListener(e -> {
@@ -143,7 +232,8 @@ public class LayoutMenu extends JMenu {
         });
 
 
-        JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");
+        JCheckBoxMenuItem fruchtermanReingold = defaultLayoutItem("Fruchterman-Reingold",
+                LayoutUtil.DefaultLayout.FRUCHTERMAN_REINGOLD);
         this.add(fruchtermanReingold);
 
         fruchtermanReingold.addActionListener(e -> {
@@ -175,22 +265,12 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
-        JMenuItem causalOrder = new JMenuItem("Causal Order");
+        JCheckBoxMenuItem causalOrder = defaultLayoutItem("Causal Order", LayoutUtil.DefaultLayout.CAUSAL_ORDER);
         this.add(causalOrder);
 
         causalOrder.addActionListener(e -> {
             LayoutEditable layoutEditable13 = LayoutMenu.this.getLayoutEditable();
             LayoutUtils.layoutByCausalOrder(layoutEditable13);
-
-            // Copy the laid out graph to the clipboard.
-            getCopyLayoutAction().actionPerformed(null);
-        });
-
-        JMenuItem richardsLayout = new JMenuItem("Richard's Layout");
-        this.add(richardsLayout);
-
-        richardsLayout.addActionListener(e -> {
-            LayoutUtils.richardsLayout(LayoutMenu.this.getLayoutEditable());
 
             // Copy the laid out graph to the clipboard.
             getCopyLayoutAction().actionPerformed(null);
@@ -222,7 +302,10 @@ public class LayoutMenu extends JMenu {
         addSeparator();
 
         add(new TieLayoutMenu(layoutEditable));
-        TieLayoutMenu.applyTieOnOpen(layoutEditable);
+
+        if (synchronizeOnOpen) {
+            TieLayoutMenu.applyTieOnOpen(layoutEditable);
+        }
 
         addSeparator();
 
@@ -231,8 +314,47 @@ public class LayoutMenu extends JMenu {
         add(new PasteLayoutAction(getLayoutEditable()));
     }
 
+    /**
+     * @return a check box item for a layout that can be the default layout, in this menu's group, checked if it is
+     * the default; choosing it makes it the default before its own action lays out the graph.
+     */
+    private JCheckBoxMenuItem defaultLayoutItem(String label, LayoutUtil.DefaultLayout choice) {
+        JCheckBoxMenuItem item = new JCheckBoxMenuItem(label);
+        item.setToolTipText("Lays out this graph, and makes this the layout for graphs that arrive without one.");
+        item.setSelected(LayoutUtil.getDefaultLayout() == choice);
+        item.addActionListener(e -> LayoutUtils.setDefaultLayout(choice));
+        this.defaultLayoutGroup.add(item);
+        this.defaultLayoutItems.put(choice, item);
+        return item;
+    }
+
     private LayoutEditable getLayoutEditable() {
         return this.layoutEditable;
+    }
+
+    /**
+     * @return the workbench that displays the graph of the given layout editable, or null if there is none. The
+     * editors that implement LayoutEditable each wrap a workbench in their own way; the display nodes they hand out
+     * are children of it. Looked up when needed, since an editor may replace its workbench.
+     */
+    private static AbstractWorkbench workbenchOf(LayoutEditable layoutEditable) {
+        if (layoutEditable instanceof AbstractWorkbench workbench) {
+            return workbench;
+        }
+
+        java.util.Map<edu.cmu.tetrad.graph.Node, Object> displayNodes = layoutEditable.getModelNodesToDisplay();
+
+        if (displayNodes == null) {
+            return null;
+        }
+
+        for (Object displayNode : displayNodes.values()) {
+            if (displayNode instanceof Component component) {
+                return (AbstractWorkbench) SwingUtilities.getAncestorOfClass(AbstractWorkbench.class, component);
+            }
+        }
+
+        return null;
     }
 
     private CopyLayoutAction getCopyLayoutAction() {

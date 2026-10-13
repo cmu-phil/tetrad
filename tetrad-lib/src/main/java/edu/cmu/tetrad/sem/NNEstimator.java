@@ -117,9 +117,49 @@ public final class NNEstimator implements TetradSerializable {
      * @param params       tuning parameters for the NN and adequacy assessment
      */
     public NNEstimator(DataSet observedData, Graph dag, NNEstimatorParams params) {
-        this.observedData = Objects.requireNonNull(observedData, "observedData");
-        this.dag = GraphUtils.replaceNodes(Objects.requireNonNull(dag, "dag"), observedData.getVariables());
+        Objects.requireNonNull(observedData, "observedData");
+        Objects.requireNonNull(dag, "dag");
+        this.observedData = restrictToGraph(observedData, dag);
+        this.dag = GraphUtils.replaceNodes(dag, this.observedData.getVariables());
         this.params = Objects.requireNonNull(params, "params");
+    }
+
+    /**
+     * Restricts a dataset to the columns named by the nodes of a graph, in the dataset's column order, so that a
+     * graph over a subset of the dataset's variables can be estimated. Returns the dataset itself if every column
+     * is in the graph.
+     *
+     * @param data  the dataset
+     * @param graph the graph, all of whose nodes must name columns of the dataset
+     * @return the dataset restricted to the graph's variables
+     * @throws IllegalArgumentException if some node of the graph names no column of the dataset
+     */
+    public static DataSet restrictToGraph(DataSet data, Graph graph) {
+        List<String> absent = new ArrayList<>();
+        Set<String> inGraph = new HashSet<>();
+
+        for (Node node : graph.getNodes()) {
+            inGraph.add(node.getName());
+            if (data.getVariable(node.getName()) == null) absent.add(node.getName());
+        }
+
+        if (!absent.isEmpty()) {
+            throw new IllegalArgumentException("The graph has variables that are not in the data: " + absent);
+        }
+
+        List<Node> variables = data.getVariables();
+        int[] keep = new int[inGraph.size()];
+        int m = 0;
+
+        for (int j = 0; j < variables.size(); j++) {
+            if (inGraph.contains(variables.get(j).getName())) keep[m++] = j;
+        }
+
+        if (m == variables.size()) return data;
+
+        DataSet subset = data.subsetColumns(Arrays.copyOf(keep, m));
+        subset.setName(data.getName());
+        return subset;
     }
 
     // ── public API ───────────────────────────────────────────────────────────

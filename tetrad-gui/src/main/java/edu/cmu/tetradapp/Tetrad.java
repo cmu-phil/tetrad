@@ -85,7 +85,6 @@ public final class Tetrad implements PropertyChangeListener {
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * Launches Tetrad as an application. One way to launch Tetrad IV as an application is the following:&gt; 0
      * <pre>java -jar jarname.jar</pre>
      * <p>
      * where "jarname.jar" is a jar containing all the classes of Tetrad IV, properly compiled, along with all the
@@ -110,6 +109,9 @@ public final class Tetrad implements PropertyChangeListener {
 
         // This is needed to get numbers to be parsed and rendered uniformly, especially in the interface.
         Locale.setDefault(Locale.US);
+
+        // The layout given to graphs that arrive without positions, as last chosen in a Layout menu.
+        edu.cmu.tetradapp.workbench.LayoutUtils.applyStoredDefaultLayout();
 
         // Check if we should skip checking for the latest version
         SplashScreen.show("Loading Tetrad...", 1000);

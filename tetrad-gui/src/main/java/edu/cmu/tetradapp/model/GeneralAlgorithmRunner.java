@@ -24,6 +24,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ExtraLatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
@@ -32,14 +33,18 @@ import edu.cmu.tetrad.algcomparison.score.BlockScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.MSepScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.PoolsImputations;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
+import edu.cmu.tetrad.search.blocks.BlocksUtil;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
@@ -77,7 +82,20 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * The graph list.
      */
     List<Graph> graphList = new ArrayList<>();
+    /**
+     * The results of the previous search in this box, kept only as a layout reference for the next one when the
+     * session recreates the runner (see the copy constructor); otherwise the reference is graphList itself. Not
+     * saved with the session, which saves graphList.
+     */
+    private transient List<Graph> layoutReference;
     BlockSpec blockSpec = null;
+    /**
+     * The upstream Latent Clusters runner, non-null only when this search box was given a Latent Clusters box as a
+     * parent. When present, {@link #execute()} refreshes the {@link BlockSpec} from it before the search and appends
+     * the measurement edges (each block's latent to its indicators) to the result, as the Latent Structure box did.
+     * Added 2026-10-11; absent from sessions saved earlier, which read it as null (serialVersionUID is pinned).
+     */
+    private LatentClustersRunner latentClustersRunner;
     /**
      * The data model.
      */
@@ -117,6 +135,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private long elapsedTime = -1L;
 
     /**
+     * Which of the result graphs is the one this runner hands to downstream boxes (see getGraph()). Chosen by
+     * selecting a result in the search editor; reset to the first result when a search is run.
+     */
+    private int selectedResultIndex = 0;
+
+    /**
      * <p>Constructor for GeneralAlgorithmRunner.</p>
      *
      * @param runner     a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
@@ -132,6 +156,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         this.parameters = parameters;
 
         this.userAlgoSelections.putAll(runner.userAlgoSelections);
+
+        // The previous results are the layout reference for the next search, so the layout survives the session
+        // recreating this box (e.g. on Execute after an upstream change). They are not this runner's results.
+        if (runner.graphList != null && !runner.graphList.isEmpty()) {
+            this.layoutReference = new ArrayList<>(runner.graphList);
+        }
     }
 
     //===========================CONSTRUCTORS===========================//
@@ -173,6 +203,84 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters)
             throws ParseException {
         this(dataWrapper, graphSource, parameters, null, null);
+    }
+
+    /**
+     * Constructs a search-box runner over data and supplied clusters: the upstream {@link BlockSpec} is handed to
+     * block-aware tests, scores, and algorithms, and the measurement edges are appended to the result. The chooser
+     * lists the algorithms that can take such a configuration (see
+     * {@link edu.cmu.tetradapp.editor.search.AlgorithmChooserLogic.BoxMode#LATENTS_FROM_CLUSTERS}).
+     *
+     * @param dataWrapper          the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the Latent Clusters parent providing the upstream BlockSpec; must not be null
+     * @param parameters           parameters for the session node
+     * @throws ParseException if any.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, LatentClustersRunner latentClustersRunner,
+                                  Parameters parameters) throws ParseException {
+        this(dataWrapper, null, parameters, null, null);
+        this.latentClustersRunner = Objects.requireNonNull(latentClustersRunner, "ClustersRunner required");
+        this.blockSpec = latentClustersRunner.getBlockSpec();
+    }
+
+    /**
+     * Constructs a search-box runner over data, supplied clusters, and knowledge.
+     *
+     * @param dataWrapper          the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the Latent Clusters parent providing the upstream BlockSpec; must not be null
+     * @param knowledgeBoxModel    the knowledge box
+     * @param parameters           parameters for the session node
+     * @throws ParseException if any.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, LatentClustersRunner latentClustersRunner,
+                                  KnowledgeBoxModel knowledgeBoxModel, Parameters parameters) throws ParseException {
+        this(dataWrapper, null, parameters, knowledgeBoxModel, null);
+        this.latentClustersRunner = Objects.requireNonNull(latentClustersRunner, "ClustersRunner required");
+        this.blockSpec = latentClustersRunner.getBlockSpec();
+    }
+
+    /**
+     * Constructs a search-box runner over data and supplied clusters, taking its algorithm and chooser selections
+     * from the previous runner of this box, if it had any.
+     *
+     * @param dataWrapper          the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the Latent Clusters parent providing the upstream BlockSpec; must not be null
+     * @param runner               the previous runner of this box
+     * @param parameters           parameters for the session node
+     * @throws ParseException if any.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, LatentClustersRunner latentClustersRunner,
+                                  GeneralAlgorithmRunner runner, Parameters parameters) throws ParseException {
+        this(dataWrapper, latentClustersRunner, parameters);
+        if (runner != null && runner.getAlgorithm() != null) {
+            this.algorithm = runner.getAlgorithm();
+        }
+        if (runner != null) {
+            this.userAlgoSelections.putAll(runner.userAlgoSelections);
+        }
+    }
+
+    /**
+     * Constructs a search-box runner over data, supplied clusters, and knowledge, taking its algorithm and chooser
+     * selections from the previous runner of this box, if it had any.
+     *
+     * @param dataWrapper          the data wrapper containing the dataset to be used
+     * @param latentClustersRunner the Latent Clusters parent providing the upstream BlockSpec; must not be null
+     * @param runner               the previous runner of this box
+     * @param knowledgeBoxModel    the knowledge box
+     * @param parameters           parameters for the session node
+     * @throws ParseException if any.
+     */
+    public GeneralAlgorithmRunner(DataWrapper dataWrapper, LatentClustersRunner latentClustersRunner,
+                                  GeneralAlgorithmRunner runner, KnowledgeBoxModel knowledgeBoxModel,
+                                  Parameters parameters) throws ParseException {
+        this(dataWrapper, latentClustersRunner, knowledgeBoxModel, parameters);
+        if (runner != null && runner.getAlgorithm() != null) {
+            this.algorithm = runner.getAlgorithm();
+        }
+        if (runner != null) {
+            this.userAlgoSelections.putAll(runner.userAlgoSelections);
+        }
     }
 
     /**
@@ -352,8 +460,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         this.parameters = parameters;
 
-        if (graphSource instanceof GeneralAlgorithmRunner) {
-            this.algorithm = ((GeneralAlgorithmRunner) graphSource).getAlgorithm();
+        if (graphSource instanceof GeneralAlgorithmRunner parent) {
+            this.algorithm = parent.getAlgorithm();
+
+            // A search box whose only parent is a search box searches that box's data, with its result as the
+            // source graph (set below).
+            if (dataWrapper == null) dataWrapper = parent.getDataWrapper();
         }
 
         if (dataWrapper != null) {
@@ -438,11 +550,34 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      */
     @Override
     public void execute() {
+        // Clusters-parent mode (Search box with a Latent Clusters parent): re-fetch the BlockSpec from the parent,
+        // since the clusters may have been re-run or edited since this runner was built, and validate it against
+        // this box's data before anything runs.
+        if (this.latentClustersRunner != null) {
+            BlockSpec spec = this.latentClustersRunner.getBlockSpec();
+
+            if (spec == null) {
+                throw new IllegalStateException("No BlockSpec is available. Run a clustering algorithm first and/or "
+                        + "click Apply in the blocks editor.");
+            }
+
+            DataModel specDataModel = resolveSpecDataModel(spec, getDataModel());
+            BlocksUtil.validateBlocks(spec.blocks(), spec.dataSet());
+            ensureSpecMatchesRunnerData(spec, specDataModel);
+            setBlockSpec(spec);
+        }
+
         long start = System.currentTimeMillis();
+
+        // The results of the previous search in this box, for laying out the new ones; see the layout pass below.
+        List<Graph> previous = !this.graphList.isEmpty() ? new ArrayList<>(this.graphList)
+                : this.layoutReference != null ? this.layoutReference : new ArrayList<>();
+        this.layoutReference = null;
 
         this.graphList.clear();
         this.resultNames.clear();
         this.graphSubtitle.clear();
+        this.selectedResultIndex = 0;
 
         if (this.independenceTests != null) {
             this.independenceTests.clear();
@@ -487,6 +622,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 ((TakesGraph) algo).setGraph(this.sourceGraph);
             }
 
+            // An algorithm that takes an external graph (FASK, the pairwise orientation algorithms) is given the source
+            // graph afresh at every run. The algorithm object is carried over from one run to the next, and the external
+            // graph it was built with may be stale, or absent if the source graph was not known when it was built.
+            if (algo instanceof TakesExternalGraph && this.sourceGraph != null) {
+                ((TakesExternalGraph) algo).setExternalGraph(new SingleGraphAlg(this.sourceGraph));
+            }
+
             if (this.algorithm instanceof AcceptsKnowledge) {
                 Knowledge knowledge1 = TsUtils.getKnowledge(getSourceGraph());
                 if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
@@ -498,14 +640,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
             Graph graph;
             try {
-                graph = algo.search(null, this.parameters);
-                graphSubtitle.put(graph, null);
+                graph = GraphUtils.detachNodes(algo.search(null, this.parameters));
                 resultNames.add("Oracle Result");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            LayoutUtil.defaultLayout(graph);
             graphList.add(graph);
             graphSubtitle.put(graph, "");
         }
@@ -537,6 +677,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         ((TakesGraph) algo).setGraph(this.sourceGraph);
                     }
 
+                    // An algorithm that takes an external graph (FASK, the pairwise orientation algorithms) is given the source
+                    // graph afresh at every run. The algorithm object is carried over from one run to the next, and the external
+                    // graph it was built with may be stale, or absent if the source graph was not known when it was built.
+                    if (algo instanceof TakesExternalGraph && this.sourceGraph != null) {
+                        ((TakesExternalGraph) algo).setExternalGraph(new SingleGraphAlg(this.sourceGraph));
+                    }
+
                     if (this.algorithm instanceof AcceptsKnowledge) {
                         // Prefer knowledge supplied via a Knowledge box; otherwise pass along the
                         // knowledge carried by the data sets (knowledge1, stamped from the first
@@ -551,12 +698,40 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     }
 
                     try {
-                        graphList.add(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
-                        graphSubtitle.put(graphList.getLast(), noteForAggregate(sub));
+                        Graph graph = GraphUtils.detachNodes(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
+                        graphList.add(graph);
+                        graphSubtitle.put(graph, noteForAggregate(sub));
                         resultNames.add("Multi-dataset Algorithm");
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
+                }
+            }
+            // ----- 2A') Imputations: several imputations of one data set, ONE search, when requested -----
+            // Not 2B' below: imputations share their observed values, so they are not pooled as independent data
+            // sets; the algorithm combines each of its tests over them. See PoolsImputations.
+            else if (dataModelList.size() > 1 && algo instanceof PoolsImputations poolsImputations
+                     && this.parameters.getBoolean(Params.POOL_IMPUTATIONS, false)) {
+                if (knowledge == null) {
+                    Knowledge knowledgeFromData = dataModelList.getFirst().getKnowledge();
+                    if (knowledgeFromData != null && !knowledgeFromData.getVariables().isEmpty()) {
+                        this.knowledge = knowledgeFromData;
+                    }
+                }
+
+                if (this.algorithm instanceof AcceptsKnowledge && this.knowledge != null) {
+                    ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                }
+
+                try {
+                    Graph graph = GraphUtils.detachNodes(poolsImputations.searchImputations(
+                            new ArrayList<>(dataModelList), this.parameters));
+                    graphList.add(graph);
+                    // Not noteForAggregate: its total sample size would count each row once per imputation.
+                    graphSubtitle.put(graph, "pooled over " + dataModelList.size() + " imputations");
+                    resultNames.add("Pooled (" + dataModelList.size() + " imputations)");
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
             // ----- 2B') Pooled search: several data sets, ONE search (IMaGES-style), when requested -----
@@ -599,6 +774,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                     ((TakesGraph) algo).setGraph(this.sourceGraph);
                 }
 
+                // An algorithm that takes an external graph (FASK, the pairwise orientation algorithms) is given the source
+                // graph afresh at every run. The algorithm object is carried over from one run to the next, and the external
+                // graph it was built with may be stale, or absent if the source graph was not known when it was built.
+                if (algo instanceof TakesExternalGraph && this.sourceGraph != null) {
+                    ((TakesExternalGraph) algo).setExternalGraph(new SingleGraphAlg(this.sourceGraph));
+                }
+
                 if (this.algorithm instanceof AcceptsKnowledge && this.knowledge != null) {
                     ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                 }
@@ -622,8 +804,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                 try {
                     // Passing the DataModelList itself is the request to pool; see
                     // AbstractBootstrapAlgorithm.searchPooled.
-                    Graph graph = algo.search(dataModelList, this.parameters);
-                    LayoutUtil.defaultLayout(graph);
+                    Graph graph = GraphUtils.detachNodes(algo.search(dataModelList, this.parameters));
                     graphList.add(graph);
                     graphSubtitle.put(graph, noteForAggregate(dataModelList));
                     resultNames.add("Pooled (" + dataModelList.size() + " data sets)");
@@ -634,8 +815,24 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             // ----- 2B) Standard algorithms: run once PER DATASET and collect graphs -----
             else { // NEW
                 // (Removed the old single-dataset assertion; now we iterate all datasets.)
-                for (int i = 0; i < dataModelList.size(); i++) {
-                    DataModel data = dataModelList.get(i);
+
+                // In blocks mode (a BlockSpec is present; the Latent Structure box with a Latent Clusters parent),
+                // the block-aware scores and tests are built from the BlockSpec's own data set and ignore the data
+                // model handed to each run, so running once per data model would produce identical copies of one
+                // result. With several data models (for example, several imputations of one data set), run ONCE,
+                // on the BlockSpec's data set.
+                List<DataModel> modelsToRun;
+                boolean collapsedToSpecData = this.blockSpec != null && dataModelList.size() > 1;
+
+                if (collapsedToSpecData) {
+                    modelsToRun = new ArrayList<>();
+                    modelsToRun.add(this.blockSpec.dataSet());
+                } else {
+                    modelsToRun = new ArrayList<>(dataModelList);
+                }
+
+                for (int i = 0; i < modelsToRun.size(); i++) {
+                    DataModel data = modelsToRun.get(i);
 
                     if (knowledge == null) {
 
@@ -673,6 +870,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         ((TakesGraph) algo).setGraph(this.sourceGraph);
                     }
 
+                    // An algorithm that takes an external graph (FASK, the pairwise orientation algorithms) is given the source
+                    // graph afresh at every run. The algorithm object is carried over from one run to the next, and the external
+                    // graph it was built with may be stale, or absent if the source graph was not known when it was built.
+                    if (algo instanceof TakesExternalGraph && this.sourceGraph != null) {
+                        ((TakesExternalGraph) algo).setExternalGraph(new SingleGraphAlg(this.sourceGraph));
+                    }
+
                     if (this.algorithm instanceof AcceptsKnowledge) {
                         ((AcceptsKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
                     }
@@ -694,10 +898,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     Graph graph;
                     try {
-                        graph = algo.search(data, this.parameters);
-                        LayoutUtil.defaultLayout(graph);
+                        graph = GraphUtils.detachNodes(algo.search(data, this.parameters));
                         graphList.add(graph);
-                        graphSubtitle.put(graph, noteFor(data));
+                        graphSubtitle.put(graph, noteFor(data) + (collapsedToSpecData
+                                ? "; the clusters' data set, one of " + dataModelList.size() + " in the data box"
+                                : ""));
 
                         // Name = dataset/covariance name, if present
                         String nm = data.getName() != null ? data.getName() : "Result" + (i + 1);
@@ -713,24 +918,150 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             this.elapsedTime = stop - start;
         }
 
-        // Final layout pass. Lagged (time-series) graphs are ALWAYS laid out by lag index - current slice at the
-        // bottom, earlier lags in rows above - whether the lag came from the algorithm's timeLag parameter or from
-        // pre-lagged data, and whether or not knowledge tiers are present: the knowledge here is the user's base
-        // (unlagged) knowledge, so laying a lagged graph out by its tiers misplaces or drops the lagged nodes, and
-        // the default layout hides the lag structure, which is the main thing a time-series graph is for. (This pass
-        // previously overwrote the by-index layout the bootstrap base class had already applied.) Other graphs are
-        // laid out by knowledge tiers if any, else by the default layout.
-        for (Graph graph : graphList) {
+        // Layout pass. Each result above was detached (GraphUtils.detachNodes), so its nodes are its own: it holds
+        // no positions from anywhere else, and the positions the workbench writes to it reach nothing else. The
+        // results of a search used to be built on the data set's variable objects, which every box on that data
+        // shares, so with the conditional default layout a box inherited the layout of whichever box on the same
+        // data had laid out last, however different its graph. Fixed 2026-10-5.
+        //
+        // Lagged (time-series) graphs are ALWAYS laid out by lag index - current slice at the bottom, earlier lags
+        // in rows above - whether the lag came from the algorithm's timeLag parameter or from pre-lagged data, and
+        // whether or not knowledge tiers are present: the knowledge here is the user's base (unlagged) knowledge, so
+        // laying a lagged graph out by its tiers misplaces or drops the lagged nodes, and the default layout hides
+        // the lag structure, which is the main thing a time-series graph is for.
+        //
+        // Any other result is arranged like the corresponding result of the previous search in this box, when that
+        // covers all of its nodes, so that searching again (other settings, another algorithm) keeps the layout the
+        // user has in this box; failing that, like the source graph, when there is one and it covers all of the
+        // nodes, so that a search run against a known graph lines up with it; failing that, it is left unpositioned
+        // and the workbench lays it out, with the real label sizes, when it is first shown.
+        for (int i = 0; i < graphList.size(); i++) {
+            Graph graph = graphList.get(i);
+
             if (LayoutUtil.isLaggedGraph(graph)) {
                 LayoutUtil.layoutByKnowledgeIndices(graph);
-            } else if (knowledge != null && knowledge.getNumTiers() > 0) {
-                LayoutUtil.layoutByKnowledgeTiers(graph, knowledge);
-            } else {
-                LayoutUtil.defaultLayout(graph);
+                continue;
+            }
+
+            Graph reference = previous.isEmpty() ? null : previous.get(Math.min(i, previous.size() - 1));
+
+            if (reference != null && LayoutUtil.arrangeBySourceGraph(graph, reference)) {
+                continue;
+            }
+
+            if (this.sourceGraph != null && LayoutUtil.arrangeBySourceGraph(graph, this.sourceGraph)) {
+                continue;
+            }
+
+            // A partial match above may have positioned some nodes; clear them so the workbench lays out the whole
+            // graph rather than treating it as positioned.
+            for (Node node : graph.getNodes()) {
+                node.setCenter(-1, -1);
+            }
+        }
+
+        // Clusters-parent mode: append the measurement edges to the selected result and collapse the result list to
+        // that one graph, exactly as the Latent Structure box does.
+        if (this.latentClustersRunner != null) {
+            Graph graph = getGraph();
+
+            if (graph != null) {
+                attachMeasurementEdges(getBlockSpec(), graph);
+                LayoutUtil.fruchtermanReingoldLayout(graph);
+                this.graphList.clear();
+                this.graphList.add(graph);
             }
         }
 
 //        this.graphList = graphList;
+    }
+
+    /**
+     * Checks that the spec's data set is the runner's data, by identity or, failing that, by variable names.
+     *
+     * @param spec       the upstream block spec.
+     * @param runnerData the data model the search will run on.
+     * @throws IllegalStateException if they do not match.
+     */
+    static void ensureSpecMatchesRunnerData(BlockSpec spec, DataModel runnerData) {
+        if (spec.dataSet() == runnerData) return; // exact same object
+
+        // Fallback: compare by variable names and count
+        List<String> specNames = spec.dataSet().getVariableNames();
+        List<String> runNames = runnerData.getVariableNames();
+
+        if (specNames.size() != runNames.size() || !specNames.equals(runNames)) {
+            throw new IllegalStateException(
+                    "BlockSpec dataset does not match the runner's dataset. " +
+                            "Ensure the clusters were derived from the same data used for this search node.");
+        }
+    }
+
+    /**
+     * Picks, from the data handed to this box, the data model the upstream clusters were derived from. With a single
+     * data model it must be the spec's data set; with several (for example, several imputations of one data set from
+     * the Impute Missing Values box), the spec's data set must be among them--the clusters box ran on one member of
+     * the same list.
+     *
+     * @param spec  the upstream block spec.
+     * @param model the data model this runner was given: a single model, or a {@link edu.cmu.tetrad.data.DataModelList}.
+     * @return the member the spec was derived from.
+     * @throws IllegalStateException if the spec's data set is not (among) the given data.
+     */
+    static DataModel resolveSpecDataModel(BlockSpec spec, DataModel model) {
+        if (model instanceof DataModelList list) {
+            for (DataModel member : list) {
+                if (member == spec.dataSet() || spec.dataSet().equals(member)) {
+                    return member;
+                }
+            }
+
+            throw new IllegalStateException("The data given to this box holds " + list.size() + " data sets, and "
+                    + "the supplied latent clusters were not derived from any of them. Make sure this box and the "
+                    + "Latent Clusters box share the same data parent, and re-run the clusters if the data has "
+                    + "changed.");
+        }
+
+        if (model == spec.dataSet() || spec.dataSet().equals(model)) {
+            return model;
+        }
+
+        throw new IllegalStateException("The dataset for the supplied latent clusters is not the " +
+                "dataset given as a parent to this box.");
+    }
+
+    /**
+     * Appends the measurement edges of the spec--each block's latent (or block variable) directed into each of its
+     * indicators--to the given result graph, adding any missing nodes.
+     *
+     * @param spec  the upstream block spec.
+     * @param graph the result graph of the search over the block variables.
+     */
+    static void attachMeasurementEdges(BlockSpec spec, Graph graph) {
+        for (int i = 0; i < spec.blocks().size(); i++) {
+            // Use the graph's own node objects. The search may return latents that are equal to (same name
+            // and type) but not identical to the BlockSpec's nodes, and Edge.getDistalNode compares by identity,
+            // so an edge built from a non-identical node yields null adjacents.
+            Node specVar = spec.blockVariables().get(i);
+            Node var = graph.getNode(specVar.getName());
+
+            if (var == null) {
+                graph.addNode(specVar);
+                var = specVar;
+            }
+
+            for (int j : spec.blocks().get(i)) {
+                Node specNode2 = spec.dataSet().getVariables().get(j);
+                Node node2 = graph.getNode(specNode2.getName());
+
+                if (node2 == null) {
+                    graph.addNode(specNode2);
+                    node2 = specNode2;
+                }
+
+                graph.addDirectedEdge(var, node2);
+            }
+        }
     }
 
     public String getGraphSubtitle(Graph g, int indexHint) {
@@ -1103,8 +1434,41 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         if (this.graphList == null || this.graphList.isEmpty()) {
             return null;
         } else {
-            return this.graphList.getFirst();
+            return this.graphList.get(getSelectedResultIndex());
         }
+    }
+
+    /**
+     * The index of the result graph that getGraph() returns, and so the one downstream boxes analyze.
+     *
+     * @return the index, always within the list of results (0 if there are none)
+     */
+    public int getSelectedResultIndex() {
+        int size = this.graphList == null ? 0 : this.graphList.size();
+        if (this.selectedResultIndex < 0 || this.selectedResultIndex >= size) return 0;
+        return this.selectedResultIndex;
+    }
+
+    /**
+     * Sets which result graph getGraph() returns. Downstream boxes that were built from the previous selection
+     * are not changed by this call; they need to be re-executed.
+     *
+     * @param index the index of the result
+     */
+    public void setSelectedResultIndex(int index) {
+        this.selectedResultIndex = index;
+    }
+
+    /**
+     * The name of the selected result, as shown on its tab in the search editor.
+     *
+     * @return the name, or null if the search has at most one result, in which case there is nothing to say
+     */
+    public String getSelectedResultName() {
+        if (this.graphList == null || this.graphList.size() < 2) return null;
+        int index = getSelectedResultIndex();
+        if (this.resultNames != null && index < this.resultNames.size()) return this.resultNames.get(index);
+        return "Result " + (index + 1);
     }
 
     /**
@@ -1117,6 +1481,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
     public void setResultGraphs(List<Graph> gs) {
         this.graphList = gs;
+        this.selectedResultIndex = 0;
     }
 
     /**

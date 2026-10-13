@@ -134,8 +134,10 @@ public class BayesEstimatorWrapper implements SessionModel {
             for (int i = 0; i < dataWrapper.getDataModelList().size(); i++) {
                 DataModel model = dataWrapper.getDataModelList().get(i);
                 DataSet dataSet = (DataSet) model;
-                bayesPmWrapper.setModelIndex(i);
-                BayesPm bayesPm = bayesPmWrapper.getBayesPm();
+
+                // One PM per data set if the PM box has them, otherwise its one PM for all the data sets. The PM
+                // box's own model index is left alone.
+                BayesPm bayesPm = bayesPmWrapper.getBayesPmFor(i);
 
                 estimate(dataSet, bayesPm);
                 this.bayesIms.add(this.bayesIm);
@@ -248,6 +250,15 @@ public class BayesEstimatorWrapper implements SessionModel {
      */
     public void setNumModels(int numModels) {
         this.numModels = numModels;
+    }
+
+    /**
+     * The data models of the parent data box, one per estimated model, for labeling the choice among them.
+     *
+     * @return the data models, or null if there is no data box
+     */
+    public DataModelList getDataModels() {
+        return this.dataWrapper == null ? null : this.dataWrapper.getDataModelList();
     }
 
     /**

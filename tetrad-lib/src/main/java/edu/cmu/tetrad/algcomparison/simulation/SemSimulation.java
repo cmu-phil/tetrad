@@ -43,6 +43,10 @@ import java.util.List;
 
 /**
  * This class represents a Simulation using Structural Equation Modeling (SEM).
+ * <p>
+ * This simulation is the Linear Gaussian SEM: exogenous noises are always Gaussian, and the engine-level switch
+ * for custom (non-Gaussian) noise is not exposed as a parameter and is overridden at simulation time. For
+ * linear SEMs with non-Gaussian exogenous noise, use {@link NonGaussianSemSimulation}.
  */
 public class SemSimulation implements Simulation {
     @Serial
@@ -170,6 +174,11 @@ public class SemSimulation implements Simulation {
             RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
         }
 
+        // This simulation type fixes the exogenous noise family, so the engine-level switch is set here
+        // rather than exposed as a parameter: 1 (Gaussian) for this class, 2 (the customNoiseExpression
+        // distribution) for NonGaussianSemSimulation.
+        parameters.set(Params.CUSTOM_NOISE_OPTION, noiseOption());
+
         Graph graph = this.randomGraph.createGraph(parameters);
 
         this.dataSets = new ArrayList<>();
@@ -278,7 +287,7 @@ public class SemSimulation implements Simulation {
      * @return a short, one-line description of the simulation.
      */
     public String getDescription() {
-        return "Linear SEM simulation using " + this.randomGraph.getDescription();
+        return "Linear Gaussian SEM simulation using " + this.randomGraph.getDescription();
     }
 
     /**
@@ -287,7 +296,27 @@ public class SemSimulation implements Simulation {
      * @return The short name of the simulation.
      */
     public String getShortName() {
-        return "Linear SEM Simulation";
+        return "Linear Gaussian SEM Simulation";
+    }
+
+    /**
+     * The exogenous noise family this simulation forces, in the sense of Params.CUSTOM_NOISE_OPTION: 1 =
+     * Gaussian noises with variances drawn in [varLow, varHigh]; 2 = independent draws from the
+     * customNoiseExpression distribution.
+     *
+     * @return the forced noise option.
+     */
+    protected int noiseOption() {
+        return 1;
+    }
+
+    /**
+     * Returns the random graph this simulation draws its graphs from.
+     *
+     * @return the random graph.
+     */
+    protected RandomGraph getRandomGraph() {
+        return this.randomGraph;
     }
 
     /**
@@ -305,6 +334,12 @@ public class SemSimulation implements Simulation {
 
         if (this.im == null) {
             parameters.addAll(SemIm.getParameterNames());
+
+            // The noise family is fixed by the simulation type (see noiseOption()), so the engine-level
+            // switch and the custom expression are not user options here. NonGaussianSemSimulation adds
+            // the expression back.
+            parameters.remove(Params.CUSTOM_NOISE_OPTION);
+            parameters.remove(Params.CUSTOM_NOISE_EXPRESSION);
         }
 
         parameters.add(Params.MEASUREMENT_VARIANCE);

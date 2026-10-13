@@ -60,6 +60,10 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
     private final JButton backButton = new JButton("Undo");
     private final JButton showGraphButton = new JButton("Graph");
     private final JButton repairButton = new JButton("Attempt Repair");
+    /**
+     * Repairs at the selected node only; its text names the node, as the search button's does.
+     */
+    private final JButton repairNodeButton = new JButton();
     private final JLabel statusLabel = new JLabel(" ");
     private final JTable resultsTable = new JTable();
     private final CandidateTableModel resultsModel = new CandidateTableModel();
@@ -143,6 +147,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         Graph wg = repairSearch.getGraph();
         this.x = resolveInitialNode(wg, x);
         searchButton.setText("Adjust " + this.x.getName());
+        repairNodeButton.setText("Repair " + this.x.getName());
 
         // Seed-source resolution, in priority order: (1) a seed attribute stamped on the incoming
         // graph by an upstream wrapper (canonical MarkovAuditUtils.SEED_ATTRIBUTE key, legacy
@@ -451,6 +456,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         topButtons.add(backButton);
         topButtons.add(showGraphButton);
         topButtons.add(searchButton);
+        topButtons.add(repairNodeButton);
         topButtons.add(repairButton);
 
         JPanel north = new JPanel(new BorderLayout());
@@ -535,11 +541,20 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
             }
 
             searchButton.setText("Adjust " + x.getName());
+            repairNodeButton.setText("Repair " + x.getName());
 
             if (activeWorker == null) {
                 startWatched("Searching", this::runSearchWatched, null);
             }
         });
+
+        repairNodeButton.setToolTipText(
+                "Repair at the selected node only: keeps applying the best edit at this node until none "
+                        + "improves the model. Other nodes are not revisited, and the strategy, seeding "
+                        + "restriction and prune alpha are not used.");
+        repairNodeButton.addActionListener(e ->
+                startWatched("Repairing", this::runRepairNodeWatched,
+                        () -> startWatched("Searching", this::runSearchWatched, null)));
 
         repairButton.addActionListener(e ->
                 startWatched("Repairing", this::runRepairWatched,
@@ -732,6 +747,23 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         }
     }
 
+    /**
+     * As runRepairWatched, but repairs at the selected node only.
+     */
+    private void runRepairNodeWatched() {
+        syncSearchFromUI();
+
+        // Snapshot for undo
+        history.push(safeCopy(repairSearch.getGraph()));
+
+        try {
+            repairSearch.repairNode(x);
+            baseModel.setGraph(safeCopy(repairSearch.getGraph()));
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     // =========================================================================
     // Candidate application (interactive, single edit from the table)
     // =========================================================================
@@ -892,6 +924,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
             if (sel instanceof Node n) {
                 x = n;
                 searchButton.setText("Adjust " + x.getName());
+                repairNodeButton.setText("Repair " + x.getName());
             }
         } finally {
             populatingNodeCombo = false;
@@ -907,6 +940,7 @@ public final class VertexRepairPanelGlobalRepair extends JPanel {
         boolean busy = (activeWorker != null);
         searchButton.setEnabled(!busy);
         repairButton.setEnabled(!busy);
+        repairNodeButton.setEnabled(!busy);
     }
 
     private void startWatched(String title, Runnable backgroundWork, Runnable onDoneEdt) {

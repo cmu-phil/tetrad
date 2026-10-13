@@ -32,8 +32,6 @@ import edu.cmu.tetrad.sem.Sampler;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import edu.cmu.tetrad.util.TMath;
 
 import java.io.Serial;

@@ -94,10 +94,12 @@ public class ImputeMissingDataParamsEditor extends JPanel implements ParameterEd
         });
 
         IntTextField mField = new IntTextField(this.params.getInt("numImputations", 5), 4);
-        mField.setToolTipText("How many completed datasets to produce. At least 2; a single completed dataset"
-                              + " would present imputed values as measured ones.");
+        mField.setToolTipText("<html>How many completed datasets to produce. 1 is allowed, for a quick look or for a"
+                              + " tool that takes one dataset,<br>but a single completed dataset presents imputed"
+                              + " values as measured ones; use 2 or more to see<br>how much a result depends on"
+                              + " them.</html>");
         mField.setFilter((value, oldValue) -> {
-            if (value < 2) return oldValue;
+            if (value < 1) return oldValue;
             this.params.set("numImputations", value);
             return value;
         });
@@ -125,6 +127,17 @@ public class ImputeMissingDataParamsEditor extends JPanel implements ParameterEd
             return value;
         });
 
+        IntTextField rowsField = new IntTextField(this.params.getInt("miceRowsPerPredictor", 3), 4);
+        rowsField.setToolTipText("<html>MICE only: the fewest observed rows of a variable allowed per predictor used"
+                                 + " to impute it.<br>If using every other variable would give fewer, only those most"
+                                 + " correlated with it,<br>or with whether it is missing, are used. 0 = no limit"
+                                 + " (always use every other variable).</html>");
+        rowsField.setFilter((value, oldValue) -> {
+            if (value < 0) return oldValue;
+            this.params.set("miceRowsPerPredictor", value);
+            return value;
+        });
+
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
@@ -145,6 +158,7 @@ public class ImputeMissingDataParamsEditor extends JPanel implements ParameterEd
         b1.add(Box.createVerticalStrut(6));
         b1.add(labeled("MICE donors:", donorField));
         b1.add(labeled("MICE sweeps:", sweepField));
+        b1.add(labeled("MICE rows per predictor:", rowsField));
         b1.add(Box.createHorizontalGlue());
 
         add(b1, BorderLayout.CENTER);

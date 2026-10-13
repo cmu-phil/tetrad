@@ -37,6 +37,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Edits some algorithm to search for Markov blanket CPDAGs.
@@ -73,13 +75,26 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.parameters = latentClustersRunner.getParameters();
         DataModelList dataModelList = latentClustersRunner.getDataWrapper().getDataModelList();
-        DataSet data = (DataSet) (dataModelList.getFirst());
+
+        // The selected data model, not the first: the runner clusters the selected one, and with several data sets
+        // present (for example, several imputations of one data set) the two used to disagree.
+        DataSet data = (DataSet) latentClustersRunner.getDataWrapper().getSelectedDataModel();
+
+        // All tabular data sets in the data box, for pooling over imputations; the wizard offers the
+        // poolImputations parameter when there are several.
+        List<DataSet> dataSets = new ArrayList<>();
+        for (Object model : dataModelList) {
+            if (model instanceof DataSet dataSet) {
+                dataSets.add(dataSet);
+            }
+        }
 
         String alg = runner.getAlg();
         String test = runner.getTest();
         String blockText = runner.getBlockText();
 
-        wizard = new BlockClusteringWizard(data, alg, test, blockText, runner.getTrueNamedClusters(), parameters);
+        wizard = new BlockClusteringWizard(data, dataSets, alg, test, blockText, runner.getTrueNamedClusters(),
+                parameters);
         wizard.setPreferredSize(new Dimension(800, 400));
         setLayout(new BorderLayout());
         add(wizard, BorderLayout.CENTER);

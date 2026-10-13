@@ -389,6 +389,10 @@ public final class Params {
      */
     public static final String CYCLIC_RADIUS = "cyclicRadius";
     /**
+     * Constant <code>DAO_ERROR_DISTRIBUTION="daoErrorDistribution"</code>
+     */
+    public static final String DAO_ERROR_DISTRIBUTION = "daoErrorDistribution";
+    /**
      * Constant <code>DAO_RANDOMIZE_ORDER="daoRandomizeOrder"</code>
      */
     public static final String DAO_RANDOMIZE_ORDER = "daoRandomizeOrder";
@@ -946,6 +950,14 @@ public final class Params {
      */
     public static final String LINEAR_LOW = "linearLow";
     /**
+     * Constant <code>LINGAM_PRUNE_ALPHA="lingamPruneAlpha"</code>
+     */
+    public static final String LINGAM_PRUNE_ALPHA = "lingamPruneAlpha";
+    /**
+     * Constant <code>LINGAM_REFIT_AND_PRUNE="lingamRefitAndPrune"</code>
+     */
+    public static final String LINGAM_REFIT_AND_PRUNE = "lingamRefitAndPrune";
+    /**
      * Constant <code>LOG_FINAL_ORIENTATIONS="logFinalOrientations"</code>
      */
     public static final String LOG_FINAL_ORIENTATIONS = "logFinalOrientations";
@@ -1423,6 +1435,14 @@ public final class Params {
      */
     public static final String PARALLELIZED = "parallelized";
     /**
+     * Constant <code>PC_ORDER_REFINEMENT="pcOrderRefinement"</code>
+     */
+    public static final String PC_ORDER_REFINEMENT = "pcOrderRefinement";
+    /**
+     * Constant <code>PC_REFINEMENT_ALPHA="pcRefinementAlpha"</code>
+     */
+    public static final String PC_REFINEMENT_ALPHA = "pcRefinementAlpha";
+    /**
      * Constant <code>PENALTY_DISCOUNT="penaltyDiscount"</code>
      */
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";
@@ -1605,6 +1625,41 @@ public final class Params {
      * Constant <code>RESCUE_ACTION="rescueAction"</code>
      */
     public static final String RESCUE_ACTION = "rescueAction";
+    /**
+     * Constant <code>RLCD_ALLOW_NON_LEAF_X="rlcdAllowNonLeafX"</code>
+     */
+    public static final String RLCD_ALLOW_NON_LEAF_X = "rlcdAllowNonLeafX";
+    /**
+     * Constant <code>RLCD_CHECK_V="rlcdCheckV"</code>
+     */
+    public static final String RLCD_CHECK_V = "rlcdCheckV";
+    /**
+     * Constant <code>RLCD_MAX_K="rlcdMaxK"</code>
+     */
+    public static final String RLCD_MAX_K = "rlcdMaxK";
+    /**
+     * Constant <code>RLCD_PARTITION_CLIQUE_THRESHOLD="rlcdPartitionCliqueThreshold"</code>
+     */
+    public static final String RLCD_PARTITION_CLIQUE_THRESHOLD = "rlcdPartitionCliqueThreshold";
+    /**
+     * Constant <code>POOL_IMPUTATIONS="poolImputations"</code> Whether, given several data sets that are
+     * imputations of one data set with missing values, to run ONE search over them with the imputation uncertainty
+     * carried into each test, rather than one search per imputation. Not the same as {@link #POOL_DATA_SETS}, which
+     * treats the data sets as independent.
+     */
+    public static final String POOL_IMPUTATIONS = "poolImputations";
+    /**
+     * Constant <code>RLCD_LATENT_GATE="rlcdLatentGate"</code>
+     */
+    public static final String RLCD_LATENT_GATE = "rlcdLatentGate";
+    /**
+     * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
+     */
+    public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";
+    /**
+     * Constant <code>RLCD_UNFOLD_COVERS="rlcdUnfoldCovers"</code>
+     */
+    public static final String RLCD_UNFOLD_COVERS = "rlcdUnfoldCovers";
     /**
      * Constant <code>SAMPLE_SIZE="sampleSize"</code>
      */

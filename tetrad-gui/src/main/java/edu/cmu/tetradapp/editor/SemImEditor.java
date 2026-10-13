@@ -741,6 +741,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             this.semImWrapper = wrapper;
             this.graphicalEditorTitle = graphicalEditorTitle;
             this.tabularEditorTitle = tabularEditorTitle;
+
+            // The SEM graph is shared with the SEM PM, so the flag may have been left on elsewhere.
+            // Error terms are hidden when the editor opens; "Show Error Terms" turns them on.
+            getSemGraph().setShowErrorTerms(false);
+
             displaySemIm(graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
         }
 
@@ -871,7 +876,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                 }
             });
 
-            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient");
+            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient", true);
             shadeEdges.setToolTipText("Color edges blue (positive) or vermillion (negative), darker for larger "
                     + "|coefficient| relative to the largest in the model; error covariances by their correlation.");
             shadeEdges.addActionListener((e) -> graphicalEditor().setShadeEdges(shadeEdges.isSelected()));
@@ -1206,7 +1211,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         /**
          * Whether display edges are shaded by coefficient sign and relative magnitude.
          */
-        private boolean shadeEdges = false;
+        private boolean shadeEdges = true;
 
         /**
          * Constructs a SemIm graphical editor for the given SemIm.
@@ -1986,7 +1991,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             ));
             sorter.sort();
             table.setRowSorter(sorter);
-            this.tableModel.addTableModelListener((e) -> this.firePropertyChange("modelChanged", null, null));
+
+            // The table also refreshes for display options (means, intercepts, correlations), so only report a
+            // model change when a parameter value was actually set.
+            this.tableModel.addTableModelListener((e) -> {
+                if (this.tableModel.consumeEdited()) {
+                    this.firePropertyChange("modelChanged", null, null);
+                }
+            });
 
             add(new JScrollPane(table), BorderLayout.CENTER);
         }
@@ -2011,6 +2023,20 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
     }
 
     final class ParamTableModel extends AbstractTableModel {
+
+        /**
+         * True if a parameter value has been set since the flag was last consumed.
+         */
+        private boolean edited;
+
+        /**
+         * True if a parameter value was set since the last call; resets the flag.
+         */
+        boolean consumeEdited() {
+            boolean wasEdited = this.edited;
+            this.edited = false;
+            return wasEdited;
+        }
 
         private static final long serialVersionUID = 2210883212769846304L;
 
@@ -2192,6 +2218,12 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
             if (columnIndex == 3) {
+                // Committing a cell without retyping it leaves the parameter alone. (Re-parsing the displayed,
+                // rounded text would otherwise change the parameter's value.)
+                if (String.valueOf(aValue).equals(String.valueOf(getValueAt(rowIndex, columnIndex)))) {
+                    return;
+                }
+
                 try {
                     double value = Double.parseDouble((String) aValue);
 
@@ -2214,7 +2246,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                             }
                         }
 
-                        this.editor.firePropertyChange("modelChanged", 0, 0);
+                        this.edited = true;
 
                     } else {
                         int index = rowIndex - semIm().getNumFreeParams();
@@ -2226,7 +2258,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                             } else {
                                 semIm().setMean(node, value);
                             }
-                            this.editor.firePropertyChange("modelChanged", 0, 0);
+                            this.edited = true;
 
                         }
                     }

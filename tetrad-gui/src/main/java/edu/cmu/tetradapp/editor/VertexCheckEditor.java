@@ -462,6 +462,61 @@ public class VertexCheckEditor extends JPanel {
         }
     }
 
+    /**
+     * Switches the check to another of the data box's data sets and reruns it. The test list and the uniformity
+     * choices depend on the kind of data, so both are rebuilt; an open repair is closed first, exactly as if the
+     * user had left the Repair tab, since it holds a test on the previous data set.
+     */
+    private void chooseData(int index) {
+        if (rightTabs != null && rightTabs.getSelectedIndex() == TAB_REPAIR) {
+            rightTabs.setSelectedIndex(TAB_CHECK);
+        }
+
+        // The same vertices and facts stay selected across the switch. Captured here, before the model drops
+        // its results, since the selected facts are read from them.
+        Set<String> selectedVertexNames = getSelectedOverviewVertexNames();
+        Set<String> selectedFactKeys = getSelectedFactsKeys();
+        String active = getActiveSelectedVertexName();
+
+        model.setDataIndex(index);
+
+        boolean rowData = model.getDataModel() instanceof DataSet;
+        if (!rowData && VertexCheckIndTestModel.WILD_BOOTSTRAP.equals(model.getUniformityTest())) {
+            model.setUniformityTest(VertexCheckIndTestModel.KOLMOGOROV_SMIRNOFF);
+        }
+
+        initializing = true;
+        try {
+            modelUniformityTest.setModel(new DefaultComboBoxModel<>(rowData
+                    ? new String[]{"Use KS", "Use AD", "Use WB"}
+                    : new String[]{"Use KS", "Use AD"}));
+            modelUniformityTest.setSelectedIndex(uniformityTestIndex(model.getUniformityTest()));
+            refreshTestList();
+        } finally {
+            initializing = false;
+        }
+
+        setTestFromCombo();
+        resetResultsUI(active, () -> {
+            reselectOverviewVerticesByName(selectedVertexNames);
+
+            // Selected last so that it is the lead row again, which is what the facts table follows.
+            if (active != null) {
+                int modelRow = model.getVertexNames().indexOf(active);
+                if (modelRow >= 0) {
+                    int viewRow = overviewTable.convertRowIndexToView(modelRow);
+                    overviewTable.getSelectionModel().addSelectionInterval(viewRow, viewRow);
+                    overviewTable.scrollRectToVisible(overviewTable.getCellRect(viewRow, 0, true));
+                }
+            }
+
+            // Details first: refreshing them rebuilds the facts table, which would drop a facts selection.
+            String stillActive = getActiveSelectedVertexName();
+            if (stillActive != null) refreshDetails(stillActive);
+            reselectFactsByKey(selectedFactKeys);
+        });
+    }
+
     private void buildControls() {
         Box controls = Box.createHorizontalBox();
         controls.add(new JLabel("Independence Test:"));
@@ -494,6 +549,15 @@ public class VertexCheckEditor extends JPanel {
         essBlocksButton.addActionListener(e -> chooseEssBlockColumns());
 
         Box controls2 = Box.createHorizontalBox();
+
+        // Says which data set the tables are computed from, and lets the user change it, when the data box
+        // holds more than one. Null (nothing shown) when there is only one.
+        Box dataChooser = DataSetChooser.create(model.getDataModels(), model.getDataIndex(), this::chooseData);
+        if (dataChooser != null) {
+            controls2.add(dataChooser);
+            controls2.add(Box.createHorizontalStrut(12));
+        }
+
         controls2.add(experimentalToggle);
         controls2.add(perFactEssCheckBox);
         controls2.add(essBlocksButton);
@@ -1164,6 +1228,14 @@ public class VertexCheckEditor extends JPanel {
     }
 
     private void resetResultsUI() {
+        resetResultsUI(null, null);
+    }
+
+    /**
+     * As resetResultsUI(), but once the rerun finishes, selects preferredVertex instead of the first row and
+     * then runs onDone. Either may be null.
+     */
+    private void resetResultsUI(String preferredVertex, Runnable onDone) {
         model.clearResults();
         histogramPanel.removeAll();
         histogramPanel.add(new JLabel("(Select a vertex to compute results)"), BorderLayout.CENTER);
@@ -1172,7 +1244,7 @@ public class VertexCheckEditor extends JPanel {
         overviewTable.clearSelection();
         histogramPanel.revalidate();
         histogramPanel.repaint();
-        runAllAndRefresh(null, null);
+        runAllAndRefresh(preferredVertex, onDone);
     }
 
     private void refreshModelDiagnostics() {

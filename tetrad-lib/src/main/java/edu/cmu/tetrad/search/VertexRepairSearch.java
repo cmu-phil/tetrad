@@ -1057,44 +1057,9 @@ public final class VertexRepairSearch implements IGraphSearch {
                 Node current = workingGraph.getNode(node.getName());
                 if (current == null) continue;
 
-                Set<String> attemptedKeys = new LinkedHashSet<>();
-
-                while (true) {
-                    if (stopRequested()) return;
-
-                    BaselineBundle bb = baselineBundle();
-                    if (bb == null) {
-                        fireStatus("Canonicalization failed during repair.");
-                        return;
-                    }
-
-                    Node currentInBase = bb.base().getNode(current.getName());
-                    if (currentInBase == null) break;
-
-                    List<ScoredCandidate> candidates = computeScoredCandidatesForNode(bb, currentInBase);
-                    if (candidates.isEmpty()) break;
-
-                    ScoredCandidate top = candidates.getFirst();
-                    if (top.edit().isNoOp() || !top.passesGuards()) break;
-
-                    String key = top.edit().key();
-                    if (!attemptedKeys.add(key)) {
-                        cycleWarnings.add(current.getName() + ": \"" + top.edit().description() + "\"");
-                        break;
-                    }
-
-                    Graph before = safeCopy(workingGraph);
-                    applyCandidateInternal(top.edit());
-
-                    if (workingGraph.equals(before)) break;
-
-                    anyChangeInSweep = true;
-                    fireEditApplied(top.edit(), workingGraph);
-
-                    Node refreshed = workingGraph.getNode(current.getName());
-                    if (refreshed == null) break;
-                    current = refreshed;
-                }
+                int edits = repairAtNode(current, cycleWarnings);
+                if (edits < 0) return;
+                if (edits > 0) anyChangeInSweep = true;
             }
 
             if (anyChangeInSweep) {
@@ -1108,6 +1073,121 @@ public final class VertexRepairSearch implements IGraphSearch {
         } while (anyChangeInSweep);
 
         fireRepairConverged(0, "Local sweep converged.");
+    }
+
+    /**
+     * Greedy repair at one vertex, the unit of work of a local sweep: repeatedly applies the top-ranked
+     * candidate edit at the vertex until the no-op ranks first, the top candidate fails its guards, nothing
+     * legal is left, or the same edit comes up twice.
+     *
+     * @param current       the vertex, in the working graph
+     * @param cycleWarnings receives a line if the same edit came up twice
+     * @return the number of edits applied, or -1 if the repair as a whole must stop (cancellation, or
+     * canonicalization of the working graph failed); edits applied before that point stay applied
+     */
+    private int repairAtNode(Node current, List<String> cycleWarnings) {
+        Set<String> attemptedKeys = new LinkedHashSet<>();
+        int edits = 0;
+
+        while (true) {
+            if (stopRequested()) return -1;
+
+            BaselineBundle bb = baselineBundle();
+            if (bb == null) {
+                fireStatus("Canonicalization failed during repair.");
+                return -1;
+            }
+
+            Node currentInBase = bb.base().getNode(current.getName());
+            if (currentInBase == null) break;
+
+            List<ScoredCandidate> candidates = computeScoredCandidatesForNode(bb, currentInBase);
+            if (candidates.isEmpty()) break;
+
+            ScoredCandidate top = candidates.getFirst();
+            if (top.edit().isNoOp() || !top.passesGuards()) break;
+
+            String key = top.edit().key();
+            if (!attemptedKeys.add(key)) {
+                cycleWarnings.add(current.getName() + ": \"" + top.edit().description() + "\"");
+                break;
+            }
+
+            Graph before = safeCopy(workingGraph);
+            applyCandidateInternal(top.edit());
+
+            if (workingGraph.equals(before)) break;
+
+            edits++;
+            fireEditApplied(top.edit(), workingGraph);
+
+            Node refreshed = workingGraph.getNode(current.getName());
+            if (refreshed == null) break;
+            current = refreshed;
+        }
+
+        return edits;
+    }
+
+    /**
+     * Repairs the graph at one vertex only: repeatedly applies the top-ranked candidate edit at that vertex
+     * until none improves on the current graph. This is one vertex's step of a
+     * {@link RepairStrategy#LOCAL_SWEEP}, run by itself, so only edits in that vertex's candidate menu (edits
+     * to edges at the vertex) are ever proposed.
+     *
+     * <p>What this does and does not save. Candidates are enumerated and scored for one vertex instead of
+     * for every vertex, which is where a full repair spends most of its time on a graph with many
+     * variables. Candidates are still ranked by their effect on the whole model (total Markov violations,
+     * then Model-P), so each applied edit still costs one whole-graph baseline evaluation, and for graph
+     * types scored without locality (MAG and PAG) each candidate costs a whole-graph evaluation too.
+     *
+     * <p>What it guarantees. On normal completion no single edit at this vertex improves on the returned
+     * graph. Nothing is certified about any other vertex: an edit here can move violations onto neighbors,
+     * and those are not revisited. The configured repair strategy, seed vertices and prune alpha are not
+     * used; in particular the global strategy's initial pruning of weak edges is not run.
+     *
+     * @param node the vertex to repair at, matched by name in the working graph
+     * @return the repaired graph (equal to the starting graph if nothing improved)
+     * @throws InterruptedException if the calling thread is interrupted
+     */
+    public Graph repairNode(Node node) throws InterruptedException {
+        Objects.requireNonNull(node, "node");
+        cancelRequested = false;
+
+        if (hasSelectionBias(workingGraph)) {
+            throw new IllegalArgumentException(
+                    "The graph to be repaired exhibits selection bias (a selection node, or a "
+                            + "tail-tail or circle-tail edge under graph type " + graphType
+                            + "). Vertex repair does not model selection bias; remove the "
+                            + "selection structure or repair the graph under a graph type in "
+                            + "which such edges are unoriented rather than selection-induced.");
+        }
+
+        Node current = workingGraph.getNode(node.getName());
+        if (current == null) {
+            throw new IllegalArgumentException("No vertex named " + node.getName() + " in the graph.");
+        }
+
+        long previousSeed = RandomUtil.getInstance().nextLong();
+        RandomUtil.getInstance().setSeed(seed);
+
+        try {
+            fireStatus("Starting repair at " + current.getName() + " (seed=" + seed + ")...");
+
+            List<String> cycleWarnings = new ArrayList<>();
+            int edits = repairAtNode(current, cycleWarnings);
+
+            if (edits >= 0) {
+                fireRepairConverged(edits, "Repair at " + current.getName() + " stopped after " + edits
+                        + (edits == 1 ? " edit" : " edits")
+                        + (cycleWarnings.isEmpty() ? "; no further edit at this vertex improves the model."
+                        : "; the same edit came up twice (" + cycleWarnings.getFirst() + ")."));
+            }
+        } finally {
+            RandomUtil.getInstance().setSeed(previousSeed);
+        }
+
+        return safeCopy(workingGraph);
     }
 
     private void runGlobalRepair() {

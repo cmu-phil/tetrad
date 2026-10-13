@@ -205,6 +205,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     public void propertyChange(PropertyChangeEvent evt) {
         if ("algoFwdBtn".equals(evt.getPropertyName())) {
             this.algoFwdBtn.setEnabled((boolean) evt.getNewValue());
+        } else if ("modelChanged".equals(evt.getPropertyName()) && evt.getSource() == this.graphCard) {
+            // A different result was selected for downstream boxes; pass it on to the session.
+            firePropertyChange("modelChanged", null, null);
         }
     }
 
@@ -230,7 +233,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
     /**
      * <p>setAlgorithmResult.</p>
-     *
+     *  an
      * @param jsonResult a {@link java.lang.String} object
      */
     public void setAlgorithmResult(String jsonResult) {

@@ -68,7 +68,8 @@ public class ParameterTab extends JPanel {
      */
     public static final String[] MODEL_TYPE_ITEMS = {
             SimulationTypes.BAYS_NET,
-            SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+            SimulationTypes.LINEAR_GAUSSIAN_SEM,
+            SimulationTypes.LINEAR_NON_GAUSSIAN_SEM,
             SimulationTypes.DAO_SIMULATION,
 //            SimulationTypes.LINEAR_FISHER_MODEL,
 //            SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL,
@@ -250,8 +251,12 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.BAYS_NET:
                         this.simulation.setSimulation(new BayesNetSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.LINEAR_GAUSSIAN_SEM:
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.LINEAR_NON_GAUSSIAN_SEM:
+                        this.simulation.setSimulation(new NonGaussianSemSimulation(randomGraph), this.simulation.getParams());
                         break;
 //                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
 //                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
@@ -315,8 +320,12 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.BAYS_NET:
                         this.simulation.setSimulation(new BayesNetSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.LINEAR_GAUSSIAN_SEM:
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.LINEAR_NON_GAUSSIAN_SEM:
+                        this.simulation.setSimulation(new NonGaussianSemSimulation(randomGraph), this.simulation.getParams());
                         break;
 //                    case SimulationTypes.GAUSSIAN_PROCESS_STRUCTURAL_EQUATION_MODEL:
 //                        this.simulation.setSimulation(new GpSemSimulation(randomGraph), this.simulation.getParams());
@@ -451,7 +460,7 @@ public class ParameterTab extends JPanel {
             }
 
             if (this.simulationsDropdown.isEnabled()) {
-                selectIfPresent(this.simulationsDropdown, simName);
+                selectIfPresent(this.simulationsDropdown, mapLegacySimulationName(simName));
             }
             if (graphName != null && this.graphsDropdown.isEnabled()) {
                 selectIfPresent(this.graphsDropdown, graphName);
@@ -668,17 +677,34 @@ public class ParameterTab extends JPanel {
     private String resolveInitialSimulationSelection() {
         String[] allowed = getSimulationItems();
 
-        String fromParams = this.simulation.getParams().getString(SIM_PREF_PARAM, null);
+        String fromParams = mapLegacySimulationName(this.simulation.getParams().getString(SIM_PREF_PARAM, null));
         if (isAllowed(fromParams, allowed)) {
             return fromParams;
         }
 
-        String fromPrefs = prefs().get(PREF_SIM_TYPE, null);
+        String fromPrefs = mapLegacySimulationName(prefs().get(PREF_SIM_TYPE, null));
         if (isAllowed(fromPrefs, allowed)) {
             return fromPrefs;
         }
 
         return allowed[0];
+    }
+
+    /**
+     * Maps simulation type names that are no longer in the dropdown to their current replacements, so that
+     * selections saved by earlier versions still resolve. "Linear Structural Equation Model" was split into
+     * the Linear Gaussian SEM and the Linear Non-Gaussian SEM; the old name meant the Gaussian one by
+     * default.
+     *
+     * @param name the saved simulation type name, possibly null.
+     * @return the current name for it.
+     */
+    private static String mapLegacySimulationName(String name) {
+        if (SimulationTypes.STRUCTURAL_EQUATION_MODEL.equals(name)) {
+            return SimulationTypes.LINEAR_GAUSSIAN_SEM;
+        }
+
+        return name;
     }
 
     private boolean isAllowed(String value, String[] allowed) {

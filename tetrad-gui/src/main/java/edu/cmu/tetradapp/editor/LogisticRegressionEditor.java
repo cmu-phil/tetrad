@@ -143,7 +143,7 @@ public class LogisticRegressionEditor extends JPanel {
             print(regressionRunner.getResult(), regressionRunner.getAlpha());
             Graph outGraph = regressionRunner.getOutGraph();
             LayoutUtil.defaultLayout(outGraph);
-            LayoutUtil.fruchtermanReingoldLayout(outGraph);
+//            LayoutUtil.fruchtermanReingoldLayout(outGraph);
             workbench.setGraph(outGraph);
             String message = this.modelParameters.getText();
             TetradLogger.getInstance().log(message);

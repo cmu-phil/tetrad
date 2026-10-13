@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.QuadCurve2D;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
@@ -43,6 +45,24 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     protected static final int ANCHORED_UNSELECTED = 1;
     protected static final int ANCHORED_SELECTED = 2;
 
+    /**
+     * The largest deflection, in pixels, of a curved edge's apex from the straight chord between its endpoints. Caps
+     * obstacle avoidance so a curve never loops around far-off nodes.
+     */
+    private static final double BEZIER_MAX_APEX = 70.0;
+
+    /**
+     * Clearance, in pixels, that a curved edge tries to keep between itself and the boundary of a node it bends
+     * around.
+     */
+    private static final double BEZIER_NODE_MARGIN = 10.0;
+
+    /**
+     * How far the component bounds are grown beyond the union of the two node rectangles when the edge is drawn as
+     * a curve, so the bow (plus endpoint decorations) is not clipped. Must exceed BEZIER_MAX_APEX.
+     */
+    private static final int BEZIER_BOUNDS_PAD = (int) BEZIER_MAX_APEX + 26;
+
     private final DisplayNode node1;
     private final ComponentHandler compHandler = new ComponentHandler();
     private final PropertyChangeHandler propertyChangeHandler = new PropertyChangeHandler();
@@ -53,8 +73,15 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     private DisplayNode node2;
     private Point mouseTrackPoint = new Point();
     private Point relativeMouseTrackPoint = new Point();
-    private Polygon clickRegion;
+    private Shape clickRegion;
     private boolean showAdjacenciesOnly;
+
+    /**
+     * Whether the current bounds were computed for this edge drawn as a curve. An edge is drawn straight unless it
+     * has to bend around a node, and which it is can change when any node moves; paint() notices the mismatch and
+     * recomputes the bounds, so no external wiring is needed.
+     */
+    private boolean boundsForBezier;
     private double offset;
     private PointPair connectedPoints;
 
@@ -243,6 +270,10 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
 
     @Override
     public void paint(Graphics g) {
+        if (checkCurveBounds()) {
+            return;
+        }
+
         switch (this.mode) {
             case DisplayEdge.HALF_ANCHORED:
                 g.setColor(getLineColor());
@@ -280,16 +311,6 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     private void drawEdge(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
 
-        getConnectedPoints().getFrom().translate(-getLocation().x, -getLocation().y);
-        getConnectedPoints().getTo().translate(-getLocation().x, -getLocation().y);
-
-        setClickRegion(null);
-
-        int x1 = getConnectedPoints().getFrom().x;
-        int y1 = getConnectedPoints().getFrom().y;
-        int x2 = getConnectedPoints().getTo().x;
-        int y2 = getConnectedPoints().getTo().y;
-
         WorkbenchStyle.applyHints(g2d);
 
         Stroke s;
@@ -308,6 +329,23 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
             g2d.setColor(this.getSelectedColor());
         }
 
+        // An edge anchored to two nodes is drawn as a curve if it has to bend around a node; a tracking edge stays
+        // straight. If the edge need not bend, or the curve cannot be built (coincident or overlapping nodes), fall
+        // through to the straight rendering.
+        if (drawBezierEdge(g2d)) {
+            return;
+        }
+
+        getConnectedPoints().getFrom().translate(-getLocation().x, -getLocation().y);
+        getConnectedPoints().getTo().translate(-getLocation().x, -getLocation().y);
+
+        setClickRegion(null);
+
+        int x1 = getConnectedPoints().getFrom().x;
+        int y1 = getConnectedPoints().getFrom().y;
+        int x2 = getConnectedPoints().getTo().x;
+        int y2 = getConnectedPoints().getTo().y;
+
         g2d.drawLine(x1, y1, x2, y2);
 
         if (!isShowAdjacenciesOnly()) {
@@ -317,20 +355,312 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         firePropertyChange("newPointPair", null, getConnectedPoints());
     }
 
-    @Override
-    public boolean contains(int x, int y) {
-        Polygon clickRegion = getClickRegion();
-        return clickRegion != null && clickRegion.contains(new Point(x, y));
+    //============================BEZIER RENDERING========================//
+
+    /**
+     * Draws this edge as a quadratic Bezier curve between its two nodes, trimmed to their boundaries, with endpoint
+     * decorations aligned to the curve's tangents and a click region following the curve. The curve bows away from
+     * the straight chord only as far as it has to: not at all when the chord is clear of the other nodes, more when
+     * nodes sit in its way (bowing to whichever side needs less deflection, capped at BEZIER_MAX_APEX), and, for
+     * multiple edges between the same pair of nodes, to opposite sides per the edge offset.
+     *
+     * @param g2d the graphics to draw on, with stroke and color already set.
+     * @return true if the curve was drawn; false if it could not be built, in which case the caller should fall back
+     * to the straight rendering and nothing has been changed.
+     */
+    private boolean drawBezierEdge(Graphics2D g2d) {
+        QuadCurve2D.Double curve = bezierCurve();
+
+        if (curve == null) {
+            return false;
+        }
+
+        g2d.draw(curve);
+
+        float sleeveWidth = Math.max(getStrokeWidth(), 1.5f) + 12f;
+        setClickRegion(new BasicStroke(sleeveWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+                .createStrokedShape(curve));
+
+        Point p0 = new Point((int) Math.round(curve.x1), (int) Math.round(curve.y1));
+        Point pc = new Point((int) Math.round(curve.ctrlx), (int) Math.round(curve.ctrly));
+        Point p2 = new Point((int) Math.round(curve.x2), (int) Math.round(curve.y2));
+
+        setConnectedPoints(new PointPair(p0, p2));
+
+        if (!isShowAdjacenciesOnly()) {
+            // The tangent of a quadratic at either end points at the control point, so the control point is the
+            // direction anchor for both endpoint decorations.
+            drawEndpoints(p0, p2, pc, pc, g2d);
+        }
+
+        firePropertyChange("newPointPair", null, getConnectedPoints());
+        return true;
     }
 
-    private Polygon getClickRegion() {
+    /**
+     * Recomputes the bounds if this edge has changed between straight and curved since they were last computed,
+     * since they may now be too small for the bow or needlessly padded. To be called at the start of painting; if
+     * it returns true the edge must not be painted this time.
+     * <p>
+     * Changing the bounds moves this component, but the graphics it has been handed to paint with was set up for
+     * where the component was. Painting on after the change drew the edge displaced by the amount the bounds had
+     * moved, which is the padding of a curved edge up and to the left: a stray copy of the edge, parallel to the
+     * real one, for one frame each time an edge straightened or bent as a node was dragged. The change of bounds
+     * schedules a repaint of the edge where it now is, so nothing is lost by not painting here.
+     * <p>
+     * A workbench brings the bounds of its edges up to date before it paints any of them (see
+     * {@link #syncCurveBounds()}), so in a workbench this finds nothing to do.
+     *
+     * @return True if the bounds were changed.
+     */
+    protected final boolean checkCurveBounds() {
+        if (this.boundsForBezier != (bezierApex() != 0.0)) {
+            resetBounds();
+            repaint();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Recomputes the bounds if this edge has changed between straight and curved since they were last computed.
+     * For the workbench to call when it has chosen anew which edges bend, before it paints them.
+     */
+    final void syncCurveBounds() {
+        if (this.boundsForBezier != (bezierApex() != 0.0)) {
+            resetBounds();
+        }
+    }
+
+    /**
+     * @return the signed apex of this edge (see chooseApex), which is zero if the edge is to be drawn straight: it
+     * is not anchored to two nodes, or the two nodes coincide, or it does not have to bend around any node.
+     */
+    private double bezierApex() {
+        if (this.mode == DisplayEdge.HALF_ANCHORED || getNode1() == null || getNode2() == null) {
+            return 0.0;
+        }
+
+        Rectangle r1 = getNode1().getBounds();
+        Rectangle r2 = getNode2().getBounds();
+
+        double dx = r2.getCenterX() - r1.getCenterX();
+        double dy = r2.getCenterY() - r1.getCenterY();
+        double len = Math.hypot(dx, dy);
+
+        if (len < 1e-6) {
+            return 0.0;
+        }
+
+        return chooseApex(new Point2D.Double(r1.getCenterX(), r1.getCenterY()), dx / len, dy / len, -dy / len,
+                dx / len, len);
+    }
+
+    /**
+     * @return this edge as a quadratic Bezier curve between its two nodes, trimmed to their boundaries, in this
+     * component's coordinates; or null if the edge is to be drawn straight: it does not have to bend around any
+     * node (see bezierApex), or the curve cannot be built.
+     */
+    protected final QuadCurve2D.Double bezierCurve() {
+        double apex = bezierApex();
+
+        if (apex == 0.0) {
+            return null;
+        }
+
+        Rectangle r1 = getNode1().getBounds();
+        Rectangle r2 = getNode2().getBounds();
+
+        Point2D.Double c1 = new Point2D.Double(r1.getCenterX(), r1.getCenterY());
+        Point2D.Double c2 = new Point2D.Double(r2.getCenterX(), r2.getCenterY());
+
+        double len = Math.hypot(c2.x - c1.x, c2.y - c1.y);
+
+        // Unit normal; positive apex bows to this side.
+        double nx = -(c2.y - c1.y) / len;
+        double ny = (c2.x - c1.x) / len;
+
+        // A quadratic Bezier with its control point displaced h from the chord midpoint passes h / 2 from the chord
+        // at its apex, so the control displacement is twice the requested apex.
+        double h = 2.0 * apex;
+        Point2D.Double ctrl = new Point2D.Double((c1.x + c2.x) / 2.0 + nx * h, (c1.y + c2.y) / 2.0 + ny * h);
+
+        // Trim the curve to the node boundaries by bisection in the curve parameter.
+        double t0 = exitParameter(getNode1(), c1, ctrl, c2, 0.0);
+        double t1 = exitParameter(getNode2(), c1, ctrl, c2, 1.0);
+
+        if (Double.isNaN(t0) || Double.isNaN(t1) || t0 >= t1) {
+            return null;
+        }
+
+        // Restrict the curve to [t0, t1] (de Casteljau, via the polar form); then move to local coordinates.
+        Point2D.Double q0 = bezierPoint(c1, ctrl, c2, t0);
+        Point2D.Double q1 = blossom(c1, ctrl, c2, t0, t1);
+        Point2D.Double q2 = bezierPoint(c1, ctrl, c2, t1);
+
+        int lx = getLocation().x;
+        int ly = getLocation().y;
+
+        return new QuadCurve2D.Double(q0.x - lx, q0.y - ly, q1.x - lx, q1.y - ly, q2.x - lx, q2.y - ly);
+    }
+
+    /**
+     * Chooses the signed apex (deflection of the curve from the chord at its midpoint) for this edge. The sign picks
+     * the side of the chord: positive bows toward the unit normal (nx, ny).
+     */
+    private double chooseApex(Point2D.Double c1, double ux, double uy, double nx, double ny, double len) {
+        // In a workbench the sides of all the curves are chosen together, so that they cross as little as
+        // possible; see BezierRouter. What follows is the choice this edge makes on its own, for an edge that is
+        // not in a workbench.
+        if (getParent() instanceof AbstractWorkbench workbench) {
+            Double routed = workbench.routedApex(this);
+
+            if (routed != null) {
+                return routed;
+            }
+        }
+
+        // As in BezierRouter: an edge is drawn straight unless it has to bend, so there is no bow to start from,
+        // except for separating several edges between the same two nodes.
+//        double base = Math.min(16.0, Math.max(5.0, 0.06 * len));
+        double base = getOffset() != 0.0 ? Math.min(16.0, Math.max(5.0, 0.06 * len)) : 0.0;
+        double maxApex = Math.min(DisplayEdge.BEZIER_MAX_APEX, 0.35 * len);
+
+        // Deflection needed on each side to clear sibling nodes sitting in the chord's corridor.
+        double needPlus = 0.0;
+        double needMinus = 0.0;
+
+        Container parent = getParent();
+
+        if (parent != null) {
+            for (Component comp : parent.getComponents()) {
+                if (!(comp instanceof DisplayNode) || comp == getNode1() || comp == getNode2()) {
+                    continue;
+                }
+
+                Rectangle b = comp.getBounds();
+                double px = b.getCenterX() - c1.x;
+                double py = b.getCenterY() - c1.y;
+
+                double u = (px * ux + py * uy) / len;
+
+                if (u < 0.08 || u > 0.92) {
+                    continue;
+                }
+
+                double d = px * nx + py * ny;
+                double r = Math.max(b.width, b.height) / 2.0 + DisplayEdge.BEZIER_NODE_MARGIN;
+
+                if (Math.abs(d) > r + maxApex) {
+                    continue;
+                }
+
+                // A curve with apex a passes 4u(1 - u)a from the chord near chord fraction u.
+                double w = 4.0 * u * (1.0 - u);
+
+                if (d + r > 0.0) {
+                    needPlus = Math.max(needPlus, (d + r) / w);
+                }
+
+                if (r - d > 0.0) {
+                    needMinus = Math.max(needMinus, (r - d) / w);
+                }
+            }
+        }
+
+        double sign;
+        double need;
+
+        if (this.offset != 0.0) {
+            // Multiple edges between the same pair: the offset already alternates sign across them, so use it to
+            // put the arcs on opposite sides, bowing at least far enough to separate them.
+            sign = Math.signum(this.offset);
+            need = Math.max(Math.abs(this.offset), sign > 0 ? needPlus : needMinus);
+        } else if (needPlus <= needMinus) {
+            sign = 1.0;
+            need = needPlus;
+        } else {
+            sign = -1.0;
+            need = needMinus;
+        }
+
+        return sign * Math.min(maxApex, Math.max(base, need));
+    }
+
+    /**
+     * Finds the curve parameter at which the quadratic Bezier (c1, ctrl, c2) crosses the boundary of the given node,
+     * searching between the given inside parameter (0 or 1, whose curve point is the node's center) and the curve
+     * midpoint.
+     *
+     * @return the boundary parameter, or NaN if the curve midpoint is itself inside the node (overlapping nodes), in
+     * which case the caller should fall back to straight rendering.
+     */
+    private static double exitParameter(DisplayNode comp, Point2D.Double c1, Point2D.Double ctrl,
+                                        Point2D.Double c2, double tInside) {
+        if (!containsCurvePoint(comp, c1, ctrl, c2, tInside)) {
+            return tInside;
+        }
+
+        double tOutside = 0.5;
+
+        if (containsCurvePoint(comp, c1, ctrl, c2, tOutside)) {
+            return Double.NaN;
+        }
+
+        for (int i = 0; i < 20; i++) {
+            double tm = (tInside + tOutside) / 2.0;
+
+            if (containsCurvePoint(comp, c1, ctrl, c2, tm)) {
+                tInside = tm;
+            } else {
+                tOutside = tm;
+            }
+        }
+
+        return tOutside;
+    }
+
+    private static boolean containsCurvePoint(DisplayNode comp, Point2D.Double c1, Point2D.Double ctrl,
+                                              Point2D.Double c2, double t) {
+        Point2D.Double p = DisplayEdge.bezierPoint(c1, ctrl, c2, t);
+        Point loc = comp.getLocation();
+        return comp.contains((int) Math.round(p.x) - loc.x, (int) Math.round(p.y) - loc.y);
+    }
+
+    /**
+     * The point of the quadratic Bezier (p0, p1, p2) at parameter t.
+     */
+    private static Point2D.Double bezierPoint(Point2D.Double p0, Point2D.Double p1, Point2D.Double p2, double t) {
+        return DisplayEdge.blossom(p0, p1, p2, t, t);
+    }
+
+    /**
+     * The polar form (blossom) of the quadratic Bezier (p0, p1, p2) at (s, t). blossom(t, t) is the curve point at
+     * t, and the control points of the curve restricted to [u, v] are blossom(u, u), blossom(u, v), blossom(v, v).
+     */
+    private static Point2D.Double blossom(Point2D.Double p0, Point2D.Double p1, Point2D.Double p2,
+                                          double s, double t) {
+        double a = (1.0 - s) * (1.0 - t);
+        double b = s * (1.0 - t) + t * (1.0 - s);
+        double c = s * t;
+        return new Point2D.Double(a * p0.x + b * p1.x + c * p2.x, a * p0.y + b * p1.y + c * p2.y);
+    }
+
+    @Override
+    public boolean contains(int x, int y) {
+        Shape clickRegion = getClickRegion();
+        return clickRegion != null && clickRegion.contains(x, y);
+    }
+
+    private Shape getClickRegion() {
         if ((this.clickRegion == null) && (getConnectedPoints() != null)) {
             this.clickRegion = getSleeve(getConnectedPoints());
         }
         return this.clickRegion;
     }
 
-    protected final void setClickRegion(Polygon clickRegion) {
+    protected final void setClickRegion(Shape clickRegion) {
         this.clickRegion = clickRegion;
     }
 
@@ -467,47 +797,62 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     //============================PRIVATE METHODS========================//
 
     protected final void drawEndpoints(PointPair pp, Graphics g) {
+        drawEndpoints(pp.getFrom(), pp.getTo(), pp.getTo(), pp.getFrom(), g);
+    }
+
+    /**
+     * Draws the endpoint decorations of this edge at the given endpoint positions, using separate direction anchors
+     * for each. For a straight edge each endpoint's direction anchor is the opposite endpoint; for a quadratic
+     * Bezier it is the control point, which both end tangents point at.
+     *
+     * @param pFrom     the position of the node-1 endpoint.
+     * @param pTo       the position of the node-2 endpoint.
+     * @param dirForFrom the point the decoration at pFrom points away from.
+     * @param dirForTo   the point the decoration at pTo points away from.
+     * @param g         the graphics to draw on.
+     */
+    private void drawEndpoints(Point pFrom, Point pTo, Point dirForFrom, Point dirForTo, Graphics g) {
         if (this.getModelEdge() != null) {
             Endpoint endpointA = this.getModelEdge().getEndpoint1();
             Endpoint endpointB = this.getModelEdge().getEndpoint2();
 
             if (endpointA == Endpoint.CIRCLE) {
-                drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
+                drawCircleEndpoint(dirForFrom, pFrom, g);
             } else if (endpointA == Endpoint.ARROW) {
-                drawArrowEndpoint(pp.getTo(), pp.getFrom(), g);
+                drawArrowEndpoint(dirForFrom, pFrom, g);
             }
 
             if (endpointB == Endpoint.CIRCLE) {
-                drawCircleEndpoint(pp.getFrom(), pp.getTo(), g);
+                drawCircleEndpoint(dirForTo, pTo, g);
             } else if (endpointB == Endpoint.ARROW) {
-                drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                drawArrowEndpoint(dirForTo, pTo, g);
             }
         } else {
             switch (this.type) {
                 case DisplayEdge.SESSION:
-                    drawSessionArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                    drawSessionArrowEndpoint(dirForTo, pTo, g);
                     break;
 
                 case DisplayEdge.DIRECTED:
-                    drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                    drawArrowEndpoint(dirForTo, pTo, g);
                     break;
 
                 case DisplayEdge.NONDIRECTED:
-                    drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
-                    drawCircleEndpoint(pp.getFrom(), pp.getTo(), g);
+                    drawCircleEndpoint(dirForFrom, pFrom, g);
+                    drawCircleEndpoint(dirForTo, pTo, g);
                     break;
 
                 case DisplayEdge.UNDIRECTED:
                     break;
 
                 case DisplayEdge.PARTIALLY_ORIENTED:
-                    drawCircleEndpoint(pp.getTo(), pp.getFrom(), g);
-                    drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
+                    drawCircleEndpoint(dirForFrom, pFrom, g);
+                    drawArrowEndpoint(dirForTo, pTo, g);
                     break;
 
                 case DisplayEdge.BIDIRECTED:
-                    drawArrowEndpoint(pp.getFrom(), pp.getTo(), g);
-                    drawArrowEndpoint(pp.getTo(), pp.getFrom(), g);
+                    drawArrowEndpoint(dirForTo, pTo, g);
+                    drawArrowEndpoint(dirForFrom, pFrom, g);
                     break;
 
                 default:
@@ -659,6 +1004,8 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     private void resetBounds() {
+        this.boundsForBezier = bezierApex() != 0.0;
+
         switch (this.mode) {
             case DisplayEdge.HALF_ANCHORED:
                 Rectangle temp = new Rectangle(this.mouseTrackPoint.x, this.mouseTrackPoint.y, 0, 0);
@@ -681,7 +1028,15 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
                 r1.translate(d.x, d.y);
                 r2.translate(d.x, d.y);
 
-                setBounds(r1.getBounds().union(r2.getBounds()));
+                Rectangle bounds = r1.getBounds().union(r2.getBounds());
+
+                // A curved edge bows outside the union of the node rectangles; grow the bounds so the curve and its
+                // endpoint decorations are not clipped.
+                if (this.boundsForBezier) {
+                    bounds.grow(DisplayEdge.BEZIER_BOUNDS_PAD, DisplayEdge.BEZIER_BOUNDS_PAD);
+                }
+
+                setBounds(bounds);
                 break;
 
             default:

@@ -32,7 +32,10 @@ import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
-import org.ejml.simple.SimpleEVD;
+import org.ejml.data.Complex_F64;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+import org.ejml.interfaces.decomposition.EigenDecomposition_F64;
 import org.ejml.simple.SimpleMatrix;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,6 +71,10 @@ public class LingD {
      * Spectral-radius tolerance for stability (rho < 1 - tol).
      */
     private static final double STAB_TOL = 1e-8;
+    /**
+     * Maximum number of matrix squarings in the Gelfand fallback for the spectral radius.
+     */
+    private static final int GELFAND_MAX_SQUARINGS = 64;
     /**
      * Entries |W_ij| < wThreshold -> 0 before permutation search.
      */
@@ -191,25 +198,106 @@ public class LingD {
 
     /**
      * Spectral-radius stability with small tolerance.
+     * <p>
+     * Robustness: only the eigenvalues are needed here, so a values-only eigendecomposition is used.
+     * (SimpleMatrix.eig() also extracts eigenvectors, and EJML's eigenvector extraction routinely
+     * fails on the unstable B̂ candidates this method is asked about, throwing "Eigenvalue
+     * Decomposition failed" and killing the whole LiNG-D run.) If even the values-only
+     * decomposition fails to converge, the decision falls back to a norm-based spectral-radius
+     * bound (Gelfand's formula via repeated squaring), which certifies stability when it returns
+     * true and is conservative otherwise. A B̂ with non-finite entries is reported as not stable.
      *
      * @param bHat the matrix to check for spectral radius stability
      * @return true if the spectral radius of the matrix is less than 1 - STAB_TOL, false otherwise
      */
     public static boolean isStable(Matrix bHat) {
-        SimpleMatrix B = bHat.getSimpleMatrix();
-        SimpleEVD<SimpleMatrix> evd = B.eig();
-
-        for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
-            double real = evd.getEigenvalue(i).getReal();
-            double imag = evd.getEigenvalue(i).getImaginary();
-            double mod = TMath.hypot(real, imag);
-
-            if (!(mod < 1.0 - STAB_TOL)) {
-                return false;
+        // Non-finite entries cannot belong to a stable model, and the eigenvalue code below
+        // would fail on them.
+        for (int i = 0; i < bHat.getNumRows(); i++) {
+            for (int j = 0; j < bHat.getNumColumns(); j++) {
+                if (!Double.isFinite(bHat.get(i, j))) {
+                    return false;
+                }
             }
         }
 
-        return true;
+        DMatrixRMaj B = bHat.getSimpleMatrix().getDDRM().copy();
+        EigenDecomposition_F64<DMatrixRMaj> evd = DecompositionFactory_DDRM.eig(B.numCols, false);
+
+        if (evd.decompose(B)) {
+            boolean sawNaN = false;
+
+            for (int i = 0; i < evd.getNumberOfEigenvalues(); i++) {
+                Complex_F64 eig = evd.getEigenvalue(i);
+                double mod = TMath.hypot(eig.getReal(), eig.getImaginary());
+
+                if (Double.isNaN(mod)) {
+                    sawNaN = true;
+                    break;
+                }
+
+                if (!(mod < 1.0 - STAB_TOL)) {
+                    return false;
+                }
+            }
+
+            if (!sawNaN) {
+                return true;
+            }
+        }
+
+        // The eigendecomposition did not converge (or returned NaN eigenvalues); decide from
+        // the Gelfand bound instead.
+        TetradLogger.getInstance().log("Eigenvalue decomposition did not converge for a candidate B matrix; "
+                                       + "deciding stability from a norm-based spectral-radius bound instead.");
+        return spectralRadiusCertifiedBelow(bHat.getSimpleMatrix(), 1.0 - STAB_TOL);
+    }
+
+    /**
+     * Decides whether the spectral radius of B is below the given (positive) limit, without an
+     * eigendecomposition. Uses Gelfand's formula: for any submultiplicative norm,
+     * ||B^k||^(1/k) decreases to rho(B) along powers of two, so each value of
+     * ||B^(2^k)||_F^(1/2^k) is an upper bound on rho(B). B is squared repeatedly, normalized by
+     * its Frobenius norm at each step to prevent overflow, with the log of the accumulated norm
+     * tracked separately.
+     * <p>
+     * A return of true certifies rho(B) < limit. A return of false means the bound never fell
+     * below the limit within the iteration budget: either rho(B) >= limit, or rho(B) lies within
+     * numerical hair of it — conservative for a stability check.
+     *
+     * @param B     the square matrix whose spectral radius is bounded; must have finite entries
+     * @param limit the positive threshold to certify against
+     * @return true if rho(B) is certified to be below the limit
+     */
+    static boolean spectralRadiusCertifiedBelow(SimpleMatrix B, double limit) {
+        SimpleMatrix A = B.copy();
+        double logNorm = 0.0; // log of the accumulated normalization factor, so that
+        double pow = 1.0;     // ||B^pow||_F = exp(logNorm) * ||A||_F.
+
+        for (int k = 0; k < GELFAND_MAX_SQUARINGS; k++) {
+            double f = A.normF();
+
+            if (f == 0.0) {
+                return true; // Nilpotent at this power: rho(B) = 0 < limit.
+            }
+
+            if (!Double.isFinite(f)) {
+                return false;
+            }
+
+            double bound = Math.exp((logNorm + Math.log(f)) / pow); // >= rho(B).
+
+            if (bound < limit) {
+                return true;
+            }
+
+            A = A.divide(f);
+            A = A.mult(A);
+            logNorm = 2.0 * (logNorm + Math.log(f));
+            pow *= 2.0;
+        }
+
+        return false;
     }
 
     /**

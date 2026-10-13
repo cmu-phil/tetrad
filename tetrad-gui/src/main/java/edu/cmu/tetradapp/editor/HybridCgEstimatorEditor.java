@@ -108,10 +108,31 @@ public final class HybridCgEstimatorEditor extends JPanel {
         });
 
         statusBar.add(bicLabel);
+        statusBar.add(PlotMatrixForSelected.button(graphView::getWorkbench, wrapper::getDataSet,
+                () -> this.dataWrapper == null ? null : this.dataWrapper.getDataModelList()));
 
         JPanel right = new JPanel(new BorderLayout());
         right.add(tabs, BorderLayout.CENTER);
         right.add(statusBar, BorderLayout.SOUTH);
+
+        // One IM was estimated per data set; this chooses which one is shown and handed downstream.
+        if (wrapper.getNumModels() > 1 && this.dataWrapper != null
+            && this.dataWrapper.getDataModelList().size() == wrapper.getNumModels()) {
+            Box chooser = DataSetChooser.create(this.dataWrapper.getDataModelList(), wrapper.getModelIndex(),
+                    index -> {
+                        wrapper.setModelIndex(index);
+                        HybridCgIm chosen = wrapper.getEstimatedHybridCgIm();
+                        if (chosen != null) showIm(chosen);
+                        updateBic();
+                        firePropertyChange("modelChanged", null, null);
+                    });
+
+            if (chooser != null) {
+                chooser.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+                chooser.add(Box.createHorizontalGlue());
+                right.add(chooser, BorderLayout.NORTH);
+            }
+        }
 
         settings.setPreferredSize(new Dimension(320, 400));
         right.setPreferredSize(new Dimension(600, 400));
@@ -284,7 +305,14 @@ public final class HybridCgEstimatorEditor extends JPanel {
     }
 
     private void showIm(HybridCgIm im) {
+        // A new embedded editor opens on its first variable. Keep the variable that was showing, so that
+        // re-estimating or choosing a different data set leaves the table on the same variable (matched by
+        // name; selectVariable fires no event, so the graph selection is not disturbed). The graph view keeps
+        // its own selection across the update; see HybridCgGraphViewer.update.
+        Node previous = this.imEditor == null ? null : this.imEditor.getSelectedVariable();
+
         HybridCgImEditor editor = new HybridCgImEditor(im);
+        editor.selectVariable(previous);
         this.imEditor = editor;
         editor.addPropertyChangeListener("modelChanged",
                 evt -> firePropertyChange("modelChanged", null, null));

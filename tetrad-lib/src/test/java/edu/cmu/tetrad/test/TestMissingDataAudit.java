@@ -170,9 +170,12 @@ public class TestMissingDataAudit {
 
         assertEquals(20, MissingDataSpec.multipleImputation(20).getNumImputations());
 
+        // A single imputation is allowed (it shows no uncertainty, but is legitimate for a quick look).
+        assertEquals(1, MissingDataSpec.multipleImputation(1).getNumImputations());
+
         try {
-            MissingDataSpec.multipleImputation(1);
-            throw new AssertionError("Expected an IllegalArgumentException for m = 1.");
+            MissingDataSpec.multipleImputation(0);
+            throw new AssertionError("Expected an IllegalArgumentException for m = 0.");
         } catch (IllegalArgumentException e) {
             // Expected.
         }

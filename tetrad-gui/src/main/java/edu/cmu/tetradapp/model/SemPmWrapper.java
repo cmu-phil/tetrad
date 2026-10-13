@@ -139,7 +139,7 @@ public class SemPmWrapper implements SessionModel {
     public SemPmWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph() instanceof TimeLagGraph
                 ? new TimeLagGraph((TimeLagGraph) graphWrapper.getGraph())
-                : new EdgeListGraph(graphWrapper.getGraph()));
+                : new EdgeListGraph(graphWrapper.getGraph(), true));
     }
 
     /**
@@ -150,7 +150,7 @@ public class SemPmWrapper implements SessionModel {
      * @param parameters  a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public SemPmWrapper(GraphSource graphSource, DataWrapper dataWrapper, Parameters parameters) {
-        this(new EdgeListGraph(graphSource.getGraph()));
+        this(new EdgeListGraph(graphSource.getGraph(), true));
     }
 
     /**
@@ -197,7 +197,7 @@ public class SemPmWrapper implements SessionModel {
      * @param wrapper a {@link edu.cmu.tetradapp.model.AlgorithmRunner} object
      */
     public SemPmWrapper(AlgorithmRunner wrapper) {
-        this(new EdgeListGraph(wrapper.getGraph()));
+        this(new EdgeListGraph(wrapper.getGraph(), true));
     }
 
     /**
@@ -206,7 +206,7 @@ public class SemPmWrapper implements SessionModel {
      * @param wrapper a {@link DagFromCPDAGWrapper} object
      */
     public SemPmWrapper(DagFromCPDAGWrapper wrapper) {
-        this(new EdgeListGraph(wrapper.getGraph()));
+        this(new EdgeListGraph(wrapper.getGraph(), true));
     }
 
     /**
@@ -215,7 +215,7 @@ public class SemPmWrapper implements SessionModel {
      * @param wrapper a {@link edu.cmu.tetradapp.model.ScoredGraphsWrapper} object
      */
     public SemPmWrapper(ScoredGraphsWrapper wrapper) {
-        this(new EdgeListGraph(wrapper.getGraph()));
+        this(new EdgeListGraph(wrapper.getGraph(), true));
     }
 
     /**

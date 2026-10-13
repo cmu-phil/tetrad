@@ -212,7 +212,7 @@ public class PagLegalityCheck {
      * Every mark in an accepted graph is therefore either invariant in the Markov equivalence class of the implied
      * MAG or forced by knowledge (directly or via rule propagation). A graph that is "between a MAG and a PAG" for
      * any OTHER reason -- e.g., a non-invariant collider stamped from a noisy sepset -- still fails, exactly as under
-     * the strict certificate. This mirrors the certificate of StarFciKeepKnowledgeOrientations; it is needed by any
+     * the strict certificate. This mirrors the modulo-knowledge certificate of StarFci (legalPagModuloKnowledge); it is needed by any
      * search that pins knowledge marks and then gates candidate graphs on legality, since knowledge-refined marks
      * (e.g., a tier arrowhead sharpening a class circle) always fail the strict round-trip equality.
      *

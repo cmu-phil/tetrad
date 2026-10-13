@@ -35,10 +35,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Displays data objects and allows users to edit these objects as well as load and save them.
@@ -75,6 +77,11 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     // Avoid stacking multiple change listeners across resets.
     private boolean selectionListenerInstalled = false;
+
+    /**
+     * True while a table is being redrawn for a display option only, so that the redraw is not taken for an edit.
+     */
+    private boolean displayOnlyTableChange = false;
 
     //==========================CONSTRUCTORS===============================//
 
@@ -201,9 +208,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                     menu.show(DataEditor.this, point.x, point.y);
 
                     close.addActionListener(e1 -> {
+                        // closeTab() reports the change itself if a tab was actually closed.
                         closeTab();
                         DataEditor.this.grabFocus();
-                        firePropertyChange("modelChanged", null, null);
                     });
                 }
             }
@@ -743,7 +750,15 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             TabularDataJTable tableTabular
                     = (TabularDataJTable) selectedJTable1;
             JCheckBoxMenuItem source = (JCheckBoxMenuItem) e.getSource();
-            tableTabular.setShowCategoryNames(source.isSelected());
+
+            // Display only: redraws the cells without changing the data.
+            this.displayOnlyTableChange = true;
+
+            try {
+                tableTabular.setShowCategoryNames(source.isSelected());
+            } finally {
+                this.displayOnlyTableChange = false;
+            }
         });
 
 //        editMenu.add(clearCells);
@@ -1010,18 +1025,39 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             JTable table = dataDisplay.getDataDisplayJTable();
             if (table != null) {
                 table.getModel().addTableModelListener(e -> {
+                    if (this.displayOnlyTableChange) {
+                        return;
+                    }
+
                     syncDisplayedModelsToWrapper();
                     firePropertyChange("modelChanged", null, null);
                 });
 
-                // Also sync when column selection changes, since that updates
-                // DataSet.selection but does not fire a tableChanged event.
-                table.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
-                    if (!e.getValueIsAdjusting()) {
-                        syncDisplayedModelsToWrapper();
-                        firePropertyChange("modelChanged", null, null);
-                    }
-                });
+                // Also sync when the set of selected variables changes, since that updates
+                // DataSet.selection but does not fire a tableChanged event. Clicking around in
+                // the cells moves the column selection without selecting any variable, which is
+                // not a change to the model. The check is deferred so that the table has
+                // finished updating DataSet.selection for this event.
+                if (table instanceof TabularDataJTable tabular) {
+                    AtomicReference<List<Node>> lastSelected
+                            = new AtomicReference<>(selectedVariables(tabular.getDataSet()));
+
+                    table.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
+                        if (e.getValueIsAdjusting()) {
+                            return;
+                        }
+
+                        SwingUtilities.invokeLater(() -> {
+                            List<Node> selected = selectedVariables(tabular.getDataSet());
+
+                            if (!selected.equals(lastSelected.get())) {
+                                lastSelected.set(selected);
+                                syncDisplayedModelsToWrapper();
+                                firePropertyChange("modelChanged", null, null);
+                            }
+                        });
+                    });
+                }
             }
 
             return dataDisplay;
@@ -1034,6 +1070,18 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         } else {
             throw new IllegalArgumentException("Unrecognized data type.");
         }
+    }
+
+    private static List<Node> selectedVariables(DataSet dataSet) {
+        List<Node> selected = new ArrayList<>();
+
+        for (Node variable : dataSet.getVariables()) {
+            if (dataSet.isSelected(variable)) {
+                selected.add(variable);
+            }
+        }
+
+        return selected;
     }
 
     private JTabbedPane tabbedPane() {

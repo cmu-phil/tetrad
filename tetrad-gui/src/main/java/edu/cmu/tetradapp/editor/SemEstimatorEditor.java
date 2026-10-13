@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.missing.RubinsRules;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
@@ -62,7 +63,21 @@ import java.util.Map;
  * @author josephramsey
  * @version $Id: $Id
  */
-public final class SemEstimatorEditor extends JPanel {
+public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
+
+    /**
+     * This editor is not wrapped in an outer scroll pane by the editor window (see {@link DoNotScroll}), since that
+     * would scroll the menu bar out of view along with the contents; the panes inside it scroll instead. So that the
+     * window still fits on the screen for a large model, the preferred size is capped to the screen here.
+     *
+     * @return the preferred size, no larger than the screen less a margin.
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension size = super.getPreferredSize();
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        return new Dimension(Math.min(size.width, screen.width - 50), Math.min(size.height, screen.height - 200));
+    }
     @Serial
     private static final long serialVersionUID = 960988184083427499L;
 
@@ -79,12 +94,18 @@ public final class SemEstimatorEditor extends JPanel {
     /**
      * The data set for the SEM estimator.
      */
-    private final DataSet dataSet;
+    private DataSet dataSet;
 
     /**
      * The SEM estimator wrapper.
      */
     private final SemEstimatorWrapper wrapper;
+
+    /**
+     * The robust (Satorra-Bentler) statistics for the current estimate, or null when robust statistics are switched
+     * off, no tabular data set is available, or the computation failed.
+     */
+    private transient SemSandwichEstimator sandwich;
 
     /**
      * The title for the graphical editor tab.
@@ -186,6 +207,38 @@ public final class SemEstimatorEditor extends JPanel {
         scoreBox.setSelectedItem(scoreType.toString());
         restarts.setValue(wrapper.getParams().getInt("numRestarts", 1));
 
+        JCheckBox robustCheck = new JCheckBox("Robust stats");
+        robustCheck.setToolTipText("<html>Satorra-Bentler robust (sandwich) standard errors and scaled chi-square,"
+                                   + "<br>for data with non-normal (e.g., heavy-tailed) variables. Requires a tabular"
+                                   + "<br>data set, since fourth moments are estimated from the data. Coefficient"
+                                   + "<br>standard errors change little; standard errors of variance parameters and"
+                                   + "<br>the model chi-square are corrected for kurtosis.</html>");
+        robustCheck.setSelected(wrapper.getParams().getBoolean("semRobustStatistics", false));
+        robustCheck.setEnabled(this.dataSet != null);
+
+        robustCheck.addActionListener((e) -> {
+            wrapper.getParams().set("semRobustStatistics", robustCheck.isSelected());
+
+            class RobustProcess extends WatchedProcess {
+                @Override
+                public void watch() {
+                    try {
+                        applyRobustStatistics();
+                        resetSemImEditor();
+                    } catch (Exception ex) {
+                        wrapper.getParams().set("semRobustStatistics", false);
+                        robustCheck.setSelected(false);
+                        SemEstimatorEditor.this.sandwich = null;
+                        resetSemImEditor();
+                        JOptionPane.showMessageDialog(robustCheck,
+                                "Could not compute robust statistics for these data:\n" + ex.getMessage());
+                    }
+                }
+            }
+
+            new RobustProcess();
+        });
+
         JButton estimateButton = new JButton("Estimate Again");
 
         estimateButton.addActionListener((e) -> {
@@ -226,6 +279,44 @@ public final class SemEstimatorEditor extends JPanel {
 
         Box lowerBar = Box.createHorizontalBox();
         lowerBar.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+
+        // The parent data box holds several data sets: say which one the estimate is from, and let another be
+        // chosen, which re-estimates on it with the settings showing.
+        Box dataChooser = DataSetChooser.create(wrapper.getDataModels(), wrapper.getDataIndex(), index -> {
+            class ChooseDataProcess extends WatchedProcess {
+                @Override
+                public void watch() {
+                    try {
+                        wrapper.setDataIndex(index);
+                        SemEstimatorEditor.this.dataSet = wrapper.getSemEstimator().getDataSet();
+                        robustCheck.setEnabled(SemEstimatorEditor.this.dataSet != null);
+
+                        try {
+                            applyRobustStatistics();
+                        } catch (Exception ex) {
+                            SemEstimatorEditor.this.sandwich = null;
+                            TetradLogger.getInstance().log("Robust statistics not computed: " + ex.getMessage());
+                        }
+
+                        resetSemImEditor();
+                        firePropertyChange("modelChanged", null, null);
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(estimateButton,
+                                "Could not estimate on that data set; the estimate shown is still from data set "
+                                + (wrapper.getDataIndex() + 1) + ".\n" + ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            new ChooseDataProcess();
+        });
+
+        if (dataChooser != null) {
+            lowerBar.add(dataChooser);
+            lowerBar.add(Box.createHorizontalStrut(12));
+        }
+
         lowerBar.add(new JLabel("Optimizer:"));
         lowerBar.add(Box.createHorizontalStrut(4));
         lowerBar.add(fixSize(optimizerCombo));
@@ -237,15 +328,98 @@ public final class SemEstimatorEditor extends JPanel {
         lowerBar.add(new JLabel("Random restarts:"));
         lowerBar.add(Box.createHorizontalStrut(4));
         lowerBar.add(fixSize(restarts));
+        lowerBar.add(Box.createHorizontalStrut(12));
+        lowerBar.add(robustCheck);
         lowerBar.add(Box.createHorizontalGlue());
+        if (this.dataSet != null) {
+            lowerBar.add(PlotMatrixForSelected.button(
+                    () -> this.oneEditorPanel == null ? null : this.oneEditorPanel.getWorkbench(),
+                    () -> this.dataSet, wrapper::getDataModels));
+            lowerBar.add(Box.createHorizontalStrut(8));
+        }
+
         lowerBar.add(report);
+
+        // Several data sets: offer the estimates pooled over all of them.
+        if (wrapper.getDataModels() != null && wrapper.getDataModels().size() > 1) {
+            JButton pooled = new JButton("Pooled Report");
+            pooled.setToolTipText("<html>Estimate on every data set and pool the estimates by Rubin's rules."
+                                  + "<br>For imputations of one data set only.</html>");
+
+            pooled.addActionListener((e) -> {
+                class PooledProcess extends WatchedProcess {
+                    @Override
+                    public void watch() {
+                        try {
+                            String text = compilePooledReport(wrapper.estimateOnAllDataModels());
+
+                            SwingUtilities.invokeLater(() -> {
+                                JTextArea textArea = new JTextArea(text);
+                                textArea.setEditable(false);
+                                textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+                                textArea.setCaretPosition(0);
+
+                                JScrollPane scroll = new JScrollPane(textArea);
+                                scroll.setPreferredSize(new Dimension(900, 450));
+
+                                JPanel editorPanel = new JPanel(new BorderLayout());
+                                editorPanel.add(scroll, BorderLayout.CENTER);
+
+                                EditorWindow window = new EditorWindow(editorPanel,
+                                        "Pooled Parameter Estimates", "Close", false, SemEstimatorEditor.this);
+                                DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
+                                window.setVisible(true);
+                            });
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            SwingUtilities.invokeLater(
+                                    () -> JOptionPane.showMessageDialog(pooled, ex.getMessage()));
+                        }
+                    }
+                }
+
+                new PooledProcess();
+            });
+
+            lowerBar.add(Box.createHorizontalStrut(8));
+            lowerBar.add(pooled);
+        }
         lowerBar.add(Box.createHorizontalStrut(8));
         lowerBar.add(estimateButton);
 
         add(lowerBar, BorderLayout.SOUTH);
 
         updateSettingEnabling(optimizerCombo, scoreBox, restarts);
+
+        try {
+            applyRobustStatistics();
+        } catch (Exception e) {
+            this.sandwich = null;
+            TetradLogger.getInstance().log("Robust statistics not computed: " + e.getMessage());
+        }
+
         resetSemImEditor();
+    }
+
+    /**
+     * Computes or clears the robust (Satorra-Bentler) statistics for the current estimate, according to the
+     * robust-statistics setting and the availability of a tabular data set, and installs or clears the robust standard
+     * errors on the estimated SEM so that the tabular editor and the report show them.
+     */
+    private void applyRobustStatistics() {
+        SemIm estSem = this.wrapper.getEstimatedSemIm();
+        this.sandwich = null;
+
+        if (estSem == null) {
+            return;
+        }
+
+        if (this.wrapper.getParams().getBoolean("semRobustStatistics", false) && this.dataSet != null) {
+            this.sandwich = new SemSandwichEstimator(estSem, this.dataSet);
+            estSem.setRobustStandardErrors(this.sandwich.getRobustStdErrs());
+        } else {
+            estSem.setRobustStandardErrors(null);
+        }
     }
 
     /**
@@ -278,6 +452,83 @@ public final class SemEstimatorEditor extends JPanel {
                 : "Restarts apply only to the EM, Powell, and Random Search optimizers.");
     }
 
+    /**
+     * The estimates from each data set pooled by Rubin's rules: one row per free parameter and per variable mean.
+     */
+    private String compilePooledReport(List<SemIm> ims) {
+        SemIm first = ims.getFirst();
+        int m = ims.size();
+        int nameWidth = 4;
+
+        for (Node node : first.getSemPm().getGraph().getNodes()) {
+            nameWidth = TMath.max(nameWidth, node.getName().length());
+        }
+
+        nameWidth += 2;
+
+        String rowFormat = "%-" + nameWidth + "s %-" + nameWidth + "s %-8s %12s %12s %12s %10s %12s %8s %12s %12s%n";
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Estimates pooled over ").append(m).append(" data sets by Rubin's rules.\n\n");
+        builder.append("Value is the mean of the ").append(m).append(" estimates. SE combines the average squared\n");
+        builder.append("standard error within a data set with the variance of the estimate between data\n");
+        builder.append("sets, so it includes the uncertainty due to the missing values, which the SE from\n");
+        builder.append("any one data set leaves out. FMI is the fraction of the information about the\n");
+        builder.append("parameter that was lost to missing data. Min and Max are over the data sets.\n\n");
+        builder.append("Valid only if the data sets are imputations of one data set; not for independent\n");
+        builder.append("samples, different subjects or different conditions. Tetrad's imputers do not draw\n");
+        builder.append("the imputation model's parameters, so the between-data-set variance, and with it\n");
+        builder.append("SE and FMI, are somewhat understated. The model chi-square is not pooled.\n\n");
+        builder.append(String.format(rowFormat, "From", "To", "Type", "Value", "SE", "T", "DF", "P", "FMI",
+                "Min", "Max"));
+
+        final int maxFreeParamsForStatistics = 200;
+        double completeDataDf = first.getSampleSize() - first.getNumFreeParams();
+
+        for (Parameter parameter : first.getFreeParameters()) {
+            double[] estimates = new double[m];
+            double[] standardErrors = new double[m];
+
+            for (int i = 0; i < m; i++) {
+                // The parameter itself, so that the estimate and its standard error are on the same scale; for a
+                // variance that is the variance, where the single-data-set report shows its square root.
+                estimates[i] = ims.get(i).getParamValue(parameter);
+                standardErrors[i] = ims.get(i).getStandardError(parameter, maxFreeParamsForStatistics);
+            }
+
+            appendPooledRow(builder, rowFormat, String.valueOf(parameter.getNodeA()),
+                    String.valueOf(parameter.getNodeB()),
+                    parameter.getType() == ParamType.VAR ? "Variance" : typeString(parameter),
+                    RubinsRules.pool(estimates, standardErrors, completeDataDf));
+        }
+
+        for (Node node : first.getVariableNodes()) {
+            double[] estimates = new double[m];
+            double[] standardErrors = new double[m];
+
+            for (int i = 0; i < m; i++) {
+                SemIm im = ims.get(i);
+                Node variable = im.getSemPm().getGraph().getNode(node.getName());
+                estimates[i] = im.getMean(variable);
+                standardErrors[i] = im.getMeanStdDev(variable) / TMath.sqrt(im.getSampleSize());
+            }
+
+            appendPooledRow(builder, rowFormat, node.getName(), node.getName(), "Mean",
+                    RubinsRules.pool(estimates, standardErrors, first.getSampleSize() - 1));
+        }
+
+        return builder.toString();
+    }
+
+    private void appendPooledRow(StringBuilder builder, String rowFormat, String from, String to, String type,
+                                 RubinsRules.Pooled pooled) {
+        builder.append(String.format(rowFormat, from, to, type,
+                asString(pooled.estimate()), asString(pooled.standardError()), asString(pooled.t()),
+                String.format("%.1f", pooled.degreesOfFreedom()), asString(pooled.pValue()),
+                String.format("%.3f", pooled.fractionMissingInformation()),
+                asString(pooled.min()), asString(pooled.max())));
+    }
+
     private String compileReport() {
         SemIm estSem = this.wrapper.getEstimatedSemIm();
 
@@ -294,6 +545,11 @@ public final class SemEstimatorEditor extends JPanel {
 
         StringBuilder builder = new StringBuilder();
         builder.append("Dataset: ").append(this.dataSet.getName()).append("\n\n");
+
+        if (this.sandwich != null) {
+            builder.append("Standard errors are robust (Satorra-Bentler sandwich) estimates.\n\n");
+        }
+
         builder.append(String.format(rowFormat, "From", "To", "Type", "Value", "SE", "T", "P"));
 
         // Maximum number of free parameters for which statistics will be calculated. (Calculating standard errors
@@ -401,6 +657,14 @@ public final class SemEstimatorEditor extends JPanel {
         estimator.setScoreType(this.wrapper.getScoreType());
 
         estimator.estimate();
+
+        try {
+            applyRobustStatistics();
+        } catch (Exception e) {
+            this.sandwich = null;
+            TetradLogger.getInstance().log("Robust statistics not computed: " + e.getMessage());
+        }
+
         resetSemImEditor();
     }
 
@@ -618,10 +882,10 @@ public final class SemEstimatorEditor extends JPanel {
         private static final long serialVersionUID = -9096723049787232471L;
 
         private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        private final SemEstimatorWrapper wrapper;
+        private final SemEstimatorEditor editor;
 
-        public ModelStatisticsPanel(SemEstimatorWrapper wrapper) {
-            this.wrapper = wrapper;
+        public ModelStatisticsPanel(SemEstimatorEditor editor) {
+            this.editor = editor;
             setEditable(false);
             setMargin(new Insets(8, 8, 8, 8));
             reset();
@@ -687,6 +951,22 @@ public final class SemEstimatorEditor extends JPanel {
                         + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
             }
 
+            SemSandwichEstimator sandwich = this.editor.sandwich;
+
+            if (sandwich != null && modelDof > 0) {
+                append("\n\nSatorra-Bentler scaled Chi Square = " + this.nf.format(sandwich.getScaledChiSquare()));
+                append("\nSatorra-Bentler scaling factor c = " + this.nf.format(sandwich.getScalingFactor()));
+                double sp = sandwich.getScaledPValue();
+                String spString = sp > 0.001 ? this.nf.format(sp) : new DecimalFormat("0.0000E0").format(sp);
+                append("\nScaled P Value = " + (Double.isNaN(sp) ? "undefined" : spString));
+                append("\n\nRobust statistics are showing: the scaled chi square divides the "
+                       + "chi square by the scaling factor c, which corrects the test for "
+                       + "non-normality using fourth moments estimated from the data (Satorra "
+                       + "and Bentler, 1994), and the standard errors in the tabular editor "
+                       + "and the report are robust (sandwich) estimates. Under normal data "
+                       + "c is close to 1 and the two tests agree.");
+            }
+
             append("\n\nThe above chi square test assumes that the maximum "
                     + "likelihood function over the measured variables has been "
                     + "minimized. Under that assumption, the null hypothesis for "
@@ -708,7 +988,7 @@ public final class SemEstimatorEditor extends JPanel {
         }
 
         private ISemIm semIm() {
-            return this.wrapper.getEstimatedSemIm();
+            return this.editor.wrapper.getEstimatedSemIm();
         }
     }
 
@@ -934,6 +1214,11 @@ public final class SemEstimatorEditor extends JPanel {
             this.semImWrapper = wrapper;
             this.graphicalEditorTitle = graphicalEditorTitle;
             this.tabularEditorTitle = tabularEditorTitle;
+
+            // The SEM graph is shared with the SEM PM, so the flag may have been left on elsewhere.
+            // Error terms are hidden when the editor opens; "Show Error Terms" turns them on.
+            getSemGraph().setShowErrorTerms(false);
+
             displaySemIm(graphicalEditorTitle, tabularEditorTitle, tabbedPaneDefault);
         }
 
@@ -1075,7 +1360,7 @@ public final class SemEstimatorEditor extends JPanel {
                 }
             });
 
-            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient");
+            JCheckBoxMenuItem shadeEdges = new JCheckBoxMenuItem("Shade edges by coefficient", true);
             shadeEdges.setToolTipText("Color edges blue (positive) or vermillion (negative), darker for larger "
                     + "|coefficient| relative to the largest in the model; error covariances by their correlation.");
             shadeEdges.addActionListener((e) -> graphicalEditor().setShadeEdges(shadeEdges.isSelected()));
@@ -1305,7 +1590,7 @@ public final class SemEstimatorEditor extends JPanel {
 
         private ModelStatisticsPanel modelStatisticsPanel() {
             if (this.modelStatisticsPanel == null) {
-                this.modelStatisticsPanel = new ModelStatisticsPanel(SemEstimatorEditor.this.wrapper);
+                this.modelStatisticsPanel = new ModelStatisticsPanel(SemEstimatorEditor.this);
             }
             return this.modelStatisticsPanel;
         }
@@ -1397,8 +1682,13 @@ public final class SemEstimatorEditor extends JPanel {
             };
             this.tableModel = new ParamTableModel(wrapper, editor, maxFreeParamsForStatistics);
             table.setModel(getTableModel());
+
+            // The table also refreshes for display options (means, intercepts, correlations), so only report a
+            // model change when a parameter value was actually set.
             this.tableModel.addTableModelListener((e) -> {
-                this.firePropertyChange("modelChanged", null, null);
+                if (this.tableModel.consumeEdited()) {
+                    this.firePropertyChange("modelChanged", null, null);
+                }
             });
 
             TableRowSorter<ParamTableModel> sorter = new TableRowSorter<>(this.tableModel);
@@ -1455,6 +1745,20 @@ public final class SemEstimatorEditor extends JPanel {
     }
 
     final class ParamTableModel extends AbstractTableModel {
+
+        /**
+         * True if a parameter value has been set since the flag was last consumed.
+         */
+        private boolean edited;
+
+        /**
+         * True if a parameter value was set since the last call; resets the flag.
+         */
+        boolean consumeEdited() {
+            boolean wasEdited = this.edited;
+            this.edited = false;
+            return wasEdited;
+        }
 
         private static final long serialVersionUID = 2210883212769846304L;
 
@@ -1643,6 +1947,12 @@ public final class SemEstimatorEditor extends JPanel {
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
             if (columnIndex == 3) {
+                // Committing a cell without retyping it leaves the parameter alone. (Re-parsing the displayed,
+                // rounded text would otherwise change the parameter's value.)
+                if (String.valueOf(aValue).equals(String.valueOf(getValueAt(rowIndex, columnIndex)))) {
+                    return;
+                }
+
                 try {
                     double value = Double.parseDouble((String) aValue);
 
@@ -1668,7 +1978,7 @@ public final class SemEstimatorEditor extends JPanel {
                             }
                         }
 
-                        this.editor.firePropertyChange("modelChanged", 0, 0);
+                        this.edited = true;
 
                     } else if (rowIndex >= numParams) {
                         int index = rowIndex - numParams;
@@ -1680,7 +1990,7 @@ public final class SemEstimatorEditor extends JPanel {
                             } else if (this.editor.nodeParamDisplay() == 1) {
                                 semIm().setMean(node, value);
                             }
-                            this.editor.firePropertyChange("modelChanged", 0, 0);
+                            this.edited = true;
 
                         }
                     }
@@ -1779,7 +2089,7 @@ public final class SemEstimatorEditor extends JPanel {
         /**
          * Whether display edges are shaded by coefficient sign and relative magnitude.
          */
-        private boolean shadeEdges = false;
+        private boolean shadeEdges = true;
 
         /**
          * Constructs a SemIm graphical editor for the given SemIm.

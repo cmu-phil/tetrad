@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
+import edu.cmu.tetrad.data.missing.TestwiseRows;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
@@ -440,10 +441,15 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         } else {
             List<Integer> rows = listRows();
             pc = partialCorrelation(x, y, z, null, rows);
-            // An explicitly set effective sample size is honored here too; previously it was
-            // silently replaced by the row count whenever rows were set (as the Markov Checker
-            // always does), making the parameter a no-op for this test.
-            n = this.essExplicit ? TMath.min(this.nEff, rows.size()) : rows.size();
+            // The sample size is the number of rows complete on x, y and every member of z -- the
+            // rows the partial correlation was actually computed on. Previously it was rows.size(),
+            // the count of candidate rows, which under test-wise deletion is the full row count N;
+            // the df then credited the test with N - m rows it never saw, inflating the z-statistic
+            // by about sqrt(N / m) and over-rejecting. On complete data the two counts coincide.
+            // An explicitly set effective sample size is honored here too, capped by that count;
+            // previously it was silently replaced by the row count whenever rows were set (as the
+            // Markov Checker always does), making the parameter a no-op for this test.
+            n = this.essExplicit ? TMath.min(this.nEff, pc.n()) : pc.n();
         }
 
         final double r = pc.r();
@@ -688,9 +694,20 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i).getName());
 
         Matrix corSub;
+        final int completeRows;
         if (cov != null) {
             corSub = cov.getSelection(indices, indices); // correlation submatrix
+            completeRows = -1;
         } else {
+            // Same row set getCov uses (cached in TestwiseRows), so the count matches the estimate.
+            completeRows = TestwiseRows.forDataSet(this.dataSet).validRows(indices, rows).size();
+            // With fewer than |z| + 4 complete rows the Fisher z df (m - 3 - |z|) is below 1 and the
+            // correlation is undefined or rank deficient (sparse data under test-wise deletion). Report
+            // it as singular -- checkIndependence then records "dependent", keeping the adjacency --
+            // rather than aborting the search, as SemBicScore treats such a family as unscorable.
+            if (completeRows < indices.length + 2) {
+                throw new SingularMatrixException();
+            }
             Matrix covM = SemBicScore.getCov(rows, indices, indices, this.dataSet, null);
             corSub = edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr(covM);
         }
@@ -710,7 +727,7 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             }
             case LEDOIT_WOLF -> {
                 int p = corSub.getNumRows();
-                int n = (cov != null ? getEffectiveSampleSize() : (rows == null ? getSampleSize() : rows.size()));
+                int n = (cov != null ? getEffectiveSampleSize() : completeRows);
                 if (p >= 2 && n > 1) {
                     double denom = 0.0, num = 0.0;
                     for (int i = 0; i < p; i++) {
@@ -740,13 +757,13 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
         }
 
         try {
-            return new PartialCorr(partialViaCholesky(corSub), ledoitWolfDelta);
+            return new PartialCorr(partialViaCholesky(corSub), ledoitWolfDelta, completeRows);
         } catch (SingularMatrixException | NonPositiveDefiniteMatrixException | NonSquareMatrixException e) {
             if (!usePseudoinverse) {
                 // Mirror previous behavior: surface as singular unless pinv allowed
                 throw new SingularMatrixException();
             }
-            return new PartialCorr(partialViaEigenPinv(corSub, pinvTolerance), ledoitWolfDelta);
+            return new PartialCorr(partialViaEigenPinv(corSub, pinvTolerance), ledoitWolfDelta, completeRows);
         }
     }
 
@@ -1053,9 +1070,11 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
 
     /**
      * Internal carrier for the partial-correlation computation: the correlation itself plus the
-     * Ledoit-Wolf delta that was applied (NaN when not in LEDOIT_WOLF mode).
+     * Ledoit-Wolf delta that was applied (NaN when not in LEDOIT_WOLF mode), and the number of
+     * rows complete on x, y and z that the correlation was computed from (-1 when it was read
+     * from a precomputed correlation matrix, whose sample size applies instead).
      */
-    private record PartialCorr(double r, double ledoitWolfDelta) {
+    private record PartialCorr(double r, double ledoitWolfDelta, int n) {
     }
 
     /**

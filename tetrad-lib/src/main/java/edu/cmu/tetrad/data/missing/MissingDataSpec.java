@@ -97,7 +97,7 @@ public final class MissingDataSpec implements TetradSerializable {
         if (emRidge < 0) throw new IllegalArgumentException("EM ridge must be >= 0: " + emRidge);
         if (emTolerance <= 0) throw new IllegalArgumentException("EM tolerance must be > 0: " + emTolerance);
         if (emMaxIterations < 1) throw new IllegalArgumentException("EM max iterations must be >= 1: " + emMaxIterations);
-        if (numImputations < 2) throw new IllegalArgumentException("Number of imputations must be >= 2: " + numImputations);
+        if (numImputations < 1) throw new IllegalArgumentException("Number of imputations must be >= 1: " + numImputations);
         if (essMode == null) throw new NullPointerException("Effective sample size mode is null.");
 
         this.policy = policy;
@@ -160,7 +160,9 @@ public final class MissingDataSpec implements TetradSerializable {
     /**
      * A spec for multiple imputation with the given number of imputations.
      *
-     * @param numImputations The number of imputed datasets, m; must be at least 2.
+     * @param numImputations The number of imputed datasets, m; at least 1. One is allowed, but a single completed
+     *                       dataset shows nothing of the uncertainty due to the missing values; use 2 or more
+     *                       for any result meant to be relied on.
      * @return The spec.
      */
     public static MissingDataSpec multipleImputation(int numImputations) {
@@ -212,7 +214,9 @@ public final class MissingDataSpec implements TetradSerializable {
     /**
      * Returns a copy of this spec with the given number of imputations.
      *
-     * @param numImputations The number of imputed datasets, m; must be at least 2.
+     * @param numImputations The number of imputed datasets, m; at least 1. One is allowed, but a single completed
+     *                       dataset shows nothing of the uncertainty due to the missing values; use 2 or more
+     *                       for any result meant to be relied on.
      * @return The copy.
      */
     public MissingDataSpec withNumImputations(int numImputations) {

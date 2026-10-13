@@ -20,6 +20,8 @@
 
 package edu.cmu.tetrad.search.blocks;
 
+import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.search.Ftfc;
 
@@ -42,6 +44,7 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
     private final int ess;
     private final SingletonClusterPolicy policy;
     private final boolean verbose;
+    private final CovarianceMatrix pooledCovariance;
 
     /**
      * Constructs a new instance of {@code FofcBlockDiscoverer}, which is used to discover clusters or "blocks" of
@@ -56,11 +59,31 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
      */
     public FtfcBlockDiscoverer(DataSet dataSet, double alpha, int ess,
                                SingletonClusterPolicy policy, boolean verbose) {
+        this(dataSet, null, alpha, ess, policy, verbose);
+    }
+
+    /**
+     * Constructs a FtfcBlockDiscoverer over a pooled covariance matrix--for example, the averaged covariance of several
+     * imputations of a data set with missing values (see {@code BlocksUtil.pooledCovariance}). The representative
+     * data set anchors the resulting {@code BlockSpec} and must have the same variables, in the same order, as the
+     * pooled matrix.
+     *
+     * @param dataSet          The representative data set for the resulting BlockSpec.
+     * @param pooledCovariance The covariance matrix to run the algorithm on, or null to compute it from the data set.
+     * @param alpha            The significance level for the statistical tests.
+     * @param ess              The equivalent sample size.
+     * @param policy           The single-cluster policy.
+     * @param verbose          Whether verbose output is enabled.
+     */
+    public FtfcBlockDiscoverer(DataSet dataSet, CovarianceMatrix pooledCovariance, double alpha, int ess,
+                               SingletonClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
+        this.pooledCovariance = pooledCovariance;
         this.alpha = alpha;
         this.ess = ess;
         this.policy = policy;
         this.verbose = verbose;
+        BlocksUtil.checkPooledMatchesData(pooledCovariance, dataSet);
     }
 
     /**
@@ -71,7 +94,9 @@ public class FtfcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Ftfc ftfc = new Ftfc(dataSet, alpha, ess);
+        Ftfc ftfc = pooledCovariance != null
+                ? new Ftfc(new CorrelationMatrix(pooledCovariance), alpha, ess)
+                : new Ftfc(dataSet, alpha, ess);
         ftfc.setVerbose(verbose);
 
         Map<List<Integer>, Integer> clusters = ftfc.findClusters();

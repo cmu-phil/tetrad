@@ -55,7 +55,21 @@ import java.util.Map;
  * @author josephramsey
  */
 public final class SemPmEditor extends JPanel implements DelegatesEditing,
-        LayoutEditable {
+        LayoutEditable, DoNotScroll {
+
+    /**
+     * This editor is not wrapped in an outer scroll pane by the editor window (see {@link DoNotScroll}), since that
+     * would scroll the menu bar out of view along with the contents; the panes inside it scroll instead. So that the
+     * window still fits on the screen for a large model, the preferred size is capped to the screen here.
+     *
+     * @return the preferred size, no larger than the screen less a margin.
+     */
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension size = super.getPreferredSize();
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        return new Dimension(Math.min(size.width, screen.width - 50), Math.min(size.height, screen.height - 200));
+    }
 
     /**
      * The SemIm being edited.
@@ -110,11 +124,11 @@ public final class SemPmEditor extends JPanel implements DelegatesEditing,
             if ("Hide Error Terms".equals(menuItem.getText())) {
                 menuItem.setText("Show Error Terms");
                 getSemGraph().setShowErrorTerms(false);
-                graphicalEditor().resetLabels();
+                graphicalEditor().resetGraph();
             } else if ("Show Error Terms".equals(menuItem.getText())) {
                 menuItem.setText("Hide Error Terms");
                 getSemGraph().setShowErrorTerms(true);
-                graphicalEditor().resetLabels();
+                graphicalEditor().resetGraph();
             }
         });
 
@@ -328,7 +342,8 @@ class SemPmGraphicalEditor extends JPanel {
         this.targetPanel.setLayout(new BorderLayout());
         add(this.targetPanel, BorderLayout.CENTER);
 
-        semPm().getGraph().setShowErrorTerms(true);
+        // Error terms are hidden when the editor opens; "Show Error Terms" turns them on.
+        semPm().getGraph().setShowErrorTerms(false);
 
         setSemPm();
     }
@@ -362,7 +377,12 @@ class SemPmGraphicalEditor extends JPanel {
         Parameter parameter = getEdgeParameter(edge);
         ParameterEditor paramEditor = new ParameterEditor(parameter, semPm());
 
-        paramEditor.addPropertyChangeListener(evt -> firePropertyChange("modelChanged", null, null));
+        // Only pass on "modelChanged"; the dialog also fires ordinary Swing property changes just by being shown.
+        paramEditor.addPropertyChangeListener(evt -> {
+            if ("modelChanged".equals(evt.getPropertyName())) {
+                firePropertyChange("modelChanged", null, null);
+            }
+        });
 
         int ret = JOptionPane.showOptionDialog(workbench(), paramEditor,
                 "Parameter Properties", JOptionPane.OK_CANCEL_OPTION,
@@ -425,6 +445,16 @@ class SemPmGraphicalEditor extends JPanel {
             addMouseListenerToGraphNodesMeasured();
         }
         return getWorkbench();
+    }
+
+    /**
+     * Reloads the SEM graph into the workbench. The workbench displays a copy of the graph, so a change to which
+     * nodes the graph contains (error terms shown or hidden) is not visible until the graph is set again.
+     */
+    public void resetGraph() {
+        workbench().setGraph(graph());
+        resetLabels();
+        addMouseListenerToGraphNodesMeasured();
     }
 
     public void resetLabels() {

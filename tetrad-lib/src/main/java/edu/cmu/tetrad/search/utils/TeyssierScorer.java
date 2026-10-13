@@ -78,7 +78,7 @@ public class TeyssierScorer {
         if (test == null && score == null) throw new IllegalArgumentException("Required: test or score");
 //        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        this.variables = score.getVariables();
+        this.variables = score != null ? score.getVariables() : test.getVariables();
         this.pi = new ArrayList<>(this.variables);
         Map<Node, Integer> variablesHash = new HashMap<>();
         nodesHash(variablesHash, this.variables);
@@ -87,7 +87,7 @@ public class TeyssierScorer {
         this.test = test;
         this.score = score;
 
-        setUseScore(true);
+        setUseScore(score != null);
         if (this.useScore) {
             for (Node node : this.variables) {
                 this.trees.put(node, new GrowShrinkTree(score, variablesHash, node));
@@ -117,7 +117,7 @@ public class TeyssierScorer {
         // we can't set the knowledge on the trees. We still need to set the
         // knowledge on the score, though. This is an issue for GraSP-FCI, which
         // uses the GraphScore to compute the score. jdramsey 2026-4-9
-        if (this.score instanceof GraphScore) {
+        if (this.score == null || this.score instanceof GraphScore) {
             return;
         }
 

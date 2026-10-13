@@ -25,7 +25,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.LatentStructureAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.annotation.*;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.DeprecationUtils;
+import edu.cmu.tetradapp.model.GeneralAlgorithmRunner;
+import edu.cmu.tetradapp.model.LatentStructureRunner;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 
 import java.util.ArrayList;
@@ -148,17 +151,76 @@ public final class AlgorithmChooserLogic {
     }
 
     /**
-     * Applies the user's answers, the data type, and the runner's block-spec state to a list of models.
+     * Which box configuration the chooser is serving, which decides the family of algorithms listed. The Search box
+     * with data alone lists every algorithm that runs on data alone, including the ones that find latent variables
+     * directly from the data (RLCD, Factor Analysis); with a Latent Clusters parent it lists only the algorithms
+     * that can take supplied clusters. The legacy Latent Structure box keeps its data-alone mode so old sessions
+     * behave as saved.
+     */
+    public enum BoxMode {
+        /**
+         * The Search box with data alone: every algorithm that runs on data alone; only the algorithms that require
+         * supplied clusters are excluded.
+         */
+        SEARCH,
+        /**
+         * The legacy Latent Structure box with data alone: algorithms of type
+         * {@link AlgType#search_for_structure_over_latents} that do not need clusters (RLCD, Factor Analysis). Kept
+         * so sessions saved with that box list what they listed when saved; new sessions use the Search box, which
+         * also lists these.
+         */
+        LATENTS_FROM_DATA,
+        /**
+         * A box with a Latent Clusters parent (the Search box, or the legacy Latent Structure box):
+         * {@link LatentStructureAlgorithm} classes, run with block-aware tests and scores, plus the Extra
+         * algorithms that take the clusters directly.
+         */
+        LATENTS_FROM_CLUSTERS
+    }
+
+    /**
+     * Decides the box mode from the runner and its block spec.
      *
-     * @param models    the candidate models (typically {@link #allModels()}).
-     * @param dataType  the data type of the connected data, or null if none.
-     * @param blocks    true if the search runs over blocks (latent-structure runner), in which case only
-     *                  {@link LatentStructureAlgorithm} classes are listed; false lists everything except
-     *                  {@link ExtraLatentStructureAlgorithm} classes, matching the classic card.
-     * @param answers   the user's answers.
+     * @param runner    the runner.
+     * @param blockSpec the block spec, non-null only when a Latent Clusters parent is attached.
+     * @return the mode.
+     */
+    public static BoxMode modeFor(GeneralAlgorithmRunner runner, BlockSpec blockSpec) {
+        if (blockSpec != null) return BoxMode.LATENTS_FROM_CLUSTERS;
+        if (runner instanceof LatentStructureRunner) return BoxMode.LATENTS_FROM_DATA;
+        return BoxMode.SEARCH;
+    }
+
+    /**
+     * Whether an algorithm class belongs in the given box mode.
+     *
+     * @param c    the algorithm class.
+     * @param a    its annotation.
+     * @param mode the mode.
+     * @return the answer.
+     */
+    public static boolean fitsMode(Class<?> c, Algorithm a, BoxMode mode) {
+        boolean extra = ExtraLatentStructureAlgorithm.class.isAssignableFrom(c);
+        boolean overLatents = a.algoType() == AlgType.search_for_structure_over_latents;
+        return switch (mode) {
+            case LATENTS_FROM_CLUSTERS -> LatentStructureAlgorithm.class.isAssignableFrom(c);
+            case LATENTS_FROM_DATA -> overLatents && !extra;
+            // All search algorithms live in the Search box (2026-10-11); only the ones that require supplied
+            // clusters are excluded, and those appear when a Latent Clusters box is made a parent of the box.
+            case SEARCH -> !extra;
+        };
+    }
+
+    /**
+     * Applies the user's answers, the data type, and the box mode to a list of models.
+     *
+     * @param models   the candidate models (typically {@link #allModels()}).
+     * @param dataType the data type of the connected data, or null if none.
+     * @param mode     the box mode; see {@link #fitsMode(Class, Algorithm, BoxMode)}.
+     * @param answers  the user's answers.
      * @return the models that pass, in the order given.
      */
-    public static List<AlgorithmModel> filter(List<AlgorithmModel> models, DataType dataType, boolean blocks,
+    public static List<AlgorithmModel> filter(List<AlgorithmModel> models, DataType dataType, BoxMode mode,
                                               Answers answers) {
         List<AlgorithmModel> out = new ArrayList<>();
         String q = answers.query() == null ? "" : answers.query().trim().toLowerCase(Locale.ROOT);
@@ -169,19 +231,21 @@ public final class AlgorithmChooserLogic {
             if (DeprecationUtils.isClassDeprecated(c)) continue;
             if (!answers.experimental() && c.isAnnotationPresent(Experimental.class)) continue;
             if (!fitsData(a.dataType(), dataType)) continue;
+            if (!fitsMode(c, a, mode)) continue;
 
-            if (blocks) {
-                if (!LatentStructureAlgorithm.class.isAssignableFrom(c)) continue;
-            } else {
-                if (ExtraLatentStructureAlgorithm.class.isAssignableFrom(c)) continue;
-            }
-
-            switch (answers.latent()) {
+            // The latent-confounder question belongs to the Search box. The latent-structure modes do not show it,
+            // and their family is fixed by the box or the clusters parent, so the answer carried over from a Search
+            // box (NO by default) must not apply there. In the Search box, NO (causal sufficiency) keeps only the
+            // algorithms that forbid latent common causes; YES keeps both the PAG family and the algorithms that
+            // find latent variables directly from the data (RLCD, Factor Analysis), since both take the
+            // possibility of latents seriously.
+            switch (mode == BoxMode.SEARCH ? answers.latent() : LatentChoice.ANY) {
                 case NO -> {
                     if (a.algoType() != AlgType.forbid_latent_common_causes) continue;
                 }
                 case YES -> {
-                    if (a.algoType() != AlgType.allow_latent_common_causes) continue;
+                    if (a.algoType() != AlgType.allow_latent_common_causes
+                            && a.algoType() != AlgType.search_for_structure_over_latents) continue;
                 }
                 default -> {
                 }

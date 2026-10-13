@@ -178,8 +178,6 @@ public class CovMatrixJTable extends JTable implements DataModelContainer,
                 covMatrixTable.fireTableCellUpdated(i + 4, j + 1);
             }
         }
-
-        firePropertyChange("modelChanged", null, null);
     }
 
     /**

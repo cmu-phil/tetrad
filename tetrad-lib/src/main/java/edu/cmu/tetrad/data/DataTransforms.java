@@ -122,6 +122,43 @@ public class DataTransforms {
     }
 
     /**
+     * Puts the variables of each of the given data sets in the given order of names. A data set that already has
+     * them in that order is returned as it is; one that has exactly those variables in another order is replaced by
+     * a reordered copy with the same name; one that does not have exactly those variables is returned as it is, for
+     * the caller to refuse. The given list and its data sets are not changed.
+     *
+     * @param dataSets the data sets.
+     * @param names    the variable names, in the order wanted.
+     * @return the data sets, in a new list.
+     */
+    public static List<DataSet> alignVariableOrder(List<DataSet> dataSets, List<String> names) {
+        List<DataSet> aligned = new ArrayList<>();
+
+        for (DataSet dataSet : dataSets) {
+            if (dataSet == null) {
+                aligned.add(null);
+                continue;
+            }
+
+            List<String> own = dataSet.getVariableNames();
+
+            if (own.equals(names) || own.size() != names.size()
+                || !new HashSet<>(own).equals(new HashSet<>(names))) {
+                aligned.add(dataSet);
+                continue;
+            }
+
+            List<Node> variables = new ArrayList<>();
+            for (String name : names) variables.add(dataSet.getVariable(name));
+            DataSet reordered = dataSet.subsetColumns(variables);
+            reordered.setName(dataSet.getName());
+            aligned.add(reordered);
+        }
+
+        return aligned;
+    }
+
+    /**
      * <p>standardizeData.</p>
      *
      * @param dataSets a {@link java.util.List} object
@@ -1581,7 +1618,7 @@ public class DataTransforms {
                 }
             }
 
-            norm = TMath.sqrt(norm / (data.getNumRows() - 1));
+            norm = TMath.sqrt(norm / (count - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {
@@ -1641,7 +1678,7 @@ public class DataTransforms {
                 }
             }
 
-            norm = TMath.sqrt(norm / (data.getNumRows() - 1));
+            norm = TMath.sqrt(norm / (count - 1));
 
             for (int i = 0; i < data.getNumRows(); i++) {
                 if (!Double.isNaN(data2.get(i, j))) {

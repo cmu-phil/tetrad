@@ -45,6 +45,45 @@ public class LayoutUtils {
     static Layout layout = Layout.topToBottom;
 
     /**
+     * The preference key under which the user's default layout is stored, by the name of a
+     * {@link LayoutUtil.DefaultLayout} constant.
+     */
+    public static final String DEFAULT_LAYOUT_PREF = "defaultLayout";
+
+    static {
+        LayoutUtils.applyStoredDefaultLayout();
+    }
+
+    /**
+     * Sets the library's default layout (the layout given to graphs that arrive without positions) from the
+     * user's stored choice, or to Richard's layout if there is none or it is not recognized. Called when Tetrad
+     * starts and whenever this class is first loaded.
+     */
+    public static void applyStoredDefaultLayout() {
+        String name = Preferences.userRoot().get(LayoutUtils.DEFAULT_LAYOUT_PREF,
+                LayoutUtil.DefaultLayout.RICHARDS.name());
+        LayoutUtil.DefaultLayout choice;
+
+        try {
+            choice = LayoutUtil.DefaultLayout.valueOf(name);
+        } catch (IllegalArgumentException e) {
+            choice = LayoutUtil.DefaultLayout.RICHARDS;
+        }
+
+        LayoutUtil.setDefaultLayout(choice);
+    }
+
+    /**
+     * Makes the given layout the default layout, for now and for later runs of Tetrad.
+     *
+     * @param choice the layout.
+     */
+    public static void setDefaultLayout(LayoutUtil.DefaultLayout choice) {
+        LayoutUtil.setDefaultLayout(choice);
+        Preferences.userRoot().put(LayoutUtils.DEFAULT_LAYOUT_PREF, LayoutUtil.getDefaultLayout().name());
+    }
+
+    /**
      * <p>Getter for the field <code>layout</code>.</p>
      *
      * @return a {@link edu.cmu.tetradapp.workbench.LayoutUtils.Layout} object
@@ -929,7 +968,8 @@ public class LayoutUtils {
     }
 
     /**
-     * <p>layoutByCausalOrder.</p>
+     * Lays the graph out in rows by causal order, each row centered on the widest, spacing the nodes by their real
+     * display sizes. See {@link LayoutUtil#layoutByCausalOrder(Graph, LayoutUtil.NodeSize)}.
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
      */
@@ -942,7 +982,7 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.layoutByCausalOrder(graph);
+        LayoutUtil.layoutByCausalOrder(graph, displayNodeSizes(layoutEditable));
         layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.layered;
     }

@@ -138,7 +138,7 @@ public class Simulation extends DataWrapper implements
         try {
             this.simulation = SimulationUtils.create(simulationType, new SingleGraph(graphSource.getGraph()), knowledge.getKnowledge());
         } catch (Exception e) {
-            this.simulation = SimulationUtils.create(SimulationTypes.STRUCTURAL_EQUATION_MODEL, new SingleGraph(graphSource.getGraph()));
+            this.simulation = SimulationUtils.create(SimulationTypes.LINEAR_GAUSSIAN_SEM, new SingleGraph(graphSource.getGraph()));
         }
 
         this.simulation.createData(parameters, true);

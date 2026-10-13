@@ -2072,6 +2072,11 @@ public class MarkovCheck implements EffectiveSampleSizeSettable {
         return testFailureExample.get();
     }
 
+    /**
+     * Sets the independence test used for the checks.
+     *
+     * @param test the independence test; may not be null.
+     */
     public void setIndependenceTest(IndependenceTest test) {
         if (test == null) {
             throw new IllegalArgumentException("Independence test cannot be null.");

@@ -29,6 +29,8 @@ import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
+import org.apache.commons.math3.distribution.TDistribution;
+import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 
@@ -39,15 +41,19 @@ import static edu.cmu.tetrad.util.TMath.abs;
  * <p>
  * Changes vs. the earlier version: - Optionally threshold W before Hungarian assignment (reduces spurious diagonals). -
  * After forming B̂ via IcaLingD.getScaledBHat (guarded diag), hard-threshold B̂ using bThreshold prior to acyclicity
- * trimming. - Always return a (possibly empty) trimmed matrix (never null).
+ * trimming. - Always return a (possibly empty) trimmed matrix (never null). - Optionally (and by default) finish with
+ * the paper's step 5: refit coefficients by OLS along the estimated causal order and prune by t-test
+ * (regressAndPrune), replacing the noisier ICA-derived coefficients.
  */
 public class Lingam {
 
     /**
-     * Dummy graph and helpers for cycle detection during trimming.
+     * Dummy graph and helpers for cycle detection during trimming. Instance fields (previously
+     * static), so that two Lingam searches running at the same time — two search boxes, Grid
+     * Search cells, or py-tetrad threads — cannot corrupt each other's trimming state.
      */
-    private static Graph dummyGraph;
-    private static ArrayList<Node> dummyVars;
+    private Graph dummyGraph;
+    private ArrayList<Node> dummyVars;
     private Set<Node> dummyCyclicNodes;
 
     /**
@@ -59,6 +65,20 @@ public class Lingam {
      * (Optional) pre-threshold for |W_ij| -> 0 before Hungarian; set to 0 to disable.
      */
     private double wThreshold = 0.0;
+
+    /**
+     * Whether fit() follows the acyclicity trimming with the regression refit-and-prune step
+     * (Shimizu et al. 2006, step 5): the trimmed B̂ fixes the causal order, each variable is
+     * regressed on all its predecessors in that order, and coefficients are kept when their
+     * two-sided t-test p-value is below pruneAlpha. ICA-derived coefficients are replaced by the
+     * regression estimates, which are far less noisy, and the pruning is scale-free.
+     */
+    private boolean refitAndPrune = true;
+
+    /**
+     * Alpha for the per-coefficient t-test in the refit-and-prune step.
+     */
+    private double pruneAlpha = 0.001;
 
     /**
      * Verbose logging.
@@ -83,8 +103,9 @@ public class Lingam {
      */
     public Matrix fit(DataSet D) {
         // Slightly more conservative defaults play nicely with stabilized FastICA.
-        Matrix W = LingD.estimateW(D, 5000, 1e-6, 1.2, true);
-        return getAcyclicTrimmedBHat(W);
+        Matrix W = LingD.estimateW(D, 5000, 1e-6, 1.2, verbose);
+        Matrix bHat = getAcyclicTrimmedBHat(W);
+        return refitAndPrune ? regressAndPrune(bHat, D) : bHat;
     }
 
     /**
@@ -179,6 +200,109 @@ public class Lingam {
     }
 
     /**
+     * The regression refit-and-prune step of Shimizu et al. (2006), step 5. The acyclic trimmed B̂
+     * fixes a causal order (a topological order of its DAG); each variable is then regressed by
+     * OLS on all its predecessors in that order, and a coefficient is kept when its two-sided
+     * t-test p-value is below pruneAlpha. The returned matrix carries the regression coefficients,
+     * which are far less noisy than the ICA-derived ones, and the pruning is scale-free, unlike
+     * the fixed bThreshold cut. Because every predecessor is offered, this step can also restore a
+     * true edge that the ICA threshold discarded, provided its endpoints are rightly ordered.
+     * <p>
+     * If the input matrix does not represent a DAG (it should, coming from
+     * getAcyclicTrimmedBHat), it is returned unchanged.
+     *
+     * @param acyclicBHat the acyclic coefficient matrix from getAcyclicTrimmedBHat; entry (i, j)
+     *                    nonzero means j -&gt; i.
+     * @param data        the data set the model was estimated from.
+     * @return the refit and pruned coefficient matrix, in the same (i, j) convention.
+     */
+    public Matrix regressAndPrune(Matrix acyclicBHat, DataSet data) {
+        int p = acyclicBHat.getNumRows();
+
+        // Topological order by Kahn's algorithm; entry (i, j) != 0 means j -> i.
+        boolean[][] adj = new boolean[p][p];
+        int[] indegree = new int[p];
+        for (int i = 0; i < p; i++) {
+            for (int j = 0; j < p; j++) {
+                if (i != j && acyclicBHat.get(i, j) != 0.0) {
+                    adj[i][j] = true;
+                    indegree[i]++;
+                }
+            }
+        }
+
+        Deque<Integer> queue = new ArrayDeque<>();
+        for (int i = 0; i < p; i++) if (indegree[i] == 0) queue.add(i);
+        List<Integer> order = new ArrayList<>();
+
+        while (!queue.isEmpty()) {
+            int v = queue.poll();
+            order.add(v);
+            for (int i = 0; i < p; i++) {
+                if (adj[i][v]) {
+                    adj[i][v] = false;
+                    if (--indegree[i] == 0) queue.add(i);
+                }
+            }
+        }
+
+        if (order.size() < p) {
+            return acyclicBHat; // Not a DAG; nothing sensible to refit.
+        }
+
+        // Centered data columns.
+        int n = data.getNumRows();
+        SimpleMatrix x = new SimpleMatrix(n, p);
+        for (int c = 0; c < p; c++) {
+            double mean = 0.0;
+            for (int r = 0; r < n; r++) mean += data.getDouble(r, c);
+            mean /= n;
+            for (int r = 0; r < n; r++) x.set(r, c, data.getDouble(r, c) - mean);
+        }
+
+        Matrix out = new Matrix(p, p);
+
+        for (int pos = 1; pos < p; pos++) {
+            int child = order.get(pos);
+            List<Integer> preds = order.subList(0, pos);
+            int k = preds.size();
+
+            SimpleMatrix xp = new SimpleMatrix(n, k);
+            for (int c = 0; c < k; c++) {
+                for (int r = 0; r < n; r++) xp.set(r, c, x.get(r, preds.get(c)));
+            }
+            SimpleMatrix y = x.extractVector(false, child);
+
+            SimpleMatrix xtxInv = xp.transpose().mult(xp).pseudoInverse();
+            SimpleMatrix beta = xtxInv.mult(xp.transpose()).mult(y);
+            SimpleMatrix resid = y.minus(xp.mult(beta));
+
+            int df = n - k - 1;
+            double sigma2 = df >= 1 ? resid.dot(resid) / df : Double.NaN;
+
+            for (int c = 0; c < k; c++) {
+                double coef = beta.get(c, 0);
+
+                if (df < 1) {
+                    // Too few rows to test; keep the regression estimate untested.
+                    if (coef != 0.0) out.set(child, preds.get(c), coef);
+                    continue;
+                }
+
+                double se = Math.sqrt(sigma2 * Math.max(0.0, xtxInv.get(c, c)));
+                double t = se > 0.0 ? Math.abs(coef) / se : Double.POSITIVE_INFINITY;
+                double pValue = 2.0 * (1.0 - new TDistribution(df).cumulativeProbability(t));
+
+                if (pValue < this.pruneAlpha) {
+                    out.set(child, preds.get(c), coef);
+                }
+            }
+        }
+
+        return out;
+    }
+
+    /**
      * Checks whether the graph induced by the scaled coefficient matrix represents an acyclic directed graph (DAG).
      *
      * @param scaledBHat the scaled coefficient matrix used to construct the graph.
@@ -223,6 +347,28 @@ public class Lingam {
     public void setWThreshold(double wThreshold) {
         if (wThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + wThreshold);
         this.wThreshold = wThreshold;
+    }
+
+    /**
+     * Whether fit() follows the acyclicity trimming with the regression refit-and-prune step.
+     *
+     * @param refitAndPrune true to refit coefficients by regression along the estimated order and
+     *                      prune by t-test; false to return the ICA-derived trimmed B̂ as before.
+     */
+    public void setRefitAndPrune(boolean refitAndPrune) {
+        this.refitAndPrune = refitAndPrune;
+    }
+
+    /**
+     * Alpha for the per-coefficient t-test in the refit-and-prune step.
+     *
+     * @param pruneAlpha the significance level; must be in (0, 1).
+     */
+    public void setPruneAlpha(double pruneAlpha) {
+        if (!(pruneAlpha > 0 && pruneAlpha < 1)) {
+            throw new IllegalArgumentException("Expecting a number in (0, 1): " + pruneAlpha);
+        }
+        this.pruneAlpha = pruneAlpha;
     }
 
     /**

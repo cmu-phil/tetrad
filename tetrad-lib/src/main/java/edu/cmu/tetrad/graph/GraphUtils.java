@@ -21,6 +21,8 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.AndersonDarlingTest;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -514,6 +516,106 @@ public final class GraphUtils {
         }
 
         return convertedGraph;
+    }
+
+    /**
+     * Returns a copy of the given node that is equal to it (same name, type, and, for a discrete variable, the same
+     * categories, so that it indexes the same column of a data set) and has the same position, but is a distinct
+     * object, so that a position later set on either is not seen through the other. Node-level attributes are
+     * copied.
+     *
+     * <p>Positions (the center used by the workbench) live on node objects, not in graphs. Two graphs that share
+     * node objects therefore share a layout: a data set's variable objects are shared by every graph built from
+     * that data set, and a graph handed from one session box to another is shared by both. See
+     * {@link #detachNodes} and {@link EdgeListGraph#EdgeListGraph(Graph, boolean)}.</p>
+     *
+     * @param node the node to copy
+     * @return the copy
+     */
+    public static Node copyNode(Node node) {
+        Node copy;
+
+        if (node instanceof DiscreteVariable discrete) {
+            copy = new DiscreteVariable(discrete);
+        } else if (node instanceof ContinuousVariable continuous) {
+            copy = new ContinuousVariable(continuous);
+        } else if (node instanceof GraphNode graphNode) {
+            copy = new GraphNode(graphNode);
+        } else {
+            copy = node.like(node.getName());
+            copy.setNodeType(node.getNodeType());
+            copy.setNodeVariableType(node.getNodeVariableType());
+        }
+
+        for (Map.Entry<String, Object> entry : node.getAllAttributes().entrySet()) {
+            copy.addAttribute(entry.getKey(), entry.getValue());
+        }
+
+        copy.setCenter(node.getCenterX(), node.getCenterY());
+        return copy;
+    }
+
+    /**
+     * Returns a copy of the graph whose nodes are fresh objects (see {@link #copyNode}), equal to the originals and
+     * in the same positions, with the same edges (including their properties, edge type probabilities, and display
+     * attributes), underlines, ambiguous triples, and graph attributes. Unlike {@link #replaceNodes}, latent nodes
+     * are copied too.
+     *
+     * <p>Use this on a graph that is about to become the graph of a session box and whose nodes are shared with
+     * something else: a search result, whose nodes are usually the data set's variable objects, or the graph of
+     * another box. Once detached, the box starts with the layout the graph came with, but the layout the workbench
+     * writes to it afterwards stays with it, and it no longer follows positions set on the shared objects by some
+     * other box. Where a fresh layout is wanted instead, lay the copy out afterwards.</p>
+     *
+     * @param graph the graph
+     * @return the copy
+     */
+    public static Graph detachNodes(Graph graph) {
+        Map<String, Node> copies = new HashMap<>();
+        Graph detached = new EdgeListGraph();
+
+        for (Node node : graph.getNodes()) {
+            Node copy = copyNode(node);
+            copies.put(node.getName(), copy);
+            detached.addNode(copy);
+        }
+
+        for (Edge edge : graph.getEdges()) {
+            Node a = copies.get(edge.getNode1().getName());
+            Node b = copies.get(edge.getNode2().getName());
+            Edge newEdge = new Edge(a, b, edge.getEndpoint1(), edge.getEndpoint2());
+
+            for (Property property : edge.getProperties()) {
+                newEdge.addProperty(property);
+            }
+
+            for (EdgeTypeProbability p : edge.getEdgeTypeProbabilities()) {
+                newEdge.addEdgeTypeProbability(p);
+            }
+
+            newEdge.setLineColor(edge.getLineColor());
+            newEdge.setAnnotation(edge.getAnnotation());
+            newEdge.setHighlighted(edge.isHighlighted());
+            detached.addEdge(newEdge);
+        }
+
+        for (Triple t : graph.getUnderLines()) {
+            detached.addUnderlineTriple(copies.get(t.getX().getName()), copies.get(t.getY().getName()),
+                    copies.get(t.getZ().getName()));
+        }
+
+        for (Triple t : graph.getDottedUnderlines()) {
+            detached.addDottedUnderlineTriple(copies.get(t.getX().getName()), copies.get(t.getY().getName()),
+                    copies.get(t.getZ().getName()));
+        }
+
+        for (Triple t : graph.getAmbiguousTriples()) {
+            detached.addAmbiguousTriple(copies.get(t.getX().getName()), copies.get(t.getY().getName()),
+                    copies.get(t.getZ().getName()));
+        }
+
+        detached.transferAttributes(graph);
+        return detached;
     }
 
     /**

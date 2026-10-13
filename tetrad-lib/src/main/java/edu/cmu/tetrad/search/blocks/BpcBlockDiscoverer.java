@@ -51,6 +51,7 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
     private final int ess;
     private final SingletonClusterPolicy policy;
     private final boolean verbose;
+    private final CovarianceMatrix pooledCovariance;
 
     /**
      * Constructor for the {@code BpcBlockDiscoverer} class, responsible for initiating the discovery of clusters or
@@ -63,11 +64,31 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
      * @param verbose flag indicating whether verbose output should be generated during the discovery process
      */
     public BpcBlockDiscoverer(DataSet dataSet, double alpha, int ess, SingletonClusterPolicy policy, boolean verbose) {
+        this(dataSet, null, alpha, ess, policy, verbose);
+    }
+
+    /**
+     * Constructs a BpcBlockDiscoverer over a pooled covariance matrix--for example, the averaged covariance of several
+     * imputations of a data set with missing values (see {@code BlocksUtil.pooledCovariance}). The representative
+     * data set anchors the resulting {@code BlockSpec} and must have the same variables, in the same order, as the
+     * pooled matrix.
+     *
+     * @param dataSet          The representative data set for the resulting BlockSpec.
+     * @param pooledCovariance The covariance matrix to run the algorithm on, or null to compute it from the data set.
+     * @param alpha            The significance level for the statistical tests.
+     * @param ess              The equivalent sample size.
+     * @param policy           The single-cluster policy.
+     * @param verbose          Whether verbose output is enabled.
+     */
+    public BpcBlockDiscoverer(DataSet dataSet, CovarianceMatrix pooledCovariance, double alpha, int ess,
+                              SingletonClusterPolicy policy, boolean verbose) {
         this.dataSet = dataSet;
+        this.pooledCovariance = pooledCovariance;
         this.alpha = alpha;
         this.ess = ess;
         this.policy = policy;
         this.verbose = verbose;
+        BlocksUtil.checkPooledMatchesData(pooledCovariance, dataSet);
     }
 
     /**
@@ -83,7 +104,8 @@ public class BpcBlockDiscoverer implements BlockDiscoverer {
      */
     @Override
     public BlockSpec discover() {
-        Bpc bpc = new Bpc(new CovarianceMatrix(dataSet), alpha, ess);
+        Bpc bpc = new Bpc(pooledCovariance != null ? pooledCovariance : new CovarianceMatrix(dataSet),
+                alpha, ess);
         bpc.setVerbose(verbose);
         List<List<Integer>> blocks = bpc.getClusters();
         blocks = BlocksUtil.canonicalizeBlocks(blocks);

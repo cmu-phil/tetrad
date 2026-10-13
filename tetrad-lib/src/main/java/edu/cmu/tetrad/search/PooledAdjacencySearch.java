@@ -23,7 +23,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Images;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataTransforms;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -180,6 +182,18 @@ public class PooledAdjacencySearch {
             throw new IllegalArgumentException("At least one dataset is required.");
         }
 
+        // Only IMaGES takes its statistics from the score, which can be one for mixed data. The other methods
+        // work from correlations, which mean nothing for a discrete variable's category codes.
+        if (this.method != Method.IMAGES) {
+            for (DataSet dataSet : standardized) {
+                if (!dataSet.isContinuous()) {
+                    throw new IllegalArgumentException("The " + this.method + " adjacency method is for continuous"
+                            + " data, and these data sets have discrete variables. Use the IMAGES adjacency method"
+                            + " with a score for mixed data, or supply external graphs.");
+                }
+            }
+        }
+
         if (this.method == Method.IMAGES) {
             if (this.score == null) {
                 throw new IllegalStateException("The IMAGES adjacency method requires a score wrapper.");
@@ -248,6 +262,28 @@ public class PooledAdjacencySearch {
         }
 
         return moralBasedAdjacency(standardized, this.method);
+    }
+
+    /**
+     * Standardizes a data set for the pooled FASK algorithms: each continuous variable to mean zero and unit
+     * variance; discrete variables left as they are, as discrete variables, so that a score for mixed data can
+     * still be computed from the result.
+     *
+     * @param dataSet the data set
+     * @return the standardized data set
+     */
+    public static DataSet standardize(DataSet dataSet) {
+        if (dataSet.isContinuous()) return DataTransforms.standardizeData(dataSet);
+
+        Matrix standardized = DataTransforms.standardizeData(dataSet.getDoubleData(), dataSet.getVariables());
+        DataSet copy = dataSet.copy();
+
+        for (int j = 0; j < copy.getNumColumns(); j++) {
+            if (!(copy.getVariable(j) instanceof ContinuousVariable)) continue;
+            for (int i = 0; i < copy.getNumRows(); i++) copy.setDouble(i, j, standardized.get(i, j));
+        }
+
+        return copy;
     }
 
     // ------------ Moral-graph-based methods ------------

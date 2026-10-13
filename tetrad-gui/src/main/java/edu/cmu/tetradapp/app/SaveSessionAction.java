@@ -28,14 +28,13 @@ import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.prefs.Preferences;
 
 /**
  * Saves a session from a file.
@@ -74,11 +73,15 @@ public final class SaveSessionAction extends AbstractAction {
         SessionWrapper sessionWrapper = workbench.getSessionWrapper();
         TetradMetadata metadata = new TetradMetadata();
 
-        Path outputFile = Paths.get(
-                Preferences.userRoot().get("sessionSaveLocation", Preferences.userRoot().absolutePath()),
-                sessionWrapper.getName());
+        // Each session remembers the file it was loaded from or last saved to. This path used to be reconstructed
+        // from the single global "sessionSaveLocation" preference plus the session name, so with several sessions
+        // open from different directories, whichever was touched last repointed the preference and Save wrote
+        // every session into that one directory -- or offered to overwrite an unrelated file of the same name
+        // there. A session that has not touched disk in this run, or whose file has since vanished, goes to Save
+        // As.
+        File outputFile = sessionWrapper.getSessionFile();
 
-        if (Files.notExists(outputFile) || sessionWrapper.isNewSession()) {
+        if (outputFile == null || sessionWrapper.isNewSession() || Files.notExists(outputFile.toPath())) {
             SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
             saveSessionAsAction.actionPerformed(e);
             saved = SaveSessionAsAction.saved;
@@ -86,36 +89,33 @@ public final class SaveSessionAction extends AbstractAction {
             return;
         }
 
-        if (Files.exists(outputFile)) {
-            int ret = JOptionPane.showConfirmDialog(JOptionUtils.centeringComp(),
-                    "File already exists. Overwrite?", "Save", JOptionPane.YES_NO_OPTION);
-            if (ret == JOptionPane.NO_OPTION) {
-                SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
-                saveSessionAsAction.actionPerformed(e);
-                saved = SaveSessionAsAction.saved;
-
-                return;
-            }
-        }
-
-        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
+        // Saving to the session's own file is a plain overwrite, as in any editor. The confirm dialog that used to
+        // sit here existed only because the path was a guess.
+        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile.toPath()))) {
             sessionWrapper.setNewSession(false);
             objOut.writeObject(metadata);
             objOut.writeObject(sessionWrapper);
         } catch (NotSerializableException exception) {
+            saved = false;
             exception.printStackTrace(System.err);
             JOptionPane.showMessageDialog(
                     JOptionUtils.centeringComp(),
                     "An error occurred while attempting to save the session. The session could not be saved.");
+            return;
         } catch (IOException exception) {
+            saved = false;
             exception.printStackTrace(System.err);
             JOptionPane.showMessageDialog(
                     JOptionUtils.centeringComp(),
                     String.format(
                             "An error occurred while attempting to save the session as %s.",
-                            outputFile.toAbsolutePath()));
+                            outputFile.getAbsolutePath()));
+            return;
         }
 
+        // Only a successful save marks the session unchanged; marking it unchanged on a failed save would let a
+        // close or quit silently discard the changes afterwards.
+        saved = true;
         sessionWrapper.setSessionChanged(false);
         DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
     }

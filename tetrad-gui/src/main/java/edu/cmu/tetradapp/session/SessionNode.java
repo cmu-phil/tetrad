@@ -1450,6 +1450,17 @@ public class SessionNode implements Node {
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects, Object oldModelInPool)
             throws RuntimeException {
+        return assignParameters(parameterTypes, objects, oldModelInPool, null);
+    }
+
+    /**
+     * As above, and, when {@code ownClassSlotsForOldModelOnly} is non-null, also keeping every genuine parent out of
+     * a slot declared as exactly that class: such a slot is, by convention, the one the node's own previous model
+     * is passed in, and a parent of that class belongs in a slot of a supertype (such as GraphSource) that the
+     * model treats as a parent. See createModelUsingArguments(Class, List, Object). Added 2026-10-4.
+     */
+    private Object[] assignParameters(Class[] parameterTypes, List objects, Object oldModelInPool,
+                                      Class<?> ownClassSlotsForOldModelOnly) throws RuntimeException {
 
         for (Class parameterType : parameterTypes) {
             if (parameterType == null) {
@@ -1466,7 +1477,8 @@ public class SessionNode implements Node {
         Object[] arguments = new Object[parameterTypes.length];
         boolean[] used     = new boolean[candidates.size()];
 
-        if (matchByBacktrack(parameterTypes, candidates, arguments, used, 0, oldModelInPool)) {
+        if (matchByBacktrack(parameterTypes, candidates, arguments, used, 0, oldModelInPool,
+                ownClassSlotsForOldModelOnly)) {
             return arguments;
         }
 
@@ -1483,7 +1495,8 @@ public class SessionNode implements Node {
                                      Object[] arguments,
                                      boolean[] used,
                                      int slot,
-                                     Object oldModelInPool) {
+                                     Object oldModelInPool,
+                                     Class<?> ownClassSlotsForOldModelOnly) {
         if (Thread.currentThread().isInterrupted()) {
             return false;
         }
@@ -1506,10 +1519,19 @@ public class SessionNode implements Node {
                     continue;
                 }
 
+                // The converse, when asked for: a genuine parent may not take the slot reserved for the old model.
+                // Otherwise a parent search box, say, lands in a search box's "old model" slot, where its result
+                // graph is ignored, instead of in the GraphSource slot, where it is the external graph.
+                if (ownClassSlotsForOldModelOnly != null && needed == ownClassSlotsForOldModelOnly
+                    && candidates.get(i) != oldModelInPool) {
+                    continue;
+                }
+
                 arguments[slot] = candidates.get(i);
                 used[i] = true;
 
-                if (matchByBacktrack(parameterTypes, candidates, arguments, used, slot + 1, oldModelInPool)) {
+                if (matchByBacktrack(parameterTypes, candidates, arguments, used, slot + 1, oldModelInPool,
+                        ownClassSlotsForOldModelOnly)) {
                     return true;
                 }
 
@@ -1780,7 +1802,19 @@ public class SessionNode implements Node {
 
         // Try to find a constructor of the model class that exactly
         // matches the types of these models.
+        //
+        // Two passes. In the first, a slot declared as exactly the model class is taken to be the one for the
+        // node's own previous model, and no genuine parent may fill it; a parent of the model's own class (a
+        // search box feeding a search box) then goes to a supertype slot, where the model treats it as a parent.
+        // The constructors come back from reflection in no fixed order, so without this the choice between, say,
+        // (DataWrapper, GraphSource, Parameters) and (DataWrapper, GeneralAlgorithmRunner, Parameters) for a
+        // data box and a search box was arbitrary, and in the second the parent's graph was lost. The second
+        // pass is the old behavior, for model classes that take a parent of their own class in such a slot.
         Constructor[] constructors = modelClass.getConstructors();
+
+        PASS:
+        for (int pass = 0; pass < 2; pass++) {
+        Class<?> ownClassSlotsForOldModelOnly = pass == 0 ? modelClass : null;
 
         for (Constructor constructor : constructors) {
             Class[] constructorTypes = constructor.getParameterTypes();
@@ -1797,7 +1831,9 @@ public class SessionNode implements Node {
 
                     // The resurrected old model may only be used where the declared type is exactly its
                     // own class; see createModelUsingArguments(Class, List, Object).
-                    if ((c1.isAssignableFrom(c2)) && !(value == oldModelInPool && c1 != c2)) {
+                    if ((c1.isAssignableFrom(c2)) && !(value == oldModelInPool && c1 != c2)
+                        && !(ownClassSlotsForOldModelOnly != null && c1 == ownClassSlotsForOldModelOnly
+                             && value != oldModelInPool)) {
                         _objects.add(value);
                     }
 
@@ -1841,7 +1877,8 @@ public class SessionNode implements Node {
             }
 
             if (arguments == null) {
-                arguments = assignParameters(constructorTypes, models, oldModelInPool);
+                arguments = assignParameters(constructorTypes, models, oldModelInPool,
+                        ownClassSlotsForOldModelOnly);
             }
 
             if (arguments != null) {
@@ -1901,8 +1938,9 @@ public class SessionNode implements Node {
                 this.constructedParentClasses = parentClasses;
 
                 getSessionSupport().fireModelCreated(this);
-                break;
+                break PASS;
             }
+        }
         }
     }
 

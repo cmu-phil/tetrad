@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.bayes.DirichletEstimator;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
@@ -34,6 +35,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Wraps a DirichletEstimator.
@@ -49,7 +52,23 @@ public class DirichletEstimatorWrapper implements SessionModel {
     /**
      * The Dirichlet Bayes IM.
      */
-    private final DirichletBayesIm dirichletBayesIm;
+    private DirichletBayesIm dirichletBayesIm;
+
+    /**
+     * The prior the estimate was made from, kept for re-estimating on another data set.
+     */
+    private DirichletBayesIm prior;
+
+    /**
+     * The data sets of the parent data box, to choose among in the editor; null in sessions saved before this field
+     * existed.
+     */
+    private List<DataSet> dataSets;
+
+    /**
+     * The index in dataSets of the data set the current estimate is from.
+     */
+    private int dataIndex = 0;
 
     /**
      * The name of the model.
@@ -84,6 +103,10 @@ public class DirichletEstimatorWrapper implements SessionModel {
 
         DirichletBayesIm dirichletBayesIm
                 = dirichletPriorWrapper.getDirichletBayesIm();
+
+        this.prior = dirichletBayesIm;
+        this.dataSets = tabularDataSets(dataWrapper);
+        this.dataIndex = Math.max(0, this.dataSets.indexOf(dataSet));
 
         try {
             this.dirichletBayesIm
@@ -128,6 +151,10 @@ public class DirichletEstimatorWrapper implements SessionModel {
                 bayesPmWrapper.getBayesPm(),
                 params.getDouble("symmetricAlpha", 1.0));
 
+        this.prior = dirichletBayesIm;
+        this.dataSets = tabularDataSets(dataWrapper);
+        this.dataIndex = Math.max(0, this.dataSets.indexOf(dataSet));
+
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException("Please remove or impute missing values.");
         }
@@ -140,6 +167,58 @@ public class DirichletEstimatorWrapper implements SessionModel {
                     "Please fully specify the Dirichlet prior first.");
         }
         log(dirichletBayesIm);
+    }
+
+    /**
+     * The tabular data sets of a data box, in order.
+     */
+    private static List<DataSet> tabularDataSets(DataWrapper dataWrapper) {
+        List<DataSet> dataSets = new ArrayList<>();
+
+        for (DataModel model : dataWrapper.getDataModelList()) {
+            if (model instanceof DataSet dataSet) dataSets.add(dataSet);
+        }
+
+        return dataSets;
+    }
+
+    /**
+     * The data sets of the parent data box, to choose among in the editor.
+     *
+     * @return the data sets; empty if unknown (a session saved before the choice existed)
+     */
+    public List<DataSet> getDataSets() {
+        return this.dataSets == null ? new ArrayList<>() : this.dataSets;
+    }
+
+    /**
+     * The index, in getDataSets(), of the data set the current estimate is from.
+     *
+     * @return the index
+     */
+    public int getDataIndex() {
+        return this.dataIndex;
+    }
+
+    /**
+     * Re-estimates from the same prior on another of the parent's data sets, replacing the current estimate. If the
+     * estimation fails, the current estimate and index are left as they were and the exception is passed on.
+     *
+     * @param index the index, in getDataSets(), of the data set to estimate on
+     */
+    public void setDataIndex(int index) {
+        if (this.prior == null || index < 0 || index >= getDataSets().size()) {
+            throw new IllegalArgumentException("No data set at index " + index + ".");
+        }
+
+        DataSet dataSet = this.dataSets.get(index);
+
+        if (DataUtils.containsMissingValue(dataSet)) {
+            throw new IllegalArgumentException("Please remove or impute missing values.");
+        }
+
+        this.dirichletBayesIm = DirichletEstimator.estimate(this.prior, dataSet);
+        this.dataIndex = index;
     }
 
     /**
