@@ -30,6 +30,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
@@ -119,14 +120,19 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     }
 
     /**
-     * Retrieves the comparison graph for the given true directed graph.
+     * Retrieves the comparison graph for the given true directed graph: the cyclic PAG that CCD
+     * is meant to recover, not the true graph itself. A cycle makes pairs inseparable that are not
+     * adjacent in the true graph (Richardson's "virtual edges"), so those edges belong in the
+     * comparison graph and grading against the true graph understates CCD badly - a perfect run
+     * scores about 0.39 endpoint-exact on random 8-node, 10-edge cyclic graphs.
      *
-     * @param graph The true directed graph, if there is one.
-     * @return The true DAG.
+     * @param graph The true directed graph, possibly cyclic.
+     * @return The cyclic PAG of the true graph's d-separation equivalence class.
+     * @see GraphTransforms#dcgToCcdPag(Graph)
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
+        return GraphTransforms.dcgToCcdPag(graph);
     }
 
     /**
