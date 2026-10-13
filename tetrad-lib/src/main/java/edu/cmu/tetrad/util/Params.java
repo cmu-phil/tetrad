@@ -517,6 +517,14 @@ public final class Params {
      */
     public static final String EFFECTIVE_SAMPLE_SIZE = "effectiveSampleSize";
     /**
+     * Constant <code>EQUIVALENCE_MARGIN="equivalenceMargin"</code>
+     */
+    public static final String EQUIVALENCE_MARGIN = "equivalenceMargin";
+    /**
+     * Constant <code>EQUIVALENCE_MARGIN_MULTIPLIER="equivalenceMarginMultiplier"</code>
+     */
+    public static final String EQUIVALENCE_MARGIN_MULTIPLIER = "equivalenceMarginMultiplier";
+    /**
      * Constant <code>ERRORS_NORMAL="errorsNormal"</code>
      */
     public static final String ERRORS_NORMAL = "errorsNormal";
@@ -1944,6 +1952,10 @@ public final class Params {
      * Constant <code>USE_DATA_ORDER="useDataOrder"</code>
      */
     public static final String USE_DATA_ORDER = "useDataOrder";
+    /**
+     * Constant <code>USE_EQUIVALENCE_REMOVAL="useEquivalenceRemoval"</code>
+     */
+    public static final String USE_EQUIVALENCE_REMOVAL = "useEquivalenceRemoval";
     /**
      * Constant <code>USE_FAS_ADJACENCIES="useFasAdjacencies"</code>
      */

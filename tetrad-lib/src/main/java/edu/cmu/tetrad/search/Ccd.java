@@ -129,6 +129,12 @@ public final class Ccd implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     /**
+     * Optional separate test for the adjacency phase. Null (the default) means the main test is
+     * used throughout.
+     */
+    private IndependenceTest adjacencyTest = null;
+
+    /**
      * Optional adjacency superstructure. If non-null, the adjacency phase (Step A) starts from the edges of this graph
      * (matched to test variables by name) instead of the complete graph, and the sepset search at each level is
      * restricted to current adjacencies. Edges may be removed from the superstructure by the sepset search but never
@@ -172,7 +178,7 @@ public final class Ccd implements IGraphSearch {
 
         if (this.superstructure == null) {
             if (verbose) TetradLogger.getInstance().log("CCD: Step A — Fast Adjacency Search (FAS)");
-            Fas fas = new Fas(this.test);
+            Fas fas = new Fas(adjacencyTest());
             fas.setDepth(this.depth);
             fas.setKnowledge(this.knowledge);
             fas.setVerbose(this.verbose);
@@ -350,6 +356,54 @@ public final class Ccd implements IGraphSearch {
         this.superstructure = superstructure;
     }
 
+    /**
+     * Sets a separate independence test for the adjacency phase (Step A), leaving the orientation
+     * steps on the main test. Null, the default, uses the main test throughout.
+     *
+     * <p>The two phases ask different questions, and the better test for one can be the wrong test
+     * for the other. Step A decides whether to <i>delete</i> an edge, which is well served by a
+     * test that demands positive evidence of negligibility - see
+     * {@link edu.cmu.tetrad.search.test.IndTestEquivalence}, which raised virtual-edge recall from
+     * 0.502 to 0.554 and dotted-underline recall from 0.529 to 0.563 on random 8-node, 10-edge
+     * cyclic graphs at n = 2000. Steps C and D instead ask whether two variables are
+     * <i>dependent</i>, and there the ordinary meaning is wanted: an equivalence test's "not shown
+     * to be negligible" is a far weaker claim than "dependent", and feeding it to the orientation
+     * rules makes CCD's dominant error - committing a direction the data does not support - worse.
+     *
+     * <p>The test supplied here must be defined over the same variables as the main test.
+     *
+     * @param adjacencyTest the test for Step A, or null to use the main test.
+     * @throws IllegalArgumentException if its variable set differs from the main test's.
+     */
+    public void setAdjacencyTest(IndependenceTest adjacencyTest) {
+        if (adjacencyTest != null) {
+            Set<Node> main = new HashSet<>(this.test.getVariables());
+            Set<Node> other = new HashSet<>(adjacencyTest.getVariables());
+            if (!main.equals(other)) {
+                throw new IllegalArgumentException(
+                        "The adjacency test must be over the same variables as the main test.");
+            }
+        }
+
+        this.adjacencyTest = adjacencyTest;
+    }
+
+    /**
+     * Returns the separate adjacency-phase test, or null if the main test is used throughout.
+     *
+     * @return the adjacency test, or null.
+     */
+    public IndependenceTest getAdjacencyTest() {
+        return this.adjacencyTest;
+    }
+
+    /**
+     * The test the adjacency phase should use: the separate one if set, otherwise the main test.
+     */
+    private IndependenceTest adjacencyTest() {
+        return this.adjacencyTest == null ? this.test : this.adjacencyTest;
+    }
+
     // ------------------------------ Algorithm --------------------------------
 
     /**
@@ -438,7 +492,7 @@ public final class Ccd implements IGraphSearch {
         while ((choice = cg.next()) != null) {
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
             Set<Node> S = GraphUtils.asSet(choice, candidates);
-            if (this.test.checkIndependence(from, other, S).isIndependent()) {
+            if (adjacencyTest().checkIndependence(from, other, S).isIndependent()) {
                 if (verbose) {
                     TetradLogger.getInstance().log("Restricted FAS removal: " + from + " _||_ " + other + " | " + S);
                 }

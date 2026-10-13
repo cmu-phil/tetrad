@@ -1964,6 +1964,57 @@ Source:
         <li>Value Type: <span id="effectiveSampleSize_value_type">Integer</span></li>
     </ul>
 
+    === equivalenceMargin ===
+    <h3 class="parameter_description" id="equivalenceMargin">equivalenceMargin</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="equivalenceMargin_short_desc">
+                    Largest |partial correlation| counted as negligible, or 0 to scale it to the sample size.
+        </span></li>
+        <li>Long Description: <span id="equivalenceMargin_long_desc">
+                    The equivalence (TOST) test reports independence only when it can show the partial
+                    correlation is smaller in magnitude than this margin, rather than merely failing to
+                    reject zero. The margin is squeezed from both sides: it must exceed about
+                    1.645/sqrt(n) at alpha = 0.05 or nothing is ever removable and the adjacency search
+                    returns a complete graph, and it must stay below the weakest association worth
+                    keeping, since asymptotically every pair below the margin is removed. Because the
+                    usable range depends on the sample size, leaving this at 0 is recommended: the margin
+                    is then set automatically to equivalenceMarginMultiplier times the smallest margin the
+                    sample size could certify.
+         </span></li>
+        <li>Default Value: <span id="equivalenceMargin_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="equivalenceMargin_lower_bound">0.0</span></li>
+        <li>Upper
+            Bound: <span id="equivalenceMargin_upper_bound">0.999</span></li>
+        <li>Value
+            Type: <span id="equivalenceMargin_value_type">Double</span></li>
+    </ul>
+
+    === equivalenceMarginMultiplier ===
+    <h3 class="parameter_description" id="equivalenceMarginMultiplier">equivalenceMarginMultiplier</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="equivalenceMarginMultiplier_short_desc">
+                    Equivalence margin as a multiple of the smallest one the sample size can certify (min &gt; 1).
+        </span></li>
+        <li>Long Description: <span id="equivalenceMarginMultiplier_long_desc">
+                    Used when equivalenceMargin is 0. The margin is set to this multiple of
+                    tanh(c/sqrt(n-3)), the smallest margin the sample size could certify at all, which
+                    turns a sample-size-dependent choice into one dimensionless knob. The multiplier
+                    trades adjacency precision for the retention of weak real edges: on random cyclic
+                    linear-Gaussian graphs, 2.0 improved recall of Richardson virtual edges and of
+                    dotted-underline triples at every sample size tested for about 0.015 of adjacency
+                    precision, 1.6 moved further in that direction at a real cost in endpoint accuracy at
+                    large samples, and values above about 2.5 began deleting the virtual edges and
+                    degraded everything. Values at or below 1 are not allowed, since the margin would
+                    then certify nothing.
+         </span></li>
+        <li>Default Value: <span id="equivalenceMarginMultiplier_default_value">2.0</span></li>
+        <li>Lower Bound: <span id="equivalenceMarginMultiplier_lower_bound">1.01</span></li>
+        <li>Upper
+            Bound: <span id="equivalenceMarginMultiplier_upper_bound">100.0</span></li>
+        <li>Value
+            Type: <span id="equivalenceMarginMultiplier_value_type">Double</span></li>
+    </ul>
+
     === errorsNormal ===
     <h3 class="parameter_description" id="errorsNormal">errorsNormal</h3>
     <ul class="parameter_description_list">
@@ -8229,6 +8280,32 @@ Source:
             Bound: <span id="useDataOrder_lower_bound"></span></li>
         <li>Upper Bound: <span id="useDataOrder_upper_bound"></span></li>
         <li>Value Type: <span id="useDataOrder_value_type">Boolean</span></li>
+    </ul>
+
+    === useEquivalenceRemoval ===
+    <h3 class="parameter_description" id="useEquivalenceRemoval">useEquivalenceRemoval</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useEquivalenceRemoval_short_desc">
+                    Yes if CCD should remove edges only on positive evidence of independence.
+        </span></li>
+        <li>Long Description: <span id="useEquivalenceRemoval_long_desc">
+                    If Yes, CCD's adjacency phase uses an equivalence (TOST) test governed by
+                    equivalenceMargin and equivalenceMarginMultiplier, while the orientation steps keep
+                    the independence test selected for the algorithm. The adjacency phase decides whether
+                    to delete an edge, which is served by a test demanding positive evidence that the
+                    partial correlation is negligible; the orientation steps instead ask whether two
+                    variables are dependent, where an equivalence test's weaker "not shown to be
+                    negligible" would worsen CCD's tendency to commit to directions the data do not
+                    support. This requires the selected test to be Fisher Z, since the equivalence test
+                    is defined on the partial correlation. Default No, which leaves CCD's behaviour
+                    unchanged.
+         </span></li>
+        <li>Default Value: <span id="useEquivalenceRemoval_default_value">false</span></li>
+        <li>Lower Bound: <span id="useEquivalenceRemoval_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="useEquivalenceRemoval_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="useEquivalenceRemoval_value_type">Boolean</span></li>
     </ul>
 
     === useFasAdjacencies ===
