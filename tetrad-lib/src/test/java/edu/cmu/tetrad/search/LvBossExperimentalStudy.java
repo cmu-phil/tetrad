@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.utils.MagToPag;
-import edu.cmu.tetrad.search.work_in_progress.LvBoss;
+import edu.cmu.tetrad.search.work_in_progress.LvBossExperimental;
 import edu.cmu.tetrad.search.work_in_progress.MagRicfBicScorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -36,7 +36,7 @@ import java.util.Map;
  * when the score prefers a non-maximal graph) is counted in its own column, scored on adjacencies
  * only, and skipped for endpoint accuracy.</p>
  */
-public class LvBossStudy {
+public class LvBossExperimentalStudy {
 
     public static void main(String[] args) throws Exception {
         int reps = arg(args, 0, 20);
@@ -91,10 +91,10 @@ public class LvBossStudy {
                     case "LV-BOSS" -> {
                         MagRicfBicScorer scorer = new MagRicfBicScorer(cov);
                         scorer.setPenaltyDiscount(penalty);
-                        LvBoss lvBoss = new LvBoss(scorer);
-                        lvBoss.setNumStarts(numStarts);
-                        lvBoss.setSeed(1000L + rep);
-                        Graph mag = lvBoss.search();
+                        LvBossExperimental lvBossExperimental = new LvBossExperimental(scorer);
+                        lvBossExperimental.setNumStarts(numStarts);
+                        lvBossExperimental.setSeed(1000L + rep);
+                        Graph mag = lvBossExperimental.search();
                         legalMag = mag.paths().isLegalMag();
                         if (!legalMag) lvBossNotMag++;
                         out = legalMag ? new MagToPag(mag).convert(false, true) : mag;

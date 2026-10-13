@@ -61,7 +61,7 @@ import java.util.Random;
  * @see MagRicfBicScorer
  */
 @Experimental
-public class LvBoss {
+public class LvBossExperimental {
 
     /**
      * The scorer; fixes the variable set.
@@ -108,7 +108,7 @@ public class LvBoss {
      *
      * @param scorer the MAG BIC scorer; its covariance matrix fixes the variable set.
      */
-    public LvBoss(MagRicfBicScorer scorer) {
+    public LvBossExperimental(MagRicfBicScorer scorer) {
         this.scorer = Objects.requireNonNull(scorer, "Scorer not specified.");
         this.projection = new MagOrderProjection(scorer);
     }

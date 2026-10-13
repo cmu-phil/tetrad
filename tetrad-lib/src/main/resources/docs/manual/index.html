@@ -4388,6 +4388,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     </div>
 
+    <h3>LV-BOSS</h3>
+
+    <h4>Description</h4>
+
+    <div id="lv-boss">
+
+        <p>LV-BOSS is an experimental, fully score-based latent-variable search. It embeds a MAG
+            projection inside a BOSS-style search over orders of the observed variables: each order is
+            projected to a high-scoring ancestral graph (directed and bidirected edges, ancestrality
+            enforced), scored by an exact Gaussian MAG BIC computed by maximum likelihood with RICF, and
+            the search relocates one variable at a time to its best position, keeping the best-scoring
+            order found. No independence test is used anywhere. The output is the PAG of the found MAG.
+        </p>
+
+        <p>Caveats, stated plainly: the method is experimental, continuous Gaussian only, has no
+            consistency proof (none is known for any greedy search over MAG space), does not support
+            background knowledge yet, and is slower than the hybrid searches in this family. Rarely, the
+            score prefers a sparser ancestral graph that is not a legal MAG (latent-projection
+            distributions can satisfy rank-type constraints beyond their MAG's independence
+            constraints); in that case the ancestral graph itself is returned, with a note in the log.
+        </p>
+
+    </div>
+
     <h3>LV-Heuristic</h3>
 
     <h4>Description</h4>

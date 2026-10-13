@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.MagToPag;
-import edu.cmu.tetrad.search.work_in_progress.LvBoss;
+import edu.cmu.tetrad.search.work_in_progress.LvBossExperimental;
 import edu.cmu.tetrad.search.work_in_progress.MagRicfBicScorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -41,7 +41,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * Oracle tests for {@link LvBoss}, LV-BOSS stage 2: the BOSS-style order search with the MAG
+ * Oracle tests for {@link LvBossExperimental}, LV-BOSS stage 2: the BOSS-style order search with the MAG
  * projection inside, run from RANDOM starting orders against the population covariance (the SemIm's
  * implied measured covariance at a large nominal sample size).
  *
@@ -55,7 +55,7 @@ import static org.junit.Assert.*;
  *
  * @author josephramsey
  */
-public class TestLvBoss {
+public class TestLvBossExperimentalExperimental {
 
     /**
      * DAG-generated data, random starting orders, nominal n of a billion (large enough that the
@@ -70,8 +70,8 @@ public class TestLvBoss {
             Graph dag = RandomGraph.randomGraph(6, 0, 8, 100, 100, 100, false);
 
             Fixture f = fixture(dag, 1_000_000_000);
-            f.lvBoss.setSeed(500L + rep);
-            Graph out = f.lvBoss.search();
+            f.lvBossExperimental.setSeed(500L + rep);
+            Graph out = f.lvBossExperimental.search();
 
             assertTrue("rep " + rep + ": not a legal MAG", out.paths().isLegalMag());
 
@@ -99,8 +99,8 @@ public class TestLvBoss {
             if (trueMag.getNumEdges() == 0) { classMatches++; continue; }
 
             Fixture f = fixture(dagL, 1_000_000);
-            f.lvBoss.setSeed(900L + rep);
-            Graph out = f.lvBoss.search();
+            f.lvBossExperimental.setSeed(900L + rep);
+            Graph out = f.lvBossExperimental.search();
 
             double outScore = f.scorer.score(out);
             double trueScore = f.scorer.score(f.trueMagOverCov);
@@ -128,9 +128,9 @@ public class TestLvBoss {
         Graph dagL = RandomGraph.randomGraph(6, 2, 9, 100, 100, 100, false);
 
         Fixture f = fixture(dagL, 1_000_000);
-        f.lvBoss.setSeed(7L);
-        Graph out1 = f.lvBoss.search();
-        Graph out2 = f.lvBoss.search();
+        f.lvBossExperimental.setSeed(7L);
+        Graph out1 = f.lvBossExperimental.search();
+        Graph out2 = f.lvBossExperimental.search();
 
         assertEquals(out1.getNumEdges(), out2.getNumEdges());
         for (Edge e : out1.getEdges()) {
@@ -142,7 +142,7 @@ public class TestLvBoss {
     // Fixture
     // ------------------------------------------------------------------
 
-    private record Fixture(MagRicfBicScorer scorer, LvBoss lvBoss, Graph trueMagOverCov) {
+    private record Fixture(MagRicfBicScorer scorer, LvBossExperimental lvBossExperimental, Graph trueMagOverCov) {
     }
 
     private static Fixture fixture(Graph dagPossiblyLatent, int nominalN) {
@@ -160,9 +160,9 @@ public class TestLvBoss {
         Graph magOverCov = GraphUtils.replaceNodes(trueMag, covVars);
 
         MagRicfBicScorer scorer = new MagRicfBicScorer(cov);
-        LvBoss lvBoss = new LvBoss(scorer);
-        lvBoss.setNumStarts(2);
+        LvBossExperimental lvBossExperimental = new LvBossExperimental(scorer);
+        lvBossExperimental.setNumStarts(2);
 
-        return new Fixture(scorer, lvBoss, magOverCov);
+        return new Fixture(scorer, lvBossExperimental, magOverCov);
     }
 }
