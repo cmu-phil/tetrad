@@ -1053,6 +1053,24 @@ public final class Fask {
      * @return true just in case the pair passes the two-cycle test
      */
     public static boolean twoCycleTest(double[] x, double[] y, double[][] candCols, double cutoff) {
+        return twoCycleTest(x, y, candCols, cutoff, TwoCycleRule.SLOPE_SHIFT);
+    }
+
+    /**
+     * The two-cycle test with the choice of discrepancy statistic made explicit; see
+     * {@link TwoCycleRule}. {@link TwoCycleRule#CORRELATION_SHIFT} reproduces
+     * {@link #twoCycleTest(double[], double[], double[][], double)} exactly.
+     *
+     * @param x        standardized series for X
+     * @param y        standardized series for Y
+     * @param candCols columns for the conditioning candidates (typically the adjacents
+     *                 of X and Y other than X and Y themselves)
+     * @param cutoff   the z cutoff corresponding to the two-cycle alpha
+     * @param rule     which discrepancy statistic to compare the half-samples with
+     * @return true just in case the pair passes the two-cycle test
+     */
+    public static boolean twoCycleTest(double[] x, double[] y, double[][] candCols, double cutoff,
+                                       TwoCycleRule rule) {
         if (candCols == null) candCols = new double[0][];
 
         x = correctSkewness(x, skewness(completeRows(x)[0]));
@@ -1066,7 +1084,7 @@ public final class Fask {
 
         // Baseline: must show the two-cycle pattern unconditionally. An unassessable
         // baseline (singular, or positive parts too small) is not a two-cycle.
-        Boolean base = showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps, cutoff);
+        Boolean base = showsTwoCyclePattern(x, y, null, minPart, ridge, clampEps, cutoff, rule);
         if (base == null || !base) {
             return false;
         }
@@ -1078,7 +1096,7 @@ public final class Fask {
             if (choice.length == 0) continue; // the baseline above
             double[][] Z = new double[choice.length][];
             for (int i = 0; i < choice.length; i++) Z[i] = candCols[choice[i]];
-            Boolean shows = showsTwoCyclePattern(x, y, Z, minPart, ridge, clampEps, cutoff);
+            Boolean shows = showsTwoCyclePattern(x, y, Z, minPart, ridge, clampEps, cutoff, rule);
             if (shows != null && !shows) {
                 return false;
             }
@@ -1095,7 +1113,7 @@ public final class Fask {
      */
     private static Boolean showsTwoCyclePattern(double[] x, double[] y, double[][] zCols,
                                                 int minPart, double ridge, double clampEps,
-                                                double cutoff) {
+                                                double cutoff, TwoCycleRule rule) {
 
         double[][] Z = (zCols == null) ? new double[0][] : zCols;
 
@@ -1113,30 +1131,54 @@ public final class Fask {
             minPart = (int) TMath.ceil(0.15 * x.length);
         }
 
-        final double pc, pc1, pc2;
-        try {
-            pc = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
-            pc1 = partialCorrelation(x, y, Z, x, 0, +1, ridge);
-            pc2 = partialCorrelation(x, y, Z, y, 0, +1, ridge);
-        } catch (Exception e) {
-            return null;
-        }
-
         int nxPos = StatUtils.getRows(x, x, 0, +1).size();
         int nyPos = StatUtils.getRows(y, y, 0, +1).size();
         if (nxPos < minPart || nyPos < minPart) return null;
 
-        double _pc = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
-        double _pc1 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc1));
-        double _pc2 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc2));
-
-        double z = 0.5 * (TMath.log(1.0 + _pc) - TMath.log(1.0 - _pc));
-        double z1 = 0.5 * (TMath.log(1.0 + _pc1) - TMath.log(1.0 - _pc1));
-        double z2 = 0.5 * (TMath.log(1.0 + _pc2) - TMath.log(1.0 - _pc2));
-
         int nAll = StatUtils.getRows(x, x, Double.NEGATIVE_INFINITY, +1).size();
-        double zv1 = (z - z1) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nxPos - 3)));
-        double zv2 = (z - z2) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nyPos - 3)));
+
+        final double zv1, zv2;
+
+        if (rule == TwoCycleRule.SLOPE_SHIFT) {
+            final double[] bAll, bxPos, aAll, ayPos;
+            try {
+                // x side: regress Y on X, full sample vs the X > 0 half.
+                bAll = partialSlope(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
+                bxPos = partialSlope(x, y, Z, x, 0, +1, ridge);
+                // y side: regress X on Y, full sample vs the Y > 0 half.
+                aAll = partialSlope(y, x, Z, y, Double.NEGATIVE_INFINITY, +1, ridge);
+                ayPos = partialSlope(y, x, Z, y, 0, +1, ridge);
+            } catch (Exception e) {
+                return null;
+            }
+
+            double se1 = TMath.sqrt(bAll[1] * bAll[1] + bxPos[1] * bxPos[1]);
+            double se2 = TMath.sqrt(aAll[1] * aAll[1] + ayPos[1] * ayPos[1]);
+            if (!(se1 > 0) || !(se2 > 0)) return null;
+
+            zv1 = (bAll[0] - bxPos[0]) / se1;
+            zv2 = (aAll[0] - ayPos[0]) / se2;
+        } else {
+            final double pc, pc1, pc2;
+            try {
+                pc = partialCorrelation(x, y, Z, x, Double.NEGATIVE_INFINITY, +1, ridge);
+                pc1 = partialCorrelation(x, y, Z, x, 0, +1, ridge);
+                pc2 = partialCorrelation(x, y, Z, y, 0, +1, ridge);
+            } catch (Exception e) {
+                return null;
+            }
+
+            double _pc = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc));
+            double _pc1 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc1));
+            double _pc2 = TMath.max(-1.0 + clampEps, TMath.min(1.0 - clampEps, pc2));
+
+            double z = 0.5 * (TMath.log(1.0 + _pc) - TMath.log(1.0 - _pc));
+            double z1 = 0.5 * (TMath.log(1.0 + _pc1) - TMath.log(1.0 - _pc1));
+            double z2 = 0.5 * (TMath.log(1.0 + _pc2) - TMath.log(1.0 - _pc2));
+
+            zv1 = (z - z1) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nxPos - 3)));
+            zv2 = (z - z2) / TMath.sqrt((1.0 / ((double) nAll - 3)) + (1.0 / ((double) nyPos - 3)));
+        }
 
         // The original FASK acceptance (Sanchez-Romero et al. 2019, Algorithm 3): a significant
         // shift on one side with the two shifts opposing, or significant shifts on both sides.
@@ -1153,6 +1195,46 @@ public final class Fask {
 
     // === Returns true if conditioning on Z BREAKS the cycle opposition pattern (i.e., destroys it) ===
 
+    /**
+     * The partial regression slope of y on x controlling Z, with its standard error, over the rows
+     * selected by the condition. Both come from the precision matrix P of the covariance matrix of
+     * (x, y, Z) on those rows: the slope is -P(1,0)/P(1,1), the residual variance of y given x and
+     * Z is 1/P(1,1), and the residual variance of x given Z is (1/P(0,0))/(1 - r^2), from which
+     * se = sqrt((P(0,0)/P(1,1)) * (1 - r^2) / (n - k - 1)) for k = |Z| + 1 predictors.
+     *
+     * <p>Unlike a correlation, this slope is invariant to selecting on x: under an acyclic
+     * X -&gt; Y with Y = bX + e and e independent of X, E[Y | X] = bX holds on every
+     * X-measurable subset, so the slope estimates b on the whole sample and on the X &gt; 0 half
+     * alike. A correlation does not have that property, because selecting on x also changes
+     * var(x). This is what gives {@link TwoCycleRule#SLOPE_SHIFT} a null hypothesis that
+     * acyclicity actually implies.
+     *
+     * @return {slope, standard error of the slope}
+     */
+    private static double[] partialSlope(double[] x, double[] y, double[][] z, double[] condition,
+                                         double threshold, double direction, double lambda)
+            throws SingularMatrixException {
+        double[][] cv = StatUtils.covMatrix(x, y, z, condition, threshold, direction);
+        Matrix precision = new Matrix(cv).chooseInverse(lambda);
+
+        double pxx = precision.get(0, 0);
+        double pyy = precision.get(1, 1);
+        double pxy = precision.get(0, 1);
+
+        if (!(pxx > 0) || !(pyy > 0)) throw new SingularMatrixException();
+
+        double slope = -pxy / pyy;
+        double r = -pxy / TMath.sqrt(pxx * pyy);
+        r = TMath.max(-1.0, TMath.min(1.0, r));
+
+        int n = StatUtils.getRows(condition, threshold, direction).size();
+        double df = n - (z.length + 1) - 1;
+        if (df <= 0) throw new SingularMatrixException();
+
+        double se = TMath.sqrt((pxx / pyy) * TMath.max(0.0, 1.0 - r * r) / df);
+        return new double[]{slope, se};
+    }
+
     private static double partialCorrelation(double[] x, double[] y, double[][] z, double[] condition,
                                              double threshold, double direction, double lambda)
             throws SingularMatrixException {
@@ -1164,6 +1246,63 @@ public final class Fask {
     private boolean knowledgeOrients(Node left, Node right) {
         return knowledge.isForbidden(right.getName(), left.getName())
                 || knowledge.isRequired(left.getName(), right.getName());
+    }
+
+    /**
+     * The discrepancy statistic the two-cycle test compares the full sample against its
+     * sign-truncated half-samples with.
+     *
+     * <p>Both rules share the same acceptance logic; they differ only in what is compared, and
+     * that difference decides whether the test has an error rate at all.
+     */
+    public enum TwoCycleRule {
+
+        /**
+         * Compare CORRELATIONS, as in the original FASK (Sanchez-Romero et al. 2019,
+         * Algorithm 3). This is the published behaviour and the default.
+         *
+         * <p>Be aware of its scope. Selecting on a variable changes that variable's variance, so
+         * the correlation of X and Y on the X &gt; 0 half differs from the correlation on the
+         * whole sample even when X -&gt; Y is a plain one-directional linear edge. The shift the
+         * test looks for is therefore a nonzero population quantity under acyclicity, while the
+         * standard errors shrink like 1/sqrt(n), so the false-positive rate rises toward 1 with
+         * sample size instead of sitting at alpha. Measured on a single acyclic edge at
+         * alpha = 0.01 (see {@code FaskTwoCycleFprHarness}), the rate reaches 1.000 by n = 20000
+         * for Gumbel, Beta, uniform, Laplace and Gaussian noise. Exponential noise is the
+         * exception, holding at about 0.01 at every n, because there the correlation happens to
+         * be invariant to the truncation; that strongly right-skewed regime is the one the rule
+         * was developed on.
+         */
+        CORRELATION_SHIFT,
+
+        /**
+         * Compare partial regression SLOPES rather than correlations.
+         *
+         * <p>Under an acyclic X -&gt; Y the slope of Y on X is invariant to selecting on X, for
+         * every noise distribution, so an acyclic edge shifts on one side only and the test
+         * rejects; a two-cycle shifts on both sides and the test accepts. This gives the null a
+         * basis in acyclicity that the correlation comparison lacks, and it extends the test to
+         * symmetric non-Gaussian noise, where the correlation rule has no validity. On Gaussian
+         * data neither side shifts, so no two-cycle is reported - which is correct, a two-cycle
+         * in a Gaussian linear model being unidentifiable from observational data.
+         *
+         * <p>The standard error treats the truncated half and the full sample as independent,
+         * which they are not; because the two estimates are positively correlated the combined
+         * standard error is too large, so the test errs toward conservatism rather than toward
+         * false positives. Two limitations follow, both measured by
+         * {@code FaskTwoCycleRuleHarness} at alpha = 0.01 and worth knowing before relying on
+         * this rule. First, the conservatism costs power at moderate sample sizes: a same-sign
+         * two-cycle under exponential noise is detected at 0.358 at n = 1000, against the
+         * correlation rule's 1.000, and needs n = 5000 to reach 0.998; a mixed-sign two-cycle is
+         * detected much earlier, 0.995 at n = 1000. Second, size is not uniformly controlled:
+         * it is 0.000 for exponential, Gumbel, Beta and Gaussian noise at every sample size
+         * tested, but runs to roughly 0.2 for uniform and Laplace noise, where the
+         * normal-theory standard error does not describe the sampling distribution of the slope
+         * contrast. That is a plateau rather than the correlation rule's climb to 1, but it is
+         * still an order of magnitude above nominal, so a bootstrap or robust standard error is
+         * the natural next improvement here.
+         */
+        SLOPE_SHIFT
     }
 
     /**

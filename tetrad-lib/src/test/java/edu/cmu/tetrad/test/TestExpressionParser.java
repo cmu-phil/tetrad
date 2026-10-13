@@ -22,7 +22,11 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.calculator.expression.Context;
 import edu.cmu.tetrad.calculator.expression.Expression;
+import edu.cmu.tetrad.calculator.expression.ExpressionDescriptor;
+import edu.cmu.tetrad.calculator.expression.ExpressionManager;
+import edu.cmu.tetrad.calculator.parser.ExpressionLexer;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
+import edu.cmu.tetrad.calculator.parser.Token;
 import org.junit.Test;
 
 import java.text.ParseException;
@@ -356,7 +360,50 @@ public class TestExpressionParser {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Every function token must lex as itself. Java's alternation is first-match, so before the
+     * lexer sorted its alternatives longest first, a token that was a prefix of another one and
+     * declared ahead of it would shadow the longer token: "Exponential" lexed as "Exp" and the
+     * remainder failed to parse. This checks all tokens, so a newly added token that collides
+     * with an existing one is caught regardless of declaration order.
+     */
+    @Test
+    public void testNoTokenIsShadowedByAPrefix() {
+        for (ExpressionDescriptor descriptor : ExpressionManager.getInstance().getDescriptors()) {
+            String token = descriptor.getToken();
+            ExpressionLexer lexer = new ExpressionLexer(token);
+            assertEquals("Token " + token + " did not lex as an operator",
+                    Token.OPERATOR, lexer.nextToken());
+            assertEquals("Token " + token + " lexed as a different token",
+                    token, lexer.getTokenString());
+        }
+    }
+
+    /**
+     * Exponential(mean) and its shorter alias Exp(mean) must both parse and sample the same
+     * distribution. Exponential(1) used to fail to parse; see
+     * {@link #testNoTokenIsShadowedByAPrefix()}.
+     */
+    @Test
+    public void testExponentialAndItsAliasAgree() throws ParseException {
+        Context context = variable -> {
+            throw new IllegalArgumentException("No variables in this expression.");
+        };
+
+        ExpressionParser parser = new ExpressionParser();
+
+        for (String formula : new String[]{"Exponential(1)", "Exp(1)"}) {
+            Expression expression = parser.parseExpression(formula);
+
+            double sum = 0.0;
+            final int sampleSize = 100000;
+
+            for (int i = 0; i < sampleSize; i++) {
+                sum += expression.evaluate(context);
+            }
+
+            assertEquals("Mean of " + formula, 1.0, sum / sampleSize, 0.05);
+        }
+    }
 }
-
-
-

@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -81,5 +82,75 @@ public class TestFaskTwoCycle {
         Fask.standardize(y);
         assertFalse("A confounded pair should not pass the two-cycle test given its common cause",
                 Fask.twoCycleTest(x, y, new double[][]{z}, CUTOFF));
+    }
+
+    /**
+     * As {@link #twoCycleData(double, double, long)}, but at a caller-chosen sample size.
+     */
+    private static double[][] twoCycleData(double a, double b, long seed, int n) {
+        Random rng = new Random(seed);
+        double[] x = new double[n], y = new double[n];
+        double det = 1.0 - a * b;
+        for (int r = 0; r < n; r++) {
+            double e1 = exp1(rng), e2 = exp1(rng);
+            x[r] = (e1 + b * e2) / det;
+            y[r] = (a * e1 + e2) / det;
+        }
+        Fask.standardize(x);
+        Fask.standardize(y);
+        return new double[][]{x, y};
+    }
+
+    /**
+     * The contract of {@link Fask.TwoCycleRule#SLOPE_SHIFT}. On a plain acyclic edge with
+     * Gaussian noise and a large sample, the published correlation rule accepts a two-cycle -
+     * its shift is a nonzero population quantity under acyclicity, so its false-positive rate
+     * grows with n - while the slope rule, whose null acyclicity actually implies, rejects.
+     */
+    @Test
+    public void slopeRuleRejectsAnAcyclicEdgeWhereTheCorrelationRuleAcceptsIt() {
+        Random rng = new Random(23L);
+        final int n = 20000;
+
+        double[] x = new double[n], y = new double[n];
+        for (int r = 0; r < n; r++) {
+            x[r] = rng.nextGaussian();
+            y[r] = 0.6 * x[r] + rng.nextGaussian();
+        }
+        Fask.standardize(x);
+        Fask.standardize(y);
+
+        assertTrue("The correlation rule is expected to false-positive here; if this starts "
+                        + "failing, the correlation rule's calibration has changed",
+                Fask.twoCycleTest(x, y, new double[0][], CUTOFF, Fask.TwoCycleRule.CORRELATION_SHIFT));
+        assertFalse("The slope rule must not call an acyclic edge a two-cycle",
+                Fask.twoCycleTest(x, y, new double[0][], CUTOFF, Fask.TwoCycleRule.SLOPE_SHIFT));
+    }
+
+    /**
+     * The slope rule keeps power on genuine two-cycles with skewed noise, same-sign and
+     * mixed-sign alike, at a sample size where it has power (see {@code FaskTwoCycleRuleHarness}
+     * for the full size/power tables).
+     */
+    @Test
+    public void slopeRuleStillDetectsTrueTwoCycles() {
+        double[][] sameSign = twoCycleData(0.6, 0.4, 29L, 20000);
+        assertTrue("A same-sign two-cycle should be detected by the slope rule",
+                Fask.twoCycleTest(sameSign[0], sameSign[1], new double[0][], CUTOFF,
+                        Fask.TwoCycleRule.SLOPE_SHIFT));
+
+        double[][] mixedSign = twoCycleData(0.6, -0.4, 31L, 20000);
+        assertTrue("A mixed-sign two-cycle should be detected by the slope rule",
+                Fask.twoCycleTest(mixedSign[0], mixedSign[1], new double[0][], CUTOFF,
+                        Fask.TwoCycleRule.SLOPE_SHIFT));
+    }
+
+    /** The unparameterized entry point must keep reproducing the published rule exactly. */
+    @Test
+    public void defaultRuleIsTheCorrelationRule() {
+        double[][] d = twoCycleData(0.6, 0.4, 11L);
+        assertEquals(Fask.twoCycleTest(d[0], d[1], new double[0][], CUTOFF),
+                Fask.twoCycleTest(d[0], d[1], new double[0][], CUTOFF,
+                        Fask.TwoCycleRule.CORRELATION_SHIFT));
     }
 }
