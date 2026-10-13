@@ -146,36 +146,51 @@ public class LvBoss {
                     improved = false;
 
                     for (int vi = 0; vi < p; vi++) {
-                        Node v = order.get(vi);
-
+                        // Candidate relocations of the variable at vi are evaluated by WALKING it one
+                        // adjacent swap at a time toward each end, warm-projecting each step from the
+                        // PREVIOUS step's graph, so each step's polish is nearly a no-op. Plateau
+                        // escapes are off while scanning (fruitless escape attempts dominate the cost
+                        // on dense graphs and escapes fire rarely); the adopted relocation then gets
+                        // one escape-enabled projection before the final comparison.
                         double bestRelocScore = score;
-                        int bestPos = -1;
+                        List<Node> bestRelocOrder = null;
                         Graph bestRelocGraph = null;
 
-                        for (int pos = 0; pos < p; pos++) {
-                            if (pos == vi) continue;
+                        this.projection.setPlateauEscapesEnabled(false);
+                        try {
+                            for (int direction : new int[]{-1, +1}) {
+                                List<Node> walkOrder = new ArrayList<>(order);
+                                Graph walkGraph = g;
 
-                            List<Node> candidate = new ArrayList<>(order);
-                            candidate.remove(vi);
-                            candidate.add(pos, v);
+                                for (int pos = vi + direction; pos >= 0 && pos < p; pos += direction) {
+                                    java.util.Collections.swap(walkOrder, pos - direction, pos);
 
-                            Graph candidateGraph = this.projection.project(candidate, g);
-                            double candidateScore = this.scorer.score(candidateGraph);
+                                    walkGraph = this.projection.project(walkOrder, walkGraph);
+                                    double walkScore = this.scorer.score(walkGraph);
 
-                            // Strict > keeps the first-found position among ties: deterministic.
-                            if (candidateScore > bestRelocScore + this.improvementEpsilon) {
-                                bestRelocScore = candidateScore;
-                                bestPos = pos;
-                                bestRelocGraph = candidateGraph;
+                                    // Strict > keeps the first-found position among ties (left walk
+                                    // first, nearer positions first): deterministic.
+                                    if (walkScore > bestRelocScore + this.improvementEpsilon) {
+                                        bestRelocScore = walkScore;
+                                        bestRelocOrder = new ArrayList<>(walkOrder);
+                                        bestRelocGraph = walkGraph;
+                                    }
+                                }
                             }
+                        } finally {
+                            this.projection.setPlateauEscapesEnabled(true);
                         }
 
-                        if (bestPos >= 0) {
-                            order.remove(vi);
-                            order.add(bestPos, v);
-                            g = bestRelocGraph;
-                            score = bestRelocScore;
-                            improved = true;
+                        if (bestRelocOrder != null) {
+                            Graph adopted = this.projection.project(bestRelocOrder, bestRelocGraph);
+                            double adoptedScore = this.scorer.score(adopted);
+
+                            if (adoptedScore > score + this.improvementEpsilon) {
+                                order = bestRelocOrder;
+                                g = adopted;
+                                score = adoptedScore;
+                                improved = true;
+                            }
                         }
                     }
                 }

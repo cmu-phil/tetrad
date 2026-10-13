@@ -94,6 +94,13 @@ public class MagOrderProjection {
     private int maxPolishMoves = 10000;
 
     /**
+     * Whether the polish phase attempts plateau escapes. The outer order search turns this off while
+     * SCANNING candidate relocations and back on for the one it adopts, since a fruitless escape
+     * attempt is the dominant cost on dense graphs and escapes fire rarely.
+     */
+    private boolean plateauEscapesEnabled = true;
+
+    /**
      * Cap on distinct plateau states visited per escape attempt. Together with the depth cap this
      * bounds the cost of a FRUITLESS escape attempt, which is the dominant cost on dense bidirected
      * graphs whose plateaus are large; the escapes observed in the oracle probe all needed depth 2 to
@@ -207,6 +214,7 @@ public class MagOrderProjection {
 
             while (true) {
                 score = bestMoveLoop(g, nodes, allPairs, score, this.maxPolishMoves, false);
+                if (!this.plateauEscapesEnabled) break;
                 Double escaped = plateauEscape(g, nodes, allPairs, score);
                 if (escaped == null) break;
                 score = escaped;
@@ -618,6 +626,15 @@ public class MagOrderProjection {
     public void setMaxPolishMoves(int maxPolishMoves) {
         if (maxPolishMoves < 1) throw new IllegalArgumentException("Cap must be at least 1.");
         this.maxPolishMoves = maxPolishMoves;
+    }
+
+    /**
+     * Turns the polish phase's plateau escapes on or off; see the field. Default on.
+     *
+     * @param plateauEscapesEnabled true to attempt plateau escapes.
+     */
+    public void setPlateauEscapesEnabled(boolean plateauEscapesEnabled) {
+        this.plateauEscapesEnabled = plateauEscapesEnabled;
     }
 
     /**
