@@ -562,4 +562,13 @@ public class MagRicfBicScorer {
     public int getSampleSize() {
         return this.n;
     }
+
+    /**
+     * The variables of the covariance matrix all scoring is done against.
+     *
+     * @return the variables.
+     */
+    public List<Node> getVariables() {
+        return this.cov.getVariables();
+    }
 }
