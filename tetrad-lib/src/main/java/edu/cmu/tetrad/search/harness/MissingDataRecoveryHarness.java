@@ -64,8 +64,28 @@ import java.util.concurrent.TimeoutException;
  *   <li><b>Mechanisms.</b> The seven of Stage 2: MCAR; MAR driven by the root and by the target; monotone
  *   attrition along the causal order without and with sequential MAR drivers; self-masking; colluder.</li>
  *   <li><b>Arms.</b> BOSS with SemBicScore under ORACLE (complete data), LISTWISE, TESTWISE, EM_COV with the
- *   FULL_N and MIN_PAIRWISE effective sample sizes, and multiple imputation pooled by edge frequency.</li>
+ *   FULL_N and MIN_PAIRWISE effective sample sizes, multiple imputation pooled by edge frequency, and PAIRWISE
+ *   (see below).</li>
  * </ul>
+ *
+ * <h2>The PAIRWISE arm</h2>
+ *
+ * <p>A candidate repair of test-wise deletion, not yet a Tetrad policy. Stage 2 found that TESTWISE's errors come
+ * from scoring each parent set on its own rows: when adding a parent shrinks the rows, the shared part of the fit
+ * is re-estimated on a different sample, and that noise, scaled to the full n, swamps the penalty. PAIRWISE keeps
+ * the available-case idea but estimates every moment once: each correlation on the rows complete on its pair,
+ * rescaled by each column's standard deviation over all its rows, shrunk toward the identity just enough to be
+ * positive definite, and scored with the smallest pairwise count as n. Every local score then reads the same
+ * matrix, so comparisons share their estimation noise and the score is score-equivalent. Like TESTWISE it needs no
+ * model of the missingness, and unlike EM it does not need a Gaussian working model of the data, so the same
+ * construction could serve the embedded scores (degenerate Gaussian, basis-function) where EM is unavailable. Like
+ * TESTWISE it is consistent under MCAR, not under MAR in general.</p>
+ *
+ * <h2>Settings</h2>
+ *
+ * <p>Arguments of the form {@code key=value} override the defaults: {@code reps}, {@code n}, {@code p},
+ * {@code edges}, {@code coefLo}, {@code coefHi}. A bare number is taken as {@code reps}. For example,
+ * {@code n=250 p=24 edges=36 coefLo=0.2 coefHi=0.6} is closer to CHEM's size and signal strength.</p>
  *
  * <h2>Output</h2>
  *
@@ -143,6 +163,10 @@ public final class MissingDataRecoveryHarness {
     /** Seconds any single search may take before it is abandoned; 0 disables the limit. */
     private static final int ARM_TIMEOUT_SECONDS = 120;
 
+    // Settings in effect, from the defaults above unless overridden on the command line.
+    private static int numVars = NUM_VARS, numEdges = NUM_EDGES, sampleSize = SAMPLE_SIZE;
+    private static double coefLo = COEF_LO, coefHi = COEF_HI;
+
     /** Per-repetition results, written to the working directory. */
     private static final String CSV_FILE = "missing_data_recovery.csv";
 
@@ -166,6 +190,7 @@ public final class MissingDataRecoveryHarness {
                 .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.FULL_N))));
         arms.put("EM_COV MIN_PAIRWISE", (complete, missing) -> boss(score(missing, MissingDataSpec.emCovariance()
                 .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE))));
+        arms.put("PAIRWISE", (complete, missing) -> boss(pairwiseScore(missing)));
         if (RUN_MULTIPLE_IMPUTATION) {
             arms.put("MI (m=" + NUM_IMPUTATIONS + ", pooled)", (complete, missing) -> {
                 Parameters params = new Parameters();
@@ -188,6 +213,100 @@ public final class MissingDataRecoveryHarness {
         // Set after construction: the test-wise path sets its own discount in the constructor.
         score.setPenaltyDiscount(PENALTY_DISCOUNT);
         return score;
+    }
+
+    /**
+     * The PAIRWISE score: SemBicScore on a pairwise-deletion correlation matrix rescaled to covariances, made
+     * positive definite by the least shrinkage of the off-diagonal toward zero, with the smallest pairwise complete
+     * count as the sample size. See the class comment.
+     */
+    private static SemBicScore pairwiseScore(DataSet data) {
+        int n = data.getNumRows(), p = data.getNumColumns();
+        double[][] x = new double[n][p];
+        for (int i = 0; i < n; i++) for (int j = 0; j < p; j++) x[i][j] = data.getDouble(i, j);
+
+        double[] sd = new double[p];
+        for (int j = 0; j < p; j++) {
+            double s = 0, ss = 0;
+            int m = 0;
+            for (int i = 0; i < n; i++) {
+                if (Double.isNaN(x[i][j])) continue;
+                s += x[i][j];
+                ss += x[i][j] * x[i][j];
+                m++;
+            }
+            if (m < 2) throw new IllegalArgumentException("Fewer than two values in column " + j + ".");
+            double mean = s / m;
+            sd[j] = Math.sqrt(Math.max(0.0, (ss - m * mean * mean) / (m - 1)));
+        }
+
+        double[][] corr = new double[p][p];
+        int minCount = n;
+        for (int a = 0; a < p; a++) {
+            corr[a][a] = 1.0;
+            for (int b = a + 1; b < p; b++) {
+                double sa = 0, sb = 0, saa = 0, sbb = 0, sab = 0;
+                int m = 0;
+                for (int i = 0; i < n; i++) {
+                    double u = x[i][a], v = x[i][b];
+                    if (Double.isNaN(u) || Double.isNaN(v)) continue;
+                    sa += u; sb += v; saa += u * u; sbb += v * v; sab += u * v;
+                    m++;
+                }
+                minCount = Math.min(minCount, m);
+                double r = 0.0;
+                if (m > 2) {
+                    double cab = sab - sa * sb / m, caa = saa - sa * sa / m, cbb = sbb - sb * sb / m;
+                    if (caa > 0 && cbb > 0) r = cab / Math.sqrt(caa * cbb);
+                }
+                corr[a][b] = corr[b][a] = r;
+            }
+        }
+
+        // The least shrinkage of the off-diagonal that leaves the matrix comfortably positive definite.
+        double lo = 0.0, hi = 1.0;
+        if (!positiveDefinite(corr, 1.0)) {
+            for (int step = 0; step < 40; step++) {
+                double mid = 0.5 * (lo + hi);
+                if (positiveDefinite(corr, 1.0 - mid)) hi = mid;
+                else lo = mid;
+            }
+        } else {
+            hi = 0.0;
+        }
+        double keep = 1.0 - hi;
+
+        double[][] cov = new double[p][p];
+        for (int a = 0; a < p; a++) {
+            for (int b = 0; b < p; b++) {
+                double r = a == b ? 1.0 : keep * corr[a][b];
+                cov[a][b] = r * sd[a] * sd[b];
+            }
+        }
+
+        SemBicScore score = new SemBicScore(
+                new edu.cmu.tetrad.data.CovarianceMatrix(data.getVariables(), cov, Math.max(minCount, p + 2)));
+        score.setPenaltyDiscount(PENALTY_DISCOUNT);
+        return score;
+    }
+
+    /** Whether the correlation matrix with off-diagonal scaled by {@code keep} has a Cholesky factor with a margin. */
+    private static boolean positiveDefinite(double[][] corr, double keep) {
+        int p = corr.length;
+        double[][] l = new double[p][p];
+        for (int i = 0; i < p; i++) {
+            for (int j = 0; j <= i; j++) {
+                double s = i == j ? 1.0 : keep * corr[i][j];
+                for (int k = 0; k < j; k++) s -= l[i][k] * l[j][k];
+                if (i == j) {
+                    if (s < 1e-3) return false;
+                    l[i][i] = Math.sqrt(s);
+                } else {
+                    l[i][j] = s / l[j][j];
+                }
+            }
+        }
+        return true;
     }
 
     private static Graph boss(SemBicScore score) throws InterruptedException {
@@ -269,17 +388,30 @@ public final class MissingDataRecoveryHarness {
     /**
      * Runs the sweep.
      *
-     * @param args Optional: the number of repetitions, overriding the default.
+     * @param args Optional overrides, {@code key=value}: reps, n, p, edges, coefLo, coefHi; a bare number is reps.
      * @throws Exception If simulation or output fails.
      */
     public static void main(String[] args) throws Exception {
-        int reps = args.length > 0 ? Integer.parseInt(args[0]) : NUM_REPS;
+        int reps = NUM_REPS;
+        for (String arg : args) {
+            String[] kv = arg.split("=", 2);
+            if (kv.length == 1) { reps = Integer.parseInt(kv[0]); continue; }
+            switch (kv[0].trim()) {
+                case "reps" -> reps = Integer.parseInt(kv[1]);
+                case "n" -> sampleSize = Integer.parseInt(kv[1]);
+                case "p" -> numVars = Integer.parseInt(kv[1]);
+                case "edges" -> numEdges = Integer.parseInt(kv[1]);
+                case "coefLo" -> coefLo = Double.parseDouble(kv[1]);
+                case "coefHi" -> coefHi = Double.parseDouble(kv[1]);
+                default -> throw new IllegalArgumentException("Unknown setting: " + kv[0]);
+            }
+        }
         Map<String, Arm> arms = arms();
         Map<String, MechanismFactory> mechanisms = mechanisms();
 
         System.out.printf("Missing-data recovery: p=%d, edges=%d, n=%d, reps=%d, penalty=%.1f, rate=%.2f,"
                           + " value weight=%.1f, coefficients in [%.1f, %.1f]%n%n",
-                NUM_VARS, NUM_EDGES, SAMPLE_SIZE, reps, PENALTY_DISCOUNT, RATE, VALUE_WEIGHT, COEF_LO, COEF_HI);
+                numVars, numEdges, sampleSize, reps, PENALTY_DISCOUNT, RATE, VALUE_WEIGHT, coefLo, coefHi);
 
         try (PrintWriter csv = new PrintWriter(new FileWriter(CSV_FILE))) {
             csv.println("errors,mechanism,rep,completeRows,arm," + String.join(",", SEARCH_STATS));
@@ -493,7 +625,7 @@ public final class MissingDataRecoveryHarness {
         System.out.println("################ errors: " + errors + " ################");
         for (String mech : mechanisms) {
             System.out.printf("%n=== %s  (mean complete rows %.0f of %d) ===%n", mech,
-                    completeRows.get(mech).mean(), SAMPLE_SIZE);
+                    completeRows.get(mech).mean(), sampleSize);
             System.out.printf("%-22s", "search");
             for (String h : SEARCH_STATS) System.out.printf(" %15s", h);
             System.out.printf(" %5s%n", "runs");
@@ -562,8 +694,8 @@ public final class MissingDataRecoveryHarness {
 
         static Sim draw(Errors errors) {
             Sim s = new Sim();
-            s.p = NUM_VARS;
-            Graph g = RandomGraph.randomGraph(NUM_VARS, 0, NUM_EDGES, 100, 100, 100, false);
+            s.p = numVars;
+            Graph g = RandomGraph.randomGraph(numVars, 0, numEdges, 100, 100, 100, false);
 
             List<Node> vars = new ArrayList<>();
             s.names = new ArrayList<>();
@@ -586,12 +718,12 @@ public final class MissingDataRecoveryHarness {
             s.coef = new double[s.p][s.p];
             double[] errSd = new double[s.p];
             for (int j = 0; j < s.p; j++) {
-                for (int k : s.parents[j]) s.coef[j][k] = COEF_LO + (COEF_HI - COEF_LO) * r.nextDouble();
+                for (int k : s.parents[j]) s.coef[j][k] = coefLo + (coefHi - coefLo) * r.nextDouble();
                 errSd[j] = Math.sqrt(1.0 + r.nextDouble());
             }
 
-            double[][] x = new double[SAMPLE_SIZE][s.p];
-            for (int i = 0; i < SAMPLE_SIZE; i++) {
+            double[][] x = new double[sampleSize][s.p];
+            for (int i = 0; i < sampleSize; i++) {
                 for (int j : s.order) {
                     double e = errors == Errors.GAUSSIAN ? r.nextGaussian(0, 1)
                             : -Math.log(1.0 - r.nextDouble()) - 1.0; // centered Exp(1): mean 0, variance 1
