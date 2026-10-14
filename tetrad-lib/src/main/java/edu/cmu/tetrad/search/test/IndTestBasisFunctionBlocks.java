@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
@@ -186,7 +185,7 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
         // Decided before the deletion gate, which rejects EM_COVARIANCE: under EM no rows are deleted, and the
         // delegate estimates the covariance of the embedded columns.
-        boolean emCovariance = spec != null && spec.getPolicy() == MissingDataPolicy.EM_COVARIANCE
+        boolean emCovariance = spec != null && spec.getPolicy().estimatesCovariance()
                                && dataSet.existsMissingValue();
 
         // On the raw variables: MIN_PAIRWISE is the same before and after embedding, but MEAN_PAIRWISE is not,

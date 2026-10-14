@@ -178,8 +178,8 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             this.variables = this.cor.getVariables();
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
-        } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
-            // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+        } else if (policy.estimatesCovariance()) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
             ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(dataSet, spec);
             this.cor = new CorrelationMatrix(estimated);
             this.variables = this.cor.getVariables();

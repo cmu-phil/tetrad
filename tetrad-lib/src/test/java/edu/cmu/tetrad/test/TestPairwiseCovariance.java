@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.MissingnessInjector;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.PairwiseCovarianceEstimator;
@@ -41,7 +42,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -52,8 +52,8 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Checks the pairwise-deletion covariance: it equals the sample covariance on complete data, it is made positive
- * definite when pairwise entries are inconsistent, the interface reaches it, and a spec saved before the covariance
- * method existed still reads as EM.
+ * definite when pairwise entries are inconsistent, the interface reaches it as its own policy, and the policy survives
+ * serialization.
  */
 public class TestPairwiseCovariance {
 
@@ -106,7 +106,7 @@ public class TestPairwiseCovariance {
         p.set(Params.PENALTY_DISCOUNT, 1.0);
 
         MissingDataSpec spec = MissingDataUtils.fromParameters(p);
-        assertEquals(MissingDataSpec.CovarianceMethod.PAIRWISE, spec.getCovarianceMethod());
+        assertEquals(MissingDataPolicy.PAIRWISE_COVARIANCE, spec.getPolicy());
 
         Score score = new SemBicScore().getScore(data, p);
         double withParent = score.localScore(1, 0);
@@ -116,11 +116,10 @@ public class TestPairwiseCovariance {
     }
 
     @Test
-    public void specSavedBeforeTheMethodExistedReadsAsEm() throws Exception {
-        MissingDataSpec spec = MissingDataSpec.emCovariance();
-        Field f = MissingDataSpec.class.getDeclaredField("covarianceMethod");
-        f.setAccessible(true);
-        f.set(spec, null); // as deserialized from a session saved before the field was added
+    public void pairwiseSpecSurvivesSerialization() throws Exception {
+        MissingDataSpec spec = MissingDataSpec.pairwiseCovariance()
+                .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE);
+        assertTrue(spec.getPolicy().estimatesCovariance());
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
@@ -131,9 +130,8 @@ public class TestPairwiseCovariance {
             back = (MissingDataSpec) in.readObject();
         }
 
-        assertEquals(MissingDataSpec.CovarianceMethod.EM, back.getCovarianceMethod());
-        assertEquals(MissingDataSpec.CovarianceMethod.EM, back.withEssMode(
-                MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE).getCovarianceMethod());
+        assertEquals(MissingDataPolicy.PAIRWISE_COVARIANCE, back.getPolicy());
+        assertEquals(MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE, back.getEssMode());
     }
 
     private static boolean choleskySucceeds(ICovarianceMatrix cov) {

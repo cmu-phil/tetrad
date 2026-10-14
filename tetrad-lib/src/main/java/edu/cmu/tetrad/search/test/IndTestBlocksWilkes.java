@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
@@ -100,7 +99,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         if (blockSpec == null) throw new IllegalArgumentException("blockSpec == null");
 
         // Decided before the deletion gate, which rejects EM_COVARIANCE: under EM no rows are deleted.
-        boolean emCovariance = spec != null && spec.getPolicy() == MissingDataPolicy.EM_COVARIANCE
+        boolean emCovariance = spec != null && spec.getPolicy().estimatesCovariance()
                                && blockSpec.dataSet().existsMissingValue();
 
         DataSet resolved = emCovariance ? blockSpec.dataSet()
@@ -128,7 +127,7 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         setEffectiveSampleSize(-1);
 
         if (emCovariance) {
-            // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
             edu.cmu.tetrad.data.ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(blockSpec.dataSet(), spec);
             this.testwise = null;
             this.S = new CorrelationMatrix(estimated).getMatrix().getSimpleMatrix();

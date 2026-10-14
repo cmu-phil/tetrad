@@ -53,8 +53,8 @@ public final class MissingDataUtils {
      * Builds a MissingDataSpec from algcomparison/GUI/py-tetrad parameters (see the MISSING_* constants in
      * {@link Params}), or returns null--meaning "legacy default behavior"--if the policy parameter is absent or
      * "default". Policy values (case-insensitive): "fail", "listwise", "testwise", "em" (or "emCovariance"),
-     * "pairwise" (a pairwise-deletion covariance, carried by the EM_COVARIANCE policy; see
-     * {@link MissingDataSpec#pairwiseCovariance()}), "mi" (or "multipleImputation"). ESS modes: "fullN",
+     * "pairwise" (or "pairwiseCovariance"; see {@link MissingDataPolicy#PAIRWISE_COVARIANCE}), "mi" (or
+     * "multipleImputation"). ESS modes: "fullN",
      * "minPairwise", "meanPairwise".
      *
      * @param parameters The parameters.
@@ -73,7 +73,7 @@ public final class MissingDataUtils {
             case "listwise" -> MissingDataSpec.listwise();
             case "testwise" -> MissingDataSpec.testwise();
             case "em", "emcovariance", "em_covariance" -> MissingDataSpec.emCovariance();
-            case "pairwise" -> MissingDataSpec.pairwiseCovariance();
+            case "pairwise", "pairwisecovariance", "pairwise_covariance" -> MissingDataSpec.pairwiseCovariance();
             case "mi", "multipleimputation", "multiple_imputation" -> MissingDataSpec.multipleImputation(
                     parameters.getInt(Params.MISSING_NUM_IMPUTATIONS, 10));
             default -> throw new IllegalArgumentException("Unrecognized missing-data policy: '" + policy
@@ -264,17 +264,17 @@ public final class MissingDataUtils {
     }
 
     /**
-     * The covariance matrix of a dataset with missing values under the EM_COVARIANCE policy, estimated by the spec's
-     * {@link MissingDataSpec.CovarianceMethod}: by EM with the spec's ridge, tolerance and iteration limit, or by
-     * pairwise deletion ({@link PairwiseCovarianceEstimator}). Every component that accepts an EM covariance gets
-     * its matrix here, so each supports both methods.
+     * The covariance matrix of a dataset with missing values under a policy that estimates one: by EM with the spec's
+     * ridge, tolerance and iteration limit under EM_COVARIANCE, or by pairwise deletion
+     * ({@link PairwiseCovarianceEstimator}) under PAIRWISE_COVARIANCE. Every component that accepts an EM
+     * covariance gets its matrix here, so each supports both; see {@link MissingDataPolicy#estimatesCovariance()}.
      *
      * @param dataSet The dataset.
-     * @param spec    The spec; its policy is expected to be EM_COVARIANCE.
+     * @param spec    The spec; its policy is expected to be EM_COVARIANCE or PAIRWISE_COVARIANCE.
      * @return The covariance matrix.
      */
     public static ICovarianceMatrix estimateCovariance(DataSet dataSet, MissingDataSpec spec) {
-        if (spec.getCovarianceMethod() == MissingDataSpec.CovarianceMethod.PAIRWISE) {
+        if (spec.getPolicy() == MissingDataPolicy.PAIRWISE_COVARIANCE) {
             return PairwiseCovarianceEstimator.estimate(dataSet);
         }
 
@@ -376,8 +376,10 @@ public final class MissingDataUtils {
                         + briefSummary(dataSet));
                 return complete;
             }
-            case "testwise", "em", "emcovariance", "em_covariance", "pairwise" -> {
-                String canonical = policy.startsWith("em") ? "em" : policy;
+            case "testwise", "em", "emcovariance", "em_covariance", "pairwise", "pairwisecovariance",
+                 "pairwise_covariance" -> {
+                String canonical = policy.startsWith("em") ? "em" : policy.startsWith("pairwise") ? "pairwise"
+                        : "testwise";
 
                 // A pairwise-deletion covariance goes wherever an EM covariance does: both are supplied by
                 // estimateCovariance to the same covariance-consuming code.

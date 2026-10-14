@@ -72,5 +72,24 @@ public enum MissingDataPolicy {
      * frequency across imputations). Valid under MAR given a correctly specified imputation model; applicable to
      * continuous, discrete, and mixed data.
      */
-    MULTIPLE_IMPUTATION
+    MULTIPLE_IMPUTATION,
+    /**
+     * Estimate the covariance matrix once by pairwise deletion (see {@link PairwiseCovarianceEstimator}) and run the
+     * analysis on it as if it were complete data: each correlation from the rows complete on its pair, rescaled by
+     * each variable's standard deviation over all its observed rows, and shrunk toward the identity just enough to be
+     * positive definite. Needs no model of the data, unlike EM_COVARIANCE, but is unbiased only under MCAR. Accepted
+     * by every component that accepts EM_COVARIANCE. Added after the other values, so their ordinals are unchanged.
+     */
+    PAIRWISE_COVARIANCE;
+
+    /**
+     * Whether the policy estimates one covariance matrix from the incomplete data and analyzes it as complete data:
+     * EM_COVARIANCE or PAIRWISE_COVARIANCE. Components that consume a covariance matrix support both, getting the
+     * matrix from {@link MissingDataUtils#estimateCovariance(edu.cmu.tetrad.data.DataSet, MissingDataSpec)}.
+     *
+     * @return True for EM_COVARIANCE and PAIRWISE_COVARIANCE.
+     */
+    public boolean estimatesCovariance() {
+        return this == EM_COVARIANCE || this == PAIRWISE_COVARIANCE;
+    }
 }

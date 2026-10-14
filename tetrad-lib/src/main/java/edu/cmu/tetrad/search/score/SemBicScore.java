@@ -251,8 +251,8 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-        } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
-            // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+        } else if (policy.estimatesCovariance()) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
             ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(dataSet, spec);
             setCovariances(estimated);
 

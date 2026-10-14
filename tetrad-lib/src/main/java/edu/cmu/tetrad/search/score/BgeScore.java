@@ -200,8 +200,8 @@ public class BgeScore implements Score {
         } else {
             switch (policy) {
                 case LISTWISE -> cov = new CovarianceMatrix(MissingDataUtils.listwiseDelete(dataSet));
-                case EM_COVARIANCE -> {
-                    // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+                case EM_COVARIANCE, PAIRWISE_COVARIANCE -> {
+                    // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
                     ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(dataSet, spec);
                     cov = estimated;
                     ess = MissingDataUtils.effectiveSampleSize(dataSet, spec);

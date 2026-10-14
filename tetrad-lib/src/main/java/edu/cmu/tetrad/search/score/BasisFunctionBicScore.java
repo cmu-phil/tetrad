@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
@@ -168,7 +167,7 @@ public class BasisFunctionBicScore implements Score {
 
         // Decided before the deletion gate, which rejects EM_COVARIANCE outright: under EM no rows are deleted,
         // so the gate is bypassed with a null spec and the estimate is taken of the embedded matrix below.
-        boolean emCovariance = spec != null && spec.getPolicy() == MissingDataPolicy.EM_COVARIANCE
+        boolean emCovariance = spec != null && spec.getPolicy().estimatesCovariance()
                                && dataSet.existsMissingValue();
 
         if (!emCovariance) {
@@ -209,7 +208,7 @@ public class BasisFunctionBicScore implements Score {
         // cost of needing multiple imputation to avoid understating uncertainty, which makes it a search wrapper
         // rather than a score; see ImputationSearch. This path is offered for comparison, not as the default.
         if (emCovariance) {
-            // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
             ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(embeddedData, spec);
             this.bic = new SemBicScore(estimated);
         } else if (testwise) {
