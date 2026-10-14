@@ -120,6 +120,18 @@ public final class MissingDataScoreDiagnostics {
         policies.put("ORACLE", (complete, missing) -> score(complete, null));
         policies.put("LISTWISE", (complete, missing) -> score(missing, MissingDataSpec.listwise()));
         policies.put("TESTWISE", (complete, missing) -> score(missing, MissingDataSpec.testwise()));
+        // TESTWISE with the likelihood discounted to a smaller effective sample size. SemBicScore's test-wise path
+        // ignores the spec's ESS mode, so it is set directly here.
+        for (MissingDataSpec.EffectiveSampleSizeMode mode : new MissingDataSpec.EffectiveSampleSizeMode[]{
+                MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE,
+                MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE}) {
+            policies.put("TESTWISE " + mode, (complete, missing) -> {
+                SemBicScore s = score(missing, MissingDataSpec.testwise());
+                s.setEffectiveSampleSize(edu.cmu.tetrad.data.missing.MissingDataUtils.effectiveSampleSize(
+                        missing, MissingDataSpec.testwise().withEssMode(mode)));
+                return s;
+            });
+        }
         policies.put(COMMON_ROWS, null);
         for (MissingDataSpec.EffectiveSampleSizeMode mode : MissingDataSpec.EffectiveSampleSizeMode.values()) {
             policies.put("EM_COV " + mode, (complete, missing) ->
