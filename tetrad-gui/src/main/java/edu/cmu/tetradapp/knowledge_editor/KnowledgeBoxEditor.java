@@ -21,6 +21,10 @@
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
@@ -29,9 +33,11 @@ import edu.cmu.tetrad.util.NaturalSort;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
+import edu.cmu.tetradapp.model.KnowledgeSourceGraph;
 import edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel;
 import edu.cmu.tetrad.util.TMath;
 import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
+import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -193,9 +199,12 @@ public class KnowledgeBoxEditor extends JPanel {
     private static final String NOT_IN_TIER = "Not in tier";
 
     /**
-     * True if edges explicitly forbidden should be shown.
+     * True if edges explicitly forbidden should be shown. On by default so the Edges tab does
+     * not open looking empty when the knowledge in fact has forbidden edges; if there are more
+     * than {@link #EDGE_LIMIT} of them, {@link #resetEdgeDisplay()} quietly turns this off
+     * again and says so in the status line.
      */
-    private boolean showForbiddenExplicitly;
+    private boolean showForbiddenExplicitly = true;
 
     /**
      * True if edges forbidden by tiers should be shown.
@@ -203,9 +212,10 @@ public class KnowledgeBoxEditor extends JPanel {
     private boolean showForbiddenByTiers;
 
     /**
-     * True if edges required explicitly should be shown.
+     * True if edges required explicitly should be shown. On by default; see
+     * {@link #showForbiddenExplicitly}.
      */
-    private boolean showRequired;
+    private boolean showRequired = true;
 
     /**
      * True if edges required by groups should be shown.
@@ -216,6 +226,27 @@ public class KnowledgeBoxEditor extends JPanel {
      * True if edges forbidden by groups should be shown.
      */
     private boolean showForbiddenByGroups;
+
+    /**
+     * The Edges tab's status line, which reports edge categories that were not drawn because
+     * they exceed {@link #EDGE_LIMIT}, in place of the modal error dialogs used before.
+     */
+    private JLabel edgeStatusLabel;
+
+    /**
+     * The Edges tab's "Show" checkboxes, kept as fields so {@link #resetEdgeDisplay()} can keep
+     * them in step with the flags when a category is quietly turned off for exceeding the edge
+     * limit.
+     */
+    private JCheckBox showForbiddenByTiersBox;
+
+    private JCheckBox showForbiddenByGroupsBox;
+
+    private JCheckBox showForbiddenExplicitlyBox;
+
+    private JCheckBox showRequiredByGroupsBox;
+
+    private JCheckBox showRequiredExplicitlyBox;
 
     /**
      * The number of tiers to display.
@@ -517,6 +548,19 @@ public class KnowledgeBoxEditor extends JPanel {
      */
     public void resetTabbedPane() {
         this.tabbedPane.removeAll();
+
+        // A knowledge box whose knowledge was derived from a graph (Forbidden Graph, Required
+        // Graph, Remove Non-Skeleton Edges, Pairwise Forbidden Graph) opens on that graph,
+        // which says far more about the knowledge than the tiers display, which for these
+        // models is empty.
+        if (this.knowledgeBoxModel instanceof KnowledgeSourceGraph provider) {
+            JComponent sourceDisplay = sourceGraphDisplay(provider);
+
+            if (sourceDisplay != null) {
+                this.tabbedPane.add(provider.getKnowledgeSourceTabTitle(), sourceDisplay);
+            }
+        }
+
         this.tabbedPane.add("Tiers", tierDisplay());
 
         if (isOtherTiersShown()) {
@@ -556,7 +600,7 @@ public class KnowledgeBoxEditor extends JPanel {
             if ("Tiers".equals(title)) {
                 setNumDisplayTiers(TMath.max(getNumTiers(), this.knowledge.getNumTiers()));
             } else if ("Edges".equals(title)) {
-                resetEdgeDisplay(null);
+                resetEdgeDisplay();
             } else if ("Text".equals(title)) {
                 refreshTextDisplay();
             }
@@ -1154,6 +1198,153 @@ public class KnowledgeBoxEditor extends JPanel {
         return bar;
     }
 
+    /**
+     * Builds the tab showing the graph a derived knowledge box was made from, with a short
+     * explanation of how the knowledge was read off it. The graph is display-only; the
+     * knowledge itself is edited in the other tabs.
+     *
+     * @param provider the model supplying the graph and its explanation
+     * @return the tab contents, or null if the model has neither a graph nor anything to say
+     */
+    private JComponent sourceGraphDisplay(KnowledgeSourceGraph provider) {
+        Graph graph = provider.getKnowledgeSourceGraph();
+        String text = provider.getKnowledgeSourceDescription();
+
+        boolean hasGraph = graph != null && graph.getNumNodes() > 0;
+        boolean hasText = text != null && !text.isBlank();
+
+        if (!hasGraph && !hasText) {
+            return null;
+        }
+
+        JPanel panel = new JPanel(new BorderLayout());
+        applyPanelTheme(panel);
+
+        if (hasText) {
+            panel.add(readOnlyTextArea(text), BorderLayout.NORTH);
+        }
+
+        if (hasGraph && graph.getNumEdges() <= KnowledgeBoxEditor.EDGE_LIMIT) {
+            // Display a copy with fresh nodes, so that moving nodes around here cannot move
+            // the nodes of the graph the parent box displays.
+            Graph display = copyForDisplay(graph);
+
+            if (!hasLayout(display)) {
+                LayoutUtil.circleLayout(display);
+            }
+
+            GraphWorkbench workbench = new GraphWorkbench(display);
+            workbench.setAllowDoubleClickActions(false);
+            workbench.setAllowEdgeReorientations(false);
+
+            JScrollPane scroll = new JScrollPane(workbench);
+            applyScrollTheme(scroll);
+            panel.add(scroll, BorderLayout.CENTER);
+        } else {
+            String note = hasGraph
+                    ? String.format("This graph has %d edges, more than the %d that can be drawn "
+                                    + "here. The Text tab lists every constraint.",
+                    graph.getNumEdges(), KnowledgeBoxEditor.EDGE_LIMIT)
+                    : "There are too many variables to draw the graph here. The Text tab lists "
+                      + "every constraint.";
+            panel.add(readOnlyTextArea(note), BorderLayout.CENTER);
+        }
+
+        return panel;
+    }
+
+    /**
+     * A themed, wrapping, non-editable text area for explanatory text.
+     */
+    private JTextArea readOnlyTextArea(String text) {
+        JTextArea area = new JTextArea(text);
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setOpaque(false);
+        area.setForeground(getLabelForeground());
+        area.setFont(UIManager.getFont("Label.font"));
+        area.setBorder(new EmptyBorder(8, 8, 8, 8));
+        return area;
+    }
+
+    /**
+     * Copies a graph for display, with fresh nodes, so that laying it out or dragging its nodes
+     * cannot alter the node positions of the original.
+     */
+    private static Graph copyForDisplay(Graph graph) {
+        Graph copy = new EdgeListGraph();
+        Map<String, Node> byName = new HashMap<>();
+
+        for (Node node : graph.getNodes()) {
+            Node fresh = new GraphNode(node.getName());
+            fresh.setNodeType(node.getNodeType());
+            fresh.setCenter(node.getCenterX(), node.getCenterY());
+            byName.put(node.getName(), fresh);
+            copy.addNode(fresh);
+        }
+
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = byName.get(edge.getNode1().getName());
+            Node n2 = byName.get(edge.getNode2().getName());
+
+            if (n1 != null && n2 != null) {
+                copy.addEdge(new Edge(n1, n2, edge.getEndpoint1(), edge.getEndpoint2()));
+            }
+        }
+
+        return copy;
+    }
+
+    /**
+     * True if any node of the graph carries a real position (the default is (-1, -1)).
+     */
+    private static boolean hasLayout(Graph graph) {
+        for (Node node : graph.getNodes()) {
+            if (node.getCenterX() > 0 || node.getCenterY() > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * A small arrow drawn in a given color, placed beside each "Show" checkbox in the Edges tab
+     * so the checkboxes double as a legend for the edge colors.
+     */
+    private static class EdgeSwatchIcon implements Icon {
+
+        private final Color color;
+
+        EdgeSwatchIcon(Color color) {
+            this.color = color;
+        }
+
+        @Override
+        public int getIconWidth() {
+            return 26;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return 10;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(this.color);
+            g2.setStroke(new BasicStroke(2f));
+            int midY = y + getIconHeight() / 2;
+            g2.drawLine(x + 2, midY, x + 20, midY);
+            g2.drawLine(x + 20, midY, x + 14, midY - 4);
+            g2.drawLine(x + 20, midY, x + 14, midY + 4);
+            g2.dispose();
+        }
+    }
+
     private JPanel edgeDisplay() {
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
 
@@ -1174,54 +1365,51 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         });
 
-        resetEdgeDisplay(null);
+        this.edgeStatusLabel = new JLabel(" ");
+        this.edgeStatusLabel.setForeground(getMutedTextColor());
 
-        JCheckBox showForbiddenByTiersCheckbox =
-                new JCheckBox("Show Forbidden By Tiers", this.showForbiddenByTiers);
-        JCheckBox showForbiddenGroupsCheckBox =
-                new JCheckBox("Show Forbidden by Groups", this.showForbiddenByGroups);
-        JCheckBox showForbiddenExplicitlyCheckbox =
-                new JCheckBox("Show Forbidden Explicitly", this.showForbiddenExplicitly);
-        JCheckBox showRequiredGroupsCheckBox =
-                new JCheckBox("Show Required by Groups", this.showRequiredByGroups);
-        JCheckBox showRequiredExplicitlyCheckbox =
-                new JCheckBox("Show Required Explicitly", this.showRequired);
+        // The color beside each checkbox is the color the corresponding edges are drawn in, so
+        // the checkbox row doubles as a legend.
+        this.showForbiddenExplicitlyBox = new JCheckBox("Explicit", this.showForbiddenExplicitly);
+        this.showForbiddenByTiersBox = new JCheckBox("From tiers", this.showForbiddenByTiers);
+        this.showForbiddenByGroupsBox = new JCheckBox("From groups", this.showForbiddenByGroups);
+        this.showRequiredExplicitlyBox = new JCheckBox("Explicit", this.showRequired);
+        this.showRequiredByGroupsBox = new JCheckBox("From groups", this.showRequiredByGroups);
 
-        styleCheckBox(showForbiddenByTiersCheckbox);
-        styleCheckBox(showForbiddenGroupsCheckBox);
-        styleCheckBox(showForbiddenExplicitlyCheckbox);
-        styleCheckBox(showRequiredGroupsCheckBox);
-        styleCheckBox(showRequiredExplicitlyCheckbox);
+        styleCheckBox(this.showForbiddenExplicitlyBox);
+        styleCheckBox(this.showForbiddenByTiersBox);
+        styleCheckBox(this.showForbiddenByGroupsBox);
+        styleCheckBox(this.showRequiredExplicitlyBox);
+        styleCheckBox(this.showRequiredByGroupsBox);
 
-        showRequiredGroupsCheckBox.addActionListener((e) -> {
-            JCheckBox box = (JCheckBox) e.getSource();
-            this.showRequiredByGroups = box.isSelected();
-            resetEdgeDisplay(showRequiredGroupsCheckBox);
-        });
+        this.showForbiddenExplicitlyBox.setToolTipText(
+                "Edges forbidden one at a time, here or in the Text tab.");
+        this.showForbiddenByTiersBox.setToolTipText(
+                "Edges forbidden because they would point from a later tier to an earlier one.");
+        this.showForbiddenByGroupsBox.setToolTipText(
+                "Edges forbidden by a group in the Other Groups tab.");
+        this.showRequiredExplicitlyBox.setToolTipText(
+                "Edges required one at a time, here or in the Text tab.");
+        this.showRequiredByGroupsBox.setToolTipText(
+                "Edges required by a group in the Other Groups tab.");
 
-        showForbiddenGroupsCheckBox.addActionListener((e) -> {
-            JCheckBox box = (JCheckBox) e.getSource();
-            this.showForbiddenByGroups = box.isSelected();
-            resetEdgeDisplay(showForbiddenGroupsCheckBox);
-        });
+        resetEdgeDisplay();
 
-        showForbiddenByTiersCheckbox.addActionListener((e) -> {
-            JCheckBox checkBox = (JCheckBox) e.getSource();
-            setShowForbiddenByTiers(checkBox.isSelected());
-            resetEdgeDisplay(showForbiddenByTiersCheckbox);
-        });
-
-        showForbiddenExplicitlyCheckbox.addActionListener((e) -> {
-            JCheckBox checkBox = (JCheckBox) e.getSource();
-            setShowForbiddenExplicitly(checkBox.isSelected());
-            resetEdgeDisplay(showForbiddenExplicitlyCheckbox);
-        });
-
-        showRequiredExplicitlyCheckbox.addActionListener((e) -> {
-            JCheckBox checkBox = (JCheckBox) e.getSource();
-            setShowRequired(checkBox.isSelected());
-            resetEdgeDisplay(showRequiredExplicitlyCheckbox);
-        });
+        this.showForbiddenExplicitlyBox.addActionListener((e) ->
+                setShowAndReset(() -> this.showForbiddenExplicitly =
+                        this.showForbiddenExplicitlyBox.isSelected()));
+        this.showForbiddenByTiersBox.addActionListener((e) ->
+                setShowAndReset(() -> this.showForbiddenByTiers =
+                        this.showForbiddenByTiersBox.isSelected()));
+        this.showForbiddenByGroupsBox.addActionListener((e) ->
+                setShowAndReset(() -> this.showForbiddenByGroups =
+                        this.showForbiddenByGroupsBox.isSelected()));
+        this.showRequiredExplicitlyBox.addActionListener((e) ->
+                setShowAndReset(() -> this.showRequired =
+                        this.showRequiredExplicitlyBox.isSelected()));
+        this.showRequiredByGroupsBox.addActionListener((e) ->
+                setShowAndReset(() -> this.showRequiredByGroups =
+                        this.showRequiredByGroupsBox.isSelected()));
 
         JPanel workbenchPanel = new JPanel(new BorderLayout());
         applyPanelTheme(workbenchPanel);
@@ -1251,29 +1439,91 @@ public class KnowledgeBoxEditor extends JPanel {
 
         Box showOptionsBox = Box.createVerticalBox();
         applyPanelTheme(showOptionsBox);
+        showOptionsBox.setBorder(new EmptyBorder(2, 5, 2, 5));
+
+        JLabel forbiddenLabel = new JLabel("Show forbidden:");
+        JLabel requiredLabel = new JLabel("Show required:");
+        styleLabel(forbiddenLabel);
+        styleLabel(requiredLabel);
+
+        // Give the two row labels the same width so the checkboxes line up.
+        Dimension labelSize = new Dimension(
+                TMath.max(forbiddenLabel.getPreferredSize().width,
+                        requiredLabel.getPreferredSize().width) + 5,
+                forbiddenLabel.getPreferredSize().height);
+        forbiddenLabel.setPreferredSize(labelSize);
+        requiredLabel.setPreferredSize(labelSize);
+        forbiddenLabel.setMaximumSize(labelSize);
+        requiredLabel.setMaximumSize(labelSize);
 
         Box forbiddenOptionsBox = Box.createHorizontalBox();
         forbiddenOptionsBox.setOpaque(false);
-        forbiddenOptionsBox.add(showForbiddenByTiersCheckbox);
-        forbiddenOptionsBox.add(showForbiddenGroupsCheckBox);
-        forbiddenOptionsBox.add(showForbiddenExplicitlyCheckbox);
+        forbiddenOptionsBox.add(forbiddenLabel);
+        forbiddenOptionsBox.add(new JLabel(new EdgeSwatchIcon(
+                KnowledgeDisplayEdge.DEFAULT_FORBIDDEN_EXPLICITLY_COLOR)));
+        forbiddenOptionsBox.add(this.showForbiddenExplicitlyBox);
+        forbiddenOptionsBox.add(Box.createHorizontalStrut(8));
+        forbiddenOptionsBox.add(new JLabel(new EdgeSwatchIcon(
+                KnowledgeDisplayEdge.DEFAULT_FORBIDDEN_BY_TIERS_COLOR)));
+        forbiddenOptionsBox.add(this.showForbiddenByTiersBox);
+        forbiddenOptionsBox.add(Box.createHorizontalStrut(8));
+        forbiddenOptionsBox.add(new JLabel(new EdgeSwatchIcon(
+                KnowledgeDisplayEdge.DEFAULT_FORBIDDEN_BY_GROUPS_COLOR)));
+        forbiddenOptionsBox.add(this.showForbiddenByGroupsBox);
         forbiddenOptionsBox.add(Box.createHorizontalGlue());
 
         Box requiredOptionsBox = Box.createHorizontalBox();
         requiredOptionsBox.setOpaque(false);
-        requiredOptionsBox.add(showRequiredGroupsCheckBox);
-        requiredOptionsBox.add(showRequiredExplicitlyCheckbox);
+        requiredOptionsBox.add(requiredLabel);
+        requiredOptionsBox.add(new JLabel(new EdgeSwatchIcon(
+                KnowledgeDisplayEdge.DEFAULT_REQUIRED_COLOR)));
+        requiredOptionsBox.add(this.showRequiredExplicitlyBox);
+        requiredOptionsBox.add(Box.createHorizontalStrut(8));
+        requiredOptionsBox.add(new JLabel(new EdgeSwatchIcon(
+                KnowledgeDisplayEdge.DEFAULT_REQUIRED_BY_GROUPS_COLOR)));
+        requiredOptionsBox.add(this.showRequiredByGroupsBox);
         requiredOptionsBox.add(Box.createHorizontalGlue());
+
+        JLabel hint = new JLabel("Edges point from cause to effect. Draw them with the Forbidden "
+                                 + "and Required tools at the left; select an edge and press Delete to remove it.");
+        hint.setForeground(getMutedTextColor());
+
+        Box hintRow = Box.createHorizontalBox();
+        hintRow.setOpaque(false);
+        hintRow.add(hint);
+        hintRow.add(Box.createHorizontalGlue());
+
+        Box statusRow = Box.createHorizontalBox();
+        statusRow.setOpaque(false);
+        statusRow.add(this.edgeStatusLabel);
+        statusRow.add(Box.createHorizontalGlue());
 
         showOptionsBox.add(forbiddenOptionsBox);
         showOptionsBox.add(requiredOptionsBox);
+        showOptionsBox.add(Box.createVerticalStrut(2));
+        showOptionsBox.add(hintRow);
+        showOptionsBox.add(statusRow);
 
         display.add(showOptionsBox, BorderLayout.SOUTH);
 
         return display;
     }
 
-    private void resetEdgeDisplay(JCheckBox checkBox) {
+    /**
+     * Runs the given flag update, then redraws the edge display.
+     */
+    private void setShowAndReset(Runnable flagUpdate) {
+        flagUpdate.run();
+        resetEdgeDisplay();
+    }
+
+    /**
+     * Redraws the Edges tab from the current knowledge and "Show" flags. A category with more
+     * edges than {@link #EDGE_LIMIT} is not drawn: its flag and checkbox are turned off and the
+     * status line says so, in place of the modal error dialog shown before (which was
+     * especially unpleasant when the tab was merely being opened, not clicked).
+     */
+    private void resetEdgeDisplay() {
         Knowledge knowledge = getKnowledge();
         KnowledgeGraph graph = new KnowledgeGraph(getKnowledge());
 
@@ -1284,20 +1534,26 @@ public class KnowledgeBoxEditor extends JPanel {
 
         LayoutUtil.circleLayout(graph);
 
+        List<String> notDrawn = new ArrayList<>();
+
         if (this.showRequiredByGroups) {
-            List<KnowledgeEdge> list = knowledge.getListOfRequiredEdges();
+            List<KnowledgeEdge> list = new ArrayList<>();
+
+            for (KnowledgeEdge e : knowledge.getListOfRequiredEdges()) {
+                if (knowledge.isRequiredByGroups(e.getFrom(), e.getTo())) {
+                    list.add(e);
+                }
+            }
+
             if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showRequiredByGroups = false;
-                if (checkBox != null) checkBox.setSelected(false);
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
-                JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
+                notDrawn.add("required from groups (" + list.size() + ")");
             } else {
                 list.forEach(e -> {
-                    String from = e.getFrom();
-                    String to = e.getTo();
-                    if (knowledge.isRequiredByGroups(from, to)) {
-                        KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(from);
-                        KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(to);
+                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(e.getFrom());
+                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(e.getTo());
+
+                    if (fromNode != null && toNode != null) {
                         graph.addEdge(new KnowledgeModelEdge(fromNode, toNode, KnowledgeModelEdge.REQUIRED_BY_GROUPS));
                     }
                 });
@@ -1305,19 +1561,23 @@ public class KnowledgeBoxEditor extends JPanel {
         }
 
         if (this.showForbiddenByGroups) {
-            List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
+            List<KnowledgeEdge> list = new ArrayList<>();
+
+            for (KnowledgeEdge e : knowledge.getListOfForbiddenEdges()) {
+                if (knowledge.isForbiddenByGroups(e.getFrom(), e.getTo())) {
+                    list.add(e);
+                }
+            }
+
             if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showForbiddenByGroups = false;
-                if (checkBox != null) checkBox.setSelected(false);
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
-                JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
+                notDrawn.add("forbidden from groups (" + list.size() + ")");
             } else {
                 list.forEach(e -> {
-                    String from = e.getFrom();
-                    String to = e.getTo();
-                    if (knowledge.isForbiddenByGroups(from, to)) {
-                        KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(from);
-                        KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(to);
+                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(e.getFrom());
+                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(e.getTo());
+
+                    if (fromNode != null && toNode != null) {
                         graph.addEdge(new KnowledgeModelEdge(fromNode, toNode, KnowledgeModelEdge.FORBIDDEN_BY_GROUPS));
                     }
                 });
@@ -1326,17 +1586,14 @@ public class KnowledgeBoxEditor extends JPanel {
 
         if (this.showRequired) {
             List<KnowledgeEdge> list = knowledge.getListOfExplicitlyRequiredEdges();
+
             if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showRequired = false;
-                if (checkBox != null) checkBox.setSelected(false);
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
-                JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
+                notDrawn.add("required explicitly (" + list.size() + ")");
             } else {
                 list.forEach(e -> {
-                    String from = e.getFrom();
-                    String to = e.getTo();
-                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(from);
-                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(to);
+                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(e.getFrom());
+                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(e.getTo());
 
                     if (!(fromNode == null || toNode == null)) {
                         graph.addEdge(new KnowledgeModelEdge(fromNode, toNode, KnowledgeModelEdge.REQUIRED));
@@ -1346,43 +1603,17 @@ public class KnowledgeBoxEditor extends JPanel {
         }
 
         if (this.showForbiddenByTiers) {
-            List<KnowledgeEdge> list = knowledge.getListOfForbiddenEdges();
+            List<KnowledgeEdge> list = new ArrayList<>();
+
+            for (KnowledgeEdge e : knowledge.getListOfForbiddenEdges()) {
+                if (knowledge.isForbiddenByTiers(e.getFrom(), e.getTo())) {
+                    list.add(e);
+                }
+            }
+
             if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
                 this.showForbiddenByTiers = false;
-                if (checkBox != null) checkBox.setSelected(false);
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
-                JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
-            } else {
-                list.forEach(e -> {
-                    String from = e.getFrom();
-                    String to = e.getTo();
-                    if (knowledge.isForbiddenByTiers(from, to)) {
-                        KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(from);
-                        KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(to);
-
-                        if (fromNode == null) {
-                            graph.addNode(new KnowledgeModelNode(from));
-                            fromNode = (KnowledgeModelNode) graph.getNode(from);
-                        }
-
-                        if (toNode == null) {
-                            graph.addNode(new KnowledgeModelNode(to));
-                            toNode = (KnowledgeModelNode) graph.getNode(to);
-                        }
-
-                        graph.addEdge(new KnowledgeModelEdge(fromNode, toNode, KnowledgeModelEdge.FORBIDDEN_BY_TIERS));
-                    }
-                });
-            }
-        }
-
-        if (this.showForbiddenExplicitly) {
-            List<KnowledgeEdge> list = knowledge.getListOfExplicitlyForbiddenEdges();
-            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
-                this.showForbiddenExplicitly = false;
-                if (checkBox != null) checkBox.setSelected(false);
-                String errMsg = String.format("The number of edges to show exceeds the limit %d.", KnowledgeBoxEditor.EDGE_LIMIT);
-                JOptionPane.showMessageDialog(this, errMsg, "Unable To Display Edges", JOptionPane.ERROR_MESSAGE);
+                notDrawn.add("forbidden from tiers (" + list.size() + ")");
             } else {
                 list.forEach(e -> {
                     String from = e.getFrom();
@@ -1390,12 +1621,53 @@ public class KnowledgeBoxEditor extends JPanel {
                     KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(from);
                     KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(to);
 
-                    KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode, toNode, KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
-                    if (!graph.containsEdge(edge)) {
-                        graph.addEdge(edge);
+                    if (fromNode == null) {
+                        graph.addNode(new KnowledgeModelNode(from));
+                        fromNode = (KnowledgeModelNode) graph.getNode(from);
+                    }
+
+                    if (toNode == null) {
+                        graph.addNode(new KnowledgeModelNode(to));
+                        toNode = (KnowledgeModelNode) graph.getNode(to);
+                    }
+
+                    graph.addEdge(new KnowledgeModelEdge(fromNode, toNode, KnowledgeModelEdge.FORBIDDEN_BY_TIERS));
+                });
+            }
+        }
+
+        if (this.showForbiddenExplicitly) {
+            List<KnowledgeEdge> list = knowledge.getListOfExplicitlyForbiddenEdges();
+
+            if (list.size() > KnowledgeBoxEditor.EDGE_LIMIT) {
+                this.showForbiddenExplicitly = false;
+                notDrawn.add("forbidden explicitly (" + list.size() + ")");
+            } else {
+                list.forEach(e -> {
+                    KnowledgeModelNode fromNode = (KnowledgeModelNode) graph.getNode(e.getFrom());
+                    KnowledgeModelNode toNode = (KnowledgeModelNode) graph.getNode(e.getTo());
+
+                    if (fromNode != null && toNode != null) {
+                        KnowledgeModelEdge edge = new KnowledgeModelEdge(fromNode, toNode, KnowledgeModelEdge.FORBIDDEN_EXPLICITLY);
+                        if (!graph.containsEdge(edge)) {
+                            graph.addEdge(edge);
+                        }
                     }
                 });
             }
+        }
+
+        // Keep the checkboxes in step with the flags, which may have just been turned off.
+        syncCheckBox(this.showForbiddenExplicitlyBox, this.showForbiddenExplicitly);
+        syncCheckBox(this.showForbiddenByTiersBox, this.showForbiddenByTiers);
+        syncCheckBox(this.showForbiddenByGroupsBox, this.showForbiddenByGroups);
+        syncCheckBox(this.showRequiredExplicitlyBox, this.showRequired);
+        syncCheckBox(this.showRequiredByGroupsBox, this.showRequiredByGroups);
+
+        if (this.edgeStatusLabel != null) {
+            this.edgeStatusLabel.setText(notDrawn.isEmpty() ? " "
+                    : "Not drawn (more than " + KnowledgeBoxEditor.EDGE_LIMIT + " edges): "
+                      + String.join("; ", notDrawn) + ". The Text tab lists every constraint.");
         }
 
         boolean arrangedAll = LayoutUtil.arrangeBySourceGraph(graph, this.edgeWorkbench.getGraph());
@@ -1406,6 +1678,16 @@ public class KnowledgeBoxEditor extends JPanel {
 
         // Redrawing the Edges tab is not a change to the knowledge.
         this.edgeWorkbench.setGraph(graph);
+    }
+
+    /**
+     * Sets the checkbox's selection to the given value, if it exists and differs. (Programmatic
+     * selection does not fire the checkbox's action listener, so this cannot recurse.)
+     */
+    private static void syncCheckBox(JCheckBox box, boolean selected) {
+        if (box != null && box.isSelected() != selected) {
+            box.setSelected(selected);
+        }
     }
 
     private void notifyKnowledge() {
@@ -1447,18 +1729,6 @@ public class KnowledgeBoxEditor extends JPanel {
 
     private List<String> getVarNames() {
         return this.knowledge.getVariables();
-    }
-
-    private void setShowForbiddenExplicitly(boolean showForbiddenExplicitly) {
-        this.showForbiddenExplicitly = showForbiddenExplicitly;
-    }
-
-    private void setShowRequired(boolean showRequired) {
-        this.showRequired = showRequired;
-    }
-
-    private void setShowForbiddenByTiers(boolean showForbiddenByTiers) {
-        this.showForbiddenByTiers = showForbiddenByTiers;
     }
 
     private int getNumTiers() {

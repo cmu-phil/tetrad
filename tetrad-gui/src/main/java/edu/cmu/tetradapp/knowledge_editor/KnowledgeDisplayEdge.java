@@ -89,30 +89,55 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
     private static final int FORBIDDEN_BY_GROUPS = 7;
 
     /**
+     * The default color for explicitly forbidden edges, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_FORBIDDEN_EXPLICITLY_COLOR = Color.MAGENTA.darker().darker();
+
+    /**
+     * The default color for edges forbidden by groups, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_FORBIDDEN_BY_GROUPS_COLOR = Color.MAGENTA.brighter();
+
+    /**
+     * The default color for edges required by groups, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_REQUIRED_BY_GROUPS_COLOR = Color.GREEN.brighter();
+
+    /**
+     * The default color for edges forbidden by tiers, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_FORBIDDEN_BY_TIERS_COLOR = Color.LIGHT_GRAY;
+
+    /**
+     * The default color for explicitly required edges, shared with the Edges tab legend.
+     */
+    public static final Color DEFAULT_REQUIRED_COLOR = Color.GREEN.darker();
+
+    /**
      * The color that forbidden edges are drawn in.
      */
-    private final Color forbiddenExplicitlyColor = Color.MAGENTA.darker().darker();
+    private final Color forbiddenExplicitlyColor = DEFAULT_FORBIDDEN_EXPLICITLY_COLOR;
 
     /**
      * The color for forbidden group edges.
      */
-    private final Color forbiddenGroupsColor = Color.MAGENTA.brighter();
+    private final Color forbiddenGroupsColor = DEFAULT_FORBIDDEN_BY_GROUPS_COLOR;
 
     /**
      * The color for required group edges.
      */
-    private final Color requiredGroupsColor = Color.GREEN.brighter();
+    private final Color requiredGroupsColor = DEFAULT_REQUIRED_BY_GROUPS_COLOR;
 
 
     /**
      * The color that forbidden edges are drawn in.
      */
-    private final Color forbiddenByTiersColor = Color.LIGHT_GRAY;
+    private final Color forbiddenByTiersColor = DEFAULT_FORBIDDEN_BY_TIERS_COLOR;
 
     /**
      * The color that required edges are drawn in.
      */
-    private final Color requiredColor = Color.GREEN.darker();
+    private final Color requiredColor = DEFAULT_REQUIRED_COLOR;
 
     /**
      * The color that selected edges will be drawn in.

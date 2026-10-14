@@ -42,7 +42,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
  * @author kaalpurush
  * @version $Id: $Id
  */
-public class ForbiddenGraphModel extends KnowledgeBoxModel {
+public class ForbiddenGraphModel extends KnowledgeBoxModel implements KnowledgeSourceGraph {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -291,6 +291,33 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
      */
     public Graph getResultGraph() {
         return this.resultGraph;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Graph getKnowledgeSourceGraph() {
+        return this.resultGraph;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getKnowledgeSourceDescription() {
+        return "Knowledge was made from the parent graph, drawn below. For every pair of "
+               + "variables X and Y where X is an ancestor of Y in this graph, the edge "
+               + "Y --> X is forbidden; that is, no edge may point back against the "
+               + "ancestral order of this graph.";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getKnowledgeSourceTabTitle() {
+        return "Parent Graph";
     }
 
 }
