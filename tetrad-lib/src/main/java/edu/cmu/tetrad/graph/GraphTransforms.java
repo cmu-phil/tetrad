@@ -624,6 +624,17 @@ public class GraphTransforms {
         }
     }
 
+    /**
+     * Converts a Directed Acyclic Graph (DAG) to a Partial Ancestral Graph (PAG).
+     * This method executes the conversion process asynchronously and allows for a configurable timeout.
+     * If the conversion process exceeds the specified timeout or is interrupted, it throws a runtime exception.
+     *
+     * @param graph The input graph, represented as a Directed Acyclic Graph (DAG), to be converted to a PAG.
+     * @param excludeSelectionBias A boolean flag indicating whether to exclude selection bias during the conversion process.
+     * @param timeoutSeconds The maximum time, in seconds, to wait for the conversion process to complete.
+     * @return The resulting Partial Ancestral Graph (PAG) obtained by converting the input DAG.
+     * @throws RuntimeException If the conversion process times out, is interrupted, or encounters an exception.
+     */
     public static Graph dagToPag(Graph graph, boolean excludeSelectionBias, int timeoutSeconds) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<Graph> future = executor.submit(

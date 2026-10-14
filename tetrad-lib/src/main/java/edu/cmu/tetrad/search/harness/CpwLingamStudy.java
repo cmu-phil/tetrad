@@ -73,14 +73,14 @@ import java.util.function.Predicate;
  *   <li><b>C</b> - CPW's two-cycle alpha and independence-test alpha, one family, one n.</li>
  *   <li><b>D</b> - two-cycle detection on vs off, over all families and sample sizes. The true
  *       graph is always acyclic, so every 2-cycle in an output graph is a false positive; the
- *       companion {@link FaskTwoCycleFprHarness} isolates the test responsible.</li>
+ *       companion {@link FaskTwoCycleRuleHarness} isolates the test responsible.</li>
  * </ol>
  *
  * <p>Summary tables are printed to standard output. Given a path argument, the per-replicate
  * counts are also written there as CSV for re-analysis.
  *
  * @see Cpw
- * @see FaskTwoCycleFprHarness
+ * @see FaskTwoCycleRuleHarness
  */
 public final class CpwLingamStudy {
 
