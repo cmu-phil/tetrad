@@ -79,6 +79,20 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     private boolean selectionListenerInstalled = false;
 
     /**
+     * Listens for the wrapper's data model list being replaced by a background process (Causal Unmix, say) so the
+     * display can refresh immediately instead of requiring the editor to be closed and reopened. The event may arrive
+     * on a background thread, so the refresh is posted to the event dispatch thread.
+     */
+    private final PropertyChangeListener wrapperDataListener = evt -> {
+        if ("dataModelList".equals(evt.getPropertyName())) {
+            SwingUtilities.invokeLater(this::reset);
+        }
+    };
+
+    // Avoid stacking the wrapper listener across addNotify calls.
+    private boolean wrapperListenerInstalled = false;
+
+    /**
      * True while a table is being redrawn for a display option only, so that the redraw is not taken for an edit.
      */
     private boolean displayOnlyTableChange = false;
@@ -215,6 +229,41 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 }
             }
         });
+    }
+
+    /**
+     * Installs the wrapper data listener when this editor is added to a window, and refreshes if the wrapper's list
+     * changed between construction and display (a background process may have finished in that window).
+     */
+    @Override
+    public void addNotify() {
+        super.addNotify();
+
+        if (!this.wrapperListenerInstalled) {
+            this.dataWrapper.addPropertyChangeListener(this.wrapperDataListener);
+            this.wrapperListenerInstalled = true;
+        }
+
+        // Only editors already populated from a wrapper are refreshed here; editors built with the no-wrapper
+        // constructors are populated later by an explicit reset(...) call and are left alone.
+        if (!this.displayedModels.isEmpty()
+            && !new ArrayList<DataModel>(this.dataWrapper.getDataModelList()).equals(this.displayedModels)) {
+            reset();
+        }
+    }
+
+    /**
+     * Uninstalls the wrapper data listener when this editor is removed from its window, so closed editors are not
+     * retained by the wrapper.
+     */
+    @Override
+    public void removeNotify() {
+        if (this.wrapperListenerInstalled) {
+            this.dataWrapper.removePropertyChangeListener(this.wrapperDataListener);
+            this.wrapperListenerInstalled = false;
+        }
+
+        super.removeNotify();
     }
 
     private void rebuildTabsFrom(DataModelList list, DataModel selectedModel) {

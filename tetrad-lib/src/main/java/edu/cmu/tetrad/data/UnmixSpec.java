@@ -31,6 +31,15 @@ import java.io.Serializable;
  * @author josephramsey
  */
 public final class UnmixSpec implements Serializable {
+
+    /**
+     * Pinned to the value the JVM computed implicitly for this class before any serialVersionUID was declared (checked
+     * against both this source and the published beta jar), so that sessions saved with earlier builds still load, and
+     * so that future edits to this class cannot silently change the UID and break saved sessions.
+     */
+    @java.io.Serial
+    private static final long serialVersionUID = -7113246204343961993L;
+
     /**
      * A flag that determines whether the value of 'k' in an operation or calculation should be automatically selected
      * by the system. When set to true, the system determines the appropriate value of 'k' without user intervention. If

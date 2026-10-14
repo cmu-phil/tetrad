@@ -74,6 +74,9 @@ public class DataSubsetModel extends DataWrapper {
                 out.add(subset);
                 out.getFirst().setName("Data Subset");
                 setDataModel(out);
+
+                // Refresh any editor already open on this wrapper; see CausalUnmix for the rationale.
+                announceDataModelChange();
             }
         };
     }
