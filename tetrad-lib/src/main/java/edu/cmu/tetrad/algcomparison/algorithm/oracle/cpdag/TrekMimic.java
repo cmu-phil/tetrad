@@ -51,7 +51,10 @@ import java.util.*;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Trek-MIMIC",
         command = "trek-mimic",
-        algoType = AlgType.forbid_latent_common_causes,
+        // Trek-MIMIC recovers latent structure (latents with their measured inputs and outputs) from the data, so it
+        // belongs with the latent-finding algorithms: in the Search box it is offered under "Yes, possibly" for the
+        // latent-confounder question, alongside RLCD and Factor Analysis, rather than under "No".
+        algoType = AlgType.search_for_structure_over_latents,
         dataType = DataType.Continuous
 )
 @Bootstrapping
