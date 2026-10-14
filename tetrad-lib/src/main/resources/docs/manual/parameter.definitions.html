@@ -4901,7 +4901,7 @@ Source:
     === missingDataPolicy ===
     <h3 class="parameter_description" id="missingDataPolicy">missingDataPolicy</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="missingDataPolicy_short_desc">Missing-data policy: "default", "fail", "listwise", "testwise", "em", or "mi"</span></li>
+        <li>Short Description: <span id="missingDataPolicy_short_desc">Missing-data policy: "default", "fail", "listwise", "testwise", "em", "pairwise", or "mi"</span></li>
         <li>Long Description: <span id="missingDataPolicy_long_desc">
         How missing values in the dataset are handled by scores and independence tests. "default"
         preserves each component's historical behavior (typically test-wise deletion, with a logged
@@ -4911,6 +4911,11 @@ Source:
         random (MCAR). "em" estimates the covariance matrix once by expectation-maximization under
         a saturated Gaussian model and proceeds as complete data; valid under the weaker
         missing-at-random (MAR) assumption for approximately multivariate normal continuous data.
+        "pairwise" also estimates one covariance matrix and proceeds as complete data, but by pairwise
+        deletion: each correlation from the rows complete on its pair, rescaled by each variable's
+        standard deviation over all its observed rows, and shrunk toward the identity just enough to
+        be positive definite. It needs no model of the data and is accepted wherever "em" is, but is
+        unbiased only under MCAR; choose a pairwise effective sample size mode with it.
         "mi" performs multiple imputation and is handled by a search wrapper over imputed datasets,
         not by a single score or test. Values are case-insensitive.</span></li>
         <li>Default Value: <span id="missingDataPolicy_default_value">default</span></li>

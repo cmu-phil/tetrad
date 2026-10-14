@@ -1171,8 +1171,9 @@ public final class Params {
     public static final String MIN_STRATUM_SIZE = "minStratumSize";
     /**
      * Constant <code>MISSING_DATA_POLICY="missingDataPolicy"</code>. One of "default" (legacy behavior per
-     * component), "fail", "listwise", "testwise", "em" (EM-estimated covariance; continuous data), or "mi"
-     * (multiple imputation; handled by search wrappers). See edu.cmu.tetrad.data.missing.MissingDataPolicy.
+     * component), "fail", "listwise", "testwise", "em" (EM-estimated covariance; continuous data), "pairwise"
+     * (pairwise-deletion covariance, accepted wherever "em" is; MCAR only), or "mi" (multiple imputation; handled
+     * by search wrappers). See edu.cmu.tetrad.data.missing.MissingDataPolicy.
      */
     public static final String MISSING_DATA_POLICY = "missingDataPolicy";
     /**

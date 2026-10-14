@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.EmCovarianceEstimator;
 import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
@@ -129,12 +128,10 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         setEffectiveSampleSize(-1);
 
         if (emCovariance) {
-            EmCovarianceEstimator estimator = new EmCovarianceEstimator(blockSpec.dataSet());
-            estimator.setRidge(spec.getEmRidge());
-            estimator.setTolerance(spec.getEmTolerance());
-            estimator.setMaxIterations(spec.getEmMaxIterations());
+            // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+            edu.cmu.tetrad.data.ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(blockSpec.dataSet(), spec);
             this.testwise = null;
-            this.S = new CorrelationMatrix(estimator.estimate()).getMatrix().getSimpleMatrix();
+            this.S = new CorrelationMatrix(estimated).getMatrix().getSimpleMatrix();
         } else if (blockSpec.dataSet().existsMissingValue()) {
             this.testwise = new TestwiseCovariance(blockSpec.dataSet().getDoubleData());
             this.S = null;

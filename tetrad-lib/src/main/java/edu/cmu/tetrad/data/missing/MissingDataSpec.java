@@ -81,6 +81,13 @@ public final class MissingDataSpec implements TetradSerializable {
     private final EffectiveSampleSizeMode essMode;
 
     /**
+     * How the covariance matrix is estimated under {@link MissingDataPolicy#EM_COVARIANCE}: by EM, or by pairwise
+     * deletion. Null in a spec saved before this field existed, which reads as EM; see
+     * {@link #getCovarianceMethod()}.
+     */
+    private final CovarianceMethod covarianceMethod;
+
+    /**
      * Constructs a spec. Private; use the static factory methods.
      *
      * @param policy          The policy.
@@ -90,15 +97,18 @@ public final class MissingDataSpec implements TetradSerializable {
      * @param numImputations  The number of imputations.
      * @param seed            The random seed, or -1 for none.
      * @param essMode         The effective sample size mode.
+     * @param covarianceMethod How the covariance is estimated under EM_COVARIANCE.
      */
     private MissingDataSpec(MissingDataPolicy policy, double emRidge, double emTolerance, int emMaxIterations,
-                            int numImputations, long seed, EffectiveSampleSizeMode essMode) {
+                            int numImputations, long seed, EffectiveSampleSizeMode essMode,
+                            CovarianceMethod covarianceMethod) {
         if (policy == null) throw new NullPointerException("Policy is null.");
         if (emRidge < 0) throw new IllegalArgumentException("EM ridge must be >= 0: " + emRidge);
         if (emTolerance <= 0) throw new IllegalArgumentException("EM tolerance must be > 0: " + emTolerance);
         if (emMaxIterations < 1) throw new IllegalArgumentException("EM max iterations must be >= 1: " + emMaxIterations);
         if (numImputations < 1) throw new IllegalArgumentException("Number of imputations must be >= 1: " + numImputations);
         if (essMode == null) throw new NullPointerException("Effective sample size mode is null.");
+        if (covarianceMethod == null) throw new NullPointerException("Covariance method is null.");
 
         this.policy = policy;
         this.emRidge = emRidge;
@@ -107,6 +117,7 @@ public final class MissingDataSpec implements TetradSerializable {
         this.numImputations = numImputations;
         this.seed = seed;
         this.essMode = essMode;
+        this.covarianceMethod = covarianceMethod;
     }
 
     /**
@@ -117,7 +128,7 @@ public final class MissingDataSpec implements TetradSerializable {
      */
     public static MissingDataSpec of(MissingDataPolicy policy) {
         return new MissingDataSpec(policy, 0.0, 1e-6, 1000, 10, -1L,
-                EffectiveSampleSizeMode.FULL_N);
+                EffectiveSampleSizeMode.FULL_N, CovarianceMethod.EM);
     }
 
     /**
@@ -158,6 +169,19 @@ public final class MissingDataSpec implements TetradSerializable {
     }
 
     /**
+     * A spec for a pairwise-deletion covariance matrix: each correlation from the rows complete on its pair,
+     * rescaled by each variable's standard deviation over all its observed rows, and shrunk toward the identity just
+     * enough to be positive definite. It is carried by the EM_COVARIANCE policy, so every component that accepts an
+     * EM covariance accepts it, with the covariance estimated this way instead; see
+     * {@link edu.cmu.tetrad.data.missing.PairwiseCovarianceEstimator}. Consistent under MCAR, not MAR.
+     *
+     * @return The spec.
+     */
+    public static MissingDataSpec pairwiseCovariance() {
+        return emCovariance().withCovarianceMethod(CovarianceMethod.PAIRWISE);
+    }
+
+    /**
      * A spec for multiple imputation with the given number of imputations.
      *
      * @param numImputations The number of imputed datasets, m; at least 1. One is allowed, but a single completed
@@ -186,7 +210,7 @@ public final class MissingDataSpec implements TetradSerializable {
      */
     public MissingDataSpec withEmRidge(double emRidge) {
         return new MissingDataSpec(this.policy, emRidge, this.emTolerance, this.emMaxIterations,
-                this.numImputations, this.seed, this.essMode);
+                this.numImputations, this.seed, this.essMode, getCovarianceMethod());
     }
 
     /**
@@ -197,7 +221,7 @@ public final class MissingDataSpec implements TetradSerializable {
      */
     public MissingDataSpec withEmTolerance(double emTolerance) {
         return new MissingDataSpec(this.policy, this.emRidge, emTolerance, this.emMaxIterations,
-                this.numImputations, this.seed, this.essMode);
+                this.numImputations, this.seed, this.essMode, getCovarianceMethod());
     }
 
     /**
@@ -208,7 +232,7 @@ public final class MissingDataSpec implements TetradSerializable {
      */
     public MissingDataSpec withEmMaxIterations(int emMaxIterations) {
         return new MissingDataSpec(this.policy, this.emRidge, this.emTolerance, emMaxIterations,
-                this.numImputations, this.seed, this.essMode);
+                this.numImputations, this.seed, this.essMode, getCovarianceMethod());
     }
 
     /**
@@ -221,7 +245,7 @@ public final class MissingDataSpec implements TetradSerializable {
      */
     public MissingDataSpec withNumImputations(int numImputations) {
         return new MissingDataSpec(this.policy, this.emRidge, this.emTolerance, this.emMaxIterations,
-                numImputations, this.seed, this.essMode);
+                numImputations, this.seed, this.essMode, getCovarianceMethod());
     }
 
     /**
@@ -232,7 +256,7 @@ public final class MissingDataSpec implements TetradSerializable {
      */
     public MissingDataSpec withSeed(long seed) {
         return new MissingDataSpec(this.policy, this.emRidge, this.emTolerance, this.emMaxIterations,
-                this.numImputations, seed, this.essMode);
+                this.numImputations, seed, this.essMode, getCovarianceMethod());
     }
 
     /**
@@ -243,7 +267,27 @@ public final class MissingDataSpec implements TetradSerializable {
      */
     public MissingDataSpec withEssMode(EffectiveSampleSizeMode essMode) {
         return new MissingDataSpec(this.policy, this.emRidge, this.emTolerance, this.emMaxIterations,
-                this.numImputations, this.seed, essMode);
+                this.numImputations, this.seed, essMode, getCovarianceMethod());
+    }
+
+    /**
+     * Returns a copy of this spec with the given covariance method.
+     *
+     * @param covarianceMethod The method.
+     * @return The copy.
+     */
+    public MissingDataSpec withCovarianceMethod(CovarianceMethod covarianceMethod) {
+        return new MissingDataSpec(this.policy, this.emRidge, this.emTolerance, this.emMaxIterations,
+                this.numImputations, this.seed, this.essMode, covarianceMethod);
+    }
+
+    /**
+     * How the covariance is estimated under EM_COVARIANCE. EM for a spec saved before this setting existed.
+     *
+     * @return This method.
+     */
+    public CovarianceMethod getCovarianceMethod() {
+        return this.covarianceMethod == null ? CovarianceMethod.EM : this.covarianceMethod;
     }
 
     /**
@@ -318,12 +362,31 @@ public final class MissingDataSpec implements TetradSerializable {
     public String toString() {
         return switch (this.policy) {
             case FAIL, LISTWISE, TESTWISE -> "MissingDataSpec(" + this.policy + ")";
-            case EM_COVARIANCE -> "MissingDataSpec(EM_COVARIANCE, ridge=" + this.emRidge
+            case EM_COVARIANCE -> getCovarianceMethod() == CovarianceMethod.PAIRWISE
+                    ? "MissingDataSpec(EM_COVARIANCE, method=PAIRWISE, essMode=" + this.essMode + ")"
+                    : "MissingDataSpec(EM_COVARIANCE, ridge=" + this.emRidge
                     + ", tol=" + this.emTolerance + ", maxIter=" + this.emMaxIterations
                     + ", essMode=" + this.essMode + ")";
             case MULTIPLE_IMPUTATION -> "MissingDataSpec(MULTIPLE_IMPUTATION, m=" + this.numImputations
                     + ", seed=" + this.seed + ")";
         };
+    }
+
+    /**
+     * How the covariance matrix is estimated from incomplete data under {@link MissingDataPolicy#EM_COVARIANCE}.
+     */
+    public enum CovarianceMethod {
+
+        /**
+         * Expectation-maximization under a saturated Gaussian model. Valid under MAR for approximately Gaussian data.
+         */
+        EM,
+
+        /**
+         * Pairwise deletion: each correlation from the rows complete on its pair. No distributional model; valid
+         * under MCAR only.
+         */
+        PAIRWISE
     }
 
     /**

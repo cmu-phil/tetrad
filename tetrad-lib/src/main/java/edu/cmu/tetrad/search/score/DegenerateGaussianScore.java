@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.EmCovarianceEstimator;
 import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
@@ -157,11 +156,9 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
         // missingness rate rather than staying fixed. Compare against TESTWISE on real data rather than assuming
         // either dominates.
         if (emCovariance) {
-            EmCovarianceEstimator estimator = new EmCovarianceEstimator(convertedData);
-            estimator.setRidge(spec.getEmRidge());
-            estimator.setTolerance(spec.getEmTolerance());
-            estimator.setMaxIterations(spec.getEmMaxIterations());
-            this.bic = new SemBicScore(estimator.estimate());
+            // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+            edu.cmu.tetrad.data.ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(convertedData, spec);
+            this.bic = new SemBicScore(estimated);
         } else if (testwise) {
             this.bic = new SemBicScore(convertedData, precomputeCovariances, MissingDataSpec.testwise());
         } else {

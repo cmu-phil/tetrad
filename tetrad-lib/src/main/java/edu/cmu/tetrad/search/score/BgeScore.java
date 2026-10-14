@@ -22,7 +22,6 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.EmCovarianceEstimator;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
@@ -202,11 +201,9 @@ public class BgeScore implements Score {
             switch (policy) {
                 case LISTWISE -> cov = new CovarianceMatrix(MissingDataUtils.listwiseDelete(dataSet));
                 case EM_COVARIANCE -> {
-                    EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
-                    estimator.setRidge(spec.getEmRidge());
-                    estimator.setTolerance(spec.getEmTolerance());
-                    estimator.setMaxIterations(spec.getEmMaxIterations());
-                    cov = estimator.estimate();
+                    // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+                    ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(dataSet, spec);
+                    cov = estimated;
                     ess = MissingDataUtils.effectiveSampleSize(dataSet, spec);
                 }
                 case TESTWISE -> tw = new TestwiseCovariance(dataSet.getDoubleData());

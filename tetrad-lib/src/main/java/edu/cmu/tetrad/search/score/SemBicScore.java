@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.data.EmCovarianceEstimator;
 import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
@@ -253,11 +252,9 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
         } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
-            EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
-            estimator.setRidge(spec.getEmRidge());
-            estimator.setTolerance(spec.getEmTolerance());
-            estimator.setMaxIterations(spec.getEmMaxIterations());
-            setCovariances(estimator.estimate());
+            // EM, or a pairwise-deletion covariance if the spec asks for one; see MissingDataUtils.estimateCovariance.
+            ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(dataSet, spec);
+            setCovariances(estimated);
 
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
