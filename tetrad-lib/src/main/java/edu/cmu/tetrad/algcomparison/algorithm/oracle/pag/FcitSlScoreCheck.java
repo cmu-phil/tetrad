@@ -193,6 +193,8 @@ public class FcitSlScoreCheck extends AbstractBootstrapAlgorithm implements Algo
         search.setScoreCheckPenaltyDiscount(parameters.getDouble(Params.SCORE_CHECK_PENALTY_DISCOUNT));
 
 
+        search.setGraspUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
+
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.FcitSlScoreCheck.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
@@ -257,6 +259,9 @@ public class FcitSlScoreCheck extends AbstractBootstrapAlgorithm implements Algo
         params.add(Params.USE_BES);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
+
+        // GRaSP (used only when starting with GRaSP)
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
 
         // FCIT
         params.add(Params.FCIT_STARTS_WITH);

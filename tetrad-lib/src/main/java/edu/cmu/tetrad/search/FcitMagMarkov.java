@@ -102,6 +102,11 @@ public final class FcitMagMarkov implements IGraphSearch {
      */
     private boolean useDataOrder = true;
     /**
+     * Whether GRaSP, when used as the starting algorithm, should use the Raskutti-Uhler test-based method
+     * instead of the score-based method.
+     */
+    private boolean graspUseRaskuttiUhler = false;
+    /**
      * This flag represents whether the Bes algorithm should be used in the search.
      * <p>
      * If set to true, the Bes algorithm will be used. If set to false, the Bes algorithm will not be used.
@@ -641,8 +646,8 @@ public final class FcitMagMarkov implements IGraphSearch {
         grasp.setUncoveredDepth(1);
         grasp.setNonSingularDepth(1);
         grasp.setOrdered(true);
-        grasp.setUseScore(true);
-        grasp.setUseRaskuttiUhler(false);
+        grasp.setUseScore(!graspUseRaskuttiUhler);
+        grasp.setUseRaskuttiUhler(graspUseRaskuttiUhler);
         grasp.setUseDataOrder(useDataOrder);
         grasp.setAllowInternalRandomness(false);
         grasp.setVerbose(superVerbose);
@@ -1232,6 +1237,16 @@ public final class FcitMagMarkov implements IGraphSearch {
      */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
+    }
+
+    /**
+     * Sets whether GRaSP, when used as the starting algorithm, should use the Raskutti-Uhler test-based method
+     * instead of the score-based method. Ignored unless the start-with option is GRaSP.
+     *
+     * @param graspUseRaskuttiUhler True to use the Raskutti-Uhler method.
+     */
+    public void setGraspUseRaskuttiUhler(boolean graspUseRaskuttiUhler) {
+        this.graspUseRaskuttiUhler = graspUseRaskuttiUhler;
     }
 
     /**

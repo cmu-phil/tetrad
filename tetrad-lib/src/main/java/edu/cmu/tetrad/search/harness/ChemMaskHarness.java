@@ -97,7 +97,7 @@ import java.util.concurrent.TimeoutException;
  *
  * <pre>
  *     Program arguments:
- *     data=/Users/josephramsey/IdeaProjects/BryanStuff/educational/example1/data/Joined1.txt tiers=/Users/josephramsey/IdeaProjects/BryanStuff/educational/example1/data/tiers.csv
+ *     data=/Users/josephramsey/IdeaProjects/BryanStuff/educational/example1/data/Joined1_24.txt tiers=/Users/josephramsey/IdeaProjects/BryanStuff/educational/example1/data/tiers.csv
  * </pre>
  *
  * @author josephramsey

@@ -170,6 +170,8 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
 
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
+        search.setGraspUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
+
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.FcitZmKeepKnowledgeOrientations.START_WITH.BOSS);
         } else if (parameters.getInt(Params.FCIT_STARTS_WITH) == 2) {
@@ -235,6 +237,9 @@ public class FcitZm extends AbstractBootstrapAlgorithm implements Algorithm, Tak
         params.add(Params.USE_BES);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
+
+        // GRaSP (used only when starting with GRaSP)
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
 
         // FCIT
         params.add(Params.FCIT_STARTS_WITH);
