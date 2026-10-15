@@ -55,8 +55,15 @@ import java.util.concurrent.TimeoutException;
  *
  * <ul>
  *   <li><b>Graph and data.</b> A random DAG; coefficients drawn uniformly from [{@value #COEF_LO},
- *   {@value #COEF_HI}], all positive, so that a negative estimate is a sign error. Errors are Gaussian, or
- *   centered exponential (skewed, as course scores often are), scaled to a random variance in [1, 2].</li>
+ *   {@value #COEF_HI}], all positive, so that a negative estimate is a sign error. Errors are Gaussian; centered
+ *   exponential (skewed, as course scores often are; skewness 2); or centered lognormal with log-scale sigma
+ *   {@code sigma} (highly skewed: skewness about 6 at sigma 1, about 33 at sigma 1.5). Every error distribution
+ *   is standardized to mean zero and variance one before scaling to a random variance in [1, 2], so the signal
+ *   strength is comparable across distributions. Note that in a linear SEM a downstream variable is a weighted
+ *   sum of errors, so its marginal skewness is attenuated below the error skewness; what sigma controls is the
+ *   error distribution, not the marginals. Note also that at sigma 1.5 the error kurtosis is in the thousands,
+ *   so sample covariances are themselves noisy at these sample sizes and even the complete-data oracle
+ *   degrades; that degradation is part of what the condition measures.</li>
  *   <li><b>Target.</b> The sink with the most parents, ties broken by most ancestors. Being a sink, its adjacencies are exactly its parents, so
  *   adjacency recall and precision at the target are recall and precision of its causes. It is never deleted,
  *   as the final grade is nearly always present in CHEM. The root with the most descendants is also never
@@ -84,8 +91,11 @@ import java.util.concurrent.TimeoutException;
  * <h2>Settings</h2>
  *
  * <p>Arguments of the form {@code key=value} override the defaults: {@code reps}, {@code n}, {@code p},
- * {@code edges}, {@code coefLo}, {@code coefHi}. A bare number is taken as {@code reps}. For example,
- * {@code n=250 p=24 edges=36 coefLo=0.2 coefHi=0.6} is closer to CHEM's size and signal strength.</p>
+ * {@code edges}, {@code coefLo}, {@code coefHi}, {@code sigma} (the lognormal log-scale sigma, default
+ * {@value #LOGNORMAL_SIGMA}), and {@code errors} (a comma-separated subset of {@code gaussian}, {@code skewed},
+ * {@code lognormal}; default all three). A bare number is taken as {@code reps}. For example,
+ * {@code n=250 p=24 edges=36 coefLo=0.2 coefHi=0.6} is closer to CHEM's size and signal strength, and
+ * {@code errors=lognormal sigma=1.5} runs only the highly skewed condition.</p>
  *
  * <h2>Output</h2>
  *
@@ -139,6 +149,9 @@ public final class MissingDataRecoveryHarness {
     /** Coefficient range; all positive, so a negative estimate is a sign error. */
     private static final double COEF_LO = 0.3, COEF_HI = 0.9;
 
+    /** Default log-scale sigma of the lognormal errors; skewness about 6. */
+    private static final double LOGNORMAL_SIGMA = 1.0;
+
     /** Marginal missingness rate for every deleted variable under the per-cell mechanisms. */
     private static final double RATE = 0.3;
 
@@ -166,6 +179,7 @@ public final class MissingDataRecoveryHarness {
     // Settings in effect, from the defaults above unless overridden on the command line.
     private static int numVars = NUM_VARS, numEdges = NUM_EDGES, sampleSize = SAMPLE_SIZE;
     private static double coefLo = COEF_LO, coefHi = COEF_HI;
+    private static double lognormalSigma = LOGNORMAL_SIGMA;
 
     /** Per-repetition results, written to the working directory. */
     private static final String CSV_FILE = "missing_data_recovery.csv";
@@ -175,7 +189,23 @@ public final class MissingDataRecoveryHarness {
 
     // ---------------------------------------------------------------- errors, arms, mechanisms
 
-    private enum Errors { GAUSSIAN, SKEWED }
+    private enum Errors {
+        GAUSSIAN, SKEWED, LOGNORMAL;
+
+        /** One standardized error draw: mean zero, variance one. */
+        double draw(RandomUtil r) {
+            return switch (this) {
+                case GAUSSIAN -> r.nextGaussian(0, 1);
+                case SKEWED -> -Math.log(1.0 - r.nextDouble()) - 1.0; // centered Exp(1)
+                case LOGNORMAL -> {
+                    // exp(sigma G) centered at its mean and scaled to unit variance.
+                    double s2 = lognormalSigma * lognormalSigma;
+                    yield (Math.exp(lognormalSigma * r.nextGaussian(0, 1)) - Math.exp(0.5 * s2))
+                          / Math.sqrt((Math.exp(s2) - 1.0) * Math.exp(s2));
+                }
+            };
+        }
+    }
 
     private interface Arm {
         Graph search(DataSet complete, DataSet missing) throws Exception;
@@ -388,11 +418,13 @@ public final class MissingDataRecoveryHarness {
     /**
      * Runs the sweep.
      *
-     * @param args Optional overrides, {@code key=value}: reps, n, p, edges, coefLo, coefHi; a bare number is reps.
+     * @param args Optional overrides, {@code key=value}: reps, n, p, edges, coefLo, coefHi, sigma, errors; a bare
+     *             number is reps.
      * @throws Exception If simulation or output fails.
      */
     public static void main(String[] args) throws Exception {
         int reps = NUM_REPS;
+        List<Errors> selected = new ArrayList<>(List.of(Errors.values()));
         for (String arg : args) {
             String[] kv = arg.split("=", 2);
             if (kv.length == 1) { reps = Integer.parseInt(kv[0]); continue; }
@@ -403,20 +435,32 @@ public final class MissingDataRecoveryHarness {
                 case "edges" -> numEdges = Integer.parseInt(kv[1]);
                 case "coefLo" -> coefLo = Double.parseDouble(kv[1]);
                 case "coefHi" -> coefHi = Double.parseDouble(kv[1]);
+                case "sigma" -> lognormalSigma = Double.parseDouble(kv[1]);
+                case "errors" -> {
+                    selected.clear();
+                    for (String name : kv[1].split(",")) {
+                        selected.add(Errors.valueOf(name.trim().toUpperCase(java.util.Locale.ROOT)));
+                    }
+                }
                 default -> throw new IllegalArgumentException("Unknown setting: " + kv[0]);
             }
+        }
+        if (!(lognormalSigma > 0.0) || !Double.isFinite(lognormalSigma)) {
+            throw new IllegalArgumentException("sigma must be finite and positive: " + lognormalSigma);
         }
         Map<String, Arm> arms = arms();
         Map<String, MechanismFactory> mechanisms = mechanisms();
 
         System.out.printf("Missing-data recovery: p=%d, edges=%d, n=%d, reps=%d, penalty=%.1f, rate=%.2f,"
-                          + " value weight=%.1f, coefficients in [%.1f, %.1f]%n%n",
-                numVars, numEdges, sampleSize, reps, PENALTY_DISCOUNT, RATE, VALUE_WEIGHT, coefLo, coefHi);
+                          + " value weight=%.1f, coefficients in [%.1f, %.1f], errors=%s%s%n%n",
+                numVars, numEdges, sampleSize, reps, PENALTY_DISCOUNT, RATE, VALUE_WEIGHT, coefLo, coefHi,
+                selected, selected.contains(Errors.LOGNORMAL)
+                        ? String.format(" (lognormal sigma=%.2f)", lognormalSigma) : "");
 
         try (PrintWriter csv = new PrintWriter(new FileWriter(CSV_FILE))) {
             csv.println("errors,mechanism,rep,completeRows,arm," + String.join(",", SEARCH_STATS));
 
-            for (Errors errors : Errors.values()) {
+            for (Errors errors : selected) {
                 // stats[mechanism][arm] -> per-statistic accumulators; est[mechanism][estimator] likewise.
                 Map<String, Map<String, Acc[]>> stats = new LinkedHashMap<>();
                 Map<String, Map<String, Acc[]>> est = new LinkedHashMap<>();
@@ -470,7 +514,7 @@ public final class MissingDataRecoveryHarness {
                                 line.append(',').append(Double.isNaN(v[k]) ? "" : String.format("%.4f", v[k]));
                             }
                             // Names are quoted: an arm name such as "MI (m=5, pooled)" contains a comma.
-                            csv.printf("%s,\"%s\",%d,%d,\"%s\"%s%n", errors, me.getKey(), rep,
+                            csv.printf("%s,\"%s\",%d,%d,\"%s\"%s%n", errorsLabel(errors), me.getKey(), rep,
                                     injected.report().completeRows(), ae.getKey(), line);
                         }
 
@@ -622,7 +666,7 @@ public final class MissingDataRecoveryHarness {
                                     Map<String, Map<String, Acc[]>> stats, Map<String, Map<String, Acc[]>> est,
                                     Map<String, Acc> completeRows) {
         System.out.println();
-        System.out.println("################ errors: " + errors + " ################");
+        System.out.println("################ errors: " + errorsLabel(errors) + " ################");
         for (String mech : mechanisms) {
             System.out.printf("%n=== %s  (mean complete rows %.0f of %d) ===%n", mech,
                     completeRows.get(mech).mean(), sampleSize);
@@ -643,6 +687,12 @@ public final class MissingDataRecoveryHarness {
             }
         }
         System.out.println();
+    }
+
+    /** The label for an error distribution in the tables and the CSV; carries sigma for the lognormal. */
+    private static String errorsLabel(Errors errors) {
+        return errors == Errors.LOGNORMAL
+                ? String.format("LOGNORMAL(sigma=%.2f)", lognormalSigma) : errors.toString();
     }
 
     /** A running mean and standard error. */
@@ -725,8 +775,7 @@ public final class MissingDataRecoveryHarness {
             double[][] x = new double[sampleSize][s.p];
             for (int i = 0; i < sampleSize; i++) {
                 for (int j : s.order) {
-                    double e = errors == Errors.GAUSSIAN ? r.nextGaussian(0, 1)
-                            : -Math.log(1.0 - r.nextDouble()) - 1.0; // centered Exp(1): mean 0, variance 1
+                    double e = errors.draw(r); // standardized: mean 0, variance 1
                     double v = errSd[j] * e;
                     for (int k : s.parents[j]) v += s.coef[j][k] * x[i][k];
                     x[i][j] = v;
