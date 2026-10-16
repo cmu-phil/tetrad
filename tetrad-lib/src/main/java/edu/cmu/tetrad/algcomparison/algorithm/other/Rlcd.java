@@ -35,6 +35,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -99,6 +100,15 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
             for (int j = 0; j < dataSet.getNumColumns(); j++) if (j != dcol) keep[k++] = j;
             DataSet sub = dataSet.subsetColumns(keep);
 
+            StringBuilder sizes = new StringBuilder();
+            for (DataSet d : perDomain) {
+                if (!sizes.isEmpty()) sizes.append(", ");
+                sizes.append(d.getNumRows());
+            }
+            TetradLogger.getInstance().log("Stratified RLCD: domain column '" + domainColumn + "' removed from the "
+                                           + "searched variables and used only to split the rows; " + perDomain.size()
+                                           + " domains with n = " + sizes + ".");
+
             edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(sub);
             rlcd.setStratifiedRankTest(new StratifiedChi2RankTest(perDomain));
             return run(rlcd, parameters);
@@ -117,6 +127,12 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
      */
     @Override
     public Graph searchImputations(List<DataModel> imputations, Parameters parameters) {
+        if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
+            throw new IllegalArgumentException("Stratified (domain-pooled) RLCD cannot be combined with pooled "
+                                               + "imputations: the strata must be independent samples, and "
+                                               + "imputations share their rows. Turn one of the two off.");
+        }
+
         List<DataSet> dataSets = new ArrayList<>();
 
         for (DataModel dataModel : imputations) {
