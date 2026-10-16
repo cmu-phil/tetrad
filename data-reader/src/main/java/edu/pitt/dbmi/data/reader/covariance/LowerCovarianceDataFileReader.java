@@ -23,6 +23,7 @@ package edu.pitt.dbmi.data.reader.covariance;
 import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.DataReaderException;
 import edu.pitt.dbmi.data.reader.Delimiter;
+import edu.pitt.dbmi.data.reader.util.TextFileUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -55,6 +56,11 @@ public class LowerCovarianceDataFileReader extends AbstractCovarianceDataFileRea
      */
     @Override
     public CovarianceData readInData() throws IOException {
+        String encodingProblem = TextFileUtils.findEncodingProblem(this.dataFile);
+        if (encodingProblem != null) {
+            throw new DataReaderException(encodingProblem);
+        }
+
         int numOfCases = getNumberOfCases();
         List<String> variables = getVariables();
         double[][] data = getCovarianceData(variables.size());

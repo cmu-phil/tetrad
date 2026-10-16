@@ -23,6 +23,8 @@ package edu.pitt.dbmi.data.reader.preview;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
+import edu.pitt.dbmi.data.reader.util.TextFileUtils;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
@@ -101,6 +103,9 @@ public class BasicDataPreviewer extends AbstractDataPreviewer implements DataPre
             byte previousChar = -1;
             do {
                 MappedByteBuffer buffer = fc.map(FileChannel.MapMode.READ_ONLY, position, size);
+                if (position == 0) {
+                    TextFileUtils.skipUtf8BOM(buffer);
+                }
 
                 while (buffer.hasRemaining() && !isDone && !Thread.currentThread().isInterrupted()) {
                     byte currentChar = buffer.get();
