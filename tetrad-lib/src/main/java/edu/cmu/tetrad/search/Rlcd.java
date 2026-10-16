@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
 import edu.cmu.tetrad.search.rlcd.LatentGroups;
 import edu.cmu.tetrad.search.rlcd.PooledRankTest;
 import edu.cmu.tetrad.search.rlcd.RankTester;
+import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
 import edu.cmu.tetrad.search.rlcd.RlcdClusterSearch;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -109,6 +110,11 @@ public class Rlcd {
     private final List<DataSet> imputations;
     private final List<Node> variables;
     private RankTester rankTester;
+    /**
+     * When non-null, stage 1 is scored on this covariance matrix instead of the data's; set by
+     * {@link #setStratifiedRankTest}.
+     */
+    private CovarianceMatrix stage1CovarianceOverride = null;
     private double alpha = 0.01;
     private double[] alphaByRank = null;
     private int maxK = 3;
@@ -192,6 +198,42 @@ public class Rlcd {
      */
     public void setRankTester(RankTester rankTester) {
         this.rankTester = rankTester;
+    }
+
+    /**
+     * Puts the search into stratified (domain-pooled) mode for data gathered in several domains -- batches, sites,
+     * cohorts -- whose causal structure is shared but whose linear coefficients, means, and noise variances may
+     * differ by domain; the Phase 1 upgrade of LCD-NOD (Dong et al., ICML 2026) applied to RLCD. Two things change
+     * at once. Every rank decision is made by {@link StratifiedChi2RankTest}, pooling the Lawley statistic over the
+     * domains, which carries the paper's guarantee. And stage 1 is scored on the within-domain pooled covariance
+     * (the data recentered at each domain's means) instead of the raw covariance of the concatenated data, whose
+     * between-domain mean shifts would otherwise dominate; that part is exactly right when only the means shift and
+     * a heuristic initialization otherwise, as the helper's javadoc says.
+     * <p>
+     * The domains must have the same variables, in the same order, as the data set this search was constructed
+     * with -- construct the search on the concatenation of the domain data sets, without the domain column.
+     * Calling {@link #setRankTester} with the stratified test instead would stratify the rank stages but leave
+     * stage 1 on the raw concatenated covariance, which is almost never wanted.
+     *
+     * @param stratified the stratified rank test, or null to return to the ordinary single-sample behavior.
+     */
+    public void setStratifiedRankTest(StratifiedChi2RankTest stratified) {
+        if (stratified == null) {
+            this.rankTester = null;
+            this.stage1CovarianceOverride = null;
+            return;
+        }
+
+        List<String> domainNames = stratified.getDomains().getFirst().getVariableNames();
+        List<String> myNames = this.dataSet.getVariableNames();
+        if (!domainNames.equals(myNames)) {
+            throw new IllegalArgumentException("The stratified test's domains have variables " + domainNames
+                                               + ", but this search was constructed over " + myNames + "; they must "
+                                               + "be the same variables in the same order.");
+        }
+
+        this.rankTester = stratified;
+        this.stage1CovarianceOverride = stratified.withinDomainPooledCovariance();
     }
 
     /**
@@ -877,6 +919,8 @@ public class Rlcd {
      * theirs, at the common sample size.
      */
     private CovarianceMatrix stage1Covariance() {
+        if (stage1CovarianceOverride != null) return stage1CovarianceOverride;
+
         CovarianceMatrix first = new CovarianceMatrix(dataSet);
         if (imputations.size() == 1) return first;
 

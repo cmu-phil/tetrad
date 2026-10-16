@@ -105,9 +105,13 @@ public final class ScoreModels {
         this.modelMap.put(DataType.Continuous, mergedModels);
 
         // merge discrete datatype with mixed datatype
+        // As in IndependenceTestModels: a score annotated with both Continuous and Mixed has declared its data
+        // types explicitly and is left out of the Discrete list.
         mergedModels = Stream.concat(
                         this.modelMap.get(DataType.Discrete).stream(),
-                        this.modelMap.get(DataType.Mixed).stream())
+                        this.modelMap.get(DataType.Mixed).stream()
+                                .filter(e -> !Arrays.asList(e.getScore().annotation().dataType())
+                                        .contains(DataType.Continuous)))
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());

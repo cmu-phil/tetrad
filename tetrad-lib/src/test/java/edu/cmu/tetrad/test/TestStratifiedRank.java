@@ -21,6 +21,8 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.independence.StratifiedRank;
+import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
+import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
@@ -420,5 +422,96 @@ public class TestStratifiedRank {
         assertEquals(Arrays.asList("A", "B"), strata.get(0).getVariableNames());
         assertEquals(2.0, strata.get(0).getDouble(0, 0), 1e-12);
         assertEquals(50.0, strata.get(1).getDouble(2, 1), 1e-12);
+    }
+
+    /**
+     * The RLCD-side stratified tester with a single domain is the ordinary Chi2RankTest: identical statistics,
+     * p-values, and decisions.
+     */
+    @Test
+    public void testStratifiedChi2SingleDomainAgreesWithChi2() {
+        Random rng = new Random(24601L);
+        int n = 800;
+        double[][] part = new double[n][6];
+        double[] loading = {0.8, 0.9, 0.7, 0.6, 0.85, 0.75};
+        for (int i = 0; i < n; i++) {
+            double l = rng.nextGaussian();
+            for (int j = 0; j < 6; j++) part[i][j] = loading[j] * l + 0.7 * rng.nextGaussian();
+        }
+
+        List<Node> vars = new ArrayList<>();
+        for (int j = 0; j < 6; j++) vars.add(new ContinuousVariable("X" + j));
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(part), vars);
+
+        Chi2RankTest plain = new Chi2RankTest(dataSet);
+        StratifiedChi2RankTest pooled = new StratifiedChi2RankTest(Collections.singletonList(dataSet));
+
+        int[] x = {0, 1, 2};
+        int[] y = {3, 4, 5};
+        for (int r = 0; r < 3; r++) {
+            assertEquals(plain.statistic(x, y, r), pooled.pooledStatistic(x, y, r)[0], 1e-10);
+            assertEquals(plain.pValue(x, y, r), pooled.pValue(x, y, r), 1e-10);
+            assertEquals(plain.failToReject(x, y, r, 0.05), pooled.failToReject(x, y, r, 0.05));
+        }
+    }
+
+    /**
+     * The RLCD-side stratified tester under nonstationarity: in a one-factor model whose loadings and indicator
+     * intercepts are redrawn per domain, the within-domain rank of the cross-covariance of the first three
+     * indicators against the last three is one. The pooled tester should mostly fail to reject rank at most one,
+     * while the ordinary Chi2RankTest on the concatenated data mostly rejects it.
+     */
+    @Test
+    public void testStratifiedChi2CalibrationUnderNonstationarity() {
+        Random rng = new Random(1999L);
+        int reps = 60;
+        int domains = 5;
+        int nPerDomain = 500;
+        double alpha = 0.05;
+
+        int[] x = {0, 1, 2};
+        int[] y = {3, 4, 5};
+
+        List<Node> vars = new ArrayList<>();
+        for (int j = 0; j < 6; j++) vars.add(new ContinuousVariable("X" + j));
+
+        int pooledOk = 0;
+        int naiveOk = 0;
+
+        for (int rep = 0; rep < reps; rep++) {
+            List<DataSet> perDomain = new ArrayList<>();
+            double[][] all = new double[domains * nPerDomain][6];
+            int row = 0;
+
+            for (int t = 0; t < domains; t++) {
+                double[] loading = new double[6];
+                double[] shift = new double[6];
+                for (int j = 0; j < 6; j++) {
+                    loading[j] = 0.5 + 0.8 * rng.nextDouble();
+                    shift[j] = 3.0 * rng.nextGaussian();
+                }
+                double[][] part = new double[nPerDomain][6];
+                for (int i = 0; i < nPerDomain; i++) {
+                    double l = rng.nextGaussian();
+                    for (int j = 0; j < 6; j++) {
+                        part[i][j] = shift[j] + loading[j] * l + 0.7 * rng.nextGaussian();
+                        all[row + i][j] = part[i][j];
+                    }
+                }
+                row += nPerDomain;
+                perDomain.add(new BoxDataSet(new DoubleDataBox(part), vars));
+            }
+
+            StratifiedChi2RankTest pooled = new StratifiedChi2RankTest(perDomain);
+            if (pooled.failToReject(x, y, 1, alpha)) pooledOk++;
+
+            Chi2RankTest naive = new Chi2RankTest(new BoxDataSet(new DoubleDataBox(all), vars));
+            if (naive.failToReject(x, y, 1, alpha)) naiveOk++;
+        }
+
+        assertTrue("Pooled tester should mostly accept the true rank 1; accepted " + pooledOk + "/" + reps,
+                pooledOk >= 0.8 * reps);
+        assertTrue("Concatenated tester should mostly reject the true rank 1; accepted " + naiveOk + "/" + reps,
+                naiveOk <= 0.5 * reps);
     }
 }

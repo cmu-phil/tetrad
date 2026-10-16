@@ -69,6 +69,7 @@ public final class StratifiedRankHarness {
 
         pcDemo(rng);
         fofcDemo(rng);
+        rlcdDemo(rng);
     }
 
     // ================================ PC demo ================================
@@ -196,6 +197,48 @@ public final class StratifiedRankHarness {
         List<Node> vars = new ArrayList<>();
         for (int j = 1; j <= 8; j++) vars.add(new ContinuousVariable("X" + j));
         return new BoxDataSet(new DoubleDataBox(data), vars);
+    }
+
+    // =============================== RLCD demo ===============================
+
+    /**
+     * RLCD on the same nonstationary one-factor data as the FOFC demo: latents L1 -&gt; L2, four indicators each,
+     * loadings and intercepts redrawn per domain. Plain RLCD runs its rank tests and its stage-1 score on the
+     * concatenated data; stratified RLCD pools the rank tests over domains and scores stage 1 on the
+     * within-domain covariance.
+     */
+    private static void rlcdDemo(Random rng) throws InterruptedException {
+        System.out.println("=============================================================");
+        System.out.println("RLCD on nonstationary one-factor data: 6 domains x 500 rows");
+        System.out.println("True model: {X1..X4} <- L1 -> L2 -> {X5..X8}");
+        System.out.println("Per-domain loadings and indicator intercepts.");
+        System.out.println("=============================================================");
+
+        int domains = 6;
+        int nPerDomain = 500;
+        double alpha = 0.01;
+
+        List<DataSet> perDomain = new ArrayList<>();
+        for (int t = 0; t < domains; t++) {
+            perDomain.add(simulateFofcDomain(nPerDomain, rng));
+        }
+        DataSet concatenated = concatenate(perDomain);
+
+        edu.cmu.tetrad.search.Rlcd plain = new edu.cmu.tetrad.search.Rlcd(concatenated);
+        plain.setAlpha(alpha);
+        Graph gPlain = plain.search();
+
+        edu.cmu.tetrad.search.Rlcd stratified = new edu.cmu.tetrad.search.Rlcd(concatenated);
+        stratified.setAlpha(alpha);
+        stratified.setStratifiedRankTest(
+                new edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest(perDomain));
+        Graph gStratified = stratified.search();
+
+        System.out.println("\n--- RLCD on concatenated data (ignores domains) ---");
+        System.out.println(gPlain);
+        System.out.println("--- RLCD in stratified mode, pooled over all domains ---");
+        System.out.println(gStratified);
+        System.out.println("True model: two latents, L1 -> L2, with children {X1..X4} and {X5..X8}.\n");
     }
 
     // ================================ helpers ================================
