@@ -101,6 +101,7 @@ public final class IndependenceTestModels {
         List<IndependenceTestModel> mergedModels = Stream.concat(
                         this.modelMap.get(DataType.Continuous).stream(),
                         this.modelMap.get(DataType.Mixed).stream())
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Continuous, mergedModels);
@@ -109,6 +110,7 @@ public final class IndependenceTestModels {
         mergedModels = Stream.concat(
                         this.modelMap.get(DataType.Discrete).stream(),
                         this.modelMap.get(DataType.Mixed).stream())
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Discrete, mergedModels);
