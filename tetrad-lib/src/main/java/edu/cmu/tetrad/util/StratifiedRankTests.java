@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * domain variable T, the same Bartlett canonical-correlation statistic that {@link RankTests} uses on homogeneous
  * data,
  * <pre>
- *     stat_t = -c_t &middot; &Sigma;<sub>i &ge; r</sub> log(1 - &rho;<sub>t,i</sub>&sup2;),
+ *     stat_t = -c_t * sum over i &gt;= r of log(1 - rho_{t,i}^2),
  *     c_t = (n_t - 1) - (p + q + 1)/2,
  * </pre>
  * and summing: &Lambda; = &Sigma;<sub>t</sub> stat_t is referred to a chi-square distribution whose degrees of freedom
