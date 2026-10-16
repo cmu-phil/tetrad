@@ -201,6 +201,42 @@ public final class StratifiedRankTests {
     }
 
     /**
+     * Resolves the name of a domain column for a data set: the named column if it exists; otherwise, if the data
+     * set has exactly one discrete column, that column, with a note logged; otherwise an exception listing the
+     * discrete columns found. Shared by the interface wrappers that take a domain-column parameter.
+     *
+     * @param dataSet   the data set.
+     * @param requested the requested column name; may be null or blank.
+     * @return the resolved column name.
+     */
+    public static String resolveDomainColumn(DataSet dataSet, String requested) {
+        if (requested != null && !requested.trim().isEmpty() && dataSet.getVariable(requested.trim()) != null) {
+            return requested.trim();
+        }
+
+        List<String> discreteColumns = new ArrayList<>();
+        for (Node node : dataSet.getVariables()) {
+            if (node instanceof edu.cmu.tetrad.data.DiscreteVariable) {
+                discreteColumns.add(node.getName());
+            }
+        }
+
+        if (discreteColumns.size() == 1) {
+            TetradLogger.getInstance().log("Stratified mode: no column named '" + requested + "'; using the one "
+                                           + "discrete column, '" + discreteColumns.get(0) + "', as the domain index.");
+            return discreteColumns.get(0);
+        }
+
+        String found = discreteColumns.isEmpty()
+                ? "the data set has no discrete columns"
+                : "the discrete columns found are " + discreteColumns;
+        throw new IllegalArgumentException("Stratified mode needs a domain column, but there is no column named '"
+                                           + requested + "', and " + found + ". Set the 'Domain column name' "
+                                           + "parameter to the column holding the domain (batch, site, cohort) "
+                                           + "index.");
+    }
+
+    /**
      * Returns the number of strata.
      *
      * @return the number of strata.

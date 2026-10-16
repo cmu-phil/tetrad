@@ -438,7 +438,11 @@ public class BlockClusteringWizard extends JPanel {
             case "FOFC" -> {
                 yield BlockDiscoverers.fofc(dataSet, pooled, parameters.getDouble(Params.ALPHA),
                         tscEssArg, policy,
-                        parameters.getBoolean(Params.VERBOSE)
+                        parameters.getBoolean(Params.VERBOSE),
+                        parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)
+                                ? StratifiedRankTests.resolveDomainColumn(dataSet,
+                                parameters.getString(Params.DOMAIN_COLUMN, "domain"))
+                                : null
                 );
             }
             case "BPC" -> {
@@ -480,6 +484,11 @@ public class BlockClusteringWizard extends JPanel {
             case "GFFC" -> {
                 paramList.add(Params.ALPHA);
                 paramList.add(Params.MAX_RANK);
+            }
+            case "FOFC" -> {
+                paramList.add(Params.ALPHA);
+                paramList.add(Params.STRATIFY_BY_DOMAIN);
+                paramList.add(Params.DOMAIN_COLUMN);
             }
             default -> paramList.add(Params.ALPHA);
         }

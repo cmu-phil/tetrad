@@ -86,6 +86,17 @@ public class IndTestStratifiedRank implements IndependenceTest {
     private boolean verbose = false;
 
     /**
+     * When positive, p-values come from the permutation form of the test (Theorem 5 of Dong et al.) with this many
+     * permutations instead of the Gaussian likelihood-ratio form; see {@link #setNumPermutations}.
+     */
+    private int numPermutations = 0;
+
+    /**
+     * The permutation engine, built lazily on first use.
+     */
+    private transient edu.cmu.tetrad.util.StratifiedPermutationRankTest permutation = null;
+
+    /**
      * Constructs the test from one data set per domain. The data sets must all have the same variables in the same
      * order.
      *
@@ -169,7 +180,15 @@ public class IndTestStratifiedRank implements IndependenceTest {
             zIdx[k++] = zi;
         }
 
-        double pValue = stratified.pValueRankLeConditioned(new int[]{xi}, new int[]{yi}, zIdx, 0);
+        double pValue;
+        if (numPermutations > 0) {
+            if (permutation == null) {
+                permutation = new edu.cmu.tetrad.util.StratifiedPermutationRankTest(dataSets);
+            }
+            pValue = permutation.pValueRankLe(new int[]{xi}, new int[]{yi}, zIdx, 0, numPermutations);
+        } else {
+            pValue = stratified.pValueRankLeConditioned(new int[]{xi}, new int[]{yi}, zIdx, 0);
+        }
 
         IndependenceFact fact = new IndependenceFact(x, y, z);
 
@@ -269,6 +288,21 @@ public class IndTestStratifiedRank implements IndependenceTest {
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * Sets the number of permutations. When positive, p-values come from the permutation form of the test
+     * (Theorem 5 of Dong, Dai, Ng, Spirtes, and Zhang, ICML 2026), which does not assume Gaussianity within
+     * domains: within each domain the trailing canonical variates are permuted and the pooled statistic is
+     * recomputed this many times. When zero, the default, the Gaussian likelihood-ratio form is used. Each test
+     * costs roughly this many times the likelihood-ratio test, so inside a search this is slow; it is a robustness
+     * check for badly non-Gaussian data, not a routine default.
+     *
+     * @param numPermutations the number of permutations, or 0 for the likelihood-ratio form.
+     */
+    public void setNumPermutations(int numPermutations) {
+        if (numPermutations < 0) throw new IllegalArgumentException("numPermutations must be nonnegative.");
+        this.numPermutations = numPermutations;
     }
 
     /**

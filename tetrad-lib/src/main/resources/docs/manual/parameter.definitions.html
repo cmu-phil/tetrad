@@ -7542,6 +7542,43 @@ Source:
             Type: <span id="startFromCompleteGraph_value_type">Boolean</span></li>
     </ul>
 
+    === stratifiedPermutations ===
+    <h3 class="parameter_description" id="stratifiedPermutations">stratifiedPermutations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="stratifiedPermutations_short_desc">Permutations for the stratified rank test (0 = likelihood ratio)</span></li>
+        <li>Long
+            Description: <span id="stratifiedPermutations_long_desc"> When positive, the Stratified Rank
+        test computes its p-values by the permutation scheme of Dong et al. (ICML 2026, Theorem 5), which
+        does not assume Gaussianity within domains: within each domain the trailing canonical variates are
+        permuted and the pooled statistic is recomputed this many times. When zero, the default, the
+        Gaussian likelihood-ratio form is used. The permutation form multiplies the cost of every test by
+        roughly this number, which inside a search such as PC or FCI can be very slow; it is meant for
+        checking conclusions on data whose within-domain distributions are badly non-Gaussian, not for
+        routine use. </span></li>
+        <li>Default Value: <span id="stratifiedPermutations_default_value">0</span></li>
+        <li>Lower Bound: <span id="stratifiedPermutations_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="stratifiedPermutations_upper_bound">100000</span></li>
+        <li>Value Type: <span id="stratifiedPermutations_value_type">Integer</span></li>
+    </ul>
+
+    === stratifyByDomain ===
+    <h3 class="parameter_description" id="stratifyByDomain">stratifyByDomain</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="stratifyByDomain_short_desc">Stratify by the domain column</span></li>
+        <li>Long
+            Description: <span id="stratifyByDomain_long_desc"> When true, the algorithm runs in
+        stratified (domain-pooled) mode: the rows are split by the column named by the domainColumn
+        parameter, every rank decision pools the within-domain statistics across domains, and for RLCD the
+        first stage is scored on the within-domain covariance. For data gathered in several batches,
+        sites, or cohorts whose causal structure is shared but whose coefficients and means may differ by
+        domain. Note for RLCD in the interface: RLCD accepts continuous data, so code the domain index as
+        an integer-valued continuous column. </span></li>
+        <li>Default Value: <span id="stratifyByDomain_default_value">false</span></li>
+        <li>Lower Bound: <span id="stratifyByDomain_lower_bound"></span></li>
+        <li>Upper Bound: <span id="stratifyByDomain_upper_bound"></span></li>
+        <li>Value Type: <span id="stratifyByDomain_value_type">Boolean</span></li>
+    </ul>
+
     === structurePrior ===
     <h3 class="parameter_description" id="structurePrior">structurePrior</h3>
     <ul class="parameter_description_list">

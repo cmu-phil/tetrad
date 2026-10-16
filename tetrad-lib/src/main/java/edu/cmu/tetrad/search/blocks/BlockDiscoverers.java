@@ -163,6 +163,25 @@ public final class BlockDiscoverers {
     }
 
     /**
+     * Creates a FOFC block discoverer that runs in stratified (domain-pooled) mode when a domain column is named;
+     * see {@link FofcBlockDiscoverer#FofcBlockDiscoverer(DataSet, CovarianceMatrix, double, int,
+     * SingletonClusterPolicy, boolean, String)}.
+     *
+     * @param data         the dataset to analyze.
+     * @param pooled       the pooled covariance, or null; must be null when domainColumn is set.
+     * @param alpha        the significance level.
+     * @param ess          the equivalent sample size; ignored in stratified mode.
+     * @param policy       the single-cluster policy.
+     * @param verbose      whether verbose output is enabled.
+     * @param domainColumn the name of the domain column, or null for the ordinary behavior.
+     * @return the discoverer.
+     */
+    public static BlockDiscoverer fofc(DataSet data, CovarianceMatrix pooled, double alpha, int ess,
+                                       SingletonClusterPolicy policy, boolean verbose, String domainColumn) {
+        return new FofcBlockDiscoverer(data, pooled, alpha, ess, policy, verbose, domainColumn);
+    }
+
+    /**
      * FTFC over a pooled covariance matrix; see {@link FtfcBlockDiscoverer}.
      *
      * @param data    the representative data set for the resulting BlockSpec

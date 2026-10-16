@@ -514,4 +514,126 @@ public class TestStratifiedRank {
         assertTrue("Concatenated tester should mostly reject the true rank 1; accepted " + naiveOk + "/" + reps,
                 naiveOk <= 0.5 * reps);
     }
+
+    /**
+     * The permutation form (Theorem 5): Type I control under nonstationarity with NON-GAUSSIAN noise -- uniform
+     * noise, per-domain coefficients and intercepts, X _||_ Y | Z true within every domain -- and power against
+     * the masked dependence. Decision agreement with the likelihood-ratio form on clear cases is implied by the
+     * bounds.
+     */
+    @Test
+    public void testPermutationTestNonGaussian() {
+        Random rng = new Random(60914L);
+        int reps = 50;
+        int domains = 4;
+        int nPerDomain = 250;
+        double alpha = 0.05;
+        int numPermutations = 99;
+
+        List<Node> vars = new ArrayList<>();
+        vars.add(new ContinuousVariable("Z"));
+        vars.add(new ContinuousVariable("X"));
+        vars.add(new ContinuousVariable("Y"));
+
+        int nullRejections = 0;
+        int maskedRejections = 0;
+
+        for (int rep = 0; rep < reps; rep++) {
+            List<DataSet> nullDomains = new ArrayList<>();
+            List<DataSet> maskedDomains = new ArrayList<>();
+
+            for (int t = 0; t < domains; t++) {
+                double bzx = 0.3 + 0.9 * rng.nextDouble();
+                double bzy = 0.3 + 0.9 * rng.nextDouble();
+                double mx = 3.0 * rng.nextGaussian();
+                double my = 3.0 * rng.nextGaussian();
+                double bxy = (t % 2 == 0 ? 1 : -1) * 0.5;
+
+                double[][] nullPart = new double[nPerDomain][3];
+                double[][] maskedPart = new double[nPerDomain][3];
+                for (int i = 0; i < nPerDomain; i++) {
+                    // Uniform noise on [-1.7, 1.7], roughly unit variance, decidedly non-Gaussian.
+                    double ez = 3.4 * (rng.nextDouble() - 0.5);
+                    double ex = 3.4 * (rng.nextDouble() - 0.5);
+                    double ey = 3.4 * (rng.nextDouble() - 0.5);
+
+                    double z = ez;
+                    double x = mx + bzx * z + ex;
+                    double y = my + bzy * z + ey;
+                    nullPart[i][0] = z;
+                    nullPart[i][1] = x;
+                    nullPart[i][2] = y;
+
+                    double x2 = 3.4 * (rng.nextDouble() - 0.5);
+                    double y2 = bxy * x2 + 3.4 * (rng.nextDouble() - 0.5);
+                    maskedPart[i][0] = 3.4 * (rng.nextDouble() - 0.5);
+                    maskedPart[i][1] = x2;
+                    maskedPart[i][2] = y2;
+                }
+                nullDomains.add(new BoxDataSet(new DoubleDataBox(nullPart), vars));
+                maskedDomains.add(new BoxDataSet(new DoubleDataBox(maskedPart), vars));
+            }
+
+            edu.cmu.tetrad.util.StratifiedPermutationRankTest nullTest =
+                    new edu.cmu.tetrad.util.StratifiedPermutationRankTest(nullDomains);
+            nullTest.setSeed(1000L + rep);
+            double pNull = nullTest.pValueRankLe(new int[]{1}, new int[]{2}, new int[]{0}, 0, numPermutations);
+            if (pNull <= alpha) nullRejections++;
+
+            edu.cmu.tetrad.util.StratifiedPermutationRankTest maskedTest =
+                    new edu.cmu.tetrad.util.StratifiedPermutationRankTest(maskedDomains);
+            maskedTest.setSeed(2000L + rep);
+            double pMasked = maskedTest.pValueRankLe(new int[]{1}, new int[]{2}, new int[]{}, 0, numPermutations);
+            if (pMasked <= alpha) maskedRejections++;
+        }
+
+        double nullRate = nullRejections / (double) reps;
+        double power = maskedRejections / (double) reps;
+
+        assertTrue("Permutation Type I rate " + nullRate + " should be near alpha = " + alpha, nullRate <= 0.14);
+        assertTrue("Permutation power against masked dependence should be high; got " + power, power >= 0.85);
+    }
+
+    /**
+     * The IndependenceTest's permutation toggle: with permutations on, a true conditional independence is accepted
+     * and a true marginal dependence is rejected, and the answers are reproducible.
+     */
+    @Test
+    public void testIndTestPermutationToggle() throws InterruptedException {
+        Random rng = new Random(777L);
+        int domains = 4;
+        int nPerDomain = 300;
+
+        List<Node> vars = new ArrayList<>();
+        vars.add(new ContinuousVariable("Z"));
+        vars.add(new ContinuousVariable("X"));
+        vars.add(new ContinuousVariable("Y"));
+
+        List<DataSet> perDomain = new ArrayList<>();
+        for (int t = 0; t < domains; t++) {
+            double bzx = 0.3 + 0.9 * rng.nextDouble();
+            double bzy = 0.3 + 0.9 * rng.nextDouble();
+            double mx = 3.0 * rng.nextGaussian();
+            double my = 3.0 * rng.nextGaussian();
+            double[][] part = simulateDomain(nPerDomain, bzx, bzy, 0.0, mx, my, rng);
+            perDomain.add(new BoxDataSet(new DoubleDataBox(part), vars));
+        }
+
+        IndTestStratifiedRank test = new IndTestStratifiedRank(perDomain, 0.01);
+        test.setNumPermutations(99);
+
+        Node z = test.getVariables().get(0);
+        Node x = test.getVariables().get(1);
+        Node y = test.getVariables().get(2);
+
+        Set<Node> cond = new HashSet<>(Collections.singletonList(z));
+        IndependenceResult ci = test.checkIndependence(x, y, cond);
+        assertTrue("X _||_ Y | Z holds; permutation p = " + ci.getPValue(), ci.isIndependent());
+
+        IndependenceResult marginal = test.checkIndependence(x, z, new HashSet<>());
+        assertTrue("Z -> X; permutation p = " + marginal.getPValue(), !marginal.isIndependent());
+
+        IndependenceResult again = test.checkIndependence(x, y, cond);
+        assertEquals("Repeated calls should be reproducible", ci.getPValue(), again.getPValue(), 1e-12);
+    }
 }

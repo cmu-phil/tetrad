@@ -25,14 +25,12 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestStratifiedRank;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.StratifiedRankTests;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -91,42 +89,13 @@ public class StratifiedRank implements IndependenceWrapper {
                                                + "rows must be split by domain.");
         }
 
-        String domainColumn = resolveDomainColumn(dataSet, parameters.getString(Params.DOMAIN_COLUMN));
+        String domainColumn = StratifiedRankTests.resolveDomainColumn(dataSet,
+                parameters.getString(Params.DOMAIN_COLUMN));
         double alpha = parameters.getDouble(Params.ALPHA);
 
-        return new IndTestStratifiedRank(dataSet, domainColumn, alpha);
-    }
-
-    /**
-     * Resolves the name of the domain column: the named column if it exists; otherwise, if the data set has exactly
-     * one discrete column, that column, with a note logged; otherwise an exception listing the discrete columns
-     * found.
-     */
-    private static String resolveDomainColumn(DataSet dataSet, String requested) {
-        if (requested != null && !requested.trim().isEmpty() && dataSet.getVariable(requested.trim()) != null) {
-            return requested.trim();
-        }
-
-        List<String> discreteColumns = new ArrayList<>();
-        for (Node node : dataSet.getVariables()) {
-            if (node instanceof DiscreteVariable) {
-                discreteColumns.add(node.getName());
-            }
-        }
-
-        if (discreteColumns.size() == 1) {
-            TetradLogger.getInstance().log("Stratified Rank: no column named '" + requested + "'; using the one "
-                                           + "discrete column, '" + discreteColumns.get(0) + "', as the domain index.");
-            return discreteColumns.get(0);
-        }
-
-        String found = discreteColumns.isEmpty()
-                ? "the data set has no discrete columns"
-                : "the discrete columns found are " + discreteColumns;
-        throw new IllegalArgumentException("The Stratified Rank test needs a domain column, but there is no column "
-                                           + "named '" + requested + "', and " + found + ". Set the 'Domain column "
-                                           + "name' parameter to the column holding the domain (batch, site, cohort) "
-                                           + "index.");
+        IndTestStratifiedRank test = new IndTestStratifiedRank(dataSet, domainColumn, alpha);
+        test.setNumPermutations(parameters.getInt(Params.STRATIFIED_PERMUTATIONS));
+        return test;
     }
 
     /**
@@ -159,6 +128,7 @@ public class StratifiedRank implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.DOMAIN_COLUMN);
         params.add(Params.ALPHA);
+        params.add(Params.STRATIFIED_PERMUTATIONS);
         return params;
     }
 }

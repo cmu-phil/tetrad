@@ -1798,6 +1798,14 @@ public final class Params {
      */
     public static final String START_FROM_COMPLETE_GRAPH = "startFromCompleteGraph";
     /**
+     * Constant <code>STRATIFIED_PERMUTATIONS="stratifiedPermutations"</code>
+     */
+    public static final String STRATIFIED_PERMUTATIONS = "stratifiedPermutations";
+    /**
+     * Constant <code>STRATIFY_BY_DOMAIN="stratifyByDomain"</code>
+     */
+    public static final String STRATIFY_BY_DOMAIN = "stratifyByDomain";
+    /**
      * Constant <code>STRUCTURE_PRIOR="structurePrior"</code>
      */
     public static final String STRUCTURE_PRIOR = "structurePrior";
