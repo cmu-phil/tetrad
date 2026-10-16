@@ -501,6 +501,10 @@ public final class Params {
      */
     public static final String DO_LEGALITY_GATING = "doLegalityGating";
     /**
+     * Constant <code>DOMAIN_COLUMN="domainColumn"</code>
+     */
+    public static final String DOMAIN_COLUMN = "domainColumn";
+    /**
      * Constant <code>DO_ONE_EQUATION_ONLY="doOneEquationOnly"</code>
      */
     public static final String DO_ONE_EQUATION_ONLY = "doOneEquationOnly";

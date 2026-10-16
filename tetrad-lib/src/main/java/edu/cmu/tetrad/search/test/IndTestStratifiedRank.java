@@ -115,6 +115,19 @@ public class IndTestStratifiedRank implements IndependenceTest {
         if (domain == null) {
             throw new IllegalArgumentException("No column named " + domainColumnName + " in the data set.");
         }
+
+        List<String> otherDiscrete = new ArrayList<>();
+        for (Node node : dataSet.getVariables()) {
+            if (node != domain && node instanceof edu.cmu.tetrad.data.DiscreteVariable) {
+                otherDiscrete.add(node.getName());
+            }
+        }
+        if (!otherDiscrete.isEmpty()) {
+            throw new IllegalArgumentException("The stratified rank test is for continuous variables plus one "
+                                               + "discrete domain column; besides the domain column "
+                                               + domainColumnName + ", these columns are discrete: " + otherDiscrete);
+        }
+
         this.dataSets = StratifiedRankTests.split(dataSet, domain);
         this.stratified = StratifiedRankTests.fromDataSets(this.dataSets);
         this.variables = new ArrayList<>(this.dataSets.get(0).getVariables());

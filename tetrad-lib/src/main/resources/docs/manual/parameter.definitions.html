@@ -1896,6 +1896,24 @@ Source:
             Type: <span id="doLegalityGating_value_type">Boolean</span></li>
     </ul>
 
+    === domainColumn ===
+    <h3 class="parameter_description" id="domainColumn">domainColumn</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="domainColumn_short_desc">Domain column name</span></li>
+        <li>Long
+            Description: <span id="domainColumn_long_desc"> The name of the column holding the
+        domain index (batch, site, cohort, country) for tests that stratify by domain, such as the
+        Stratified Rank test. The column should be discrete, or a continuous column whose values are
+        all whole numbers; it is removed from the variable list and used only to split the rows into
+        domains, within which the test statistics are computed and then pooled. If no column of this
+        name exists but the data set has exactly one discrete column, that column is used and a note
+        is logged. </span></li>
+        <li>Default Value: <span id="domainColumn_default_value">domain</span></li>
+        <li>Lower Bound: <span id="domainColumn_lower_bound"></span></li>
+        <li>Upper Bound: <span id="domainColumn_upper_bound"></span></li>
+        <li>Value Type: <span id="domainColumn_value_type">String</span></li>
+    </ul>
+
     === doOneEquationOnly ===
     <h3 class="parameter_description" id="doOneEquationOnly">doOneEquationOnly</h3>
     <ul class="parameter_description_list">

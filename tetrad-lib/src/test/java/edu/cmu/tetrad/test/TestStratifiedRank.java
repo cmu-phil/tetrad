@@ -20,10 +20,13 @@
 
 package edu.cmu.tetrad.test;
 
+import edu.cmu.tetrad.algcomparison.independence.StratifiedRank;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestStratifiedRank;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -357,6 +360,36 @@ public class TestStratifiedRank {
         StratifiedRankTests pooled = new StratifiedRankTests(covs, new int[]{4});
         assertTrue(Double.isNaN(pooled.pValueRankLe(x, y, 0)));
         assertEquals(3, pooled.estimateRank(x, y, 0.05));
+    }
+
+    /**
+     * The algcomparison wrapper: resolves the domain column by name, applies alpha, and returns a test over the
+     * remaining variables.
+     */
+    @Test
+    public void testAlgcomparisonWrapper() {
+        Random rng = new Random(8675309L);
+        List<Node> vars = new ArrayList<>();
+        vars.add(new ContinuousVariable("A"));
+        vars.add(new ContinuousVariable("B"));
+        vars.add(new ContinuousVariable("site"));
+
+        double[][] data = new double[600][3];
+        for (int i = 0; i < 600; i++) {
+            data[i][0] = rng.nextGaussian();
+            data[i][1] = rng.nextGaussian();
+            data[i][2] = i < 300 ? 0 : 1;
+        }
+        DataSet dataSet = new BoxDataSet(new DoubleDataBox(data), vars);
+
+        Parameters parameters = new Parameters();
+        parameters.set(Params.DOMAIN_COLUMN, "site");
+        parameters.set(Params.ALPHA, 0.01);
+
+        IndTestStratifiedRank test = (IndTestStratifiedRank) new StratifiedRank().getTest(dataSet, parameters);
+        assertEquals(2, test.getVariables().size());
+        assertEquals(0.01, test.getAlpha(), 1e-12);
+        assertEquals(600, test.getSampleSize());
     }
 
     /**
