@@ -219,6 +219,11 @@ public class Tsc implements EffectiveSampleSizeSettable {
     private double discoveryAlpha = -1.0;
     private boolean parallel = true;
     private double[][] dataArray;
+    /**
+     * When non-null, rank decisions are pooled over the strata of this object (domains, batches, sites) instead of
+     * being read from the single covariance matrix S; see {@link #setStratifiedRankTests}.
+     */
+    private StratifiedRankTests stratifiedRankTests = null;
 
     /**
      * Constructs an instance of the TscScored class using the provided variables and covariance matrix.
@@ -499,7 +504,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
                             int[] cmz = Cmz.stream().mapToInt(Integer::intValue).toArray();
                             int[] zArr = new int[]{z};
 
-                            int rZ = RankTests.estimateWilksRankConditioned(S, cmz, dArray, zArr, nEff, alpha);
+                            int rZ = rankOfConditioned(S, cmz, dArray, zArr, nEff, alpha);
                             if (rZ == 0) {
                                 collapses = true;
                                 break;
@@ -719,6 +724,47 @@ public class Tsc implements EffectiveSampleSizeSettable {
     }
 
     /**
+     * Puts the search into stratified (domain-pooled) mode, or takes it out of that mode with null. In stratified
+     * mode every rank decision is made by pooling the Bartlett statistic over the strata of the given object --
+     * domains, batches, sites -- instead of being read from the single covariance matrix the search was constructed
+     * with; see {@link StratifiedRankTests}. The strata must be over the same variables, in the same column order,
+     * as that covariance matrix: only index arithmetic connects them, so a mismatch is not detectable here. In this
+     * mode the per-stratum sample sizes are used and the effective sample size setting is ignored. Updating this
+     * clears the cached ranks.
+     *
+     * @param stratifiedRankTests the stratified rank test engine, or null for the ordinary single-sample behavior.
+     */
+    public void setStratifiedRankTests(StratifiedRankTests stratifiedRankTests) {
+        if (stratifiedRankTests != null && stratifiedRankTests.getDimension() != S.getNumRows()) {
+            throw new IllegalArgumentException("Stratified rank tests are over " + stratifiedRankTests.getDimension()
+                                               + " variables, but this search has " + S.getNumRows() + ".");
+        }
+        this.stratifiedRankTests = stratifiedRankTests;
+        rankCache.clear();
+        discoveryRankCache.clear();
+    }
+
+    /**
+     * Rank of the cross-covariance of x and y: pooled over strata in stratified mode, otherwise the Wilks estimate
+     * from the given matrix and sample size.
+     */
+    private int rankOf(SimpleMatrix S, int[] x, int[] y, int n, double a) {
+        return stratifiedRankTests != null
+                ? stratifiedRankTests.estimateRank(x, y, a)
+                : estimateWilksRank(S, x, y, n, a);
+    }
+
+    /**
+     * Rank of the cross-covariance of C \ Z and VminusC \ Z given Z: pooled over strata in stratified mode,
+     * otherwise the conditioned Wilks estimate from the given matrix and sample size.
+     */
+    private int rankOfConditioned(SimpleMatrix S, int[] C, int[] VminusC, int[] Z, int n, double a) {
+        return stratifiedRankTests != null
+                ? stratifiedRankTests.estimateRankConditioned(C, VminusC, Z, a)
+                : RankTests.estimateWilksRankConditioned(S, C, VminusC, Z, n, a);
+    }
+
+    /**
      * Returns the discovery alpha to use for seed finding and cluster growing.
      * If set explicitly, returns that value. Otherwise derives an N-adaptive
      * value: scale = sqrt(10000 / nEff), capped so the result never exceeds 0.20.
@@ -756,7 +802,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
         xSet.removeAll(ySet);
         int[] xIndices = xSet.stream().mapToInt(Integer::intValue).toArray();
         int[] yIndices = ySet.stream().mapToInt(Integer::intValue).toArray();
-        return estimateWilksRank(S, xIndices, yIndices, nEff, a);
+        return rankOf(S, xIndices, yIndices, nEff, a);
     }
 
     /**
@@ -895,7 +941,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
 
             int numPermutations = 1000;
 
-            int r = RankTests.estimateWilksRank(S, c1Array, c2Array, expectedSampleSize, alpha);
+            int r = rankOf(S, c1Array, c2Array, expectedSampleSize, alpha);
 //            int r = RankTests.estimatePermutationRank(dataArray, c1Array, c2Array, alpha, numPermutations);
 
             if (r == 0) {
@@ -946,8 +992,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
             int[] c1Array = C1list.stream().mapToInt(Integer::intValue).toArray();
             int[] c2Array = C2list.stream().mapToInt(Integer::intValue).toArray();
 
-            int r = RankTests.estimateWilksRank(S, c1Array, c2Array,
-                    getEffectiveSampleSize(), alpha);
+            int r = rankOf(S, c1Array, c2Array, getEffectiveSampleSize(), alpha);
 
             if (r == 0) {
                 Set<Integer> piece1 = new HashSet<>(C1list);
@@ -998,7 +1043,7 @@ public class Tsc implements EffectiveSampleSizeSettable {
         for (int i = 0; i < xSet.size(); i++) xIndices[i] = xSet.get(i);
         for (int i = 0; i < ySet.size(); i++) yIndices[i] = ySet.get(i);
 
-        return estimateWilksRank(S, xIndices, yIndices, nEff, alpha);
+        return rankOf(S, xIndices, yIndices, nEff, alpha);
     }
 
     private void log(String s) {
