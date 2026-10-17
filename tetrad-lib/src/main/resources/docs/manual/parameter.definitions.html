@@ -6979,6 +6979,17 @@ Source:
         <li>Value Type: <span id="rlcdStage1Fges_value_type">Boolean</span></li>
     </ul>
 
+    === rlcdStage1None ===
+    <h3 class="parameter_description" id="rlcdStage1None">rlcdStage1None</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdStage1None_short_desc">RLCD: skip the stage-1 search and run the rank search unconstrained (default false)</span></li>
+        <li>Long Description: <span id="rlcdStage1None_long_desc">If true, no stage-1 search is run: the complete graph over the observed variables is used, so all variables form one partition and the stage-2 rank search runs unconstrained. This matches the reference implementation's "all" setting and overrides the FGES/BOSS choice. It gives up the pruning that makes RLCD tractable as the number of variables grows, so it is recommended only for small variable sets.</span></li>
+        <li>Default Value: <span id="rlcdStage1None_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdStage1None_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdStage1None_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdStage1None_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdUnfoldCovers ===
     <h3 class="parameter_description" id="rlcdUnfoldCovers">rlcdUnfoldCovers</h3>
     <ul class="parameter_description_list">

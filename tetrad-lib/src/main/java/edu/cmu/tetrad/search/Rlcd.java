@@ -100,7 +100,15 @@ public class Rlcd {
         /**
          * FGES with the SEM BIC score (closest to the GES stage of causal-learn).
          */
-        FGES
+        FGES,
+        /**
+         * No stage-1 search: the complete graph over the observed variables is used, so all variables form one
+         * partition and the stage-2 rank search runs unconstrained. This matches the reference implementation's
+         * "all" setting. It gives up the pruning that makes RLCD tractable as the number of variables grows, so it
+         * is an option for small variable sets, not a default; stage-1 knowledge is not consulted, though knowledge
+         * still restricts non-sinks and restores required edges as usual.
+         */
+        NONE
     }
 
     private final DataSet dataSet;
@@ -897,6 +905,16 @@ public class Rlcd {
     }
 
     private Graph runStage1() throws InterruptedException {
+        if (stage1Method == Stage1Method.NONE) {
+            Graph complete = new EdgeListGraph(variables);
+            for (int i = 0; i < variables.size(); i++) {
+                for (int j = i + 1; j < variables.size(); j++) {
+                    complete.addUndirectedEdge(variables.get(i), variables.get(j));
+                }
+            }
+            return complete;
+        }
+
         SemBicScore score = new SemBicScore(stage1Covariance());
         score.setPenaltyDiscount(penaltyDiscount);
         if (stage1Method == Stage1Method.FGES) {

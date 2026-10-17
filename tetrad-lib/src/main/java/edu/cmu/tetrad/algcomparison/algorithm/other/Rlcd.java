@@ -154,7 +154,9 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         rlcd.setCheckV(parameters.getBoolean(Params.RLCD_CHECK_V));
         rlcd.setLatentGate(parameters.getBoolean(Params.RLCD_LATENT_GATE));
         rlcd.setPartitionCliqueThreshold(parameters.getInt(Params.RLCD_PARTITION_CLIQUE_THRESHOLD));
-        rlcd.setStage1Method(parameters.getBoolean(Params.RLCD_STAGE1_FGES)
+        rlcd.setStage1Method(parameters.getBoolean(Params.RLCD_STAGE1_NONE, false)
+                ? edu.cmu.tetrad.search.Rlcd.Stage1Method.NONE
+                : parameters.getBoolean(Params.RLCD_STAGE1_FGES)
                 ? edu.cmu.tetrad.search.Rlcd.Stage1Method.FGES
                 : edu.cmu.tetrad.search.Rlcd.Stage1Method.BOSS);
         rlcd.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT_DEFAULT_1));
@@ -212,6 +214,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         parameters.add(Params.RLCD_LATENT_GATE);
         parameters.add(Params.RLCD_PARTITION_CLIQUE_THRESHOLD);
         parameters.add(Params.RLCD_STAGE1_FGES);
+        parameters.add(Params.RLCD_STAGE1_NONE);
         parameters.add(Params.STRATIFY_BY_DOMAIN);
         parameters.add(Params.DOMAIN_COLUMN);
         parameters.add(Params.POOL_IMPUTATIONS);

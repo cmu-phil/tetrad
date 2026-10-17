@@ -1669,6 +1669,11 @@ public final class Params {
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";
+
+    /**
+     * Constant <code>RLCD_STAGE1_NONE="rlcdStage1None"</code>
+     */
+    public static final String RLCD_STAGE1_NONE = "rlcdStage1None";
     /**
      * Constant <code>RLCD_UNFOLD_COVERS="rlcdUnfoldCovers"</code>
      */
