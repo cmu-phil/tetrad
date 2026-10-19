@@ -101,6 +101,15 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * This map preserves that proper independence relationships are maintained during the execution of the strategy.
      */
     private SepsetMap sepsets = new SepsetMap();
+    /**
+     * Opt-in fallback for R4 when the RECORDED separator for the path's endpoints does not contain the
+     * collider path (where R4 otherwise declines): construct a path-containing separator by the recursive
+     * blocking search, confirmed by the test, and orient from that if one is found. Off by default --
+     * behavior is unchanged for every existing user; designed for searches that bind a TOTAL sepset map
+     * (e.g. the sepset-projection *-FCI variant), where the recorded entry always exists but may have been
+     * harvested for a different purpose than this discriminating path.
+     */
+    private boolean pathContainingFallback = false;
 
     /**
      * Frozen reference graph (the initial Markov PAG, G_0) against which an
@@ -289,13 +298,38 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         // storage convention). With a fallible test this can fail; when it does, the separator is
         // not a valid basis for R4, so decline rather than orienting from it.
         if (!blocking.containsAll(path)) {
-            if (verbose) {
-                TetradLogger.getInstance().log("R4: Separator " + blocking + " for " + x + " and " + y
-                                               + " does not contain the collider path " + path
-                                               + "; declining to orient " + discriminatingPath);
+            // Opt-in fallback (see pathContainingFallback): the recorded separator is unusable for THIS
+            // path, but a path-containing separator may still exist; construct one by recursive blocking,
+            // test-confirmed, and orient from it. The result is appended to the bound sepset map exactly
+            // like a found separator in the null branch above (trial-local in the gated searches).
+            Set<Node> fallback = null;
+
+            if (pathContainingFallback) {
+                Graph refGraph = (sepsetGraph != null && !sepsetGraph.isAdjacentTo(x, y))
+                        ? sepsetGraph : graph;
+                fallback = RecursiveDiscriminatingPathRule.findDdpSepsetRecursive(test, refGraph, x, y,
+                        recursiveDepth, maxDiscriminatingPathLength, depth, preserveMarkovHelper, null, timeout,
+                        ddpMaxP);
             }
 
-            return Pair.of(discriminatingPath, false);
+            if (fallback != null && fallback.containsAll(path)) {
+                if (verbose) {
+                    TetradLogger.getInstance().log("R4: recorded separator " + blocking + " for " + x + " and "
+                                                   + y + " does not contain the collider path " + path
+                                                   + "; recursive-blocking fallback found " + fallback + ".");
+                }
+
+                sepsets.set(x, y, fallback);
+                blocking = fallback;
+            } else {
+                if (verbose) {
+                    TetradLogger.getInstance().log("R4: Separator " + blocking + " for " + x + " and " + y
+                                                   + " does not contain the collider path " + path
+                                                   + "; declining to orient " + discriminatingPath);
+                }
+
+                return Pair.of(discriminatingPath, false);
+            }
         }
 
         // R4 proper: V is a non-collider on the discriminating path exactly when V belongs to a
@@ -383,6 +417,16 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         return null;
+    }
+
+    /**
+     * Sets the opt-in R4 fallback for recorded separators that do not contain the collider path; see the
+     * {@code pathContainingFallback} field. Off by default.
+     *
+     * @param pathContainingFallback true to enable the recursive-blocking fallback.
+     */
+    public void setPathContainingFallback(boolean pathContainingFallback) {
+        this.pathContainingFallback = pathContainingFallback;
     }
 
     /**
