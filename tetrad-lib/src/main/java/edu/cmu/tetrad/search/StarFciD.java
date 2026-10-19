@@ -518,6 +518,7 @@ public abstract class StarFciD implements IGraphSearch {
 
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
+        Map<Set<Node>, Set<Node>> pendingReselect = new LinkedHashMap<>();
 
         // SEPSET PROJECTION (the variant's one structural change, part 1 of 2): harvest a TOTAL sepset
         // map from the DAG representative D. For each nonadjacent pair, PA(a) or PA(b) d-separates a and
@@ -539,21 +540,51 @@ public abstract class StarFciD implements IGraphSearch {
                 }
 
                 Set<Node> paA = new HashSet<>(initDag.getParents(ga));
-                Set<Node> sep;
+                Set<Node> paB = new HashSet<>(initDag.getParents(gb));
+                boolean aFirst = initDag.paths().isMSeparatedFrom(ga, gb, paA, false);
+                Set<Node> dEntry = mapToOwnNodes(aFirst ? paA : paB);
+                sepsetMap.set(a, b, dEntry);
 
-                if (initDag.paths().isMSeparatedFrom(ga, gb, paA, false)) {
-                    sep = paA;
-                } else {
-                    sep = new HashSet<>(initDag.getParents(gb));
+                // GATED RE-SELECTION (2026-10-19), part 1 of 2. D's d-separations are only as good as D, and
+                // the initializer can return a DAG that is not an I-map of the test: in the pke15 OBS=5
+                // enumeration a GraphScore tie made BOSS return a D claiming dsep(V1,V4 | {V3}) that is false
+                // in the oracle; projecting it stamped a false collider that closed to a legal PAG of the WRONG
+                // equivalence class, which the legality gate cannot see (2 of 313 PAGs). So D's entry is
+                // confirmed against the actual test here; if it fails and a test-confirmed alternative exists
+                // (the other end's parents, else the usual adjacency-pool search over D), the alternative is
+                // QUEUED. The projection map is deliberately NOT edited here: a map mixing D's entries with
+                // test entries is the projection of no single MAG and at scale is routinely an illegal PAG
+                // before any removal (which stalls the single-edge passes). Queued alternatives are instead
+                // trialed one at a time under the same legality gate as removals (gatedReselect), so the
+                // carried map remains a legal projection at every step.
+                //
+                // Only alternatives that can change an R0 decision are queued: the two sets must disagree on
+                // some common neighbour of a and b in D (adjacency only shrinks later, so D's neighbourhoods
+                // over-approximate every later unshielded triple at this pair). Disclosed gap: a difference
+                // confined to a node adjacent to ONE end could in principle change only an R4 reading and is not
+                // trialed; at 110 nodes this filter cuts ~280 trials per run to ~20 with identical output, and
+                // the OBS=5 enumeration is exact with it.
+                if (!independenceHolds(a, b, dEntry, independenceTest)) {
+                    Set<Node> other = mapToOwnNodes(aFirst ? paB : paA);
+                    Set<Node> alt = null;
+                    if (independenceHolds(a, b, other, independenceTest)) {
+                        alt = other;
+                    } else {
+                        Set<Node> searched = sepsetSubsetOfAdjxOrAdjy(initDag, ga, gb, new HashSet<>(),
+                                independenceTest, depth, useMaxP);
+                        if (searched != null) alt = mapToOwnNodes(searched);
+                    }
+                    if (alt != null) {
+                        Set<Node> common = mapToOwnNodes(new HashSet<>(initDag.getAdjacentNodes(ga)));
+                        common.retainAll(mapToOwnNodes(new HashSet<>(initDag.getAdjacentNodes(gb))));
+                        for (Node y : common) {
+                            if (dEntry.contains(y) != alt.contains(y)) {
+                                pendingReselect.put(Set.of(a, b), alt);
+                                break;
+                            }
+                        }
+                    }
                 }
-
-                // Record against the search's own node objects.
-                Set<Node> sepMapped = new HashSet<>();
-                for (Node n : sep) {
-                    Node own = independenceTest.getVariable(n.getName());
-                    sepMapped.add(own != null ? own : n);
-                }
-                sepsetMap.set(a, b, sepMapped);
             }
         }
         // Reusable data facts (X _||_ Y | S), invariant across passes. Kept OUT of sepsetMap
@@ -576,6 +607,18 @@ public abstract class StarFciD implements IGraphSearch {
             if (node.getNodeType() == NodeType.SELECTION) {
                 selection.add(node);
             }
+        }
+
+        // Gated re-selection before any removal (see the harvest comment). Ungated runs trust the test
+        // outright, exactly as they do for removals.
+        if (doLegalityGating) {
+            pag = gatedReselect(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, pendingReselect);
+        } else {
+            for (Map.Entry<Set<Node>, Set<Node>> e : pendingReselect.entrySet()) {
+                List<Node> pn = new ArrayList<>(e.getKey());
+                sepsetMap.set(pn.get(0), pn.get(1), e.getValue());
+            }
+            pendingReselect.clear();
         }
 
         // Pass 1: adjacency-subset removal, iterated to a FIXPOINT. Gated commits are
@@ -696,6 +739,12 @@ public abstract class StarFciD implements IGraphSearch {
                 pag = commitRemoval(pag, a, c, sepset, "possible-D-SEP", doLegalityGating,
                         cpdag, nodes, sepsetMap, unshieldedColliders, selection);
             }
+        }
+
+        // Gated re-selection, second call: re-try the re-selections rejected before the removals, since the
+        // removals may have made them legal.
+        if (doLegalityGating) {
+            pag = gatedReselect(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, pendingReselect);
         }
 
         // Saturating step (gated path only): clears deadlocks of the single-edge gated
@@ -1342,5 +1391,59 @@ public abstract class StarFciD implements IGraphSearch {
         }
         this.maxPossibleDsepPathLength = maxPossibleDsepPathLength;
     }
-}
 
+    /**
+     * Maps a set of nodes from the initializer's graph onto the search's own variable objects, by name.
+     */
+    private Set<Node> mapToOwnNodes(Set<Node> set) {
+        Set<Node> mapped = new HashSet<>();
+        for (Node n : set) {
+            Node own = independenceTest.getVariable(n.getName());
+            mapped.add(own != null ? own : n);
+        }
+        return mapped;
+    }
+
+    /**
+     * Gated re-selection, part 2 of 2 (see the harvest comment in search). For each queued nonadjacent pair
+     * whose harvested D-entry the test rejected, trial the test-confirmed alternative exactly as commitRemoval
+     * trials a removal: replace that one entry in a trial-local copy of the map, run the full projection on a
+     * copy of the graph, and commit only if the result passes the legality certificate. Accepted pairs leave
+     * the queue; rejected ones stay queued for the later call (after the removals, when they may have become
+     * legal). Pairs with no test-confirmed alternative are never queued and keep D's entry.
+     */
+    private Graph gatedReselect(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
+                                Set<Triple> unshieldedColliders, Set<Node> selection,
+                                Map<Set<Node>, Set<Node>> pending) throws InterruptedException {
+        for (Iterator<Map.Entry<Set<Node>, Set<Node>>> it = pending.entrySet().iterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                throw new InterruptedException();
+            }
+            Map.Entry<Set<Node>, Set<Node>> e = it.next();
+            List<Node> pn = new ArrayList<>(e.getKey());
+            Node a = pn.get(0), b = pn.get(1);
+            Set<Node> alt = e.getValue();
+
+            Graph _pag = pag.copy();
+            SepsetMap trialMap = new SepsetMap(sepsetMap);
+            trialMap.set(a, b, alt);
+            FciOrient trialOrient = buildFciOrient(trialMap);
+            gfciOrientPag(_pag, cpdag, nodes, trialMap, unshieldedColliders, trialOrient);
+            PagLegalityCheck.LegalPagRet legal = legalPagModuloKnowledge(_pag, new LinkedHashSet<>(selection), trialOrient);
+
+            if (legal.isLegalPag()) {
+                sepsetMap.set(a, b, alt);
+                pag = _pag;
+                it.remove();
+                if (verbose) {
+                    TetradLogger.getInstance().log("Re-selected sepset for nonadjacent " + a + " -- " + b
+                            + " (legal PAG): " + alt + " (the DAG's entry failed the test).");
+                }
+            } else if (verbose) {
+                TetradLogger.getInstance().log("\tTried re-selecting sepset for " + a + " -- " + b + " to " + alt
+                        + ", but it didn't lead to a legal PAG (kept the DAG's entry). Reason: " + legal.getReason());
+            }
+        }
+        return pag;
+    }
+}
