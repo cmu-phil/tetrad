@@ -101,17 +101,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
      * This map preserves that proper independence relationships are maintained during the execution of the strategy.
      */
     private SepsetMap sepsets = new SepsetMap();
-    /**
-     * Optional cross-run memory of discriminating-path separators, shared across the many orientation runs a
-     * gated search performs (each gated trial re-orients from scratch against a trial-local {@code sepsets}
-     * map, so without this memory every trial redoes every R4 separator search). A separator recorded here is
-     * a test-confirmed data fact (x _||_ y | S), valid verbatim in every later run; the graph-dependent checks
-     * (the collider-path containment test below, and v's membership) are re-applied on every use exactly as
-     * for a freshly computed separator. Consulted inside R4 only -- never written to the {@code sepsets} map a
-     * caller binds -- so entries from a rejected trial cannot be read back as R0 sepset-collider facts. Null
-     * (the default) disables the memory.
-     */
-    private SepsetMap ddpCache = null;
 
     /**
      * Frozen reference graph (the initial Markov PAG, G_0) against which an
@@ -250,13 +239,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
         Set<Node> blocking = sepsets.get(x, y);
 
-        // Redo from memory where possible: a separator found for (x, y) in an earlier orientation run is a
-        // test-confirmed data fact, reused rather than re-searched. The recorded sepsets above still take
-        // priority; the memory fills in only when the bound map has no entry.
-        if (blocking == null && ddpCache != null) {
-            blocking = ddpCache.get(x, y);
-        }
-
         // GREEDY fast path: look for a separator of X and Y among subsets of adj(X) or adj(Y)
         // that contain the collider path. This is sound but incomplete -- in the presence of
         // latent confounding a separator of a non-adjacent pair need not be a subset of the
@@ -267,10 +249,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             if (blocking != null) {
                 sepsets.set(x, y, blocking);
-
-                if (ddpCache != null) {
-                    ddpCache.set(x, y, blocking);
-                }
             }
         }
 
@@ -291,10 +269,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
 
             if (blocking != null) {
                 sepsets.set(x, y, blocking);
-
-                if (ddpCache != null) {
-                    ddpCache.set(x, y, blocking);
-                }
             } else {
                 // No separator could be found for X and Y. R4 has no basis on which to decide
                 // whether V is a collider, so decline to orient rather than aborting the whole
@@ -409,17 +383,6 @@ public class R0R4StrategyTestBased implements R0R4Strategy {
         }
 
         return null;
-    }
-
-    /**
-     * Sets the cross-run memory of discriminating-path separators; see the {@code ddpCache} field. Pass a map
-     * that outlives the individual orientation runs (e.g., one per search) to have R4 separator searches redone
-     * from memory where possible; pass null (the default) to disable.
-     *
-     * @param ddpCache the separator memory, or null to disable.
-     */
-    public void setDdpCache(SepsetMap ddpCache) {
-        this.ddpCache = ddpCache;
     }
 
     /**

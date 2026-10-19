@@ -149,8 +149,6 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
         search.setDoLegalityGating(parameters.getBoolean(Params.DO_LEGALITY_GATING));
-        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-        search.setLogCiDetails(parameters.getBoolean(Params.LOG_CI_DETAILS));
         search.setKnowledge(this.knowledge);
 
         return search.search();
@@ -220,8 +218,6 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         // General
         params.add(Params.TIME_LAG);
         params.add(Params.DO_LEGALITY_GATING);
-        params.add(Params.GUARANTEE_PAG);
-        params.add(Params.LOG_CI_DETAILS);
         params.add(Params.VERBOSE);
         params.add(Params.LOG_FINAL_ORIENTATIONS);
 

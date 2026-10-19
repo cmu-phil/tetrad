@@ -143,8 +143,6 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setParallelized(parallelized);
         search.setNumThreads(parallelized ? 1 : Runtime.getRuntime().availableProcessors());
         search.setDoLegalityGating(parameters.getBoolean(Params.DO_LEGALITY_GATING));
-//        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
-//        search.setLogCiDetails(parameters.getBoolean(Params.LOG_CI_DETAILS));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
@@ -209,8 +207,6 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
         params.add(Params.DO_LEGALITY_GATING);
-        params.add(Params.GUARANTEE_PAG);
-        params.add(Params.LOG_CI_DETAILS);
         params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.LV_HEURISTIC_ONLY);

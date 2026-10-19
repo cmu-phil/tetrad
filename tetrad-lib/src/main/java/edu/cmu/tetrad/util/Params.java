@@ -970,10 +970,6 @@ public final class Params {
      */
     public static final String LINGAM_REFIT_AND_PRUNE = "lingamRefitAndPrune";
     /**
-     * Constant <code>LOG_CI_DETAILS="logCiDetails"</code>
-     */
-    public static final String LOG_CI_DETAILS = "logCiDetails";
-    /**
      * Constant <code>LOG_FINAL_ORIENTATIONS="logFinalOrientations"</code>
      */
     public static final String LOG_FINAL_ORIENTATIONS = "logFinalOrientations";
