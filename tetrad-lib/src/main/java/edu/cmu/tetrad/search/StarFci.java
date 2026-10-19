@@ -303,6 +303,15 @@ public abstract class StarFci implements IGraphSearch {
      * Independence tests that fail to separate do not count. Disclosed in the class Javadoc.
      */
     private int maxGateTrialsPerEdge = 100;
+    /**
+     * Cross-trial memory of discriminating-path separators, fresh per search() call. Every gated trial
+     * re-orients from scratch against a trial-local sepset map, so without this memory each trial redoes
+     * every R4 separator search -- on large models the discriminating-path rule then dominates the run. A
+     * separator is a test-confirmed data fact (x _||_ y | S), valid verbatim across trials; the memory is
+     * consulted inside R4 only (via {@link R0R4StrategyTestBased#setDdpCache}), never by R0's sepset-collider
+     * stamping, so a rejected trial's entries cannot leak into the committed map or become collider facts.
+     */
+    private SepsetMap ddpMemory = new SepsetMap();
 
     /**
      * Constructs a new StarFci algorithm with the given independence test.
@@ -543,6 +552,7 @@ public abstract class StarFci implements IGraphSearch {
 
         Set<Triple> unshieldedColliders = new HashSet<>();
         SepsetMap sepsetMap = new SepsetMap();
+        this.ddpMemory = new SepsetMap();   // fresh discriminating-path separator memory per run
 
         if (verbose) {
             TetradLogger.getInstance().log("Starting *-FCI extra edge removal step.");
@@ -1032,6 +1042,10 @@ public abstract class StarFci implements IGraphSearch {
         strategy.setMaxLength(this.maxDiscriminatingPathLength);
         strategy.setSepsetMap(sepsetMap);
         strategy.setBlockingType(R0R4StrategyTestBased.BlockingType.GREEDY);
+        // Cross-trial memory: R4 separator searches are redone from memory where possible. The trial-local
+        // sepset map above still takes priority and still receives this trial's appends; only the expensive
+        // separator SEARCH is shared across trials, as test-confirmed data facts.
+        strategy.setDdpCache(ddpMemory);
         strategy.setVerbose(logFinalOrientations);
         FciOrient fciOrient = new FciOrient(strategy);
         fciOrient.setCompleteRuleSetUsed(completeRuleSetUsed);
