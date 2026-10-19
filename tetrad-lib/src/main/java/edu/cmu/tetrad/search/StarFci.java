@@ -108,10 +108,13 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  *   scratch against a trial-local copy of the committed sepset map seeded with the candidate sepset, and accept
  *   iff the result passes the legality certificate. A rejected trial leaves no trace, and the scan continues
  *   with the next separating set, up to {@link #setMaxGateTrialsPerEdge} trials per edge per visit.</li>
- *   <li><b>Finalization.</b> The ungated path orients once and then repairs with {@code GraphUtils.guaranteePag}
- *   -- invoked only when the certificate fails, which is equivalent to the paper's unconditional GuaranteePag
- *   since that operator is the identity on any graph already passing the check. The gated path returns the
- *   carried graph directly: it has passed the check after every accepted step.</li>
+ *   <li><b>Finalization.</b> The ungated path orients once; then, independently of the gating choice, the
+ *   {@code guaranteePag} flag (default true) controls the repair step: a final graph failing the
+ *   modulo-knowledge certificate is mapped to a nearby legal PAG by {@code GraphUtils.guaranteePag} -- invoked
+ *   only on failure, which is equivalent to the paper's unconditional GuaranteePag since that operator is the
+ *   identity on any graph already passing the check. On the gated path every commit was already certified, so
+ *   the repair is a dormant safety net and the carried graph is returned. With BOTH flags off, the raw greedy
+ *   GFCI-template output is returned, which is not necessarily a legal PAG.</li>
  * </ul>
  * Disclosed divergences from the paper's idealized pseudocode: (1) when the global {@code depth} is unlimited
  * (-1), the Pass-2 subset search over possible-D-SEP pools is clamped to subsets of size at most
@@ -258,6 +261,22 @@ public abstract class StarFci implements IGraphSearch {
      * mechanism.
      */
     private boolean doLegalityGating = true;
+    /**
+     * When true, the final graph is checked against the modulo-knowledge certificate and, if it fails, mapped to
+     * a nearby legal PAG by GraphUtils.guaranteePag. Independent of {@code doLegalityGating}: on the gated path
+     * every commit was already certified, so the check should pass and the repair is a dormant safety net; on the
+     * ungated path this is the paper's GuaranteePag step, and turning it off returns the raw greedy GFCI-template
+     * output, which is NOT necessarily a legal PAG. Default true, preserving the previous behavior on both paths.
+     */
+    private boolean guaranteePag = true;
+    /**
+     * Whether to log the individual conditional independence results: when true, the independence test itself
+     * is put in verbose mode (every CI query printed), and the removal/trial log lines include the p-value of
+     * the committed or rejected sepset (which costs one extra test call per line). Off by default: plain
+     * {@code verbose} gives the search-level narrative (removals committed, gate rejections, clamps) without
+     * the CI flood. For the curious who want to check all the details.
+     */
+    private boolean logCiDetails = false;
     /**
      * Whether to do the possible d-sep step. This step is REQUIRED for exactness: an exhaustive oracle test over
      * all PAGs on six observed variables exhibits a pair whose unique separating set contains a vertex adjacent to
@@ -501,7 +520,10 @@ public abstract class StarFci implements IGraphSearch {
      * @throws InterruptedException if any
      */
     public Graph search() throws InterruptedException {
-        this.independenceTest.setVerbose(verbose);
+        // Test-level verbosity (every CI query printed) is governed by logCiDetails, not verbose: plain
+        // verbose gives the search-level narrative without the CI flood. The initial CPDAG run is verbose
+        // whenever verbose is set (getMarkovCpdag(verbose), below).
+        this.independenceTest.setVerbose(logCiDetails);
         List<Node> nodes = new ArrayList<>(getIndependenceTest().getVariables());
 
         // Paper, Alg. 1: the Markov CPDAG from the initializer. Subclasses may return the CPDAG itself
@@ -656,10 +678,8 @@ public abstract class StarFci implements IGraphSearch {
                     sepsetMap.set(a, c, sepset);
 
                     if (verbose) {
-                        IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
                         TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
-                                + " (adjacency-subset); sepset = " + sepset + ", p-value = "
-                                + result.getPValue() + ".");
+                                + " (adjacency-subset); sepset = " + sepset + pValueSuffix(a, c, sepset) + ".");
                     }
                 }
             } while (pag.getNumEdges() < edgesBefore);
@@ -705,22 +725,25 @@ public abstract class StarFci implements IGraphSearch {
                     sepsetMap.set(a, c, sepset);
 
                     if (verbose) {
-                        IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
                         TetradLogger.getInstance().log("Removed edge " + a + " -- " + c
-                                + " (possible-D-SEP); sepset = " + sepset + ", p-value = "
-                                + result.getPValue() + ".");
+                                + " (possible-D-SEP); sepset = " + sepset + pValueSuffix(a, c, sepset) + ".");
                     }
                 }
             }
 
-            // Run the single final orientation. If the result already passes the modulo-knowledge
-            // certificate, keep it AS IS -- running GraphUtils.guaranteePag here would judge the
-            // knowledge-refined graph illegal under the strict certificate and repair it to the canonical
-            // PAG, erasing exactly the knowledge marks this class exists to keep. Only if the certificate
-            // fails is the graph mapped to a nearby legal PAG by guaranteePag (dropping knowledge extras);
-            // the final refinement step below then tries to reapply them.
+            // The single final orientation (part of the template, not of the repair).
             gfciOrientPag(pag, cpdag, nodes, sepsetMap, unshieldedColliders, fciOrient);
+        }
 
+        // GuaranteePag step, independent of the gating choice: if requested and the graph fails the
+        // modulo-knowledge certificate, map it to a nearby legal PAG. The repair runs ONLY on certificate
+        // failure -- running GraphUtils.guaranteePag unconditionally would judge a knowledge-refined graph
+        // illegal under the strict certificate and repair it to the canonical PAG, erasing exactly the
+        // knowledge marks this class exists to keep (the final refinement step below then reapplies them).
+        // On the gated path every commit was already certified, so this check should pass and the repair is
+        // a dormant safety net; on the ungated path it is the paper's GuaranteePag step. With guaranteePag
+        // false the graph is returned as it stands, which on the ungated path is not necessarily a legal PAG.
+        if (guaranteePag) {
             if (!legalPagModuloKnowledge(pag, new LinkedHashSet<>(selection), fciOrient).isLegalPag()) {
                 pag = rewrap(GraphUtils.guaranteePag(pag, fciOrient, knowledge, new HashSet<>(), verbose, new HashSet<>(),
                         excludeSelectionBias, Integer.MAX_VALUE));
@@ -870,9 +893,8 @@ public abstract class StarFci implements IGraphSearch {
             sepsetMap.set(a, c, C);
 
             if (verbose) {
-                IndependenceResult result = independenceTest.checkIndependence(a, c, C);
                 TetradLogger.getInstance().log("Removed edge " + a + " -- " + c + " (" + type
-                        + ", legal PAG); sepset = " + C + ", p-value = " + result.getPValue()
+                        + ", legal PAG); sepset = " + C + pValueSuffix(a, c, C)
                         + " (gate trial " + gateTrial + ").");
             }
 
@@ -880,14 +902,23 @@ public abstract class StarFci implements IGraphSearch {
         }
 
         if (verbose) {
-            IndependenceResult result = independenceTest.checkIndependence(a, c, C);
             TetradLogger.getInstance().log("\tTried removing " + a + " -- " + c + " (" + type
-                    + "); sepset = " + C + ", p-value = " + result.getPValue()
+                    + "); sepset = " + C + pValueSuffix(a, c, C)
                     + ", but it didn't lead to a legal PAG; trying the next separating set. Reason: "
                     + legal.getReason());
         }
 
         return null;
+    }
+
+    /**
+     * ", p-value = ..." for the given CI fact when {@code logCiDetails} is set, otherwise the empty string.
+     * Keeping this behind the flag also avoids re-running the test just to decorate a log line.
+     */
+    private String pValueSuffix(Node a, Node c, Set<Node> sepset) throws InterruptedException {
+        if (!logCiDetails) return "";
+        IndependenceResult result = independenceTest.checkIndependence(a, c, sepset);
+        return ", p-value = " + result.getPValue();
     }
 
     private void logGateCap(Node a, Node c, String type) {
@@ -1345,5 +1376,31 @@ public abstract class StarFci implements IGraphSearch {
             throw new IllegalArgumentException("Gate-trial cap must be at least 1: " + maxGateTrialsPerEdge);
         }
         this.maxGateTrialsPerEdge = maxGateTrialsPerEdge;
+    }
+
+    /**
+     * Sets whether to map the final graph to a nearby legal PAG (GraphUtils.guaranteePag) when it fails the
+     * modulo-knowledge certificate. Independent of {@link #setDoLegalityGating}: on the gated path every commit
+     * was already certified, so the repair is a dormant safety net; on the ungated path this is the paper's
+     * GuaranteePag step, and with it off the raw greedy GFCI-template output is returned, which is NOT
+     * necessarily a legal PAG. Default true.
+     *
+     * @param guaranteePag True to repair a certificate-failing final graph to a nearby legal PAG.
+     */
+    public void setGuaranteePag(boolean guaranteePag) {
+        this.guaranteePag = guaranteePag;
+    }
+
+    /**
+     * Sets whether to log the individual conditional independence results: the independence test itself is put
+     * in verbose mode (every CI query printed), and removal/trial log lines include the sepset's p-value (one
+     * extra test call per line). Off by default; plain {@link #setVerbose} gives the search-level narrative
+     * (removals committed, gate rejections, clamps) without the CI flood. The initial CPDAG search is verbose
+     * whenever {@code verbose} is set, independent of this flag.
+     *
+     * @param logCiDetails True to additionally print the individual CI results.
+     */
+    public void setLogCiDetails(boolean logCiDetails) {
+        this.logCiDetails = logCiDetails;
     }
 }

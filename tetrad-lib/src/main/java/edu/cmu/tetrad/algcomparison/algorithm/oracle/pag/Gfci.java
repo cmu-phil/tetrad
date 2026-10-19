@@ -124,6 +124,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDoLegalityGating(parameters.getBoolean(Params.DO_LEGALITY_GATING));
+        search.setGuaranteePag(parameters.getBoolean(Params.GUARANTEE_PAG));
+        search.setLogCiDetails(parameters.getBoolean(Params.LOG_CI_DETAILS));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
         search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
@@ -183,6 +185,8 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(Params.NUM_THREADS);
         parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.DO_LEGALITY_GATING);
+        parameters.add(Params.GUARANTEE_PAG);
+        parameters.add(Params.LOG_CI_DETAILS);
         parameters.add(Params.PARALLELIZED);
 
         parameters.add(Params.VERBOSE);
