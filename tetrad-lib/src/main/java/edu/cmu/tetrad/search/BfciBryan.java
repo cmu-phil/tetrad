@@ -49,11 +49,22 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * OBS=6 certification of this formulation is OPEN, so this class is for empirical comparison against
  * {@link Bfci}, not yet a certified replacement.
  * <p>
- * ALGORITHM (Bryan's pseudocode, with three corrections). State is the committed sepset map S plus the carried
- * graph G, where G is always the output of a full from-scratch re-orientation (circles, CPDAG colliders,
- * sepset colliders, Zhang's complete final rules) against S.
+ * ALGORITHM (Bryan's pseudocode, with three corrections). State is the committed sepset map S alone; the
+ * carried graph G is always the PROJECTION of S: a full from-scratch re-orientation (circles, colliders at
+ * unshielded triples x-y-z from y's absence from S(x,z), Zhang's complete final rules with R4 reading S) with
+ * no other source of orientation. S is TOTAL on nonadjacencies throughout: it is seeded from the DAG
+ * representative D of the BOSS CPDAG (for each nonadjacent pair, PA(a) or PA(b), whichever d-separates in D;
+ * these entries reproduce exactly D's unshielded colliders), and every removal overwrites one entry. This is
+ * the same seeding and projection as {@link StarFciC}; the two classes differ only in the removal schedule
+ * (re-selection here; frozen sepsets plus a saturating step there), so StarFciC stands to this class as an
+ * optimization.
  * <pre>
- * G0 &lt;- BOSS CPDAG;  S &lt;- {};  G &lt;- dagToPag(DAG representative of G0)
+ * G0 &lt;- BOSS CPDAG;  D &lt;- DAG representative of G0
+ * S &lt;- { (a,b) -&gt; PA_D(a) or PA_D(b), the one d-separating a,b in D : a,b nonadjacent in D }
+ * G &lt;- dagToPag(D)                                  // = projection of S, legal by construction
+ * Pass 0: for each (a,b) nonadjacent in D with NOT a _||_ b | S(a,b) in the data   // D not an I-map here
+ *   re-select S(a,b) by the same loop as an edge visit (Try over separating C, smallest first); keep D's
+ *   entry if nothing is accepted. Repeated once after Pass 2 for pairs still pending.
  * Pass 1 (adjacency subsets), then Pass 2 (possible-D-SEP subsets), each to a fixpoint:
  *   Repeat
  *     changed &lt;- false
@@ -65,12 +76,20 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  *   While changed
  * Return G
  * </pre>
- * where Try removes a-b on a copy, seeds C into a trial-local copy of S, re-orients from scratch, and commits
- * G and S together iff the result passes the legality certificate (modulo background knowledge, exactly as in
- * {@link StarFci}); a rejected trial leaves no trace. The corrections relative to the pseudocode as given:
- * (1) S and G commit atomically (the original added C to S before the gate, so a revert left the sepset
- * behind); (2) the fixpoint test is an explicit changed flag; (3) a pair with no recorded sepset gets no
- * sepset collider in the re-orientation.
+ * where Try removes a-b on a copy (a no-op in Pass 0, where the pair is already nonadjacent), seeds C into a
+ * trial-local copy of S, re-projects from scratch, and commits G and S together iff the result passes the
+ * legality certificate (modulo background knowledge, exactly as in {@link StarFci}); a rejected trial leaves no
+ * trace. The corrections relative to the pseudocode as given: (1) S and G commit atomically (the original
+ * added C to S before the gate, so a revert left the sepset behind); (2) the fixpoint test is an explicit
+ * changed flag; (3) a pair with no recorded sepset gets no sepset collider in the re-orientation (with the
+ * total seeding this can no longer occur).
+ * <p>
+ * WHY PASS 0 (2026-10-20). The initializer can return a D that is not an I-map of the test (seen in the
+ * exhaustive 5-variable certification of BFCI-C when BOSS ran without BES: a tied, non-I-map D claimed a false
+ * d-separation; projecting it stamped a false collider that closed to a legal PAG of the wrong class, which the
+ * legality gate cannot see). Pass 0 lets the test correct such entries, under the same gate as everything
+ * else. Overwriting them ungated instead would make S the projection of no single MAG and the baseline
+ * routinely illegal at scale. With BES on, D is an I-map under faithfulness and Pass 0 queues nothing.
  * <p>
  * COSTS, DISCLOSED. Re-selection runs one full re-orientation plus one legality check per SEPARATING candidate
  * set scanned, not per pair, so {@code maxGateTrialsPerEdge} caps the gate trials per edge per visit (the cap
@@ -191,6 +210,41 @@ public final class BfciBryan implements IGraphSearch {
 
         SepsetMap sepsetMap = new SepsetMap();
 
+        // SEEDING (see class doc): a TOTAL sepset map from the DAG representative D -- for each nonadjacent
+        // pair, PA(a) if it d-separates a and b in D, else PA(b) (one always does: nonadjacent nodes cannot
+        // be mutual descendants). Identical to StarFciC's harvest. Entries that fail the actual test are
+        // queued for Pass 0 re-selection; D's entry stays in S meanwhile, so S remains D's projection.
+        List<Node[]> pendingReselect = new ArrayList<>();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node a = nodes.get(i);
+                Node b = nodes.get(j);
+                Node ga = initDag.getNode(a.getName());
+                Node gb = initDag.getNode(b.getName());
+
+                if (ga == null || gb == null || initDag.isAdjacentTo(ga, gb)) {
+                    continue;
+                }
+
+                Set<Node> paA = new HashSet<>(initDag.getParents(ga));
+                Set<Node> sep = initDag.paths().isMSeparatedFrom(ga, gb, paA, false)
+                        ? paA : new HashSet<>(initDag.getParents(gb));
+
+                // Record against the search's own node objects.
+                Set<Node> sepMapped = new HashSet<>();
+                for (Node n : sep) {
+                    Node own = independenceTest.getVariable(n.getName());
+                    sepMapped.add(own != null ? own : n);
+                }
+                sepsetMap.set(a, b, sepMapped);
+
+                if (!independenceTest.checkIndependence(a, b, sepMapped).isIndependent()) {
+                    pendingReselect.add(new Node[]{a, b});
+                }
+            }
+        }
+
         Set<Node> selection = new LinkedHashSet<>();
         for (Node node : nodes) {
             if (node.getNodeType() == NodeType.SELECTION) {
@@ -199,8 +253,15 @@ public final class BfciBryan implements IGraphSearch {
         }
 
         if (verbose) {
-            TetradLogger.getInstance().log("Starting BFCI-Bryan extra edge removal (sepset re-selection, no saturating step).");
+            TetradLogger.getInstance().log("Starting BFCI-Bryan extra edge removal (sepset projection, "
+                    + "sepset re-selection, no saturating step); " + pendingReselect.size()
+                    + " seeded sepset(s) failed the test and are queued for re-selection.");
         }
+
+        // Pass 0: re-select seeded sepsets the test rejects, by the ordinary edge-visit loop (the pair is
+        // already nonadjacent, so the trial's removeEdge is a no-op; only the entry changes). Gated like
+        // everything else; a pair with no accepted candidate keeps D's entry and is retried after Pass 2.
+        pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
 
         // Pass 1: adjacency subsets, to a fixpoint.
         boolean changed;
@@ -259,6 +320,9 @@ public final class BfciBryan implements IGraphSearch {
             } while (changed);
         }
 
+        // Pass 0 again for pairs still pending: removals since may have made a re-selection legal.
+        pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
+
         // Uniform final knowledge refinement, as in StarFci: covers the path on which no removal ever
         // committed, where pag is the untouched dagToPag start carrying no knowledge marks.
         if (!knowledge.isEmpty()) {
@@ -279,6 +343,33 @@ public final class BfciBryan implements IGraphSearch {
             TetradLogger.getInstance().log("BFCI-Bryan finished.");
         }
 
+        return pag;
+    }
+
+    /**
+     * Pass 0: for each queued nonadjacent pair, run the ordinary edge-visit loop over the adjacency pools of the
+     * current graph. An accepted candidate replaces the pair's seeded entry in the committed map (and the carried
+     * graph becomes the accepted projection); the pair is then dropped from the queue. Pairs with no accepted
+     * candidate keep D's entry and stay queued.
+     */
+    private Graph reselectPending(Graph pag, List<Node[]> pending, Graph cpdag, List<Node> nodes,
+                                  SepsetMap sepsetMap, Set<Node> selection) throws InterruptedException {
+        for (Iterator<Node[]> it = pending.iterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+            Node[] pr = it.next();
+            Node a = pr[0], b = pr[1];
+
+            List<List<Node>> pools = new ArrayList<>();
+            pools.add(adjPool(pag, a, b));
+            pools.add(adjPool(pag, b, a));
+
+            Graph next = tryRemoveEdge(pag, a, b, pools, depth, cpdag, nodes, sepsetMap, selection,
+                    "seeded-sepset re-selection");
+            if (next != null) {
+                pag = next;
+                it.remove();
+            }
+        }
         return pag;
     }
 
@@ -377,9 +468,11 @@ public final class BfciBryan implements IGraphSearch {
     }
 
     /**
-     * The full from-scratch *-FCI orientation, verbatim from {@link StarFci}: reorient everything to circles,
-     * apply background knowledge, copy unshielded colliders from the CPDAG, stamp sepset colliders for
-     * CPDAG-adjacent pairs, then run the FCI final-orientation rules.
+     * The full from-scratch projection of the sepset map, verbatim from {@link StarFciC}: reorient everything to
+     * circles, apply background knowledge, stamp a collider at every unshielded triple x-y-z with y not in
+     * S(x,z) -- the map is total on nonadjacencies, and the CPDAG is NOT consulted -- then run the FCI
+     * final-orientation rules with R4 reading S. ({@code cpdag} is retained in the signature for symmetry with
+     * the trial loop; it is unused.)
      */
     private void gfciOrientPag(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
                                FciOrient fciOrient) throws InterruptedException {
@@ -396,12 +489,7 @@ public final class BfciBryan implements IGraphSearch {
                     Node x = adjacentNodes.get(i);
                     Node z = adjacentNodes.get(j);
 
-                    if (cpdag.isDefCollider(x, y, z) && !cpdag.isAdjacentTo(x, z)) {
-                        if (colliderAllowed(pag, x, y, z, knowledge)) {
-                            pag.setEndpoint(x, y, Endpoint.ARROW);
-                            pag.setEndpoint(z, y, Endpoint.ARROW);
-                        }
-                    } else if (cpdag.isAdjacentTo(x, z)) {
+                    if (!pag.isAdjacentTo(x, z)) {
                         Set<Node> sepset = sepsetMap.get(x, z);
 
                         if (sepset != null && !sepset.contains(y)) {
