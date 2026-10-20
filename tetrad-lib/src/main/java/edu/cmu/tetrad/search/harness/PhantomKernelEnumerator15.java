@@ -167,7 +167,7 @@ public final class PhantomKernelEnumerator15 {
     private static String MODE       = "magspace";
     private static int    N          = 7;    // dagsweep only
     private static int    NUM_LATENT = 2;    // dagsweep only
-    private static int    OBS        = 6;
+    private static int    OBS        = 5;
 
     // ── BfciC configuration (match the shipping defaults to certify) ──
     // Unlike Fcit, BfciC exposes no timeout, so a hang stalls the run; there is
@@ -788,28 +788,29 @@ public final class PhantomKernelEnumerator15 {
             // the search makes every verdict a deterministic function of the model
             // alone: any violation replays standalone from its log entry.
             RandomUtil.getInstance().setSeed(modelId.hashCode());
-            BfciC gfci = new BfciC(test, scoreObj);
-            gfci.setKnowledge(new Knowledge());
-            gfci.setExcludeSelectionBias(EXCLUDE_SELECTION_BIAS);   // via StarFciC
-            gfci.setCompleteRuleSetUsed(true);
-            gfci.setDepth(DEPTH);   // sets BOTH BOSS depth and StarFciC sepset depth
-            gfci.setNumStarts(1);
-            gfci.setVerbose(false);
+            BfciC bfci = new BfciC(test, scoreObj);
+            bfci.setKnowledge(new Knowledge());
+            bfci.setExcludeSelectionBias(EXCLUDE_SELECTION_BIAS);   // via StarFciC
+            bfci.setCompleteRuleSetUsed(true);
+            bfci.setDepth(DEPTH);   // sets BOTH BOSS depth and StarFciC sepset depth
+            bfci.setNumStarts(1);
+            bfci.setBossUseBes(true);
+            bfci.setVerbose(false);
             // Match the INTERFACE defaults: the algcomparison wrapper sets guaranteePag
             // from Params.GUARANTEE_PAG_DEFAULT_TRUE (default true, per the name), so the
             // user-facing shipping config is the MAG-legality-GATED commit path.  The raw
             // StarFciC field default is false (ungated); certifying that instead
             // silently tests a different algorithm than the GUI runs.
-            gfci.setDoLegalityGating(true);
+            bfci.setDoLegalityGating(true);
             // StarFciC has no setRecursiveDepth or setTimeout (a hang stalls the
             // run).  Other branch knobs left at shipping defaults (false); toggles:
-            gfci.setUsePossibleDsep(true);  // REQUIRED: without the pDsep pass, pairs whose only
+            bfci.setUsePossibleDsep(true);  // REQUIRED: without the pDsep pass, pairs whose only
             // sepset needs a non-adjacent vertex (e.g. (V2,V6) sep {V1,V3,V5} in model
             // aaaa..ta.aaat.aata..aaaa) are removable only during order-dependent windows in
             // which other spurious edges inflate the adjacency sets -- exactness becomes a
             // function of the shuffle draw.
 
-            // gfci.setLvHeuristicOnly(true);  // return dagToPag(Markov DAG), no removal
+            // bfci.setLvHeuristicOnly(true);  // return dagToPag(Markov DAG), no removal
             //
             // CAVEAT (nondeterminism): StarFciC.search() calls an UNSEEDED
             // Collections.shuffle on the edge list before the removal passes, and gated
@@ -817,7 +818,7 @@ public final class PhantomKernelEnumerator15 {
             // per-DRAW, not per-model: a violation may pass on rerun (and vice versa).
             // Replay any violation K times before trusting it, and consider seeding
             // that shuffle in the branch for reproducibility.
-            terminal = gfci.search();
+            terminal = bfci.search();
         } catch (Throwable ex) {
             r.error.increment();
             violationLog.write(violationEntry("ERROR", modelId, trueMag, truePag, null,
