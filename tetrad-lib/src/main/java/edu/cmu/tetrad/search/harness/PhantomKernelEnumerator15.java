@@ -167,7 +167,7 @@ public final class PhantomKernelEnumerator15 {
     private static String MODE       = "magspace";
     private static int    N          = 7;    // dagsweep only
     private static int    NUM_LATENT = 2;    // dagsweep only
-    private static int    OBS        = 5;
+    private static int    OBS        = 6;
 
     // ── BfciC configuration (match the shipping defaults to certify) ──
     // Unlike Fcit, BfciC exposes no timeout, so a hang stalls the run; there is

@@ -730,12 +730,12 @@ public abstract class StarFciC implements IGraphSearch {
             }
         }
 
-//        // Saturating step (gated path only): clears deadlocks of the single-edge gated
-//        // fixpoint by trying the surviving test-confirmed removals JOINTLY. See the
-//        // saturatingRemoval javadoc for the witness case and the escalation ladder.
-//        if (doLegalityGating) {
-//            pag = rewrap(saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets));
-//        }
+        // Saturating step (gated path only): clears deadlocks of the single-edge gated
+        // fixpoint by trying the surviving test-confirmed removals JOINTLY. See the
+        // saturatingRemoval javadoc for the witness case and the escalation ladder.
+        if (doLegalityGating) {
+            pag = rewrap(saturatingRemoval(pag, cpdag, nodes, sepsetMap, unshieldedColliders, selection, foundSepsets));
+        }
 
         // Gated re-selection, second call: re-try the re-selections rejected before the removals, since the
         // removals may have made them legal.
