@@ -135,7 +135,7 @@ public class BfciC extends AbstractBootstrapAlgorithm implements Algorithm, Take
 
         boolean parallelized = parameters.getBoolean(Params.PARALLELIZED);
 
-        search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setBossUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -199,7 +199,7 @@ public class BfciC extends AbstractBootstrapAlgorithm implements Algorithm, Take
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);

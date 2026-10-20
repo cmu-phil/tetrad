@@ -1959,6 +1959,16 @@ public final class Params {
      */
     public static final String USE_BES = "useBes";
     /**
+     * Constant <code>USE_BES_DEFAULT_TRUE="useBesDefaultTrue"</code>. The BES step of BOSS, as a separate
+     * parameter whose interface default is TRUE. Used by the hybrid latent-variable algorithms that start from a
+     * BOSS CPDAG (the StarFci/BFCI family, FCIT and relatives, GMAS, LV-heuristic, BOSS-CCD, ION): their
+     * correctness arguments presuppose that the initializer returns an I-map, which for BOSS is exactly what
+     * BES guarantees under faithfulness. Without it BOSS can stop at a non-I-map local optimum whose false
+     * d-separations the later phases cannot undo (observed in the exhaustive 5-variable certification of
+     * BFCI-C, and as reduced accuracy on 100-variable models). Plain BOSS as a CPDAG search keeps USE_BES.
+     */
+    public static final String USE_BES_DEFAULT_TRUE = "useBesDefaultTrue";
+    /**
      * Constant <code>USE_BOSS_ADJACENCIES="useBossAdjacencies"</code>
      */
     public static final String USE_BOSS_ADJACENCIES = "useBossAdjacencies";

@@ -154,7 +154,9 @@ public final class BfciBryan implements IGraphSearch {
     /**
      * Whether BOSS should use BES as a final step.
      */
-    private boolean bossUseBes = false;
+    // Default TRUE (2026-10-20): the hybrid relies on the BOSS CPDAG being an I-map, which BES guarantees under
+    // faithfulness; see Params.USE_BES_DEFAULT_TRUE.
+    private boolean bossUseBes = true;
     /**
      * The number of threads BOSS uses.
      */

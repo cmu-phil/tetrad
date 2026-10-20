@@ -8302,6 +8302,26 @@ Source:
             <span id="useBes_value_type">Boolean</span></li>
     </ul>
 
+    === useBesDefaultTrue ===
+    <h3 class="parameter_description" id="useBesDefaultTrue">useBesDefaultTrue</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useBesDefaultTrue_short_desc">True if the BES step of BOSS should be used
+        (recommended for hybrid algorithms)</span></li>
+        <li>Long Description: <span id="useBesDefaultTrue_long_desc">Hybrid latent-variable algorithms that start
+                    from a BOSS CPDAG (BFCI, BFCI-C, BFCI-D, FCIT and relatives, GMAS, LV-heuristic, BOSS-CCD, ION)
+                    rely on that CPDAG being an I-map of the data; the backward equivalence search (BES) step of
+                    BOSS is what guarantees this under faithfulness. Without it BOSS can stop at a non-I-map local
+                    optimum, and the resulting false separations are propagated as false colliders that the later
+                    phases of these algorithms cannot undo. For these algorithms the step is therefore on by
+                    default; it costs little time relative to the rest of the search. Plain BOSS as a CPDAG
+                    search is controlled by the separate useBes parameter.</span></li>
+        <li>Default Value: <span id="useBesDefaultTrue_default_value">true</span></li>
+        <li>Lower Bound: <span id="useBesDefaultTrue_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useBesDefaultTrue_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="useBesDefaultTrue_value_type">Boolean</span></li>
+    </ul>
+
     === useBossAdjacencies ===
     <h3 class="parameter_description" id="useBossAdjacencies">useBossAdjacencies</h3>
     <ul class="parameter_description_list">

@@ -178,7 +178,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         // BOSS
         fcit.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         fcit.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        fcit.setUseBes(parameters.getBoolean(Params.USE_BES));
+        fcit.setUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
 
         // FCIT
         fcit.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -385,7 +385,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         List<String> params = new ArrayList<>();
 
         // BOSS
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 

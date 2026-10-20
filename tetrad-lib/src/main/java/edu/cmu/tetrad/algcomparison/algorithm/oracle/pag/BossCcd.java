@@ -117,7 +117,7 @@ public class BossCcd extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -189,7 +189,7 @@ public class BossCcd extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         parameters.add(Params.DEPTH);
         parameters.add(Params.PARALLELIZED);
         parameters.add(Params.APPLY_R1);
-        parameters.add(Params.USE_BES);
+        parameters.add(Params.USE_BES_DEFAULT_TRUE);
         parameters.add(Params.NUM_STARTS);
         parameters.add(Params.USE_DATA_ORDER);
         parameters.add(Params.FDR_Q);

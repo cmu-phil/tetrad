@@ -235,7 +235,9 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
     /**
      * Whether BES should be used inside BOSS.
      */
-    private boolean useBes = false;
+    // Default TRUE (2026-10-20): the hybrid relies on the BOSS CPDAG being an I-map, which BES guarantees under
+    // faithfulness; see Params.USE_BES_DEFAULT_TRUE.
+    private boolean useBes = true;
     /**
      * True iff verbose output should be printed.
      */

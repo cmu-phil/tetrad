@@ -129,7 +129,7 @@ public class Ion implements MultiDataSetAlgorithm, TakesIndependenceWrapper, Tak
 
             boolean parallelized = parameters.getBoolean(Params.PARALLELIZED);
 
-            bfci.setBossUseBes(parameters.getBoolean(Params.USE_BES));
+            bfci.setBossUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
             bfci.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
             bfci.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
             bfci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -262,7 +262,7 @@ public class Ion implements MultiDataSetAlgorithm, TakesIndependenceWrapper, Tak
     @Override
     public List<String> getParameters() {
         List<String> parameters = new LinkedList<>();
-        parameters.add(Params.USE_BES);
+        parameters.add(Params.USE_BES_DEFAULT_TRUE);
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);

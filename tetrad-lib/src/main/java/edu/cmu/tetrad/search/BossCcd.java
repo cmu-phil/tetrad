@@ -108,7 +108,9 @@ public final class BossCcd implements IGraphSearch {
     /**
      * Whether BOSS should run BES after each best-move sweep.
      */
-    private boolean useBes = false;
+    // Default TRUE (2026-10-20): the hybrid relies on the BOSS CPDAG being an I-map, which BES guarantees under
+    // faithfulness; see Params.USE_BES_DEFAULT_TRUE.
+    private boolean useBes = true;
 
     /**
      * Number of random restarts for BOSS.

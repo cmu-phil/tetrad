@@ -118,7 +118,7 @@ public class Gmas extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         edu.cmu.tetrad.search.Gmas search = new edu.cmu.tetrad.search.Gmas(score);
 
         // BOSS seed.
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
 
@@ -179,7 +179,7 @@ public class Gmas extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         List<String> params = new ArrayList<>();
 
         // BOSS
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 

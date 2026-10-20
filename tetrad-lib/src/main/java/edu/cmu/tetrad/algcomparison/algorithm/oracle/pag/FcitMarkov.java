@@ -157,7 +157,7 @@ public class FcitMarkov extends AbstractBootstrapAlgorithm implements Algorithm,
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
 
         // FCIT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -232,7 +232,7 @@ public class FcitMarkov extends AbstractBootstrapAlgorithm implements Algorithm,
         List<String> params = new ArrayList<>();
 
         // BOSS
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
 

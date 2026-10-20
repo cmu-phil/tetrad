@@ -126,7 +126,9 @@ public final class FcitSlKeepKnowledgeOrientations implements IGraphSearch {
      * <p>
      * By default, the value of this flag is false.
      */
-    private boolean useBes = false;
+    // Default TRUE (2026-10-20): the hybrid relies on the BOSS CPDAG being an I-map, which BES guarantees under
+    // faithfulness; see Params.USE_BES_DEFAULT_TRUE.
+    private boolean useBes = true;
     /**
      * A set representing all identified colliders in the current CPDAG (Completed Partially Directed Acyclic Graph). A
      * collider is a node in the graph where two edges converge, and the directions of the edges are both pointing into
