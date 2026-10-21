@@ -131,8 +131,8 @@ public class BDeuScore implements DiscreteScore {
                     dataSet = MissingDataUtils.listwiseDelete(dataSet);
                     missing = false;
                 }
-                case EM_COVARIANCE -> throw new IllegalArgumentException(
-                        "BDeuScore: EM_COVARIANCE applies to continuous data only.");
+                case EM_COVARIANCE, PAIRWISE_COVARIANCE -> throw new IllegalArgumentException(
+                        "BDeuScore: " + policy + " applies to continuous data only.");
                 case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
                         "BDeuScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed datasets, "
                                 + "not by a single score.");

@@ -157,7 +157,7 @@ public final class ParamDescriptions {
         ParamDescription missingDataPolicy = this.map.get(Params.MISSING_DATA_POLICY);
         if (missingDataPolicy != null) {
             missingDataPolicy.setAllowedValues(java.util.List.of(
-                    "default", "fail", "listwise", "testwise", "em", "mi"));
+                    "default", "fail", "listwise", "testwise", "em", "pairwise", "mi"));
         }
 
         ParamDescription pooledTestMethod = this.map.get(Params.POOLED_TEST_METHOD);

@@ -60,7 +60,9 @@ public final class Bfci extends StarFci {
      * Determines whether the Boss search algorithm should use the BES (Backward elimination of shadows) method as a
      * final step.
      */
-    private boolean bossUseBes = false;
+    // Default TRUE (2026-10-20): the hybrid relies on the BOSS CPDAG being an I-map, which BES guarantees under
+    // faithfulness; see Params.USE_BES_DEFAULT_TRUE.
+    private boolean bossUseBes = true;
     /**
      * The number of threads to use for parallel processing. This variable determines the degree of parallelism for
      * certain operations that can be performed concurrently to improve performance. For example, in multithreaded

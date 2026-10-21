@@ -98,12 +98,17 @@ public class CausalUnmixer {
         EmUnmix.Config ec = new EmUnmix.Config();
         ec.K = (cfg.K != null ? cfg.K : TMath.max(cfg.Kmin, 1));
 
-        // Covariance policy
-        int n = data.getNumRows();
-        int p = data.getNumColumns();
-        int K = (cfg.K != null ? cfg.K : TMath.max(cfg.Kmin, 2));
-        boolean okFull = (n / TMath.max(1, K)) >= (p + cfg.fullSigmaSafetyMargin);
-        ec.covType = okFull ? GaussianMixtureEM.CovarianceType.FULL : GaussianMixtureEM.CovarianceType.DIAGONAL;
+        // Covariance policy: an explicit override wins; otherwise fall back to the automatic heuristic. Note that
+        // for auto-selected K the heuristic is evaluated at the largest candidate K, the most conservative choice.
+        if (cfg.covTypeOverride != null) {
+            ec.covType = cfg.covTypeOverride;
+        } else {
+            int n = data.getNumRows();
+            int p = data.getNumColumns();
+            int K = (cfg.K != null ? cfg.K : TMath.max(cfg.Kmax, 2));
+            boolean okFull = (n / TMath.max(1, K)) >= (p + cfg.fullSigmaSafetyMargin);
+            ec.covType = okFull ? GaussianMixtureEM.CovarianceType.FULL : GaussianMixtureEM.CovarianceType.DIAGONAL;
+        }
 
         // Residual options
         ec.useParentSuperset = cfg.useParentSuperset;
@@ -119,6 +124,7 @@ public class CausalUnmixer {
         ec.covShrinkage = cfg.covShrinkage;
         ec.annealSteps = cfg.annealSteps;
         ec.annealStartT = cfg.annealStartT;
+        ec.logIntermediate = cfg.logIntermediate;
 
         return ec;
     }
@@ -223,6 +229,16 @@ public class CausalUnmixer {
          * Safety margin for full sigma estimation. Ensures that the estimated covariance matrix is positive definite.
          */
         public int fullSigmaSafetyMargin = 10;
+        /**
+         * If non-null, forces the given covariance type (FULL or DIAGONAL) for the Gaussian mixture, bypassing the
+         * automatic policy based on the per-cluster sample size. If null (the default), the automatic policy is used.
+         */
+        public GaussianMixtureEM.CovarianceType covTypeOverride = null;
+        /**
+         * If true, logs intermediate EM state (iteration log-likelihoods, weights, means) and per-K model selection
+         * information to the Tetrad log. The default is false.
+         */
+        public boolean logIntermediate = false;
         /**
          * A regularization parameter used in ridge regression to prevent overfitting by adding a penalty proportional
          * to the square of the coefficients' magnitude. Typically, higher values increase regularization, while lower

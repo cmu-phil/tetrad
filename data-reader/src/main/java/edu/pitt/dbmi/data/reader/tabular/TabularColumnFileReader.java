@@ -25,6 +25,7 @@ import edu.pitt.dbmi.data.reader.DataFileReader;
 import edu.pitt.dbmi.data.reader.DataReaderException;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.util.Columns;
+import edu.pitt.dbmi.data.reader.util.TextFileUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -116,6 +117,11 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
      */
     @Override
     public DataColumn[] generateColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
+        String encodingProblem = TextFileUtils.findEncodingProblem(this.dataFile);
+        if (encodingProblem != null) {
+            throw new DataReaderException(encodingProblem);
+        }
+
         List<DataColumn> columns = new LinkedList<>();
 
         int[] sortedColsToExclude = Columns.sortNew(columnsToExclude);
@@ -134,6 +140,11 @@ public final class TabularColumnFileReader extends AbstractTabularColumnFileRead
     }
 
     private DataColumn[] getColumns(int[] columnsToExclude, boolean isDiscrete) throws IOException {
+        String encodingProblem = TextFileUtils.findEncodingProblem(this.dataFile);
+        if (encodingProblem != null) {
+            throw new DataReaderException(encodingProblem);
+        }
+
         List<DataColumn> columns = new LinkedList<>();
 
         try (InputStream in = Files.newInputStream(this.dataFile, StandardOpenOption.READ)) {

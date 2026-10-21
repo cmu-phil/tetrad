@@ -190,13 +190,20 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
      */
     private boolean useDataOrder = true;
     /**
+     * Whether GRaSP, when used as the starting algorithm, should use the Raskutti-Uhler test-based method
+     * instead of the score-based method.
+     */
+    private boolean graspUseRaskuttiUhler = false;
+    /**
      * This flag represents whether the Bes algorithm should be used in the search.
      * <p>
      * If set to true, the Bes algorithm will be used. If set to false, the Bes algorithm will not be used.
      * <p>
      * By default, the value of this flag is false.
      */
-    private boolean useBes = false;
+    // Default TRUE (2026-10-20): the hybrid relies on the BOSS CPDAG being an I-map, which BES guarantees under
+    // faithfulness; see Params.USE_BES_DEFAULT_TRUE.
+    private boolean useBes = true;
     /**
      * True iff verbose output should be printed.
      */
@@ -1025,8 +1032,8 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
         grasp.setUncoveredDepth(1);
         grasp.setNonSingularDepth(1);
         grasp.setOrdered(true);
-        grasp.setUseScore(true);
-        grasp.setUseRaskuttiUhler(false);
+        grasp.setUseScore(!graspUseRaskuttiUhler);
+        grasp.setUseRaskuttiUhler(graspUseRaskuttiUhler);
         grasp.setUseDataOrder(useDataOrder);
         grasp.setAllowInternalRandomness(false);
         grasp.setVerbose(superVerbose);
@@ -1772,6 +1779,16 @@ public final class FcitZmKeepKnowledgeOrientations implements IGraphSearch {
      */
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
+    }
+
+    /**
+     * Sets whether GRaSP, when used as the starting algorithm, should use the Raskutti-Uhler test-based method
+     * instead of the score-based method. Ignored unless the start-with option is GRaSP.
+     *
+     * @param graspUseRaskuttiUhler True to use the Raskutti-Uhler method.
+     */
+    public void setGraspUseRaskuttiUhler(boolean graspUseRaskuttiUhler) {
+        this.graspUseRaskuttiUhler = graspUseRaskuttiUhler;
     }
 
     /**

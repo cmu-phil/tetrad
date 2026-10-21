@@ -133,17 +133,12 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 
         edu.cmu.tetrad.search.Bfci search = new edu.cmu.tetrad.search.Bfci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
-        boolean parallelized = parameters.getBoolean(Params.PARALLELIZED);
-
-        search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setBossUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
         search.setDepth(parameters.getInt(Params.DEPTH));
-        search.setParallelized(parallelized);
-        search.setNumThreads(parallelized ? 1 : Runtime.getRuntime().availableProcessors());
-        search.setDoLegalityGating(parameters.getBoolean(Params.DO_LEGALITY_GATING));
-        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
+        search.setNumThreads(Runtime.getRuntime().availableProcessors());
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
@@ -153,6 +148,8 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         search.setKnowledge(knowledge);
 
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+
+        search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
         search.setReplicatingGraph(parameters.getBoolean(Params.TIME_LAG_REPLICATING_GRAPH));
 
         return search.search();
@@ -199,24 +196,22 @@ public class Bfci extends AbstractBootstrapAlgorithm implements Algorithm, Takes
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.TIME_LAG_REPLICATING_GRAPH);
-        params.add(Params.DO_LEGALITY_GATING);
-        params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.LV_HEURISTIC_ONLY);
         params.add(Params.DO_POSSIBLE_DSEP);
-        params.add(Params.PARALLELIZED);
         params.add(Params.VERBOSE);
         params.add(Params.LOG_FINAL_ORIENTATIONS);
 
         // Parameters
         params.add(Params.NUM_STARTS);
+        params.add(Params.USE_SATURATING_STEP);
 
         return params;
     }

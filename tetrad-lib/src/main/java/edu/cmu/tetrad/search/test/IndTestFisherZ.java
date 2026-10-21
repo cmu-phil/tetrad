@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.data.EmCovarianceEstimator;
 import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
@@ -179,12 +178,10 @@ public final class IndTestFisherZ implements IndependenceTest, EffectiveSampleSi
             this.variables = this.cor.getVariables();
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);
-        } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
-            EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
-            estimator.setRidge(spec.getEmRidge());
-            estimator.setTolerance(spec.getEmTolerance());
-            estimator.setMaxIterations(spec.getEmMaxIterations());
-            this.cor = new CorrelationMatrix(estimator.estimate());
+        } else if (policy.estimatesCovariance()) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
+            ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(dataSet, spec);
+            this.cor = new CorrelationMatrix(estimated);
             this.variables = this.cor.getVariables();
             this.indexMap = indexMap(this.variables);
             this.nameMap = nameMap(this.variables);

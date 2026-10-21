@@ -23,6 +23,8 @@ package edu.cmu.tetrad.calculator.parser;
 import edu.cmu.tetrad.calculator.expression.ExpressionDescriptor;
 import edu.cmu.tetrad.calculator.expression.ExpressionManager;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,23 +128,29 @@ public class ExpressionLexer {
 
     /**
      * Builds a regex that can identify expressions.
+     *
+     * <p>Java's alternation is first-match, not longest-match, so a token that is a prefix of
+     * another token would shadow it if it came first: with the descriptors in declaration order,
+     * "Exponential(1)" lexed as the token "Exp" followed by the unparseable "onential(1)". The
+     * alternatives are therefore emitted longest token first, which makes the lexer independent
+     * of the order in which descriptors happen to be declared. Each token is quoted rather than
+     * having a fixed list of metacharacters escaped after the fact, so a token containing any
+     * metacharacter is matched literally.
      */
     private static String getExpressionRegex() {
-        String str = "(";
         List<ExpressionDescriptor> descriptors = ExpressionManager.getInstance().getDescriptors();
-        for (int i = 0; i < descriptors.size(); i++) {
-            ExpressionDescriptor exp = descriptors.get(i);
-            str += "(" + exp.getToken() + ")";
-            if (i < descriptors.size() - 1) {
-                str += "|";
-            }
-        }
-        // replace meta characters where necessary.
-        str = str.replace("+", "\\+");
-        str = str.replace("*", "\\*");
-        str = str.replace("^", "\\^");
 
-        return str + ")";
+        List<String> tokens = new ArrayList<>();
+        for (ExpressionDescriptor exp : descriptors) tokens.add(exp.getToken());
+        tokens.sort(Comparator.comparingInt(String::length).reversed());
+
+        StringBuilder str = new StringBuilder("(");
+        for (int i = 0; i < tokens.size(); i++) {
+            if (i > 0) str.append("|");
+            str.append("(").append(Pattern.quote(tokens.get(i))).append(")");
+        }
+
+        return str.append(")").toString();
     }
 
     /**

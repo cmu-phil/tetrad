@@ -40,7 +40,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.removeNonSkeletonEdges;
  * @author kaalpurush
  * @version $Id: $Id
  */
-public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
+public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel implements KnowledgeSourceGraph {
 
     @Serial
     private static final long serialVersionUID = 23L;
@@ -263,6 +263,33 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
      */
     public Graph getResultGraph() {
         return this.resultGraph;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Graph getKnowledgeSourceGraph() {
+        return this.resultGraph;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getKnowledgeSourceDescription() {
+        return "Knowledge was made from the parent graph, drawn below. For every pair of "
+               + "variables not adjacent in this graph, edges are forbidden in both "
+               + "directions, so searches are kept within this skeleton. (Variables whose "
+               + "names start with E_ are skipped.)";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getKnowledgeSourceTabTitle() {
+        return "Parent Graph";
     }
 
 }

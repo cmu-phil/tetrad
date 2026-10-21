@@ -176,7 +176,6 @@ public class TestCheckMarkov {
 
         Bfci bfci = new Bfci(test, score);
         bfci.setVerbose(true);
-        bfci.setDoLegalityGating(true);
         Graph pag;
 
         try {

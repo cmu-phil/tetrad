@@ -22,6 +22,8 @@ package edu.cmu.tetrad.data.missing;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -50,8 +52,10 @@ public final class MissingDataUtils {
     /**
      * Builds a MissingDataSpec from algcomparison/GUI/py-tetrad parameters (see the MISSING_* constants in
      * {@link Params}), or returns null--meaning "legacy default behavior"--if the policy parameter is absent or
-     * "default". Policy values (case-insensitive): "fail", "listwise", "testwise", "em" (or "emCovariance"), "mi"
-     * (or "multipleImputation"). ESS modes: "fullN", "minPairwise", "meanPairwise".
+     * "default". Policy values (case-insensitive): "fail", "listwise", "testwise", "em" (or "emCovariance"),
+     * "pairwise" (or "pairwiseCovariance"; see {@link MissingDataPolicy#PAIRWISE_COVARIANCE}), "mi" (or
+     * "multipleImputation"). ESS modes: "fullN",
+     * "minPairwise", "meanPairwise".
      *
      * @param parameters The parameters.
      * @return The spec, or null for the legacy default.
@@ -69,10 +73,11 @@ public final class MissingDataUtils {
             case "listwise" -> MissingDataSpec.listwise();
             case "testwise" -> MissingDataSpec.testwise();
             case "em", "emcovariance", "em_covariance" -> MissingDataSpec.emCovariance();
+            case "pairwise", "pairwisecovariance", "pairwise_covariance" -> MissingDataSpec.pairwiseCovariance();
             case "mi", "multipleimputation", "multiple_imputation" -> MissingDataSpec.multipleImputation(
                     parameters.getInt(Params.MISSING_NUM_IMPUTATIONS, 10));
             default -> throw new IllegalArgumentException("Unrecognized missing-data policy: '" + policy
-                    + "'. Expected one of: default, fail, listwise, testwise, em, mi.");
+                    + "'. Expected one of: default, fail, listwise, testwise, em, pairwise, mi.");
         };
 
         spec = spec.withEmRidge(parameters.getDouble(Params.MISSING_EM_RIDGE, spec.getEmRidge()))
@@ -259,6 +264,28 @@ public final class MissingDataUtils {
     }
 
     /**
+     * The covariance matrix of a dataset with missing values under a policy that estimates one: by EM with the spec's
+     * ridge, tolerance and iteration limit under EM_COVARIANCE, or by pairwise deletion
+     * ({@link PairwiseCovarianceEstimator}) under PAIRWISE_COVARIANCE. Every component that accepts an EM
+     * covariance gets its matrix here, so each supports both; see {@link MissingDataPolicy#estimatesCovariance()}.
+     *
+     * @param dataSet The dataset.
+     * @param spec    The spec; its policy is expected to be EM_COVARIANCE or PAIRWISE_COVARIANCE.
+     * @return The covariance matrix.
+     */
+    public static ICovarianceMatrix estimateCovariance(DataSet dataSet, MissingDataSpec spec) {
+        if (spec.getPolicy() == MissingDataPolicy.PAIRWISE_COVARIANCE) {
+            return PairwiseCovarianceEstimator.estimate(dataSet);
+        }
+
+        EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
+        estimator.setRidge(spec.getEmRidge());
+        estimator.setTolerance(spec.getEmTolerance());
+        estimator.setMaxIterations(spec.getEmMaxIterations());
+        return estimator.estimate();
+    }
+
+    /**
      * The wrapper-level missing-data gate, called at the top of every algcomparison test and score wrapper's
      * {@code getTest}/{@code getScore} method. This is the point at which the explicit-choice contract for missing
      * data is enforced for all user-facing interfaces (the GUI search box, algcomparison, and py-tetrad, all of
@@ -334,6 +361,7 @@ public final class MissingDataUtils {
                     + "  'testwise'  - test-wise deletion (each local calculation uses its complete rows; the previous default),\n"
                     + "  'listwise'  - analyze complete cases only (supported by every test and score),\n"
                     + "  'em'        - EM-estimated covariance (continuous data; supported where noted),\n"
+                    + "  'pairwise'  - pairwise-deletion covariance (wherever 'em' is supported; MCAR only),\n"
                     + "  'fail'      - refuse to analyze data with missing values.\n"
                     + "Test-wise and listwise deletion are unbiased only if values are missing completely at random "
                     + "(MCAR); EM is valid under the weaker MAR assumption for approximately multivariate normal "
@@ -348,15 +376,22 @@ public final class MissingDataUtils {
                         + briefSummary(dataSet));
                 return complete;
             }
-            case "testwise", "em", "emcovariance", "em_covariance" -> {
-                String canonical = policy.startsWith("em") ? "em" : "testwise";
+            case "testwise", "em", "emcovariance", "em_covariance", "pairwise", "pairwisecovariance",
+                 "pairwise_covariance" -> {
+                String canonical = policy.startsWith("em") ? "em" : policy.startsWith("pairwise") ? "pairwise"
+                        : "testwise";
 
-                if (nativePolicies.contains(canonical)) {
+                // A pairwise-deletion covariance goes wherever an EM covariance does: both are supplied by
+                // estimateCovariance to the same covariance-consuming code.
+                if (nativePolicies.contains(canonical.equals("pairwise") ? "em" : canonical)) {
                     return dataModel;
                 } else {
                     StringBuilder supported = new StringBuilder("'listwise' (analyze complete cases only) and 'fail'");
                     for (String p : new String[]{"testwise", "em"}) {
-                        if (nativePolicies.contains(p)) supported.append(", and natively '").append(p).append("'");
+                        if (nativePolicies.contains(p)) {
+                            supported.append(", and natively '").append(p.equals("em") ? "em' and 'pairwise" : p)
+                                    .append("'");
+                        }
                     }
 
                     throw new IllegalArgumentException(caller
@@ -366,7 +401,8 @@ public final class MissingDataUtils {
                             + "support for '" + canonical + "' (test-wise: Fisher Z, SEM BIC, BGe, EBIC, GIC, "
                             + "Poisson Prior, ZS Bound, HT SEM BIC, RFF BIC, TRFF BIC, KCV BIC, FFML, BDeu, "
                             + "Discrete BIC, CG-BIC, DG-BIC, DG-BGe, BF-BIC, BF-BGe, CG-LRT, DG-LRT, BF-LRT, "
-                            + "Blocks-Test, Chi-Square, G-Square, KCI, RCIT, CCI, GCM, Poisson Prior Test; EM "
+                            + "Blocks-Test, Chi-Square, G-Square, KCI, RCIT, FFCI, FFCI-Continuous, CCI, GCM, "
+                            + "Poisson Prior Test; EM "
                             + "covariance: Fisher Z, SEM BIC, BGe, EBIC, GIC, Poisson Prior, ZS Bound).");
                 }
             }
@@ -375,7 +411,7 @@ public final class MissingDataUtils {
                     + "ImputationSearch) and is not performed by a single test or score; it is not yet available "
                     + "through this interface. Please use 'em', 'testwise', or 'listwise' instead.");
             default -> throw new IllegalArgumentException(caller + ": Unrecognized missing-data policy: '" + policy
-                    + "'. Expected one of: default, fail, listwise, testwise, em, mi.");
+                    + "'. Expected one of: default, fail, listwise, testwise, em, pairwise, mi.");
         }
     }
 

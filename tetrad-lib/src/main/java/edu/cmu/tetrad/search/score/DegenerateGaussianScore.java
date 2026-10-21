@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.EmCovarianceEstimator;
 import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingValueSupport;
@@ -117,13 +116,13 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
             switch (policy) {
                 case LISTWISE -> dataSet = MissingDataUtils.listwiseDelete(dataSet);
                 case TESTWISE -> testwise = true;
-                case EM_COVARIANCE -> emCovariance = true;
+                case EM_COVARIANCE, PAIRWISE_COVARIANCE -> emCovariance = true;
                 case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
                         "DegenerateGaussianScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed "
                                 + "datasets, not by a single score.");
                 default -> throw new IllegalArgumentException(
                         "DegenerateGaussianScore: The dataset contains missing values and the missing-data policy "
-                                + "is " + policy + ". This score supports LISTWISE, TESTWISE and EM_COVARIANCE on "
+                                + "is " + policy + ". This score supports LISTWISE, TESTWISE, EM_COVARIANCE and PAIRWISE_COVARIANCE on "
                                 + "missing data. " + MissingDataUtils.briefSummary(dataSet));
             }
         }
@@ -157,11 +156,9 @@ public class DegenerateGaussianScore implements Score, EffectiveSampleSizeSettab
         // missingness rate rather than staying fixed. Compare against TESTWISE on real data rather than assuming
         // either dominates.
         if (emCovariance) {
-            EmCovarianceEstimator estimator = new EmCovarianceEstimator(convertedData);
-            estimator.setRidge(spec.getEmRidge());
-            estimator.setTolerance(spec.getEmTolerance());
-            estimator.setMaxIterations(spec.getEmMaxIterations());
-            this.bic = new SemBicScore(estimator.estimate());
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
+            edu.cmu.tetrad.data.ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(convertedData, spec);
+            this.bic = new SemBicScore(estimated);
         } else if (testwise) {
             this.bic = new SemBicScore(convertedData, precomputeCovariances, MissingDataSpec.testwise());
         } else {

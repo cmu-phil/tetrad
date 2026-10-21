@@ -4388,6 +4388,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     </div>
 
+    <h3>LV-BOSS</h3>
+
+    <h4>Description</h4>
+
+    <div id="lv-boss">
+
+        <p>LV-BOSS is an experimental, fully score-based latent-variable search. It embeds a MAG
+            projection inside a BOSS-style search over orders of the observed variables: each order is
+            projected to a high-scoring ancestral graph (directed and bidirected edges, ancestrality
+            enforced), scored by an exact Gaussian MAG BIC computed by maximum likelihood with RICF, and
+            the search relocates one variable at a time to its best position, keeping the best-scoring
+            order found. No independence test is used anywhere. The output is the PAG of the found MAG.
+        </p>
+
+        <p>Caveats, stated plainly: the method is experimental, continuous Gaussian only, has no
+            consistency proof (none is known for any greedy search over MAG space), does not support
+            background knowledge yet, and is slower than the hybrid searches in this family. Rarely, the
+            score prefers a sparser ancestral graph that is not a legal MAG (latent-projection
+            distributions can satisfy rank-type constraints beyond their MAG's independence
+            constraints); in that case the ancestral graph itself is returned, with a note in the log.
+        </p>
+
+    </div>
+
     <h3>LV-Heuristic</h3>
 
     <h4>Description</h4>
@@ -5080,13 +5104,35 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h3>Fisher Z Test</h3>
 
-    <div id="fisher-z-test"><p> rcit-cl-test judges independence if the
-        conditional correlation is cannot statistically be distinguished from
-        zero. Primarily for the linear, Gaussian case. </p></div>
+    <div id="fisher-z-test">
+        <p>Judges X independent of Y given Z when their partial correlation cannot be
+            distinguished from zero. The partial correlation r is taken from the covariance matrix
+            of x, y and Z, transformed by Fisher's z as q = atanh(|r|), and referred to a standard
+            normal as sqrt(n - 3 - |Z|) * q with a two-sided p-value; independence is reported when
+            that p-value exceeds alpha. This is the standard conditional independence test for the
+            linear, Gaussian case, and the usual default for continuous data.</p>
+        <p>It needs nothing beyond second moments, so it accepts either a continuous data set or a
+            covariance matrix, and it is much the fastest test available here - the natural choice
+            when a covariance matrix is all that is on hand. Under test-wise deletion the sample
+            size used for the degrees of freedom is the number of rows complete on x, y and Z
+            rather than the full row count. For ill-conditioned covariance matrices, shrinkageMode
+            selects no shrinkage, a ridge penalty, or Ledoit-Wolf shrinkage, with
+            regularizationLambda setting the ridge.</p>
+        <p>Because it reads only linear, second-moment dependence, it has no power against
+            dependence that leaves the covariance unchanged, such as dependence in variance or in
+            the tails; the CCI, KCI and CORD tests are nonparametric alternatives for that case.
+            Note also that failing to reject zero correlation is not evidence that the correlation
+            is zero, which matters when a search deletes an edge on a report of independence; the
+            Equivalence (TOST) test inverts that burden of proof. Continuous data or a covariance
+            matrix.</p>
+    </div>
 
     <h4>Parameters</h4>
 
-    <p><a href="#alpha">alpha</a></p>
+    <p><a href="#alpha">alpha</a>, <a href="#shrinkageMode">shrinkageMode</a>,
+        <a href="#regularizationLambda">regularizationLambda</a>,
+        <a href="#effectiveSampleSize">effectiveSampleSize</a>, missingDataPolicy, missingEmRidge,
+        missingEmTolerance, missingEmMaxIterations, missingEssMode</p>
 
     <h3>SEM BIC Test</h3>
 
@@ -5634,6 +5680,18 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <p>alphaDefault0.05, <a href="#verbose">verbose</a>, missingDataPolicy</p>
 
+        <h3>Equivalence (TOST) Test</h3>
+
+    <div id="equivalence-test">
+        <p>Judges independence only on positive evidence that the partial correlation is negligible, by a two-one-sided-test (TOST) equivalence test on the Fisher z scale. An ordinary test answers "can I reject rho = 0?", and a constraint-based adjacency search deletes an edge when it cannot, which treats absence of evidence as evidence of absence. This test answers the question edge removal actually needs, "can I show |rho| is below a margin?", reporting independence just in case the (1 - 2*alpha) confidence interval for the Fisher z of the partial correlation lies entirely inside (-z0, +z0), where z0 = atanh(equivalenceMargin).</p>
+        <p>The practical difference is which way the burden of proof falls, and it matters most for weak associations. An ordinary test's removal region, |z| &lt; c*se, shrinks as the sample grows, so a weak but real edge is deleted most eagerly at the sample sizes where deleting it is least justified; and because a search tries many conditioning subsets per pair and removes the edge if any one of them fails to reject, each extra subset is another chance to delete a real adjacency. This test's removal region instead grows with the sample size toward |rho| &lt; margin, so nothing is deleted until the data can show it is negligible. On bivariate normal data at margin 0.10 and alpha 0.05, a true correlation of 0.05 was called independent 81% of the time by Fisher Z at n = 500 against 23% here, while at a true correlation of 0.10, the boundary of this test's null hypothesis, the rate stayed at alpha for every sample size tried.</p>
+        <p>Two cautions. The margin must exceed roughly 1.645/sqrt(n) at alpha = 0.05 or no pair is ever removable and the search returns a complete graph, which is why equivalenceMargin defaults to 0, meaning that the margin is scaled to the sample size; and asymptotically every pair whose partial correlation falls below the margin is removed, so the margin must sit below the weakest association worth keeping. Note also that this test's notion of independence is weaker than an ordinary test's notion of dependence, so an algorithm whose orientation rules ask whether two variables are dependent may be degraded by it; for CCD, prefer the algorithm's useEquivalenceRemoval parameter, which applies the equivalence rule to the adjacency phase alone and leaves orientation on the selected test. Continuous data or a covariance matrix.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#alpha">alpha</a>, <a href="#equivalenceMargin">equivalenceMargin</a>, <a href="#equivalenceMarginMultiplier">equivalenceMarginMultiplier</a></p>
+
     <h3>Fisher Z Test, Causal-Learn (Python)</h3>
 
     <div id="fisherz-cl-test">
@@ -5702,6 +5760,42 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#alpha">alpha</a>, <a href="#effectiveSampleSize">effectiveSampleSize</a>, minimaxRidge,
         minimaxFfFeatures, <a href="#penaltyDiscount">penaltyDiscount</a>, trffSymmetrized,
         <a href="#verbose">verbose</a>, missingDataPolicy</p>
+
+    <h3>Stratified Rank (Domain-Pooled) Test</h3>
+
+    <div id="stratified-rank-test">
+        <p>A conditional independence test for data gathered in several domains - batches, sites, cohorts,
+            semesters, countries - whose causal structure is shared but whose linear coefficients, means, and noise
+            variances may differ by domain. The hypothesis X _||_ Y | Z is judged by the vanishing of the partial
+            cross-covariance of X and Y given Z within each domain: the Bartlett canonical-correlation statistic is
+            computed inside each domain separately and the statistics and degrees of freedom are summed across
+            domains, which is valid because the domains are disjoint samples. This is the Phase 1 test of LCD-NOD
+            (Dong, Dai, Ng, Spirtes, and Zhang, Identifying Partially Observed Causal Models from
+            Heterogeneous/Nonstationary Data, ICML 2026), whose Theorem 1 shows that the within-domain covariance
+            constraints are exactly those of the homogeneous linear model with the same graph. The covariance of the
+            domains mixed together carries no such guarantee: testing it both invents dependence that is an artifact
+            of the mixing and can mask real dependence whose sign or strength varies by domain, which is why a
+            search run on concatenated multi-site data so often returns a hairball.</p>
+        <p>To use it: include in the data set one column holding the domain index - a discrete column, or a
+            continuous column whose values are all whole numbers - and load the data as usual. In a Search box,
+            choose a constraint-based algorithm such as PC or FCI, select this test, and set the Domain column name
+            parameter to that column's name; the default is a column named "domain", and if no column of the given
+            name exists but the data set has exactly one discrete column, that column is used and a note is logged.
+            The domain column is removed from the variable list and used only to split the rows, so it does not
+            appear in the output graph; the remaining variables must be continuous. The same test can be selected in
+            the Markov Checker to ask whether a fitted graph satisfies its implied independencies within domains.</p>
+        <p>Each domain must have enough rows for its own covariance matrix: domains too small for the statistic to
+            discriminate are skipped, along with their degrees of freedom, and if no domain is usable the result is
+            marked invalid. Many very small domains make the chi-square approximation rough even when they are not
+            skipped, so merge small domains into larger ones first. The statistic is the Gaussian likelihood-ratio
+            form and assumes linearity within each domain; with a single domain it reduces to the ordinary Wilks
+            rank test. A tabular data set is required - a covariance matrix cannot be used, since the rows must be
+            split by domain. Continuous data plus one discrete domain column.</p>
+    </div>
+
+    <h4>Parameters</h4>
+
+    <p><a href="#domainColumn">domainColumn</a>, <a href="#alpha">alpha</a>, missingDataPolicy</p>
 
     <h2>Scoring Functions</h2>
 
@@ -7418,6 +7512,54 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                     id="doFgesFirst_value_type">Boolean</span></li>
         </ul>
 
+
+        <h3 class="parameter_description"
+            id="equivalenceMargin">equivalenceMargin</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="equivalenceMargin_short_desc">
+                    Largest |partial correlation| counted as negligible, or 0 to scale it to the sample size.
+        </span></li>
+            <li>Long Description: <span
+                    id="equivalenceMargin_long_desc">
+                    The equivalence (TOST) test reports independence only when it can show the partial correlation is smaller in magnitude than this margin, rather than merely failing to reject zero. The margin is squeezed from both sides: it must exceed about 1.645/sqrt(n) at alpha = 0.05 or nothing is ever removable and the adjacency search returns a complete graph, and it must stay below the weakest association worth keeping, since asymptotically every pair below the margin is removed. Because the usable range depends on the sample size, leaving this at 0 is recommended: the margin is then set automatically to equivalenceMarginMultiplier times the smallest margin the sample size could certify.
+         </span></li>
+            <li>Default Value: <span
+                    id="equivalenceMargin_default_value">0.0</span></li>
+            <li>Lower Bound: <span
+                    id="equivalenceMargin_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="equivalenceMargin_upper_bound">0.999</span></li>
+            <li>Value
+                Type: <span
+                        id="equivalenceMargin_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="equivalenceMarginMultiplier">equivalenceMarginMultiplier</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="equivalenceMarginMultiplier_short_desc">
+                    Equivalence margin as a multiple of the smallest one the sample size can certify (min &gt; 1).
+        </span></li>
+            <li>Long Description: <span
+                    id="equivalenceMarginMultiplier_long_desc">
+                    Used when equivalenceMargin is 0. The margin is set to this multiple of tanh(c/sqrt(n-3)), the smallest margin the sample size could certify at all, which turns a sample-size-dependent choice into one dimensionless knob. The multiplier trades adjacency precision for the retention of weak real edges: on random cyclic linear-Gaussian graphs, 2.0 improved recall of Richardson virtual edges and of dotted-underline triples at every sample size tested for about 0.015 of adjacency precision, 1.6 moved further in that direction at a real cost in endpoint accuracy at large samples, and values above about 2.5 began deleting the virtual edges and degraded everything. Values at or below 1 are not allowed, since the margin would then certify nothing.
+         </span></li>
+            <li>Default Value: <span
+                    id="equivalenceMarginMultiplier_default_value">2.0</span></li>
+            <li>Lower Bound: <span
+                    id="equivalenceMarginMultiplier_lower_bound">1.01</span></li>
+            <li>Upper
+                Bound: <span
+                        id="equivalenceMarginMultiplier_upper_bound">100.0</span></li>
+            <li>Value
+                Type: <span
+                        id="equivalenceMarginMultiplier_value_type">Double</span></li>
+        </ul>
         <h3 class="parameter_description"
             id="errorsNormal">errorsNormal</h3>
         <ul
@@ -11813,6 +11955,30 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
                         id="useCorrDiffAdjacencies_value_type">Boolean</span></li>
         </ul>
 
+
+        <h3 class="parameter_description"
+            id="useEquivalenceRemoval">useEquivalenceRemoval</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="useEquivalenceRemoval_short_desc">
+                    Yes if CCD should remove edges only on positive evidence of independence.
+        </span></li>
+            <li>Long Description: <span
+                    id="useEquivalenceRemoval_long_desc">
+                    If Yes, CCD's adjacency phase uses an equivalence (TOST) test governed by equivalenceMargin and equivalenceMarginMultiplier, while the orientation steps keep the independence test selected for the algorithm. The adjacency phase decides whether to delete an edge, which is served by a test demanding positive evidence that the partial correlation is negligible; the orientation steps instead ask whether two variables are dependent, where an equivalence test's weaker "not shown to be negligible" would worsen CCD's tendency to commit to directions the data do not support. This requires the selected test to be Fisher Z, since the equivalence test is defined on the partial correlation. Default No, which leaves CCD's behaviour unchanged.
+         </span></li>
+            <li>Default Value: <span
+                    id="useEquivalenceRemoval_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="useEquivalenceRemoval_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="useEquivalenceRemoval_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="useEquivalenceRemoval_value_type">Boolean</span></li>
+        </ul>
         <h3 class="parameter_description"
             id="useFasAdjacencies">useFasAdjacencies</h3>
         <ul

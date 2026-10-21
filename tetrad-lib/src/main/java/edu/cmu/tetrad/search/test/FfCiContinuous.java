@@ -1,6 +1,11 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
@@ -56,6 +61,11 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
      * Active rows state.
      */
     private List<Integer> rows = null;
+    /**
+     * If true, each test is evaluated on the active rows complete on x, y, and z; see the constructor taking a
+     * {@link MissingDataSpec}.
+     */
+    private boolean testwiseDeletion = false;
     /**
      * The number of active rows.
      */
@@ -115,7 +125,27 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
      * @param dataSet the dataset to be analyzed; must not be null
      */
     public FfCiContinuous(DataSet dataSet) {
+        this(dataSet, null);
+    }
+
+    /**
+     * Constructs FF-CI with an explicit missing-data specification. On a data set with missing values the supported
+     * policies are LISTWISE and TESTWISE; under TESTWISE each test is computed on the active rows that are complete
+     * on x, y, and z (by a temporary row override, which invalidates the feature cache for that test). Under TESTWISE,
+     * concurrent checkIndependence calls on one instance are serialized. A null spec leaves the legacy behavior
+     * in place.
+     *
+     * @param dataSet the dataset to be analyzed; must not be null
+     * @param spec    the missing-data specification, or null.
+     */
+    public FfCiContinuous(DataSet dataSet, MissingDataSpec spec) {
         DataSet _data = Objects.requireNonNull(dataSet, "data");
+
+        if (spec != null) {
+            _data = MissingDataUtils.resolveDeletionPolicy(_data, spec, "FfCiContinuous");
+            this.testwiseDeletion = spec.getPolicy() == MissingDataPolicy.TESTWISE && _data.existsMissingValue();
+        }
+
 //        this.data = DataTransforms.standardizeData(_data);
         this.data = _data;
         this.vars = Collections.unmodifiableList(new ArrayList<>(this.data.getVariables()));
@@ -443,6 +473,65 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
             throw new InterruptedException();
         }
 
+        Objects.requireNonNull(x, "x");
+        Objects.requireNonNull(y, "y");
+
+        if (this.testwiseDeletion) {
+            // Searches (e.g., StarFci's sepset sweep) call checkIndependence from parallel streams on one
+            // instance, and the row override below mutates shared state. Without this lock, concurrent calls
+            // crash (IndexOutOfBounds in activeRowIndex) or, worse, compute on the wrong rows; with it, calls
+            // are serialized while test-wise deletion is active. Complete data pays nothing.
+            synchronized (this) {
+                List<Integer> complete = completeRows(x, y, z);
+
+                if (complete.size() < getActiveRowCount()) {
+                    List<Integer> saved = this.rows;
+                    try {
+                        setRows(complete);
+                        return checkIndependenceOnActiveRows(x, y, z);
+                    } finally {
+                        setRows(saved);
+                    }
+                }
+
+                return checkIndependenceOnActiveRows(x, y, z);
+            }
+        }
+
+        return checkIndependenceOnActiveRows(x, y, z);
+    }
+
+    /**
+     * The active rows on which none of x, y, z is missing.
+     */
+    private List<Integer> completeRows(Node x, Node y, Set<Node> z) {
+        List<Integer> cols = new ArrayList<>();
+        cols.add(columnIndexOf(x));
+        cols.add(columnIndexOf(y));
+        if (z != null) for (Node v : z) cols.add(columnIndexOf(v));
+
+        int m = getActiveRowCount();
+        List<Integer> out = new ArrayList<>(m);
+        R:
+        for (int i = 0; i < m; i++) {
+            int r = activeRowIndex(i);
+            for (int c : cols) {
+                if (MissingDataAudit.isMissing(data, r, c)) continue R;
+            }
+            out.add(r);
+        }
+        return out;
+    }
+
+    private int columnIndexOf(Node v) {
+        int col = data.getColumnIndex(v);
+        if (col < 0) col = data.getVariableNames().indexOf(v.getName());
+        return col;
+    }
+
+    private IndependenceResult checkIndependenceOnActiveRows(Node x, Node y, Set<Node> z)
+            throws InterruptedException {
+
         // If x.getName() is lexically after y.getName(), swap x and y.
         if (x.getName().compareTo(y.getName()) > 0) {
             Node temp = x;
@@ -669,6 +758,17 @@ public final class FfCiContinuous implements IndependenceTest, RowsSettable, Raw
 
         this.n = this.rows.size();
         invalidateFeatureCache();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test is evaluated on the rows complete on
+     * x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
     }
 
     // --------------------------------------------------------------------

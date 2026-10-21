@@ -163,7 +163,7 @@ public class FcitSlScoreCheck extends AbstractBootstrapAlgorithm implements Algo
         // BOSS
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
 
         // FCIT
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -192,6 +192,8 @@ public class FcitSlScoreCheck extends AbstractBootstrapAlgorithm implements Algo
         search.setUseScoreCheck(true);
         search.setScoreCheckPenaltyDiscount(parameters.getDouble(Params.SCORE_CHECK_PENALTY_DISCOUNT));
 
+
+        search.setGraspUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
 
         if (parameters.getInt(Params.FCIT_STARTS_WITH) == 1) {
             search.setStartWith(edu.cmu.tetrad.search.FcitSlScoreCheck.START_WITH.BOSS);
@@ -254,9 +256,12 @@ public class FcitSlScoreCheck extends AbstractBootstrapAlgorithm implements Algo
         List<String> params = new ArrayList<>();
 
         // BOSS
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.USE_DATA_ORDER);
         params.add(Params.NUM_STARTS);
+
+        // GRaSP (used only when starting with GRaSP)
+        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
 
         // FCIT
         params.add(Params.FCIT_STARTS_WITH);

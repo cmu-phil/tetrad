@@ -140,15 +140,13 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
         search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
         search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
-        search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
+        search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
 
         // General
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
         search.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
-        search.setDoLegalityGating(parameters.getBoolean(Params.DO_LEGALITY_GATING));
         search.setKnowledge(this.knowledge);
 
         return search.search();
@@ -210,14 +208,12 @@ public class GraspFci extends AbstractBootstrapAlgorithm implements Algorithm, T
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.USE_MAX_P_HEURISTIC);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.DO_POSSIBLE_DSEP);
-        params.add(Params.PARALLELIZED);
+        params.add(Params.USE_SATURATING_STEP);
 
         // General
         params.add(Params.TIME_LAG);
-        params.add(Params.DO_LEGALITY_GATING);
         params.add(Params.VERBOSE);
         params.add(Params.LOG_FINAL_ORIENTATIONS);
 

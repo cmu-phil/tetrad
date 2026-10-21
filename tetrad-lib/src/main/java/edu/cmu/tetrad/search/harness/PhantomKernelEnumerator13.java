@@ -786,12 +786,9 @@ public final class PhantomKernelEnumerator13 {
             gfci.setDepth(DEPTH);   // sets BOTH GRaSP depth and StarFciCheckPag sepset depth
             gfci.setNumStarts(1);
             gfci.setVerbose(false);
-            // Match the INTERFACE defaults: the algcomparison wrapper sets guaranteePag
-            // from Params.GUARANTEE_PAG_DEFAULT_TRUE (default true, per the name), so the
-            // user-facing shipping config is the MAG-legality-GATED commit path.  The raw
-            // StarFciCheckPag field default is false (ungated); certifying that instead
-            // silently tests a different algorithm than the GUI runs.
-            gfci.setDoLegalityGating(true);
+            // 2026-10-21: GraspFci now extends the re-selection StarFci, which is always
+            // legality-gated (no setDoLegalityGating); the original gated/ungated template
+            // survives only as StarFciOriginal, off the interface.
             // StarFciCheckPag has no setRecursiveDepth or setTimeout (a hang stalls the
             // run).  Other branch knobs left at shipping defaults (false); toggles:
             gfci.setUsePossibleDsep(true);  // REQUIRED: without the pDsep pass, pairs whose only

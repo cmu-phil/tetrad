@@ -31,6 +31,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.session.DoNotAddOldModel;
 import edu.cmu.tetradapp.session.SimulationParamsSource;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -79,6 +81,13 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
      * The parameter setting map.
      */
     private Map<String, String> allParamSettings;
+
+    /**
+     * Change support for notifying open editors that the data model list has been replaced, e.g. by a background
+     * process (see {@link #announceDataModelChange()}). Transient and lazily initialized so that the serialized form of
+     * this class is unchanged and previously saved sessions still load.
+     */
+    private transient PropertyChangeSupport dataChangeSupport;
 
     //==============================CONSTRUCTORS===========================//
 
@@ -408,6 +417,46 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
             dataModelList.add(dataModel);
             this.dataModelList = dataModelList;
         }
+    }
+
+    /**
+     * Returns the lazily initialized change support object. Lazy initialization is needed because the field is
+     * transient and so is null after deserialization of an older (or current) session.
+     */
+    private synchronized PropertyChangeSupport dataChangeSupport() {
+        if (this.dataChangeSupport == null) {
+            this.dataChangeSupport = new PropertyChangeSupport(this);
+        }
+        return this.dataChangeSupport;
+    }
+
+    /**
+     * Adds a listener to be notified when the data model list of this wrapper is replaced by a background process. See
+     * {@link #announceDataModelChange()}.
+     *
+     * @param listener the listener to add.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        dataChangeSupport().addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes a listener added by {@link #addPropertyChangeListener(PropertyChangeListener)}.
+     *
+     * @param listener the listener to remove.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        dataChangeSupport().removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Fires a "dataModelList" property change to registered listeners. Models that replace their data model list
+     * asynchronously (from a WatchedProcess, say) should call this after setDataModel(...), so that any open editor on
+     * this wrapper can refresh its display. May be called from any thread; listeners are responsible for getting
+     * themselves onto the event dispatch thread.
+     */
+    public void announceDataModelChange() {
+        dataChangeSupport().firePropertyChange("dataModelList", null, getDataModelList());
     }
 
     /**

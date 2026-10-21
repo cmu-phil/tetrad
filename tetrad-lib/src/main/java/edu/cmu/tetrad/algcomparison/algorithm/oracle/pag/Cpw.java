@@ -77,7 +77,14 @@ import java.util.Map;
  *       PAG; a pair that passes is output as a 2-cycle (X → Y and Y → X)
  *       and is exempt from the pairwise orientation below. This is what
  *       lets CPW represent the smallest cycles at all: the pairwise rule
- *       by itself always commits to a single direction.</li>
+ *       by itself always commits to a single direction. The test is run
+ *       with {@link Fask.TwoCycleRule#SLOPE_SHIFT} rather than FASK's
+ *       published correlation comparison, which has no asymptotic level on
+ *       acyclic data outside strongly right-skewed noise and so injected
+ *       false 2-cycles at a rate that grew with sample size. See
+ *       {@link Fask.TwoCycleRule} for the reasoning and
+ *       {@link edu.cmu.tetrad.search.harness.CpwLingamStudy} for the
+ *       measurements.</li>
  *   <li><b>Pairwise edge orientation.</b> Edges left ambiguous by FCI are
  *       further oriented using the pairwise left-right rule on standardized
  *       data, subject to the following case analysis:
@@ -390,7 +397,8 @@ public class Cpw extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         }
 
         return Fask.twoCycleTest(data[nameToIdx.get(x.getName())], data[nameToIdx.get(y.getName())],
-                cols.toArray(new double[0][]), StatUtils.getZForAlpha(twoCycleAlpha));
+                cols.toArray(new double[0][]), StatUtils.getZForAlpha(twoCycleAlpha),
+                Fask.TwoCycleRule.SLOPE_SHIFT);
     }
 
     // --------------------------- Boilerplate parity with Fci ---------------------------

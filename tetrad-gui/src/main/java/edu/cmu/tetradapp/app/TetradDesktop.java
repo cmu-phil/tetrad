@@ -459,23 +459,103 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
     }
 
     /**
-     * Queries the user whether they would like to save their sessions.
+     * Asks the user, one session at a time, what to do with each session that has unsaved changes, then closes all
+     * sessions. Unchanged sessions are closed without asking.
+     * <p>
+     * Nothing is closed until every changed session has an answer, so Cancel Quit leaves all sessions open (any
+     * saves already made stay made, which loses nothing). Quit used to save every changed session silently, with no
+     * way to decline a save or to cancel the quit.
+     *
+     * @return true if all sessions were closed; false if the user cancelled the quit.
      */
-    public void closeAllSessions() {
-        while (existsSession()) {
-            SessionEditor sessionEditor = getFrontmostSessionEditor();
-            assert sessionEditor != null;
+    public boolean closeAllSessions() {
+        for (JInternalFrame frame : this.desktopPane.getAllFramesInLayer(0)) {
+            Object o = frame.getContentPane().getComponents()[0];
 
-            if (sessionEditor.getSessionWorkbench().getSessionWrapper().isSessionChanged()) {
-                // Re-save each changed session to its own file; SaveSessionAction falls back to a Save As dialog
-                // only for a session that has not touched disk in this run. Previously every changed session went
-                // straight to a Save As dialog seeded from the single global save-location preference, so on quit
-                // they all offered to save into the same directory, whichever was touched last.
-                new SaveSessionAction().actionPerformed(new ActionEvent(sessionEditor,
-                        ActionEvent.ACTION_PERFORMED, "Save"));
+            if (!(o instanceof SessionEditor sessionEditor)) {
+                continue;
             }
 
+            SessionWrapper sessionWrapper = sessionEditor.getSessionWorkbench().getSessionWrapper();
+
+            if (!sessionWrapper.isSessionChanged()) {
+                continue;
+            }
+
+            // The save actions work on the frontmost session, and the user should see which session is being asked
+            // about.
+            frame.moveToFront();
+
+            try {
+                frame.setSelected(true);
+            } catch (java.beans.PropertyVetoException ignored) {
+                // Selection is cosmetic here; moveToFront is what the save actions rely on.
+            }
+
+            if (!decideOnQuit(sessionEditor, sessionWrapper)) {
+                return false;
+            }
+        }
+
+        while (existsSession()) {
             closeFrontmostSession();
+        }
+
+        return true;
+    }
+
+    /**
+     * Asks what to do with one changed session on quit and does it. A save that fails, or a Save As whose file
+     * chooser is cancelled, asks again rather than treating the session as decided, so an accidental Escape in the
+     * chooser cannot discard work.
+     *
+     * @return false if the user chose to cancel the quit.
+     */
+    private boolean decideOnQuit(SessionEditor sessionEditor, SessionWrapper sessionWrapper) {
+        final String save = "Save";
+        final String saveAs = "Save As...";
+        final String dontSave = "Don't Save";
+        final String cancel = "Cancel Quit";
+
+        while (true) {
+            File sessionFile = sessionWrapper.getSessionFile();
+            boolean hasFile = sessionFile != null && !sessionWrapper.isNewSession() && sessionFile.exists();
+
+            String message = hasFile
+                    ? "Session \"" + sessionWrapper.getName() + "\" has unsaved changes.\n"
+                      + "Its file is " + sessionFile.getAbsolutePath()
+                    : "Session \"" + sessionWrapper.getName() + "\" has unsaved changes\n"
+                      + "and has not been saved to a file yet.";
+
+            Object[] options = hasFile
+                    ? new Object[]{save, saveAs, dontSave, cancel}
+                    : new Object[]{saveAs, dontSave, cancel};
+
+            int index = JOptionPane.showOptionDialog(JOptionUtils.centeringComp(), message, "Quit Tetrad",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+
+            // Closing the dialog with its window control counts as Cancel Quit, the choice that loses nothing.
+            Object choice = index < 0 ? cancel : options[index];
+            ActionEvent event = new ActionEvent(sessionEditor, ActionEvent.ACTION_PERFORMED, String.valueOf(choice));
+
+            if (choice == dontSave) {
+                return true;
+            } else if (choice == cancel) {
+                return false;
+            } else if (choice == save) {
+                // No "saved to" acknowledgment here: the prompt just named the file.
+                new SaveSessionAction(false).actionPerformed(event);
+
+                if (SaveSessionAction.saved) {
+                    return true;
+                }
+            } else {
+                new SaveSessionAsAction(false).actionPerformed(event);
+
+                if (SaveSessionAsAction.saved) {
+                    return true;
+                }
+            }
         }
     }
 

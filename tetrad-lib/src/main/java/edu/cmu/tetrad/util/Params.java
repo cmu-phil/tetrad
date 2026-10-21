@@ -501,6 +501,10 @@ public final class Params {
      */
     public static final String DO_LEGALITY_GATING = "doLegalityGating";
     /**
+     * Constant <code>DOMAIN_COLUMN="domainColumn"</code>
+     */
+    public static final String DOMAIN_COLUMN = "domainColumn";
+    /**
      * Constant <code>DO_ONE_EQUATION_ONLY="doOneEquationOnly"</code>
      */
     public static final String DO_ONE_EQUATION_ONLY = "doOneEquationOnly";
@@ -516,6 +520,14 @@ public final class Params {
      * Constant <code>EFFECTIVE_SAMPLE_SIZE="effectiveSampleSize"</code>
      */
     public static final String EFFECTIVE_SAMPLE_SIZE = "effectiveSampleSize";
+    /**
+     * Constant <code>EQUIVALENCE_MARGIN="equivalenceMargin"</code>
+     */
+    public static final String EQUIVALENCE_MARGIN = "equivalenceMargin";
+    /**
+     * Constant <code>EQUIVALENCE_MARGIN_MULTIPLIER="equivalenceMarginMultiplier"</code>
+     */
+    public static final String EQUIVALENCE_MARGIN_MULTIPLIER = "equivalenceMarginMultiplier";
     /**
      * Constant <code>ERRORS_NORMAL="errorsNormal"</code>
      */
@@ -1163,8 +1175,9 @@ public final class Params {
     public static final String MIN_STRATUM_SIZE = "minStratumSize";
     /**
      * Constant <code>MISSING_DATA_POLICY="missingDataPolicy"</code>. One of "default" (legacy behavior per
-     * component), "fail", "listwise", "testwise", "em" (EM-estimated covariance; continuous data), or "mi"
-     * (multiple imputation; handled by search wrappers). See edu.cmu.tetrad.data.missing.MissingDataPolicy.
+     * component), "fail", "listwise", "testwise", "em" (EM-estimated covariance; continuous data), "pairwise"
+     * (pairwise-deletion covariance, accepted wherever "em" is; MCAR only), or "mi" (multiple imputation; handled
+     * by search wrappers). See edu.cmu.tetrad.data.missing.MissingDataPolicy.
      */
     public static final String MISSING_DATA_POLICY = "missingDataPolicy";
     /**
@@ -1656,6 +1669,11 @@ public final class Params {
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";
+
+    /**
+     * Constant <code>RLCD_STAGE1_NONE="rlcdStage1None"</code>
+     */
+    public static final String RLCD_STAGE1_NONE = "rlcdStage1None";
     /**
      * Constant <code>RLCD_UNFOLD_COVERS="rlcdUnfoldCovers"</code>
      */
@@ -1784,6 +1802,14 @@ public final class Params {
      * Constant <code>START_FROM_COMPLETE_GRAPH="startFromCompleteGraph"</code>
      */
     public static final String START_FROM_COMPLETE_GRAPH = "startFromCompleteGraph";
+    /**
+     * Constant <code>STRATIFIED_PERMUTATIONS="stratifiedPermutations"</code>
+     */
+    public static final String STRATIFIED_PERMUTATIONS = "stratifiedPermutations";
+    /**
+     * Constant <code>STRATIFY_BY_DOMAIN="stratifyByDomain"</code>
+     */
+    public static final String STRATIFY_BY_DOMAIN = "stratifyByDomain";
     /**
      * Constant <code>STRUCTURE_PRIOR="structurePrior"</code>
      */
@@ -1933,6 +1959,23 @@ public final class Params {
      */
     public static final String USE_BES = "useBes";
     /**
+     * Constant <code>USE_BES_DEFAULT_TRUE="useBesDefaultTrue"</code>. The BES step of BOSS, as a separate
+     * parameter whose interface default is TRUE. Used by the hybrid latent-variable algorithms that start from a
+     * BOSS CPDAG (the StarFci/BFCI family, FCIT and relatives, GMAS, LV-heuristic, BOSS-CCD, ION): their
+     * correctness arguments presuppose that the initializer returns an I-map, which for BOSS is exactly what
+     * BES guarantees under faithfulness. Without it BOSS can stop at a non-I-map local optimum whose false
+     * d-separations the later phases cannot undo (observed in the exhaustive 5-variable certification of
+     * BFCI-C, and as reduced accuracy on 100-variable models). Plain BOSS as a CPDAG search keeps USE_BES.
+     */
+    public static final String USE_BES_DEFAULT_TRUE = "useBesDefaultTrue";
+    /**
+     * Constant <code>USE_SATURATING_STEP="useSaturatingStep"</code>. For the gated *-FCI variants: after the
+     * single-edge passes, jointly remove the still-adjacent pairs that have a test-confirmed separator but whose
+     * single removals the legality gate rejected. Needed for correctness in the oracle (a reachable state can
+     * have no legal single removal); default true.
+     */
+    public static final String USE_SATURATING_STEP = "useSaturatingStep";
+    /**
      * Constant <code>USE_BOSS_ADJACENCIES="useBossAdjacencies"</code>
      */
     public static final String USE_BOSS_ADJACENCIES = "useBossAdjacencies";
@@ -1944,6 +1987,10 @@ public final class Params {
      * Constant <code>USE_DATA_ORDER="useDataOrder"</code>
      */
     public static final String USE_DATA_ORDER = "useDataOrder";
+    /**
+     * Constant <code>USE_EQUIVALENCE_REMOVAL="useEquivalenceRemoval"</code>
+     */
+    public static final String USE_EQUIVALENCE_REMOVAL = "useEquivalenceRemoval";
     /**
      * Constant <code>USE_FAS_ADJACENCIES="useFasAdjacencies"</code>
      */

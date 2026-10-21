@@ -85,10 +85,12 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
 
     /**
      * Constructs the test with an explicit missing-data specification for the block data set. On data with missing
-     * values the supported policies are LISTWISE and TESTWISE; under TESTWISE each test's correlation matrix is
-     * computed over the rows complete on every embedded column the test uses (x, y, and z blocks), with the count
-     * of those rows as its sample size (an explicit effective sample size acts as a deflation factor). A null spec
-     * on missing data throws.
+     * values the supported policies are LISTWISE, TESTWISE and EM_COVARIANCE. Under TESTWISE each test's
+     * correlation matrix is computed over the rows complete on every embedded column the test uses (x, y, and z
+     * blocks), with the count of those rows as its sample size (an explicit effective sample size acts as a
+     * deflation factor). Under EM_COVARIANCE one correlation matrix is estimated by EM over all rows of the block
+     * data set and every test reads it, with the row count as the default sample size; set an effective sample size
+     * to discount it. A null spec on missing data throws.
      *
      * @param blockSpec The block specification.
      * @param spec      The missing-data specification, or null.
@@ -96,7 +98,12 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
     public IndTestBlocksWilkes(BlockSpec blockSpec, MissingDataSpec spec) {
         if (blockSpec == null) throw new IllegalArgumentException("blockSpec == null");
 
-        DataSet resolved = MissingDataUtils.resolveDeletionPolicy(blockSpec.dataSet(), spec, "IndTestBlocksWilkes");
+        // Decided before the deletion gate, which rejects EM_COVARIANCE: under EM no rows are deleted.
+        boolean emCovariance = spec != null && spec.getPolicy().estimatesCovariance()
+                               && blockSpec.dataSet().existsMissingValue();
+
+        DataSet resolved = emCovariance ? blockSpec.dataSet()
+                : MissingDataUtils.resolveDeletionPolicy(blockSpec.dataSet(), spec, "IndTestBlocksWilkes");
         if (resolved != blockSpec.dataSet()) {
             blockSpec = new BlockSpec(resolved, blockSpec.blocks(), blockSpec.blockVariables(), blockSpec.ranks());
         }
@@ -119,7 +126,12 @@ public class IndTestBlocksWilkes implements IndependenceTest, BlockTest, Effecti
         this.n = blockSpec.dataSet().getNumRows();
         setEffectiveSampleSize(-1);
 
-        if (blockSpec.dataSet().existsMissingValue()) {
+        if (emCovariance) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
+            edu.cmu.tetrad.data.ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(blockSpec.dataSet(), spec);
+            this.testwise = null;
+            this.S = new CorrelationMatrix(estimated).getMatrix().getSimpleMatrix();
+        } else if (blockSpec.dataSet().existsMissingValue()) {
             this.testwise = new TestwiseCovariance(blockSpec.dataSet().getDoubleData());
             this.S = null;
         } else {

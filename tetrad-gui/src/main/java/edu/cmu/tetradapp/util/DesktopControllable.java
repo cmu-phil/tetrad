@@ -116,9 +116,13 @@ public interface DesktopControllable {
     void closeSessionByName(String name);
 
     /**
-     * <p>closeAllSessions.</p>
+     * Closes every session, first asking the user, session by session, whether to save each one that has unsaved
+     * changes.
+     *
+     * @return true if all sessions were closed; false if the user cancelled, in which case every session is still
+     * open.
      */
-    void closeAllSessions();
+    boolean closeAllSessions();
 }
 
 

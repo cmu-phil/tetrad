@@ -150,10 +150,10 @@ public class DesktopController implements DesktopControllable {
     }
 
     /**
-     * <p>closeAllSessions.</p>
+     * {@inheritDoc}
      */
-    public void closeAllSessions() {
-        DesktopController.getInstance().closeAllSessions();
+    public boolean closeAllSessions() {
+        return DesktopController.getInstance().closeAllSessions();
     }
 }
 

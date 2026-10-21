@@ -174,8 +174,12 @@ public class MagCgBicScore implements Score {
                     }
                 }
 
-                int[] parents = new int[j];
-                for (int k = 0; k < j; k++) {
+                // The conditioning set is the whole of condSet (the tail plus the selected head
+                // subset). This used to allocate and fill by j -- the subset BITMASK, not a size --
+                // which truncated the conditioning set when j < condSet.size() and threw
+                // IndexOutOfBoundsException when j > condSet.size().
+                int[] parents = new int[condSet.size()];
+                for (int k = 0; k < condSet.size(); k++) {
                     parents[k] = this.score.getVariables().indexOf(condSet.get(k));
                 }
 

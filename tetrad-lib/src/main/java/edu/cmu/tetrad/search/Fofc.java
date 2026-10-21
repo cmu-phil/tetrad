@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.RankTests;
+import edu.cmu.tetrad.util.StratifiedRankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TMath;
 import org.ejml.simple.SimpleMatrix;
@@ -84,6 +85,11 @@ public class Fofc {
     private Set<Set<Integer>> impureTets;
     private int rMax = 2;
     private int ess;
+    /**
+     * When non-null, rank decisions are pooled over the strata of this object (domains, batches, sites) instead of
+     * being read from the single correlation matrix; see {@link #setStratifiedRankTests}.
+     */
+    private StratifiedRankTests stratifiedRankTests = null;
 
     /**
      * Constructs an instance of the Fofc class using the given dataset, significance level, and equivalent sample size.
@@ -126,6 +132,21 @@ public class Fofc {
     private void setEss(int ess) {
         this.ess = ess == -1 ? this.sampleSize : ess;
         this.tsc.setEffectiveSampleSize(ess);
+    }
+
+    /**
+     * Puts the search into stratified (domain-pooled) mode, or takes it out of that mode with null. In stratified
+     * mode every rank decision, here and in the underlying TSC search, is made by pooling the Bartlett statistic
+     * over the strata of the given object -- domains, batches, sites -- instead of being read from the single
+     * correlation matrix the search was constructed with; see {@link StratifiedRankTests}. The strata must be over
+     * the same variables, in the same column order, as that matrix, and the equivalent sample size setting is
+     * ignored in this mode. Set this before calling findClusters.
+     *
+     * @param stratifiedRankTests the stratified rank test engine, or null for the ordinary single-sample behavior.
+     */
+    public void setStratifiedRankTests(StratifiedRankTests stratifiedRankTests) {
+        this.stratifiedRankTests = stratifiedRankTests;
+        this.tsc.setStratifiedRankTests(stratifiedRankTests);
     }
 
     private void setRMax(int rMax) {
@@ -443,7 +464,9 @@ public class Fofc {
             }
 
             int r = TMath.min(x.length, y.length) - 1;
-            int rank = RankTests.estimateWilksRankFast(S, x, y, ess, alpha);
+            int rank = stratifiedRankTests != null
+                    ? stratifiedRankTests.estimateRank(x, y, alpha)
+                    : RankTests.estimateWilksRankFast(S, x, y, ess, alpha);
             if (rank != r) {
                 vanishCache.put(key, false);
                 return false;

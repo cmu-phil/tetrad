@@ -54,10 +54,27 @@ public final class SaveSessionAction extends AbstractAction {
     public static boolean saved = false;
 
     /**
+     * Whether a successful save is acknowledged with a dialog naming the file written. Without it, Save to a session's
+     * known file gives no visible sign that anything happened.
+     */
+    private final boolean confirmSaved;
+
+    /**
      * <p>Constructor for SaveSessionAction.</p>
      */
     public SaveSessionAction() {
+        this(true);
+    }
+
+    /**
+     * Constructor for SaveSessionAction.
+     *
+     * @param confirmSaved whether to show a dialog naming the file once the session is saved. Callers that have just
+     *                     shown the user the file (such as the quit prompt) pass false.
+     */
+    public SaveSessionAction(boolean confirmSaved) {
         super("Save Session");
+        this.confirmSaved = confirmSaved;
     }
 
     /**
@@ -82,7 +99,7 @@ public final class SaveSessionAction extends AbstractAction {
         File outputFile = sessionWrapper.getSessionFile();
 
         if (outputFile == null || sessionWrapper.isNewSession() || Files.notExists(outputFile.toPath())) {
-            SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction();
+            SaveSessionAsAction saveSessionAsAction = new SaveSessionAsAction(this.confirmSaved);
             saveSessionAsAction.actionPerformed(e);
             saved = SaveSessionAsAction.saved;
 
@@ -118,6 +135,10 @@ public final class SaveSessionAction extends AbstractAction {
         saved = true;
         sessionWrapper.setSessionChanged(false);
         DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
+
+        if (this.confirmSaved) {
+            SaveSessionAsAction.showSavedDialog(sessionWrapper.getName(), outputFile);
+        }
     }
 
     /**

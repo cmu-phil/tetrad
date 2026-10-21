@@ -60,11 +60,8 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "BFCI-Score-Check",
-//        command = "bfci-score-check",
-//        algoType = AlgType.allow_latent_common_causes
-//)
+//// Hidden from the interface on 2026-10-21 (no @Algorithm annotation): kept only so that saved sessions
+// that used it still load. The shipping BFCI is now this formulation; see edu.cmu.tetrad.search.StarFci.
 //@Bootstrapping
 //@Experimental
 public class BfciScoreCheck extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
@@ -139,7 +136,7 @@ public class BfciScoreCheck extends AbstractBootstrapAlgorithm implements Algori
 
         boolean parallelized = parameters.getBoolean(Params.PARALLELIZED);
 
-        search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setBossUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
@@ -212,7 +209,7 @@ public class BfciScoreCheck extends AbstractBootstrapAlgorithm implements Algori
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        params.add(Params.USE_BES);
+        params.add(Params.USE_BES_DEFAULT_TRUE);
         params.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         params.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);

@@ -115,6 +115,12 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
      */
     private int userNEff = -1;
 
+    /**
+     * Under EM_COVARIANCE, the effective sample size the spec's mode implies for the raw data (-1 for FULL_N), used
+     * when the caller has not set one. Computed on the raw variables, not the embedding; see the constructor.
+     */
+    private final int emNEff;
+
     // Optional row subset (null = use all rows)
     private List<Integer> rows;
 
@@ -156,10 +162,15 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
 
     /**
      * As the four-argument constructor, with an explicit missing-data specification. On a data set with missing
-     * values the supported policies are LISTWISE and TESTWISE. Under TESTWISE the embedding carries NaN in every
-     * derived column of a variable wherever that variable is missing, the adaptive screen (if any) uses
-     * pairwise-deletion correlations, and the delegate blocks test computes each test's correlation matrix over
-     * the rows complete on the columns it uses. A null spec on missing data throws.
+     * values the supported policies are LISTWISE, TESTWISE and EM_COVARIANCE. In both of the last two the embedding
+     * carries NaN in every derived column of a variable wherever that variable is missing, and the adaptive screen
+     * (if any) uses pairwise-deletion correlations. Under TESTWISE the delegate blocks test computes each test's
+     * correlation matrix over the rows complete on the columns it uses. Under EM_COVARIANCE it estimates one
+     * correlation matrix of the embedded columns by EM, under a jointly Gaussian working model, and the spec's
+     * effective-sample-size mode sets the sample size unless the caller sets one. As for the basis-function BIC
+     * score, this working model ignores the exact relations among a continuous variable's basis columns (the
+     * quadratic column is the square of the linear one), so the EM path is offered for comparison, not as the
+     * default. A null spec on missing data throws.
      *
      * @param dataSet                the input dataset.
      * @param truncationLimit        the degree of the basis function transformation.
@@ -172,7 +183,18 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
         if (dataSet == null) throw new IllegalArgumentException("raw == null");
         if (truncationLimit < 0) throw new IllegalArgumentException("degree must be >= 0");
 
-        dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "IndTestBasisFunctionBlocks");
+        // Decided before the deletion gate, which rejects EM_COVARIANCE: under EM no rows are deleted, and the
+        // delegate estimates the covariance of the embedded columns.
+        boolean emCovariance = spec != null && spec.getPolicy().estimatesCovariance()
+                               && dataSet.existsMissingValue();
+
+        // On the raw variables: MIN_PAIRWISE is the same before and after embedding, but MEAN_PAIRWISE is not,
+        // since averaging over embedded columns would weight each variable by the width of its block.
+        this.emNEff = emCovariance ? MissingDataUtils.effectiveSampleSize(dataSet, spec) : -1;
+
+        if (!emCovariance) {
+            dataSet = MissingDataUtils.resolveDeletionPolicy(dataSet, spec, "IndTestBasisFunctionBlocks");
+        }
         this.missingSpec = spec;
         this.dataSet = dataSet;
         this.truncationLimit = truncationLimit;
@@ -505,17 +527,20 @@ public class IndTestBasisFunctionBlocks implements IndependenceTest, RawMarginal
     private void applyEffectiveSampleSize() {
         int applied;
 
-        if (this.userNEff < 0) {
+        // A caller's value wins; failing that, under EM, the spec's effective-sample-size mode.
+        int requested = this.userNEff >= 0 ? this.userNEff : this.emNEff;
+
+        if (requested < 0) {
             applied = -1; // default: delegate uses its own row count
             this.nEff = this.sampleSize;
         } else if (this.rows == null) {
-            applied = this.userNEff;
+            applied = requested;
             this.nEff = applied;
         } else {
             // Proportional rescaling under a row subset; see setEffectiveSampleSize.
             int total = this.dataSet.getNumRows();
             applied = TMath.max(1, (int) TMath.round(
-                    this.userNEff * (double) this.sampleSize / (double) total));
+                    requested * (double) this.sampleSize / (double) total));
             this.nEff = applied;
         }
 

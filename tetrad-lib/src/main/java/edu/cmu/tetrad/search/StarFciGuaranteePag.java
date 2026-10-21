@@ -24,21 +24,17 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
 /**
- * Deprecated source-compatibility shell for the class now named {@link StarFci}. This class was renamed to
- * StarFci so that the class name matches the algorithm family of the StarFCI paper (Ramsey, Andrews, and
- * Spirtes); all behavior lives in {@link StarFci}, and this shell adds nothing beyond a bridge from the old
- * abstract method name, {@code getMarkovDag(boolean)}, to the new one, {@link StarFci#getMarkovCpdag(boolean)}.
- * Existing subclasses of this class continue to compile and behave identically; new code should extend
- * {@link StarFci} directly.
+ * Deprecated source-compatibility shell over {@link StarFciOriginal} (the pre-2026-10-21 StarFci): a bridge from
+ * the old abstract method name, {@code getMarkovDag(boolean)}, to {@link StarFciOriginal#getMarkovCpdag(boolean)}.
+ * Not used by any shipping algorithm; new code should extend {@link StarFci}.
  *
  * @author josephramsey
  * @author bryanandrews
- * @see StarFci
- * @deprecated Renamed to {@link StarFci}; extend that class and override {@link StarFci#getMarkovCpdag(boolean)}
- * instead.
+ * @see StarFciOriginal
+ * @deprecated Legacy shell over {@link StarFciOriginal}; extend {@link StarFci} instead.
  */
 @Deprecated
-public abstract class StarFciGuaranteePag extends StarFci {
+public abstract class StarFciGuaranteePag extends StarFciOriginal {
 
     /**
      * Constructs a new instance with the given independence test.

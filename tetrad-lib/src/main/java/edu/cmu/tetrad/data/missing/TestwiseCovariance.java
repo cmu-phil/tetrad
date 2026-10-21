@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
+import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -57,8 +58,11 @@ public final class TestwiseCovariance {
     /**
      * The per-matrix registry, so that several scores or tests over the same raw data matrix share one family
      * cache (mirrors TestwiseRows.MATRIX_REGISTRY). Weak identity keys: Matrix does not override equals/hashCode.
+     * Values are held softly: each instance holds its own matrix, so a strongly held value would keep its weak key
+     * reachable and the entry would never be removed. Held softly, an instance nobody else references survives
+     * while memory allows and is reclaimed, with its key, before the heap runs out.
      */
-    private static final Map<Matrix, TestwiseCovariance> MATRIX_REGISTRY
+    private static final Map<Matrix, SoftReference<TestwiseCovariance>> MATRIX_REGISTRY
             = Collections.synchronizedMap(new WeakHashMap<>());
 
     private final Matrix data;
@@ -94,7 +98,17 @@ public final class TestwiseCovariance {
      * @return This instance.
      */
     public static TestwiseCovariance forMatrix(Matrix matrix) {
-        return MATRIX_REGISTRY.computeIfAbsent(matrix, TestwiseCovariance::new);
+        synchronized (MATRIX_REGISTRY) {
+            SoftReference<TestwiseCovariance> ref = MATRIX_REGISTRY.get(matrix);
+            TestwiseCovariance instance = ref == null ? null : ref.get();
+
+            if (instance == null) {
+                instance = new TestwiseCovariance(matrix);
+                MATRIX_REGISTRY.put(matrix, new SoftReference<>(instance));
+            }
+
+            return instance;
+        }
     }
 
     /**
@@ -103,7 +117,8 @@ public final class TestwiseCovariance {
      * @param matrix The matrix.
      */
     public static void invalidate(Matrix matrix) {
-        TestwiseCovariance removed = MATRIX_REGISTRY.remove(matrix);
+        SoftReference<TestwiseCovariance> ref = MATRIX_REGISTRY.remove(matrix);
+        TestwiseCovariance removed = ref == null ? null : ref.get();
         if (removed != null) removed.cache.clear();
     }
 

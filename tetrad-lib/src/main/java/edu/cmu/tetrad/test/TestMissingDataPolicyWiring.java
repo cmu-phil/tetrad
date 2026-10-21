@@ -87,14 +87,16 @@ public class TestMissingDataPolicyWiring {
      */
     private static Map<String, Set<String>> expected() {
         Map<String, Set<String>> expected = new LinkedHashMap<>();
-        expected.put("DegenerateGaussianBicScore", new LinkedHashSet<>(Arrays.asList("listwise", "testwise", "em")));
-        expected.put("BasisFunctionBicScore", new LinkedHashSet<>(Arrays.asList("listwise", "testwise", "em")));
-        expected.put("SemBicScore", new LinkedHashSet<>(Arrays.asList("listwise", "testwise", "em")));
+        expected.put("DegenerateGaussianBicScore",
+                new LinkedHashSet<>(Arrays.asList("listwise", "testwise", "em", "pairwise")));
+        expected.put("BasisFunctionBicScore",
+                new LinkedHashSet<>(Arrays.asList("listwise", "testwise", "em", "pairwise")));
+        expected.put("SemBicScore", new LinkedHashSet<>(Arrays.asList("listwise", "testwise", "em", "pairwise")));
         return expected;
     }
 
     /** Every policy the parameter offers in its dropdown, minus the ones no score implements as a score. */
-    private static final List<String> ALL_POLICIES = Arrays.asList("listwise", "testwise", "em");
+    private static final List<String> ALL_POLICIES = Arrays.asList("listwise", "testwise", "em", "pairwise");
 
     /**
      * Each wrapper accepts exactly the policies it is expected to, through the same call path an interface uses.

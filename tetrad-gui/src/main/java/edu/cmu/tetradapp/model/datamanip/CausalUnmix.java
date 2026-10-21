@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.UnmixSpec;
 import edu.cmu.tetrad.search.unmix.CausalUnmixer;
+import edu.cmu.tetrad.search.unmix.GaussianMixtureEM;
 import edu.cmu.tetrad.search.unmix.ParentSupersetBuilder;
 import edu.cmu.tetrad.search.unmix.UnmixResult;
 import edu.cmu.tetrad.util.Parameters;
@@ -54,8 +55,29 @@ public class CausalUnmix extends DataWrapper {
             throw new IllegalArgumentException("Only tabular data sets can be split.");
         }
 
-        UnmixSpec spec = (UnmixSpec) params.get("unmixSpec");
-        if (spec == null) {
+        // The unmixer regresses each variable on a parent superset and runs a Gaussian mixture EM on the residuals.
+        // Discrete columns and missing values would not raise errors downstream; they would silently produce
+        // meaningless residuals (category indices treated as magnitudes; NaNs propagating through the regressions
+        // into every residual). Better to say so up front.
+        if (!ds.isContinuous()) {
+            throw new IllegalArgumentException(
+                    "Causal unmixing requires an all-continuous data set; this data set has discrete columns. "
+                    + "Consider removing the discrete columns first.");
+        }
+
+        if (ds.existsMissingValue()) {
+            throw new IllegalArgumentException(
+                    "Causal unmixing requires complete data; this data set has missing values. "
+                    + "Consider imputing missing values or restricting to complete rows first.");
+        }
+
+        // Parameters.get returns a placeholder default (not null) for names without a registered description, so
+        // check the type rather than for null.
+        Object stored = params.get("unmixSpec");
+        UnmixSpec spec;
+        if (stored instanceof UnmixSpec storedSpec) {
+            spec = storedSpec;
+        } else {
             spec = new UnmixSpec();
             params.set("unmixSpec", spec);
         }
@@ -78,6 +100,10 @@ public class CausalUnmix extends DataWrapper {
                 DataModelList out = new DataModelList();
                 out.addAll(parts);
                 setDataModel(out);
+
+                // This runs on a background thread after the constructor has returned, so any editor already open
+                // on this wrapper is showing the stale (empty) model. Tell it to refresh.
+                announceDataModelChange();
             }
         };
     }
@@ -104,6 +130,15 @@ public class CausalUnmix extends DataWrapper {
                 case SPEARMAN -> ParentSupersetBuilder.ScoreType.SPEARMAN;
             };
             c.robustScaleResiduals = s.isRobustScaleResiduals();
+
+            // Honor the covariance policy radio buttons; null means use the automatic n/K heuristic.
+            c.covTypeOverride = switch (s.getCovarianceMode()) {
+                case AUTO -> null;
+                case FULL -> GaussianMixtureEM.CovarianceType.FULL;
+                case DIAGONAL -> GaussianMixtureEM.CovarianceType.DIAGONAL;
+            };
+
+            c.logIntermediate = s.isLogIntermediate() || s.isSaveDiagnostics();
 
             c.kmeansRestarts = s.getKmeansRestarts();
             c.emMaxIters = s.getEmMaxIters();

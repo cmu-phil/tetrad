@@ -107,8 +107,8 @@ public class ConditionalGaussianScore implements Score, EffectiveSampleSizeSetta
                     dataSet = MissingDataUtils.listwiseDelete(dataSet);
                     missing = false;
                 }
-                case EM_COVARIANCE -> throw new IllegalArgumentException(
-                        "ConditionalGaussianScore: EM_COVARIANCE applies to all-continuous data only.");
+                case EM_COVARIANCE, PAIRWISE_COVARIANCE -> throw new IllegalArgumentException(
+                        "ConditionalGaussianScore: " + policy + " applies to all-continuous data only.");
                 case MULTIPLE_IMPUTATION -> throw new UnsupportedOperationException(
                         "ConditionalGaussianScore: MULTIPLE_IMPUTATION is handled by a search wrapper over imputed "
                                 + "datasets, not by a single score.");

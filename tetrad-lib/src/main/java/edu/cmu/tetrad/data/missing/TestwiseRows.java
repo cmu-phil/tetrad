@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data.missing;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Matrix;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Computes, and caches, the row subsets used by test-wise deletion: for a given set of columns, the rows of a dataset
@@ -53,17 +55,21 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class TestwiseRows {
 
     /**
-     * The per-dataset registry. Weak keys so caches die with their datasets; synchronized so that
-     * {@link #forDataSet(DataSet)} is atomic.
+     * The per-dataset registry. Weak keys so caches can die with their datasets; synchronized so that
+     * {@link #forDataSet(DataSet)} is atomic. The values are held softly, not strongly: each instance holds its own
+     * dataset, so a strongly held value would keep its weak key reachable forever, and no entry would ever be
+     * removed. Held softly, an instance nobody else references survives while memory allows and is reclaimed, with
+     * its key, before the heap runs out.
      */
-    private static final Map<DataSet, TestwiseRows> REGISTRY
+    private static final Map<DataSet, SoftReference<TestwiseRows>> REGISTRY
             = Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
      * The per-matrix registry, for callers that hold a raw data Matrix rather than a DataSet (e.g., the internal
-     * covariance path of SemBicScore). Weak identity keys: Matrix does not override equals/hashCode.
+     * covariance path of SemBicScore). Weak identity keys: Matrix does not override equals/hashCode. Values are held
+     * softly, for the reason given at {@link #REGISTRY}.
      */
-    private static final Map<Matrix, TestwiseRows> MATRIX_REGISTRY
+    private static final Map<Matrix, SoftReference<TestwiseRows>> MATRIX_REGISTRY
             = Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
@@ -119,7 +125,7 @@ public final class TestwiseRows {
      * @return This instance.
      */
     public static TestwiseRows forDataSet(DataSet dataSet) {
-        return REGISTRY.computeIfAbsent(dataSet, TestwiseRows::new);
+        return lookup(REGISTRY, dataSet, TestwiseRows::new);
     }
 
     /**
@@ -130,7 +136,26 @@ public final class TestwiseRows {
      * @return This instance.
      */
     public static TestwiseRows forMatrix(Matrix matrix) {
-        return MATRIX_REGISTRY.computeIfAbsent(matrix, TestwiseRows::new);
+        return lookup(MATRIX_REGISTRY, matrix, TestwiseRows::new);
+    }
+
+    /**
+     * The registered instance for the key, or a new one registered in its place if there is none or the old one has
+     * been reclaimed. Synchronized on the map, as its synchronized wrapper requires for compound actions.
+     */
+    private static <K> TestwiseRows lookup(Map<K, SoftReference<TestwiseRows>> registry, K key,
+                                           Function<K, TestwiseRows> create) {
+        synchronized (registry) {
+            SoftReference<TestwiseRows> ref = registry.get(key);
+            TestwiseRows instance = ref == null ? null : ref.get();
+
+            if (instance == null) {
+                instance = create.apply(key);
+                registry.put(key, new SoftReference<>(instance));
+            }
+
+            return instance;
+        }
     }
 
     /**
@@ -140,7 +165,8 @@ public final class TestwiseRows {
      * @param dataSet The dataset.
      */
     public static void invalidate(DataSet dataSet) {
-        TestwiseRows testwiseRows = TestwiseRows.REGISTRY.remove(dataSet);
+        SoftReference<TestwiseRows> ref = TestwiseRows.REGISTRY.remove(dataSet);
+        TestwiseRows testwiseRows = ref == null ? null : ref.get();
 
         if (testwiseRows != null) {
             testwiseRows.cache.clear();

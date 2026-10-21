@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.harness;
 import edu.cmu.tetrad.search.score.EdgePriorScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.EdgePriors;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.Objects;
 
@@ -157,6 +158,50 @@ public final class EdgePriorScoreFacade {
     }
 
     /**
+     * Builds a locus score prior from a per-(SNP, trait) annotation under a selectable
+     * normalisation, on the raw log-odds scale: beta_jk = tau * adjusted(annotation)_jk.
+     *
+     * <p>This is {@link #fromAnnotation(String[], String[], double[][], double)} with the
+     * normalisation made a parameter. {@link AnnotationNormalization#Z_SCORE} delegates to that
+     * method and is bit for bit the legacy behaviour: pooled, mean zero, unit SD, unbounded. The
+     * bounded modes normalise each trait column separately over the full candidate pool and keep
+     * the adjustments in [-1, 1], and {@link AnnotationNormalization#NONE} passes precomputed
+     * adjustments through with no re-standardisation; see {@link AnnotationNormalization} for the
+     * trade-offs, including why unboundedness matters under toll scaling.
+     *
+     * @param snpNames      Names of the SNP nodes, length n_snp; must match the scores' variable
+     *                      names byte for byte.
+     * @param traitNames    Names of the trait nodes, length n_trait; same requirement.
+     * @param annotation    An n_snp x n_trait matrix of exogenous prior scores; higher means more
+     *                      prior support, {@code NaN} means no information. For
+     *                      {@link AnnotationNormalization#NONE} these are the adjustments
+     *                      themselves, used as given.
+     * @param tau           Prior strength on the raw log-odds scale. tau = 0 reproduces the
+     *                      unmodified score exactly. Negative tau inverts the annotation.
+     * @param normalization How the annotation is turned into adjustments.
+     * @return The facade.
+     * @throws IllegalArgumentException If the annotation's shape disagrees with the name arrays,
+     *                                  tau is not finite, the annotation contains an infinite
+     *                                  entry, or the names contain duplicates or empty strings.
+     * @throws NullPointerException     If any argument is null.
+     */
+    public static EdgePriorScoreFacade fromAnnotation(String[] snpNames, String[] traitNames,
+                                                      double[][] annotation, double tau,
+                                                      AnnotationNormalization normalization) {
+        Objects.requireNonNull(normalization, "normalization");
+
+        if (normalization == AnnotationNormalization.Z_SCORE) {
+            return fromAnnotation(snpNames, traitNames, annotation, tau);
+        }
+
+        double[][] beta = normalization.betaFromAnnotation(snpNames, traitNames, annotation, tau);
+        String[] names = concat(snpNames, traitNames);
+        EdgePriors lo = EdgePriors.fromMatrix(
+                java.util.Arrays.asList(names), beta, EdgePriors.Semantics.LOG_ODDS);
+        return new EdgePriorScoreFacade(lo);
+    }
+
+    /**
      * Builds a locus score prior on the toll-fraction scale, so that one tau is comparable across
      * PC, BOSS, and FGES despite their very different operating points.
      *
@@ -203,6 +248,80 @@ public final class EdgePriorScoreFacade {
         EdgePriors lo = EdgePriors.fromMatrix(
                 java.util.Arrays.asList(names), beta, EdgePriors.Semantics.LOG_ODDS);
         return new EdgePriorScoreFacade(lo);
+    }
+
+    /**
+     * Builds a locus score prior on the toll-fraction scale under a selectable normalisation:
+     * beta_jk = tau * adjusted(annotation)_jk * lambda * log(n) / 2.
+     *
+     * <p>This is {@link #fromAnnotationTollScaled(String[], String[], double[][], double, double,
+     * int)} with the normalisation made a parameter;
+     * {@link AnnotationNormalization#Z_SCORE} delegates to that method and is bit for bit the
+     * legacy behaviour. On this scale tau * a is the fraction of the score's penalty toll rebated
+     * for the edge, so tau * a &gt;= 1 makes the edge free to add and impossible to remove -- the
+     * required-knowledge limit. For the bounded modes |a| &lt;= 1, so no adjustment crosses that
+     * limit at tau &lt; 1; for {@link AnnotationNormalization#Z_SCORE} and
+     * {@link AnnotationNormalization#NONE} nothing bounds a, so this factory counts the pairs at
+     * or beyond the limit and, if there are any, logs a warning naming the count. The count is
+     * also available afterwards from {@link #numForcedPairs(double, int)}.
+     *
+     * @param snpNames      Names of the SNP nodes, length n_snp; must match the scores' variable
+     *                      names byte for byte.
+     * @param traitNames    Names of the trait nodes, length n_trait; same requirement.
+     * @param annotation    An n_snp x n_trait matrix of exogenous prior scores; higher means more
+     *                      support, {@code NaN} means no information. For
+     *                      {@link AnnotationNormalization#NONE} these are the adjustments
+     *                      themselves, used as given.
+     * @param tau           Prior strength on the toll-fraction scale; tau * a = 1 is required
+     *                      knowledge, tau = 0 reproduces the unmodified score exactly.
+     * @param lambda        The penalty discount of the score this prior will wrap.
+     * @param n             The sample size the score uses.
+     * @param normalization How the annotation is turned into adjustments.
+     * @return The facade.
+     * @throws IllegalArgumentException If shapes disagree, tau is not finite, lambda is not
+     *                                  positive and finite, n is less than 2, or the annotation
+     *                                  contains an infinite entry.
+     * @throws NullPointerException     If any argument is null.
+     */
+    public static EdgePriorScoreFacade fromAnnotationTollScaled(String[] snpNames, String[] traitNames,
+                                                                double[][] annotation, double tau,
+                                                                double lambda, int n,
+                                                                AnnotationNormalization normalization) {
+        Objects.requireNonNull(normalization, "normalization");
+
+        EdgePriorScoreFacade facade;
+
+        if (normalization == AnnotationNormalization.Z_SCORE) {
+            facade = fromAnnotationTollScaled(snpNames, traitNames, annotation, tau, lambda, n);
+        } else {
+            if (!(lambda > 0.0) || !Double.isFinite(lambda)) {
+                throw new IllegalArgumentException("lambda must be positive and finite: " + lambda);
+            }
+
+            if (n < 2) {
+                throw new IllegalArgumentException("n must be at least 2: " + n);
+            }
+
+            double scale = tau * lambda * Math.log(n) / 2.0;
+            double[][] beta = normalization.betaFromAnnotation(snpNames, traitNames, annotation, scale);
+            String[] names = concat(snpNames, traitNames);
+            EdgePriors lo = EdgePriors.fromMatrix(
+                    java.util.Arrays.asList(names), beta, EdgePriors.Semantics.LOG_ODDS);
+            facade = new EdgePriorScoreFacade(lo);
+        }
+
+        int forced = facade.numForcedPairs(lambda, n);
+
+        if (forced > 0) {
+            TetradLogger.getInstance().log("EdgePriorScoreFacade: " + forced + " SNP-trait pair"
+                    + (forced == 1 ? "" : "s") + " at or beyond the required-knowledge limit"
+                    + " (2 * beta >= lambda * log(n)): these edges are free to add and impossible"
+                    + " to remove. If that is not deliberate, lower tau or use a bounded"
+                    + " normalisation mode (normalization = " + normalization + ", tau = " + tau
+                    + ", lambda = " + lambda + ", n = " + n + ").");
+        }
+
+        return facade;
     }
 
     /**
@@ -268,6 +387,33 @@ public final class EdgePriorScoreFacade {
      */
     public int numPriorPairs() {
         return this.logOdds.size();
+    }
+
+    /**
+     * Returns the number of variable pairs whose prior is at or beyond the required-knowledge
+     * limit for a score with penalty discount {@code lambda} and sample size {@code n}: pairs
+     * with 2 * beta &gt;= lambda * log(n), whose BIC penalty is fully rebated, so the edge is
+     * added unconditionally by the forward phase and can never be removed by the backward phase.
+     * This should be zero unless edges are being forced deliberately; it is the diagnostic that
+     * catches an unbounded normalisation ({@link AnnotationNormalization#Z_SCORE} at moderate tau,
+     * or out-of-range precomputed adjustments under {@link AnnotationNormalization#NONE}) silently
+     * crossing the limit.
+     *
+     * @param lambda The penalty discount of the score this prior wraps.
+     * @param n      The sample size the score uses.
+     * @return The count of forced pairs.
+     * @throws IllegalArgumentException If lambda is not positive and finite, or n is less than 2.
+     */
+    public int numForcedPairs(double lambda, int n) {
+        if (!(lambda > 0.0) || !Double.isFinite(lambda)) {
+            throw new IllegalArgumentException("lambda must be positive and finite: " + lambda);
+        }
+
+        if (n < 2) {
+            throw new IllegalArgumentException("n must be at least 2: " + n);
+        }
+
+        return this.logOdds.countValuesAtLeast(lambda * Math.log(n) / 2.0);
     }
 
     /**

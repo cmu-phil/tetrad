@@ -1896,6 +1896,24 @@ Source:
             Type: <span id="doLegalityGating_value_type">Boolean</span></li>
     </ul>
 
+    === domainColumn ===
+    <h3 class="parameter_description" id="domainColumn">domainColumn</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="domainColumn_short_desc">Domain column name</span></li>
+        <li>Long
+            Description: <span id="domainColumn_long_desc"> The name of the column holding the
+        domain index (batch, site, cohort, country) for tests that stratify by domain, such as the
+        Stratified Rank test. The column should be discrete, or a continuous column whose values are
+        all whole numbers; it is removed from the variable list and used only to split the rows into
+        domains, within which the test statistics are computed and then pooled. If no column of this
+        name exists but the data set has exactly one discrete column, that column is used and a note
+        is logged. </span></li>
+        <li>Default Value: <span id="domainColumn_default_value">domain</span></li>
+        <li>Lower Bound: <span id="domainColumn_lower_bound"></span></li>
+        <li>Upper Bound: <span id="domainColumn_upper_bound"></span></li>
+        <li>Value Type: <span id="domainColumn_value_type">String</span></li>
+    </ul>
+
     === doOneEquationOnly ===
     <h3 class="parameter_description" id="doOneEquationOnly">doOneEquationOnly</h3>
     <ul class="parameter_description_list">
@@ -1962,6 +1980,57 @@ Source:
         <li>Lower Bound: <span id="effectiveSampleSize_lower_bound">-1</span></li>
         <li>Upper Bound: <span id="effectiveSampleSize_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="effectiveSampleSize_value_type">Integer</span></li>
+    </ul>
+
+    === equivalenceMargin ===
+    <h3 class="parameter_description" id="equivalenceMargin">equivalenceMargin</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="equivalenceMargin_short_desc">
+                    Largest |partial correlation| counted as negligible, or 0 to scale it to the sample size.
+        </span></li>
+        <li>Long Description: <span id="equivalenceMargin_long_desc">
+                    The equivalence (TOST) test reports independence only when it can show the partial
+                    correlation is smaller in magnitude than this margin, rather than merely failing to
+                    reject zero. The margin is squeezed from both sides: it must exceed about
+                    1.645/sqrt(n) at alpha = 0.05 or nothing is ever removable and the adjacency search
+                    returns a complete graph, and it must stay below the weakest association worth
+                    keeping, since asymptotically every pair below the margin is removed. Because the
+                    usable range depends on the sample size, leaving this at 0 is recommended: the margin
+                    is then set automatically to equivalenceMarginMultiplier times the smallest margin the
+                    sample size could certify.
+         </span></li>
+        <li>Default Value: <span id="equivalenceMargin_default_value">0.0</span></li>
+        <li>Lower Bound: <span id="equivalenceMargin_lower_bound">0.0</span></li>
+        <li>Upper
+            Bound: <span id="equivalenceMargin_upper_bound">0.999</span></li>
+        <li>Value
+            Type: <span id="equivalenceMargin_value_type">Double</span></li>
+    </ul>
+
+    === equivalenceMarginMultiplier ===
+    <h3 class="parameter_description" id="equivalenceMarginMultiplier">equivalenceMarginMultiplier</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="equivalenceMarginMultiplier_short_desc">
+                    Equivalence margin as a multiple of the smallest one the sample size can certify (min &gt; 1).
+        </span></li>
+        <li>Long Description: <span id="equivalenceMarginMultiplier_long_desc">
+                    Used when equivalenceMargin is 0. The margin is set to this multiple of
+                    tanh(c/sqrt(n-3)), the smallest margin the sample size could certify at all, which
+                    turns a sample-size-dependent choice into one dimensionless knob. The multiplier
+                    trades adjacency precision for the retention of weak real edges: on random cyclic
+                    linear-Gaussian graphs, 2.0 improved recall of Richardson virtual edges and of
+                    dotted-underline triples at every sample size tested for about 0.015 of adjacency
+                    precision, 1.6 moved further in that direction at a real cost in endpoint accuracy at
+                    large samples, and values above about 2.5 began deleting the virtual edges and
+                    degraded everything. Values at or below 1 are not allowed, since the margin would
+                    then certify nothing.
+         </span></li>
+        <li>Default Value: <span id="equivalenceMarginMultiplier_default_value">2.0</span></li>
+        <li>Lower Bound: <span id="equivalenceMarginMultiplier_lower_bound">1.01</span></li>
+        <li>Upper
+            Bound: <span id="equivalenceMarginMultiplier_upper_bound">100.0</span></li>
+        <li>Value
+            Type: <span id="equivalenceMarginMultiplier_value_type">Double</span></li>
     </ul>
 
     === errorsNormal ===
@@ -4850,7 +4919,7 @@ Source:
     === missingDataPolicy ===
     <h3 class="parameter_description" id="missingDataPolicy">missingDataPolicy</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="missingDataPolicy_short_desc">Missing-data policy: "default", "fail", "listwise", "testwise", "em", or "mi"</span></li>
+        <li>Short Description: <span id="missingDataPolicy_short_desc">Missing-data policy: "default", "fail", "listwise", "testwise", "em", "pairwise", or "mi"</span></li>
         <li>Long Description: <span id="missingDataPolicy_long_desc">
         How missing values in the dataset are handled by scores and independence tests. "default"
         preserves each component's historical behavior (typically test-wise deletion, with a logged
@@ -4860,6 +4929,11 @@ Source:
         random (MCAR). "em" estimates the covariance matrix once by expectation-maximization under
         a saturated Gaussian model and proceeds as complete data; valid under the weaker
         missing-at-random (MAR) assumption for approximately multivariate normal continuous data.
+        "pairwise" also estimates one covariance matrix and proceeds as complete data, but by pairwise
+        deletion: each correlation from the rows complete on its pair, rescaled by each variable's
+        standard deviation over all its observed rows, and shrunk toward the identity just enough to
+        be positive definite. It needs no model of the data and is accepted wherever "em" is, but is
+        unbiased only under MCAR; choose a pairwise effective sample size mode with it.
         "mi" performs multiple imputation and is handled by a search wrapper over imputed datasets,
         not by a single score or test. Values are case-insensitive.</span></li>
         <li>Default Value: <span id="missingDataPolicy_default_value">default</span></li>
@@ -6905,6 +6979,17 @@ Source:
         <li>Value Type: <span id="rlcdStage1Fges_value_type">Boolean</span></li>
     </ul>
 
+    === rlcdStage1None ===
+    <h3 class="parameter_description" id="rlcdStage1None">rlcdStage1None</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdStage1None_short_desc">RLCD: skip the stage-1 search and run the rank search unconstrained (default false)</span></li>
+        <li>Long Description: <span id="rlcdStage1None_long_desc">If true, no stage-1 search is run: the complete graph over the observed variables is used, so all variables form one partition and the stage-2 rank search runs unconstrained. This matches the reference implementation's "all" setting and overrides the FGES/BOSS choice. It gives up the pruning that makes RLCD tractable as the number of variables grows, so it is recommended only for small variable sets.</span></li>
+        <li>Default Value: <span id="rlcdStage1None_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdStage1None_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdStage1None_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdStage1None_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdUnfoldCovers ===
     <h3 class="parameter_description" id="rlcdUnfoldCovers">rlcdUnfoldCovers</h3>
     <ul class="parameter_description_list">
@@ -7466,6 +7551,43 @@ Source:
             Bound: <span id="startFromCompleteGraph_upper_bound"></span></li>
         <li>Value
             Type: <span id="startFromCompleteGraph_value_type">Boolean</span></li>
+    </ul>
+
+    === stratifiedPermutations ===
+    <h3 class="parameter_description" id="stratifiedPermutations">stratifiedPermutations</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="stratifiedPermutations_short_desc">Permutations for the stratified rank test (0 = likelihood ratio)</span></li>
+        <li>Long
+            Description: <span id="stratifiedPermutations_long_desc"> When positive, the Stratified Rank
+        test computes its p-values by the permutation scheme of Dong et al. (ICML 2026, Theorem 5), which
+        does not assume Gaussianity within domains: within each domain the trailing canonical variates are
+        permuted and the pooled statistic is recomputed this many times. When zero, the default, the
+        Gaussian likelihood-ratio form is used. The permutation form multiplies the cost of every test by
+        roughly this number, which inside a search such as PC or FCI can be very slow; it is meant for
+        checking conclusions on data whose within-domain distributions are badly non-Gaussian, not for
+        routine use. </span></li>
+        <li>Default Value: <span id="stratifiedPermutations_default_value">0</span></li>
+        <li>Lower Bound: <span id="stratifiedPermutations_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="stratifiedPermutations_upper_bound">100000</span></li>
+        <li>Value Type: <span id="stratifiedPermutations_value_type">Integer</span></li>
+    </ul>
+
+    === stratifyByDomain ===
+    <h3 class="parameter_description" id="stratifyByDomain">stratifyByDomain</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="stratifyByDomain_short_desc">Stratify by the domain column</span></li>
+        <li>Long
+            Description: <span id="stratifyByDomain_long_desc"> When true, the algorithm runs in
+        stratified (domain-pooled) mode: the rows are split by the column named by the domainColumn
+        parameter, every rank decision pools the within-domain statistics across domains, and for RLCD the
+        first stage is scored on the within-domain covariance. For data gathered in several batches,
+        sites, or cohorts whose causal structure is shared but whose coefficients and means may differ by
+        domain. Note for RLCD in the interface: RLCD accepts continuous data, so code the domain index as
+        an integer-valued continuous column. </span></li>
+        <li>Default Value: <span id="stratifyByDomain_default_value">false</span></li>
+        <li>Lower Bound: <span id="stratifyByDomain_lower_bound"></span></li>
+        <li>Upper Bound: <span id="stratifyByDomain_upper_bound"></span></li>
+        <li>Value Type: <span id="stratifyByDomain_value_type">Boolean</span></li>
     </ul>
 
     === structurePrior ===
@@ -8180,6 +8302,26 @@ Source:
             <span id="useBes_value_type">Boolean</span></li>
     </ul>
 
+    === useBesDefaultTrue ===
+    <h3 class="parameter_description" id="useBesDefaultTrue">useBesDefaultTrue</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useBesDefaultTrue_short_desc">True if the BES step of BOSS should be used
+        (recommended for hybrid algorithms)</span></li>
+        <li>Long Description: <span id="useBesDefaultTrue_long_desc">Hybrid latent-variable algorithms that start
+                    from a BOSS CPDAG (BFCI, BFCI-C, BFCI-D, FCIT and relatives, GMAS, LV-heuristic, BOSS-CCD, ION)
+                    rely on that CPDAG being an I-map of the data; the backward equivalence search (BES) step of
+                    BOSS is what guarantees this under faithfulness. Without it BOSS can stop at a non-I-map local
+                    optimum, and the resulting false separations are propagated as false colliders that the later
+                    phases of these algorithms cannot undo. For these algorithms the step is therefore on by
+                    default; it costs little time relative to the rest of the search. Plain BOSS as a CPDAG
+                    search is controlled by the separate useBes parameter.</span></li>
+        <li>Default Value: <span id="useBesDefaultTrue_default_value">true</span></li>
+        <li>Lower Bound: <span id="useBesDefaultTrue_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useBesDefaultTrue_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="useBesDefaultTrue_value_type">Boolean</span></li>
+    </ul>
+
     === useBossAdjacencies ===
     <h3 class="parameter_description" id="useBossAdjacencies">useBossAdjacencies</h3>
     <ul class="parameter_description_list">
@@ -8229,6 +8371,32 @@ Source:
             Bound: <span id="useDataOrder_lower_bound"></span></li>
         <li>Upper Bound: <span id="useDataOrder_upper_bound"></span></li>
         <li>Value Type: <span id="useDataOrder_value_type">Boolean</span></li>
+    </ul>
+
+    === useEquivalenceRemoval ===
+    <h3 class="parameter_description" id="useEquivalenceRemoval">useEquivalenceRemoval</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useEquivalenceRemoval_short_desc">
+                    Yes if CCD should remove edges only on positive evidence of independence.
+        </span></li>
+        <li>Long Description: <span id="useEquivalenceRemoval_long_desc">
+                    If Yes, CCD's adjacency phase uses an equivalence (TOST) test governed by
+                    equivalenceMargin and equivalenceMarginMultiplier, while the orientation steps keep
+                    the independence test selected for the algorithm. The adjacency phase decides whether
+                    to delete an edge, which is served by a test demanding positive evidence that the
+                    partial correlation is negligible; the orientation steps instead ask whether two
+                    variables are dependent, where an equivalence test's weaker "not shown to be
+                    negligible" would worsen CCD's tendency to commit to directions the data do not
+                    support. This requires the selected test to be Fisher Z, since the equivalence test
+                    is defined on the partial correlation. Default No, which leaves CCD's behaviour
+                    unchanged.
+         </span></li>
+        <li>Default Value: <span id="useEquivalenceRemoval_default_value">false</span></li>
+        <li>Lower Bound: <span id="useEquivalenceRemoval_lower_bound"></span></li>
+        <li>Upper
+            Bound: <span id="useEquivalenceRemoval_upper_bound"></span></li>
+        <li>Value
+            Type: <span id="useEquivalenceRemoval_value_type">Boolean</span></li>
     </ul>
 
     === useFasAdjacencies ===
@@ -8341,6 +8509,18 @@ Source:
             Bound: <span id="useMaxPOrientationHeuristic_upper_bound"></span></li>
         <li>Value
             Type: <span id="useMaxPOrientationHeuristic_value_type">Boolean</span></li>
+    </ul>
+
+    === useSaturatingStep ===
+    <h3 class="parameter_description" id="useSaturatingStep">useSaturatingStep</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useSaturatingStep_short_desc">True if the saturating (joint-removal) step should run after the single-edge passes</span></li>
+        <li>Long Description: <span id="useSaturatingStep_long_desc">In the gated *-FCI variants, after the single-edge removal passes, jointly remove the pairs that have a test-confirmed separating set but whose single removals the legality gate rejected, accepting the result if it is a legal PAG. In the oracle a reachable state can have no legal single removal while the joint removal gives the true PAG, so this step is needed for correctness. It does nothing on a run that does not stall.</span></li>
+        <li>Default Value: <span id="useSaturatingStep_default_value">true</span></li>
+        <li>Lower Bound: <span id="useSaturatingStep_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useSaturatingStep_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="useSaturatingStep_value_type">Boolean</span></li>
     </ul>
 
     === useScore ===

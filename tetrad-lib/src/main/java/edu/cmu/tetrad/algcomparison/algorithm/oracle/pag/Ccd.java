@@ -21,18 +21,23 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.*;
+import edu.cmu.tetrad.algcomparison.independence.EquivalenceTest;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.AcceptsKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -67,7 +72,7 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      * The knowledge object typically holds domain-specific constraints or background knowledge
      * that is used to guide the search process in the algorithm.
      */
-    private Knowledge knowledge;
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Constructs a new CCD algorithm.
@@ -97,6 +102,16 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
         IndependenceTest _test = test.getTest(dataModel, parameters);
         _test = new CachedIndependenceQueries(_test);
         edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(_test);
+
+        // The adjacency phase decides whether to DELETE an edge, which is served by a test
+        // demanding positive evidence that the partial correlation is negligible. The orientation
+        // steps ask whether two variables are DEPENDENT, where the equivalence test's weaker
+        // "not shown to be negligible" would worsen CCD's tendency to over-commit, so they keep
+        // the selected test. See Ccd.setAdjacencyTest.
+        if (parameters.getBoolean(Params.USE_EQUIVALENCE_REMOVAL)) {
+            search.setAdjacencyTest(equivalenceAdjacencyTest(dataModel, parameters));
+        }
+
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
@@ -119,14 +134,59 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     }
 
     /**
-     * Retrieves the comparison graph for the given true directed graph.
+     * Builds the equivalence (TOST) test for the adjacency phase, from the same data the search
+     * runs on.
      *
-     * @param graph The true directed graph, if there is one.
-     * @return The true DAG.
+     * <p>The equivalence test is defined on the Fisher Z partial correlation, so this requires the
+     * selected independence test to be Fisher Z; anything else is rejected rather than silently
+     * ignored, since the caller asked for a removal rule that cannot then be provided.
+     *
+     * @param dataModel  the data the search runs on.
+     * @param parameters the parameter settings, read for the margin and multiplier.
+     * @return the equivalence test for Step A.
+     * @throws IllegalArgumentException if the data is not continuous or a covariance matrix.
+     */
+    private IndependenceTest equivalenceAdjacencyTest(DataModel dataModel, Parameters parameters) {
+        double alpha = parameters.getDouble(Params.ALPHA);
+        double margin = parameters.getDouble(Params.EQUIVALENCE_MARGIN);
+        double multiplier = parameters.getDouble(Params.EQUIVALENCE_MARGIN_MULTIPLIER);
+
+        IndTestFisherZ fisherZ;
+        int sampleSize;
+
+        if (dataModel instanceof ICovarianceMatrix covarianceMatrix) {
+            fisherZ = new IndTestFisherZ(covarianceMatrix, alpha);
+            sampleSize = covarianceMatrix.getSampleSize();
+        } else if (dataModel instanceof DataSet dataSet) {
+            if (!dataSet.isContinuous()) {
+                throw new IllegalArgumentException(Params.USE_EQUIVALENCE_REMOVAL
+                        + " needs continuous data; the equivalence test is defined on the Fisher Z "
+                        + "partial correlation.");
+            }
+            fisherZ = new IndTestFisherZ(dataSet, alpha);
+            sampleSize = dataSet.getNumRows();
+        } else {
+            throw new IllegalArgumentException(Params.USE_EQUIVALENCE_REMOVAL
+                    + " expects either a dataset or a covariance matrix.");
+        }
+
+        return EquivalenceTest.build(fisherZ, sampleSize, margin, multiplier, alpha);
+    }
+
+    /**
+     * Retrieves the comparison graph for the given true directed graph: the cyclic PAG that CCD
+     * is meant to recover, not the true graph itself. A cycle makes pairs inseparable that are not
+     * adjacent in the true graph (Richardson's "virtual edges"), so those edges belong in the
+     * comparison graph and grading against the true graph understates CCD badly - a perfect run
+     * scores about 0.39 endpoint-exact on random 8-node, 10-edge cyclic graphs.
+     *
+     * @param graph The true directed graph, possibly cyclic.
+     * @return The cyclic PAG of the true graph's d-separation equivalence class.
+     * @see GraphTransforms#dcgToCcdPag(Graph)
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
+        return GraphTransforms.dcgToCcdPag(graph);
     }
 
     /**
@@ -159,6 +219,9 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
+        parameters.add(Params.USE_EQUIVALENCE_REMOVAL);
+        parameters.add(Params.EQUIVALENCE_MARGIN);
+        parameters.add(Params.EQUIVALENCE_MARGIN_MULTIPLIER);
         parameters.add(Params.PARALLELIZED);
         parameters.add(Params.APPLY_R1);
         parameters.add(Params.FDR_Q);
@@ -209,7 +272,9 @@ public class Ccd extends AbstractBootstrapAlgorithm implements Algorithm, TakesI
      */
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
+        // Empty knowledge rather than null: the search rejects null, so an unset or cleared
+        // knowledge object would otherwise fail the run with a NullPointerException.
+        this.knowledge = knowledge == null ? new Knowledge() : knowledge;
     }
 }
 

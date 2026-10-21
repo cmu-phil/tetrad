@@ -167,6 +167,65 @@ public final class EdgePriorFacade {
     }
 
     /**
+     * Builds a locus prior from a per-(SNP, trait) annotation under a selectable normalisation.
+     *
+     * <p>This is {@link #fromAnnotation(String[], String[], double[][], double, double)} with the
+     * normalisation made a parameter. {@link AnnotationNormalization#Z_SCORE} delegates to that
+     * method and is bit for bit the legacy behaviour: pooled, mean zero, unit SD, unbounded. The
+     * bounded modes normalise each trait column separately and keep the adjustments in [-1, 1],
+     * and {@link AnnotationNormalization#NONE} passes precomputed adjustments through with no
+     * re-standardisation; see {@link AnnotationNormalization} for the trade-offs. Whatever the
+     * mode, the resulting log-odds tau * a are anchored at {@code alpha} and the weights rescaled
+     * to mean one, exactly as the legacy path does, so the significance budget is conserved;
+     * note this anchored-probit map is the principled version of the test-level adjustment, not a
+     * linear scaling of alpha.
+     *
+     * @param snpNames      Names of the SNP nodes, length n_snp. Must match the node names the
+     *                      tests will use.
+     * @param traitNames    Names of the trait nodes, length n_trait.
+     * @param annotation    An n_snp x n_trait matrix of exogenous prior scores; higher means more
+     *                      prior support, {@code NaN} means no information. For
+     *                      {@link AnnotationNormalization#NONE} these are the adjustments
+     *                      themselves, used as given.
+     * @param tau           Prior strength. {@code tau = 0} reproduces the unmodified pipeline
+     *                      exactly.
+     * @param alpha         The tuned significance level to anchor at.
+     * @param normalization How the annotation is turned into adjustments.
+     * @return The facade.
+     * @throws IllegalArgumentException If shapes disagree, names are empty or duplicated, alpha is
+     *                                  out of range, tau is not finite, or the annotation contains
+     *                                  an infinite entry.
+     * @throws NullPointerException     If any argument is null.
+     */
+    public static EdgePriorFacade fromAnnotation(String[] snpNames, String[] traitNames,
+                                                 double[][] annotation, double tau, double alpha,
+                                                 AnnotationNormalization normalization) {
+        Objects.requireNonNull(normalization, "normalization");
+
+        if (normalization == AnnotationNormalization.Z_SCORE) {
+            return fromAnnotation(snpNames, traitNames, annotation, tau, alpha);
+        }
+
+        if (!(alpha > 0.0 && alpha < 1.0)) {
+            throw new IllegalArgumentException("alpha must be in (0, 1): " + alpha);
+        }
+
+        if (!Double.isFinite(tau)) {
+            throw new IllegalArgumentException("tau must be finite: " + tau);
+        }
+
+        double[][] beta = normalization.betaFromAnnotation(snpNames, traitNames, annotation, tau);
+
+        int nSnp = snpNames.length;
+        int nTrait = traitNames.length;
+        String[] names = new String[nSnp + nTrait];
+        System.arraycopy(snpNames, 0, names, 0, nSnp);
+        System.arraycopy(traitNames, 0, names, nSnp, nTrait);
+
+        return fromLogOdds(names, beta, alpha, true);
+    }
+
+    /**
      * Builds a locus prior directly from a symmetric matrix of prior log-odds, for callers who
      * want to construct beta themselves. Prefer {@link #fromAnnotation} unless you have a reason
      * not to.

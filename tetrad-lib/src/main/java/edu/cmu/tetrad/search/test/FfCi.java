@@ -21,6 +21,11 @@
 package edu.cmu.tetrad.search.test;
 
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MissingValueSupport;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.RawMarginalIndependenceTest;
@@ -115,6 +120,12 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
     private List<Integer> rows = null;
     private int n;
 
+    /**
+     * If true, each test is evaluated on the active rows complete on x, y, and z; see the constructor taking a
+     * {@link MissingDataSpec}.
+     */
+    private boolean testwiseDeletion = false;
+
     // ---------------- hyperparams (kept aligned with IndTestFfCi for continuous-only) ----------------
     private int numFeatXY = 10;
     private int numFeatZ  = 100;
@@ -172,10 +183,32 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
      *                key-value pairs, including optional "rcit.seed" for random seed initialization
      */
     public FfCi(DataSet dataSet, Parameters params) {
+        this(dataSet, params, null);
+    }
+
+    /**
+     * Constructs an instance with an explicit missing-data specification. On a data set with missing values the
+     * supported policies are LISTWISE and TESTWISE; under TESTWISE each test is computed on the active rows that
+     * are complete on x, y, and z (by a temporary row override, which invalidates the feature caches for that
+     * test). Missingness is NaN for continuous variables and the discrete missing-value code for discrete ones. A
+     * null spec leaves the legacy behavior in place. Under TESTWISE, concurrent checkIndependence calls on one
+     * instance are serialized.
+     *
+     * @param dataSet the dataset containing the variables and data to be analyzed; must not be null
+     * @param params  configuration parameters; see the two-argument constructor
+     * @param spec    the missing-data specification, or null.
+     */
+    public FfCi(DataSet dataSet, Parameters params, MissingDataSpec spec) {
         DataSet _data = Objects.requireNonNull(dataSet, "data");
+
+        if (spec != null) {
+            _data = MissingDataUtils.resolveDeletionPolicy(_data, spec, "FfCi");
+            this.testwiseDeletion = spec.getPolicy() == MissingDataPolicy.TESTWISE && _data.existsMissingValue();
+        }
+
 //        this.data = DataTransforms.standardizeData(_data);
         this.data = _data;
-        this.vars = Collections.unmodifiableList(new ArrayList<>(dataSet.getVariables()));
+        this.vars = Collections.unmodifiableList(new ArrayList<>(_data.getVariables()));
         this.n = getActiveRowCount();
 
         boolean anyDisc = false;
@@ -195,7 +228,7 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         this.rng = new Random(this.seed);
 
         // initialize dataVersion so cache keys incorporate dataset identity by default
-        this.dataVersion = System.identityHashCode(dataSet);
+        this.dataVersion = System.identityHashCode(_data);
 
         // Initialize delegate from current knobs (and propagate seed)
         syncDelegateToThis();
@@ -487,6 +520,17 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         this.continuousDelegate.setRows(this.rows);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * TESTWISE: constructed with {@code MissingDataSpec.testwise()}, each test is evaluated on the rows complete on
+     * x, y, and z.
+     */
+    @Override
+    public MissingValueSupport getMissingValueSupport() {
+        return MissingValueSupport.TESTWISE;
+    }
+
     private int getActiveRowCount() {
         return (rows == null) ? data.getNumRows() : rows.size();
     }
@@ -540,6 +584,63 @@ public final class FfCi implements IndependenceTest, RowsSettable, RawMarginalIn
         }
         Objects.requireNonNull(x, "x");
         Objects.requireNonNull(y, "y");
+
+        if (this.testwiseDeletion) {
+            // Searches (e.g., StarFci's sepset sweep) call checkIndependence from parallel streams on one
+            // instance, and the row override below mutates shared state. Without this lock, concurrent calls
+            // crash (IndexOutOfBounds in activeRowIndex) or, worse, compute on the wrong rows; with it, calls
+            // are serialized while test-wise deletion is active. Complete data pays nothing.
+            synchronized (this) {
+                List<Integer> complete = completeRows(x, y, z);
+
+                if (complete.size() < getActiveRowCount()) {
+                    List<Integer> saved = this.rows;
+                    try {
+                        setRows(complete);
+                        return checkIndependenceOnActiveRows(x, y, z);
+                    } finally {
+                        setRows(saved);
+                    }
+                }
+
+                return checkIndependenceOnActiveRows(x, y, z);
+            }
+        }
+
+        return checkIndependenceOnActiveRows(x, y, z);
+    }
+
+    /**
+     * The active rows on which none of x, y, z is missing (NaN for continuous variables, the discrete missing-value
+     * code for discrete ones).
+     */
+    private List<Integer> completeRows(Node x, Node y, Set<Node> z) {
+        List<Integer> cols = new ArrayList<>();
+        cols.add(columnIndexOf(x));
+        cols.add(columnIndexOf(y));
+        if (z != null) for (Node v : z) cols.add(columnIndexOf(v));
+
+        int m = getActiveRowCount();
+        List<Integer> out = new ArrayList<>(m);
+        R:
+        for (int i = 0; i < m; i++) {
+            int r = activeRowIndex(i);
+            for (int c : cols) {
+                if (MissingDataAudit.isMissing(data, r, c)) continue R;
+            }
+            out.add(r);
+        }
+        return out;
+    }
+
+    private int columnIndexOf(Node v) {
+        int col = data.getColumnIndex(v);
+        if (col < 0) col = data.getVariableNames().indexOf(v.getName());
+        return col;
+    }
+
+    private IndependenceResult checkIndependenceOnActiveRows(Node x, Node y, Set<Node> z)
+            throws InterruptedException {
 
         // If all variables are discrete, fall back to chi-square
         if (DiscreteIndependenceUtils.isAllDiscrete(x, y, z)) {

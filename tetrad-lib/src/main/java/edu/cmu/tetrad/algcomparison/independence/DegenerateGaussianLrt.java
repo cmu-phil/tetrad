@@ -63,7 +63,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
      */
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise"), "DG-LRT (Degenerate Gaussian Likelihood Ratio Test)");
+        dataSet = MissingDataUtils.gate(dataSet, parameters, java.util.Set.of("testwise", "em"), "DG-LRT (Degenerate Gaussian Likelihood Ratio Test)");
         IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt(SimpleDataLoader.getMixedDataSet(dataSet),
                 MissingDataUtils.fromParameters(parameters));
         test.setAlpha(parameters.getDouble(Params.ALPHA));
@@ -98,6 +98,7 @@ public class DegenerateGaussianLrt implements IndependenceWrapper {
         parameters.add(Params.SINGULARITY_LAMBDA);
         parameters.add(Params.EFFECTIVE_SAMPLE_SIZE);
         parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_ESS_MODE);
         return parameters;
     }
 

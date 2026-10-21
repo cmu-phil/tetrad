@@ -26,12 +26,16 @@ import edu.cmu.tetrad.algcomparison.utils.PoolsImputations;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
+import edu.cmu.tetrad.util.StratifiedRankTests;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
@@ -81,6 +85,35 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
             throw new IllegalArgumentException("RLCD requires a continuous tabular data set.");
         }
 
+        if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
+            // Stratified (domain-pooled) mode, the Phase 1 upgrade of LCD-NOD (Dong et al., ICML 2026). RLCD
+            // accepts continuous data, so here the domain index is an integer-valued continuous column, named by
+            // the domainColumn parameter; it is removed from the variable list and used only to split the rows.
+            String domainColumn = StratifiedRankTests.resolveDomainColumn(dataSet,
+                    parameters.getString(Params.DOMAIN_COLUMN, "domain"));
+            Node domain = dataSet.getVariable(domainColumn);
+            List<DataSet> perDomain = StratifiedRankTests.split(dataSet, domain);
+
+            int dcol = dataSet.getVariables().indexOf(domain);
+            int[] keep = new int[dataSet.getNumColumns() - 1];
+            int k = 0;
+            for (int j = 0; j < dataSet.getNumColumns(); j++) if (j != dcol) keep[k++] = j;
+            DataSet sub = dataSet.subsetColumns(keep);
+
+            StringBuilder sizes = new StringBuilder();
+            for (DataSet d : perDomain) {
+                if (!sizes.isEmpty()) sizes.append(", ");
+                sizes.append(d.getNumRows());
+            }
+            TetradLogger.getInstance().log("Stratified RLCD: domain column '" + domainColumn + "' removed from the "
+                                           + "searched variables and used only to split the rows; " + perDomain.size()
+                                           + " domains with n = " + sizes + ".");
+
+            edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(sub);
+            rlcd.setStratifiedRankTest(new StratifiedChi2RankTest(perDomain));
+            return run(rlcd, parameters);
+        }
+
         return run(new edu.cmu.tetrad.search.Rlcd(dataSet), parameters);
     }
 
@@ -94,6 +127,12 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
      */
     @Override
     public Graph searchImputations(List<DataModel> imputations, Parameters parameters) {
+        if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
+            throw new IllegalArgumentException("Stratified (domain-pooled) RLCD cannot be combined with pooled "
+                                               + "imputations: the strata must be independent samples, and "
+                                               + "imputations share their rows. Turn one of the two off.");
+        }
+
         List<DataSet> dataSets = new ArrayList<>();
 
         for (DataModel dataModel : imputations) {
@@ -115,7 +154,9 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         rlcd.setCheckV(parameters.getBoolean(Params.RLCD_CHECK_V));
         rlcd.setLatentGate(parameters.getBoolean(Params.RLCD_LATENT_GATE));
         rlcd.setPartitionCliqueThreshold(parameters.getInt(Params.RLCD_PARTITION_CLIQUE_THRESHOLD));
-        rlcd.setStage1Method(parameters.getBoolean(Params.RLCD_STAGE1_FGES)
+        rlcd.setStage1Method(parameters.getBoolean(Params.RLCD_STAGE1_NONE, false)
+                ? edu.cmu.tetrad.search.Rlcd.Stage1Method.NONE
+                : parameters.getBoolean(Params.RLCD_STAGE1_FGES)
                 ? edu.cmu.tetrad.search.Rlcd.Stage1Method.FGES
                 : edu.cmu.tetrad.search.Rlcd.Stage1Method.BOSS);
         rlcd.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT_DEFAULT_1));
@@ -173,6 +214,9 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         parameters.add(Params.RLCD_LATENT_GATE);
         parameters.add(Params.RLCD_PARTITION_CLIQUE_THRESHOLD);
         parameters.add(Params.RLCD_STAGE1_FGES);
+        parameters.add(Params.RLCD_STAGE1_NONE);
+        parameters.add(Params.STRATIFY_BY_DOMAIN);
+        parameters.add(Params.DOMAIN_COLUMN);
         parameters.add(Params.POOL_IMPUTATIONS);
         parameters.add(Params.PENALTY_DISCOUNT_DEFAULT_1);
         parameters.add(Params.SEED);

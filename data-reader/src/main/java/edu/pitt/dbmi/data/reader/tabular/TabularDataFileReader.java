@@ -23,6 +23,7 @@ package edu.pitt.dbmi.data.reader.tabular;
 import edu.pitt.dbmi.data.reader.*;
 import edu.pitt.dbmi.data.reader.metadata.ColumnMetadata;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
+import edu.pitt.dbmi.data.reader.util.TextFileUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +59,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
      */
     @Override
     public void determineDiscreteDataColumns(DataColumn[] dataColumns, int numberOfCategories, boolean hasHeader) throws IOException {
+        String encodingProblem = TextFileUtils.findEncodingProblem(this.dataFile);
+        if (encodingProblem != null) {
+            throw new DataReaderException(encodingProblem);
+        }
+
         int numOfColsInDataFile = 0;
         for (DataColumn dataColumn : dataColumns) {
             if (!dataColumn.isGenerated()) {
@@ -329,6 +335,11 @@ public final class TabularDataFileReader extends DatasetFileReader implements Ta
      */
     @Override
     public Data read(DataColumn[] dataColumns, boolean hasHeader) throws IOException {
+        String encodingProblem = TextFileUtils.findEncodingProblem(this.dataFile);
+        if (encodingProblem != null) {
+            throw new DataReaderException(encodingProblem);
+        }
+
         if (dataColumns == null) {
             return null;
         }

@@ -52,7 +52,9 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RFCI-BSC",
         command = "rfci-bsc",
-        algoType = AlgType.forbid_latent_common_causes,
+        // RFCI-BSC is an RFCI variant and returns PAGs, so it is latent-tolerant: in the Search box it is offered
+        // under "Yes, possibly" for the latent-confounder question, not under "No" (causal sufficiency).
+        algoType = AlgType.allow_latent_common_causes,
         dataType = DataType.Discrete
 )
 @Experimental

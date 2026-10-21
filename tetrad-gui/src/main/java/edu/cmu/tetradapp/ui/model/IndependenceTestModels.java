@@ -101,14 +101,21 @@ public final class IndependenceTestModels {
         List<IndependenceTestModel> mergedModels = Stream.concat(
                         this.modelMap.get(DataType.Continuous).stream(),
                         this.modelMap.get(DataType.Mixed).stream())
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Continuous, mergedModels);
 
-        // merge discrete datatype with mixed datatype
+        // merge discrete datatype with mixed datatype. A test annotated Mixed alone is taken to handle all-discrete
+        // data, which is why the merge exists; a test annotated with BOTH Continuous and Mixed has said explicitly
+        // which data it handles -- continuous and mixed, not pure discrete -- and is taken at its word and left out
+        // (e.g. the Stratified Rank test, which needs continuous variables plus a discrete domain column).
         mergedModels = Stream.concat(
                         this.modelMap.get(DataType.Discrete).stream(),
-                        this.modelMap.get(DataType.Mixed).stream())
+                        this.modelMap.get(DataType.Mixed).stream()
+                                .filter(e -> !Arrays.asList(e.getIndependenceTest().annotation().dataType())
+                                        .contains(DataType.Continuous)))
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
         this.modelMap.put(DataType.Discrete, mergedModels);

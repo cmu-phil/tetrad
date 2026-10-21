@@ -24,7 +24,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.data.EmCovarianceEstimator;
 import edu.cmu.tetrad.data.missing.MissingDataPolicy;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MissingDataUtils;
@@ -252,12 +251,10 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
             setEffectiveSampleSize(-1);
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = false;
-        } else if (policy == MissingDataPolicy.EM_COVARIANCE) {
-            EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
-            estimator.setRidge(spec.getEmRidge());
-            estimator.setTolerance(spec.getEmTolerance());
-            estimator.setMaxIterations(spec.getEmMaxIterations());
-            setCovariances(estimator.estimate());
+        } else if (policy.estimatesCovariance()) {
+            // EM_COVARIANCE or PAIRWISE_COVARIANCE; see MissingDataUtils.estimateCovariance.
+            ICovarianceMatrix estimated = MissingDataUtils.estimateCovariance(dataSet, spec);
+            setCovariances(estimated);
 
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
@@ -267,7 +264,11 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
         } else { // TESTWISE
             this.variables = dataSet.getVariables();
             this.sampleSize = dataSet.getNumRows();
-            setEffectiveSampleSize(-1);
+            // The spec's effective-sample-size mode discounts the likelihood, as it does under EM_COVARIANCE here
+            // and under TESTWISE in the degenerate-Gaussian and basis-function scores. Previously it was ignored on
+            // this path, so choosing minPairwise or meanPairwise with test-wise deletion had no effect. A null spec
+            // (the legacy default) keeps the full row count.
+            setEffectiveSampleSize(spec == null ? -1 : MissingDataUtils.effectiveSampleSize(dataSet, spec));
             this.indexMap = indexMap(this.variables);
             this.calculateRowSubsets = true;
             this.penaltyDiscount = 1.0;

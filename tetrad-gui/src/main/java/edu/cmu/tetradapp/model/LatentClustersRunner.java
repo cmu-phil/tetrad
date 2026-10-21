@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.blocks.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.StratifiedRankTests;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Unmarshallable;
 import edu.cmu.tetradapp.session.Executable;
@@ -361,7 +362,11 @@ public class LatentClustersRunner implements ParamsResettable, SessionModel, Exe
                     parameters.getBoolean(Params.VERBOSE)
             );
             case "FOFC" -> BlockDiscoverers.fofc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg, policy,
-                    parameters.getBoolean(Params.VERBOSE));
+                    parameters.getBoolean(Params.VERBOSE),
+                    parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)
+                            ? StratifiedRankTests.resolveDomainColumn(dataSet,
+                            parameters.getString(Params.DOMAIN_COLUMN, "domain"))
+                            : null);
             case "BPC" -> BlockDiscoverers.bpc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg, policy,
                     parameters.getBoolean(Params.VERBOSE));
             case "FTFC" -> BlockDiscoverers.ftfc(dataSet, pooled, parameters.getDouble(Params.ALPHA), essArg, policy,

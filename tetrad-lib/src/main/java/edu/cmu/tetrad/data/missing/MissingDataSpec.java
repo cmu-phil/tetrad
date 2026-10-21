@@ -158,6 +158,17 @@ public final class MissingDataSpec implements TetradSerializable {
     }
 
     /**
+     * A spec for a pairwise-deletion covariance matrix; see {@link MissingDataPolicy#PAIRWISE_COVARIANCE} and
+     * {@link PairwiseCovarianceEstimator}. Consistent under MCAR, not MAR. Pair it with a pairwise effective sample
+     * size mode, since the estimate reports the full row count.
+     *
+     * @return The spec.
+     */
+    public static MissingDataSpec pairwiseCovariance() {
+        return of(MissingDataPolicy.PAIRWISE_COVARIANCE);
+    }
+
+    /**
      * A spec for multiple imputation with the given number of imputations.
      *
      * @param numImputations The number of imputed datasets, m; at least 1. One is allowed, but a single completed
@@ -323,6 +334,7 @@ public final class MissingDataSpec implements TetradSerializable {
                     + ", essMode=" + this.essMode + ")";
             case MULTIPLE_IMPUTATION -> "MissingDataSpec(MULTIPLE_IMPUTATION, m=" + this.numImputations
                     + ", seed=" + this.seed + ")";
+            case PAIRWISE_COVARIANCE -> "MissingDataSpec(PAIRWISE_COVARIANCE, essMode=" + this.essMode + ")";
         };
     }
 

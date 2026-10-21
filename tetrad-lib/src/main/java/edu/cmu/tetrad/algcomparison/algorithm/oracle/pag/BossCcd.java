@@ -33,6 +33,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndTestFdrWrapper;
@@ -116,7 +117,7 @@ public class BossCcd extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         search.setDepth(parameters.getInt(Params.DEPTH));
         search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
-        search.setUseBes(parameters.getBoolean(Params.USE_BES));
+        search.setUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseDataOrder(parameters.getBoolean(Params.USE_DATA_ORDER));
         search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -141,14 +142,19 @@ public class BossCcd extends AbstractBootstrapAlgorithm implements Algorithm, Ta
     }
 
     /**
-     * Retrieves the comparison graph for the given true directed graph.
+     * Retrieves the comparison graph for the given true directed graph: the cyclic PAG that BOSS-CCD
+     * is meant to recover, not the true graph itself. A cycle makes pairs inseparable that are not
+     * adjacent in the true graph (Richardson's "virtual edges"), so those edges belong in the
+     * comparison graph and grading against the true graph understates BOSS-CCD badly - a perfect run
+     * scores about 0.39 endpoint-exact on random 8-node, 10-edge cyclic graphs.
      *
-     * @param graph The true directed graph, if there is one.
-     * @return The true DAG.
+     * @param graph The true directed graph, possibly cyclic.
+     * @return The cyclic PAG of the true graph's d-separation equivalence class.
+     * @see GraphTransforms#dcgToCcdPag(Graph)
      */
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
+        return GraphTransforms.dcgToCcdPag(graph);
     }
 
     /**
@@ -183,7 +189,7 @@ public class BossCcd extends AbstractBootstrapAlgorithm implements Algorithm, Ta
         parameters.add(Params.DEPTH);
         parameters.add(Params.PARALLELIZED);
         parameters.add(Params.APPLY_R1);
-        parameters.add(Params.USE_BES);
+        parameters.add(Params.USE_BES_DEFAULT_TRUE);
         parameters.add(Params.NUM_STARTS);
         parameters.add(Params.USE_DATA_ORDER);
         parameters.add(Params.FDR_Q);
