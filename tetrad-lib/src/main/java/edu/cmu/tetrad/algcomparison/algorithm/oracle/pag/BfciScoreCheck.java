@@ -60,11 +60,8 @@ import java.util.List;
  * @author josephramsey
  * @version $Id: $Id
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "BFCI-Score-Check",
-//        command = "bfci-score-check",
-//        algoType = AlgType.allow_latent_common_causes
-//)
+//// Hidden from the interface on 2026-10-21 (no @Algorithm annotation): kept only so that saved sessions
+// that used it still load. The shipping BFCI is now this formulation; see edu.cmu.tetrad.search.StarFci.
 //@Bootstrapping
 //@Experimental
 public class BfciScoreCheck extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,

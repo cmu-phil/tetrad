@@ -83,7 +83,7 @@ import static org.junit.Assert.assertTrue;
  *   PASS  testBossIsDeterministic
  *   PASS  testFgesIsDeterministic
  *   PASS  testGfciIsDeterministicWhenGlobalRngIsReseeded  (source 1 only)
- *   PASS  testDefaultdoLegalityGatingFlags
+ *   PASS  testDefaultSaturatingStepFlags
  *   PASS  testReseedingSubstantiallyReducesBfciInstability
  *   FAIL  testBfciIsDeterministicAcrossRepeatedCalls     &lt;-- the target
  *   FAIL  testBfciCpIsDeterministicAcrossRepeatedCalls   &lt;-- the target
@@ -197,10 +197,8 @@ public class TestBfciDeterminism {
         Bfci search = new Bfci(test(data), score(data));
         search.setDepth(DEPTH);
         search.setCompleteRuleSetUsed(true);
-        search.setDoLegalityGating(doLegalityGating);
         search.setNumStarts(1);
         search.setNumThreads(numThreads);
-        search.setParallelized(false);
         search.setVerbose(false);
         return search.search();
     }
@@ -219,7 +217,6 @@ public class TestBfciDeterminism {
         Gfci search = new Gfci(test(data), score(data));
         search.setDepth(DEPTH);
         search.setCompleteRuleSetUsed(true);
-        search.setDoLegalityGating(doLegalityGating);
         search.setVerbose(false);
         return search.search();
     }
@@ -552,30 +549,30 @@ public class TestBfciDeterminism {
 //    }
 
     /**
-     * Pins the defaults set on 2026-07-31 so they cannot regress silently:
-     * doLegalityGating defaults true on the StarFciCheckPag subclasses and false on
-     * Fci, which is a published algorithm and must keep its published behavior.
+     * Pins a correctness-bearing default so it cannot regress silently. Since 2026-10-21 StarFci is always
+     * legality-gated (there is no doLegalityGating flag); the default that matters for oracle correctness is now
+     * the saturating step, which must be ON (see StarFci: a reachable state can have no legal single removal).
      */
     @Test
-    public void testDefaultdoLegalityGatingFlags() throws Exception {
+    public void testDefaultSaturatingStepFlags() throws Exception {
         DataSet data = lowRankData(1000L);
 
-        assertTrue("Bfci should default to doLegalityGating = true",
-                readdoLegalityGating(new Bfci(test(data), score(data))));
-        assertTrue("Gfci should default to doLegalityGating = true",
-                readdoLegalityGating(new Gfci(test(data), score(data))));
+        assertTrue("Bfci should default to useSaturatingStep = true",
+                readUseSaturatingStep(new Bfci(test(data), score(data))));
+        assertTrue("Gfci should default to useSaturatingStep = true",
+                readUseSaturatingStep(new Gfci(test(data), score(data))));
     }
 
-    private static boolean readdoLegalityGating(Object search) throws Exception {
+    private static boolean readUseSaturatingStep(Object search) throws Exception {
         for (Class<?> c = search.getClass(); c != null; c = c.getSuperclass()) {
             for (Field field : c.getDeclaredFields()) {
-                if ("doLegalityGating".equals(field.getName())) {
+                if ("useSaturatingStep".equals(field.getName())) {
                     field.setAccessible(true);
                     return field.getBoolean(search);
                 }
             }
         }
-        throw new NoSuchFieldException("doLegalityGating not found on "
+        throw new NoSuchFieldException("useSaturatingStep not found on "
                 + search.getClass().getName());
     }
 }

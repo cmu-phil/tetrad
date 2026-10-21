@@ -127,23 +127,19 @@ public class Ion implements MultiDataSetAlgorithm, TakesIndependenceWrapper, Tak
 
             Bfci bfci = new Bfci(s, sc);
 
-            boolean parallelized = parameters.getBoolean(Params.PARALLELIZED);
-
             bfci.setBossUseBes(parameters.getBoolean(Params.USE_BES_DEFAULT_TRUE));
             bfci.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
             bfci.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
             bfci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             bfci.setDepth(parameters.getInt(Params.DEPTH));
-            bfci.setParallelized(parallelized);
-            bfci.setNumThreads(parallelized ? 1 : Runtime.getRuntime().availableProcessors());
-            bfci.setDoLegalityGating(parameters.getBoolean(Params.DO_LEGALITY_GATING));
-            bfci.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
+            bfci.setNumThreads(Runtime.getRuntime().availableProcessors());
             bfci.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
             bfci.setLvHeuristicOnly(parameters.getBoolean(Params.LV_HEURISTIC_ONLY));
             bfci.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
             bfci.setVerbose(parameters.getBoolean(Params.VERBOSE));
             bfci.setLogFinalOrientations(parameters.getBoolean(Params.LOG_FINAL_ORIENTATIONS));
             bfci.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+            bfci.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
 
             Graph pag = bfci.search();
             TetradLogger.getInstance().log("ION input PAG for " + dataModel.getName() + ": " + pag);
@@ -267,13 +263,11 @@ public class Ion implements MultiDataSetAlgorithm, TakesIndependenceWrapper, Tak
         parameters.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.DEPTH);
-        parameters.add(Params.DO_LEGALITY_GATING);
-        parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.EXCLUDE_SELECTION_BIAS);
         parameters.add(Params.LV_HEURISTIC_ONLY);
         parameters.add(Params.DO_POSSIBLE_DSEP);
-        parameters.add(Params.PARALLELIZED);
         parameters.add(Params.NUM_STARTS);
+        parameters.add(Params.USE_SATURATING_STEP);
         parameters.add(Params.ION_PATH_LENGTH_SEARCH);
         parameters.add(Params.ION_ADJACENCY_SEARCH);
         parameters.add(Params.VERBOSE);

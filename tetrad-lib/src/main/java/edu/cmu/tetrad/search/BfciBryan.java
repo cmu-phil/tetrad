@@ -33,6 +33,9 @@ import java.util.*;
 import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
 
 /**
+ * FROZEN REFERENCE (2026-10-21): this formulation became the shipping {@link StarFci}/{@link Bfci}; the class is kept
+ * unchanged, off the interface, so that saved sessions that used "BFCI-Bryan" still load. New work goes in StarFci.
+ * <p>
  * BFCI-Bryan: BOSS followed by Bryan Andrews's from-scratch, sepset-map-as-state formulation of the gated
  * StarFCI extra-edge-removal step, with SEPSET RE-SELECTION, plus a final saturating step (on by default;
  * see {@link #setUseSaturatingStep(boolean)}).

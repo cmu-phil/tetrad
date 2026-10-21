@@ -123,10 +123,10 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         search.setMaxDiscriminatingPathLength(parameters.getInt(Params.MAX_DISCRIMINATING_PATH_LENGTH));
         search.setMaxPossibleDsepPathLength(parameters.getInt(Params.MAX_POSSIBLE_SEP_PATH_LENGTH));
         search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-        search.setDoLegalityGating(parameters.getBoolean(Params.DO_LEGALITY_GATING));
+        search.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        search.setUsePossibleDsep(parameters.getBoolean(Params.DO_POSSIBLE_DSEP));
+        search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
         search.setNumThreads(parameters.getInt(Params.NUM_THREADS));
-        search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
-        search.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         search.setOut(System.out);
 
         return search.search();
@@ -179,11 +179,11 @@ public class Gfci extends AbstractBootstrapAlgorithm implements Algorithm, Accep
         parameters.add(Params.MAX_DISCRIMINATING_PATH_LENGTH);
         parameters.add(Params.MAX_POSSIBLE_SEP_PATH_LENGTH);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
+        parameters.add(Params.EXCLUDE_SELECTION_BIAS);
+        parameters.add(Params.DO_POSSIBLE_DSEP);
+        parameters.add(Params.USE_SATURATING_STEP);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.NUM_THREADS);
-        parameters.add(Params.USE_MAX_P_HEURISTIC);
-        parameters.add(Params.DO_LEGALITY_GATING);
-        parameters.add(Params.PARALLELIZED);
 
         parameters.add(Params.VERBOSE);
         parameters.add(Params.LOG_FINAL_ORIENTATIONS);
