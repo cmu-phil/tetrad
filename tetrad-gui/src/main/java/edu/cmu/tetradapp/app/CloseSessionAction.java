@@ -70,6 +70,12 @@ public final class CloseSessionAction extends AbstractAction {
             if (response == JOptionPane.YES_OPTION) {
                 SaveSessionAction saveSessionAction = new SaveSessionAction();
                 saveSessionAction.actionPerformed(e);
+
+                // A failed save, or a Save As whose chooser was cancelled, keeps the session open; closing it anyway
+                // would discard the changes the user just asked to keep.
+                if (!SaveSessionAction.saved) {
+                    return;
+                }
             } else if (response == JOptionPane.CANCEL_OPTION) {
                 return;
             }

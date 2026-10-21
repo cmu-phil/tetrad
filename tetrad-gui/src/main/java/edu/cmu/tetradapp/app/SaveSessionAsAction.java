@@ -53,10 +53,37 @@ public final class SaveSessionAsAction extends AbstractAction {
     public static boolean saved = false;
 
     /**
+     * Whether a successful save is acknowledged with a dialog naming the file written.
+     */
+    private final boolean confirmSaved;
+
+    /**
      * <p>Constructor for SaveSessionAsAction.</p>
      */
     public SaveSessionAsAction() {
+        this(true);
+    }
+
+    /**
+     * Constructor for SaveSessionAsAction.
+     *
+     * @param confirmSaved whether to show a dialog naming the file once the session is saved.
+     */
+    public SaveSessionAsAction(boolean confirmSaved) {
         super("Save Session As...");
+        this.confirmSaved = confirmSaved;
+    }
+
+    /**
+     * Tells the user that a session was saved, and where.
+     *
+     * @param sessionName the session's name.
+     * @param file        the file written.
+     */
+    static void showSavedDialog(String sessionName, File file) {
+        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                "Session \"" + sessionName + "\" was saved to\n" + file.getAbsolutePath(),
+                "Session Saved", JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
@@ -130,6 +157,10 @@ public final class SaveSessionAsAction extends AbstractAction {
 
         DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
         sessionEditor.firePropertyChange("name", null, file.getName());
+
+        if (saved && this.confirmSaved) {
+            showSavedDialog(file.getName(), file);
+        }
     }
 }
 

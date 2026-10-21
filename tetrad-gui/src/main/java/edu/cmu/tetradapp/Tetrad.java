@@ -277,8 +277,9 @@ public final class Tetrad implements PropertyChangeListener {
         getFrame().addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                // exitApplication disposes the frame itself when the quit goes ahead; on Cancel Quit the window
+                // stays.
                 exitApplication();
-                getFrame().dispose();
             }
         });
 
@@ -305,8 +306,11 @@ public final class Tetrad implements PropertyChangeListener {
 
             try {
                 desktop.setQuitHandler((e2, response) -> {
-                    exitApplication();
-                    response.performQuit();
+                    if (exitApplication()) {
+                        response.performQuit();
+                    } else {
+                        response.cancelQuit();
+                    }
                 });
             } catch (Exception e) {
                 TetradLogger.getInstance().warn("Could not set quit handler on this platform..");
@@ -314,9 +318,13 @@ public final class Tetrad implements PropertyChangeListener {
         }
     }
 
-    // Exits the application gracefully.
-    private void exitApplication() {
-        getDesktop().closeAllSessions();
+    // Exits the application gracefully, after asking about each session with unsaved changes. Returns false, leaving
+    // everything open, if the user cancels the quit.
+    private boolean exitApplication() {
+        if (!getDesktop().closeAllSessions()) {
+            return false;
+        }
+
         getFrame().setVisible(false);
         getFrame().dispose();
         TetradLogger.getInstance().removeNextOutputStream();
@@ -326,6 +334,8 @@ public final class Tetrad implements PropertyChangeListener {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        return true;
     }
 
     private JFrame getFrame() {
