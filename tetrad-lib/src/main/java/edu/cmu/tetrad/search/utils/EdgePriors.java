@@ -374,6 +374,28 @@ public final class EdgePriors {
     }
 
     /**
+     * Returns the number of stored (non-neutral) values at or above a threshold. For a
+     * {@link Semantics#LOG_ODDS} store wrapped by {@code EdgePriorScore} over a score with
+     * penalty toll lambda * log(n), {@code countValuesAtLeast(lambda * log(n) / 2)} is the number
+     * of pairs whose penalty is fully rebated -- edges that are free to add and impossible to
+     * remove. Pairs carrying the neutral value are not stored and are not counted.
+     *
+     * @param t The threshold.
+     * @return The count of stored values v with v &gt;= t.
+     */
+    public int countValuesAtLeast(double t) {
+        int count = 0;
+
+        for (double v : this.values.values()) {
+            if (v >= t) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    /**
      * Resolves this store against a variable list into a dense symmetric matrix indexed by that
      * list's order. Pairs with no stored value take the neutral value.
      *
