@@ -8511,6 +8511,18 @@ Source:
             Type: <span id="useMaxPOrientationHeuristic_value_type">Boolean</span></li>
     </ul>
 
+    === useSaturatingStep ===
+    <h3 class="parameter_description" id="useSaturatingStep">useSaturatingStep</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="useSaturatingStep_short_desc">True if the saturating (joint-removal) step should run after the single-edge passes</span></li>
+        <li>Long Description: <span id="useSaturatingStep_long_desc">In the gated *-FCI variants, after the single-edge removal passes, jointly remove the pairs that have a test-confirmed separating set but whose single removals the legality gate rejected, accepting the result if it is a legal PAG. In the oracle a reachable state can have no legal single removal while the joint removal gives the true PAG, so this step is needed for correctness. It does nothing on a run that does not stall.</span></li>
+        <li>Default Value: <span id="useSaturatingStep_default_value">true</span></li>
+        <li>Lower Bound: <span id="useSaturatingStep_lower_bound"></span></li>
+        <li>Upper Bound: <span id="useSaturatingStep_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="useSaturatingStep_value_type">Boolean</span></li>
+    </ul>
+
     === useScore ===
     <h3 class="parameter_description" id="useScore">useScore</h3>
     <ul class="parameter_description_list">

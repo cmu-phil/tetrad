@@ -1969,6 +1969,13 @@ public final class Params {
      */
     public static final String USE_BES_DEFAULT_TRUE = "useBesDefaultTrue";
     /**
+     * Constant <code>USE_SATURATING_STEP="useSaturatingStep"</code>. For the gated *-FCI variants: after the
+     * single-edge passes, jointly remove the still-adjacent pairs that have a test-confirmed separator but whose
+     * single removals the legality gate rejected. Needed for correctness in the oracle (a reachable state can
+     * have no legal single removal); default true.
+     */
+    public static final String USE_SATURATING_STEP = "useSaturatingStep";
+    /**
      * Constant <code>USE_BOSS_ADJACENCIES="useBossAdjacencies"</code>
      */
     public static final String USE_BOSS_ADJACENCIES = "useBossAdjacencies";
