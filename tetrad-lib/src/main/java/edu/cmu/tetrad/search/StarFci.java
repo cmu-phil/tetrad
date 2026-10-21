@@ -711,7 +711,9 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
-     * Runs BOSS to obtain the initial Markov CPDAG, exactly as in {@link Bfci}.
+     * Sets the background knowledge used by the initial search and by orientation.
+     *
+     * @param knowledge the knowledge; must not be null.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) throw new NullPointerException();
@@ -838,6 +840,8 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
+     * Returns whether graphs replicate across time lags.
+     *
      * @return whether graphs replicate across time lags.
      */
     public boolean isReplicatingGraph() {
@@ -845,6 +849,8 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
+     * Returns the background knowledge.
+     *
      * @return the knowledge.
      */
     public Knowledge getKnowledge() {
@@ -852,6 +858,8 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
+     * Returns whether verbose output is on.
+     *
      * @return whether verbose output is on.
      */
     public boolean isVerbose() {
@@ -859,6 +867,8 @@ public abstract class StarFci implements IGraphSearch {
     }
 
     /**
+     * Returns the independence test.
+     *
      * @return the independence test.
      */
     public IndependenceTest getIndependenceTest() {
