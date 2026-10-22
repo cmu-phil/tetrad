@@ -25,11 +25,13 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeTierStructure;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MvnImputer;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
 import edu.cmu.tetrad.search.rlcd.PooledRankTest;
+import edu.cmu.tetrad.search.rlcd.TierPrecedence;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -148,6 +150,74 @@ public class TestRlcd {
         g.addDirectedEdge(x[1], x[4]);
         g.addDirectedEdge(x[3], x[4]);
         return g;
+    }
+
+    /**
+     * Temporal tiers constrain ancestry through latents, not only direct edges. The true model is F --> L1 --> {E1,
+     * E2, E3} and F --> L2 --> {M1, M2, M3}, which RLCD recovers without knowledge on this seed (F --> L2 found by a
+     * rank test with F as a non-sink, F --> L1 placed by the finish step). Tier structures putting F after the E's
+     * and after the M's must keep F from being an ancestor of any of them in the output, whichever step would
+     * otherwise have done it.
+     */
+    @Test
+    public void testTiersConstrainAncestryThroughLatents() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node f = new GraphNode("F");
+        g.addNode(f);
+        Node l1 = new GraphNode("L1"), l2 = new GraphNode("L2");
+        l1.setNodeType(NodeType.LATENT);
+        l2.setNodeType(NodeType.LATENT);
+        g.addNode(l1);
+        g.addDirectedEdge(f, l1);
+        g.addNode(l2);
+        g.addDirectedEdge(f, l2);
+        for (int i = 1; i <= 3; i++) {
+            Node e = new GraphNode("E" + i);
+            g.addNode(e);
+            g.addDirectedEdge(l1, e);
+        }
+        for (int i = 1; i <= 3; i++) {
+            Node m = new GraphNode("M" + i);
+            g.addNode(m);
+            g.addDirectedEdge(l2, m);
+        }
+        DataSet data = simulate(g, 3000, 3L);
+
+        Rlcd plain = new Rlcd(data);
+        plain.setMaxK(2);
+        plain.setSeed(1L);
+        Graph unconstrained = plain.search();
+        assertTrue("Precondition: without knowledge F should be an ancestor of E1: " + unconstrained,
+                unconstrained.paths().isAncestorOf(unconstrained.getNode("F"), unconstrained.getNode("E1")));
+
+        Knowledge knowledge = new Knowledge();
+        KnowledgeTierStructure exams = new KnowledgeTierStructure("E");
+        KnowledgeTierStructure modules = new KnowledgeTierStructure("M");
+        for (int i = 1; i <= 3; i++) {
+            exams.addToTier(i - 1, "E" + i);
+            modules.addToTier(i - 1, "M" + i);
+        }
+        exams.addToTier(3, "F");
+        modules.addToTier(3, "F");
+        knowledge.addTierStructure(exams);
+        knowledge.addTierStructure(modules);
+
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setMaxK(2);
+        rlcd.setSeed(1L);
+        rlcd.setKnowledge(knowledge);
+        Graph out = rlcd.search();
+
+        for (Node a : out.getNodes()) {
+            if (a.getNodeType() == NodeType.LATENT) continue;
+            for (Node b : out.getNodes()) {
+                if (a == b || b.getNodeType() == NodeType.LATENT) continue;
+                if (TierPrecedence.isLater(knowledge, a.getName(), b.getName())) {
+                    assertFalse(a + " is an ancestor of " + b + " against the tiers: " + out,
+                            out.paths().isAncestorOf(a, b));
+                }
+            }
+        }
     }
 
     /**

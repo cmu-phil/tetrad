@@ -362,7 +362,7 @@ public final class RlcdClusterSearch {
             if (g.overlapPaCh(as)) continue;
             if (g.measuredHasNonSinks(as, nonsinks)) continue;
             if (g.checkNonSinksAreAsChildren(as, nonsinks)) continue;
-            if (knowledgeForbids(as, nonsinks)) continue;
+            if (knowledgeForbids(g, as, nonsinks)) continue;
             // Bs must have parent cardinality > k - |nonsinks|, otherwise rank <= k regardless of As.
             if (g.parentCardinality(bs) <= k - numNonsinks) continue;
 
@@ -401,9 +401,11 @@ public final class RlcdClusterSearch {
 
     /**
      * Whether background knowledge forbids some non-sink from being a parent of some observed member of As. The
-     * non-sinks of a confirmed cluster become parents of its members, so such a candidate is not tested.
+     * non-sinks of a confirmed cluster become parents of its members, so such a candidate is not tested. Nor is one
+     * in which the temporal tiers forbid some non-sink from being an ancestor of an observed descendant of As
+     * (through latent members of As); {@link LatentGroups#addCluster} makes the full ancestry check.
      */
-    private boolean knowledgeForbids(Set<Cover> as, List<String> nonsinks) {
+    private boolean knowledgeForbids(LatentGroups g, Set<Cover> as, List<String> nonsinks) {
         if (nonsinks.isEmpty()) return false;
         for (Cover a : as) {
             if (!a.isObserved()) continue;
@@ -413,7 +415,8 @@ public final class RlcdClusterSearch {
                 }
             }
         }
-        return false;
+        return TierPrecedence.findViolation(knowledge, g.observedAncestors(nonsinks),
+                g.observedDescendants(CoverSets.vars(as))) != null;
     }
 
     /**
@@ -509,8 +512,33 @@ public final class RlcdClusterSearch {
                             Collections.emptyList());
                     if (test[0] == 0) toAdd.add(l);
                 }
+                // Nothing here tests which way the link goes; observed --> latent is a convention. Where the
+                // temporal tiers rule that direction out, the link is put the other way if the tiers allow that,
+                // and is left unoriented otherwise.
+                List<Cover> reversed = new ArrayList<>();
+                for (Iterator<Cover> it = toAdd.iterator(); it.hasNext(); ) {
+                    Cover l = it.next();
+                    if (TierPrecedence.findViolation(knowledge, g.observedAncestors(o.getVars()),
+                            g.observedDescendants(l.getVars())) != null) {
+                        it.remove();
+                        reversed.add(l);
+                    }
+                }
                 if (!toAdd.isEmpty()) {
                     g.addOrUpdateCover(o, toAdd);
+                    g.updateActiveSet(false);
+                }
+                for (Cover l : reversed) {
+                    Set<String> ancestorsOfL = g.observedAncestors(l.getVars());
+                    boolean cycle = !Collections.disjoint(ancestorsOfL, g.observedDescendants(o.getVars()));
+                    if (!cycle && TierPrecedence.findViolation(knowledge, ancestorsOfL,
+                            g.observedDescendants(o.getVars())) == null) {
+                        log.accept("Temporal tiers put " + l + " --> " + o + " in the finish step");
+                        g.addOrUpdateCover(l, new LinkedHashSet<>(Collections.singleton(o)));
+                    } else {
+                        log.accept("Temporal tiers rule out " + o + " --> " + l + "; linked unoriented");
+                        g.addUnorientedLink(o, l);
+                    }
                     g.updateActiveSet(false);
                 }
             }
