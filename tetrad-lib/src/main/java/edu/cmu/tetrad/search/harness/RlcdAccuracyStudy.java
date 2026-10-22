@@ -80,18 +80,24 @@ import java.util.Set;
  *     children with an estimated latent's, averaged (softer than clus, which an impurity alone can spoil).
  *     <b>spur</b>: spurious latents per run.</li>
  *     <li><b>LL P/R</b>: precision and recall of latent-latent adjacencies, through the matching (an edge at a
- *     spurious latent counts against precision).</li>
- *     <li><b>OO P/R</b>: precision and recall of observed-observed adjacencies. <b>Arr P/R</b>: the same for
- *     directed observed-observed edges, counting only those pointing the true way.</li>
+ *     spurious latent counts against precision; an edge between two estimated latents matched to the same true
+ *     latent, a split cluster, is left out of both).</li>
+ *     <li><b>OO P/R</b>: precision and recall of observed-observed adjacencies. <b>dir</b>: among the true
+ *     observed-observed adjacencies found and directed, the share pointing the true way (direction accuracy;
+ *     false adjacencies play no part). <b>dir'd</b>: the share of the true adjacencies found that are directed at
+ *     all, the rest being undirected.</li>
  *     <li><b>imp</b>: share of the true within-cluster edges found as adjacencies; <b>impDir</b>: as directed edges
- *     pointing the true way. Blank for structures without them.</li>
+ *     pointing the true way; <b>impLat</b>: rendered instead as a latent whose observed children are exactly the
+ *     pair, RLCD's rank-equivalent representation of such an edge. Such a latent is matched to the pair's true
+ *     latent and is not counted as spurious. Blank for structures without impurities.</li>
  *     <li><b>rev</b>: ordered pairs of observed variables per run with X an ancestor of Y in the output but Y an
  *     ancestor of X in the truth (a reversed ancestral relation, the thing tiers rule out).</li>
  * </ul>
  * Edges between observed and latent variables are not scored separately; their effect shows in clus and spur.
  * <p>
  * <b>Arguments</b>, all optional, as key=value: reps=10, ns=2000, structures=mixed30,mixed30i5,rand6,
- * dists=skew,mildskew,gauss, conditions=plain,resolve,tiers,both, seed=20261022. For example,
+ * dists=skew,mildskew,gauss, conditions=plain,resolve,tiers,both, penalty=1 (the stage-1 BOSS penalty
+ * discount; RLCD's default of 1 matches causal-learn's GES setting), seed=20261022. For example,
  * {@code reps=30 ns=2000,5000 structures=mixed30i5 dists=skew,ceil}. A dot is printed per replication.
  * <p>
  * Timing, from a smoke run at N = 5000, per RLCD run: mixed30 about 2 s, mixed30i5 about 3 s, rand6 about 7 s
@@ -127,18 +133,20 @@ public final class RlcdAccuracyStudy {
         String[] dists = opt.getOrDefault("dists", "skew,mildskew,gauss").split(",");
         String[] conditions = opt.getOrDefault("conditions", "plain,resolve,tiers,both").split(",");
         long seed = Long.parseLong(opt.getOrDefault("seed", "20261022"));
+        double penalty = Double.parseDouble(opt.getOrDefault("penalty", "1"));
         Random random = new Random(seed);
 
         System.out.println("RLCD accuracy on linear non-Gaussian data with latents. reps " + reps
+                           + "; stage-1 penalty discount " + penalty
                            + "; RLCD defaults otherwise (alpha 0.01, max k 3, BOSS stage 1, latent gate on).");
 
         for (String structure : structures) {
             for (String dist : dists) {
                 System.out.println();
                 System.out.println("=== " + structure + ", errors " + dist + " ===");
-                System.out.printf("%6s %-8s %7s %5s %5s %5s  %5s %5s  %5s %5s  %5s %5s  %5s %6s  %5s %6s%n",
-                        "N", "cond", "lat", "clus", "jac", "spur", "LL P", "LL R", "OO P", "OO R", "Arr P", "Arr R",
-                        "imp", "impDir", "rev", "secs");
+                System.out.printf("%6s %-8s %7s %5s %5s %5s  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s  %5s %6s%n",
+                        "N", "cond", "lat", "clus", "jac", "spur", "LL P", "LL R", "OO P", "OO R", "dir", "dir'd",
+                        "imp", "impDir", "impLat", "rev", "secs");
                 for (int n : ns) {
                     Map<String, Totals> totals = new LinkedHashMap<>();
                     for (String c : conditions) totals.put(c, new Totals());
@@ -153,7 +161,7 @@ public final class RlcdAccuracyStudy {
                         long runSeed = Math.floorMod(random.nextLong(), 1_000_000L);
                         for (String c : conditions) {
                             long t0 = System.nanoTime();
-                            Graph out = run(data, truth, c, runSeed);
+                            Graph out = run(data, truth, c, runSeed, penalty);
                             totals.get(c).add(score(truth, out), (System.nanoTime() - t0) / 1e9);
                         }
                     }
@@ -166,15 +174,19 @@ public final class RlcdAccuracyStudy {
         System.out.println("lat: latents found (true count in parentheses). clus: true latents recovered with "
                            + "exactly their indicators. jac: mean best overlap (Jaccard) of a true latent's "
                            + "indicators with an estimated latent's. spur: unmatched latents per run.");
-        System.out.println("LL, OO, Arr: precision and recall of latent-latent adjacencies, observed-observed "
-                           + "adjacencies, and observed-observed arrows.");
-        System.out.println("imp, impDir: within-cluster direct edges found, and found pointing the right way. "
-                           + "rev: reversed ancestral relations among observed pairs per run.");
+        System.out.println("LL, OO: precision and recall of latent-latent and observed-observed adjacencies. dir: "
+                           + "direction accuracy among true observed adjacencies found and directed; dir'd: share "
+                           + "of those found that are directed.");
+        System.out.println("imp, impDir, impLat: within-cluster direct edges found as adjacencies, found pointing "
+                           + "the right way, and rendered as a two-indicator latent. rev: reversed ancestral "
+                           + "relations among observed pairs per run.");
     }
 
-    private static Graph run(DataSet data, Truth truth, String condition, long seed) throws InterruptedException {
+    private static Graph run(DataSet data, Truth truth, String condition, long seed, double penalty)
+            throws InterruptedException {
         Rlcd rlcd = new Rlcd(data);
         rlcd.setSeed(seed);
+        rlcd.setPenaltyDiscount(penalty);
         rlcd.setResolveTwoIndicatorLatents(condition.equals("resolve") || condition.equals("both"));
         if (condition.equals("tiers") || condition.equals("both")) rlcd.setKnowledge(truth.depthTiers());
         return rlcd.search();
@@ -376,8 +388,8 @@ public final class RlcdAccuracyStudy {
     // ---------------------------------------------------------------- scoring
 
     private record Score(int latents, int exactClusters, double jaccardSum, int spurious, int llTp, int llEst, int llTrue,
-                         int ooTp, int ooEst, int ooTrue, int arrTp, int arrEst, int impAdj, int impDir,
-                         int impTrue, int reversed) {
+                         int ooTp, int ooEst, int ooTrue, int dirRight, int dirWrong, int impAdj, int impDir,
+                         int impLat, int impTrue, int reversed) {
     }
 
     private static Score score(Truth truth, Graph out) {
@@ -389,9 +401,25 @@ public final class RlcdAccuracyStudy {
         Map<Node, Set<String>> estKids = new LinkedHashMap<>();
         for (Node v : out.getNodes()) if (v.getNodeType() == NodeType.LATENT) estKids.put(v, observedChildren(out, v));
 
+        // A latent whose observed children are exactly a true impure pair is that edge in RLCD's rank-equivalent
+        // form; it is matched to the pair's latent and not counted as spurious.
+        Map<Set<String>, String> impurityPairs = new HashMap<>();
+        for (String[] imp : truth.impurities) {
+            for (Map.Entry<String, Set<String>> t : trueKids.entrySet()) {
+                if (t.getValue().contains(imp[0]) && t.getValue().contains(imp[1])) {
+                    impurityPairs.put(Set.of(imp[0], imp[1]), t.getKey());
+                }
+            }
+        }
+
         Map<Node, String> match = new HashMap<>();
-        int spurious = 0;
+        int spurious = 0, impLat = 0;
         for (Map.Entry<Node, Set<String>> e : estKids.entrySet()) {
+            if (impurityPairs.containsKey(e.getValue())) {
+                match.put(e.getKey(), impurityPairs.get(e.getValue()));
+                impLat++;
+                continue;
+            }
             String best = null;
             double bestJ = 0;
             for (Map.Entry<String, Set<String>> t : trueKids.entrySet()) {
@@ -425,9 +453,10 @@ public final class RlcdAccuracyStudy {
         for (Edge e : out.getEdges()) {
             Node a = e.getNode1(), b = e.getNode2();
             if (a.getNodeType() != NodeType.LATENT || b.getNodeType() != NodeType.LATENT) continue;
-            llEst++;
             String ma = match.get(a), mb = match.get(b);
-            if (ma != null && mb != null && !ma.equals(mb) && trueLL.contains(Set.of(ma, mb))) {
+            if (ma != null && ma.equals(mb)) continue;     // two pieces of one true latent: not a latent-latent edge
+            llEst++;
+            if (ma != null && mb != null && trueLL.contains(Set.of(ma, mb))) {
                 foundLL.add(Set.of(ma, mb));
             }
         }
@@ -445,7 +474,7 @@ public final class RlcdAccuracyStudy {
                 trueArr.add(List.of(tail.getName(), head.getName()));
             }
         }
-        int ooEst = 0, ooTp = 0, arrEst = 0, arrTp = 0;
+        int ooEst = 0, ooTp = 0, dirRight = 0, dirWrong = 0;
         Set<Set<String>> estOO = new HashSet<>();
         Set<List<String>> estArr = new HashSet<>();
         for (Edge e : out.getEdges()) {
@@ -453,13 +482,16 @@ public final class RlcdAccuracyStudy {
             if (!obs.contains(a) || !obs.contains(b)) continue;
             ooEst++;
             estOO.add(Set.of(a, b));
-            if (trueOO.contains(Set.of(a, b))) ooTp++;
+            boolean trueAdj = trueOO.contains(Set.of(a, b));
+            if (trueAdj) ooTp++;
             if (Edges.isDirectedEdge(e)) {
-                arrEst++;
                 List<String> arr = List.of(Edges.getDirectedEdgeTail(e).getName(),
                         Edges.getDirectedEdgeHead(e).getName());
                 estArr.add(arr);
-                if (trueArr.contains(arr)) arrTp++;
+                if (trueAdj) {
+                    if (trueArr.contains(arr)) dirRight++;
+                    else dirWrong++;
+                }
             }
         }
 
@@ -481,7 +513,7 @@ public final class RlcdAccuracyStudy {
         }
 
         return new Score(estKids.size(), exact, jaccardSum, spurious, llTp, llEst, trueLL.size(), ooTp, ooEst, trueOO.size(),
-                arrTp, arrEst, impAdj, impDir, truth.impurities.size(), reversed);
+                dirRight, dirWrong, impAdj, impDir, impLat, truth.impurities.size(), reversed);
     }
 
     private static Set<String> observedChildren(Graph g, Node l) {
@@ -521,8 +553,7 @@ public final class RlcdAccuracyStudy {
     private static final class Totals {
         int runs;
         double latents, exact, jaccard, spurious, secs;
-        long llTp, llEst, llTrue, ooTp, ooEst, ooTrue, arrTp, arrEst, impAdj, impDir, impTrue, reversed;
-        int trueLatentsSeen;
+        long llTp, llEst, llTrue, ooTp, ooEst, ooTrue, dirRight, dirWrong, impAdj, impDir, impLat, impTrue, reversed;
 
         void add(Score s, double seconds) {
             runs++;
@@ -536,17 +567,18 @@ public final class RlcdAccuracyStudy {
             ooTp += s.ooTp();
             ooEst += s.ooEst();
             ooTrue += s.ooTrue();
-            arrTp += s.arrTp();
-            arrEst += s.arrEst();
+            dirRight += s.dirRight();
+            dirWrong += s.dirWrong();
             impAdj += s.impAdj();
             impDir += s.impDir();
+            impLat += s.impLat();
             impTrue += s.impTrue();
             reversed += s.reversed();
             secs += seconds;
         }
 
         void print(int n, String condition, int trueLatents) {
-            System.out.printf("%6d %-8s %7s %5.2f %5.2f %5.2f  %5s %5s  %5s %5s  %5s %5s  %5s %6s  %5.1f %6.2f%n",
+            System.out.printf("%6d %-8s %7s %5.2f %5.2f %5.2f  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s  %5.1f %6.2f%n",
                     n, condition,
                     String.format("%.1f(%d)", latents / runs, trueLatents),
                     exact / (runs * (double) trueLatents),
@@ -554,8 +586,9 @@ public final class RlcdAccuracyStudy {
                     spurious / runs,
                     ratio(llTp, llEst), ratio(llTp, llTrue),
                     ratio(ooTp, ooEst), ratio(ooTp, ooTrue),
-                    ratio(arrTp, arrEst), ratio(arrTp, ooTrue),
+                    ratio(dirRight, dirRight + dirWrong), ratio(dirRight + dirWrong, ooTp),
                     impTrue == 0 ? "" : ratio(impAdj, impTrue), impTrue == 0 ? "" : ratio(impDir, impTrue),
+                    impTrue == 0 ? "" : ratio(impLat, impTrue),
                     reversed / (double) runs, secs / runs);
         }
 
