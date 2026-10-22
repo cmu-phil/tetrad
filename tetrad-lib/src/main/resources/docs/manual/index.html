@@ -5054,8 +5054,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             as any search does; in stage 2 an observed variable is never used as a parent of a cluster member it is
             forbidden to cause, and a cluster whose cover would create a forbidden edge between observed variables is
             rejected; and required edges between observed variables are kept in the output, oriented as required.
+            Temporal tiers are also read as constraining ancestry, since a cause cannot come after its effect: a
+            cluster that would make an observed variable an ancestor, through latents, of one in an earlier tier is
+            rejected, and an edge between latents is not oriented in a direction that would do so.
             Knowledge cannot refer to the latent variables, which are created by the search, so it cannot prevent an
             observed variable from being placed under a latent.</p>
+        <p>A direct edge between two indicators of one latent is rank-equivalent to a second latent over the pair,
+            and RLCD reports the second latent. With rlcdResolveTwoIndicatorLatents set, a latent with exactly two
+            indicators, no observed parent and one latent neighbor with at least three pure indicators is tested with
+            third-order cumulants, and is replaced by a direct edge if the test shows one. The test is conservative
+            and needs skewed data; see the parameter's description.</p>
         <p>Given several imputations of a data set with missing values, RLCD by default returns one graph per
             imputation, and these can differ a great deal, since the search is a sequence of yes-or-no decisions and
             each imputation perturbs the ones near their thresholds. With poolImputations set, one search is run
@@ -5070,6 +5078,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#alpha">alpha</a>, <a href="#rlcdMaxK">rlcdMaxK</a>, <a href="#rlcdAllowNonLeafX">rlcdAllowNonLeafX</a>,
         <a href="#rlcdUnfoldCovers">rlcdUnfoldCovers</a>, <a href="#rlcdCheckV">rlcdCheckV</a>,
         <a href="#rlcdLatentGate">rlcdLatentGate</a>,
+        <a href="#rlcdResolveTwoIndicatorLatents">rlcdResolveTwoIndicatorLatents</a>,
         <a href="#rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</a>, <a href="#rlcdStage1Fges">rlcdStage1Fges</a>,
         <a href="#poolImputations">poolImputations</a>, <a href="#penaltyDiscountDefault1">penaltyDiscountDefault1</a>, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
 

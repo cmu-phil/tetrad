@@ -1666,6 +1666,11 @@ public final class Params {
      */
     public static final String RLCD_LATENT_GATE = "rlcdLatentGate";
     /**
+     * Constant <code>RLCD_RESOLVE_TWO_INDICATOR_LATENTS="rlcdResolveTwoIndicatorLatents"</code> Whether RLCD tries
+     * to replace a latent with two indicators by a direct edge between them, using non-Gaussianity.
+     */
+    public static final String RLCD_RESOLVE_TWO_INDICATOR_LATENTS = "rlcdResolveTwoIndicatorLatents";
+    /**
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";

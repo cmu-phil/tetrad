@@ -6968,6 +6968,17 @@ Source:
         <li>Value Type: <span id="rlcdPartitionCliqueThreshold_value_type">Integer</span></li>
     </ul>
 
+    === rlcdResolveTwoIndicatorLatents ===
+    <h3 class="parameter_description" id="rlcdResolveTwoIndicatorLatents">rlcdResolveTwoIndicatorLatents</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdResolveTwoIndicatorLatents_short_desc">RLCD: try to replace a latent with two indicators by a direct edge, using non-Gaussianity (default false)</span></li>
+        <li>Long Description: <span id="rlcdResolveTwoIndicatorLatents_long_desc">Rank constraints cannot tell a direct edge between two indicators of a latent from a second latent over the pair, and RLCD reports the second latent. If this is true, each latent in the output with exactly two observed children, no observed parent, and exactly one latent neighbor that has at least three pure indicators is tested with third-order cumulants, using that neighbor's indicators as references. If the test shows a direct edge, the two-indicator latent is replaced by the edge, and the two variables are made indicators of the neighbor; otherwise the latent is kept. The test needs positive evidence for the edge (an equivalence test), so it rarely turns a real latent into an edge, but it also leaves many real edges as latents. It needs skewed data: with Gaussian data nothing changes, and ceiling or floor effects, which skew data without independent skewed causes, can mislead it. With several pooled imputations the edge is taken only if every imputation shows it. Not done with a stratified rank test.</span></li>
+        <li>Default Value: <span id="rlcdResolveTwoIndicatorLatents_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdResolveTwoIndicatorLatents_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdResolveTwoIndicatorLatents_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdResolveTwoIndicatorLatents_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdStage1Fges ===
     <h3 class="parameter_description" id="rlcdStage1Fges">rlcdStage1Fges</h3>
     <ul class="parameter_description_list">
