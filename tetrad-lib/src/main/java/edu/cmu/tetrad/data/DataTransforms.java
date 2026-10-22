@@ -118,7 +118,13 @@ public class DataTransforms {
             X.assignColumn(j, new Vector(x1));
         }
 
-        return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
+        DataSet transformed = new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()),
+                dataSet.getVariables());
+
+        // Carry the name over, as the standardizing and centering transforms do; without it the output data set
+        // shows up unnamed in the data editor and in downstream boxes.
+        transformed.setName(dataSet.getName());
+        return transformed;
     }
 
     /**

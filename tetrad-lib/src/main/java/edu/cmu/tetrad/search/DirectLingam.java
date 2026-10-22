@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
-import edu.cmu.tetrad.util.StatUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,6 +111,11 @@ public class DirectLingam {
      * For each variable, the variables the knowledge requires as its parents; variables with none are absent.
      */
     private final Map<Node, List<Node>> requiredParents = new HashMap<>();
+
+    /**
+     * The causal order found by the last call to {@link #search()}; empty before the first call.
+     */
+    private List<Node> causalOrder = new ArrayList<>();
 
     /**
      * Constructs a DirectLiNGAM search object from a data set and a score.
@@ -263,7 +267,10 @@ public class DirectLingam {
      * @return the entropy-style approximation used by the pairwise criterion
      */
     private static double maxEntApprox(double[] x) {
-        x = StatUtils.standardizeData(x);
+        // Standardize to mean 0 and variance exactly 1 (divisor n, as in Shimizu's lingam). The constants below,
+        // gamma especially (E log cosh u for a standard normal), assume unit variance; the n - 1 divisor of
+        // StatUtils.standardizeData leaves variance (n - 1) / n and reads as a small spurious negentropy.
+        x = standardizedCopy(x);
 
         final double k1 = 79.047;
         final double k2 = 36.0 / (8.0 * sqrt(3.0) - 9.0);
@@ -293,6 +300,36 @@ public class DirectLingam {
         double negentropy = k1 * (d * d) + k2 * (b2 * b2);
 
         return gaussianEntropy - negentropy;
+    }
+
+    /**
+     * Returns a copy of {@code x} centered and scaled by the standard deviation with divisor n.
+     */
+    private static double[] standardizedCopy(double[] x) {
+        int n = x.length;
+        double mean = 0.0;
+
+        for (double value : x) {
+            mean += value;
+        }
+
+        mean /= n;
+
+        double[] z = new double[n];
+        double ss = 0.0;
+
+        for (int i = 0; i < n; i++) {
+            z[i] = x[i] - mean;
+            ss += z[i] * z[i];
+        }
+
+        double sd = sqrt(ss / n);
+
+        for (int i = 0; i < n; i++) {
+            z[i] /= sd;
+        }
+
+        return z;
     }
 
     /**
@@ -328,6 +365,7 @@ public class DirectLingam {
         }
 
         Set<Node> ordered = new HashSet<>();
+        List<Node> order = new ArrayList<>();
         Graph graph = new EdgeListGraph(this.variables);
 
         while (!remaining.isEmpty()) {
@@ -341,6 +379,7 @@ public class DirectLingam {
             }
 
             ordered.add(next);
+            order.add(next);
 
             Set<Node> parents = new HashSet<>();
             this.gsts.get(next).trace(ordered, ordered, parents);
@@ -350,7 +389,19 @@ public class DirectLingam {
             }
         }
 
+        this.causalOrder = order;
         return graph;
+    }
+
+    /**
+     * Returns the causal order estimated by the last call to {@link #search()}, earliest (most nearly exogenous)
+     * first. This is the order the parents were chosen from; it corresponds to {@code causal_order_} in Shimizu's
+     * {@code lingam} package and causal-learn. Empty if {@link #search()} has not been called.
+     *
+     * @return a copy of the estimated causal order
+     */
+    public List<Node> getCausalOrder() {
+        return new ArrayList<>(this.causalOrder);
     }
 
     /**
