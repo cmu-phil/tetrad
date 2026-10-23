@@ -54,6 +54,13 @@ import java.util.List;
  */
 // Hidden from the interface on 2026-10-21 (no @Algorithm annotation): kept only so that saved sessions
 // that used it still load. The shipping BFCI is now this formulation; see edu.cmu.tetrad.search.StarFci.
+
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "BFCI-Bryan",
+        command = "bfci-bryan",
+        algoType = AlgType.allow_latent_common_causes,
+        dataType = DataType.Continuous
+)
 @Bootstrapping
 @Experimental
 public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
