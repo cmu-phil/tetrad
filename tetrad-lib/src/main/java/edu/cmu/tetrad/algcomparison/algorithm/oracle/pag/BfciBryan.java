@@ -135,6 +135,10 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
 
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
+        search.setRequireImapStates(parameters.getBoolean(Params.REQUIRE_IMAP_STATES));
+        search.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
+        search.setUsePass0(parameters.getBoolean(Params.USE_PASS_0));
+        search.setReharvestSepsets(parameters.getBoolean(Params.REHARVEST_SEPSETS));
 
         return search.search();
     }
@@ -194,6 +198,10 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
         // Parameters
         params.add(Params.NUM_STARTS);
         params.add(Params.USE_SATURATING_STEP);
+        params.add(Params.REQUIRE_IMAP_STATES);
+        params.add(Params.IMAP_ALPHA);
+        params.add(Params.USE_PASS_0);
+        params.add(Params.REHARVEST_SEPSETS);
 
         return params;
     }

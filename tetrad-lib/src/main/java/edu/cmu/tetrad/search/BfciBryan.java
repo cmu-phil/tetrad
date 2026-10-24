@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -181,6 +182,76 @@ public final class BfciBryan implements IGraphSearch {
      * with true separators, whose projection is G*. On a run that never stalls the step does nothing.
      */
     private boolean useSaturatingStep = true;
+    /**
+     * EXPERIMENTAL I-MAP GATE (2026-10-23; the 2026-10-21 gate restored, with a separate alpha). When true, every
+     * candidate the legality gate accepts in Passes 1-2 and in the saturating step must additionally be an I-map
+     * of the test: for every nonadjacent pair x,z of the candidate's Zhang MAG, some separator of x,z in that
+     * MAG must be judged independent. Checked pairwise with as few tests as a test-based certificate allows: a
+     * pair passes at no cost if a KNOWN separator (its committed entry S(x,z), or any set an earlier I-map check
+     * found independent for it) m-separates x,z in the candidate MAG; otherwise one recursive-blocking separator
+     * is tested at {@link #imapAlpha}. The gate vetoes only violations the MOVE introduces: a pair that is
+     * already uncertified in the committed state (a refuted seed, or a pair whose entry stopped separating under
+     * an earlier Pass-0 repair) is exempt, so that a pre-existing violation cannot veto every later candidate
+     * (observed 2026-10-23: one such pair vetoed 599 candidates in a row). Known separators are cached only;
+     * they are NOT written into S, since the carried graph must stay the projection of S.
+     * <p>
+     * What this does and does not give: with it, every committed state after Pass 0 asserts no independence the
+     * test has not confirmed (at imapAlpha). Correctness of the gated search then rests on the "GMC for
+     * projections" conjecture (from every I-map projection state other than G*, some single projection move with
+     * a true separator reaches another I-map state), exhaustively supported at 5 observed variables and so far at
+     * 6, open in general. On data (2026-10-21, with imapAlpha = alpha) it reduced accuracy: each false "dependent"
+     * vetoes a correct move. The separate, smaller imapAlpha is the attempt to fix that.
+     */
+    private boolean requireImapStates = false;
+    /**
+     * Whether Pass 0 runs (default true). Pass 0 is not in Bryan's pseudocode: it re-selects seeded sepset entries
+     * the test refutes. 2026-10-23, 20+5 variables, n = 1000, 10 models: the RICF-score arm, which removed
+     * almost no edges, still lost 7 points of arrowhead precision relative to the BOSS start; Pass 0 is the only
+     * other source of change, so this switch exists to measure it.
+     */
+    private boolean usePass0 = true;
+    /**
+     * EXPERIMENTAL (2026-10-24). Keep S P-FAITHFUL: after every commit, each entry S(x,z) that no longer
+     * m-separates x,z in the committed graph (its Zhang MAG) is replaced by a separator that does (recursive
+     * blocking). Entries that still separate are left alone. Default false.
+     * <p>
+     * Why. For a total map of separators OF THE CURRENT PAG P, the projection is P itself (any separator decides
+     * every unshielded collider; R4 reads P-separators; Zhang's rules complete), so re-harvesting preserves
+     * G = proj(S). With S P-faithful, the generalized Meek conjecture (GMC) implies the no-stall property of the
+     * I-map-gated search: take a GMC path from a MAG of P to M*; the class P'' right after its first deletion
+     * (a,b) satisfies I(P) &sube; I(P''), so S's entries are P''-separators, any P''-separator C of a,b completes a
+     * total P''-separator map, and proj(S + {(a,b) -&gt; C}) = P'' -- legal, an I-map, one edge fewer. The mark
+     * changes GMC may need before that deletion are absorbed by re-projection. Without P-faithfulness the
+     * projection of S + {C} need not be P'' (S-faithfulness failure, seen in accepted states), and GMC gives
+     * nothing. Remaining lemma, not yet written out: C lies in the pools computed in P (possible-D-SEP
+     * monotonicity for comparable I-maps, modulo the depth clamp).
+     * <p>
+     * On data a re-harvested entry is graph-derived, not test-confirmed; the I-map gate treats it as unconfirmed
+     * until a check tests it. In the oracle, from an I-map state, every re-harvested entry is a true separator.
+     * When verbose, the idempotence claim is checked after each re-harvest by re-projecting and comparing.
+     */
+    private boolean reharvestSepsets = false;
+    /** Pairs whose entry was re-harvested from the graph and not (yet) test-confirmed. */
+    private final Set<Set<Node>> unconfirmedEntries = new HashSet<>();
+    /** Re-harvest tallies. */
+    private int reharvestedEntries = 0, reharvestFailures = 0, reprojectionMismatches = 0;
+    /**
+     * Significance level of the I-map check's tests, applied to the test's p-value when the test reports a
+     * probability (else the test's own verdict is used). Smaller than the removal alpha by design: a veto should
+     * need a STRONG dependence. Default 0.001.
+     */
+    private double imapAlpha = 0.001;
+    /**
+     * Known test-confirmed separators per pair for the I-map check: the committed entry plus any separator an
+     * earlier check found independent. A cache, never written to S.
+     */
+    private final Map<Set<Node>, List<Set<Node>>> knownSeparators = new HashMap<>();
+    /** Pairs whose seeded entry the test refuted: their entry is not a known separator. */
+    private final Set<Set<Node>> refutedSeeds = new HashSet<>();
+    /** Pairs uncertified in the committed state; exempt from the check (violations predating the move). */
+    private Set<Set<Node>> baselineUncertified = new HashSet<>();
+    /** I-map check tallies for the end-of-run summary. */
+    private int imapCandidates = 0, imapVetoes = 0, imapTests = 0, imapIndeterminate = 0;
     /** First separating set found for each pair, cached across visits (survives gate rejections). */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
     /**
@@ -227,6 +298,11 @@ public final class BfciBryan implements IGraphSearch {
 
         SepsetMap sepsetMap = new SepsetMap();
         foundSepsets.clear();
+        knownSeparators.clear();
+        refutedSeeds.clear();
+        unconfirmedEntries.clear();
+        reharvestedEntries = reharvestFailures = reprojectionMismatches = 0;
+        imapCandidates = imapVetoes = imapTests = imapIndeterminate = 0;
 
         // SEEDING (see class doc): a TOTAL sepset map from the DAG representative D -- for each nonadjacent
         // pair, PA(a) if it d-separates a and b in D, else PA(b) (one always does: nonadjacent nodes cannot
@@ -259,6 +335,7 @@ public final class BfciBryan implements IGraphSearch {
 
                 if (!independenceTest.checkIndependence(a, b, sepMapped).isIndependent()) {
                     pendingReselect.add(new Node[]{a, b});
+                    refutedSeeds.add(Set.of(a, b));
                 }
             }
         }
@@ -277,10 +354,12 @@ public final class BfciBryan implements IGraphSearch {
                     + " seeded sepset(s) failed the test and are queued for re-selection.");
         }
 
+        if (requireImapStates) refreshBaseline(pag, sepsetMap);
+
         // Pass 0: re-select seeded sepsets the test rejects, by the ordinary edge-visit loop (the pair is
         // already nonadjacent, so the trial's removeEdge is a no-op; only the entry changes). Gated like
         // everything else; a pair with no accepted candidate keeps D's entry and is retried after Pass 2.
-        pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
+        if (usePass0) pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
 
         // Pass 1: adjacency subsets, to a fixpoint.
         boolean changed;
@@ -340,11 +419,23 @@ public final class BfciBryan implements IGraphSearch {
         }
 
         // Pass 0 again for pairs still pending: removals since may have made a re-selection legal.
-        pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
+        if (usePass0) pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
 
         // Saturating step: clears states in which no single removal is legal (see the field doc).
         if (useSaturatingStep) {
             pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, selection);
+        }
+
+        if (reharvestSepsets) {
+            TetradLogger.getInstance().log("BFCI-Bryan re-harvest summary: entries re-harvested = "
+                    + reharvestedEntries + ", pairs with no separator found = " + reharvestFailures
+                    + (verbose ? ", re-projection mismatches = " + reprojectionMismatches : "") + ".");
+        }
+
+        if (requireImapStates) {
+            TetradLogger.getInstance().log("BFCI-Bryan I-map gate summary (imapAlpha = " + imapAlpha
+                    + "): legal candidates checked = " + imapCandidates + ", vetoed = " + imapVetoes
+                    + ", tests spent = " + imapTests + ", indeterminate separators = " + imapIndeterminate + ".");
         }
 
         // Uniform final knowledge refinement, as in StarFci: covers the path on which no removal ever
@@ -392,6 +483,7 @@ public final class BfciBryan implements IGraphSearch {
             if (next != null) {
                 pag = next;
                 it.remove();
+                refutedSeeds.remove(Set.of(a, b));
             }
         }
         return pag;
@@ -449,11 +541,19 @@ public final class BfciBryan implements IGraphSearch {
             PagLegalityCheck.LegalPagRet legal =
                     legalPagModuloKnowledge(trial, new LinkedHashSet<>(selection), trialOrient);
 
+            if (legal.isLegalPag() && requireImapStates && !isImapOfTest(trial, trialMap,
+                    "saturating batch " + formatBatch(batch))) {
+                continue;
+            }
+
             if (legal.isLegalPag()) {
                 for (Set<Node> pair : batch) {
                     List<Node> pn = new ArrayList<>(pair);
                     sepsetMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
                 }
+                for (Set<Node> pair : batch) unconfirmedEntries.remove(pair);
+                if (reharvestSepsets) reharvest(trial, sepsetMap, cpdag, nodes);
+                if (requireImapStates) refreshBaseline(trial, sepsetMap);
                 if (verbose) {
                     TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
                             + stalled.size() + " edge(s) jointly (legal PAG): " + formatBatch(batch) + ".");
@@ -534,8 +634,16 @@ public final class BfciBryan implements IGraphSearch {
                 PagLegalityCheck.LegalPagRet legal =
                         legalPagModuloKnowledge(_pag, new LinkedHashSet<>(selection), trialOrient);
 
+                if (legal.isLegalPag() && requireImapStates
+                        && !isImapOfTest(_pag, trialMap, a + " -- " + b + " | " + C)) {
+                    continue;   // I-map veto: nothing committed; try the next separating set
+                }
+
                 if (legal.isLegalPag()) {
                     sepsetMap.set(a, b, C);
+                    unconfirmedEntries.remove(Set.of(a, b));
+                    if (reharvestSepsets) reharvest(_pag, sepsetMap, cpdag, nodes);
+                    if (requireImapStates) refreshBaseline(_pag, sepsetMap);
                     if (verbose) {
                         TetradLogger.getInstance().log("Removed edge " + a + " -- " + b + " (" + type
                                 + ", legal PAG); sepset = " + C + " (gate trial " + gateTrials + ").");
@@ -555,6 +663,190 @@ public final class BfciBryan implements IGraphSearch {
         }
 
         return null;
+    }
+
+    /**
+     * The I-map check (see {@link #requireImapStates}): the candidate passes iff every nonadjacent pair of its
+     * Zhang MAG that is NOT already uncertified in the committed state has a test-confirmed separator.
+     */
+    private boolean isImapOfTest(Graph candidate, SepsetMap trialMap, String what) throws InterruptedException {
+        imapCandidates++;
+        Set<Node> bad = firstNewUncertifiedPair(candidate, trialMap, what);
+        if (bad != null) imapVetoes++;
+        return bad == null;
+    }
+
+    /**
+     * Recomputes the committed state's uncertified pairs after a commit (tests spent here are cached by the
+     * known-separator map and by the test itself).
+     */
+    private void refreshBaseline(Graph committed, SepsetMap map) throws InterruptedException {
+        Set<Set<Node>> base = new HashSet<>();
+        Graph mag;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(committed);
+        } catch (Exception e) {
+            baselineUncertified = base;
+            return;
+        }
+        List<Node> ns = mag.getNodes();
+        for (int i = 0; i < ns.size(); i++) {
+            for (int j = i + 1; j < ns.size(); j++) {
+                Node x = ns.get(i), z = ns.get(j);
+                if (x.getNodeType() != NodeType.MEASURED || z.getNodeType() != NodeType.MEASURED) continue;
+                if (mag.isAdjacentTo(x, z)) continue;
+                if (!certified(mag, map, x, z, null)) base.add(Set.of(x, z));
+            }
+        }
+        if (verbose && !base.isEmpty()) {
+            TetradLogger.getInstance().log("\tI-map gate: committed state has " + base.size()
+                    + " uncertified pair(s), exempt until repaired: " + base);
+        }
+        baselineUncertified = base;
+    }
+
+    /**
+     * Returns the first nonadjacent pair of the candidate's Zhang MAG that is uncertified and not exempt, or null
+     * if none (the candidate introduces no uncertified independence).
+     */
+    private Set<Node> firstNewUncertifiedPair(Graph candidate, SepsetMap trialMap, String what)
+            throws InterruptedException {
+        Graph mag;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(candidate);
+        } catch (Exception e) {
+            if (verbose) TetradLogger.getInstance().log("\tI-map gate: no Zhang MAG for " + what + "; vetoed.");
+            return Set.of();
+        }
+
+        List<Node> ns = mag.getNodes();
+        for (int i = 0; i < ns.size(); i++) {
+            for (int j = i + 1; j < ns.size(); j++) {
+                Node x = ns.get(i), z = ns.get(j);
+                if (x.getNodeType() != NodeType.MEASURED || z.getNodeType() != NodeType.MEASURED) continue;
+                if (mag.isAdjacentTo(x, z)) continue;
+                Set<Node> key = Set.of(x, z);
+                if (baselineUncertified.contains(key)) continue;
+                if (!certified(mag, trialMap, x, z, what)) return key;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Re-harvest (see {@link #reharvestSepsets}): replace each entry that no longer m-separates its pair in the
+     * committed graph's Zhang MAG by a recursive-blocking separator in that MAG. Replaced entries are marked
+     * unconfirmed for the I-map gate. When verbose, re-projects and reports any mismatch with the committed graph.
+     */
+    private void reharvest(Graph committed, SepsetMap map, Graph cpdag, List<Node> nodes) throws InterruptedException {
+        Graph mag;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(committed);
+        } catch (Exception e) {
+            return;
+        }
+
+        List<Node> ns = mag.getNodes();
+        int changed = 0;
+
+        for (int i = 0; i < ns.size(); i++) {
+            for (int j = i + 1; j < ns.size(); j++) {
+                Node x = ns.get(i), z = ns.get(j);
+                if (mag.isAdjacentTo(x, z)) continue;
+                Set<Node> entry = map.get(x, z);
+                if (entry != null && mag.paths().isMSeparatedFrom(x, z, entry, false)) continue;
+
+                Set<Node> d;
+                try {
+                    RecursiveBlocking.BlockingResult b = RecursiveBlocking.blockPathsRecursively(
+                            mag, x, z, Set.of(), Set.of(), -1, -1, -1, 1, true);
+                    d = (b == null || b.indeterminate() || b.blockingSet() == null) ? null : new HashSet<>(b.blockingSet());
+                } catch (Exception e) {
+                    d = null;
+                }
+
+                if (d == null || !mag.paths().isMSeparatedFrom(x, z, d, false)) {
+                    reharvestFailures++;
+                    if (verbose) {
+                        TetradLogger.getInstance().log("\tRe-harvest: no separator found for " + x + ", " + z
+                                + " in the committed MAG; entry left as " + entry + ".");
+                    }
+                    continue;
+                }
+
+                d.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+                map.set(x, z, d);
+                unconfirmedEntries.add(Set.of(x, z));
+                reharvestedEntries++;
+                changed++;
+                if (verbose) {
+                    TetradLogger.getInstance().log("\tRe-harvest: S(" + x + ", " + z + ") " + entry + " -> " + d + ".");
+                }
+            }
+        }
+
+        if (verbose && changed > 0) {
+            // Idempotence check: a total map of P-separators should project back to P.
+            Graph re = committed.copy();
+            gfciOrientPag(re, cpdag, nodes, new SepsetMap(map), buildFciOrient(new SepsetMap(map)));
+            if (!re.equals(committed)) {
+                reprojectionMismatches++;
+                TetradLogger.getInstance().log("\tRe-harvest: WARNING, re-projection of the re-harvested map differs "
+                        + "from the committed graph (idempotence failure); G = proj(S) does not hold here.");
+            }
+        }
+    }
+
+    /**
+     * Whether x,z (nonadjacent in mag) has a test-confirmed separator: a known separator (the map entry, unless
+     * the pair is a refuted seed, or a cached confirmed set) that m-separates them in mag; failing that, the
+     * recursive-blocking separator in mag, tested once at imapAlpha and cached if independent.
+     */
+    private boolean certified(Graph mag, SepsetMap map, Node x, Node z, String what) throws InterruptedException {
+        Set<Node> key = Set.of(x, z);
+        List<Set<Node>> known = new ArrayList<>();
+        Set<Node> entry = map.get(x, z);
+        if (entry != null && !refutedSeeds.contains(key) && !unconfirmedEntries.contains(key)) known.add(entry);
+        List<Set<Node>> cached = knownSeparators.get(key);
+        if (cached != null) known.addAll(cached);
+
+        for (Set<Node> sep : known) {
+            if (mag.paths().isMSeparatedFrom(x, z, sep, false)) return true;
+        }
+
+        Set<Node> d;
+        try {
+            RecursiveBlocking.BlockingResult b = RecursiveBlocking.blockPathsRecursively(
+                    mag, x, z, Set.of(), Set.of(), -1, -1, -1, 1, true);
+            d = (b == null || b.indeterminate() || b.blockingSet() == null) ? null : new HashSet<>(b.blockingSet());
+        } catch (Exception e) {
+            d = null;
+        }
+
+        if (d == null || !mag.paths().isMSeparatedFrom(x, z, d, false)) {
+            imapIndeterminate++;
+            if (verbose && what != null) {
+                TetradLogger.getInstance().log("\tI-map gate: no separator found for " + x + ", " + z
+                        + " in the candidate MAG (" + what + "); vetoed.");
+            }
+            return false;
+        }
+
+        d.removeIf(n -> n.getNodeType() == NodeType.LATENT);
+        imapTests++;
+        IndependenceResult r = independenceTest.checkIndependence(x, z, d);
+        boolean indep = independenceTest.isPValueAProbability() ? r.getPValue() > imapAlpha : r.isIndependent();
+
+        if (!indep) {
+            if (verbose && what != null) {
+                TetradLogger.getInstance().log("\tI-map gate: " + what + " asserts " + x + " _||_ " + z + " | " + d
+                        + ", judged dependent (p = " + r.getPValue() + "); vetoed.");
+            }
+            return false;
+        }
+
+        knownSeparators.computeIfAbsent(key, k -> new ArrayList<>()).add(d);
+        return true;
     }
 
     /**
@@ -867,5 +1159,42 @@ public final class BfciBryan implements IGraphSearch {
             throw new IllegalArgumentException("Number of threads must be at least 1: " + numThreads);
         }
         this.numThreads = numThreads;
+    }
+
+    /**
+     * Turns the experimental I-map gate on or off (default off); see {@link #requireImapStates}.
+     *
+     * @param requireImapStates true to require every committed state after Pass 0 to be an I-map of the test.
+     */
+    public void setRequireImapStates(boolean requireImapStates) {
+        this.requireImapStates = requireImapStates;
+    }
+
+    /**
+     * Sets the significance level of the I-map gate's tests (default 0.001); see {@link #imapAlpha}.
+     *
+     * @param imapAlpha a level in [0, 1].
+     */
+    public void setImapAlpha(double imapAlpha) {
+        if (!(imapAlpha >= 0 && imapAlpha <= 1)) throw new IllegalArgumentException("imapAlpha must be in [0, 1]");
+        this.imapAlpha = imapAlpha;
+    }
+
+    /**
+     * Turns Pass 0 (re-selection of test-refuted seeded sepsets) on or off; default on. See {@link #usePass0}.
+     *
+     * @param usePass0 false to skip Pass 0, leaving D's entries in S even where the test refutes them.
+     */
+    public void setUsePass0(boolean usePass0) {
+        this.usePass0 = usePass0;
+    }
+
+    /**
+     * Turns sepset re-harvesting on or off (default off); see {@link #reharvestSepsets}.
+     *
+     * @param reharvestSepsets true to keep every entry of S a separator in the committed graph.
+     */
+    public void setReharvestSepsets(boolean reharvestSepsets) {
+        this.reharvestSepsets = reharvestSepsets;
     }
 }

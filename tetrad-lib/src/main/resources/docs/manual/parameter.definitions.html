@@ -8522,6 +8522,54 @@ Source:
             Type: <span id="useMaxPOrientationHeuristic_value_type">Boolean</span></li>
     </ul>
 
+    === reharvestSepsets ===
+    <h3 class="parameter_description" id="reharvestSepsets">reharvestSepsets</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="reharvestSepsets_short_desc">Experimental: keep the sepset map faithful to the current PAG (re-harvest after each commit)</span></li>
+        <li>Long Description: <span id="reharvestSepsets_long_desc">In BFCI-Bryan, after each accepted removal, replace every recorded separating set that no longer m-separates its pair in the committed graph by a separator that does. A total map of separators of the current PAG projects back to that PAG, so the carried graph is unchanged; what changes is that later removals are projected from separators of the current graph rather than of earlier ones. With this on, the generalized Meek conjecture implies that the I-map-gated search never stalls. On data, re-harvested entries are graph-derived rather than test-confirmed.</span></li>
+        <li>Default Value: <span id="reharvestSepsets_default_value">false</span></li>
+        <li>Lower Bound: <span id="reharvestSepsets_lower_bound"></span></li>
+        <li>Upper Bound: <span id="reharvestSepsets_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="reharvestSepsets_value_type">Boolean</span></li>
+    </ul>
+
+    === requireImapStates ===
+    <h3 class="parameter_description" id="requireImapStates">requireImapStates</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="requireImapStates_short_desc">Experimental: require each state the legality gate accepts to be an I-map of the test</span></li>
+        <li>Long Description: <span id="requireImapStates_long_desc">In BFCI-Bryan and FCIT, additionally require every candidate accepted by the legality gate (single-edge passes and saturating step) to be an I-map of the independence test: for each nonadjacent pair of the candidate's MAG, a separator in that MAG must be judged independent at imapAlpha. A pair passes without a test when a known test-confirmed separator still m-separates it; otherwise one recursive-blocking separator is tested. Pairs whose seeded sepset the test refuted are exempt. Spends tests, so on data a false dependence becomes a veto.</span></li>
+        <li>Default Value: <span id="requireImapStates_default_value">false</span></li>
+        <li>Lower Bound: <span id="requireImapStates_lower_bound"></span></li>
+        <li>Upper Bound: <span id="requireImapStates_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="requireImapStates_value_type">Boolean</span></li>
+    </ul>
+
+    === imapAlpha ===
+    <h3 class="parameter_description" id="imapAlpha">imapAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="imapAlpha_short_desc">Significance level for the I-map gate's tests (default 0.001)</span></li>
+        <li>Long Description: <span id="imapAlpha_long_desc">The I-map gate vetoes a candidate when a separator it asserts tests dependent at this level. Kept separate from, and smaller than, the removal alpha so that a veto requires a strong dependence; this reduces false vetoes from test noise. Applied to the test's p-value when it is a probability; otherwise the test's own verdict is used.</span></li>
+        <li>Default Value: <span id="imapAlpha_default_value">0.001</span></li>
+        <li>Lower Bound: <span id="imapAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="imapAlpha_upper_bound">1.0</span></li>
+        <li>Value Type:
+            <span id="imapAlpha_value_type">Double</span></li>
+    </ul>
+
+    === usePass0 ===
+    <h3 class="parameter_description" id="usePass0">usePass0</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="usePass0_short_desc">BFCI-Bryan: run Pass 0 (re-select seeded sepsets the test refutes)</span></li>
+        <li>Long Description: <span id="usePass0_long_desc">The sepset map is seeded from the initial DAG with parent sets. Pass 0 re-selects, under the legality gate, each seeded entry the independence test refutes. Turn off to keep the DAG's entries regardless of the test, as in the original pseudocode; this isolates the effect of Pass 0, which can change orientations without removing any edge.</span></li>
+        <li>Default Value: <span id="usePass0_default_value">true</span></li>
+        <li>Lower Bound: <span id="usePass0_lower_bound"></span></li>
+        <li>Upper Bound: <span id="usePass0_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="usePass0_value_type">Boolean</span></li>
+    </ul>
+
     === useSaturatingStep ===
     <h3 class="parameter_description" id="useSaturatingStep">useSaturatingStep</h3>
     <ul class="parameter_description_list">

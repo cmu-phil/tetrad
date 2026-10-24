@@ -193,6 +193,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 //        fcit.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);  // or POOL_ONLY
 
         fcit.setUseMarkFlipEscalation(true);
+        fcit.setRequireImapStates(parameters.getBoolean(Params.REQUIRE_IMAP_STATES));
+        fcit.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
 
         // Wall-clock per-pair budget. NOTE: this makes runs NONDETERMINISTIC -- a machine under load explores a
         // different candidate family and can return a different graph. For enumeration harnesses and any experiment
@@ -401,6 +403,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TEST_TIMEOUT);
+        params.add(Params.REQUIRE_IMAP_STATES);
+        params.add(Params.IMAP_ALPHA);
 
         // General
         params.add(Params.TIME_LAG);
