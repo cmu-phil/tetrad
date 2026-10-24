@@ -79,7 +79,8 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
         try {
             WorkbenchStyle.applyHints(g2);
             DisplayNodeUtils.paintNode(g2, getShape(), getName(), getPreferredSize(),
-                    WorkbenchStyle.latentFill(), isSelected());
+                    WorkbenchStyle.latentFill(), isSelected(),
+                    DisplayNodeUtils.scaledFont(this, WorkbenchStyle.nodeFont()));
         } finally {
             g2.dispose();
         }
@@ -90,10 +91,12 @@ public class LatentDisplayComp extends JComponent implements DisplayComp {
      */
     @Override
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(WorkbenchStyle.nodeFont());
-        int width = fm.stringWidth(getName()) + fm.getMaxAdvance() + 5;
-        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 5;
-        width = Math.max(width, 60);
+        double scale = DisplayNodeUtils.scaleOf(this);
+        FontMetrics fm = getFontMetrics(DisplayNodeUtils.scaledFont(this, WorkbenchStyle.nodeFont()));
+        int width = fm.stringWidth(getName()) + fm.getMaxAdvance() + (int) Math.round(5 * scale);
+        int height = 2 * (int) Math.round(DisplayNodeUtils.getPixelGap() * scale) + fm.getAscent()
+                + (int) Math.round(5 * scale);
+        width = Math.max(width, (int) Math.round(60 * scale));
         return new Dimension(width, height);
     }
 
