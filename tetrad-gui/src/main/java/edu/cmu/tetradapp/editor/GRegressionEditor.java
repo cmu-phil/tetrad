@@ -1,5 +1,7 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.GRegression;
@@ -385,7 +387,7 @@ public final class GRegressionEditor extends JPanel {
 
         JTextArea area = new JTextArea(sb.toString());
         area.setEditable(false);
-        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setFont(ThemeUtils.monospaced(12));
         area.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
         JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this),

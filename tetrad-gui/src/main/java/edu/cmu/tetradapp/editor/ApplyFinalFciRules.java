@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.FciOrient;
@@ -93,7 +95,7 @@ public class ApplyFinalFciRules extends AbstractAction implements ClipboardOwner
         group.add(useRef);
 
         JTextArea refArea = new JTextArea(14, 50);
-        refArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        refArea.setFont(ThemeUtils.monospaced(12));
         refArea.setEnabled(false);
         useSelf.addActionListener(ev -> refArea.setEnabled(false));
         useRef.addActionListener(ev -> refArea.setEnabled(true));

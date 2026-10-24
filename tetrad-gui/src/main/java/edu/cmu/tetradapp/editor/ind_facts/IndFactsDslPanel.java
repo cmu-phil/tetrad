@@ -1,5 +1,7 @@
 package edu.cmu.tetradapp.editor.ind_facts;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -28,7 +30,7 @@ public final class IndFactsDslPanel extends JPanel {
         this.varNames = new ArrayList<>(Objects.requireNonNull(varNames));
         this.adjMap = adjMap;
 
-        editor.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        editor.setFont(ThemeUtils.monospaced(13));
         editor.setText("""
                 # Examples:
                 X10 _||_ X1 | X3 +k(0..2)
@@ -54,7 +56,7 @@ public final class IndFactsDslPanel extends JPanel {
 
         highlighter = editor.getHighlighter();
 
-        output.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        output.setFont(ThemeUtils.monospaced(12));
         output.setEditable(false);
 
         JButton preview = new JButton("Preview");

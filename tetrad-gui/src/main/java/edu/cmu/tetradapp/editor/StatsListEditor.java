@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
@@ -109,7 +111,7 @@ public class StatsListEditor extends JPanel {
 
         this.area.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        this.area.setFont(new Font(Font.MONOSPACED, Font.BOLD, 14));
+        this.area.setFont(ThemeUtils.monospaced(14, Font.BOLD));
 //        this.area.setPreferredSize(new Dimension(1200, 1800));
 
         JScrollPane pane = new JScrollPane(this.area);

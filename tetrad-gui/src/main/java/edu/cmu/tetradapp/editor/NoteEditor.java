@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetradapp.model.NoteModel;
 import edu.cmu.tetradapp.util.StringTextField;
 
@@ -56,7 +58,7 @@ public class NoteEditor extends JPanel {
     //============================ Private Methods =========================//
 
     private void setup() {
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        Font font = ThemeUtils.monospaced(14);
         JTextPane textPane = new JTextPane(this.noteModel.getNote());
         JTextField field = new StringTextField(this.noteModel.getName(), 20);
 

@@ -29,6 +29,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.algcomparison.independence.BlockIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
@@ -198,7 +200,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
         setPreferredSize(new Dimension(1100, 650));
 
         // DSL pane setup
-        dslPane.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        dslPane.setFont(ThemeUtils.monospaced(13));
         dslPane.setText(defaultDslText());
         this.highlighter = dslPane.getHighlighter();
 

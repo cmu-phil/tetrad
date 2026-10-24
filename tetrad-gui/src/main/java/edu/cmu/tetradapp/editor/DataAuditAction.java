@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.audit.AuditFinding;
@@ -1113,7 +1115,7 @@ class DataAuditAction extends AbstractAction {
 
         JTextArea area = new JTextArea(text);
         area.setEditable(false);
-        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setFont(ThemeUtils.monospaced(12));
         area.setCaretPosition(0);
 
         JButton copy = new JButton("Copy to Clipboard");

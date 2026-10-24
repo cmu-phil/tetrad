@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.missing.RubinsRules;
@@ -262,7 +264,7 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         report.addActionListener((e) -> {
             JTextArea textArea = new JTextArea(compileReport());
             textArea.setEditable(false);
-            textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+            textArea.setFont(ThemeUtils.monospaced(12));
             textArea.setCaretPosition(0);
 
             JScrollPane scroll = new JScrollPane(textArea);
@@ -356,7 +358,7 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
                             SwingUtilities.invokeLater(() -> {
                                 JTextArea textArea = new JTextArea(text);
                                 textArea.setEditable(false);
-                                textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+                                textArea.setFont(ThemeUtils.monospaced(12));
                                 textArea.setCaretPosition(0);
 
                                 JScrollPane scroll = new JScrollPane(textArea);

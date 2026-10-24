@@ -1,5 +1,7 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.GraphUtils;
@@ -379,7 +381,7 @@ public final class HybridCgEstimatorEditor extends JPanel {
 
         JTextArea text = new JTextArea(report.toString(), 20, 80);
         text.setEditable(false);
-        text.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        text.setFont(ThemeUtils.monospaced(12));
         text.setCaretPosition(0);
         Object[] options = report.getDeletions().isEmpty()
                 ? new Object[]{"Close"}
