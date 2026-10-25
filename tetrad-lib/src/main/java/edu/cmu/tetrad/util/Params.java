@@ -1204,6 +1204,14 @@ public final class Params {
      */
     public static final String MISSING_NUM_IMPUTATIONS = "missingNumImputations";
     /**
+     * Constant <code>MISSING_TESTWISE_COMMON_ROWS="missingTestwiseCommonRows"</code>. Experimental. Under the
+     * "testwise" policy, compute each local score difference on the rows shared by its two sides, so that each
+     * decision is a nested-model likelihood ratio on one sample. Honored only by searches that decide through
+     * localScoreDiff (e.g., FGES) on scores that implement it (currently SEM BIC); sums of local scores (BOSS,
+     * GRaSP) are unaffected. Default false.
+     */
+    public static final String MISSING_TESTWISE_COMMON_ROWS = "missingTestwiseCommonRows";
+    /**
      * Constant <code>MNAR_NUM_EXTRA_INFLUENCES="mnarNumExtraInfluences"</code>
      */
     public static final String MNAR_NUM_EXTRA_INFLUENCES = "mnarNumExtraInfluences";

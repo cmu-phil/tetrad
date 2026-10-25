@@ -5024,6 +5024,28 @@ Source:
         <li>Value Type: <span id="missingNumImputations_value_type">Integer</span></li>
     </ul>
 
+    === missingTestwiseCommonRows ===
+    <h3 class="parameter_description" id="missingTestwiseCommonRows">missingTestwiseCommonRows</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingTestwiseCommonRows_short_desc">Experimental: under the "testwise"
+                policy, compute each local score comparison on the rows its two sides share</span></li>
+        <li>Long Description: <span id="missingTestwiseCommonRows_long_desc">
+        Under test-wise deletion, the two sides of a local score comparison are by default fit on
+        different row sets, so their difference is not a likelihood ratio of anything well defined,
+        and searches tend to add too many edges. With this option, each comparison is instead
+        computed on the rows complete on all of the variables it involves, making it a nested-model
+        likelihood ratio on one sample, with the BIC penalty at that sample's own row count. This is
+        honored only by searches that decide through local score differences (e.g., FGES) on scores
+        that implement it (currently SEM BIC); searches that optimize a sum of local scores (BOSS,
+        GRaSP) are unaffected by it, since their objective has no per-comparison row set. Precision
+        is typically bought at a cost in recall, as fewer rows support each decision. Used only when
+        missingDataPolicy is "testwise".</span></li>
+        <li>Default Value: <span id="missingTestwiseCommonRows_default_value">false</span></li>
+        <li>Lower Bound: <span id="missingTestwiseCommonRows_lower_bound"></span></li>
+        <li>Upper Bound: <span id="missingTestwiseCommonRows_upper_bound"></span></li>
+        <li>Value Type: <span id="missingTestwiseCommonRows_value_type">Boolean</span></li>
+    </ul>
+
     === mnarNumExtraInfluences ===
     <h3 class="parameter_description" id="mnarNumExtraInfluences">mnarNumExtraInfluences</h3>
     <ul class="parameter_description_list">

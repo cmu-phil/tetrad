@@ -79,6 +79,9 @@ public class SemBicScore implements ScoreWrapper {
             MissingDataSpec missingDataSpec = MissingDataUtils.fromParameters(parameters);
             semBicScore = new edu.cmu.tetrad.search.score.SemBicScore((DataSet) this.dataSet, precomputeCovariances,
                     missingDataSpec);
+            // Experimental; has effect only on the test-wise deletion path, and only for searches that decide
+            // through localScoreDiff (e.g., FGES). See Params.MISSING_TESTWISE_COMMON_ROWS.
+            semBicScore.setTestwiseCommonRowsDiff(parameters.getBoolean(Params.MISSING_TESTWISE_COMMON_ROWS, false));
         } else if (dataSet instanceof ICovarianceMatrix) {
             semBicScore = new edu.cmu.tetrad.search.score.SemBicScore((ICovarianceMatrix) this.dataSet);
         } else {
@@ -146,6 +149,7 @@ public class SemBicScore implements ScoreWrapper {
         parameters.add(Params.MISSING_EM_TOLERANCE);
         parameters.add(Params.MISSING_EM_MAX_ITERATIONS);
         parameters.add(Params.MISSING_ESS_MODE);
+        parameters.add(Params.MISSING_TESTWISE_COMMON_ROWS);
         return parameters;
     }
 
