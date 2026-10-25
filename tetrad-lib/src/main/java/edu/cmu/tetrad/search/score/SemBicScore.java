@@ -149,6 +149,11 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
      */
     private double lambda = 0.0;
     private int nEff;
+    /**
+     * Experimental: under test-wise deletion, compute each localScoreDiff on the rows shared by its two sides.
+     * Off by default; see setTestwiseCommonRowsDiff.
+     */
+    private boolean testwiseCommonRowsDiff = false;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -583,9 +588,68 @@ public class SemBicScore implements Score, EffectiveSampleSizeSettable, Provides
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
             return nandyBic(x, y, z);
+        } else if (this.calculateRowSubsets && this.testwiseCommonRowsDiff) {
+            return commonRowsDiff(x, y, z);
         } else {
             return localScore(y, append(z, x)) - localScore(y, z);
         }
+    }
+
+    /**
+     * Experimental. Under test-wise deletion, makes {@link #localScoreDiff(int, int, int[])} compute both sides of
+     * each comparison on one shared row set--the rows complete on the child, the current parents, and the
+     * candidate--so that the difference is a genuine nested-model likelihood ratio on one sample, with the
+     * standard BIC penalty at that sample's own row count. The default difference of two local scores instead
+     * subtracts fits computed on different row sets, which is not a likelihood ratio of anything well defined and
+     * empirically over-adds edges. Only searches that decide through localScoreDiff (FGES) are affected; sums of
+     * local scores (BOSS, GRaSP via TeyssierScorer) do not call it and have no coherent analogue of this fix. The
+     * effective-sample-size mode is deliberately ignored here: the shared rows are an actual sample, and the
+     * penalty uses their actual count. Off by default; no effect on complete data or under any
+     * covariance-estimating policy.
+     *
+     * @param testwiseCommonRowsDiff True to turn the common-rows difference on.
+     */
+    public void setTestwiseCommonRowsDiff(boolean testwiseCommonRowsDiff) {
+        this.testwiseCommonRowsDiff = testwiseCommonRowsDiff;
+    }
+
+    /**
+     * The common-rows score difference for adding x as a parent of y given parents z: both residual variances are
+     * fit on the m rows complete on {y} union z union {x}, giving 2 delta-lik = m log(var(y|z) / var(y|z,x)),
+     * penalized by the penalty discount times log m for the one added parameter, with the structure-prior
+     * difference matching {@link #localScore(int, int...)}. Returns NaN when the shared rows cannot support both
+     * fits, which the searches treat as unscorable, as they do for NaN local scores.
+     */
+    private double commonRowsDiff(int x, int y, int[] z) {
+        int[] zx = append(z, x);
+        List<Integer> rows = TestwiseRows.forMatrix(this.data).validRows(concat(y, zx));
+        int m = rows.size();
+
+        // Both fits need more rows than columns; getCov enforces the same bound by throwing.
+        if (m <= zx.length + 1) return Double.NaN;
+
+        try {
+            double varSmall = residualVarianceOnRows(y, z, rows);
+            double varLarge = residualVarianceOnRows(y, zx, rows);
+
+            if (!(varSmall > 0) || !(varLarge > 0)) return Double.NaN;
+
+            double lr = m * log(varSmall / varLarge);
+            return lr - getPenaltyDiscount() * log(m)
+                   - (getStructurePrior(zx.length) - getStructurePrior(z.length));
+        } catch (SingularMatrixException e) {
+            noteSingularity(y, zx);
+            return Double.NaN;
+        }
+    }
+
+    /**
+     * The residual variance of the regression of variable i on the given parents, computed over exactly the given
+     * rows, with the same ridge handling as every other local fit in this score.
+     */
+    private double residualVarianceOnRows(int i, int[] parents, List<Integer> rows) {
+        CovAndCoefs cc = getCovAndCoefs(i, parents, this.data, this.covariances, this.lambda, rows);
+        return bStar(cc.b()).transpose().times(cc.cov()).times(bStar(cc.b())).get(0, 0);
     }
 
     /**

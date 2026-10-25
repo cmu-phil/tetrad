@@ -206,6 +206,17 @@ public final class TestwiseDeletionStudy {
             }
         }
 
+        // The common-rows difference: each FGES insert or delete decision is a nested-model likelihood ratio on
+        // the rows shared by its two sides, with the BIC penalty at that shared count. This is the per-decision
+        // repair of the incoherence the TESTWISE arms exhibit; it exists only for searches that decide through
+        // localScoreDiff, so there is no BOSS or GRaSP version. Advance prediction: it behaves like PC TESTWISE,
+        // holding precision near the oracle and paying in recall as families shrink.
+        arms.put("FGES TESTWISE (common rows)", (complete, missing) -> {
+            SemBicScore score = scoreFor(missing, MissingDataSpec.testwise());
+            score.setTestwiseCommonRowsDiff(true);
+            return new Fges(score).search();
+        });
+
         // PC with test-wise Fisher Z: per-test deletion, the estimator the consistency literature defends. Its
         // covariance counterpart is included for the same contrast the score arms draw.
         arms.put("PC ORACLE", (complete, missing) ->
