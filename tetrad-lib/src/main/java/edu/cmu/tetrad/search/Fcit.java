@@ -306,6 +306,24 @@ public final class Fcit implements IGraphSearch {
      */
     private long maxTestsPerPair = -1L;
     /**
+     * Whether the saturating pass (phase 2 of Thm. algorithm) runs. OFF stops
+     * after the single-edge fixpoint and detection: confirmed-spurious pairs
+     * whose single removals the legality gate rejected are reported by the
+     * final scan but never jointly removed, so the oracle correctness argument
+     * (Cor. saturation) no longer applies. Same semantics and default as
+     * {@code Params.USE_SATURATING_STEP} in the gated *-FCI variants.
+     */
+    private boolean useSaturatingStep = true;
+    /**
+     * Whether, after a gated single-edge removal reverts, the search continues
+     * through the pair's remaining data-valid separators in canonical order
+     * until one commits or the family exhausts (see
+     * {@link #retrySepsetsUntilCommit}). Default false: the certified
+     * configuration attempts only the first-found canonical separator per pair
+     * and relies on the saturating pass for discharge.
+     */
+    private boolean retrySepsetsOnRevert = false;
+    /**
      * Whether the final discriminating-path scan runs. OFF skips detection and
      * the discharge it feeds, so confirmed-spurious legs that neither
      * single-edge removal nor saturation caught are neither reported nor
@@ -740,7 +758,7 @@ public final class Fcit implements IGraphSearch {
                 TetradLogger.getInstance().log("\nRound: " + (++round));
             } while (removeEdgesRecursively(excludeSelectionBias, initialColliders));
 
-            if (saturatingPass(excludeSelectionBias, initialColliders)) {
+            if (useSaturatingStep && saturatingPass(excludeSelectionBias, initialColliders)) {
                 progressed = true;
                 lastScan = null;
                 continue;
@@ -806,7 +824,8 @@ public final class Fcit implements IGraphSearch {
      *
      * @return true if at least one edge was removed, false otherwise
      */
-    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples) {
+    private boolean removeEdgesRecursively(boolean excludeSelectionBias, Set<Triple> unshieldedTriples)
+            throws InterruptedException {
         if (superVerbose) {
             TetradLogger.getInstance().log("Removing extra edges (recursive-blocking sweep).");
         }
@@ -871,6 +890,15 @@ public final class Fcit implements IGraphSearch {
             boolean didChange = tryToModifyGraph(x, y, h.cond(), "recursive",
                     excludeSelectionBias, unshieldedTriples);
 
+            // Sepset retry (realizing the one-fewer-edge existential): the
+            // first-found separator induced a gate-rejected reorientation;
+            // search the rest of the pair's separator family for one whose
+            // removal commits.
+            if (!didChange && retrySepsetsOnRevert) {
+                didChange = retrySepsetsUntilCommit(x, y, h.cond(),
+                        excludeSelectionBias, unshieldedTriples);
+            }
+
             if (didChange) {
                 changedThisSweep = true;
             }
@@ -931,12 +959,39 @@ public final class Fcit implements IGraphSearch {
         // the nested enumerations can arrive at the same S by different routes.
         Set<Set<Node>> tried = new HashSet<>();
 
+        SweepOutcome out = searchForSepset(x, y, deadline, tried);
+        if (out.sepset() != null) {
+            return new IndependenceCheck(edge, out.sepset());
+        }
+
+        // Cache only a DEFINITE exhaustion. A budget-truncated failure could
+        // succeed on a later attempt with a fresh budget, so it is not cached.
+        if (!out.indeterminate()) {
+            sweepFailedAt.put(Set.of(x, y), graphVersion);
+        }
+
+        return null;
+    }
+
+    /**
+     * The separator search proper for one pair: the quick-subset shortcut (when
+     * enabled), the live-view sweep, and the conflict-driven mark-flip
+     * escalation, in that order, all skipping candidates already in
+     * {@code tried}. Candidates are tested in canonical order and every tested
+     * set enters {@code tried} before its test, so the search is RESUMABLE:
+     * seeding {@code tried} with separators already rejected yields the next
+     * data-valid separator in the canonical enumeration -- which is what the
+     * sepset-retry loop relies on.
+     */
+    private SweepOutcome searchForSepset(Node x, Node y, long deadline, Set<Set<Node>> tried)
+            throws InterruptedException {
+
         // Shortcut pass: small subsets of the common neighborhood, by increasing
         // size. Candidates feed `tried`, so the sweep below never retests them.
         if (quickSubsetDepth >= 0) {
             Set<Node> quick = quickCommonSubsetSepset(x, y, deadline, tried);
             if (quick != null) {
-                return new IndependenceCheck(edge, quick);
+                return new SweepOutcome(quick, false);
             }
         }
 
@@ -957,7 +1012,7 @@ public final class Fcit implements IGraphSearch {
             live = sweepForSepset(this.pag, x, y, deadline, tried);
         }
         if (live.sepset() != null) {
-            return new IndependenceCheck(edge, live.sepset());
+            return live;
         }
 
         // Conflict-driven mark-flip escalation: structure-guided -- the failed
@@ -966,17 +1021,65 @@ public final class Fcit implements IGraphSearch {
         if (useMarkFlipEscalation && conflicts != null && !conflicts.isEmpty()) {
             flip = markFlipEscalation(x, y, conflicts, deadline, tried);
             if (flip.sepset() != null) {
-                return new IndependenceCheck(edge, flip.sepset());
+                return flip;
             }
         }
 
-        // Cache only a DEFINITE exhaustion. A budget-truncated failure could
-        // succeed on a later attempt with a fresh budget, so it is not cached.
-        if (!live.indeterminate() && !flip.indeterminate()) {
-            sweepFailedAt.put(Set.of(x, y), graphVersion);
-        }
+        return new SweepOutcome(null, live.indeterminate() || flip.indeterminate());
+    }
 
-        return null;
+    /**
+     * Realization loop for the one-fewer-edge step: called after a pair's
+     * canonical separator was found but the gated removal reverted. Resumes the
+     * canonical separator enumeration past everything rejected so far and
+     * attempts a gated commit for each next data-valid separator in turn, until
+     * one commits or the family exhausts. On a commit the committed separator
+     * replaces the pair's cross-round record, so the pair's canonical separator
+     * becomes "first in canonical order that both separates AND commits" --
+     * still a deterministic function of the committed history.
+     *
+     * <p>Rationale: the reachability theorem guarantees that SOME legal
+     * orientation of the reduced skeleton exists, but the reorientation here is
+     * a function of the recorded separators, so the one orientation induced by
+     * the first-found separator can fail the gate while the orientation induced
+     * by a different data-valid separator passes it. This loop searches the
+     * pair's separator family instead of giving up after the first. It
+     * realizes the existential over THIS pair's separators only; separators
+     * committed for other pairs stay fixed, so it narrows, not closes, the gap
+     * between existence and realization.</p>
+     *
+     * <p>A definite exhaustion here is deliberately NOT cached in
+     * {@link #sweepFailedAt}: separators for the pair exist -- none of them
+     * commits at this state -- and a later state can accept one.</p>
+     */
+    private boolean retrySepsetsUntilCommit(Node x, Node y, Set<Node> firstRejected,
+                                            boolean excludeSelectionBias, Set<Triple> initialColliders)
+            throws InterruptedException {
+        final long deadline = (timeout < 0L)
+                ? Long.MAX_VALUE
+                : System.currentTimeMillis() + timeout;
+
+        Set<Set<Node>> tried = new HashSet<>();
+        tried.add(firstRejected);
+
+        while (true) {
+            SweepOutcome next = searchForSepset(x, y, deadline, tried);
+
+            if (next.sepset() == null) {
+                return false;  // exhausted (or budget-truncated); the edge stays for now
+            }
+
+            if (tryToModifyGraph(x, y, next.sepset(), "recursive, retried sepset",
+                    excludeSelectionBias, initialColliders)) {
+                foundSepsets.put(Set.of(x, y), next.sepset());
+                return true;
+            }
+
+            // The rejected separator entered `tried` inside the search, so the
+            // next iteration resumes strictly past it; `tried` grows every
+            // iteration and the candidate family is finite, so the loop
+            // terminates.
+        }
     }
 
     /**
@@ -1832,6 +1935,30 @@ public final class Fcit implements IGraphSearch {
      */
     public void setDetectionEnabled(boolean detectionEnabled) {
         this.detectionEnabled = detectionEnabled;
+    }
+
+    /**
+     * Sets whether the saturating pass (joint removal of all test-confirmed
+     * spurious pairs when no single-edge removal commits) runs. With it off,
+     * such pairs are reported by the final scan as undischarged rather than
+     * removed, and the oracle-correctness guarantee is forfeited.
+     *
+     * @param useSaturatingStep true by default.
+     */
+    public void setUseSaturatingStep(boolean useSaturatingStep) {
+        this.useSaturatingStep = useSaturatingStep;
+    }
+
+    /**
+     * Sets whether, after a gated removal reverts, the remaining data-valid
+     * separators for the pair are tried in canonical order until one commits.
+     * Changes trajectories; re-certify (PKE12) before trusting a configuration
+     * with this on.
+     *
+     * @param retrySepsetsOnRevert false by default.
+     */
+    public void setRetrySepsetsOnRevert(boolean retrySepsetsOnRevert) {
+        this.retrySepsetsOnRevert = retrySepsetsOnRevert;
     }
 
     /**

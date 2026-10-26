@@ -187,6 +187,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         fcit.setRbRadius(parameters.getInt(Params.RB_RADIUS));
         fcit.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
         fcit.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        fcit.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
 //        fcit.setCompletionPolicy(edu.cmu.tetrad.fcit.Fcit.CompletionPolicy.OFF);
 
 //        fcit.setUseMarkFlipEscalation(true);
@@ -402,6 +403,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.RB_RADIUS);
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
+        params.add(Params.USE_SATURATING_STEP);
         params.add(Params.TEST_TIMEOUT);
         params.add(Params.REQUIRE_IMAP_STATES);
         params.add(Params.IMAP_ALPHA);
