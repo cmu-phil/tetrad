@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.study;
+package edu.cmu.tetrad.study.missingness;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
@@ -19,9 +19,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;

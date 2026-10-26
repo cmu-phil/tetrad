@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.study;
+package edu.cmu.tetrad.study.missingness;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;

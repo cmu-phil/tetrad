@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.study;
+package edu.cmu.tetrad.study.missingness;
 
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataSet;

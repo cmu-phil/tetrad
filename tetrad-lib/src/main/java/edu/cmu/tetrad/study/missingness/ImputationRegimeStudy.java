@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.study;
+package edu.cmu.tetrad.study.missingness;
 
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
