@@ -73,11 +73,11 @@ import java.util.concurrent.Future;
  * {100, 1000, 5000}.</p>
  *
  * <p>Arms per phase: ORACLE BOSS on the complete data; LISTWISE PC (complete rows only); MEAN/MODE-IMPUTE PC;
- * TESTWISE PC (Fisher-Z or DG-LRT with the testwise spec); MICE-PMM m = 5 with the test-level pooled-z PC that
- * is their actual procedure (Gaussian phase only -- pooling the DG likelihood-ratio statistic needs Meng-Rubin
- * rules we have not implemented); MICE-PMM m = 5 + IMaGES BOSS (SEM-BIC or DG components); and, Gaussian only,
- * MVN-EM covariance BOSS. Including both MI arms separates "MI versus deletion" from "PC versus BOSS", which
- * their design confounds.</p>
+ * TESTWISE PC (Fisher-Z or DG-LRT with the testwise spec); MICE-PMM m = 5 with test-level pooling inside PC,
+ * which is their actual procedure (Rubin-pooled Fisher z in the Gaussian phase; Meng-Rubin D3 pooling of the
+ * DG likelihood ratio via {@link PooledDgLrtTest} in the mixed phase); MICE-PMM m = 5 + IMaGES BOSS (SEM-BIC
+ * or DG components); and, Gaussian only, MVN-EM covariance BOSS. Including both MI arms separates "MI versus
+ * deletion" from "PC versus BOSS", which their design confounds.</p>
  *
  * <p>Parallelism: repetitions run concurrently (RandomUtil is thread-local, and each rep seeds its own thread's
  * instance from the condition and rep index, so results are reproducible regardless of scheduling), and the
@@ -575,15 +575,22 @@ public final class WitteReplicationStudy {
         });
 
         if (gaussian) {
-            // Their actual MI procedure: test-level Rubin pooling inside PC. Continuous only -- pooling the DG
-            // likelihood-ratio statistic needs the Meng-Rubin rules, which we have not implemented. The -B
-            // variant adds mice-style coefficient draws (proper, type-1 matching): Rubin's rules then see the
-            // parameter-uncertainty share of the between-imputation variance, so it should run sparser and is
-            // the fair test of Witte's W5 anti-PMM warning; the plain variant is our improper type-0 PMM.
+            // Their actual MI procedure: test-level Rubin pooling inside PC. The proper variant adds
+            // mice-style coefficient draws (type-1 matching): Rubin's rules then see the parameter-uncertainty
+            // share of the between-imputation variance, so it should run sparser and is the fair test of
+            // Witte's W5 anti-PMM warning; the plain variant is our improper type-0 PMM.
             arms.put("MICE POOLED-Z PC", (complete, missing) ->
                     pc(new PooledZFisherTest(miceImpute(missing, false), ALPHA)));
             arms.put("MICE (proper) POOLED-Z PC", (complete, missing) ->
                     pc(new PooledZFisherTest(miceImpute(missing, true), ALPHA)));
+        } else {
+            // The mixed-phase counterpart: Meng-Rubin (D3) pooling of the DG likelihood-ratio statistic, the
+            // rule micd implements for its mixed tests. Calibration checked directly (type I 0.053 at alpha
+            // 0.05 under MCAR 20%, n = 1000, m = 5) before these arms were added.
+            arms.put("MICE POOLED-DG PC", (complete, missing) ->
+                    pc(new PooledDgLrtTest(miceImpute(missing, false), ALPHA, PooledDgLrtTest.Pooling.D3)));
+            arms.put("MICE (proper) POOLED-DG PC", (complete, missing) ->
+                    pc(new PooledDgLrtTest(miceImpute(missing, true), ALPHA, PooledDgLrtTest.Pooling.D3)));
         }
 
         arms.put("MICE + IMaGES BOSS", (complete, missing) -> {
