@@ -11,7 +11,11 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.Fcit;
 import edu.cmu.tetrad.search.Rfci;
+import edu.cmu.tetrad.search.score.ImagesScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -120,8 +124,14 @@ public final class StroblTestwiseFciStudy {
     /** Imputations for the pooled-z MICE arm. */
     private static final int NUM_IMPUTATIONS = 5;
 
-    /** Run RFCI instead of FCI for every arm. */
+    /** Run RFCI instead of FCI for every FCI-family arm. */
     private static final boolean USE_RFCI = false;
+
+    /** Also run the FCIT arms (test-plus-score hybrid; see the arm comments for configuration). */
+    private static final boolean RUN_FCIT_ARMS = true;
+
+    /** BIC penalty discount for the scores the FCIT arms use. */
+    private static final double PENALTY_DISCOUNT = 2.0;
 
     /** Seconds any single arm may take before it is abandoned; 0 disables. */
     private static final int ARM_TIMEOUT_SECONDS = 120;
@@ -507,21 +517,7 @@ public final class StroblTestwiseFciStudy {
         arms.put("TW-HEURISTIC", s ->
                 fci(new IndTestFisherZ(s.missingObserved(), ALPHA, MissingDataSpec.testwise())));
 
-        arms.put("LISTWISE", s -> {
-            DataSet missing = s.missingObserved();
-            List<Integer> complete = new ArrayList<>();
-            outer:
-            for (int i = 0; i < missing.getNumRows(); i++) {
-                for (int j = 0; j < missing.getNumColumns(); j++) {
-                    if (Double.isNaN(missing.getDouble(i, j))) continue outer;
-                }
-                complete.add(i);
-            }
-            if (complete.size() < 20) {
-                throw new IllegalStateException("only " + complete.size() + " complete rows");
-            }
-            return fci(new IndTestFisherZ(missing.subsetRows(complete), ALPHA));
-        });
+        arms.put("LISTWISE", s -> fci(new IndTestFisherZ(completeRows(s.missingObserved()), ALPHA)));
 
         arms.put("MEAN IMPUTE", s -> fci(new IndTestFisherZ(meanImpute(s.missingObserved()), ALPHA)));
 
@@ -540,6 +536,44 @@ public final class StroblTestwiseFciStudy {
 
         arms.put("EM-COV", s ->
                 fci(new IndTestFisherZ(s.missingObserved(), ALPHA, MissingDataSpec.emCovariance())));
+
+        if (RUN_FCIT_ARMS) {
+            // FCIT is a test-plus-score hybrid, so each arm must supply BOTH under the same missing-data
+            // handling. Configuration per Joe: BES on inside BOSS (the I-map guarantee the hybrid relies on)
+            // and the saturating step off.
+            arms.put("FCIT ORACLE", s ->
+                    fcit(new IndTestFisherZ(s.completeObserved(), ALPHA), semBic(s.completeObserved(), null)));
+
+            // CAVEAT, deliberate: the score side here is a SUMMED testwise-deleted BIC, the mode
+            // TestwiseDeletionStudy found incoherent for permutation searches (each family scored on its own
+            // row set). This arm measures how much that incoherence bites FCIT's BOSS stage in practice; a
+            // poor showing here indicts the score mode, not testwise testing.
+            arms.put("FCIT TW", s ->
+                    fcit(new IndTestFisherZ(s.missingObserved(), ALPHA, MissingDataSpec.testwise()),
+                            semBic(s.missingObserved(), MissingDataSpec.testwise())));
+
+            arms.put("FCIT LISTWISE", s -> {
+                DataSet cc = completeRows(s.missingObserved());
+                return fcit(new IndTestFisherZ(cc, ALPHA), semBic(cc, null));
+            });
+
+            arms.put("FCIT PMM m=1", s -> {
+                DataSet imputed = new MiceLiteImputer().impute(s.missingObserved(), 1, MICE_SEED).get(0);
+                return fcit(new IndTestFisherZ(imputed, ALPHA), semBic(imputed, null));
+            });
+
+            // Test: Rubin-pooled z over the m imputations. Score: IMaGES over the same m completed datasets.
+            arms.put("FCIT MICE m=5", s -> {
+                List<DataSet> imputed = miceImpute(s.missingObserved(), false);
+                List<Score> scores = new ArrayList<>();
+                for (DataSet d : imputed) scores.add(semBic(d, null));
+                return fcit(new PooledZFisherTest(imputed, ALPHA), new ImagesScore(scores));
+            });
+
+            arms.put("FCIT EM-COV", s ->
+                    fcit(new IndTestFisherZ(s.missingObserved(), ALPHA, MissingDataSpec.emCovariance()),
+                            semBic(s.missingObserved(), MissingDataSpec.emCovariance())));
+        }
 
         return arms;
     }
@@ -571,6 +605,9 @@ public final class StroblTestwiseFciStudy {
         }
     }
 
+    /** Reserved key under which runRep reports the scenario's achieved missingness; never an arm name. */
+    private static final String SCENARIO_KEY = "__scenario__";
+
     private static void runCondition(Mechanism mechanism, int n) throws Exception {
         System.out.printf("=== mechanism = %s, n = %d ===%n", mechanism, n);
 
@@ -584,6 +621,10 @@ public final class StroblTestwiseFciStudy {
             failures.put(name, 0);
         }
 
+        double missFracSum = 0;
+        double completeRowsSum = 0;
+        int scenarioCount = 0;
+
         ExecutorService repPool = Executors.newFixedThreadPool(REP_THREADS);
 
         try {
@@ -596,6 +637,14 @@ public final class StroblTestwiseFciStudy {
 
             for (Future<Map<String, double[]>> future : futures) {
                 Map<String, double[]> repResult = future.get();
+
+                double[] scen = repResult.get(SCENARIO_KEY);
+                if (scen != null) {
+                    missFracSum += scen[0];
+                    completeRowsSum += scen[1];
+                    scenarioCount++;
+                }
+
                 for (String name : armNames) {
                     double[] stats = repResult.get(name);
                     if (stats == null) {
@@ -629,6 +678,11 @@ public final class StroblTestwiseFciStudy {
                     fail > 0 ? "   (" + fail + " rep(s) failed/timed out)" : "");
         }
 
+        if (scenarioCount > 0) {
+            System.out.printf("(mean achieved missing-cell fraction: %.3f; mean complete rows: %.0f of %d)%n",
+                    missFracSum / scenarioCount, completeRowsSum / scenarioCount, n);
+        }
+
         System.out.println();
     }
 
@@ -639,6 +693,25 @@ public final class StroblTestwiseFciStudy {
         Graph truePag = GraphTransforms.dagToPag(scenario.trueDag(), false);
 
         Map<String, double[]> results = new LinkedHashMap<>();
+
+        // The achieved missingness of this rep's scenario, reported under a reserved key the arm loop skips:
+        // the fraction of missing cells, and the number of complete rows (what LISTWISE gets to keep).
+        DataSet missing = scenario.missingObserved();
+        long missingCells = 0;
+        int completeRowCount = 0;
+        for (int i = 0; i < missing.getNumRows(); i++) {
+            boolean complete = true;
+            for (int j = 0; j < missing.getNumColumns(); j++) {
+                if (Double.isNaN(missing.getDouble(i, j))) {
+                    missingCells++;
+                    complete = false;
+                }
+            }
+            if (complete) completeRowCount++;
+        }
+        results.put(SCENARIO_KEY, new double[]{
+                missingCells / (double) ((long) missing.getNumRows() * missing.getNumColumns()),
+                completeRowCount});
 
         for (Map.Entry<String, Arm> entry : arms().entrySet()) {
             long t0 = System.currentTimeMillis();
@@ -717,6 +790,49 @@ public final class StroblTestwiseFciStudy {
         Fci fci = new Fci(test);
         fci.setVerbose(false);
         return fci.search();
+    }
+
+    /**
+     * FCIT, configured with BES on inside BOSS (the I-map guarantee the hybrid relies on) and the saturating
+     * step off. FCIT narrates through TetradLogger even with verbose off, which would bury the tables, so the
+     * logger is silenced for the duration; the flag is global, so this also quiets anything else that logs
+     * while an FCIT arm runs, which in this harness is nothing the tables need.
+     */
+    private static Graph fcit(IndependenceTest test, Score score) throws InterruptedException {
+        Fcit fcit = new Fcit(test, score);
+        fcit.setUseBes(true);
+        fcit.setUseSaturatingStep(false);
+        fcit.setVerbose(false);
+
+        boolean wasLogging = edu.cmu.tetrad.util.TetradLogger.getInstance().isLogging();
+        edu.cmu.tetrad.util.TetradLogger.getInstance().setLogging(false);
+        try {
+            return fcit.search();
+        } finally {
+            edu.cmu.tetrad.util.TetradLogger.getInstance().setLogging(wasLogging);
+        }
+    }
+
+    private static SemBicScore semBic(DataSet data, MissingDataSpec spec) {
+        SemBicScore score = spec == null ? new SemBicScore(data, true) : new SemBicScore(data, true, spec);
+        score.setPenaltyDiscount(PENALTY_DISCOUNT);
+        return score;
+    }
+
+    /** The complete rows of a dataset, as a dataset; throws if fewer than 20 survive. */
+    private static DataSet completeRows(DataSet missing) {
+        List<Integer> complete = new ArrayList<>();
+        outer:
+        for (int i = 0; i < missing.getNumRows(); i++) {
+            for (int j = 0; j < missing.getNumColumns(); j++) {
+                if (Double.isNaN(missing.getDouble(i, j))) continue outer;
+            }
+            complete.add(i);
+        }
+        if (complete.size() < 20) {
+            throw new IllegalStateException("only " + complete.size() + " complete rows");
+        }
+        return missing.subsetRows(complete);
     }
 
     private static List<DataSet> miceImpute(DataSet data, boolean draws) throws Exception {
