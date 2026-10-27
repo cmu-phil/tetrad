@@ -122,6 +122,12 @@ public final class MiceLiteImputer implements MultipleImputer {
     private int[] moments;
 
     /**
+     * Whether each update draws regression coefficients from their approximate posterior for the missing rows'
+     * fitted values (mice-style type-1 matching). See {@link #setCoefficientDraws(boolean)}.
+     */
+    private boolean coefficientDraws = false;
+
+    /**
      * For each continuous column, the mean and standard deviation of its observed values, by which it is
      * standardized before powers are taken. Set at the start of each call to impute.
      */
@@ -262,6 +268,24 @@ public final class MiceLiteImputer implements MultipleImputer {
     }
 
     /**
+     * Sets whether each column update draws its regression coefficients from their approximate posterior before
+     * computing the fitted values of the MISSING rows, as R's mice does ("type-1" matching in the taxonomy of
+     * Morris et al. 2014): the residual variance is drawn as RSS / chi-squared(nObs - q), the coefficient draw is
+     * b + sigma L'^{-1} eta with eta standard normal and L the Cholesky factor of the ridged cross-product matrix,
+     * and the intercept gets its own sigma / sqrt(nObs) draw. The observed rows' fitted values keep the point
+     * estimates, per type-1 matching. Off by default, which reproduces this class's previous behavior exactly
+     * ("type-0" matching): point estimates throughout, so between-imputation variance reflects only donor and
+     * chain randomness and Rubin's rules are anti-conservative. Turn this on when pooled test statistics will be
+     * computed from the imputations; it mainly matters there, since score averaging never reads the
+     * between-imputation variance. An update with nObs - q < 3 skips the draw and is logged.
+     *
+     * @param coefficientDraws True to draw coefficients (mice-style proper imputation), false for point estimates.
+     */
+    public void setCoefficientDraws(boolean coefficientDraws) {
+        this.coefficientDraws = coefficientDraws;
+    }
+
+    /**
      * What went less than cleanly in the last call to impute: fallbacks to marginal hot-deck draws, predictors left
      * out as constant, and fits that were possible only because of the ridge. Each entry names the variable being
      * imputed and says in how many of its updates the event occurred. Empty if every regression was well posed.
@@ -280,6 +304,25 @@ public final class MiceLiteImputer implements MultipleImputer {
 
     private void event(String name, String what) {
         this.events.merge(name + ": " + what, 1, Integer::sum);
+    }
+
+    /**
+     * A chi-squared draw with nu degrees of freedom: the sum of nu squared standard normals for small nu, and the
+     * Wilson-Hilferty approximation for large nu, where the exact sum would cost nu draws per regression.
+     */
+    private static double chiSquaredDraw(int nu, Random rand) {
+        if (nu <= 256) {
+            double sum = 0.0;
+            for (int i = 0; i < nu; i++) {
+                double u = rand.nextGaussian();
+                sum += u * u;
+            }
+            return sum;
+        }
+
+        double c = 2.0 / (9.0 * nu);
+        double x = 1.0 - c + rand.nextGaussian() * Math.sqrt(c);
+        return Math.max(1e-10, nu * x * x * x);
     }
 
     /**
@@ -623,6 +666,48 @@ public final class MiceLiteImputer implements MultipleImputer {
             }
         }
 
+        // Coefficients used for the MISSING rows' fitted values: the point estimates, or, with coefficient draws
+        // on, a posterior draw per target (type-1 matching; the observed rows above keep the point fit). See
+        // setCoefficientDraws.
+        double[][] bMiss = b;
+        double[] meanYMiss = meanY;
+
+        if (this.coefficientDraws) {
+            int nu = nObs - q;
+
+            if (nu < 3) {
+                event(names[j], "coefficient draws skipped because the residual degrees of freedom are below 3;"
+                                + " point estimates used for this update");
+            } else {
+                bMiss = new double[numTargets][q];
+                meanYMiss = new double[numTargets];
+
+                for (int t = 0; t < numTargets; t++) {
+                    int category = numCategories[j] == 0 ? -(t + 1) : t;
+
+                    double rss = 0.0;
+                    for (int a = 0; a < nObs; a++) {
+                        double r = feature(work, obs.get(a), j, category) - fittedObs[a][t];
+                        rss += r * r;
+                    }
+
+                    double sigma = Math.sqrt(rss / chiSquaredDraw(nu, rand));
+
+                    // cov(b) is sigma^2 (L L')^{-1}, so a draw is b + sigma L'^{-1} eta: solve L' v = eta by
+                    // back substitution on the stored Cholesky factor.
+                    double[] v = new double[q];
+                    for (int f = q - 1; f >= 0; f--) {
+                        double sum = rand.nextGaussian();
+                        for (int c = f + 1; c < q; c++) sum -= g[c][f] * v[c];
+                        v[f] = sum / g[f][f];
+                    }
+
+                    for (int f = 0; f < q; f++) bMiss[t][f] = b[t][f] + sigma * v[f];
+                    meanYMiss[t] = meanY[t] + sigma / Math.sqrt(nObs) * rand.nextGaussian();
+                }
+            }
+        }
+
         // The observed rows are scanned in a shuffled order, from a random start for each missing row, so that
         // among rows tied in fitted value (common when the predictors are discrete) the donors are a random
         // choice. Scanned in data order, ties would always go to the same first few rows.
@@ -643,8 +728,8 @@ public final class MiceLiteImputer implements MultipleImputer {
             for (int f = 0; f < q; f++) zRow[f] = (feature(work, i, col[f], cat[f]) - mean[f]) / scale[f];
 
             for (int t = 0; t < numTargets; t++) {
-                double sum = meanY[t];
-                for (int f = 0; f < q; f++) sum += b[t][f] * zRow[f];
+                double sum = meanYMiss[t];
+                for (int f = 0; f < q; f++) sum += bMiss[t][f] * zRow[f];
                 fit[t] = sum;
             }
 

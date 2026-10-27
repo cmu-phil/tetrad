@@ -129,8 +129,10 @@ public final class StroblTestwiseFciStudy {
     /** Base seed for the imputation chains. */
     private static final long MICE_SEED = 8675309L;
 
-    /** Stream one line per arm per rep. */
-    private static final boolean STREAM_PROGRESS = true;
+    /** Stream one line per arm per rep. Off for small runs, where the lines are clutter; turn back on for
+     *  large sweeps, where they show where the time goes. Failures and timeouts print regardless, since the
+     *  tables show only their count. */
+    private static final boolean STREAM_PROGRESS = false;
 
     /** Threads for concurrent repetitions. */
     private static final int REP_THREADS =
@@ -528,7 +530,13 @@ public final class StroblTestwiseFciStudy {
             return fci(new IndTestFisherZ(imputed, ALPHA));
         });
 
-        arms.put("MICE m=5 POOLED-Z", s -> fci(new PooledZFisherTest(miceImpute(s.missingObserved()), ALPHA)));
+        arms.put("MICE m=5 POOLED-Z", s ->
+                fci(new PooledZFisherTest(miceImpute(s.missingObserved(), false), ALPHA)));
+
+        // The proper (mice-style, coefficient-drawing) variant; Rubin's rules then see the full
+        // between-imputation variance, so expect it sparser than the plain pooled-z arm.
+        arms.put("MICE (proper) m=5 POOLED-Z", s ->
+                fci(new PooledZFisherTest(miceImpute(s.missingObserved(), true), ALPHA)));
 
         arms.put("EM-COV", s ->
                 fci(new IndTestFisherZ(s.missingObserved(), ALPHA, MissingDataSpec.emCovariance())));
@@ -608,14 +616,14 @@ public final class StroblTestwiseFciStudy {
             repPool.shutdownNow();
         }
 
-        System.out.printf("%-20s %8s %8s %8s %8s %6s %8s%n",
+        System.out.printf("%-27s %8s %8s %8s %8s %6s %8s%n",
                 "method", "adjPrec", "adjRec", "arrPrec", "arrRec", "#E", "seconds");
 
         for (String name : armNames) {
             double[] t = totals.get(name);
             int[] c = counts.get(name);
             int fail = failures.get(name);
-            System.out.printf("%-20s %8s %8s %8s %8s %6s %8s%s%n",
+            System.out.printf("%-27s %8s %8s %8s %8s %6s %8s%s%n",
                     name, mean(t, c, 0, "%.3f"), mean(t, c, 1, "%.3f"), mean(t, c, 2, "%.3f"),
                     mean(t, c, 3, "%.3f"), mean(t, c, 4, "%.1f"), mean(t, c, 5, "%.1f"),
                     fail > 0 ? "   (" + fail + " rep(s) failed/timed out)" : "");
@@ -639,21 +647,17 @@ public final class StroblTestwiseFciStudy {
             try {
                 est = runWithTimeout(entry.getValue(), scenario);
             } catch (TimeoutException e) {
-                if (STREAM_PROGRESS) {
-                    System.out.printf("  rep %d  %-20s timed out after %ds%n", rep, entry.getKey(),
-                            ARM_TIMEOUT_SECONDS);
-                }
+                System.out.printf("  rep %d  %-27s timed out after %ds%n", rep, entry.getKey(),
+                        ARM_TIMEOUT_SECONDS);
                 continue;
             } catch (Exception e) {
-                if (STREAM_PROGRESS) {
-                    System.out.printf("  rep %d  %-20s FAILED: %s%n", rep, entry.getKey(), e.getMessage());
-                }
+                System.out.printf("  rep %d  %-27s FAILED: %s%n", rep, entry.getKey(), e.getMessage());
                 continue;
             }
 
             double seconds = (System.currentTimeMillis() - t0) / 1000.0;
             if (STREAM_PROGRESS) {
-                System.out.printf("  rep %d  %-20s %6.1fs%n", rep, entry.getKey(), seconds);
+                System.out.printf("  rep %d  %-27s %6.1fs%n", rep, entry.getKey(), seconds);
             }
 
             est = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(est, truePag.getNodes());
@@ -715,13 +719,17 @@ public final class StroblTestwiseFciStudy {
         return fci.search();
     }
 
-    private static List<DataSet> miceImpute(DataSet data) throws Exception {
+    private static List<DataSet> miceImpute(DataSet data, boolean draws) throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(NUM_IMPUTATIONS);
         try {
             List<Future<DataSet>> futures = new ArrayList<>();
             for (int k = 0; k < NUM_IMPUTATIONS; k++) {
                 final long seed = MICE_SEED + k;
-                futures.add(pool.submit(() -> new MiceLiteImputer().impute(data, 1, seed).get(0)));
+                futures.add(pool.submit(() -> {
+                    MiceLiteImputer imputer = new MiceLiteImputer();
+                    imputer.setCoefficientDraws(draws);
+                    return imputer.impute(data, 1, seed).get(0);
+                }));
             }
             List<DataSet> out = new ArrayList<>();
             for (Future<DataSet> f : futures) out.add(f.get());

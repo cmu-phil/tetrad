@@ -133,8 +133,10 @@ public final class WitteReplicationStudy {
     /** Base seed for the MICE chains; chain k of a rep uses MICE_SEED + k. */
     private static final long MICE_SEED = 8675309L;
 
-    /** Stream one line per arm per rep as it finishes. */
-    private static final boolean STREAM_PROGRESS = true;
+    /** Stream one line per arm per rep as it finishes. Off for small runs, where the lines are clutter; turn
+     *  back on for large sweeps, where they show where the time goes. Failures print regardless, since the
+     *  tables show only their count. */
+    private static final boolean STREAM_PROGRESS = false;
 
     /** Threads for concurrent repetitions. */
     private static final int REP_THREADS =
@@ -365,14 +367,20 @@ public final class WitteReplicationStudy {
         return out;
     }
 
-    /** The m MICE-PMM imputations, chains run concurrently with deterministic per-chain seeds. */
-    private static List<DataSet> miceImpute(DataSet data) throws Exception {
+    /** The m MICE-PMM imputations, chains run concurrently with deterministic per-chain seeds. With
+     *  {@code draws} true, each chain draws its regression coefficients (mice-style type-1 matching), which is
+     *  the proper variant whose pooled statistics Rubin's rules actually license. */
+    private static List<DataSet> miceImpute(DataSet data, boolean draws) throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(NUM_IMPUTATIONS);
         try {
             List<Future<DataSet>> futures = new ArrayList<>();
             for (int k = 0; k < NUM_IMPUTATIONS; k++) {
                 final long seed = MICE_SEED + k;
-                futures.add(pool.submit(() -> new MiceLiteImputer().impute(data, 1, seed).get(0)));
+                futures.add(pool.submit(() -> {
+                    MiceLiteImputer imputer = new MiceLiteImputer();
+                    imputer.setCoefficientDraws(draws);
+                    return imputer.impute(data, 1, seed).get(0);
+                }));
             }
             List<DataSet> out = new ArrayList<>();
             for (Future<DataSet> f : futures) out.add(f.get());
@@ -568,17 +576,34 @@ public final class WitteReplicationStudy {
 
         if (gaussian) {
             // Their actual MI procedure: test-level Rubin pooling inside PC. Continuous only -- pooling the DG
-            // likelihood-ratio statistic needs the Meng-Rubin rules, which we have not implemented.
+            // likelihood-ratio statistic needs the Meng-Rubin rules, which we have not implemented. The -B
+            // variant adds mice-style coefficient draws (proper, type-1 matching): Rubin's rules then see the
+            // parameter-uncertainty share of the between-imputation variance, so it should run sparser and is
+            // the fair test of Witte's W5 anti-PMM warning; the plain variant is our improper type-0 PMM.
             arms.put("MICE POOLED-Z PC", (complete, missing) ->
-                    pc(new PooledZFisherTest(miceImpute(missing), ALPHA)));
+                    pc(new PooledZFisherTest(miceImpute(missing, false), ALPHA)));
+            arms.put("MICE (proper) POOLED-Z PC", (complete, missing) ->
+                    pc(new PooledZFisherTest(miceImpute(missing, true), ALPHA)));
         }
 
         arms.put("MICE + IMaGES BOSS", (complete, missing) -> {
-            List<DataSet> imputed = miceImpute(missing);
+            List<DataSet> imputed = miceImpute(missing, false);
             List<Score> scores = new ArrayList<>();
             for (DataSet d : imputed) scores.add(gaussian ? semBic(d) : dgScore(d));
             return boss(new ImagesScore(scores));
         });
+
+        if (gaussian) {
+            // Prediction on record: a wash. ImagesScore averages BICs and never reads the between-imputation
+            // variance, so the draws only inject coefficient noise the pooling then ignores. A visible change
+            // here would itself be a finding about score pooling's blindness to imputation uncertainty.
+            arms.put("MICE (proper) + IMaGES BOSS", (complete, missing) -> {
+                List<DataSet> imputed = miceImpute(missing, true);
+                List<Score> scores = new ArrayList<>();
+                for (DataSet d : imputed) scores.add(semBic(d));
+                return boss(new ImagesScore(scores));
+            });
+        }
 
         if (gaussian) {
             arms.put("EM-COV BOSS", (complete, missing) -> {
@@ -675,7 +700,7 @@ public final class WitteReplicationStudy {
             repPool.shutdownNow();
         }
 
-        System.out.printf("%-22s %8s %8s %8s %8s %8s %6s %8s%n",
+        System.out.printf("%-28s %8s %8s %8s %8s %8s %6s %8s%n",
                 "method", "adjPrec", "adjRec", "arrPrec", "arrRec", "SHD", "#E", "seconds");
 
         for (String name : armNames) {
@@ -683,7 +708,7 @@ public final class WitteReplicationStudy {
             int[] c = counts.get(name);
             int fail = failures.get(name);
 
-            System.out.printf("%-22s %8s %8s %8s %8s %8s %6s %8s%s%n",
+            System.out.printf("%-28s %8s %8s %8s %8s %8s %6s %8s%s%n",
                     name, mean(t, c, 0, "%.3f"), mean(t, c, 1, "%.3f"), mean(t, c, 2, "%.3f"),
                     mean(t, c, 3, "%.3f"), mean(t, c, 4, "%.1f"), mean(t, c, 5, "%.1f"),
                     mean(t, c, 6, "%.1f"),
@@ -741,16 +766,14 @@ public final class WitteReplicationStudy {
             try {
                 est = entry.getValue().search(complete, missing);
             } catch (Exception e) {
-                if (STREAM_PROGRESS) {
-                    System.out.printf("  rep %d  %-22s FAILED: %s%n", rep, entry.getKey(), e.getMessage());
-                }
+                System.out.printf("  rep %d  %-28s FAILED: %s%n", rep, entry.getKey(), e.getMessage());
                 continue;
             }
 
             double seconds = (System.currentTimeMillis() - t0) / 1000.0;
 
             if (STREAM_PROGRESS) {
-                System.out.printf("  rep %d  %-22s %6.1fs%n", rep, entry.getKey(), seconds);
+                System.out.printf("  rep %d  %-28s %6.1fs%n", rep, entry.getKey(), seconds);
             }
 
             est = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(est, trueCpdag.getNodes());
