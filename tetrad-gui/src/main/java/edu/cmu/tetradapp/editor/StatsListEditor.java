@@ -125,9 +125,25 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private String tableTextWithHeader() {
-        String table = CompareTwoGraphs.getStatsListTable(this.referenceGraph, this.targetGraph, this.dataModel, this.comparison.getElapsedTime());
-        return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from " + this.comparison.getTargetName()
-               + "\n\n" + table;
+        java.util.List<Graph> targetGraphs = this.comparison.getTargetGraphs();
+        java.util.List<String> targetNames = this.comparison.getTargetNames();
+
+        if (targetGraphs.isEmpty()) {
+            return "True graph from " + this.comparison.getReferenceName()
+                   + "\n\nNo target graphs to compare to it.";
+        }
+
+        if (targetGraphs.size() == 1) {
+            String table = CompareTwoGraphs.getStatsListTable(this.referenceGraph, targetGraphs.getFirst(),
+                    this.dataModel, this.comparison.getElapsedTime());
+            return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from "
+                   + targetNames.getFirst() + "\n\n" + table;
+        }
+
+        String table = CompareTwoGraphs.getStatsListTable(this.referenceGraph, targetGraphs, targetNames,
+                this.dataModel, this.comparison.getElapsedTimes());
+        return "True graph from " + this.comparison.getReferenceName() + "\nTarget graphs from "
+               + String.join(", ", targetNames) + "\n\n" + table;
     }
 
     @NotNull

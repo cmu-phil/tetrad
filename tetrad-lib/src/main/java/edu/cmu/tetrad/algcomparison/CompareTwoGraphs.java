@@ -312,6 +312,113 @@ public class CompareTwoGraphs {
         return table.toString();
     }
 
+    /**
+     * Returns a string representing a table of statistics for several target graphs against a single true graph,
+     * one column per target. Statistics that fail (or return NaN) for a target are shown as "-" in that column;
+     * rows where every target fails are omitted. This is the multi-target generalization of
+     * {@link #getStatsListTable(Graph, Graph, DataModel, long)}, used by the GUI comparison boxes when more than
+     * one graph source is attached, and usable from py-tetrad as well.
+     *
+     * @param trueGraph    The true graph.
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueGraph, List<Graph> targetGraphs, List<String> targetNames,
+                                           DataModel dataModel, List<Long> elapsedTimes) {
+        if (targetGraphs.size() != targetNames.size()) {
+            throw new IllegalArgumentException("One name per target graph expected.");
+        }
+
+        List<Statistic> statistics = statistics();
+        NumberFormat nf = new DecimalFormat("0.###");
+        int numTargets = targetGraphs.size();
+
+        String[][] cells = new String[statistics.size()][numTargets];
+        boolean[] anyValue = new boolean[statistics.size()];
+
+        for (int j = 0; j < numTargets; j++) {
+            Graph _targetGraph = GraphUtils.replaceNodes(targetGraphs.get(j), trueGraph.getNodes());
+
+            for (int i = 0; i < statistics.size(); i++) {
+                try {
+                    double value = statistics.get(i).getValue(trueGraph, trueGraph, _targetGraph, dataModel,
+                            new Parameters());
+                    cells[i][j] = Double.isNaN(value) ? "-" : nf.format(value);
+                    anyValue[i] = true;
+                } catch (Exception e) {
+                    cells[i][j] = "-";
+                }
+            }
+        }
+
+        boolean anyElapsed = false;
+
+        if (elapsedTimes != null) {
+            for (Long time : elapsedTimes) {
+                if (time != null && time >= 0) {
+                    anyElapsed = true;
+                    break;
+                }
+            }
+        }
+
+        int numRows = 1; // header
+
+        for (boolean b : anyValue) {
+            if (b) {
+                numRows++;
+            }
+        }
+
+        if (anyElapsed) {
+            numRows++;
+        }
+
+        TextTable table = new TextTable(numRows, numTargets + 2);
+        table.setJustification(TextTable.LEFT_JUSTIFIED);
+
+        table.setToken(0, 0, "Stat");
+
+        for (int j = 0; j < numTargets; j++) {
+            table.setToken(0, j + 1, targetNames.get(j));
+        }
+
+        table.setToken(0, numTargets + 1, "Description");
+
+        int row = 1;
+
+        for (int i = 0; i < statistics.size(); i++) {
+            if (!anyValue[i]) {
+                continue;
+            }
+
+            table.setToken(row, 0, statistics.get(i).getAbbreviation());
+
+            for (int j = 0; j < numTargets; j++) {
+                table.setToken(row, j + 1, cells[i][j]);
+            }
+
+            table.setToken(row, numTargets + 1, statistics.get(i).getDescription());
+            row++;
+        }
+
+        if (anyElapsed) {
+            table.setToken(row, 0, "Elapsed");
+
+            for (int j = 0; j < numTargets; j++) {
+                Long time = elapsedTimes.get(j);
+                table.setToken(row, j + 1, (time == null || time < 0) ? "-" : nf.format(time / 1000.0));
+            }
+
+            table.setToken(row, numTargets + 1, "Wall time (s)");
+        }
+
+        return table.toString();
+    }
+
     private static List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 

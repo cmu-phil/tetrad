@@ -35,6 +35,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -69,6 +72,18 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
      */
     private String name;
 
+    /**
+     * The target graphs, in display order, when more than one graph source is compared to the reference. Null for
+     * instances deserialized from sessions saved before multi-target comparison was added; see getTargetGraphs().
+     */
+    private List<Graph> targetGraphs;
+
+    /**
+     * The names of the target graphs, in display order. Null for instances deserialized from older sessions; see
+     * getTargetNames().
+     */
+    private List<String> targetNames;
+
 
     //=============================CONSTRUCTORS==========================//
 
@@ -82,37 +97,66 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
      * @param params a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public Misclassifications(GraphSource model1, GraphSource model2, Parameters params) {
+        this(checkPair(model1, model2), params);
+    }
+
+    /**
+     * Compares the graphs of any number of graph sources against a single reference (true) graph, which is one of
+     * them. The reference is chosen by the "referenceGraphName" parameter, falling back to a Simulation box if one
+     * is attached; the remaining sources are the targets, ordered by the "targetGraphNames" parameter where
+     * available. The session machinery matches this constructor when the comparison box has two or more graph
+     * source parents; see SessionNode's handling of (X[], Parameters) constructors.
+     *
+     * @param models the graph sources to compare; one is the reference, the rest are targets.
+     * @param params the parameters for the comparison.
+     */
+    public Misclassifications(GraphSource[] models, Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
 
-        if (model1 == null || model2 == null) {
-            throw new NullPointerException("Null graph source>");
+        if (models == null || models.length == 0) {
+            throw new IllegalArgumentException("At least one graph source expected.");
+        }
+
+        for (GraphSource model : models) {
+            if (model == null) {
+                throw new NullPointerException("Null graph source>");
+            }
         }
 
         this.params = params;
 
-        String referenceName = params.getString("referenceGraphName", null);
-        String targetName = params.getString("targetGraphName", null);
+        List<GraphSource> sources = GraphComparisonUtils.sortByName(models);
+        GraphSource reference = GraphComparisonUtils.resolveReference(sources, params);
+        List<GraphSource> targets = GraphComparisonUtils.orderTargets(sources, reference, params);
 
-        String model1Name = model1.getName();
-        String model2Name = model2.getName();
+        this.referenceGraph = reference.getGraph();
 
-        if (referenceName.equals(model1Name) && targetName.equals(model2Name)) {
-            this.referenceGraph = model1.getGraph();
-            this.targetGraph = model2.getGraph();
-        } else if (referenceName.equals(model2Name) && targetName.equals(model1Name)) {
-            this.referenceGraph = model2.getGraph();
-            this.targetGraph = model1.getGraph();
-        } else {
-            throw new IllegalArgumentException(
-                    "Cannot resolve reference/target graphs from names: referenceName='"
-                            + referenceName + "', targetName='" + targetName
-                            + "', model1='" + model1Name + "', model2='" + model2Name + "'");
+        this.targetGraphs = new ArrayList<>();
+        this.targetNames = new ArrayList<>();
+
+        for (GraphSource target : targets) {
+            this.targetGraphs.add(target.getGraph());
+            this.targetNames.add(target.getName());
         }
+
+        this.targetGraph = targets.isEmpty() ? reference.getGraph() : this.targetGraphs.getFirst();
 
         TetradLogger.getInstance().log("Graph Comparison");
 
+    }
+
+    /**
+     * Bundles the two graph sources of the legacy pair constructor into an array, null-checking first so the
+     * legacy constructor keeps its error behavior.
+     */
+    private static GraphSource[] checkPair(GraphSource model1, GraphSource model2) {
+        if (model1 == null || model2 == null) {
+            throw new NullPointerException("Null graph source>");
+        }
+
+        return new GraphSource[]{model1, model2};
     }
 
     //==============================PUBLIC METHODS========================//
@@ -174,14 +218,58 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
      */
     public String getComparisonString() {
         String refName = getParams().getString("referenceGraphName", null);
-        String targetName = getParams().getString("targetGraphName", null);
 
+        Graph comparisonGraph = getComparisonGraph(this.referenceGraph, this.params);
 
-        Graph comparisonGraph = getComparisonGraph(referenceGraph, params);
+        List<Graph> graphs = getTargetGraphs();
+        List<String> names = getTargetNames();
 
-        String table = CompareTwoGraphs.getMisclassificationTable(comparisonGraph, targetGraph);
-        return "True graph from " + refName + "\nTarget graph from " + targetName +
-               "\n\n\n" + table;
+        if (graphs.isEmpty()) {
+            return "True graph from " + refName + "\n\nNo target graphs to compare to it.";
+        }
+
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < graphs.size(); i++) {
+            if (i > 0) {
+                builder.append("\n\n==============================================================\n\n");
+            }
+
+            String table = CompareTwoGraphs.getMisclassificationTable(comparisonGraph, graphs.get(i));
+            builder.append("True graph from ").append(refName)
+                    .append("\nTarget graph from ").append(names.get(i))
+                    .append("\n\n\n").append(table);
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Returns the target graphs, in display order. For instances deserialized from sessions saved before
+     * multi-target comparison was added, returns the single target graph in a list.
+     *
+     * @return the target graphs.
+     */
+    public List<Graph> getTargetGraphs() {
+        if (this.targetGraphs == null) {
+            return Collections.singletonList(this.targetGraph);
+        }
+
+        return this.targetGraphs;
+    }
+
+    /**
+     * Returns the names of the target graphs, in display order. For instances deserialized from older sessions,
+     * returns the single target name (from the "targetGraphName" parameter) in a list.
+     *
+     * @return the target names.
+     */
+    public List<String> getTargetNames() {
+        if (this.targetNames == null) {
+            return Collections.singletonList(this.params.getString("targetGraphName", null));
+        }
+
+        return this.targetNames;
     }
 
     /**

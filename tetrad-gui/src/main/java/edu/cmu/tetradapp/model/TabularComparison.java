@@ -106,6 +106,24 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      */
     private String referenceName;
 
+    /**
+     * The target graphs, in display order, when more than one graph source is compared to the reference. Null for
+     * instances deserialized from sessions saved before multi-target comparison was added; see getTargetGraphs().
+     */
+    private List<Graph> targetGraphs;
+
+    /**
+     * The names of the target graphs, in display order. Null for instances deserialized from older sessions; see
+     * getTargetNames().
+     */
+    private List<String> targetNames;
+
+    /**
+     * The elapsed times in milliseconds for the target graphs, in display order, with -1 for targets that are not
+     * algorithm runs. Null for instances deserialized from older sessions; see getElapsedTimes().
+     */
+    private List<Long> elapsedTimes;
+
     //=============================CONSTRUCTORS==========================//
 
     /**
@@ -130,44 +148,78 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      */
     public TabularComparison(GraphSource model1, GraphSource model2,
                              DataWrapper dataWrapper, Parameters params) {
+        this(checkPair(model1, model2), params);
+    }
+
+    /**
+     * Compares the graphs of any number of graph sources against a single reference (true) graph, which is one of
+     * them. The reference is chosen by the "referenceGraphName" parameter, falling back to a Simulation box if one
+     * is attached; the remaining sources are the targets, ordered by the "targetGraphNames" parameter where
+     * available. The session machinery matches this constructor when the comparison box has two or more graph
+     * source parents; see SessionNode's handling of (X[], Parameters) constructors.
+     *
+     * @param models the graph sources to compare; one is the reference, the rest are targets.
+     * @param params the parameters for the comparison.
+     */
+    public TabularComparison(GraphSource[] models, Parameters params) {
         if (params == null) {
             throw new NullPointerException("Parameters must not be null");
         }
 
-        if (model1 == null || model2 == null) {
-            throw new NullPointerException("Null graph source>");
+        if (models == null || models.length == 0) {
+            throw new IllegalArgumentException("At least one graph source expected.");
         }
 
-        if (model1 instanceof GeneralAlgorithmRunner) {
-            this.elapsedTime = ((GeneralAlgorithmRunner) model1).getElapsedTime();
-        } else if (model2 instanceof GeneralAlgorithmRunner) {
-            this.elapsedTime = ((GeneralAlgorithmRunner) model2).getElapsedTime();
+        for (GraphSource model : models) {
+            if (model == null) {
+                throw new NullPointerException("Null graph source>");
+            }
         }
 
         this.params = params;
 
-        this.referenceName = params.getString("referenceGraphName", null);
-        this.targetName = params.getString("targetGraphName", null);
+        List<GraphSource> sources = GraphComparisonUtils.sortByName(models);
+        GraphSource reference = GraphComparisonUtils.resolveReference(sources, params);
+        List<GraphSource> targets = GraphComparisonUtils.orderTargets(sources, reference, params);
 
-        String model1Name = model1.getName();
-        String model2Name = model2.getName();
+        this.referenceName = reference.getName();
+        this.referenceGraph = reference.getGraph();
 
-        if (this.referenceName.equals(model1Name) && this.targetName.equals(model2Name)) {
-            this.referenceGraph = model1.getGraph();
-            this.targetGraph = model2.getGraph();
-        } else if (this.referenceName.equals(model2Name) && this.targetName.equals(model1Name)) {
-            this.referenceGraph = model2.getGraph();
-            this.targetGraph = model1.getGraph();
+        this.targetGraphs = new ArrayList<>();
+        this.targetNames = new ArrayList<>();
+        this.elapsedTimes = new ArrayList<>();
+
+        for (GraphSource target : targets) {
+            this.targetGraphs.add(target.getGraph());
+            this.targetNames.add(target.getName());
+            this.elapsedTimes.add(target instanceof GeneralAlgorithmRunner runner ? runner.getElapsedTime() : -1L);
+        }
+
+        // Keep the single-target fields populated for the single-target code paths and for older code reading them.
+        if (targets.isEmpty()) {
+            this.targetGraph = reference.getGraph();
+            this.targetName = reference.getName();
         } else {
-            throw new IllegalArgumentException(
-                    "Cannot resolve reference/target graphs from names: referenceName='"
-                            + this.referenceName + "', targetName='" + this.targetName
-                            + "', model1='" + model1Name + "', model2='" + model2Name + "'");
+            this.targetGraph = this.targetGraphs.getFirst();
+            this.targetName = this.targetNames.getFirst();
+            this.elapsedTime = Math.max(this.elapsedTimes.getFirst(), 0L);
         }
 
         newExecution();
 
         TetradLogger.getInstance().log("Graph Comparison");
+    }
+
+    /**
+     * Bundles the two graph sources of the legacy pair constructors into an array, null-checking first so the
+     * legacy constructors keep their error behavior.
+     */
+    private static GraphSource[] checkPair(GraphSource model1, GraphSource model2) {
+        if (model1 == null || model2 == null) {
+            throw new NullPointerException("Null graph source>");
+        }
+
+        return new GraphSource[]{model1, model2};
     }
 
     private void newExecution() {
@@ -305,6 +357,49 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      */
     public Graph getTargetGraph() {
         return this.targetGraph;
+    }
+
+    /**
+     * Returns the target graphs, in display order. For instances deserialized from sessions saved before
+     * multi-target comparison was added, returns the single target graph in a list.
+     *
+     * @return the target graphs.
+     */
+    public List<Graph> getTargetGraphs() {
+        if (this.targetGraphs == null) {
+            return Collections.singletonList(this.targetGraph);
+        }
+
+        return this.targetGraphs;
+    }
+
+    /**
+     * Returns the names of the target graphs, in display order. For instances deserialized from older sessions,
+     * returns the single target name in a list.
+     *
+     * @return the target names.
+     */
+    public List<String> getTargetNames() {
+        if (this.targetNames == null) {
+            return Collections.singletonList(this.targetName);
+        }
+
+        return this.targetNames;
+    }
+
+    /**
+     * Returns the elapsed times in milliseconds for the target graphs, in display order, with -1 for targets that
+     * are not algorithm runs. For instances deserialized from older sessions, returns the single elapsed time in a
+     * list.
+     *
+     * @return the elapsed times.
+     */
+    public List<Long> getElapsedTimes() {
+        if (this.elapsedTimes == null) {
+            return Collections.singletonList(this.elapsedTime);
+        }
+
+        return this.elapsedTimes;
     }
 
     /**
