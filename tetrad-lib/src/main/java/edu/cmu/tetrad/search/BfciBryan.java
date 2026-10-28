@@ -100,7 +100,14 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * <p>
  * COSTS, DISCLOSED. Re-selection runs one full re-orientation plus one legality check per SEPARATING candidate
  * set scanned, not per pair, so {@code maxGateTrialsPerEdge} caps the gate trials per edge per visit (the cap
- * is per visit; later sweeps rescan against the shrunken graph). A committed sepset is thereby selected partly
+ * is per visit; later sweeps rescan against the shrunken graph). In the default configuration a trial's
+ * outcome is a deterministic function of the committed state (G, S) and the pair, so a visit whose previous
+ * visit of the same kind failed in full against the SAME committed state is skipped outright; this removes
+ * each fixpoint's quiescence sweep, which otherwise repeats every rejected trial once more just to detect
+ * that nothing changed. The memo is DISABLED when {@code requireImapStates} or {@code reharvestSepsets} is
+ * on: the I-map check's {@code knownSeparators} cache grows during failed trials and is monotone
+ * false-to-true, so under those gates a repeat visit can legitimately accept where the first failed.
+ * A committed sepset is thereby selected partly
  * for orientation coherence rather than independence strength alone; every committed sepset is still
  * individually test-confirmed. The Pass-2 subset search keeps StarFci's clamp: when {@code depth} is unlimited
  * (-1), subsets of possible-D-SEP pools are capped at size {@value #DSEP_DEPTH_CLAMP}.
@@ -255,6 +262,23 @@ public final class BfciBryan implements IGraphSearch {
     /** First separating set found for each pair, cached across visits (survives gate rejections). */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
     /**
+     * Monotone count of commits to the searched state (G, S): bumped on every accepted trial and every
+     * accepted saturating batch. In the default configuration a trial's outcome is a deterministic function
+     * of that state and the pair, so this version stamps when a failed visit may be skipped on repetition.
+     */
+    private int commitVersion = 0;
+    /**
+     * For each (ordered pair, visit kind), the {@link #commitVersion} at which the pair's last visit of that
+     * kind failed in full (every candidate rejected, or the gate-trial cap reached). A visit is skipped iff
+     * its recorded version equals the current one; any commit invalidates every record at once. Consulted and
+     * written ONLY when both {@link #requireImapStates} and {@link #reharvestSepsets} are off (see the class
+     * doc); conservative on pair order, so a swapped-endpoint revisit simply re-runs.
+     */
+    private final Map<String, Integer> failedVisitVersion = new HashMap<>();
+    /** Per-run cost tallies: full gate trials paid for, and repeat visits the memo skipped. */
+    private int tallyGateTrials = 0;
+    private int tallySkippedVisits = 0;
+    /**
      * The number of BOSS restarts.
      */
     private int numStarts = 1;
@@ -303,6 +327,9 @@ public final class BfciBryan implements IGraphSearch {
         unconfirmedEntries.clear();
         reharvestedEntries = reharvestFailures = reprojectionMismatches = 0;
         imapCandidates = imapVetoes = imapTests = imapIndeterminate = 0;
+        commitVersion = 0;
+        failedVisitVersion.clear();
+        tallyGateTrials = tallySkippedVisits = 0;
 
         // SEEDING (see class doc): a TOTAL sepset map from the DAG representative D -- for each nonadjacent
         // pair, PA(a) if it d-separates a and b in D, else PA(b) (one always does: nonadjacent nodes cannot
@@ -425,6 +452,12 @@ public final class BfciBryan implements IGraphSearch {
         if (useSaturatingStep) {
             pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, selection);
         }
+
+        // Unconditional one-line cost summary: gate trials is the number of full trials paid for
+        // (re-orientation plus legality certificate); skipped visits is the number of repeat visits the
+        // commit-version memo avoided (zero when the memo is off under the experimental gates).
+        TetradLogger.getInstance().log("BFCI-Bryan summary: gate trials = " + tallyGateTrials
+                + ", skipped repeat visits = " + tallySkippedVisits + ".");
 
         if (reharvestSepsets) {
             TetradLogger.getInstance().log("BFCI-Bryan re-harvest summary: entries re-harvested = "
@@ -554,6 +587,7 @@ public final class BfciBryan implements IGraphSearch {
                 for (Set<Node> pair : batch) unconfirmedEntries.remove(pair);
                 if (reharvestSepsets) reharvest(trial, sepsetMap, cpdag, nodes);
                 if (requireImapStates) refreshBaseline(trial, sepsetMap);
+                commitVersion++;
                 if (verbose) {
                     TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
                             + stalled.size() + " edge(s) jointly (legal PAG): " + formatBatch(batch) + ".");
@@ -595,6 +629,22 @@ public final class BfciBryan implements IGraphSearch {
     private Graph tryRemoveEdge(Graph pag, Node a, Node b, List<List<Node>> pools, int subsetDepth,
                                 Graph cpdag, List<Node> nodes, SepsetMap sepsetMap, Set<Node> selection,
                                 String type) throws InterruptedException {
+        // Visit memo (default configuration only; see the class doc and failedVisitVersion): a failed visit
+        // is a deterministic function of the committed state, so repeating it against the same commitVersion
+        // repeats every rejection. Skip it. The pools are functions of the carried graph, so an unchanged
+        // version implies unchanged pools; the kind string separates the adjacency, possible-D-SEP, and
+        // Pass-0 visit semantics. Under the I-map gate or re-harvesting the memo is off, since the
+        // knownSeparators cache grows during failed trials and can flip a later identical visit to accept.
+        boolean memoActive = !requireImapStates && !reharvestSepsets;
+        String visitKey = a.getName() + "|" + b.getName() + "|" + type;
+        if (memoActive) {
+            Integer failedAt = failedVisitVersion.get(visitKey);
+            if (failedAt != null && failedAt == commitVersion) {
+                tallySkippedVisits++;
+                return null;
+            }
+        }
+
         Set<Set<Node>> tried = new HashSet<>();
         int gateTrials = 0;
 
@@ -617,9 +667,11 @@ public final class BfciBryan implements IGraphSearch {
                         TetradLogger.getInstance().log("\t" + a + " -- " + b + " (" + type + "): gate-trial cap of "
                                 + maxGateTrialsPerEdge + " reached; deferring to a later sweep.");
                     }
+                    if (memoActive) failedVisitVersion.put(visitKey, commitVersion);
                     return null;
                 }
                 gateTrials++;
+                tallyGateTrials++;
 
                 // Gated trial: copy, remove, re-orient from scratch against a trial-local sepset map seeded
                 // with this candidate, certify. Commit S and G together on acceptance; no trace on rejection.
@@ -644,6 +696,7 @@ public final class BfciBryan implements IGraphSearch {
                     unconfirmedEntries.remove(Set.of(a, b));
                     if (reharvestSepsets) reharvest(_pag, sepsetMap, cpdag, nodes);
                     if (requireImapStates) refreshBaseline(_pag, sepsetMap);
+                    commitVersion++;
                     if (verbose) {
                         TetradLogger.getInstance().log("Removed edge " + a + " -- " + b + " (" + type
                                 + ", legal PAG); sepset = " + C + " (gate trial " + gateTrials + ").");
@@ -662,6 +715,7 @@ public final class BfciBryan implements IGraphSearch {
                     + " separating set(s) gate-rejected this visit; edge kept.");
         }
 
+        if (memoActive) failedVisitVersion.put(visitKey, commitVersion);
         return null;
     }
 

@@ -156,6 +156,28 @@ public class PagLegalityCheck {
         } catch (Exception e) {
             return new LegalPagRet(false, "PAG to MAG failed");
         }
+        return isLegalPag(pag, mag, selection);
+    }
+
+    /**
+     * The same certificate with the Zhang MAG of {@code pag} supplied by the caller, for searches that have
+     * already computed that MAG for another purpose (to score it, say) and would otherwise pay for the
+     * conversion twice per candidate. The verdict is identical to {@link #isLegalPag(Graph, Set)} provided
+     * {@code mag} is in fact {@code GraphTransforms.zhangMagFromPag(pag)}; supplying any other graph voids
+     * the certificate.
+     *
+     * @param pag       The Partial Ancestral Graph (PAG) to be checked
+     * @param mag       The Zhang MAG of {@code pag}, precomputed by the caller
+     * @param selection The set of nodes to be conditioned on
+     * @return A LegalPagRet object indicating whether the PAG is legal or not, along with a reason if it is not legal.
+     */
+    public static LegalPagRet isLegalPag(Graph pag, Graph mag, Set<Node> selection) {
+        for (Node n : pag.getNodes()) {
+            if (n.getNodeType() != NodeType.MEASURED) {
+                return new LegalPagRet(false, "Node " + n + " is not measured");
+            }
+        }
+
         LegalMagRet legalMag = isLegalMag(mag, selection);
 
         if (!legalMag.isLegalMag()) {

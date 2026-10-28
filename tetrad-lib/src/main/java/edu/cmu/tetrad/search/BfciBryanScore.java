@@ -139,7 +139,12 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * <p>
  * COSTS, DISCLOSED. Re-selection runs one full re-orientation plus one legality check per SEPARATING candidate
  * set scanned, not per pair, so {@code maxGateTrialsPerEdge} caps the gate trials per edge per visit (the cap
- * is per visit; later sweeps rescan against the shrunken graph). A committed sepset is thereby selected partly
+ * is per visit; later sweeps rescan against the shrunken graph). Since a trial's outcome is a deterministic
+ * function of the committed state (G, S, current score) and the pair, a visit whose previous visit of the same
+ * kind failed in full against the SAME committed state is skipped outright; this removes each fixpoint's
+ * quiescence sweep, which otherwise repeats every rejected trial once more just to detect that nothing changed.
+ * Each trial computes the candidate's Zhang MAG once and hands it to both the legality certificate and the
+ * score. A committed sepset is thereby selected partly
  * for orientation coherence rather than independence strength alone; every committed sepset is still
  * individually test-confirmed. The Pass-2 subset search keeps StarFci's clamp: when {@code depth} is unlimited
  * (-1), subsets of possible-D-SEP pools are capped at size {@value #DSEP_DEPTH_CLAMP}.
@@ -257,6 +262,21 @@ public final class BfciBryanScore implements IGraphSearch {
     private int tallyScoreAccepted = 0;
     private int tallyScoreRejected = 0;
     private int tallyScoreUnavailable = 0;
+    private int tallyGateTrials = 0;
+    private int tallySkippedVisits = 0;
+    /**
+     * Monotone count of commits to the searched state (G, S, current score): bumped on every accepted trial
+     * and every accepted saturating batch. A trial's outcome is a deterministic function of that state and
+     * the pair, so this version stamps when a failed visit may be skipped on repetition.
+     */
+    private int commitVersion = 0;
+    /**
+     * For each (ordered pair, visit kind), the {@link #commitVersion} at which the pair's last visit of that
+     * kind failed in full (every candidate rejected, or the gate-trial cap reached). A visit is skipped iff
+     * its recorded version equals the current one; any commit invalidates every record at once. Conservative
+     * on pair order: an edge revisited with endpoints swapped simply re-runs.
+     */
+    private final Map<String, Integer> failedVisitVersion = new HashMap<>();
     /** First separating set found for each pair, cached across visits (survives gate rejections). */
     private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
     /**
@@ -321,7 +341,17 @@ public final class BfciBryanScore implements IGraphSearch {
 
         magScorer = new MagRicfBicScorer(covarianceMatrix);
         magScorer.setPenaltyDiscount(scorePenaltyDiscount);
+        // Trusted-caller fast path: every scored MAG is the Zhang MAG of a candidate over the test's
+        // variables, its edge types are re-checked cheaply in scoreMag, and (except for the start graph,
+        // legal by construction) it has already passed the ancestrality check, so the scorer's per-call
+        // node replacement, name validation, and cycle check are pure overhead. Tolerance 1e-8 is two
+        // decades below SCORE_EPSILON, so acceptance decisions are unaffected.
+        magScorer.setSkipChecks(true);
+        magScorer.setTolerance(1e-8);
         tallyLegal = tallyScoreAccepted = tallyScoreRejected = tallyScoreUnavailable = 0;
+        tallyGateTrials = tallySkippedVisits = 0;
+        commitVersion = 0;
+        failedVisitVersion.clear();
 
         Double initialScore = scorePag(pag);
         if (initialScore == null) {
@@ -456,7 +486,8 @@ public final class BfciBryanScore implements IGraphSearch {
             FciOrient refineOrient = buildFciOrient(new SepsetMap(sepsetMap));
             Graph refined = refineWithKnowledge(pag, refineOrient);
 
-            if (legalPagModuloKnowledge(refined, new LinkedHashSet<>(selection), refineOrient).isLegalPag()) {
+            if (legalPagModuloKnowledge(refined, tryZhangMag(refined), new LinkedHashSet<>(selection),
+                    refineOrient).isLegalPag()) {
                 pag = refined;
             } else if (verbose) {
                 TetradLogger.getInstance().log("Final knowledge refinement failed the modulo-knowledge "
@@ -466,10 +497,17 @@ public final class BfciBryanScore implements IGraphSearch {
 
         pag = GraphUtils.replaceNodes(pag, nodes);
 
-        // Unconditional one-line summary of the score step.
-        TetradLogger.getInstance().log("BFCI-Bryan-Score summary: legal candidates scored = " + tallyLegal
+        // Unconditional one-line summary of the score step, with the cost diagnostics: gate trials is the
+        // number of full trials paid for (re-orientation, legality, usually a score); skipped visits is the
+        // number of repeat visits the commit-version memo avoided; the scorer's district-cache hit rate says
+        // whether RICF or the orientation-and-legality machinery dominates what remains.
+        TetradLogger.getInstance().log("BFCI-Bryan-Score summary: gate trials = " + tallyGateTrials
+                + ", legal candidates scored = " + tallyLegal
                 + ", accepted = " + tallyScoreAccepted + ", score-rejected = " + tallyScoreRejected
-                + ", score unavailable (rejected) = " + tallyScoreUnavailable + "; final score = " + currentScore
+                + ", score unavailable (rejected) = " + tallyScoreUnavailable
+                + ", skipped repeat visits = " + tallySkippedVisits
+                + ", district cache hits/misses = " + magScorer.getCacheHits() + "/" + magScorer.getCacheMisses()
+                + "; final score = " + currentScore
                 + " (c = " + scorePenaltyDiscount + ").");
 
         if (verbose) {
@@ -560,10 +598,11 @@ public final class BfciBryanScore implements IGraphSearch {
             FciOrient trialOrient = buildFciOrient(trialMap);
             gfciOrientPag(trial, cpdag, nodes, trialMap, trialOrient);
 
+            Graph mag = tryZhangMag(trial);
             PagLegalityCheck.LegalPagRet legal =
-                    legalPagModuloKnowledge(trial, new LinkedHashSet<>(selection), trialOrient);
+                    legalPagModuloKnowledge(trial, mag, new LinkedHashSet<>(selection), trialOrient);
 
-            if (legal.isLegalPag() && !scoreAccepts(trial, "saturating batch " + formatBatch(batch))) {
+            if (legal.isLegalPag() && !scoreAccepts(mag, "saturating batch " + formatBatch(batch))) {
                 continue;
             }
 
@@ -572,6 +611,7 @@ public final class BfciBryanScore implements IGraphSearch {
                     List<Node> pn = new ArrayList<>(pair);
                     sepsetMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
                 }
+                commitVersion++;
                 if (verbose) {
                     TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
                             + stalled.size() + " edge(s) jointly (legal PAG): " + formatBatch(batch) + ".");
@@ -613,6 +653,17 @@ public final class BfciBryanScore implements IGraphSearch {
     private Graph tryRemoveEdge(Graph pag, Node a, Node b, List<List<Node>> pools, int subsetDepth,
                                 Graph cpdag, List<Node> nodes, SepsetMap sepsetMap, Set<Node> selection,
                                 String type) throws InterruptedException {
+        // Visit memo: a failed visit is a deterministic function of the committed state, so repeating it
+        // against the same commitVersion repeats every rejection. Skip it. (The pools are functions of the
+        // carried graph, so an unchanged version implies unchanged pools; the kind string separates the
+        // adjacency, possible-D-SEP, and Pass-0 visit semantics.)
+        String visitKey = a.getName() + "|" + b.getName() + "|" + type;
+        Integer failedAt = failedVisitVersion.get(visitKey);
+        if (failedAt != null && failedAt == commitVersion) {
+            tallySkippedVisits++;
+            return null;
+        }
+
         Set<Set<Node>> tried = new HashSet<>();
         int gateTrials = 0;
 
@@ -635,9 +686,11 @@ public final class BfciBryanScore implements IGraphSearch {
                         TetradLogger.getInstance().log("\t" + a + " -- " + b + " (" + type + "): gate-trial cap of "
                                 + maxGateTrialsPerEdge + " reached; deferring to a later sweep.");
                     }
+                    failedVisitVersion.put(visitKey, commitVersion);
                     return null;
                 }
                 gateTrials++;
+                tallyGateTrials++;
 
                 // Gated trial: copy, remove, re-orient from scratch against a trial-local sepset map seeded
                 // with this candidate, certify. Commit S and G together on acceptance; no trace on rejection.
@@ -649,15 +702,18 @@ public final class BfciBryanScore implements IGraphSearch {
                 FciOrient trialOrient = buildFciOrient(trialMap);
                 gfciOrientPag(_pag, cpdag, nodes, trialMap, trialOrient);
 
+                // One Zhang MAG per trial, shared by the legality certificate and the score step.
+                Graph mag = tryZhangMag(_pag);
                 PagLegalityCheck.LegalPagRet legal =
-                        legalPagModuloKnowledge(_pag, new LinkedHashSet<>(selection), trialOrient);
+                        legalPagModuloKnowledge(_pag, mag, new LinkedHashSet<>(selection), trialOrient);
 
-                if (legal.isLegalPag() && !scoreAccepts(_pag, a + " -- " + b + " (" + type + "), sepset = " + C)) {
+                if (legal.isLegalPag() && !scoreAccepts(mag, a + " -- " + b + " (" + type + "), sepset = " + C)) {
                     continue;   // score rejection: revert (nothing was committed) and try the next C
                 }
 
                 if (legal.isLegalPag()) {
                     sepsetMap.set(a, b, C);
+                    commitVersion++;
                     if (verbose) {
                         TetradLogger.getInstance().log("Removed edge " + a + " -- " + b + " (" + type
                                 + ", legal PAG); sepset = " + C + " (gate trial " + gateTrials + ").");
@@ -676,17 +732,18 @@ public final class BfciBryanScore implements IGraphSearch {
                     + " separating set(s) gate-rejected this visit; edge kept.");
         }
 
+        failedVisitVersion.put(visitKey, commitVersion);
         return null;
     }
 
     /**
-     * The scoring step. Scores a legal candidate PAG and accepts iff its score exceeds the committed score by
-     * more than {@link #SCORE_EPSILON}; on acceptance the committed score is updated (the caller then commits G
-     * and S). An unscorable candidate is rejected.
+     * The scoring step. Scores a legal candidate's Zhang MAG (the one the legality certificate already used)
+     * and accepts iff its score exceeds the committed score by more than {@link #SCORE_EPSILON}; on acceptance
+     * the committed score is updated (the caller then commits G and S). An unscorable candidate is rejected.
      */
-    private boolean scoreAccepts(Graph candidate, String what) {
+    private boolean scoreAccepts(Graph mag, String what) {
         tallyLegal++;
-        Double trialScore = scorePag(candidate);
+        Double trialScore = scoreMag(mag);
 
         if (trialScore == null) {
             tallyScoreUnavailable++;
@@ -720,13 +777,40 @@ public final class BfciBryanScore implements IGraphSearch {
 
     /**
      * RICF BIC of the PAG: the score of its Zhang MAG, which is the same for every MAG in the class. Null if it
-     * cannot be computed.
+     * cannot be computed. Used once, for the start graph; trials score the MAG they already hold.
      */
     private Double scorePag(Graph pag) {
+        return scoreMag(tryZhangMag(pag));
+    }
+
+    /**
+     * RICF BIC of a Zhang MAG; null if it cannot be computed. The scorer runs its trusted-caller fast path
+     * (no node replacement, no cycle check -- see search()), so the edge-type guard that the scorer's own
+     * validation used to provide is kept here: an undirected (selection-bias) edge makes the candidate
+     * unscorable, exactly as before.
+     */
+    private Double scoreMag(Graph mag) {
+        if (mag == null) return null;
+
+        for (Edge e : mag.getEdges()) {
+            if (!Edges.isDirectedEdge(e) && !Edges.isBidirectedEdge(e)) return null;
+        }
+
         try {
-            Graph mag = GraphTransforms.zhangMagFromPag(pag);
             double sc = magScorer.score(mag);
             return Double.isFinite(sc) ? sc : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * The Zhang MAG of the given PAG, or null if the conversion fails (which both the legality certificate
+     * and the score step treat as a rejection).
+     */
+    private static Graph tryZhangMag(Graph pag) {
+        try {
+            return GraphTransforms.zhangMagFromPag(pag);
         } catch (Exception e) {
             return null;
         }
@@ -815,27 +899,26 @@ public final class BfciBryanScore implements IGraphSearch {
     }
 
     /**
-     * Legal PAG modulo background knowledge, verbatim from {@link StarFci}: with empty knowledge this is
-     * exactly {@link PagLegalityCheck#isLegalPag(Graph, Set)}; otherwise the round-trip equality is taken
+     * Legal PAG modulo background knowledge, as in {@link StarFci}, except that the Zhang MAG of {@code pag}
+     * is supplied by the caller (null meaning the conversion failed), so the trial that scores the MAG does
+     * not convert twice: with empty knowledge this is exactly
+     * {@link PagLegalityCheck#isLegalPag(Graph, Graph, Set)}; otherwise the round-trip equality is taken
      * against the knowledge-refined canonical PAG of the implied Zhang MAG.
      */
-    private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Set<Node> selection, FciOrient orient)
-            throws InterruptedException {
+    private PagLegalityCheck.LegalPagRet legalPagModuloKnowledge(Graph pag, Graph mag, Set<Node> selection,
+                                                                 FciOrient orient) throws InterruptedException {
+        if (mag == null) {
+            return new PagLegalityCheck.LegalPagRet(false, "PAG to MAG failed");
+        }
+
         if (knowledge.isEmpty()) {
-            return PagLegalityCheck.isLegalPag(pag, selection);
+            return PagLegalityCheck.isLegalPag(pag, mag, selection);
         }
 
         for (Node n : pag.getNodes()) {
             if (n.getNodeType() != NodeType.MEASURED) {
                 return new PagLegalityCheck.LegalPagRet(false, "Node " + n + " is not measured");
             }
-        }
-
-        Graph mag;
-        try {
-            mag = GraphTransforms.zhangMagFromPag(pag);
-        } catch (Exception e) {
-            return new PagLegalityCheck.LegalPagRet(false, "PAG to MAG failed");
         }
 
         PagLegalityCheck.LegalMagRet legalMag = PagLegalityCheck.isLegalMag(mag, selection);
