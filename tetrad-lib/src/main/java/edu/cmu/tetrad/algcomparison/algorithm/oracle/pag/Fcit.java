@@ -193,11 +193,21 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 //        fcit.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);  // or POOL_ONLY
 
         fcit.setUseMarkFlipEscalation(true);
-        boolean requireImapStates = parameters.getBoolean(Params.REQUIRE_IMAP_STATES);
-        // The saturating step is not a user choice here: it runs iff the I-map gate is off (2026-10-28). With the
-        // gate on, every committed state is required to be an I-map of the test, and the joint removal is not run.
-        fcit.setRequireImapStates(requireImapStates);
-        fcit.setUseSaturatingStep(!requireImapStates);
+        // The warrant for the result, a three-way choice (the saturating step is not a separate switch: it runs
+        // exactly when neither gate is on). 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step.
+        int correctness = parameters.getInt(Params.FCIT_CORRECTNESS);
+        if (correctness == 1) {
+            fcit.setRequireImapStates(true);
+            fcit.setUseSaturatingStep(false);
+        } else if (correctness == 2) {
+            fcit.setRequireNoScoreDrop(true);
+            fcit.setUseSaturatingStep(false);
+        } else if (correctness == 3) {
+            fcit.setUseSaturatingStep(true);
+        } else {
+            throw new IllegalArgumentException("Unknown FCIT correctness option: " + correctness
+                    + " (1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step).");
+        }
         fcit.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
 
         // Wall-clock per-pair budget. NOTE: this makes runs NONDETERMINISTIC -- a machine under load explores a
@@ -407,7 +417,7 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TEST_TIMEOUT);
-        params.add(Params.REQUIRE_IMAP_STATES);
+        params.add(Params.FCIT_CORRECTNESS);
         params.add(Params.IMAP_ALPHA);
 
         // General

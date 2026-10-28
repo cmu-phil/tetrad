@@ -24,6 +24,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.work_in_progress.MagRicfBicScorer;
 import edu.cmu.tetrad.search.test.CachedIndependenceQueries;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -404,6 +406,26 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
      * else the test's own verdict). Default 0.001.
      */
     private double imapAlpha = 0.001;
+    /**
+     * NO-SCORE-DROP GATE (the BFCI-Bryan score step as a veto; see
+     * {@link BfciBryanScore}). When true, every candidate the legality gate (and,
+     * if on, the I-map gate) accepts must also not lower the RICF BIC of its
+     * Zhang MAG relative to the committed state's, by more than
+     * {@link #SCORE_EPSILON}. An unscorable candidate (MAG conversion fails, or
+     * the MAG has a selection-bias undirected edge) is vetoed. Only MAG scores
+     * are ever compared with MAG scores, so no DAG/MAG scale alignment is
+     * needed; the covariance matrix and penalty discount are taken from the
+     * supplied {@link SemBicScore}, which is therefore required. Default false.
+     */
+    private boolean requireNoScoreDrop = false;
+    /** Tolerance for the no-score-drop comparison. */
+    private static final double SCORE_EPSILON = 1e-6;
+    /** RICF BIC scorer over Zhang MAGs, for the no-score-drop gate. */
+    private MagRicfBicScorer magScorer = null;
+    /** RICF BIC of the committed state's Zhang MAG. */
+    private double currentScore = Double.NaN;
+    /** No-score-drop gate tallies, reported at the end of the run. */
+    private int scoreGateCandidates = 0, scoreGateVetoes = 0, scoreGateUnscorable = 0;
     /** Known test-confirmed separators per pair, for the I-map gate (a cache; never written into sepsets). */
     private final Map<Set<Node>, List<Set<Node>>> knownSeparators = new HashMap<>();
     /** Pairs uncertified in the committed state; exempt from the I-map gate. */
@@ -893,6 +915,10 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
             refreshBaseline(this.pag, this.sepsets);
         }
 
+        if (requireNoScoreDrop) {
+            initScoreGate();
+        }
+
         // ---------------------------------------------------------------------
         // Thm. algorithm: phase 1 (legality-gated single-edge deletions) to
         // fixpoint; then phase 2 (one saturating step over all confirmed
@@ -954,6 +980,12 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
                             + "No non-genuine DDP was confirmed, but the graph cannot be certified phantom-free.");
         } else {
             TetradLogger.getInstance().log("\nNo non-genuine DDPs detected in the final graph.");
+        }
+
+        if (requireNoScoreDrop) {
+            TetradLogger.getInstance().log("\nFCIT score gate summary: legal candidates scored = "
+                    + scoreGateCandidates + ", vetoed = " + scoreGateVetoes
+                    + ", unscorable = " + scoreGateUnscorable + "; final MAG score = " + currentScore + ".");
         }
 
         if (requireImapStates) {
@@ -1583,6 +1615,27 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
             return false;
         }
 
+        if (requireNoScoreDrop) {
+            // Score veto: revert like the I-map veto, and likewise do not memoize (the verdict depends on the
+            // committed score, which changes).
+            scoreGateCandidates++;
+            Double trial = scoreMagOfPag(this.pag);
+            if (trial == null || trial < currentScore - SCORE_EPSILON) {
+                if (trial == null) scoreGateUnscorable++; else scoreGateVetoes++;
+                if (verbose) {
+                    TetradLogger.getInstance().log("\tTried removing " + _edge + ", legal PAG, but the score "
+                            + "gate vetoed it (" + (trial == null ? "unscorable" : trial + " < " + currentScore)
+                            + "); sepset = " + b);
+                }
+                restorePag(_pag);
+                if (r0r4Strategy != null) {
+                    r0r4Strategy.setSepsetMap(this.sepsets);
+                }
+                return false;
+            }
+            currentScore = trial;  // the commit below is unconditional from here
+        }
+
         if (memoHit) {
             // Audit mode only: the memo said illegal, the recomputation says
             // legal. Reorientation is not a function of (skeleton, sepsets).
@@ -1603,6 +1656,67 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
         }
 
         return true;
+    }
+
+    // -------------------------------------------------------------------------
+    // No-score-drop gate (see requireNoScoreDrop).
+    // -------------------------------------------------------------------------
+
+    /**
+     * Builds the RICF BIC scorer and scores the initial PAG. The covariance
+     * matrix and penalty discount come from the supplied {@link SemBicScore};
+     * only MAG scores are compared with MAG scores, so unlike
+     * {@link BfciBryanScore} no structure-prior restriction is needed.
+     */
+    private void initScoreGate() {
+        if (replicatingGraph) {
+            throw new IllegalArgumentException("The no-score-drop gate does not support the time-lag "
+                    + "replicating-graph wrapper.");
+        }
+        if (!(score instanceof SemBicScore semBic) || semBic.getCovariances() == null) {
+            throw new IllegalArgumentException("The no-score-drop gate requires a SemBicScore built on a "
+                    + "covariance matrix: the gate compares RICF BICs of candidate Zhang MAGs, and the "
+                    + "covariance and penalty discount are taken from the SemBicScore (got "
+                    + (score == null ? "null" : score.getClass().getSimpleName()) + ").");
+        }
+        magScorer = new MagRicfBicScorer(semBic.getCovariances());
+        magScorer.setPenaltyDiscount(semBic.getPenaltyDiscount());
+        // Trusted-caller fast path, as in BfciBryanScore: every scored MAG is the Zhang MAG of a legality-
+        // checked candidate over the test's variables, and edge types are re-checked in scoreMag.
+        magScorer.setSkipChecks(true);
+        magScorer.setTolerance(1e-8);
+        scoreGateCandidates = scoreGateVetoes = scoreGateUnscorable = 0;
+
+        Double initial = scoreMagOfPag(this.pag);
+        if (initial == null) {
+            throw new IllegalStateException("The no-score-drop gate could not score the initial PAG's Zhang MAG.");
+        }
+        currentScore = initial;
+    }
+
+    /**
+     * RICF BIC of a PAG's Zhang MAG; null if the conversion fails or the MAG is
+     * unscorable (an undirected selection-bias edge, or a non-finite score).
+     */
+    private Double scoreMagOfPag(Graph pag) {
+        Graph mag;
+        try {
+            mag = GraphTransforms.zhangMagFromPag(pag);
+        } catch (Exception e) {
+            return null;
+        }
+        if (mag == null) return null;
+
+        for (Edge e : mag.getEdges()) {
+            if (!Edges.isDirectedEdge(e) && !Edges.isBidirectedEdge(e)) return null;
+        }
+
+        try {
+            double sc = magScorer.score(mag);
+            return Double.isFinite(sc) ? sc : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -1865,6 +1979,23 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
             TetradLogger.getInstance().warn("SATURATION REVERTED by the I-map gate: the joint removal is a legal "
                     + "PAG but asserts an independence the test judges false at imapAlpha.");
             return false;
+        }
+
+        if (requireNoScoreDrop) {
+            scoreGateCandidates++;
+            Double trial = scoreMagOfPag(this.pag);
+            if (trial == null || trial < currentScore - SCORE_EPSILON) {
+                if (trial == null) scoreGateUnscorable++; else scoreGateVetoes++;
+                restorePag(backup);
+                if (r0r4Strategy != null) {
+                    r0r4Strategy.setSepsetMap(this.sepsets);
+                }
+                TetradLogger.getInstance().warn("SATURATION REVERTED by the score gate: the joint removal is a "
+                        + "legal PAG but " + (trial == null ? "its Zhang MAG is unscorable."
+                        : "lowers the MAG score (" + trial + " < " + currentScore + ")."));
+                return false;
+            }
+            currentScore = trial;
         }
 
         this.sepsets = scratch;
@@ -2307,6 +2438,17 @@ public final class FcitKeepKnowledgeOrientations implements IGraphSearch {
      */
     public void setRequireImapStates(boolean requireImapStates) {
         this.requireImapStates = requireImapStates;
+    }
+
+    /**
+     * Turns the no-score-drop gate on or off (default off); see {@link #requireNoScoreDrop}. Requires the
+     * supplied score to be a SemBicScore built on a covariance matrix.
+     *
+     * @param requireNoScoreDrop true to veto any accepted candidate whose Zhang MAG's RICF BIC is lower than
+     *                           the committed state's.
+     */
+    public void setRequireNoScoreDrop(boolean requireNoScoreDrop) {
+        this.requireNoScoreDrop = requireNoScoreDrop;
     }
 
     /**

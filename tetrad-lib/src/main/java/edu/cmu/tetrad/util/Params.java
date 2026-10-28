@@ -623,6 +623,13 @@ public final class Params {
      */
     public static final String FCIT_STARTS_WITH = "fcitStartsWith";
     /**
+     * Constant <code>FCIT_CORRECTNESS="fcitCorrectness"</code>. FCIT's warrant for the result, a three-way
+     * choice: 1 = Guarantee I-map (the I-map gate; saturating step off), 2 = No score drop (the BFCI-Bryan
+     * score step as a veto; saturating step off), 3 = Saturating step (no extra gate; the joint-removal
+     * discharge of Cor. saturation runs).
+     */
+    public static final String FCIT_CORRECTNESS = "fcitCorrectness";
+    /**
      * Constant <code>FDR_Q="fdrQ"</code>
      */
     public static final String FDR_Q = "fdrQ";

@@ -2463,6 +2463,20 @@ Source:
             Type: <span id="fcitStartsWith_value_type">Integer</span></li>
     </ul>
 
+    === fcitCorrectness ===
+    <h3 class="parameter_description" id="fcitCorrectness">fcitCorrectness</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fcitCorrectness_short_desc">
+                    Warrant for the result: 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step
+        </span></li>
+        <li>Long Description: <span id="fcitCorrectness_long_desc">The warrant FCIT relies on for the final graph, a three-way choice. 1 = Guarantee I-map: every candidate the legality gate accepts must additionally be an I-map of the independence test (see requireImapStates; imapAlpha applies); the saturating step is off. 2 = No score drop: every accepted candidate's Zhang MAG must not score lower (RICF BIC) than the committed state's, as in the BFCI-Bryan score step; the saturating step is off, and a SemBicScore built on a covariance matrix is required. 3 = Saturating step: no extra per-commit gate; when no single removal commits, all pairs with test-confirmed separating sets are removed jointly, which is the step the oracle correctness argument needs. The saturating step is not a separate switch: it runs exactly when neither gate is on.</span></li>
+        <li>Default Value: <span id="fcitCorrectness_default_value">1</span></li>
+        <li>Lower Bound: <span id="fcitCorrectness_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="fcitCorrectness_upper_bound">3</span></li>
+        <li>Value Type:
+            <span id="fcitCorrectness_value_type">Integer</span></li>
+    </ul>
+
     === fDegree ===
     <h3 class="parameter_description" id="fDegree">fDegree</h3>
     <ul class="parameter_description_list">
@@ -8560,7 +8574,7 @@ Source:
     <h3 class="parameter_description" id="requireImapStates">requireImapStates</h3>
     <ul class="parameter_description_list">
         <li>Short Description: <span id="requireImapStates_short_desc">Require each state the legality gate accepts to be an I-map of the test (the saturating step runs only when this is off)</span></li>
-        <li>Long Description: <span id="requireImapStates_long_desc">In BFCI-Bryan and FCIT, additionally require every candidate accepted by the legality gate (single-edge passes and saturating step) to be an I-map of the independence test: for each nonadjacent pair of the candidate's MAG, a separator in that MAG must be judged independent at imapAlpha. A pair passes without a test when a known test-confirmed separator still m-separates it; otherwise one recursive-blocking separator is tested. Pairs whose seeded sepset the test refuted are exempt. Spends tests, so on data a false dependence becomes a veto. In BFCI-Bryan and FCIT the saturating (joint-removal) step is not a separate choice: it runs if and only if this option is off.</span></li>
+        <li>Long Description: <span id="requireImapStates_long_desc">In BFCI-Bryan, additionally require every candidate accepted by the legality gate (single-edge passes and saturating step) to be an I-map of the independence test: for each nonadjacent pair of the candidate's MAG, a separator in that MAG must be judged independent at imapAlpha. A pair passes without a test when a known test-confirmed separator still m-separates it; otherwise one recursive-blocking separator is tested. Pairs whose seeded sepset the test refuted are exempt. Spends tests, so on data a false dependence becomes a veto. The saturating (joint-removal) step is not a separate choice: it runs if and only if this option is off. In FCIT this gate is option 1 of fcitCorrectness.</span></li>
         <li>Default Value: <span id="requireImapStates_default_value">true</span></li>
         <li>Lower Bound: <span id="requireImapStates_lower_bound"></span></li>
         <li>Upper Bound: <span id="requireImapStates_upper_bound"></span></li>
