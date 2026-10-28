@@ -143,12 +143,31 @@ public final class TabularComparison implements SessionModel, SimulationParamsSo
      *
      * @param model1      the first model to compare; its graph is used.
      * @param model2      the second model to compare; its graph is used.
-     * @param dataWrapper the data wrapper to use for the comparison. (Unused here.)
+     * @param dataWrapper the data wrapper to use for the comparison. Its data are unused, but if it is also a graph
+     *                    source (a Simulation box is both), its graph is compared along with the other two; see below.
      * @param params      the parameters for the comparison.
      */
     public TabularComparison(GraphSource model1, GraphSource model2,
                              DataWrapper dataWrapper, Parameters params) {
-        this(checkPair(model1, model2), params);
+        // A Simulation is both a DataWrapper and a GraphSource, so with a Simulation and two search boxes as parents
+        // the session binds this constructor exactly (two graph sources, one "data wrapper", Parameters), and
+        // dropping the wrapper here silently lost the true graph: one search box became the reference. Treat a
+        // wrapper that is a graph source as a third source, so this constructor and the array form agree whichever
+        // one reflection offers first. A plain data box is still accepted and ignored. Fixed 2026-10-28.
+        this(dataWrapper instanceof GraphSource source
+                ? new GraphSource[]{requireNonNull(model1), requireNonNull(model2), source}
+                : checkPair(model1, model2), params);
+    }
+
+    /**
+     * Null-checks a graph source, with the legacy constructors' error message.
+     */
+    private static GraphSource requireNonNull(GraphSource model) {
+        if (model == null) {
+            throw new NullPointerException("Null graph source>");
+        }
+
+        return model;
     }
 
     /**
