@@ -134,8 +134,11 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
         search.setKnowledge(knowledge);
 
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
-        search.setRequireImapStates(parameters.getBoolean(Params.REQUIRE_IMAP_STATES));
+        boolean requireImapStates = parameters.getBoolean(Params.REQUIRE_IMAP_STATES);
+        // The saturating step is not a user choice here: it runs iff the I-map gate is off (2026-10-28). With the
+        // gate on, every committed state is required to be an I-map of the test, and the joint removal is not run.
+        search.setRequireImapStates(requireImapStates);
+        search.setUseSaturatingStep(!requireImapStates);
         search.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
         search.setUsePass0(parameters.getBoolean(Params.USE_PASS_0));
         search.setReharvestSepsets(parameters.getBoolean(Params.REHARVEST_SEPSETS));
@@ -197,7 +200,6 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
 
         // Parameters
         params.add(Params.NUM_STARTS);
-        params.add(Params.USE_SATURATING_STEP);
         params.add(Params.REQUIRE_IMAP_STATES);
         params.add(Params.IMAP_ALPHA);
         params.add(Params.USE_PASS_0);

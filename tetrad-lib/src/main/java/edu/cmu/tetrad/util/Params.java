@@ -1985,13 +1985,16 @@ public final class Params {
      * Constant <code>USE_SATURATING_STEP="useSaturatingStep"</code>. For the gated *-FCI variants: after the
      * single-edge passes, jointly remove the still-adjacent pairs that have a test-confirmed separator but whose
      * single removals the legality gate rejected. Needed for correctness in the oracle (a reachable state can
-     * have no legal single removal); default true.
+     * have no legal single removal); default true. Not offered by BFCI-Bryan or FCIT, whose wrappers run the step
+     * iff {@link #REQUIRE_IMAP_STATES} is off, nor by BFCI-Bryan-Score, which has no saturating step.
      */
     public static final String USE_SATURATING_STEP = "useSaturatingStep";
     /**
      * Constant <code>REQUIRE_IMAP_STATES="requireImapStates"</code>. Experimental, BFCI-Bryan: require every
      * state the legality gate accepts to also be an I-map of the independence test (see
-     * {@link edu.cmu.tetrad.search.BfciBryan#setRequireImapStates(boolean)}); default false.
+     * {@link edu.cmu.tetrad.search.BfciBryan#setRequireImapStates(boolean)}); also used by FCIT. Default true as a
+     * parameter (the search classes' own field defaults are unchanged, for the harnesses). In both wrappers the
+     * saturating step runs iff this is off.
      */
     public static final String REQUIRE_IMAP_STATES = "requireImapStates";
     /**

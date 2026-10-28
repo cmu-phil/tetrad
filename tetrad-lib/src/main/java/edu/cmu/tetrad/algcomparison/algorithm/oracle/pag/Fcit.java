@@ -187,14 +187,17 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         fcit.setRbRadius(parameters.getInt(Params.RB_RADIUS));
         fcit.setRecursiveDepth(parameters.getInt(Params.RECURSIVE_DEPTH));
         fcit.setExcludeSelectionBias(parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
-        fcit.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
 //        fcit.setCompletionPolicy(edu.cmu.tetrad.fcit.Fcit.CompletionPolicy.OFF);
 
 //        fcit.setUseMarkFlipEscalation(true);
 //        fcit.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);  // or POOL_ONLY
 
         fcit.setUseMarkFlipEscalation(true);
-        fcit.setRequireImapStates(parameters.getBoolean(Params.REQUIRE_IMAP_STATES));
+        boolean requireImapStates = parameters.getBoolean(Params.REQUIRE_IMAP_STATES);
+        // The saturating step is not a user choice here: it runs iff the I-map gate is off (2026-10-28). With the
+        // gate on, every committed state is required to be an I-map of the test, and the joint removal is not run.
+        fcit.setRequireImapStates(requireImapStates);
+        fcit.setUseSaturatingStep(!requireImapStates);
         fcit.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
 
         // Wall-clock per-pair budget. NOTE: this makes runs NONDETERMINISTIC -- a machine under load explores a
@@ -403,7 +406,6 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.RB_RADIUS);
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
-        params.add(Params.USE_SATURATING_STEP);
         params.add(Params.TEST_TIMEOUT);
         params.add(Params.REQUIRE_IMAP_STATES);
         params.add(Params.IMAP_ALPHA);

@@ -8559,9 +8559,9 @@ Source:
     === requireImapStates ===
     <h3 class="parameter_description" id="requireImapStates">requireImapStates</h3>
     <ul class="parameter_description_list">
-        <li>Short Description: <span id="requireImapStates_short_desc">Experimental: require each state the legality gate accepts to be an I-map of the test</span></li>
-        <li>Long Description: <span id="requireImapStates_long_desc">In BFCI-Bryan and FCIT, additionally require every candidate accepted by the legality gate (single-edge passes and saturating step) to be an I-map of the independence test: for each nonadjacent pair of the candidate's MAG, a separator in that MAG must be judged independent at imapAlpha. A pair passes without a test when a known test-confirmed separator still m-separates it; otherwise one recursive-blocking separator is tested. Pairs whose seeded sepset the test refuted are exempt. Spends tests, so on data a false dependence becomes a veto.</span></li>
-        <li>Default Value: <span id="requireImapStates_default_value">false</span></li>
+        <li>Short Description: <span id="requireImapStates_short_desc">Require each state the legality gate accepts to be an I-map of the test (the saturating step runs only when this is off)</span></li>
+        <li>Long Description: <span id="requireImapStates_long_desc">In BFCI-Bryan and FCIT, additionally require every candidate accepted by the legality gate (single-edge passes and saturating step) to be an I-map of the independence test: for each nonadjacent pair of the candidate's MAG, a separator in that MAG must be judged independent at imapAlpha. A pair passes without a test when a known test-confirmed separator still m-separates it; otherwise one recursive-blocking separator is tested. Pairs whose seeded sepset the test refuted are exempt. Spends tests, so on data a false dependence becomes a veto. In BFCI-Bryan and FCIT the saturating (joint-removal) step is not a separate choice: it runs if and only if this option is off.</span></li>
+        <li>Default Value: <span id="requireImapStates_default_value">true</span></li>
         <li>Lower Bound: <span id="requireImapStates_lower_bound"></span></li>
         <li>Upper Bound: <span id="requireImapStates_upper_bound"></span></li>
         <li>Value Type:
