@@ -132,7 +132,6 @@ public class BfciBryanScore extends AbstractBootstrapAlgorithm implements Algori
         search.setKnowledge(knowledge);
 
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
 
         return search.search();
     }
@@ -191,7 +190,6 @@ public class BfciBryanScore extends AbstractBootstrapAlgorithm implements Algori
 
         // Parameters
         params.add(Params.NUM_STARTS);
-        params.add(Params.USE_SATURATING_STEP);
 
         return params;
     }

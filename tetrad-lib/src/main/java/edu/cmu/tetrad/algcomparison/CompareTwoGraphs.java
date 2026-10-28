@@ -271,12 +271,23 @@ public class CompareTwoGraphs {
      * @return The comparison string.
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime) {
+        return getStatsListTable(trueGraph, targetGraph, dataModel, elapsedTime, statistics());
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, Graph, DataModel, long)}, but with the statistics to show given
+     * explicitly, in display order.
+     *
+     * @param trueGraph   The true graph.
+     * @param targetGraph The target graph.
+     * @param dataModel   The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTime Elapsed wall time in milliseconds; &lt; 0 to omit the Elapsed row.
+     * @param statistics  The statistics to show.
+     * @return The comparison string.
+     */
+    public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime,
+                                           List<Statistic> statistics) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
-
-//        System.out.println("_target graph =  " + _targetGraph);
-//        System.out.println("target graph = " + targetGraph);
-
-        List<Statistic> statistics = statistics();
 
         TextTable table = new TextTable(statistics.size() + 1, 3);
         NumberFormat nf = new DecimalFormat("0.###");
@@ -328,11 +339,27 @@ public class CompareTwoGraphs {
      */
     public static String getStatsListTable(Graph trueGraph, List<Graph> targetGraphs, List<String> targetNames,
                                            DataModel dataModel, List<Long> elapsedTimes) {
+        return getStatsListTable(trueGraph, targetGraphs, targetNames, dataModel, elapsedTimes, statistics());
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, List, List, DataModel, List)}, but with the statistics to show given
+     * explicitly, in display order.
+     *
+     * @param trueGraph    The true graph.
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @param statistics   The statistics to show.
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueGraph, List<Graph> targetGraphs, List<String> targetNames,
+                                           DataModel dataModel, List<Long> elapsedTimes,
+                                           List<Statistic> statistics) {
         if (targetGraphs.size() != targetNames.size()) {
             throw new IllegalArgumentException("One name per target graph expected.");
         }
-
-        List<Statistic> statistics = statistics();
         NumberFormat nf = new DecimalFormat("0.###");
         int numTargets = targetGraphs.size();
 
@@ -417,6 +444,26 @@ public class CompareTwoGraphs {
         }
 
         return table.toString();
+    }
+
+    /**
+     * Returns the statistics shown by default in the stats list comparison, in display order, with duplicate
+     * abbreviations removed (the internal default list repeats a few entries, which the plain table methods keep
+     * for unchanged output).
+     *
+     * @return a new list of the default statistics.
+     */
+    public static List<Statistic> defaultStatistics() {
+        List<Statistic> unique = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+
+        for (Statistic statistic : statistics()) {
+            if (seen.add(statistic.getAbbreviation())) {
+                unique.add(statistic);
+            }
+        }
+
+        return unique;
     }
 
     private static List<Statistic> statistics() {

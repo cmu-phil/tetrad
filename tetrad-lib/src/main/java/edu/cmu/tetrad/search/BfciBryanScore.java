@@ -55,9 +55,15 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  *                      If SCORE(G') &lt;= SCORE(G) + EPS     -&gt; REJECT   // new: the scoring step
  *                      commit (G, S) &lt;- (G', S'); SCORE(G) &lt;- SCORE(G')
  * </pre>
- * The same scored Try is used for each batch of the saturating step, if enabled. In Pass 0 (seeded-sepset
- * re-selection, not in the pseudocode; the pair is already nonadjacent) the score must merely not decrease. The saturating step is not in the
- * pseudocode and is OFF by default here.
+ * In Pass 0 (seeded-sepset re-selection, not in the pseudocode; the pair is already nonadjacent) the score must
+ * merely not decrease.
+ * <p>
+ * NO SATURATING STEP (removed 2026-10-28). Unlike {@link BfciBryan}, this class has no saturating (joint-removal)
+ * step, and it cannot be turned on. The step's justification is an oracle argument: in the oracle a pair gets a
+ * separator only if it is truly non-adjacent, so the joint removal of all stalled pairs yields G*. This class needs
+ * data (the score step fits a covariance matrix) and cannot run against an oracle, so that argument never applies
+ * here; and the step is not in Bryan's scoring pseudocode. The cost, stated plainly: from a state in which no
+ * single score-improving legal removal exists, the search stops there (see item 3 below).
  * <p>
  * WHAT THE SCORE STEP DOES AND DOES NOT BUY, stated plainly. (1) Gaussian MAG models are curved exponential
  * families, so BIC is consistent: in the large-sample limit, from an I-map state, a move is score-improving iff
@@ -77,8 +83,8 @@ import static edu.cmu.tetrad.graph.GraphUtils.colliderAllowed;
  * The documentation of the parent formulation follows.
  * <p>
  * BFCI-Bryan: BOSS followed by Bryan Andrews's from-scratch, sepset-map-as-state formulation of the gated
- * StarFCI extra-edge-removal step, with SEPSET RE-SELECTION, plus a final saturating step (on by default;
- * see {@link #setUseSaturatingStep(boolean)}).
+ * StarFCI extra-edge-removal step, with SEPSET RE-SELECTION, plus a final saturating step (on by default in
+ * BfciBryan; not present in this class, see above).
  * <p>
  * DIFFERENCE FROM {@link StarFci} (the shipping gated template). StarFci freezes the FIRST test-confirmed
  * separating set found for a pair ({@code foundSepsets}: "a discovered separating set is a frozen data fact,
@@ -218,16 +224,6 @@ public final class BfciBryanScore implements IGraphSearch {
      */
     private int maxGateTrialsPerEdge = 100;
     /**
-     * Whether to run a saturating step after the passes: jointly remove every still-adjacent pair for which a
-     * separating set was found but every gated single removal was rejected. Default FALSE here (the step is
-     * not in Bryan's scoring pseudocode); when on, each batch must also pass the score step. Without it the search
-     * can stall from a reachable state in which no single removal is legal (6-variable instance: model
-     * ta...ca.aaat.aa.ataaaaat, reached by legal moves V2-V3 | {V6}, V2-V6 | {V1,V5}, V1-V5 | {V6}). In the oracle
-     * a pair gets a separator only if it is truly non-adjacent, so the joint removal yields the true skeleton
-     * with true separators, whose projection is G*. On a run that never stalls the step does nothing.
-     */
-    private boolean useSaturatingStep = false;
-    /**
      * A candidate must beat the committed score by more than this to be accepted; guards against accepting
      * RICF convergence noise on moves that leave the class's likelihood unchanged (Pass 0 re-selections).
      */
@@ -266,7 +262,7 @@ public final class BfciBryanScore implements IGraphSearch {
     private int tallySkippedVisits = 0;
     /**
      * Monotone count of commits to the searched state (G, S, current score): bumped on every accepted trial
-     * and every accepted saturating batch. A trial's outcome is a deterministic function of that state and
+     * A trial's outcome is a deterministic function of that state and
      * the pair, so this version stamps when a failed visit may be skipped on repetition.
      */
     private int commitVersion = 0;
@@ -277,8 +273,6 @@ public final class BfciBryanScore implements IGraphSearch {
      * on pair order: an edge revisited with endpoints swapped simply re-runs.
      */
     private final Map<String, Integer> failedVisitVersion = new HashMap<>();
-    /** First separating set found for each pair, cached across visits (survives gate rejections). */
-    private final Map<Set<Node>, Set<Node>> foundSepsets = new HashMap<>();
     /**
      * The number of BOSS restarts.
      */
@@ -337,7 +331,6 @@ public final class BfciBryanScore implements IGraphSearch {
         Graph pag = GraphTransforms.dagToPag(initDag, false);
 
         SepsetMap sepsetMap = new SepsetMap();
-        foundSepsets.clear();
 
         magScorer = new MagRicfBicScorer(covarianceMatrix);
         magScorer.setPenaltyDiscount(scorePenaltyDiscount);
@@ -404,7 +397,6 @@ public final class BfciBryanScore implements IGraphSearch {
         if (verbose) {
             TetradLogger.getInstance().log("Starting BFCI-Bryan-Score extra edge removal (sepset projection, "
                     + "sepset re-selection, RICF-BIC score step, c = " + scorePenaltyDiscount
-                    + (useSaturatingStep ? ", saturating step" : ", no saturating step")
                     + "); initial score = " + currentScore
                     + "); " + pendingReselect.size()
                     + " seeded sepset(s) failed the test and are queued for re-selection.");
@@ -474,11 +466,6 @@ public final class BfciBryanScore implements IGraphSearch {
 
         // Pass 0 again for pairs still pending: removals since may have made a re-selection legal.
         pag = reselectPending(pag, pendingReselect, cpdag, nodes, sepsetMap, selection);
-
-        // Saturating step: clears states in which no single removal is legal (see the field doc).
-        if (useSaturatingStep) {
-            pag = saturatingRemoval(pag, cpdag, nodes, sepsetMap, selection);
-        }
 
         // Uniform final knowledge refinement, as in StarFci: covers the path on which no removal ever
         // committed, where pag is the untouched dagToPag start carrying no knowledge marks.
@@ -550,98 +537,6 @@ public final class BfciBryanScore implements IGraphSearch {
     }
 
     /**
-     * Saturating step, run once after the passes. R = every still-adjacent pair with a cached separating set.
-     * Trial 1 removes all of R at once, records their separators, re-projects, and gates once on legality. If
-     * that fails, one leave-one-out rung is tried (each subset of size |R|-1, first legal wins) before keeping
-     * the graph as it is. Every removal in a batch is individually test-confirmed; the batch as a whole must
-     * pass the same legality certificate as a single removal.
-     */
-    private Graph saturatingRemoval(Graph pag, Graph cpdag, List<Node> nodes, SepsetMap sepsetMap,
-                                    Set<Node> selection) throws InterruptedException {
-        List<Set<Node>> stalled = new ArrayList<>();
-        for (Set<Node> pair : foundSepsets.keySet()) {
-            List<Node> pn = new ArrayList<>(pair);
-            if (pag.isAdjacentTo(pn.get(0), pn.get(1))) {
-                stalled.add(pair);
-            }
-        }
-
-        if (stalled.isEmpty()) {
-            return pag;
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Saturating step: " + stalled.size()
-                    + " separable edge(s) survived the passes; trying joint removal: " + formatBatch(stalled) + ".");
-        }
-
-        List<List<Set<Node>>> batches = new ArrayList<>();
-        batches.add(stalled);
-        if (stalled.size() > 1) {
-            for (int skip = 0; skip < stalled.size(); skip++) {
-                List<Set<Node>> sub = new ArrayList<>(stalled);
-                sub.remove(skip);
-                batches.add(sub);
-            }
-        }
-
-        for (List<Set<Node>> batch : batches) {
-            if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-
-            Graph trial = pag.copy();
-            SepsetMap trialMap = new SepsetMap(sepsetMap);
-            for (Set<Node> pair : batch) {
-                List<Node> pn = new ArrayList<>(pair);
-                trial.removeEdge(pn.get(0), pn.get(1));
-                trialMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
-            }
-            FciOrient trialOrient = buildFciOrient(trialMap);
-            gfciOrientPag(trial, cpdag, nodes, trialMap, trialOrient);
-
-            Graph mag = tryZhangMag(trial);
-            PagLegalityCheck.LegalPagRet legal =
-                    legalPagModuloKnowledge(trial, mag, new LinkedHashSet<>(selection), trialOrient);
-
-            if (legal.isLegalPag() && !scoreAccepts(mag, "saturating batch " + formatBatch(batch))) {
-                continue;
-            }
-
-            if (legal.isLegalPag()) {
-                for (Set<Node> pair : batch) {
-                    List<Node> pn = new ArrayList<>(pair);
-                    sepsetMap.set(pn.get(0), pn.get(1), foundSepsets.get(pair));
-                }
-                commitVersion++;
-                if (verbose) {
-                    TetradLogger.getInstance().log("Saturating step: removed " + batch.size() + " of "
-                            + stalled.size() + " edge(s) jointly (legal PAG): " + formatBatch(batch) + ".");
-                }
-                return trial;
-            } else if (verbose) {
-                TetradLogger.getInstance().log("\tSaturating step: joint removal of " + batch.size()
-                        + " edge(s) not legal (reverted): " + formatBatch(batch) + ". Reason: " + legal.getReason());
-            }
-        }
-
-        if (verbose) {
-            TetradLogger.getInstance().log("Saturating step: no joint removal was legal; graph kept.");
-        }
-        return pag;
-    }
-
-    /** Formats a batch of pairs as "a -- b (sepset = [...])" for verbose logging. */
-    private String formatBatch(List<Set<Node>> batch) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < batch.size(); i++) {
-            if (i > 0) sb.append(", ");
-            List<Node> pn = new ArrayList<>(batch.get(i));
-            sb.append(pn.get(0)).append(" -- ").append(pn.get(1))
-                    .append(" (sepset = ").append(foundSepsets.get(batch.get(i))).append(")");
-        }
-        return sb.toString();
-    }
-
-    /**
      * One edge visit: scan candidate conditioning sets from the given pools, smallest first, trying each
      * SEPARATING set against the legality gate until one is accepted or the gate-trial cap is reached. This is
      * the sepset re-selection loop: a gate rejection moves to the NEXT separating set for the same pair rather
@@ -679,7 +574,6 @@ public final class BfciBryanScore implements IGraphSearch {
                 if (!tried.add(C)) continue;
 
                 if (!independenceTest.checkIndependence(a, b, C).isIndependent()) continue;
-                foundSepsets.putIfAbsent(Set.of(a, b), C);
 
                 if (gateTrials >= maxGateTrialsPerEdge) {
                     if (verbose) {
@@ -1086,15 +980,6 @@ public final class BfciBryanScore implements IGraphSearch {
             throw new IllegalArgumentException("Gate-trial cap must be at least 1: " + maxGateTrialsPerEdge);
         }
         this.maxGateTrialsPerEdge = maxGateTrialsPerEdge;
-    }
-
-    /**
-     * Sets whether to run the saturating step after the passes. Default true; see the field documentation.
-     *
-     * @param useSaturatingStep true to run it.
-     */
-    public void setUseSaturatingStep(boolean useSaturatingStep) {
-        this.useSaturatingStep = useSaturatingStep;
     }
 
     /**
