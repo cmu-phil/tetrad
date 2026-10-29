@@ -277,7 +277,7 @@ public final class MiceLiteImputer implements MultipleImputer {
      * ("type-0" matching): point estimates throughout, so between-imputation variance reflects only donor and
      * chain randomness and Rubin's rules are anti-conservative. Turn this on when pooled test statistics will be
      * computed from the imputations; it mainly matters there, since score averaging never reads the
-     * between-imputation variance. An update with nObs - q < 3 skips the draw and is logged.
+     * between-imputation variance. An update with nObs - q &lt; 3 skips the draw and is logged.
      *
      * @param coefficientDraws True to draw coefficients (mice-style proper imputation), false for point estimates.
      */

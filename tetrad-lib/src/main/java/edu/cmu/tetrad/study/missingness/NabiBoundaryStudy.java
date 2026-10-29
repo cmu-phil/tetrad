@@ -49,7 +49,7 @@ import java.util.concurrent.Future;
  *       self-masking, the NaN-marked cousin of the dropout study's mechanism);</li>
  *   <li>COLLUDER (not identified): incomplete variables are paired; within a pair (a, b), R_b depends on the
  *       value of a third variable, and R_a depends on the VALUE of X_b and on R_b, forming the colluder
- *       X_b -> R_a <- R_b.</li>
+ *       X_b -> R_a &lt;- R_b.</li>
  * </ul>
  *
  * <p>Arms: ORACLE BOSS on the complete data; LISTWISE BOSS; TESTWISE PC (Fisher-Z, testwise spec); MICE-PMM
