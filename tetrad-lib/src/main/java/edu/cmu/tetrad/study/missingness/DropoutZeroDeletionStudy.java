@@ -3,7 +3,9 @@ package edu.cmu.tetrad.study.missingness;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.missing.MiceLiteImputer;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.search.score.ImagesScore;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphTransforms;
 import edu.cmu.tetrad.graph.Node;
@@ -107,15 +109,17 @@ public final class DropoutZeroDeletionStudy {
     /** Fisher-Z alpha for the PC arms. */
     private static final double ALPHA = 0.05;
 
-    /** BIC penalty discount for every score arm. */
+    /** BIC penalty discount for the BOSS and pairwise/EM covariance arms. */
     private static final double PENALTY_DISCOUNT = 2.0;
 
     /**
-     * Whether the per-decision FGES diff rescales the zero-deleted partial correlation to the full sample size,
-     * preserving the Fisher-Z statistic, as the paper's GES integration does. Set false for the "honest" variant
-     * that uses the deleted-row count directly in both the likelihood term and the penalty.
+     * BIC penalty discount for the FGES arms (oracle, full, and all 0DEL diff variants). Separate because at
+     * this density (average degree 4) and n, FGES at c = 2 densifies: in the Oct 29 full run ORACLE FGES sat at
+     * adjacency precision 0.73-0.87 while ORACLE BOSS sat at 0.99-1.0 on the same score, and every FGES 0DEL
+     * variant inherits that ceiling. Raising c lifts the engine's ceiling; the deletion machinery was already
+     * tracking it.
      */
-    private static final boolean RESCALE_DIFF_TO_FULL_N = true;
+    private static final double FGES_PENALTY_DISCOUNT = 4.0;
 
     /** Run the lognormal phase (exp transform of the Gaussian data) in addition to the Gaussian phase. */
     private static final boolean RUN_LOGNORMAL = true;
@@ -133,9 +137,10 @@ public final class DropoutZeroDeletionStudy {
      * Stream one line per arm per rep as it finishes. Without this, nothing prints until a whole condition (all
      * reps of all arms) completes, and the first condition front-loads the two slow arms -- MICE at tens of
      * seconds per rep, and BOSS 0DEL at its pathological densest at the lowest rate -- so the console sits silent
-     * for minutes and the run looks stalled when it is not.
+     * for minutes and the run looks stalled when it is not. Off by default for quiet full runs; failures and
+     * timeouts print regardless.
      */
-    private static final boolean STREAM_PROGRESS = true;
+    private static final boolean STREAM_PROGRESS = false;
 
     /** Score returned for a family or decision whose zero-deleted row set is too small to estimate. */
     private static final double STARVED_SCORE = -1e9;
@@ -469,19 +474,32 @@ public final class DropoutZeroDeletionStudy {
      */
     static final class ZeroDeletionBicScore implements Score {
 
+        /**
+         * How a per-decision diff converts the zero-deleted partial correlation into an insert/delete bump.
+         * RESCALED_BIC preserves the Fisher-Z statistic at the full sample size and applies the BIC penalty at
+         * log nFull (the paper's GES integration; most conservative). DELETED_N_BIC uses the deleted-row count
+         * honestly in both likelihood and penalty (log m is smaller, so more liberal -- helps recall when the
+         * deletion starves). FIXED_ALPHA is the literal GES-as-CI-test reframing: the bump is z^2 minus the
+         * two-sided alpha quantile squared, so the decision is a fixed-level test on the deleted rows rather
+         * than a BIC comparison, and the ordering among candidates is by test statistic.
+         */
+        enum DiffMode {RESCALED_BIC, DELETED_N_BIC, FIXED_ALPHA}
+
         private final List<Node> variables;
         private final ZeroRows zeroRows;
         private final double penaltyDiscount;
         private final boolean perDecisionDiff;
-        private final boolean rescaleToFullN;
+        private final DiffMode diffMode;
+        private final double alphaZ;
 
         ZeroDeletionBicScore(DataSet dataSet, double penaltyDiscount, boolean perDecisionDiff,
-                             boolean rescaleToFullN) {
+                             DiffMode diffMode) {
             this.variables = new ArrayList<>(dataSet.getVariables());
             this.zeroRows = new ZeroRows(dataSet);
             this.penaltyDiscount = penaltyDiscount;
             this.perDecisionDiff = perDecisionDiff;
-            this.rescaleToFullN = rescaleToFullN;
+            this.diffMode = diffMode;
+            this.alphaZ = new NormalDistribution(0, 1).inverseCumulativeProbability(1.0 - ALPHA / 2.0);
         }
 
         @Override
@@ -551,23 +569,27 @@ public final class DropoutZeroDeletionStudy {
             if (Double.isNaN(r)) return STARVED_SCORE;
             r = Math.max(-0.999999, Math.min(0.999999, r));
 
-            double rUsed;
-            double nUsed;
+            double q = 0.5 * Math.log((1.0 + r) / (1.0 - r)); // atanh(r)
 
-            if (this.rescaleToFullN) {
-                // Preserve the Fisher-Z statistic at the full sample size, per the paper's GES integration:
-                // atanh(r') sqrt(dfFull) = atanh(r) sqrt(dfDel).
-                double q = 0.5 * Math.log((1.0 + r) / (1.0 - r));
-                double qPrime = q * Math.sqrt(dfDel / dfFull);
-                rUsed = Math.tanh(qPrime);
-                nUsed = nFull;
-            } else {
-                rUsed = r;
-                nUsed = m;
+            switch (this.diffMode) {
+                case FIXED_ALPHA -> {
+                    // The deleted-sample Fisher-Z statistic against the fixed two-sided alpha quantile:
+                    // positive iff the test rejects independence; magnitude orders candidates by statistic.
+                    double z2 = dfDel * q * q;
+                    return z2 - this.alphaZ * this.alphaZ;
+                }
+                case RESCALED_BIC -> {
+                    // Preserve the Fisher-Z statistic at the full sample size, per the paper's GES
+                    // integration: atanh(r') sqrt(dfFull) = atanh(r) sqrt(dfDel).
+                    double rPrime = Math.tanh(q * Math.sqrt(dfDel / dfFull));
+                    return -nFull * Math.log(1.0 - rPrime * rPrime)
+                           - this.penaltyDiscount * Math.log(nFull);
+                }
+                default -> { // DELETED_N_BIC
+                    // The deleted-row count used honestly in both the likelihood term and the penalty.
+                    return -m * Math.log(1.0 - r * r) - this.penaltyDiscount * Math.log(m);
+                }
             }
-
-            // The Nandy-rule BIC change for adding x to y's parents given z; positive favors the edge.
-            return -nUsed * Math.log(1.0 - rUsed * rUsed) - this.penaltyDiscount * Math.log(nUsed);
         }
 
         /** OLS residual variance of column i regressed on the parent columns, over the given rows. */
@@ -645,7 +667,7 @@ public final class DropoutZeroDeletionStudy {
         @Override
         public String toString() {
             return "Zero-deletion BIC score (perDecisionDiff = " + this.perDecisionDiff
-                   + ", rescaleToFullN = " + this.rescaleToFullN + ", c = " + this.penaltyDiscount + ")";
+                   + ", diffMode = " + this.diffMode + ", c = " + this.penaltyDiscount + ")";
         }
     }
 
@@ -659,11 +681,11 @@ public final class DropoutZeroDeletionStudy {
         Map<String, Arm> arms = new LinkedHashMap<>();
 
         arms.put("ORACLE PC", (complete, dropped) -> pc(new IndTestFisherZ(complete, ALPHA)));
-        arms.put("ORACLE FGES", (complete, dropped) -> fges(semBic(complete)));
+        arms.put("ORACLE FGES", (complete, dropped) -> fges(semBicAt(complete, FGES_PENALTY_DISCOUNT)));
         arms.put("ORACLE BOSS", (complete, dropped) -> boss(semBic(complete)));
 
         arms.put("FULL PC", (complete, dropped) -> pc(new IndTestFisherZ(dropped, ALPHA)));
-        arms.put("FULL FGES", (complete, dropped) -> fges(semBic(dropped)));
+        arms.put("FULL FGES", (complete, dropped) -> fges(semBicAt(dropped, FGES_PENALTY_DISCOUNT)));
         arms.put("FULL BOSS", (complete, dropped) -> boss(semBic(dropped)));
 
         arms.put("PC 0DEL-COND", (complete, dropped) ->
@@ -671,11 +693,46 @@ public final class DropoutZeroDeletionStudy {
         arms.put("PC 0DEL-ALL", (complete, dropped) ->
                 pc(new ZeroDeletionFisherZ(dropped, ALPHA, ZeroDeletionFisherZ.DeletionMode.ALL_INVOLVED)));
 
-        arms.put("FGES 0DEL (per-decision)", (complete, dropped) ->
-                fges(new ZeroDeletionBicScore(dropped, PENALTY_DISCOUNT, true, RESCALE_DIFF_TO_FULL_N)));
+        // Three threshold conventions on the same per-decision zero-deleted diff; all FGES arms run at
+        // FGES_PENALTY_DISCOUNT so the engine ceiling is lifted uniformly (FIXED_ALPHA ignores the penalty).
+        arms.put("FGES 0DEL (rescaled BIC)", (complete, dropped) ->
+                fges(new ZeroDeletionBicScore(dropped, FGES_PENALTY_DISCOUNT, true,
+                        ZeroDeletionBicScore.DiffMode.RESCALED_BIC)));
+        arms.put("FGES 0DEL (deleted-n BIC)", (complete, dropped) ->
+                fges(new ZeroDeletionBicScore(dropped, FGES_PENALTY_DISCOUNT, true,
+                        ZeroDeletionBicScore.DiffMode.DELETED_N_BIC)));
+        arms.put("FGES 0DEL (alpha)", (complete, dropped) ->
+                fges(new ZeroDeletionBicScore(dropped, FGES_PENALTY_DISCOUNT, true,
+                        ZeroDeletionBicScore.DiffMode.FIXED_ALPHA)));
 
         arms.put("BOSS 0DEL (summed)", (complete, dropped) ->
-                boss(new ZeroDeletionBicScore(dropped, PENALTY_DISCOUNT, false, RESCALE_DIFF_TO_FULL_N)));
+                boss(new ZeroDeletionBicScore(dropped, PENALTY_DISCOUNT, false,
+                        ZeroDeletionBicScore.DiffMode.RESCALED_BIC)));
+
+        // The candidate LICENSED routes to the strong engine: zeros recoded to NaN and the covariance estimated
+        // pairwise (each entry over the rows where its pair is both nonzero) or by MVN-EM, then one ordinary
+        // BOSS run. Under FIXED_RATE the selection is value-independent, so both estimators are consistent and
+        // BOSS gets a sound path; under TRUNCATED and LOGISTIC both are selection-biased (the observed nonzeros
+        // are a truncated sample), and these arms measure how fast that bites. Prediction on record: near
+        // ORACLE BOSS under fixed-rate at every rate, degrading under self-masking -- roughly like MICE but
+        // without imputation noise, since the low tail is never fabricated, only mis-estimated.
+        // ESS modes discounted from the FULL_N default, which credits the estimated covariance with n complete
+        // rows of evidence it does not have: at 50 percent dropout the first smoke run's pairwise arm claimed
+        // full-n BIC evidence from quarter-n pairwise counts and densified to 0.51 precision under FIXED_RATE.
+        arms.put("PAIRWISE-NZ BOSS", (complete, dropped) -> {
+            SemBicScore score = new SemBicScore(zerosToMissing(dropped), true,
+                    MissingDataSpec.pairwiseCovariance()
+                            .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE));
+            score.setPenaltyDiscount(PENALTY_DISCOUNT);
+            return boss(score);
+        });
+        arms.put("EM-COV BOSS (zeros as NaN)", (complete, dropped) -> {
+            SemBicScore score = new SemBicScore(zerosToMissing(dropped), true,
+                    MissingDataSpec.emCovariance()
+                            .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE));
+            score.setPenaltyDiscount(PENALTY_DISCOUNT);
+            return boss(score);
+        });
 
         // Multiple imputation by predictive mean matching, all zeros treated as missing, followed by a single
         // BOSS run on the IMaGES score over the m completed datasets. In this continuous simulation every zero IS
@@ -899,10 +956,13 @@ public final class DropoutZeroDeletionStudy {
         }
     }
 
-    private static edu.cmu.tetrad.search.score.SemBicScore semBic(DataSet data) {
-        edu.cmu.tetrad.search.score.SemBicScore score =
-                new edu.cmu.tetrad.search.score.SemBicScore(data, true);
-        score.setPenaltyDiscount(PENALTY_DISCOUNT);
+    private static SemBicScore semBic(DataSet data) {
+        return semBicAt(data, PENALTY_DISCOUNT);
+    }
+
+    private static SemBicScore semBicAt(DataSet data, double penaltyDiscount) {
+        SemBicScore score = new SemBicScore(data, true);
+        score.setPenaltyDiscount(penaltyDiscount);
         return score;
     }
 
