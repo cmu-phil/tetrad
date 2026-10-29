@@ -1777,24 +1777,23 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private static final int CURVE_VIEW_MARGIN = 14;
 
     /**
-     * Moves every display node down and to the right by the same amount, if need be, so that no curved edge runs
-     * off the top or the left of the workbench. A layout puts the nodes inside the workbench, but an edge that has
-     * to bend around a node bows outside the box of its two endpoints, and for nodes near the top or left that can
-     * put part of the curve at negative coordinates, where it cannot be scrolled to. (To the right and below, the
-     * workbench grows to hold its edges, so nothing is needed there.) Moving all the nodes together changes no
-     * curve, since which edges bend and how depends only on where the nodes are relative to one another.
-     *
-     * @return True if the nodes were moved.
+     * The box around every curved edge in the workbench, found by stepping along each curve as it is routed for
+     * the nodes' current positions; or null if no edge curves. The box is computed from the node positions as they
+     * are now, not from the edge components' bounds: a component's bounds catch up with a move of its nodes only
+     * when the queued component-moved events run, so right after a layout they still describe the old drawing.
      */
-    private boolean shiftCurvesIntoView() {
+    private Rectangle routedCurveBounds() {
         refreshRouting();
 
         if (this.straightOnly || this.routedApexes == null) {
-            return false;
+            return null;
         }
 
         double minX = Double.POSITIVE_INFINITY;
         double minY = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        boolean any = false;
 
         for (Map.Entry<DisplayEdge, Double> entry : this.routedApexes.entrySet()) {
             double apex = entry.getValue();
@@ -1814,19 +1813,51 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
 
             // The curve's control point is displaced twice the apex from the chord's midpoint, toward the chord's
-            // left normal; see BezierRouter. Its leftmost and topmost points are found by stepping along it.
+            // left normal; see BezierRouter. Its extreme points are found by stepping along it.
             double cx = (x1 + x2) / 2.0 - (y2 - y1) / len * 2.0 * apex;
             double cy = (y1 + y2) / 2.0 + (x2 - x1) / len * 2.0 * apex;
 
             for (int i = 1; i < 16; i++) {
                 double t = i / 16.0, u = 1.0 - t;
-                minX = Math.min(minX, u * u * x1 + 2.0 * u * t * cx + t * t * x2);
-                minY = Math.min(minY, u * u * y1 + 2.0 * u * t * cy + t * t * y2);
+                double px = u * u * x1 + 2.0 * u * t * cx + t * t * x2;
+                double py = u * u * y1 + 2.0 * u * t * cy + t * t * y2;
+                minX = Math.min(minX, px);
+                minY = Math.min(minY, py);
+                maxX = Math.max(maxX, px);
+                maxY = Math.max(maxY, py);
             }
+
+            any = true;
         }
 
-        int dx = minX < CURVE_VIEW_MARGIN ? (int) Math.ceil(CURVE_VIEW_MARGIN - minX) : 0;
-        int dy = minY < CURVE_VIEW_MARGIN ? (int) Math.ceil(CURVE_VIEW_MARGIN - minY) : 0;
+        if (!any) {
+            return null;
+        }
+
+        return new Rectangle((int) Math.floor(minX), (int) Math.floor(minY),
+                (int) Math.ceil(maxX - minX), (int) Math.ceil(maxY - minY));
+    }
+
+    /**
+     * Moves every display node down and to the right by the same amount, if need be, so that no curved edge runs
+     * off the top or the left of the workbench. A layout puts the nodes inside the workbench, but an edge that has
+     * to bend around a node bows outside the box of its two endpoints, and for nodes near the top or left that can
+     * put part of the curve at negative coordinates, where it cannot be scrolled to. (To the right and below,
+     * {@link #adjustPreferredSize()} grows the workbench to hold its curves, so nothing is needed there.) Moving
+     * all the nodes together changes no curve, since which edges bend and how depends only on where the nodes are
+     * relative to one another.
+     *
+     * @return True if the nodes were moved.
+     */
+    private boolean shiftCurvesIntoView() {
+        Rectangle curves = routedCurveBounds();
+
+        if (curves == null) {
+            return false;
+        }
+
+        int dx = curves.x < CURVE_VIEW_MARGIN ? CURVE_VIEW_MARGIN - curves.x : 0;
+        int dy = curves.y < CURVE_VIEW_MARGIN ? CURVE_VIEW_MARGIN - curves.y : 0;
 
         if (dx == 0 && dy == 0) {
             return false;
@@ -2224,6 +2255,17 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         for (Component component1 : components) {
             r = r.union(component1.getBounds());
+        }
+
+        // A curved edge bows outside the box of its two nodes, and an edge component's own box catches up with a
+        // move of its nodes only when the queued component-moved events run — so right after a layout the union
+        // above can stop short of where the curves now reach, below and to the right. Size the canvas from the
+        // curves themselves, as they are routed for the nodes' current positions.
+        Rectangle curves = routedCurveBounds();
+
+        if (curves != null) {
+            curves.grow(CURVE_VIEW_MARGIN, CURVE_VIEW_MARGIN);
+            r = r.union(curves);
         }
 
         // Apparently both of these are required to get the scrollbars to reset.
