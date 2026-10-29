@@ -51,7 +51,8 @@ import java.util.concurrent.TimeoutException;
  * <ul>
  *   <li><b>T1</b>: FCI (and RFCI) with test-wise deletion via their Algorithm 1 beats list-wise deletion under
  *       their latent-driven MNAR at every n, with the largest gains at small n;</li>
- *   <li><b>T2</b>: under that MNAR, imputation (hot deck, kNN, regression, PMM, random forests) performs much
+ *   <li><b>T2</b>: under that MNAR, imputation (hot deck, kNN, regression,
+ *   PMM, random forests) performs much
  *       worse than either deletion flavor;</li>
  *   <li><b>T3</b>: under MAR, correctly specified imputation modestly beats deletion, and deletion remains
  *       mid-pack;</li>
