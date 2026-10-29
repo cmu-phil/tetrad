@@ -124,6 +124,16 @@ public final class DropoutZeroDeletionStudy {
     /** Run the lognormal phase (exp transform of the Gaussian data) in addition to the Gaussian phase. */
     private static final boolean RUN_LOGNORMAL = true;
 
+    /**
+     * In the lognormal phase, log-transform the nonzero entries of the dropped data (and hand the oracle arms
+     * the original Gaussian data). This is what every real scRNA pipeline does, and on retained entries the log
+     * exactly undoes the exp, so all arms are then correctly specified and the phase measures the zero-deletion
+     * machinery instead of FisherZ/BIC misspecification on skewed data. Zeros pass through as 0.0 and keep
+     * serving as dropout markers; a true Gaussian value of exactly log(1) = 0 colliding with a marker is a
+     * measure-zero event. Set false to recover the old behavior (all arms on the raw lognormal scale).
+     */
+    private static final boolean LOG_TRANSFORM_NONZEROS = true;
+
     /** Imputations for the MICE arm. */
     private static final int NUM_IMPUTATIONS = 5;
 
@@ -153,7 +163,17 @@ public final class DropoutZeroDeletionStudy {
         /** Example 2: per column, the lowest rate-quantile of values is set to zero. */
         TRUNCATED,
         /** Example 3: P(drop) = logistic(a - slope * standardized value); a is solved to hit the target rate. */
-        LOGISTIC
+        LOGISTIC,
+        /**
+         * NOT one of the paper's mechanisms: a deliberate violation of their assumption A3. Each column's
+         * dropout is driven logistically by a DIFFERENT column's true value (column j by column j+1 mod p), so
+         * the graph has cross edges Z_k to D_j. Selecting on R_S = 0 then selects on other variables' values,
+         * and Theorem 1's license fails: the conditioning-only arm should lose precision here, and their
+         * Section 4.2 discussion predicts the all-involved variant degrades differently (it bounds rather than
+         * recovers the independencies without A3). The licensed arms' behavior in this cell is the measure of
+         * how much their key structural assumption is doing.
+         */
+        CROSS_MASKING
     }
 
     /**
@@ -215,6 +235,40 @@ public final class DropoutZeroDeletionStudy {
                         if (rand.nextDouble() < pDrop) out.setDouble(i, j, 0.0);
                     }
                 }
+                case CROSS_MASKING -> {
+                    // Logistic dropout of column j driven by column (j + 1) mod p. Driver values are read from
+                    // the PRE-dropout data (the `complete` parameter, never `out`), since by the time a later
+                    // column is processed its own driver may already have been zeroed in `out`.
+                    int d = (j + 1) % p;
+
+                    double mean = 0, var = 0;
+                    for (int i = 0; i < n; i++) mean += complete.getDouble(i, d);
+                    mean /= n;
+                    for (int i = 0; i < n; i++) {
+                        double diff = complete.getDouble(i, d) - mean;
+                        var += diff * diff;
+                    }
+                    double sd = Math.sqrt(var / (n - 1));
+                    if (sd == 0) sd = 1;
+
+                    double[] std = new double[n];
+                    for (int i = 0; i < n; i++) std[i] = (complete.getDouble(i, d) - mean) / sd;
+
+                    double lo = -20, hi = 20;
+                    for (int iter = 0; iter < 60; iter++) {
+                        double a = 0.5 * (lo + hi);
+                        double meanP = 0;
+                        for (double s : std) meanP += 1.0 / (1.0 + Math.exp(-(a - LOGISTIC_SLOPE * s)));
+                        meanP /= n;
+                        if (meanP < rate) lo = a; else hi = a;
+                    }
+                    double a = 0.5 * (lo + hi);
+
+                    for (int i = 0; i < n; i++) {
+                        double pDrop = 1.0 / (1.0 + Math.exp(-(a - LOGISTIC_SLOPE * std[i])));
+                        if (rand.nextDouble() < pDrop) out.setDouble(i, j, 0.0);
+                    }
+                }
             }
         }
 
@@ -227,6 +281,23 @@ public final class DropoutZeroDeletionStudy {
         for (int j = 0; j < out.getNumColumns(); j++) {
             for (int i = 0; i < out.getNumRows(); i++) {
                 out.setDouble(i, j, Math.exp(out.getDouble(i, j)));
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Replaces each nonzero value with its log, leaving zeros exactly 0.0 so they keep serving as dropout
+     * markers. On lognormal data this recovers the underlying Gaussian values on retained entries.
+     */
+    private static DataSet logNonzeros(DataSet data) {
+        DataSet out = data.copy();
+        for (int j = 0; j < out.getNumColumns(); j++) {
+            for (int i = 0; i < out.getNumRows(); i++) {
+                double v = out.getDouble(i, j);
+                if (v != 0.0) {
+                    out.setDouble(i, j, Math.log(v));
+                }
             }
         }
         return out;
@@ -775,6 +846,15 @@ public final class DropoutZeroDeletionStudy {
         System.out.println("zeros in any involved variable (their Definition 2). The FGES 0DEL arm uses the");
         System.out.println("per-decision rescaled diff (their GES integration); the BOSS 0DEL arm sums per-family");
         System.out.println("zero-deleted scores, which their theory does NOT license, as a negative control.");
+        System.out.println("CROSS_MASKING is not one of the paper's mechanisms: it violates their assumption A3");
+        System.out.println("(each column's dropout is driven by a different column's value), so it measures how");
+        System.out.println("much that assumption is doing. In the LOGNORMAL phase, dropout is injected on the exp");
+        if (LOG_TRANSFORM_NONZEROS) {
+            System.out.println("scale and the nonzeros are then log-transformed (the standard scRNA pipeline step),");
+            System.out.println("so retained entries are exactly Gaussian and zeros remain dropout markers.");
+        } else {
+            System.out.println("scale and all arms run on the raw lognormal data (LOG_TRANSFORM_NONZEROS = false).");
+        }
         System.out.println();
 
         runPhase("GAUSSIAN", false);
@@ -813,14 +893,36 @@ public final class DropoutZeroDeletionStudy {
 
                     Graph dag = RandomGraph.randomGraph(NUM_VARS, 0, NUM_EDGES, 100, 100, 100, false);
                     SemIm im = new SemIm(new SemPm(dag));
-                    DataSet complete = im.simulateData(SAMPLE_SIZE, false);
-
-                    if (lognormal) {
-                        complete = exponentiate(complete);
-                    }
+                    DataSet gaussianComplete = im.simulateData(SAMPLE_SIZE, false);
 
                     Graph trueCpdag = GraphTransforms.dagToCpdag(dag);
-                    DataSet dropped = applyDropout(complete, mechanism, rate);
+
+                    DataSet complete;
+                    DataSet dropped;
+
+                    if (lognormal) {
+                        // Dropout happens on the lognormal (exponentiated) scale, as in the paper's second
+                        // case. With LOG_TRANSFORM_NONZEROS, the analyst then does what every scRNA pipeline
+                        // does: log-transform. On retained entries that recovers the Gaussian variables
+                        // EXACTLY, while zeros stay zero as deletion markers; the oracle arms get the Gaussian
+                        // data, so every arm is correctly specified and the phase finally measures the zero
+                        // machinery rather than FisherZ/BIC misspecification. With the flag off, the previous
+                        // behavior: all arms run on the raw lognormal scale, oracles included.
+                        DataSet expComplete = exponentiate(gaussianComplete);
+                        DataSet expDropped = applyDropout(expComplete, mechanism, rate);
+
+                        if (LOG_TRANSFORM_NONZEROS) {
+                            complete = gaussianComplete;
+                            dropped = logNonzeros(expDropped);
+                        } else {
+                            complete = expComplete;
+                            dropped = expDropped;
+                        }
+                    } else {
+                        complete = gaussianComplete;
+                        dropped = applyDropout(complete, mechanism, rate);
+                    }
+
                     achievedZeroFraction += zeroFraction(dropped);
 
                     for (Map.Entry<String, Arm> entry : arms.entrySet()) {
