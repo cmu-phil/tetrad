@@ -114,7 +114,6 @@ public class PdagPagIda {
 
         boolean isDag = graph.paths().isLegalDag();
         boolean isPdag = graph.paths().isLegalPdag();
-        boolean isPag = graph.paths().isLegalPag();
 
         boolean containsCircle = false;
 
@@ -125,14 +124,14 @@ public class PdagPagIda {
             }
         }
 
-        // Disabling rPAG-IDA for publication, as it needs work still. jdramsey 2026-1-6.
-        if (!(isDag || isPdag)) {// isPag)) {
-            throw new IllegalArgumentException("Expecting a DAG/CPDAG/PDAG.");
+        // The PAG branch was disabled for publication on 2026-1-6; re-enabled 2026-10-29. A PAG is admitted on
+        // the presence of a circle endpoint rather than on isLegalPag(), both because that check is expensive on
+        // every construction and because FCI output that fails it should still be estimable; the PAG branch does
+        // not depend on legality.
+        if (!(isDag || isPdag || containsCircle)) {
+            throw new IllegalArgumentException("Expecting a DAG/CPDAG/PDAG or PAG.");
         }
 
-//        if (!(isDag || isPdag || containsCircle)) {// isPag)) {
-//            throw new IllegalArgumentException("Expecting a DAG/CPDAG/PDAG or PAG.");
-//        }
         if (!dataSet.isContinuous()) {
             throw new IllegalArgumentException("Expecting a continuous dataset.");
         }
@@ -148,7 +147,11 @@ public class PdagPagIda {
         }
 
         this.dag = isDag;
-        this.pag = isPag;
+
+        // Route on the presence of a circle endpoint, not on isLegalPag(): a circle-containing graph that fails
+        // the legality check must not fall through to the PDAG branch, which assumes there are no circles. A DAG
+        // or PDAG has no circles, so this is false for those.
+        this.pag = containsCircle;
     }
 
     // --------------------------- Utility: endpoint refinement ---------------------------

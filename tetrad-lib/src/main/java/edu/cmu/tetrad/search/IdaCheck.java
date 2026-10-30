@@ -21,6 +21,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -79,9 +81,17 @@ public class IdaCheck {
     private final Map<OrderedPair<Node>, LinkedList<Double>> absTotalEffects;
 
     /**
-     * The instance of IDA used in this class to calculate node effects and distances.
+     * The instance of IDA used in this class to calculate node effects and distances, for a graph with no circle
+     * endpoints (a DAG, CPDAG or PDAG). Null when {@link #pagIda} is used instead. The PDAG case is left with
+     * {@link Ida} deliberately, so that enabling the PAG case does not change any existing result.
      */
     private final Ida ida;
+
+    /**
+     * The instance used instead of {@link #ida} when the graph contains circle endpoints, i.e. is a PAG. Null
+     * otherwise. Exactly one of the two is non-null.
+     */
+    private final PdagPagIda pagIda;
 
     /**
      * The true SEM IM, if given.
@@ -136,7 +146,23 @@ public class IdaCheck {
         this.nodes = dataSet.getVariables();
         this.totalEffects = new HashMap<>();
         this.absTotalEffects = new HashMap<>();
-        this.ida = new Ida(dataSet, graph, List.of());
+        boolean containsCircle = false;
+
+        for (Edge edge : graph.getEdges()) {
+            if (edge.getEndpoint1() == Endpoint.CIRCLE || edge.getEndpoint2() == Endpoint.CIRCLE) {
+                containsCircle = true;
+                break;
+            }
+        }
+
+        if (containsCircle) {
+            this.ida = null;
+            this.pagIda = new PdagPagIda(dataSet, graph, List.of());
+        } else {
+            this.ida = new Ida(dataSet, graph, List.of());
+            this.pagIda = null;
+        }
+
         this.pairs = calcOrderedPairs();
 
         this.trueSemIm = trueSemIm;
@@ -153,7 +179,7 @@ public class IdaCheck {
             }
         }
 
-        this.ida.setIdaType(currentIdaType);
+        applyIdaType(currentIdaType);
 
         // NOTE: Do NOT compute IDA results here. The UI may open this object even when it needs an empty table.
         // Results are computed either by calling recompute() or lazily when getters are called.
@@ -165,8 +191,8 @@ public class IdaCheck {
      */
     private void ensurePairComputed(OrderedPair<Node> pair) {
         if (!this.totalEffects.containsKey(pair)) {
-            LinkedList<Double> total = ida.getTotalEffects(pair.getFirst(), pair.getSecond());
-            LinkedList<Double> abs = ida.getAbsTotalEffects(pair.getFirst(), pair.getSecond());
+            LinkedList<Double> total = engineTotalEffects(pair.getFirst(), pair.getSecond());
+            LinkedList<Double> abs = engineAbsTotalEffects(pair.getFirst(), pair.getSecond());
             this.totalEffects.put(pair, total);
             this.absTotalEffects.put(pair, abs);
         }
@@ -208,10 +234,45 @@ public class IdaCheck {
 
         if (this.currentIdaType != idaType) {
             this.currentIdaType = idaType;
-            this.ida.setIdaType(idaType);
+            applyIdaType(idaType);
             this.totalEffects.clear();
             this.absTotalEffects.clear();
         }
+    }
+
+    /**
+     * Passes the IDA type through to whichever engine is in use. {@link Ida.IDA_TYPE} stays the public parameter
+     * type of {@link #setIdaType(Ida.IDA_TYPE)}, so that callers and saved sessions are unaffected; the two
+     * enums have the same constants, so the translation is by name.
+     */
+    private void applyIdaType(Ida.IDA_TYPE idaType) {
+        if (this.ida != null) {
+            this.ida.setIdaType(idaType);
+        } else {
+            this.pagIda.setIdaType(PdagPagIda.IDA_TYPE.valueOf(idaType.name()));
+        }
+    }
+
+    /**
+     * The total effects of x on y, from whichever engine is in use.
+     */
+    private LinkedList<Double> engineTotalEffects(Node x, Node y) {
+        return this.ida != null ? this.ida.getTotalEffects(x, y) : this.pagIda.getTotalEffects(x, y);
+    }
+
+    /**
+     * The absolute total effects of x on y, from whichever engine is in use.
+     */
+    private LinkedList<Double> engineAbsTotalEffects(Node x, Node y) {
+        return this.ida != null ? this.ida.getAbsTotalEffects(x, y) : this.pagIda.getAbsTotalEffects(x, y);
+    }
+
+    /**
+     * The distance from a true effect to a range of estimated effects, from whichever engine is in use.
+     */
+    private double engineDistance(LinkedList<Double> effects, double trueEffect) {
+        return this.ida != null ? this.ida.distance(effects, trueEffect)
+                : this.pagIda.distance(effects, trueEffect);
     }
 
     /**
@@ -342,7 +403,7 @@ public class IdaCheck {
         }
 
         double trueTotalEffect = getTrueTotalEffect(pair);
-        double distance = ida.distance(effects, trueTotalEffect);
+        double distance = engineDistance(effects, trueTotalEffect);
         return distance * distance;
     }
 
