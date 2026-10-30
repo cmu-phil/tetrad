@@ -90,9 +90,15 @@ public class PdagPagIda {
     private int maxLengthAdjustment = -1;
 
     /**
-     * If true, when running RA on a refinement PAG we pass children(X) as force-visible (your prior behavior).
+     * If true, when running RA on a refinement PAG we pass children(X) as force-visible -- and the amenability
+     * check for that refinement is made under the same assumption, so that the two cannot disagree.
+     * <p>
+     * The default is now false. Forcing visibility asserts that X and the child are unconfounded, which the PAG
+     * does not say; under the old asymmetric arrangement (forced in the search, not in the check) the adjustment
+     * set returned could rely on visibility that was never certified, making that leaf's estimate biased rather
+     * than merely noisy. Set this to true only with background knowledge that justifies it.
      */
-    private boolean forceChildrenVisibleInRA = true;
+    private boolean forceChildrenVisibleInRA = false;
 
     /**
      * Constructs a new instance of the PdagPagIda class which is used for
@@ -354,25 +360,108 @@ public class PdagPagIda {
     // --------------------------- PAG branch with incremental FCI per step ---------------------------
 
     private LinkedList<Double> getTotalEffectsPagInternal(Node x, Node y) {
+        return pagEffectsInternal(x, y).effects();
+    }
+
+    /**
+     * The PAG branch, with the bookkeeping that {@link #getTotalEffects(Node, Node)} discards.
+     */
+    private PagEffects pagEffectsInternal(Node x, Node y) {
         LinkedList<Double> totalEffects = new LinkedList<>();
         Graph base = this.graph;
+        PagScan scan = new PagScan();
 
         Set<List<Node>> pdPaths = base.paths().potentiallyDirectedPaths(x, y, maxLengthAdjustment);
         if (pdPaths == null || pdPaths.isEmpty()) {
+            // Not a possible ancestor: every model in the class gives X no effect on Y. This zero is a result,
+            // not a default.
             totalEffects.add(0.0);
-            return totalEffects;
+            return new PagEffects(totalEffects, 0, 0, 0);
         }
 
-        dfsPagAroundX(base, x, y, totalEffects);
-        if (totalEffects.isEmpty()) totalEffects.add(0.0); // optional
+        dfsPagAroundX(base, x, y, totalEffects, scan);
+
+        // No default zero here. A refinement that was dropped for non-amenability or for want of an adjustment
+        // set is an unknown, and reporting it as 0.0 made "no effect" and "cannot say" indistinguishable -- for
+        // the whole pair when every leaf was dropped, and silently within the multiset otherwise. An empty list
+        // now means "nothing could be estimated"; callers such as IdaCheck already render that as NaN.
+        if (scan.droppedNotAmenable > 0 || scan.droppedNoAdjustmentSet > 0) {
+            TetradLogger.getInstance().log("PAG-IDA " + x + " ~~> " + y + ": " + totalEffects.size()
+                                           + " effect(s) estimated; " + scan.droppedNotAmenable
+                                           + " refinement(s) dropped as not amenable, "
+                                           + scan.droppedNoAdjustmentSet
+                                           + " with no adjustment set found. The returned range is incomplete.");
+        }
+
         Collections.sort(totalEffects);
-        return totalEffects;
+        return new PagEffects(totalEffects, scan.evaluated, scan.droppedNotAmenable,
+                scan.droppedNoAdjustmentSet);
+    }
+
+    /**
+     * Mutable counters threaded through one PAG scan, so the recursion need not keep state on the instance.
+     */
+    private static final class PagScan {
+
+        /**
+         * Leaf refinements that yielded an effect.
+         */
+        private int evaluated;
+
+        /**
+         * Leaf refinements dropped because the refinement was not amenable for (X, Y).
+         */
+        private int droppedNotAmenable;
+
+        /**
+         * Leaf refinements dropped because no adjustment set was found, though the refinement was amenable.
+         */
+        private int droppedNoAdjustmentSet;
+    }
+
+    /**
+     * The result of the PAG branch: the possible total effects, together with a count of the refinements that
+     * could not be estimated. The effect list alone cannot distinguish "the effect is zero" from "nothing could
+     * be estimated", so a caller that reports a range should check {@link #complete()} first.
+     *
+     * @param effects                  The possible total effects, sorted. Empty if none could be estimated.
+     * @param numRefinementsEvaluated  Leaf refinements that yielded an effect.
+     * @param numDroppedNotAmenable    Leaf refinements dropped because they were not amenable for (X, Y).
+     * @param numDroppedNoAdjustmentSet Leaf refinements that were amenable but for which no adjustment set was
+     *                                 found.
+     */
+    public record PagEffects(LinkedList<Double> effects, int numRefinementsEvaluated,
+                             int numDroppedNotAmenable, int numDroppedNoAdjustmentSet) {
+
+        /**
+         * Returns true if every refinement reached was estimated, so that the effect list is a complete account
+         * of what the PAG allows. False means the returned range is narrower than the truth.
+         *
+         * @return True if nothing was dropped.
+         */
+        public boolean complete() {
+            return numDroppedNotAmenable == 0 && numDroppedNoAdjustmentSet == 0;
+        }
+    }
+
+    /**
+     * Returns the possible total effects of x on y together with the count of refinements that could not be
+     * estimated; see {@link PagEffects}. For a DAG, CPDAG or PDAG input the counts are zero and only the effect
+     * list is meaningful, since that branch does no refinement search.
+     *
+     * @param x the source node
+     * @param y the target node
+     * @return the effects and the bookkeeping
+     */
+    public PagEffects getPagEffects(Node x, Node y) {
+        if (pag) return pagEffectsInternal(x, y);
+        return new PagEffects(getTotalEffectsPdagInternal(x, y), 0, 0, 0);
     }
 
     /**
      * Depth-first search over local orientations at X with FCI propagation after each edge orientation.
      */
-    private void dfsPagAroundX(Graph current, Node x, Node y, List<Double> out) {
+    private void dfsPagAroundX(Graph current, Node x, Node y, List<Double> out, PagScan scan) {
         // Collect the edges incident to X whose endpoint at X is still a circle.
         List<Edge> orientable = new ArrayList<>();
         for (Edge e : current.getEdges(x)) {
@@ -382,7 +471,7 @@ public class PdagPagIda {
 
         // Leaf: no more circles at X → evaluate this refinement.
         if (orientable.isEmpty()) {
-            evaluatePagLeaf(current, x, y, out);
+            evaluatePagLeaf(current, x, y, out, scan);
             return;
         }
 
@@ -393,11 +482,11 @@ public class PdagPagIda {
         Endpoint baseAtO = this.graph.getEndpoint(x, other);
 
         // Try X -> other (TAIL at X, ARROW at other)
-        tryPagStep(current, x, other, baseAtX, baseAtO, Endpoint.TAIL, Endpoint.ARROW, y, out);
+        tryPagStep(current, x, other, baseAtX, baseAtO, Endpoint.TAIL, Endpoint.ARROW, y, out, scan);
         // Try X <- other (ARROW at X, TAIL at other)
-        tryPagStep(current, x, other, baseAtX, baseAtO, Endpoint.ARROW, Endpoint.TAIL, y, out);
+        tryPagStep(current, x, other, baseAtX, baseAtO, Endpoint.ARROW, Endpoint.TAIL, y, out, scan);
         // Try X <-> other (ARROW at X, ARROW at other)
-        tryPagStep(current, x, other, baseAtX, baseAtO, Endpoint.ARROW, Endpoint.ARROW, y, out);
+        tryPagStep(current, x, other, baseAtX, baseAtO, Endpoint.ARROW, Endpoint.ARROW, y, out, scan);
     }
 
     /**
@@ -411,7 +500,8 @@ public class PdagPagIda {
                             Endpoint newAtX,
                             Endpoint newAtOther,
                             Node y,
-                            List<Double> out) {
+                            List<Double> out,
+                            PagScan scan) {
         if (!endpointRefines(oldAtX, newAtX)) return;
         if (!endpointRefines(oldAtOther, newAtOther)) return;
 
@@ -443,13 +533,13 @@ public class PdagPagIda {
         }
 
         // Recurse with the updated graph; new orientables will be gathered there.
-        dfsPagAroundX(gNext, x, y, out);
+        dfsPagAroundX(gNext, x, y, out, scan);
     }
 
     /**
      * Leaf evaluation for a PAG refinement: check amenability, then run RA to get one adjustment set and a beta.
      */
-    private void evaluatePagLeaf(Graph gPrime, Node x, Node y, List<Double> out) {
+    private void evaluatePagLeaf(Graph gPrime, Node x, Node y, List<Double> out, PagScan scan) {
         Set<List<Node>> pdPaths = gPrime.paths().potentiallyDirectedPaths(x, y, maxLengthAdjustment);
         if (pdPaths == null || pdPaths.isEmpty()) {
             out.add(0.0);
@@ -458,13 +548,19 @@ public class PdagPagIda {
 
         if (!isRefinementOf(this.graph, gPrime)) return;
 
-        // IMPORTANT: no forced visibility in the amenability *check*
-        if (!gPrime.paths().isGraphAmenable(x, y, "PAG", maxLengthAdjustment, Set.of())) return;
+        // IMPORTANT: the amenability check and the adjustment search must make the same visibility assumption.
+        // If X -> c is treated as visible by fiat in the search but not in the check, the set RA returns can
+        // rely on visibility the check never certified, and this leaf's estimate is then biased, not just noisy.
+        Set<Node> forceVisibility = forceChildrenVisibleInRA
+                ? new HashSet<>(gPrime.getChildren(x))
+                : Set.of();
 
-        collectEffectsFromRefinementPag(
-                gPrime, x, y, out,
-                forceChildrenVisibleInRA ? new HashSet<>(gPrime.getChildren(x)) : Set.of()
-        );
+        if (!gPrime.paths().isGraphAmenable(x, y, "PAG", maxLengthAdjustment, forceVisibility)) {
+            scan.droppedNotAmenable++;
+            return;
+        }
+
+        collectEffectsFromRefinementPag(gPrime, x, y, out, forceVisibility, scan);
     }
 
     /**
@@ -477,12 +573,14 @@ public class PdagPagIda {
      * @param y                The target variable node.
      * @param out              A list to collect the computed effect values.
      * @param forceVisibility  A set of nodes to be forcefully marked as visible during the refinement adjustment process.
+     * @param scan             Counters for the refinements estimated and dropped.
      */
     private void collectEffectsFromRefinementPag(Graph gPrime,
                                                  Node x,
                                                  Node y,
                                                  List<Double> out,
-                                                 Set<Node> forceVisibility) {
+                                                 Set<Node> forceVisibility,
+                                                 PagScan scan) {
         try {
             RecursiveAdjustment ra = new RecursiveAdjustment(gPrime);
             int maxNumSets = 1;                        // one minimal set
@@ -505,7 +603,11 @@ public class PdagPagIda {
                     containing,
                     forceVisibility);
 
-            if (adjSets.isEmpty()) return; // identified but we failed to find a set
+            if (adjSets.isEmpty()) {
+                // Identified but we failed to find a set: an unknown, not a zero.
+                scan.droppedNoAdjustmentSet++;
+                return;
+            }
 
             Set<Node> Z = adjSets.get(0);
             Set<Node> regs = new LinkedHashSet<>();
@@ -515,7 +617,9 @@ public class PdagPagIda {
 
             double beta = getBeta(new ArrayList<>(regs), x, y);
             out.add(beta);
+            scan.evaluated++;
         } catch (Exception e) {
+            scan.droppedNoAdjustmentSet++;
             TetradLogger.getInstance().log(e.getMessage());
         }
     }
