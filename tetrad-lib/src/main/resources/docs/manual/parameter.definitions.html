@@ -2429,6 +2429,20 @@ Source:
         <li>Value Type: <span id="fastIcaTolerance_value_type">Double</span></li>
     </ul>
 
+    === fcitCorrectness ===
+    <h3 class="parameter_description" id="fcitCorrectness">fcitCorrectness</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="fcitCorrectness_short_desc">
+                    Warrant for the result: 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step
+        </span></li>
+        <li>Long Description: <span id="fcitCorrectness_long_desc">The warrant FCIT relies on for the final graph, a three-way choice. 1 = Guarantee I-map: every candidate the legality gate accepts must additionally be an I-map of the independence test (see requireImapStates; imapAlpha applies); the saturating step is off. 2 = No score drop: every accepted candidate's Zhang MAG must not score lower (RICF BIC) than the committed state's, as in the BFCI-Bryan score step; the saturating step is off, and a SemBicScore built on a covariance matrix is required. 3 = Saturating step: no extra per-commit gate; when no single removal commits, all pairs with test-confirmed separating sets are removed jointly, which is the step the oracle correctness argument needs. The saturating step is not a separate switch: it runs exactly when neither gate is on.</span></li>
+        <li>Default Value: <span id="fcitCorrectness_default_value">1</span></li>
+        <li>Lower Bound: <span id="fcitCorrectness_lower_bound">1</span></li>
+        <li>Upper Bound: <span id="fcitCorrectness_upper_bound">3</span></li>
+        <li>Value Type:
+            <span id="fcitCorrectness_value_type">Integer</span></li>
+    </ul>
+
     === fcitSlAllowClassEscape ===
     <h3 class="parameter_description" id="fcitSlAllowClassEscape">
         fcitSlAllowClassEscape</h3>
@@ -3401,6 +3415,18 @@ Source:
         <li>Lower Bound: <span id="imagesMetaAlg_lower_bound">1</span></li>
         <li>Upper Bound: <span id="imagesMetaAlg_upper_bound">5</span></li>
         <li>Value Type: <span id="imagesMetaAlg_value_type">Integer</span></li>
+    </ul>
+
+    === imapAlpha ===
+    <h3 class="parameter_description" id="imapAlpha">imapAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="imapAlpha_short_desc">Significance level for the I-map gate's tests (default 0.001)</span></li>
+        <li>Long Description: <span id="imapAlpha_long_desc">The I-map gate vetoes a candidate when a separator it asserts tests dependent at this level. Kept separate from, and smaller than, the removal alpha so that a veto requires a strong dependence; this reduces false vetoes from test noise. Applied to the test's p-value when it is a probability; otherwise the test's own verdict is used.</span></li>
+        <li>Default Value: <span id="imapAlpha_default_value">0.001</span></li>
+        <li>Lower Bound: <span id="imapAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="imapAlpha_upper_bound">1.0</span></li>
+        <li>Value Type:
+            <span id="imapAlpha_value_type">Double</span></li>
     </ul>
 
     === include_structure_model ===
@@ -5022,6 +5048,28 @@ Source:
         <li>Lower Bound: <span id="missingNumImputations_lower_bound">1</span></li>
         <li>Upper Bound: <span id="missingNumImputations_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="missingNumImputations_value_type">Integer</span></li>
+    </ul>
+
+    === missingTestwiseCommonRows ===
+    <h3 class="parameter_description" id="missingTestwiseCommonRows">missingTestwiseCommonRows</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="missingTestwiseCommonRows_short_desc">Experimental: under the "testwise"
+                policy, compute each local score comparison on the rows its two sides share</span></li>
+        <li>Long Description: <span id="missingTestwiseCommonRows_long_desc">
+        Under test-wise deletion, the two sides of a local score comparison are by default fit on
+        different row sets, so their difference is not a likelihood ratio of anything well defined,
+        and searches tend to add too many edges. With this option, each comparison is instead
+        computed on the rows complete on all of the variables it involves, making it a nested-model
+        likelihood ratio on one sample, with the BIC penalty at that sample's own row count. This is
+        honored only by searches that decide through local score differences (e.g., FGES) on scores
+        that implement it (currently SEM BIC); searches that optimize a sum of local scores (BOSS,
+        GRaSP) are unaffected by it, since their objective has no per-comparison row set. Precision
+        is typically bought at a cost in recall, as fewer rows support each decision. Used only when
+        missingDataPolicy is "testwise".</span></li>
+        <li>Default Value: <span id="missingTestwiseCommonRows_default_value">false</span></li>
+        <li>Lower Bound: <span id="missingTestwiseCommonRows_lower_bound"></span></li>
+        <li>Upper Bound: <span id="missingTestwiseCommonRows_upper_bound"></span></li>
+        <li>Value Type: <span id="missingTestwiseCommonRows_value_type">Boolean</span></li>
     </ul>
 
     === mnarNumExtraInfluences ===
@@ -6797,6 +6845,18 @@ Source:
             Type: <span id="regularizationLambda_value_type">Double</span></li>
     </ul>
 
+    === reharvestSepsets ===
+    <h3 class="parameter_description" id="reharvestSepsets">reharvestSepsets</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="reharvestSepsets_short_desc">Experimental: keep the sepset map faithful to the current PAG (re-harvest after each commit)</span></li>
+        <li>Long Description: <span id="reharvestSepsets_long_desc">In BFCI-Bryan, after each accepted removal, replace every recorded separating set that no longer m-separates its pair in the committed graph by a separator that does. A total map of separators of the current PAG projects back to that PAG, so the carried graph is unchanged; what changes is that later removals are projected from separators of the current graph rather than of earlier ones. With this on, the generalized Meek conjecture implies that the I-map-gated search never stalls. On data, re-harvested entries are graph-derived rather than test-confirmed.</span></li>
+        <li>Default Value: <span id="reharvestSepsets_default_value">false</span></li>
+        <li>Lower Bound: <span id="reharvestSepsets_lower_bound"></span></li>
+        <li>Upper Bound: <span id="reharvestSepsets_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="reharvestSepsets_value_type">Boolean</span></li>
+    </ul>
+
     === removeAlmostCycles ===
     <h3 class="parameter_description" id="removeAlmostCycles">removeAlmostCycles</h3>
     <ul class="parameter_description_list">
@@ -6828,6 +6888,18 @@ Source:
         <li>Upper Bound: <span id="removeEffectNodes_upper_bound"></span></li>
         <li>Value Type:
             <span id="removeEffectNodes_value_type">Boolean</span></li>
+    </ul>
+
+    === requireImapStates ===
+    <h3 class="parameter_description" id="requireImapStates">requireImapStates</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="requireImapStates_short_desc">Require each state the legality gate accepts to be an I-map of the test (the saturating step runs only when this is off)</span></li>
+        <li>Long Description: <span id="requireImapStates_long_desc">In BFCI-Bryan, additionally require every candidate accepted by the legality gate (single-edge passes and saturating step) to be an I-map of the independence test: for each nonadjacent pair of the candidate's MAG, a separator in that MAG must be judged independent at imapAlpha. A pair passes without a test when a known test-confirmed separator still m-separates it; otherwise one recursive-blocking separator is tested. Pairs whose seeded sepset the test refuted are exempt. Spends tests, so on data a false dependence becomes a veto. The saturating (joint-removal) step is not a separate choice: it runs if and only if this option is off. In FCIT this gate is option 1 of fcitCorrectness.</span></li>
+        <li>Default Value: <span id="requireImapStates_default_value">true</span></li>
+        <li>Lower Bound: <span id="requireImapStates_lower_bound"></span></li>
+        <li>Upper Bound: <span id="requireImapStates_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="requireImapStates_value_type">Boolean</span></li>
     </ul>
 
     === resamplingEnsemble ===
@@ -6966,6 +7038,17 @@ Source:
         <li>Lower Bound: <span id="rlcdPartitionCliqueThreshold_lower_bound">1</span></li>
         <li>Upper Bound: <span id="rlcdPartitionCliqueThreshold_upper_bound">2147483647</span></li>
         <li>Value Type: <span id="rlcdPartitionCliqueThreshold_value_type">Integer</span></li>
+    </ul>
+
+    === rlcdResolveTwoIndicatorLatents ===
+    <h3 class="parameter_description" id="rlcdResolveTwoIndicatorLatents">rlcdResolveTwoIndicatorLatents</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdResolveTwoIndicatorLatents_short_desc">RLCD: try to replace a latent with two indicators by a direct edge, using non-Gaussianity (default false)</span></li>
+        <li>Long Description: <span id="rlcdResolveTwoIndicatorLatents_long_desc">Rank constraints cannot tell a direct edge between two indicators of a latent from a second latent over the pair, and RLCD reports the second latent. If this is true, each latent in the output with exactly two observed children, no observed parent, and exactly one latent neighbor that has at least three pure indicators is tested with third-order cumulants, using that neighbor's indicators as references. If the test shows a direct edge, the two-indicator latent is replaced by the edge, and the two variables are made indicators of the neighbor; otherwise the latent is kept. The test needs positive evidence for the edge (an equivalence test), so it rarely turns a real latent into an edge, but it also leaves many real edges as latents. It needs skewed data: with Gaussian data nothing changes, and ceiling or floor effects, which skew data without independent skewed causes, can mislead it. With several pooled imputations the edge is taken only if every imputation shows it. Not done with a stratified rank test.</span></li>
+        <li>Default Value: <span id="rlcdResolveTwoIndicatorLatents_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdResolveTwoIndicatorLatents_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdResolveTwoIndicatorLatents_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdResolveTwoIndicatorLatents_value_type">Boolean</span></li>
     </ul>
 
     === rlcdStage1Fges ===
@@ -8509,6 +8592,18 @@ Source:
             Bound: <span id="useMaxPOrientationHeuristic_upper_bound"></span></li>
         <li>Value
             Type: <span id="useMaxPOrientationHeuristic_value_type">Boolean</span></li>
+    </ul>
+
+    === usePass0 ===
+    <h3 class="parameter_description" id="usePass0">usePass0</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="usePass0_short_desc">BFCI-Bryan: run Pass 0 (re-select seeded sepsets the test refutes)</span></li>
+        <li>Long Description: <span id="usePass0_long_desc">The sepset map is seeded from the initial DAG with parent sets. Pass 0 re-selects, under the legality gate, each seeded entry the independence test refutes. Turn off to keep the DAG's entries regardless of the test, as in the original pseudocode; this isolates the effect of Pass 0, which can change orientations without removing any edge.</span></li>
+        <li>Default Value: <span id="usePass0_default_value">true</span></li>
+        <li>Lower Bound: <span id="usePass0_lower_bound"></span></li>
+        <li>Upper Bound: <span id="usePass0_upper_bound"></span></li>
+        <li>Value Type:
+            <span id="usePass0_value_type">Boolean</span></li>
     </ul>
 
     === useSaturatingStep ===

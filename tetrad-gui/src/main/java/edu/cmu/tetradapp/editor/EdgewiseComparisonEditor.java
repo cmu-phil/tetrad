@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.EdgewiseComparisonModel;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -73,7 +75,7 @@ public class EdgewiseComparisonEditor extends JPanel implements DoNotScroll {
 
 //        JPanel pane = new JPanel();
 
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        Font font = ThemeUtils.monospaced(14);
         area = new JTextArea();
         area.setText(tableTextWithHeader());
 

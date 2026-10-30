@@ -235,6 +235,26 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      */
     private boolean pagEdgeSpecializationMarked = false;
     /**
+     * The smallest zoom factor the workbench allows.
+     */
+    public static final double MIN_ZOOM = 0.25;
+    /**
+     * The largest zoom factor the workbench allows.
+     */
+    public static final double MAX_ZOOM = 4.0;
+    /**
+     * The zoom factor of the display: display coordinates and node fonts are the model's, times this. The model
+     * nodes always keep unzoomed coordinates, so saved sessions are unaffected by zooming. Transient, so a
+     * deserialized workbench reads as 0 and {@link #getZoom()} normalizes that to 1; zoom is per-session and is
+     * never saved.
+     */
+    private transient double zoom = 1.0;
+    /**
+     * True while {@link #setZoom(double)} is repositioning the display nodes, so that the repositioning is not
+     * written back to the model nodes (whose coordinates are not changing).
+     */
+    private transient boolean rezooming;
+    /**
      * The knowledge.
      */
     private Knowledge knowledge = new Knowledge();
@@ -275,6 +295,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         });
         setEnabled(this.enableEditing);
 
+        // Zoom with the menu shortcut key (Ctrl, or Command on a Mac) held while the mouse wheel turns, about the
+        // mouse position. A plain wheel turn is handed to the parent, since a component with a wheel listener
+        // otherwise swallows the wheel events its scroll pane needs for scrolling.
+        addMouseWheelListener(e -> {
+            int menuMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+
+            if ((e.getModifiersEx() & menuMask) == menuMask) {
+                zoomAbout(getZoom() * Math.pow(1.1, -e.getPreciseWheelRotation()), e.getPoint());
+                e.consume();
+            } else if (getParent() != null) {
+                getParent().dispatchEvent(SwingUtilities.convertMouseEvent(this, e, getParent()));
+            }
+        });
+
         boolean unpositioned = false;
         for (Node node : graph.getNodes()) {
             if (node.getCenterX() == -1 || node.getCenterY() == -1) {
@@ -307,10 +341,123 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (d == null) continue;
             Dimension dim = d.getSize();
             if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
-            d.setLocation(node.getCenterX() - dim.width / 2, node.getCenterY() - dim.height / 2);
+            d.setLocation(zoomed(node.getCenterX()) - dim.width / 2, zoomed(node.getCenterY()) - dim.height / 2);
         }
 
         fitCanvasToNodes();
+    }
+
+    /**
+     * The zoom factor of the display; 1 means unzoomed.
+     *
+     * @return the zoom factor; always positive.
+     */
+    public final double getZoom() {
+        double z = this.zoom;
+        return z > 0 ? z : 1.0;
+    }
+
+    /**
+     * Zooms the display to the given factor, clamped to [{@link #MIN_ZOOM}, {@link #MAX_ZOOM}]: the display nodes
+     * are resized for the scaled font and repositioned at the model centers times the factor, and the edges follow the nodes. The
+     * model nodes keep their unzoomed coordinates throughout, so saving while zoomed saves the unzoomed layout.
+     *
+     * @param zoom the new zoom factor; a nonpositive value is read as 1.
+     */
+    public final void setZoom(double zoom) {
+        if (!(zoom > 0)) zoom = 1.0;
+        zoom = Math.max(AbstractWorkbench.MIN_ZOOM, Math.min(AbstractWorkbench.MAX_ZOOM, zoom));
+
+        if (Math.abs(zoom - getZoom()) < 1e-6 || this.graph == null) {
+            return;
+        }
+
+        this.zoom = zoom;
+        this.rezooming = true;
+
+        try {
+            for (Node modelNode : this.graph.getNodes()) {
+                if (getModelNodesToDisplay().get(modelNode) instanceof DisplayNode displayNode) {
+                    placeDisplayNode(modelNode, displayNode);
+                }
+            }
+        } finally {
+            this.rezooming = false;
+        }
+
+        fitCanvasToNodes();
+        firePropertyChange("zoom", null, zoom);
+    }
+
+    /**
+     * Zooms the display to the given factor, keeping the given point (in current display coordinates) under
+     * itself: when the workbench sits in a scroll pane, the viewport is moved so that the model point that was at
+     * the anchor stays at the anchor. This is what the mouse wheel calls, with the mouse position as the anchor.
+     *
+     * @param newZoom the new zoom factor.
+     * @param anchor  the display point to hold still.
+     */
+    public final void zoomAbout(double newZoom, Point anchor) {
+        double oldZoom = getZoom();
+        setZoom(newZoom);
+        double z = getZoom();
+
+        if (z == oldZoom || anchor == null || !(getParent() instanceof JViewport viewport)) {
+            return;
+        }
+
+        double scale = z / oldZoom;
+        Point view = viewport.getViewPosition();
+        Dimension extent = viewport.getExtentSize();
+
+        int nx = (int) Math.round(anchor.x * scale) - (anchor.x - view.x);
+        int ny = (int) Math.round(anchor.y * scale) - (anchor.y - view.y);
+        nx = Math.max(0, Math.min(nx, Math.max(0, getWidth() - extent.width)));
+        ny = Math.max(0, Math.min(ny, Math.max(0, getHeight() - extent.height)));
+
+        viewport.setViewPosition(new Point(nx, ny));
+    }
+
+    /**
+     * Zooms to the given factor about the center of the visible area; this is what the keyboard shortcuts call.
+     */
+    private void zoomAboutViewportCenter(double newZoom) {
+        Rectangle visible = getVisibleRect();
+        zoomAbout(newZoom, new Point(visible.x + visible.width / 2, visible.y + visible.height / 2));
+    }
+
+    /**
+     * The given model coordinate in display coordinates under the current zoom.
+     */
+    private int zoomed(int v) {
+        double z = getZoom();
+        return z == 1.0 ? v : (int) Math.round(v * z);
+    }
+
+    /**
+     * The given display coordinate in model coordinates under the current zoom.
+     */
+    private int unzoomed(int v) {
+        double z = getZoom();
+        return z == 1.0 ? v : (int) Math.round(v / z);
+    }
+
+    /**
+     * Sizes the given display node for the current zoom and places it at its model node's center times the zoom.
+     * The model node's coordinates are left exactly as they were.
+     */
+    private void placeDisplayNode(Node modelNode, DisplayNode displayNode) {
+        int centerX = modelNode.getCenterX();
+        int centerY = modelNode.getCenterY();
+
+        displayNode.setScale(getZoom());
+
+        Dimension dim = displayNode.getPreferredSize();
+        displayNode.setSize(dim);
+        displayNode.setLocation(zoomed(centerX) - dim.width / 2, zoomed(centerY) - dim.height / 2);
+
+        // setLocation wrote the model center back from the rounded display center; restore it exactly.
+        modelNode.setCenter(centerX, centerY);
     }
 
     private static Color uiColor(String key, Color fallback) {
@@ -549,8 +696,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (getModelNodesToDisplay().get(modelNode) instanceof DisplayNode displayNode) {
                 Dimension dim = displayNode.getSize();
                 if (dim.width <= 0 || dim.height <= 0) dim = displayNode.getPreferredSize();
-                snapshot.put(modelNode.getName(), new Point(displayNode.getX() + dim.width / 2,
-                        displayNode.getY() + dim.height / 2));
+                snapshot.put(modelNode.getName(), new Point(unzoomed(displayNode.getX() + dim.width / 2),
+                        unzoomed(displayNode.getY() + dim.height / 2)));
             }
         }
 
@@ -629,7 +776,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             Dimension dim = displayNode.getSize();
             if (dim.width <= 0 || dim.height <= 0) dim = displayNode.getPreferredSize();
-            displayNode.setLocation(center.x - dim.width / 2, center.y - dim.height / 2);
+            displayNode.setLocation(zoomed(center.x) - dim.width / 2, zoomed(center.y) - dim.height / 2);
             modelNode.setCenter(center.x, center.y);
         }
 
@@ -1398,7 +1545,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             int centerY = modelNode.getCenterY();
 
             displayNode.setSize(dim);
-            displayNode.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
+            displayNode.setLocation(zoomed(centerX) - dim.width / 2, zoomed(centerY) - dim.height / 2);
         }
 
         separateNodes();
@@ -1500,8 +1647,8 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             if (dim.width <= 0 || dim.height <= 0) dim = nodes.get(i).getPreferredSize();
             cx[i] = model.get(i).getCenterX();
             cy[i] = model.get(i).getCenterY();
-            w[i] = dim.width;
-            h[i] = dim.height;
+            w[i] = unzoomed(dim.width);
+            h[i] = unzoomed(dim.height);
         }
 
         Map<Integer, List<Integer>> rows = new TreeMap<>();
@@ -1613,7 +1760,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
         for (int i = 0; i < n; i++) {
             DisplayNode d = nodes.get(i);
-            d.setLocation(cx[i] - w[i] / 2, cy[i] - h[i] / 2);
+            Dimension dim = d.getSize();
+            if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
+            d.setLocation(zoomed(cx[i]) - dim.width / 2, zoomed(cy[i]) - dim.height / 2);
             model.get(i).setCenter(cx[i], cy[i]);
         }
 
@@ -1628,24 +1777,23 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private static final int CURVE_VIEW_MARGIN = 14;
 
     /**
-     * Moves every display node down and to the right by the same amount, if need be, so that no curved edge runs
-     * off the top or the left of the workbench. A layout puts the nodes inside the workbench, but an edge that has
-     * to bend around a node bows outside the box of its two endpoints, and for nodes near the top or left that can
-     * put part of the curve at negative coordinates, where it cannot be scrolled to. (To the right and below, the
-     * workbench grows to hold its edges, so nothing is needed there.) Moving all the nodes together changes no
-     * curve, since which edges bend and how depends only on where the nodes are relative to one another.
-     *
-     * @return True if the nodes were moved.
+     * The box around every curved edge in the workbench, found by stepping along each curve as it is routed for
+     * the nodes' current positions; or null if no edge curves. The box is computed from the node positions as they
+     * are now, not from the edge components' bounds: a component's bounds catch up with a move of its nodes only
+     * when the queued component-moved events run, so right after a layout they still describe the old drawing.
      */
-    private boolean shiftCurvesIntoView() {
+    private Rectangle routedCurveBounds() {
         refreshRouting();
 
         if (this.straightOnly || this.routedApexes == null) {
-            return false;
+            return null;
         }
 
         double minX = Double.POSITIVE_INFINITY;
         double minY = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        boolean any = false;
 
         for (Map.Entry<DisplayEdge, Double> entry : this.routedApexes.entrySet()) {
             double apex = entry.getValue();
@@ -1665,19 +1813,51 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             }
 
             // The curve's control point is displaced twice the apex from the chord's midpoint, toward the chord's
-            // left normal; see BezierRouter. Its leftmost and topmost points are found by stepping along it.
+            // left normal; see BezierRouter. Its extreme points are found by stepping along it.
             double cx = (x1 + x2) / 2.0 - (y2 - y1) / len * 2.0 * apex;
             double cy = (y1 + y2) / 2.0 + (x2 - x1) / len * 2.0 * apex;
 
             for (int i = 1; i < 16; i++) {
                 double t = i / 16.0, u = 1.0 - t;
-                minX = Math.min(minX, u * u * x1 + 2.0 * u * t * cx + t * t * x2);
-                minY = Math.min(minY, u * u * y1 + 2.0 * u * t * cy + t * t * y2);
+                double px = u * u * x1 + 2.0 * u * t * cx + t * t * x2;
+                double py = u * u * y1 + 2.0 * u * t * cy + t * t * y2;
+                minX = Math.min(minX, px);
+                minY = Math.min(minY, py);
+                maxX = Math.max(maxX, px);
+                maxY = Math.max(maxY, py);
             }
+
+            any = true;
         }
 
-        int dx = minX < CURVE_VIEW_MARGIN ? (int) Math.ceil(CURVE_VIEW_MARGIN - minX) : 0;
-        int dy = minY < CURVE_VIEW_MARGIN ? (int) Math.ceil(CURVE_VIEW_MARGIN - minY) : 0;
+        if (!any) {
+            return null;
+        }
+
+        return new Rectangle((int) Math.floor(minX), (int) Math.floor(minY),
+                (int) Math.ceil(maxX - minX), (int) Math.ceil(maxY - minY));
+    }
+
+    /**
+     * Moves every display node down and to the right by the same amount, if need be, so that no curved edge runs
+     * off the top or the left of the workbench. A layout puts the nodes inside the workbench, but an edge that has
+     * to bend around a node bows outside the box of its two endpoints, and for nodes near the top or left that can
+     * put part of the curve at negative coordinates, where it cannot be scrolled to. (To the right and below,
+     * {@link #adjustPreferredSize()} grows the workbench to hold its curves, so nothing is needed there.) Moving
+     * all the nodes together changes no curve, since which edges bend and how depends only on where the nodes are
+     * relative to one another.
+     *
+     * @return True if the nodes were moved.
+     */
+    private boolean shiftCurvesIntoView() {
+        Rectangle curves = routedCurveBounds();
+
+        if (curves == null) {
+            return false;
+        }
+
+        int dx = curves.x < CURVE_VIEW_MARGIN ? CURVE_VIEW_MARGIN - curves.x : 0;
+        int dy = curves.y < CURVE_VIEW_MARGIN ? CURVE_VIEW_MARGIN - curves.y : 0;
 
         if (dx == 0 && dy == 0) {
             return false;
@@ -1810,7 +1990,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             int centerX = (int) Math.round(cx[i] + shiftX);
             int centerY = (int) Math.round(cy[i] + shiftY);
             d.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
-            model.get(i).setCenter(centerX, centerY);
+            model.get(i).setCenter(unzoomed(centerX), unzoomed(centerY));
         }
 
         fitCanvasToNodes();
@@ -2077,6 +2257,17 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             r = r.union(component1.getBounds());
         }
 
+        // A curved edge bows outside the box of its two nodes, and an edge component's own box catches up with a
+        // move of its nodes only when the queued component-moved events run — so right after a layout the union
+        // above can stop short of where the curves now reach, below and to the right. Size the canvas from the
+        // curves themselves, as they are routed for the nodes' current positions.
+        Rectangle curves = routedCurveBounds();
+
+        if (curves != null) {
+            curves.grow(CURVE_VIEW_MARGIN, CURVE_VIEW_MARGIN);
+            r = r.union(curves);
+        }
+
         // Apparently both of these are required to get the scrollbars to reset.
         // I'm
         // guessing the scrollbars pay attention to preferred size but the
@@ -2099,9 +2290,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             throw new IllegalArgumentException("Attempt to add measured variable " + "when this has been disallowed.");
         }
 
-        // Add the model node to the display workbench model.
-        modelNode.setCenterX(loc.x);
-        modelNode.setCenterY(loc.y);
+        // Add the model node to the display workbench model. The click point is a display point.
+        modelNode.setCenterX(unzoomed(loc.x));
+        modelNode.setCenterY(unzoomed(loc.y));
         getGraph().addNode(modelNode);
         firePropertyChange("modelChanged", null, null);
 
@@ -2129,8 +2320,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         // (3) If it's an error term that doesn't have an associated node,
         // don't add it.
         // (4) Otherwise, pick a random location.
-        int centerX = modelNode.getCenterX();
-        int centerY = modelNode.getCenterY();
 
         // Construct a display node for the model node.
         DisplayNode displayNode = getNewDisplayNode(modelNode);
@@ -2140,10 +2329,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         getDisplayToModel().put(displayNode, modelNode);
 
         // Set the bounds of the display node.
-        Dimension dim = displayNode.getPreferredSize();
-
-        displayNode.setSize(dim);
-        displayNode.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
+        placeDisplayNode(modelNode, displayNode);
 
         // add the display node
         add(displayNode, 0);
@@ -2168,8 +2354,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private void adjustForNewModelNodes() {
         this.graph.getNodes().forEach(node -> {
             if (this.modelNodesToDisplay.get(node) == null) {
-                int centerX = node.getCenterX();
-                int centerY = node.getCenterY();
 
                 // Construct a display node for the model node.
                 DisplayNode displayNode = getNewDisplayNode(node);
@@ -2179,10 +2363,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                 this.displayToModel.put(displayNode, node);
 
                 // Set the bounds of the display node.
-                Dimension dim = displayNode.getPreferredSize();
-
-                displayNode.setSize(dim);
-                displayNode.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
+                placeDisplayNode(node, displayNode);
 
                 // add the display node
                 add(displayNode, 0);
@@ -2215,15 +2396,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         });
 
         this.graph.getNodes().forEach(node -> {
-            int centerX = node.getCenterX();
-            int centerY = node.getCenterY();
             DisplayNode displayNode = (DisplayNode) this.modelNodesToDisplay.get(node);
 
             // Set the bounds of the display node.
-            Dimension dim = displayNode.getPreferredSize();
-
-            displayNode.setSize(dim);
-            displayNode.setLocation(centerX - dim.width / 2, centerY - dim.height / 2);
+            placeDisplayNode(node, displayNode);
         });
     }
 
@@ -2531,6 +2707,37 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         };
 
         getActionMap().put("DELETE", deleteAction);
+
+        // Zoom shortcuts: the menu shortcut key (Ctrl, or Command on a Mac) with plus, minus, and zero. Bound for
+        // when the workbench has focus, which it takes when the mouse enters it, so with several workbenches in
+        // one window the one under the mouse zooms.
+        int menuMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        InputMap focused = getInputMap(JComponent.WHEN_FOCUSED);
+        focused.put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, menuMask), "ZOOM_IN");
+        focused.put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, menuMask), "ZOOM_IN");
+        focused.put(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, menuMask), "ZOOM_IN");
+        focused.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, menuMask), "ZOOM_OUT");
+        focused.put(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, menuMask), "ZOOM_OUT");
+        focused.put(KeyStroke.getKeyStroke(KeyEvent.VK_0, menuMask), "ZOOM_RESET");
+        focused.put(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0, menuMask), "ZOOM_RESET");
+
+        getActionMap().put("ZOOM_IN", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                zoomAboutViewportCenter(getZoom() * 1.25);
+            }
+        });
+
+        getActionMap().put("ZOOM_OUT", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                zoomAboutViewportCenter(getZoom() / 1.25);
+            }
+        });
+
+        getActionMap().put("ZOOM_RESET", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                zoomAboutViewportCenter(1.0);
+            }
+        });
 
 //        if (this.controlDispatcher == null) {
 //            this.controlDispatcher = this::respondToControlKey;
@@ -3881,11 +4088,15 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
                     return;
                 }
 
+                if (this.workbench.rezooming) {
+                    return;
+                }
+
                 int centerX = bounds.x + bounds.width / 2;
                 int centerY = bounds.y + bounds.height / 2;
 
-                modelNode.setCenterX(centerX);
-                modelNode.setCenterY(centerY);
+                modelNode.setCenterX(this.workbench.unzoomed(centerX));
+                modelNode.setCenterY(this.workbench.unzoomed(centerY));
 
                 this.workbench.adjustPreferredSize();
 

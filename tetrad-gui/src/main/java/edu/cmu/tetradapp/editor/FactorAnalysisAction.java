@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
@@ -144,7 +146,7 @@ public class FactorAnalysisAction extends AbstractAction {
         JScrollPane scrollPane = new JScrollPane(display);
         scrollPane.setPreferredSize(new Dimension(500, 400));
         display.setEditable(false);
-        display.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        display.setFont(ThemeUtils.monospaced(12));
         //editorPanel.addPropertyChangeListener(new NormalityTestListener(display));
 
 

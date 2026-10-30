@@ -702,6 +702,13 @@ public class LayoutUtils {
                 if (!(o instanceof DisplayNode d)) return null;
                 Dimension dim = d.getSize();
                 if (dim.width <= 0 || dim.height <= 0) dim = d.getPreferredSize();
+
+                // Layouts work in model coordinates, so a zoomed display box is scaled back to model size.
+                double s = d.getScale();
+                if (s != 1.0) {
+                    dim = new Dimension((int) Math.round(dim.width / s), (int) Math.round(dim.height / s));
+                }
+
                 return dim;
             }
 

@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.graph.*;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
@@ -1904,13 +1906,13 @@ public class GridSearchEditor extends JPanel {
         comparisonTextArea.setLineWrap(false);
         comparisonTextArea.setWrapStyleWord(false);
         comparisonTextArea.setEditable(false);
-        comparisonTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        comparisonTextArea.setFont(ThemeUtils.monospaced(12));
 
         verboseOutputTextArea = new JTextArea();
         verboseOutputTextArea.setLineWrap(true);
         verboseOutputTextArea.setWrapStyleWord(true);
         verboseOutputTextArea.setEditable(false);
-        verboseOutputTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        verboseOutputTextArea.setFont(ThemeUtils.monospaced(12));
 
         setComparisonText();
 

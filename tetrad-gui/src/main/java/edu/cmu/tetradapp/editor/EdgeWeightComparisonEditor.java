@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetradapp.model.EdgeWeightComparison;
 
 import javax.swing.*;
@@ -54,7 +56,7 @@ public class EdgeWeightComparisonEditor extends JPanel {
     private void setup() {
         String compareString = this.comparison.getDisplayString();
 
-        Font font = new Font("Monospaced", Font.PLAIN, 14);
+        Font font = ThemeUtils.monospaced(14);
         JTextArea textPane = new JTextArea();
         textPane.setText(compareString);
 

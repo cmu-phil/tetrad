@@ -25,11 +25,14 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeTierStructure;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
 import edu.cmu.tetrad.data.missing.MvnImputer;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
 import edu.cmu.tetrad.search.rlcd.PooledRankTest;
+import edu.cmu.tetrad.search.rlcd.TierPrecedence;
+import edu.cmu.tetrad.search.rlcd.TwoIndicatorTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -148,6 +151,74 @@ public class TestRlcd {
         g.addDirectedEdge(x[1], x[4]);
         g.addDirectedEdge(x[3], x[4]);
         return g;
+    }
+
+    /**
+     * Temporal tiers constrain ancestry through latents, not only direct edges. The true model is F --> L1 --> {E1,
+     * E2, E3} and F --> L2 --> {M1, M2, M3}, which RLCD recovers without knowledge on this seed (F --> L2 found by a
+     * rank test with F as a non-sink, F --> L1 placed by the finish step). Tier structures putting F after the E's
+     * and after the M's must keep F from being an ancestor of any of them in the output, whichever step would
+     * otherwise have done it.
+     */
+    @Test
+    public void testTiersConstrainAncestryThroughLatents() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node f = new GraphNode("F");
+        g.addNode(f);
+        Node l1 = new GraphNode("L1"), l2 = new GraphNode("L2");
+        l1.setNodeType(NodeType.LATENT);
+        l2.setNodeType(NodeType.LATENT);
+        g.addNode(l1);
+        g.addDirectedEdge(f, l1);
+        g.addNode(l2);
+        g.addDirectedEdge(f, l2);
+        for (int i = 1; i <= 3; i++) {
+            Node e = new GraphNode("E" + i);
+            g.addNode(e);
+            g.addDirectedEdge(l1, e);
+        }
+        for (int i = 1; i <= 3; i++) {
+            Node m = new GraphNode("M" + i);
+            g.addNode(m);
+            g.addDirectedEdge(l2, m);
+        }
+        DataSet data = simulate(g, 3000, 3L);
+
+        Rlcd plain = new Rlcd(data);
+        plain.setMaxK(2);
+        plain.setSeed(1L);
+        Graph unconstrained = plain.search();
+        assertTrue("Precondition: without knowledge F should be an ancestor of E1: " + unconstrained,
+                unconstrained.paths().isAncestorOf(unconstrained.getNode("F"), unconstrained.getNode("E1")));
+
+        Knowledge knowledge = new Knowledge();
+        KnowledgeTierStructure exams = new KnowledgeTierStructure("E");
+        KnowledgeTierStructure modules = new KnowledgeTierStructure("M");
+        for (int i = 1; i <= 3; i++) {
+            exams.addToTier(i - 1, "E" + i);
+            modules.addToTier(i - 1, "M" + i);
+        }
+        exams.addToTier(3, "F");
+        modules.addToTier(3, "F");
+        knowledge.addTierStructure(exams);
+        knowledge.addTierStructure(modules);
+
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setMaxK(2);
+        rlcd.setSeed(1L);
+        rlcd.setKnowledge(knowledge);
+        Graph out = rlcd.search();
+
+        for (Node a : out.getNodes()) {
+            if (a.getNodeType() == NodeType.LATENT) continue;
+            for (Node b : out.getNodes()) {
+                if (a == b || b.getNodeType() == NodeType.LATENT) continue;
+                if (TierPrecedence.isLater(knowledge, a.getName(), b.getName())) {
+                    assertFalse(a + " is an ancestor of " + b + " against the tiers: " + out,
+                            out.paths().isAncestorOf(a, b));
+                }
+            }
+        }
     }
 
     /**
@@ -500,5 +571,141 @@ public class TestRlcd {
         System.out.println("Stage 1: " + rlcd.getStage1Graph());
         System.out.println("Partition: " + rlcd.getPartition());
         System.out.println("Result: " + out);
+    }
+
+    // ---------------------------------------------------------------- two-indicator latents
+
+    private static double[] skewOrGauss(Random r, int n, boolean gauss) {
+        double[] o = new double[n];
+        for (int i = 0; i < n; i++) o[i] = 0.8 * (gauss ? r.nextGaussian() : -Math.log(1 - r.nextDouble()) - 1);
+        return o;
+    }
+
+    /**
+     * The cumulant test alone, with three references of the shared factor L, N = 5000, skewed errors. A direct
+     * edge X1 --&gt; X2 is recognized; a latent over {X1, X2} is recognized as one; with Gaussian errors the answer
+     * is always undecided. The seeds are fixed; on other seeds the edge is often undecided (the test needs positive
+     * evidence for an edge), but a latent should not be read as an edge.
+     */
+    @Test
+    public void testTwoIndicatorTest() {
+        int n = 5000;
+        for (String kind : new String[]{"edge", "latent", "gauss"}) {
+            for (long seed = 1; seed <= (kind.equals("edge") ? 1 : 3); seed++) {
+                Random r = new Random(seed);
+                boolean gauss = kind.equals("gauss");
+                double[] l = skewOrGauss(r, n, gauss);
+                for (int i = 0; i < n; i++) l[i] /= 0.8;
+                double[][] refs = new double[3][n];
+                double[] c = {1.0, 0.9, 1.1};
+                for (int k = 0; k < 3; k++) {
+                    double[] e = skewOrGauss(r, n, gauss);
+                    for (int i = 0; i < n; i++) refs[k][i] = c[k] * l[i] + e[i];
+                }
+                double[] e1 = skewOrGauss(r, n, gauss), e2 = skewOrGauss(r, n, gauss), u = skewOrGauss(r, n, gauss);
+                double[] x1 = new double[n], x2 = new double[n];
+                for (int i = 0; i < n; i++) {
+                    if (kind.equals("latent")) {
+                        double lp = l[i] + u[i];
+                        x1[i] = lp + e1[i];
+                        x2[i] = 0.8 * lp + e2[i];
+                    } else {
+                        x1[i] = l[i] + e1[i];
+                        x2[i] = 0.8 * l[i] + x1[i] + e2[i];
+                    }
+                }
+                TwoIndicatorTest.Answer expected = switch (kind) {
+                    case "edge" -> TwoIndicatorTest.Answer.X1_TO_X2;
+                    case "latent" -> TwoIndicatorTest.Answer.LATENT;
+                    default -> TwoIndicatorTest.Answer.UNDECIDED;
+                };
+                assertEquals(kind + ", seed " + seed, expected,
+                        TwoIndicatorTest.test(x1, x2, refs, 0.1, 400, seed).answer());
+                // Swapping the roles of X1 and X2 swaps the answer.
+                if (kind.equals("edge")) {
+                    assertEquals(TwoIndicatorTest.Answer.X2_TO_X1,
+                            TwoIndicatorTest.test(x2, x1, refs, 0.1, 400, seed).answer());
+                }
+            }
+        }
+    }
+
+    /**
+     * L1 --&gt; X1..X5 with X1 --&gt; X2, L2 --&gt; X6..X9, L1 --&gt; L2; or the same with a latent Lp over X1, X2
+     * in place of the edge.
+     */
+    private static DataSet twoIndicatorData(long seed, boolean edge, boolean gauss, int n) {
+        Random r = new Random(seed);
+        double[] l1 = skewOrGauss(r, n, gauss), l2 = new double[n], lp = new double[n];
+        double[] e = skewOrGauss(r, n, gauss), u = skewOrGauss(r, n, gauss);
+        for (int i = 0; i < n; i++) {
+            l2[i] = 0.9 * l1[i] + e[i];
+            lp[i] = l1[i] + u[i];
+        }
+        double[] c = {1.0, 0.8, 1.1, 0.9, 1.2, 1.0, 0.8, 1.1, 0.9};
+        double[][] x = new double[9][n];
+        for (int j = 0; j < 9; j++) {
+            double[] parent = j < 5 ? (!edge && j < 2 ? lp : l1) : l2;
+            double[] ej = skewOrGauss(r, n, gauss);
+            for (int i = 0; i < n; i++) x[j][i] = c[j] * parent[i] + ej[i];
+        }
+        if (edge) for (int i = 0; i < n; i++) x[1][i] += x[0][i];
+        List<Node> vars = new ArrayList<>();
+        for (int j = 0; j < 9; j++) vars.add(new ContinuousVariable("X" + (j + 1)));
+        DoubleDataBox box = new DoubleDataBox(n, 9);
+        for (int i = 0; i < n; i++) for (int j = 0; j < 9; j++) box.set(i, j, x[j][i]);
+        return new BoxDataSet(box, vars);
+    }
+
+    private static Graph runTwoIndicator(DataSet data, boolean resolve) throws Exception {
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setSeed(1L);
+        rlcd.setResolveTwoIndicatorLatents(resolve);
+        return rlcd.search();
+    }
+
+    /**
+     * End to end. Without the step, RLCD splits L1's cluster into a latent over {X1, X2} and one over {X3, X4, X5}.
+     * With it, on this seed, the two-indicator latent is replaced by X1 --&gt; X2 with X1 and X2 under the latent
+     * of X3..X5, which is the true structure. With a real latent over {X1, X2}, or with Gaussian errors, the step
+     * changes nothing; nor does it with knowledge forbidding the edge.
+     */
+    @Test
+    public void testResolveTwoIndicatorLatents() throws Exception {
+        DataSet data = twoIndicatorData(2L, true, false, 5000);
+        Graph off = runTwoIndicator(data, false);
+        Graph on = runTwoIndicator(data, true);
+
+        Node x1 = on.getNode("X1"), x2 = on.getNode("X2"), x3 = on.getNode("X3");
+        assertFalse("Precondition: plain RLCD should not have the edge: " + off,
+                off.isAdjacentTo(off.getNode("X1"), off.getNode("X2")));
+        assertTrue("X1 --> X2 expected: " + on, on.isParentOf(x1, x2));
+        Node m = on.getParents(x3).getFirst();
+        assertEquals("X1 should be under X3's latent: " + on, List.of(m), on.getParents(x1));
+        assertTrue("X2 should be under X3's latent: " + on, on.isParentOf(m, x2));
+        int latentsOff = 0, latentsOn = 0;
+        for (Node v : off.getNodes()) if (v.getNodeType() == NodeType.LATENT) latentsOff++;
+        for (Node v : on.getNodes()) if (v.getNodeType() == NodeType.LATENT) latentsOn++;
+        assertEquals("One latent fewer: " + on, latentsOff - 1, latentsOn);
+
+        // Knowledge forbidding the edge in that direction keeps the latent.
+        Knowledge knowledge = new Knowledge();
+        knowledge.setForbidden("X1", "X2");
+        Rlcd rlcd = new Rlcd(data);
+        rlcd.setSeed(1L);
+        rlcd.setResolveTwoIndicatorLatents(true);
+        rlcd.setKnowledge(knowledge);
+        Graph forbidden = rlcd.search();
+        assertFalse("Forbidden edge added: " + forbidden,
+                forbidden.isAdjacentTo(forbidden.getNode("X1"), forbidden.getNode("X2")));
+
+        for (long seed = 1; seed <= 3; seed++) {
+            DataSet latent = twoIndicatorData(seed, false, false, 5000);
+            assertEquals("A real latent should be kept, seed " + seed, runTwoIndicator(latent, false),
+                    runTwoIndicator(latent, true));
+            DataSet gauss = twoIndicatorData(seed, true, true, 5000);
+            assertEquals("Gaussian data should be left alone, seed " + seed, runTwoIndicator(gauss, false),
+                    runTwoIndicator(gauss, true));
+        }
     }
 }

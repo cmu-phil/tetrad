@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -421,7 +423,7 @@ public final class LoadDataDialog extends JPanel {
         // Setup file text area.
         // We don't want the users to edit in the preview area - Zhou
         this.filePreviewTextArea.setEditable(false);
-        this.filePreviewTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        this.filePreviewTextArea.setFont(ThemeUtils.monospaced(12));
 
         // Set the default preview for the default selected file
         setPreview(this.loadedFiles.get(0), this.filePreviewTextArea);

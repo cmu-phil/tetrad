@@ -80,7 +80,8 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
         try {
             WorkbenchStyle.applyHints(g2);
             DisplayNodeUtils.paintNode(g2, getShape(), getName(), getPreferredSize(),
-                    WorkbenchStyle.measuredFill(), isSelected());
+                    WorkbenchStyle.measuredFill(), isSelected(),
+                    DisplayNodeUtils.scaledFont(this, WorkbenchStyle.nodeFont()));
         } finally {
             g2.dispose();
         }
@@ -91,10 +92,12 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
      */
     @Override
     public Dimension getPreferredSize() {
-        FontMetrics fm = getFontMetrics(WorkbenchStyle.nodeFont());
+        double scale = DisplayNodeUtils.scaleOf(this);
+        FontMetrics fm = getFontMetrics(DisplayNodeUtils.scaledFont(this, WorkbenchStyle.nodeFont()));
         int width = fm.stringWidth(getName()) + fm.getMaxAdvance();
-        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent() + 3;
-        width = Math.max(width, 60);
+        int height = 2 * (int) Math.round(DisplayNodeUtils.getPixelGap() * scale) + fm.getAscent()
+                + (int) Math.round(3 * scale);
+        width = Math.max(width, (int) Math.round(60 * scale));
         return new Dimension(width, height);
     }
 

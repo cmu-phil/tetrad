@@ -139,6 +139,9 @@ public final class Tetrad implements PropertyChangeListener {
             } else {
                 FlatLightLaf.setup();
             }
+
+            // Scale the Look and Feel's fonts to the size stored in Settings.
+            ThemeUtils.applyStoredFontScale();
         } catch (Exception e) {
             TetradLogger.getInstance().log("Couldn't set look and feel.");
         }

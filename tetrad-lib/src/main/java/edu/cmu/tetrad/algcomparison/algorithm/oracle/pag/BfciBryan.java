@@ -54,6 +54,13 @@ import java.util.List;
  */
 // Hidden from the interface on 2026-10-21 (no @Algorithm annotation): kept only so that saved sessions
 // that used it still load. The shipping BFCI is now this formulation; see edu.cmu.tetrad.search.StarFci.
+
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "BFCI-Bryan",
+        command = "bfci-bryan",
+        algoType = AlgType.allow_latent_common_causes,
+        dataType = DataType.Continuous
+)
 @Bootstrapping
 @Experimental
 public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
@@ -127,7 +134,14 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
         search.setKnowledge(knowledge);
 
         search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        search.setUseSaturatingStep(parameters.getBoolean(Params.USE_SATURATING_STEP));
+        boolean requireImapStates = parameters.getBoolean(Params.REQUIRE_IMAP_STATES);
+        // The saturating step is not a user choice here: it runs iff the I-map gate is off (2026-10-28). With the
+        // gate on, every committed state is required to be an I-map of the test, and the joint removal is not run.
+        search.setRequireImapStates(requireImapStates);
+        search.setUseSaturatingStep(!requireImapStates);
+        search.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
+        search.setUsePass0(parameters.getBoolean(Params.USE_PASS_0));
+        search.setReharvestSepsets(parameters.getBoolean(Params.REHARVEST_SEPSETS));
 
         return search.search();
     }
@@ -186,7 +200,10 @@ public class BfciBryan extends AbstractBootstrapAlgorithm implements Algorithm, 
 
         // Parameters
         params.add(Params.NUM_STARTS);
-        params.add(Params.USE_SATURATING_STEP);
+        params.add(Params.REQUIRE_IMAP_STATES);
+        params.add(Params.IMAP_ALPHA);
+        params.add(Params.USE_PASS_0);
+        params.add(Params.REHARVEST_SEPSETS);
 
         return params;
     }

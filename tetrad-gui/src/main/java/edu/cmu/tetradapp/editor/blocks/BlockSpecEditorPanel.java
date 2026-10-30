@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor.blocks;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
@@ -89,7 +91,7 @@ public final class BlockSpecEditorPanel extends JPanel {
         super(new BorderLayout());
         this.dataSet = Objects.requireNonNull(dataSet, "DataSet is required");
 
-        textPane.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+        textPane.setFont(ThemeUtils.monospaced(14));
         textPane.setMargin(new Insets(8, 10, 8, 10));
         textPane.setCaretColor(Color.DARK_GRAY);
 

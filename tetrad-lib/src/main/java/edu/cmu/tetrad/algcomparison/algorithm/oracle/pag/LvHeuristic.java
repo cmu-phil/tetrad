@@ -59,7 +59,6 @@ import java.util.List;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-@Experimental
 public class LvHeuristic extends AbstractBootstrapAlgorithm implements Algorithm, TakesScoreWrapper,
         AcceptsKnowledge, ReturnsBootstrapGraphs, TakesCovarianceMatrix {
 

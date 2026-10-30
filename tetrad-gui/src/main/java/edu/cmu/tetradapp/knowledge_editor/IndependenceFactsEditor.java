@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.knowledge_editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.model.IndependenceFactsModel;
 
@@ -144,7 +146,7 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     private void resetTextDisplay() {
-        getTextArea().setFont(new Font("Monospaced", Font.PLAIN, 12));
+        getTextArea().setFont(ThemeUtils.monospaced(12));
         getTextArea().setBorder(new CompoundBorder(new LineBorder(Color.black),
                 new EmptyBorder(3, 3, 3, 3)));
         getTextArea().setText(this.facts.toString());

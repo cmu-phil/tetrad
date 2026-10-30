@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -106,7 +108,7 @@ public class LinearAdjustmentRegressionEditor extends JPanel implements GraphEdi
 
         this.textArea = new JTextArea();
 
-        Font monospacedFont = new Font(Font.MONOSPACED, Font.PLAIN, 14);
+        Font monospacedFont = ThemeUtils.monospaced(14);
         textArea.setFont(monospacedFont);
 
         JScrollPane scroll = new JScrollPane(this.textArea);

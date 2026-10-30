@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.app;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.LicenseUtils;
 
@@ -53,7 +55,7 @@ final class WarrantyAction extends AbstractAction {
 
         JTextArea textArea = new JTextArea(license);
         textArea.setEditable(false);
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        textArea.setFont(ThemeUtils.monospaced(12));
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(600, 400));
         textArea.setCaretPosition(index);

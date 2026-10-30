@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.algcomparison.algorithm.AbstractBootstrapAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSamplingRfci;
@@ -250,7 +252,7 @@ public class AlgorithmParameterPanel extends JPanel {
      */
     private void showPasteSettingsDialog(GeneralAlgorithmRunner algorithmRunner) {
         JTextArea area = new JTextArea(20, 60);
-        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setFont(ThemeUtils.monospaced(12));
         JScrollPane scroll = new JScrollPane(area);
 
         Object[] options = {"Apply", "Cancel"};
@@ -314,7 +316,7 @@ public class AlgorithmParameterPanel extends JPanel {
 
         JTextArea area = new JTextArea(text, 25, 60);
         area.setEditable(false);
-        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setFont(ThemeUtils.monospaced(12));
         area.setCaretPosition(0);
         JScrollPane scroll = new JScrollPane(area);
 

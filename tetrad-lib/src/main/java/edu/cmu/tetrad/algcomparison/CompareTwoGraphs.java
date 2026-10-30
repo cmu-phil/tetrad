@@ -271,12 +271,23 @@ public class CompareTwoGraphs {
      * @return The comparison string.
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime) {
+        return getStatsListTable(trueGraph, targetGraph, dataModel, elapsedTime, statistics());
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, Graph, DataModel, long)}, but with the statistics to show given
+     * explicitly, in display order.
+     *
+     * @param trueGraph   The true graph.
+     * @param targetGraph The target graph.
+     * @param dataModel   The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTime Elapsed wall time in milliseconds; &lt; 0 to omit the Elapsed row.
+     * @param statistics  The statistics to show.
+     * @return The comparison string.
+     */
+    public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel, long elapsedTime,
+                                           List<Statistic> statistics) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
-
-//        System.out.println("_target graph =  " + _targetGraph);
-//        System.out.println("target graph = " + targetGraph);
-
-        List<Statistic> statistics = statistics();
 
         TextTable table = new TextTable(statistics.size() + 1, 3);
         NumberFormat nf = new DecimalFormat("0.###");
@@ -310,6 +321,149 @@ public class CompareTwoGraphs {
         table.setJustification(TextTable.LEFT_JUSTIFIED);
 
         return table.toString();
+    }
+
+    /**
+     * Returns a string representing a table of statistics for several target graphs against a single true graph,
+     * one column per target. Statistics that fail (or return NaN) for a target are shown as "-" in that column;
+     * rows where every target fails are omitted. This is the multi-target generalization of
+     * {@link #getStatsListTable(Graph, Graph, DataModel, long)}, used by the GUI comparison boxes when more than
+     * one graph source is attached, and usable from py-tetrad as well.
+     *
+     * @param trueGraph    The true graph.
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueGraph, List<Graph> targetGraphs, List<String> targetNames,
+                                           DataModel dataModel, List<Long> elapsedTimes) {
+        return getStatsListTable(trueGraph, targetGraphs, targetNames, dataModel, elapsedTimes, statistics());
+    }
+
+    /**
+     * As {@link #getStatsListTable(Graph, List, List, DataModel, List)}, but with the statistics to show given
+     * explicitly, in display order.
+     *
+     * @param trueGraph    The true graph.
+     * @param targetGraphs The target graphs, in display order.
+     * @param targetNames  Column headers for the targets, same length as targetGraphs.
+     * @param dataModel    The data model; some statistics (like BIC) may use this. May be null.
+     * @param elapsedTimes Elapsed wall times in milliseconds, one per target, or null; entries &lt; 0 print as "-".
+     * @param statistics   The statistics to show.
+     * @return The comparison table string.
+     */
+    public static String getStatsListTable(Graph trueGraph, List<Graph> targetGraphs, List<String> targetNames,
+                                           DataModel dataModel, List<Long> elapsedTimes,
+                                           List<Statistic> statistics) {
+        if (targetGraphs.size() != targetNames.size()) {
+            throw new IllegalArgumentException("One name per target graph expected.");
+        }
+        NumberFormat nf = new DecimalFormat("0.###");
+        int numTargets = targetGraphs.size();
+
+        String[][] cells = new String[statistics.size()][numTargets];
+        boolean[] anyValue = new boolean[statistics.size()];
+
+        for (int j = 0; j < numTargets; j++) {
+            Graph _targetGraph = GraphUtils.replaceNodes(targetGraphs.get(j), trueGraph.getNodes());
+
+            for (int i = 0; i < statistics.size(); i++) {
+                try {
+                    double value = statistics.get(i).getValue(trueGraph, trueGraph, _targetGraph, dataModel,
+                            new Parameters());
+                    cells[i][j] = Double.isNaN(value) ? "-" : nf.format(value);
+                    anyValue[i] = true;
+                } catch (Exception e) {
+                    cells[i][j] = "-";
+                }
+            }
+        }
+
+        boolean anyElapsed = false;
+
+        if (elapsedTimes != null) {
+            for (Long time : elapsedTimes) {
+                if (time != null && time >= 0) {
+                    anyElapsed = true;
+                    break;
+                }
+            }
+        }
+
+        int numRows = 1; // header
+
+        for (boolean b : anyValue) {
+            if (b) {
+                numRows++;
+            }
+        }
+
+        if (anyElapsed) {
+            numRows++;
+        }
+
+        TextTable table = new TextTable(numRows, numTargets + 2);
+        table.setJustification(TextTable.LEFT_JUSTIFIED);
+
+        table.setToken(0, 0, "Stat");
+
+        for (int j = 0; j < numTargets; j++) {
+            table.setToken(0, j + 1, targetNames.get(j));
+        }
+
+        table.setToken(0, numTargets + 1, "Description");
+
+        int row = 1;
+
+        for (int i = 0; i < statistics.size(); i++) {
+            if (!anyValue[i]) {
+                continue;
+            }
+
+            table.setToken(row, 0, statistics.get(i).getAbbreviation());
+
+            for (int j = 0; j < numTargets; j++) {
+                table.setToken(row, j + 1, cells[i][j]);
+            }
+
+            table.setToken(row, numTargets + 1, statistics.get(i).getDescription());
+            row++;
+        }
+
+        if (anyElapsed) {
+            table.setToken(row, 0, "Elapsed");
+
+            for (int j = 0; j < numTargets; j++) {
+                Long time = elapsedTimes.get(j);
+                table.setToken(row, j + 1, (time == null || time < 0) ? "-" : nf.format(time / 1000.0));
+            }
+
+            table.setToken(row, numTargets + 1, "Wall time (s)");
+        }
+
+        return table.toString();
+    }
+
+    /**
+     * Returns the statistics shown by default in the stats list comparison, in display order, with duplicate
+     * abbreviations removed (the internal default list repeats a few entries, which the plain table methods keep
+     * for unchanged output).
+     *
+     * @return a new list of the default statistics.
+     */
+    public static List<Statistic> defaultStatistics() {
+        List<Statistic> unique = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+
+        for (Statistic statistic : statistics()) {
+            if (seen.add(statistic.getAbbreviation())) {
+                unique.add(statistic);
+            }
+        }
+
+        return unique;
     }
 
     private static List<Statistic> statistics() {

@@ -100,6 +100,32 @@ public class DisplayNodeUtils {
     }
 
     /**
+     * The given base font, scaled by the zoom factor of the display node the given component sits in, or the base
+     * font itself when the component is not in a display node or the workbench is unzoomed. Display comps size and
+     * paint themselves with this, so that their text follows the workbench's zoom.
+     *
+     * @param component the display comp.
+     * @param base      the font at a zoom of 1.
+     * @return the font to size and paint with.
+     */
+    static Font scaledFont(Component component, Font base) {
+        double scale = DisplayNodeUtils.scaleOf(component);
+        return scale == 1.0 ? base : base.deriveFont((float) (base.getSize2D() * scale));
+    }
+
+    /**
+     * The zoom factor of the display node the given component sits in, or 1 when the component is not in a
+     * display node. Display comps scale their fixed paddings and minimum sizes by this, so a node's box tracks
+     * its text in both directions instead of bottoming out at the unzoomed minimum.
+     *
+     * @param component the display comp.
+     * @return the scale; always positive.
+     */
+    static double scaleOf(Component component) {
+        return component != null && component.getParent() instanceof DisplayNode d ? d.getScale() : 1.0;
+    }
+
+    /**
      * Paints a node: fills the shape, draws its border (accented and heavier when selected), and centers the name
      * in it. The caller is responsible for rendering hints.
      *
@@ -109,8 +135,10 @@ public class DisplayNodeUtils {
      * @param size     the node size.
      * @param fill     the unselected fill color.
      * @param selected whether the node is selected.
+     * @param font     the font for the name; null means the unzoomed node font.
      */
-    static void paintNode(Graphics2D g2, Shape shape, String name, Dimension size, Color fill, boolean selected) {
+    static void paintNode(Graphics2D g2, Shape shape, String name, Dimension size, Color fill, boolean selected,
+                          Font font) {
         if (name == null) name = "";
 
         g2.setColor(WorkbenchStyle.translucentFill(selected ? WorkbenchStyle.selectedFill(fill) : fill));
@@ -120,7 +148,7 @@ public class DisplayNodeUtils {
         g2.setColor(selected ? WorkbenchStyle.selectedBorder() : WorkbenchStyle.nodeBorder());
         g2.draw(shape);
 
-        Font font = WorkbenchStyle.nodeFont();
+        if (font == null) font = WorkbenchStyle.nodeFont();
         FontMetrics fm = g2.getFontMetrics(font);
         int x = (size.width - fm.stringWidth(name)) / 2;
         int y = (size.height - fm.getHeight()) / 2 + fm.getAscent();

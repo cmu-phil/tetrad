@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
@@ -100,7 +102,7 @@ public class RegressionEditor extends JPanel {
         workbenchScroll.setPreferredSize(new Dimension(400, 400));
 
         this.reportText = new JTextArea();
-        this.reportText.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        this.reportText.setFont(ThemeUtils.monospaced(12));
         this.reportText.setTabSize(10);
 
         if (this.runner.getResult() != null) {

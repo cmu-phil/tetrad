@@ -1,5 +1,7 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
@@ -391,7 +393,7 @@ public final class TextBayesUpdateEditor extends JPanel {
         String report = buildReport(nodeIndex, lastUpdater, lastEvidence, lastEvidenceText);
 
         JTextArea ta = new JTextArea(report, 28, 90);
-        ta.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        ta.setFont(ThemeUtils.monospaced(12));
         ta.setCaretPosition(0);
 
         JScrollPane sp = new JScrollPane(ta);

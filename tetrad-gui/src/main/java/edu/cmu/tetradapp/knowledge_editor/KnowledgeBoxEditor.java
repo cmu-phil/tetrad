@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.knowledge_editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
@@ -670,7 +672,7 @@ public class KnowledgeBoxEditor extends JPanel {
         JTextArea area = new JTextArea();
         area.setEditable(true);
         area.setLineWrap(false);
-        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        area.setFont(ThemeUtils.monospaced(12));
         area.setBorder(new EmptyBorder(5, 5, 5, 5));
         this.knowledgeTextArea = area;
 

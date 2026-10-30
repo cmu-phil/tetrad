@@ -314,11 +314,12 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         WorkbenchStyle.applyHints(g2d);
 
         Stroke s;
-        float width = thick ? 3f : 1.5f;
+        float z = zoomScale();
+        float width = (thick ? 3f : 1.5f) * z;
 
         Stroke solidStroke = new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
         Stroke dashedStroke = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 1f,
-                new float[]{7f, 5f}, 0f);
+                new float[]{7f * z, 5f * z}, 0f);
 
         s = this.solid ? solidStroke : dashedStroke;
         g2d.setStroke(s);
@@ -862,7 +863,16 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
     }
 
     private float endpointScale() {
-        return Math.max(1f, getStrokeWidth()) * (thick ? 1.35f : 1f);
+        return Math.max(1f, getStrokeWidth()) * (thick ? 1.35f : 1f) * zoomScale();
+    }
+
+    /**
+     * The zoom factor of the workbench this edge sits in, or 1 outside a workbench. Strokes, dashes, arrowheads,
+     * and circle endpoints are scaled by this, so the rendering tracks the zoom the way an affine transform would;
+     * click sleeves are left unscaled, so the click tolerance stays a constant number of screen pixels.
+     */
+    private float zoomScale() {
+        return getParent() instanceof AbstractWorkbench workbench ? (float) workbench.getZoom() : 1f;
     }
 
     private void drawArrowEndpoint(Point from, Point to, Graphics g) {
@@ -905,7 +915,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         try {
             WorkbenchStyle.applyHints(g2);
             g2.fill(head);
-            g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.setStroke(new BasicStroke(zoomScale(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.draw(head);
         } finally {
             g2.dispose();
@@ -932,7 +942,7 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
             g2.setColor(getCircleInteriorColor());
             g2.fill(circle);
             g2.setColor(ring);
-            g2.setStroke(new BasicStroke(thick ? 2.5f : 1.6f));
+            g2.setStroke(new BasicStroke((thick ? 2.5f : 1.6f) * zoomScale()));
             g2.draw(circle);
         } finally {
             g2.dispose();

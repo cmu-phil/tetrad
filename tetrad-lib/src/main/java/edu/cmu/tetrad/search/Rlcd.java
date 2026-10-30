@@ -32,6 +32,8 @@ import edu.cmu.tetrad.search.rlcd.PooledRankTest;
 import edu.cmu.tetrad.search.rlcd.RankTester;
 import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
 import edu.cmu.tetrad.search.rlcd.RlcdClusterSearch;
+import edu.cmu.tetrad.search.rlcd.TierPrecedence;
+import edu.cmu.tetrad.search.rlcd.TwoIndicatorTest;
 import edu.cmu.tetrad.search.blocks.BlockSpec;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -131,6 +133,7 @@ public class Rlcd {
      */
     private static final int MAX_GATE_TESTS = 20000;
     private boolean latentGate = true;
+    private boolean resolveTwoIndicatorLatents = false;
     private boolean allowNonLeafX = true;
     private boolean unfoldCovers = true;
     private boolean checkV = true;
@@ -278,6 +281,25 @@ public class Rlcd {
     }
 
     /**
+     * Sets whether to try to replace two-indicator latents by direct edges, using non-Gaussianity (default false).
+     * Rank constraints cannot tell L --&gt; {X1, X2} with X1 --&gt; X2 from a second latent over {X1, X2}, and RLCD
+     * reports the second latent. With this set, each latent of the output that has exactly two observed children,
+     * no observed parent and exactly one latent neighbor M, where M has at least three pure observed children, is
+     * tested by {@link TwoIndicatorTest} with M's pure children as references. If the test shows X1 --&gt; X2 (or
+     * X2 --&gt; X1), and knowledge allows it, the latent is removed and replaced by M --&gt; X1, M --&gt; X2 and the
+     * edge; otherwise the latent is left as it is. The test is conservative (it needs positive evidence for the
+     * edge) and needs skewed data; with Gaussian data nothing changes. Not done under a stratified rank test, whose
+     * pooled domains make the data non-Gaussian whatever the model. With several imputations, the edge is taken
+     * only if every imputation shows it. {@link #getAdjacency()} and {@link #getLatentGroups()} describe the search
+     * before this step.
+     *
+     * @param resolve true to try.
+     */
+    public void setResolveTwoIndicatorLatents(boolean resolve) {
+        this.resolveTwoIndicatorLatents = resolve;
+    }
+
+    /**
      * Sets the largest cluster cardinality to search for (default 3).
      *
      * @param maxK the maximum k.
@@ -368,8 +390,13 @@ public class Rlcd {
      * search honors it as any search does; in stage 2 an observed variable is never used as a non-sink (parent) of a
      * candidate member it is forbidden to cause, and a cluster whose cover would create a forbidden observed-to-
      * observed edge is rejected; and required edges between observed variables are restored in the output if stage
-     * 2 dropped them, oriented as required. Knowledge cannot refer to latent variables, which are created by the
-     * search, so it cannot keep an observed variable from being placed under a latent.
+     * 2 dropped them, oriented as required. Temporal tiers (the main tiers and any additional tier structures) are
+     * also read as constraining ancestry, since a cause cannot come after its effect: stage 2 rejects a cluster that
+     * would make an observed variable, through latents, an ancestor of one in an earlier tier, and an edge between
+     * latents is oriented away from the direction that would do so. Other knowledge (explicitly forbidden edges,
+     * groups, edges forbidden within a tier) constrains direct edges only. Knowledge cannot refer to latent
+     * variables, which are created by the search, so it cannot keep an observed variable from being placed under a
+     * latent.
      *
      * @param knowledge the knowledge; null means none.
      */
@@ -538,7 +565,149 @@ public class Rlcd {
         }
         Graph graph = adjacencyToGraph(adj, nodes);
         orientLatentEdgesByRankTests(graph);
+        if (resolveTwoIndicatorLatents) resolveTwoIndicatorLatents(graph);
         return graph;
+    }
+
+    // ---------------------------------------------------------------- two-indicator latents
+
+    /**
+     * Equivalence margin for {@link TwoIndicatorTest}.
+     */
+    private static final double TWO_INDICATOR_DELTA = 0.1;
+    /**
+     * Bootstrap resamples for {@link TwoIndicatorTest}.
+     */
+    private static final int TWO_INDICATOR_BOOT = 400;
+    /**
+     * At most this many references are used (pairs grow quadratically).
+     */
+    private static final int TWO_INDICATOR_MAX_REFS = 5;
+
+    /**
+     * See {@link #setResolveTwoIndicatorLatents(boolean)}.
+     *
+     * @param graph the output graph, changed in place.
+     */
+    private void resolveTwoIndicatorLatents(Graph graph) {
+        if (rankTester instanceof StratifiedChi2RankTest) {
+            log("Two-indicator latents are not resolved under a stratified rank test.");
+            return;
+        }
+
+        List<Node> latents = new ArrayList<>();
+        for (Node v : graph.getNodes()) if (v.getNodeType() == NodeType.LATENT) latents.add(v);
+        latents.sort(Comparator.comparing(Node::getName));
+
+        for (Node lp : latents) {
+            if (!graph.containsNode(lp)) continue;
+
+            // Exactly two observed neighbors, both children, and exactly one latent neighbor.
+            List<Node> children = new ArrayList<>();
+            Node m = null;
+            boolean ok = true;
+            for (Node a : graph.getAdjacentNodes(lp)) {
+                if (a.getNodeType() == NodeType.LATENT) {
+                    if (m != null) {
+                        ok = false;
+                        break;
+                    }
+                    m = a;
+                } else if (graph.isParentOf(lp, a)) {
+                    children.add(a);
+                } else {
+                    ok = false;
+                    break;
+                }
+            }
+            if (!ok || m == null || children.size() != 2) continue;
+            children.sort(Comparator.comparing(Node::getName));
+            Node x1 = children.get(0), x2 = children.get(1);
+            if (!isPureChildOf(graph, x1, lp) || !isPureChildOf(graph, x2, lp) || graph.isAdjacentTo(x1, x2)) {
+                continue;
+            }
+
+            List<Node> refs = new ArrayList<>();
+            for (Node c : graph.getChildren(m)) {
+                if (c.getNodeType() != NodeType.LATENT && isPureChildOf(graph, c, m)) refs.add(c);
+            }
+            if (refs.size() < 3) continue;
+            refs.sort(Comparator.comparing(Node::getName));
+            if (refs.size() > TWO_INDICATOR_MAX_REFS) refs = refs.subList(0, TWO_INDICATOR_MAX_REFS);
+
+            TwoIndicatorTest.Answer answer = null;
+            StringBuilder detail = new StringBuilder();
+            for (DataSet d : imputations) {
+                TwoIndicatorTest.Result r = TwoIndicatorTest.test(column(d, x1), column(d, x2), columns(d, refs),
+                        TWO_INDICATOR_DELTA, TWO_INDICATOR_BOOT, seed == -1 ? 17L : seed);
+                detail.append(String.format(" [n12 = %.3f, n21 = %.3f, N = %d: %s]", r.n12(), r.n21(), r.n(),
+                        r.answer()));
+                if (answer == null) answer = r.answer();
+                else if (answer != r.answer()) answer = TwoIndicatorTest.Answer.UNDECIDED;
+            }
+            log("Two-indicator latent " + lp + " over " + x1 + ", " + x2 + ", references " + refs + " under " + m
+                + ":" + detail);
+
+            Node from, to;
+            if (answer == TwoIndicatorTest.Answer.X1_TO_X2) {
+                from = x1;
+                to = x2;
+            } else if (answer == TwoIndicatorTest.Answer.X2_TO_X1) {
+                from = x2;
+                to = x1;
+            } else {
+                continue;
+            }
+
+            if (knowledge.isForbidden(from.getName(), to.getName())) {
+                log("   Knowledge forbids " + from + " --> " + to + "; " + lp + " kept.");
+                continue;
+            }
+            Set<String> below = new HashSet<>();
+            for (Node d : graph.paths().getDescendants(to)) {
+                if (d.getNodeType() != NodeType.LATENT) below.add(d.getName());
+            }
+            if (TierPrecedence.findViolation(knowledge, Set.of(from.getName()), below) != null) {
+                log("   The temporal tiers rule out " + from + " as an ancestor of " + to + "'s descendants; "
+                    + lp + " kept.");
+                continue;
+            }
+
+            graph.removeNode(lp);
+            graph.addDirectedEdge(m, x1);
+            graph.addDirectedEdge(m, x2);
+            graph.addDirectedEdge(from, to);
+            log("   Replaced " + lp + " by " + m + " --> " + x1 + ", " + m + " --> " + x2 + ", " + from + " --> "
+                + to + ".");
+        }
+    }
+
+    /**
+     * Whether an observed node's only parent is the given latent and every other edge at it points away from it.
+     */
+    private static boolean isPureChildOf(Graph graph, Node x, Node latent) {
+        for (Edge e : graph.getEdges(x)) {
+            Node other = e.getDistalNode(x);
+            if (other == latent) {
+                if (!graph.isParentOf(latent, x)) return false;
+            } else if (!(Edges.isDirectedEdge(e) && Edges.getDirectedEdgeTail(e) == x)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static double[] column(DataSet d, Node v) {
+        int j = d.getColumnIndex(v.getName());
+        double[] out = new double[d.getNumRows()];
+        for (int i = 0; i < out.length; i++) out[i] = d.getDouble(i, j);
+        return out;
+    }
+
+    private static double[][] columns(DataSet d, List<Node> vs) {
+        double[][] out = new double[vs.size()][];
+        for (int k = 0; k < vs.size(); k++) out[k] = column(d, vs.get(k));
+        return out;
     }
 
     /**
@@ -719,12 +888,51 @@ public class Rlcd {
                 if (adjacent[i][j]) coverGraph.addUndirectedEdge(coverNodes.get(i), coverNodes.get(j));
             }
         }
+
+        // Temporal tiers, first: cover i --> cover j is ruled out when an observed parent of i lies in a later tier
+        // than an observed child of j, since the edge would make the one an ancestor of the other.
+        List<Set<String>> obsParents = new ArrayList<>(), obsChildren = new ArrayList<>();
+        for (List<Node> cover : covers) {
+            Set<String> pa = new TreeSet<>(), ch = new TreeSet<>();
+            for (Node l : cover) {
+                for (Node p : graph.getParents(l)) if (p.getNodeType() != NodeType.LATENT) pa.add(p.getName());
+                for (Node c : graph.getChildren(l)) if (c.getNodeType() != NodeType.LATENT) ch.add(c.getName());
+            }
+            obsParents.add(pa);
+            obsChildren.add(ch);
+        }
+        boolean[][] tierForbids = new boolean[nc][nc];   // [i][j]: cover i --> cover j is ruled out
+        for (int i = 0; i < nc; i++) {
+            for (int j = 0; j < nc; j++) {
+                if (i != j && adjacent[i][j]) {
+                    tierForbids[i][j] = TierPrecedence.findViolation(knowledge, obsParents.get(i),
+                            obsChildren.get(j)) != null;
+                }
+            }
+        }
+        for (int i = 0; i < nc; i++) {
+            for (int j = i + 1; j < nc; j++) {
+                if (!adjacent[i][j] || tierForbids[i][j] == tierForbids[j][i]) {
+                    if (adjacent[i][j] && tierForbids[i][j]) {
+                        log("Temporal tiers rule out both directions between latent covers " + covers.get(i)
+                            + " and " + covers.get(j) + "; left unoriented.");
+                    }
+                    continue;
+                }
+                int from = tierForbids[i][j] ? j : i, to = tierForbids[i][j] ? i : j;
+                coverGraph.removeEdge(coverNodes.get(i), coverNodes.get(j));
+                coverGraph.addDirectedEdge(coverNodes.get(from), coverNodes.get(to));
+                log("Temporal tiers orient latent covers " + covers.get(from) + " --> " + covers.get(to));
+            }
+        }
+
         Set<Long> colliderInto = new HashSet<>();   // directed cover edges a --> c requested by colliders
         for (int c = 0; c < nc; c++) {
             for (int a = 0; a < nc; a++) {
                 if (a == c || !adjacent[a][c]) continue;
                 for (int b = a + 1; b < nc; b++) {
                     if (b == c || !adjacent[b][c] || adjacent[a][b]) continue;
+                    if (tierForbids[a][c] || tierForbids[b][c]) continue;
                     Set<Integer> sep = sepsets.get(pairKey(a, b));
                     if (sep == null || sep.contains(c)) continue;
                     colliderInto.add(dirKey(a, c));
@@ -743,6 +951,14 @@ public class Rlcd {
             }
         }
         new MeekRules().orientImplied(coverGraph);
+        for (int i = 0; i < nc; i++) {
+            for (int j = 0; j < nc; j++) {
+                if (tierForbids[i][j] && coverGraph.isParentOf(coverNodes.get(i), coverNodes.get(j))) {
+                    log("Warning: the rank tests orient latent covers " + covers.get(i) + " --> " + covers.get(j)
+                        + " against the temporal tiers.");
+                }
+            }
+        }
 
         // Write back onto the latent-latent edges.
         for (Edge edge : new ArrayList<>(graph.getEdges())) {

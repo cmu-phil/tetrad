@@ -3340,6 +3340,73 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p>Uses all of the parameters of FCI (see Spirtes et al., 1993) and
         GRaSP.</p>
 
+    <h3>The BFCI-Bryan Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="bfci-bryan">
+        <p>An experimental arm for comparison against BFCI. BOSS supplies the initial CPDAG, and the extra-edge-removal
+            step is Bryan Andrews's from-scratch formulation of the gated *-FCI step, in which the state of the search
+            is the committed sepset map alone and the carried graph is always the projection of that map: a complete
+            re-orientation from circles, with colliders at unshielded triples read off the map and Zhang's complete
+            final rules applied on top. The map is seeded from the DAG representative of the BOSS CPDAG and is total on
+            nonadjacent pairs throughout, so every accepted removal overwrites one entry rather than adding one.</p>
+        <p>The difference from the shipping BFCI is the removal schedule. The shipping version freezes the first
+            test-confirmed separating set it finds for a pair and gates removals on that one set, so a pair whose
+            frozen set induces an illegal re-orientation deadlocks. This version keeps scanning: when a candidate
+            separating set is rejected by the legality gate, the next separating set for the same pair is tried within
+            the same visit. Different separating sets induce different colliders, so a pair that fails under one set
+            can still be removed under another. Re-selection alone is not sufficient in general, however, so a final
+            saturating step is on by default; it removes jointly those pairs that have a test-confirmed separating set
+            but whose single removals the gate rejected, and it does nothing on a run that does not stall.</p>
+        <p>Both a test and a score must be given: the score drives BOSS, and the removal step and the gate need the
+            test. Knowledge of forbidden and required edges, including temporal tiers, is respected.</p>
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses the parameters of BFCI, together with usePass0, useSaturatingStep, requireImapStates, imapAlpha,
+        and reharvestSepsets.</p>
+
+    <h3>The BFCI-Bryan-Score Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="bfci-bryan-score">
+        <p>BFCI-Bryan with a scoring step added to every gated move, following Bryan Andrews's pseudocode for BFCI-Bryan
+            with scoring. A test-confirmed candidate whose projection passes the legality gate is committed only if the
+            score of the candidate's model strictly exceeds the score of the committed model; otherwise it is reverted
+            just as a gate rejection would be, and the scan moves on to the next separating set.</p>
+        <p>The score used for this step is a Gaussian BIC obtained by fitting the Zhang MAG of the PAG with RICF,
+            district by district and cached. That score is constant on a Markov equivalence class, so the score of a
+            PAG is well defined. Because the step is only meaningful on the same scale as the score that chose the
+            starting point, this algorithm requires the BOSS score to be SEM BIC with a zero structure prior, and takes
+            the penalty discount and the covariance matrix from it. Any other score, or a nonzero structure prior,
+            raises an exception. Continuous data only.</p>
+        <p>The scoring step is a filter on moves the gate has already accepted, so it can only reduce the set of
+            removals that commit. It does not by itself make the result a highest-scoring PAG.</p>
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for FCI, with continuous data and a SEM BIC score required.</p>
+
+    <h4>Output Format</h4>
+
+    <p>Same as for FCI.</p>
+
+    <h4>Parameters</h4>
+
+    <p>Uses the parameters of BFCI-Bryan.</p>
+
     <h3>The SP-FCI Algorithm</h3>
 
     <h4>Description</h4>
@@ -5054,8 +5121,16 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
             as any search does; in stage 2 an observed variable is never used as a parent of a cluster member it is
             forbidden to cause, and a cluster whose cover would create a forbidden edge between observed variables is
             rejected; and required edges between observed variables are kept in the output, oriented as required.
+            Temporal tiers are also read as constraining ancestry, since a cause cannot come after its effect: a
+            cluster that would make an observed variable an ancestor, through latents, of one in an earlier tier is
+            rejected, and an edge between latents is not oriented in a direction that would do so.
             Knowledge cannot refer to the latent variables, which are created by the search, so it cannot prevent an
             observed variable from being placed under a latent.</p>
+        <p>A direct edge between two indicators of one latent is rank-equivalent to a second latent over the pair,
+            and RLCD reports the second latent. With rlcdResolveTwoIndicatorLatents set, a latent with exactly two
+            indicators, no observed parent and one latent neighbor with at least three pure indicators is tested with
+            third-order cumulants, and is replaced by a direct edge if the test shows one. The test is conservative
+            and needs skewed data; see the parameter's description.</p>
         <p>Given several imputations of a data set with missing values, RLCD by default returns one graph per
             imputation, and these can differ a great deal, since the search is a sequence of yes-or-no decisions and
             each imputation perturbs the ones near their thresholds. With poolImputations set, one search is run
@@ -5070,6 +5145,7 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
     <p><a href="#alpha">alpha</a>, <a href="#rlcdMaxK">rlcdMaxK</a>, <a href="#rlcdAllowNonLeafX">rlcdAllowNonLeafX</a>,
         <a href="#rlcdUnfoldCovers">rlcdUnfoldCovers</a>, <a href="#rlcdCheckV">rlcdCheckV</a>,
         <a href="#rlcdLatentGate">rlcdLatentGate</a>,
+        <a href="#rlcdResolveTwoIndicatorLatents">rlcdResolveTwoIndicatorLatents</a>,
         <a href="#rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</a>, <a href="#rlcdStage1Fges">rlcdStage1Fges</a>,
         <a href="#poolImputations">poolImputations</a>, <a href="#penaltyDiscountDefault1">penaltyDiscountDefault1</a>, <a href="#seed">seed</a>, <a href="#verbose">verbose</a></p>
 

@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.util;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
 
@@ -184,7 +186,7 @@ public final class ErrorDialogs {
 
         JTextArea detailsArea = new JTextArea(details, 14, 70);
         detailsArea.setEditable(false);
-        detailsArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        detailsArea.setFont(ThemeUtils.monospaced(12));
         detailsArea.setCaretPosition(0);
         JScrollPane detailsScroll = new JScrollPane(detailsArea);
         detailsScroll.setVisible(false);

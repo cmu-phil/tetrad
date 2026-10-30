@@ -526,7 +526,68 @@ public final class LatentGroups {
             }
         }
 
+        // Temporal tiers constrain ancestry, not only direct edges: no observed ancestor of the new cover may lie
+        // in a later tier than an observed descendant of its children, whatever latents lie between them.
+        String[] violation = TierPrecedence.findViolation(knowledge, observedAncestors(newCover.getVars()),
+                observedDescendants(CoverSets.vars(vsWork)));
+        if (violation != null) {
+            log.accept("Rejecting " + vs + " as a cluster because it would make " + violation[0]
+                       + " an ancestor of " + violation[1] + ", which the temporal tiers forbid");
+            return false;
+        }
+
         return addOrUpdateCover(newCover, vsWork, vs2);
+    }
+
+    /**
+     * The observed variables among the given variables and their ancestors, in the variable-level graph that
+     * {@link #toAdjacency()} writes (every variable of a key is a parent of every variable of each of its children).
+     *
+     * @param vars the variable names.
+     * @return the observed variable names.
+     */
+    public Set<String> observedAncestors(Collection<String> vars) {
+        return observedClosure(vars, false);
+    }
+
+    /**
+     * The observed variables among the given variables and their descendants, in the variable-level graph that
+     * {@link #toAdjacency()} writes.
+     *
+     * @param vars the variable names.
+     * @return the observed variable names.
+     */
+    public Set<String> observedDescendants(Collection<String> vars) {
+        return observedClosure(vars, true);
+    }
+
+    private Set<String> observedClosure(Collection<String> vars, boolean down) {
+        Set<String> seen = new HashSet<>(vars);
+        Deque<String> queue = new ArrayDeque<>(vars);
+        while (!queue.isEmpty()) {
+            String v = queue.poll();
+            for (Map.Entry<Cover, Entry> e : latentDict.entrySet()) {
+                if (down) {
+                    if (!e.getKey().getVars().contains(v)) continue;
+                    for (Cover ch : e.getValue().children) {
+                        for (String c : ch.getVars()) if (seen.add(c)) queue.add(c);
+                    }
+                } else {
+                    boolean isParent = false;
+                    for (Cover ch : e.getValue().children) {
+                        if (ch.getVars().contains(v)) {
+                            isParent = true;
+                            break;
+                        }
+                    }
+                    if (!isParent) continue;
+                    for (String c : e.getKey().getVars()) if (seen.add(c)) queue.add(c);
+                }
+            }
+        }
+        Set<String> out = new TreeSet<>();
+        for (String v : seen) if (xDict.containsKey(v)) out.add(v);
+        return out;
     }
 
     // ---------------------------------------------------------------- queries

@@ -193,6 +193,22 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
 //        fcit.setCompletionPolicy(edu.cmu.tetrad.search.Fcit.CompletionPolicy.OFF);  // or POOL_ONLY
 
         fcit.setUseMarkFlipEscalation(true);
+        // The warrant for the result, a three-way choice (the saturating step is not a separate switch: it runs
+        // exactly when neither gate is on). 1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step.
+        int correctness = parameters.getInt(Params.FCIT_CORRECTNESS);
+        if (correctness == 1) {
+            fcit.setRequireImapStates(true);
+            fcit.setUseSaturatingStep(false);
+        } else if (correctness == 2) {
+            fcit.setRequireNoScoreDrop(true);
+            fcit.setUseSaturatingStep(false);
+        } else if (correctness == 3) {
+            fcit.setUseSaturatingStep(true);
+        } else {
+            throw new IllegalArgumentException("Unknown FCIT correctness option: " + correctness
+                    + " (1 = Guarantee I-map, 2 = No score drop, 3 = Saturating step).");
+        }
+        fcit.setImapAlpha(parameters.getDouble(Params.IMAP_ALPHA));
 
         // Wall-clock per-pair budget. NOTE: this makes runs NONDETERMINISTIC -- a machine under load explores a
         // different candidate family and can return a different graph. For enumeration harnesses and any experiment
@@ -401,6 +417,8 @@ public class Fcit extends AbstractBootstrapAlgorithm implements Algorithm, Takes
         params.add(Params.RECURSIVE_DEPTH);
         params.add(Params.EXCLUDE_SELECTION_BIAS);
         params.add(Params.TEST_TIMEOUT);
+        params.add(Params.FCIT_CORRECTNESS);
+        params.add(Params.IMAP_ALPHA);
 
         // General
         params.add(Params.TIME_LAG);

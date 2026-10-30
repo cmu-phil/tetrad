@@ -139,6 +139,24 @@ final class SettingsDialog extends JDialog {
             ThemeUtils.applyTheme(dark);
         });
 
+        // The UI font scale. 100% is the Look and Feel default; the change applies at once to everything that
+        // follows the Look and Feel, while the Monospaced text displays pick it up when they are next opened.
+        JComboBox<String> fontScaleBox = new JComboBox<>();
+        for (int percent : ThemeUtils.FONT_SCALE_PERCENTS) {
+            fontScaleBox.addItem(percent + "%");
+        }
+        fontScaleBox.setSelectedItem(ThemeUtils.getFontScalePercent() + "%");
+        if (fontScaleBox.getSelectedIndex() < 0) fontScaleBox.setSelectedItem("100%");
+        fontScaleBox.setMaximumSize(fontScaleBox.getPreferredSize());
+        fontScaleBox.setToolTipText("<html><div style='width:300px'>Scales the fonts across the interface; "
+                + "100% is the standard size. Text displays that use a fixed-width font pick up the new size "
+                + "when they are next opened.</div></html>");
+        fontScaleBox.addActionListener(e -> {
+            String item = (String) fontScaleBox.getSelectedItem();
+            if (item == null) return;
+            ThemeUtils.setFontScalePercent(Integer.parseInt(item.substring(0, item.length() - 1)));
+        });
+
         Box b = Box.createVerticalBox();
 
         Box b1 = Box.createHorizontalBox();
@@ -151,6 +169,14 @@ final class SettingsDialog extends JDialog {
         b2.add(showExperimentalBox);
         b2.add(Box.createHorizontalGlue());
         b.add(b2);
+        b.add(Box.createVerticalStrut(5));
+
+        Box b3 = Box.createHorizontalBox();
+        b3.add(new JLabel("UI font size:"));
+        b3.add(Box.createHorizontalStrut(10));
+        b3.add(fontScaleBox);
+        b3.add(Box.createHorizontalGlue());
+        b.add(b3);
         b.add(Box.createVerticalGlue());
 
         return wrap(b);

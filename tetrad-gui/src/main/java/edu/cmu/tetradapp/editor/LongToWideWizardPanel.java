@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.LongToWide;
@@ -426,7 +428,7 @@ public class LongToWideWizardPanel extends JPanel {
 
         this.summaryArea = new JTextArea();
         this.summaryArea.setEditable(false);
-        this.summaryArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        this.summaryArea.setFont(ThemeUtils.monospaced(12));
         JScrollPane scroll = new JScrollPane(this.summaryArea);
         scroll.setPreferredSize(new Dimension(460, 220));
 

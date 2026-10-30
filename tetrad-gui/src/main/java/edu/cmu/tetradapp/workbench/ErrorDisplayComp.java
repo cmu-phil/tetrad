@@ -104,7 +104,7 @@ public class ErrorDisplayComp extends JComponent implements DisplayComp {
 
         Graphics2D g2 = (Graphics2D) g.create();
         try {
-            Font font = getFont();
+            Font font = DisplayNodeUtils.scaledFont(this, getFont());
             FontMetrics fm = g2.getFontMetrics(font);
             Dimension size = getPreferredSize();
 
@@ -131,13 +131,14 @@ public class ErrorDisplayComp extends JComponent implements DisplayComp {
     @Override
     public Dimension getPreferredSize() {
         Font font = getFont() != null ? getFont() : DisplayNodeUtils.getFont();
-        FontMetrics fm = getFontMetrics(font);
+        FontMetrics fm = getFontMetrics(DisplayNodeUtils.scaledFont(this, font));
 
         String name = getName();
         if (name == null) name = "";
 
         int width = fm.stringWidth(name) + fm.getMaxAdvance();
-        int height = 2 * DisplayNodeUtils.getPixelGap() + fm.getAscent();
+        int height = 2 * (int) Math.round(DisplayNodeUtils.getPixelGap() * DisplayNodeUtils.scaleOf(this))
+                + fm.getAscent();
 
         return new Dimension(width, height);
     }

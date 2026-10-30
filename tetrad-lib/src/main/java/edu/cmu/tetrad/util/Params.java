@@ -623,6 +623,13 @@ public final class Params {
      */
     public static final String FCIT_STARTS_WITH = "fcitStartsWith";
     /**
+     * Constant <code>FCIT_CORRECTNESS="fcitCorrectness"</code>. FCIT's warrant for the result, a three-way
+     * choice: 1 = Guarantee I-map (the I-map gate; saturating step off), 2 = No score drop (the BFCI-Bryan
+     * score step as a veto; saturating step off), 3 = Saturating step (no extra gate; the joint-removal
+     * discharge of Cor. saturation runs).
+     */
+    public static final String FCIT_CORRECTNESS = "fcitCorrectness";
+    /**
      * Constant <code>FDR_Q="fdrQ"</code>
      */
     public static final String FDR_Q = "fdrQ";
@@ -1204,6 +1211,14 @@ public final class Params {
      */
     public static final String MISSING_NUM_IMPUTATIONS = "missingNumImputations";
     /**
+     * Constant <code>MISSING_TESTWISE_COMMON_ROWS="missingTestwiseCommonRows"</code>. Experimental. Under the
+     * "testwise" policy, compute each local score difference on the rows shared by its two sides, so that each
+     * decision is a nested-model likelihood ratio on one sample. Honored only by searches that decide through
+     * localScoreDiff (e.g., FGES) on scores that implement it (currently SEM BIC); sums of local scores (BOSS,
+     * GRaSP) are unaffected. Default false.
+     */
+    public static final String MISSING_TESTWISE_COMMON_ROWS = "missingTestwiseCommonRows";
+    /**
      * Constant <code>MNAR_NUM_EXTRA_INFLUENCES="mnarNumExtraInfluences"</code>
      */
     public static final String MNAR_NUM_EXTRA_INFLUENCES = "mnarNumExtraInfluences";
@@ -1666,6 +1681,11 @@ public final class Params {
      */
     public static final String RLCD_LATENT_GATE = "rlcdLatentGate";
     /**
+     * Constant <code>RLCD_RESOLVE_TWO_INDICATOR_LATENTS="rlcdResolveTwoIndicatorLatents"</code> Whether RLCD tries
+     * to replace a latent with two indicators by a direct edge between them, using non-Gaussianity.
+     */
+    public static final String RLCD_RESOLVE_TWO_INDICATOR_LATENTS = "rlcdResolveTwoIndicatorLatents";
+    /**
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";
@@ -1972,9 +1992,34 @@ public final class Params {
      * Constant <code>USE_SATURATING_STEP="useSaturatingStep"</code>. For the gated *-FCI variants: after the
      * single-edge passes, jointly remove the still-adjacent pairs that have a test-confirmed separator but whose
      * single removals the legality gate rejected. Needed for correctness in the oracle (a reachable state can
-     * have no legal single removal); default true.
+     * have no legal single removal); default true. Not offered by BFCI-Bryan or FCIT, whose wrappers run the step
+     * iff {@link #REQUIRE_IMAP_STATES} is off, nor by BFCI-Bryan-Score, which has no saturating step.
      */
     public static final String USE_SATURATING_STEP = "useSaturatingStep";
+    /**
+     * Constant <code>REQUIRE_IMAP_STATES="requireImapStates"</code>. Experimental, BFCI-Bryan: require every
+     * state the legality gate accepts to also be an I-map of the independence test (see
+     * {@link edu.cmu.tetrad.search.BfciBryan#setRequireImapStates(boolean)}); also used by FCIT. Default true as a
+     * parameter (the search classes' own field defaults are unchanged, for the harnesses). In both wrappers the
+     * saturating step runs iff this is off.
+     */
+    public static final String REQUIRE_IMAP_STATES = "requireImapStates";
+    /**
+     * Constant <code>IMAP_ALPHA="imapAlpha"</code>. Significance level of the I-map gate's own tests, separate
+     * from (and by design smaller than) the removal alpha; default 0.001.
+     */
+    public static final String IMAP_ALPHA = "imapAlpha";
+    /**
+     * Constant <code>USE_PASS_0="usePass0"</code>. BFCI-Bryan: whether the Pass-0 re-selection of test-refuted
+     * seeded sepsets runs (default true); off reproduces the pseudocode's seeding exactly.
+     */
+    public static final String USE_PASS_0 = "usePass0";
+    /**
+     * Constant <code>REHARVEST_SEPSETS="reharvestSepsets"</code>. BFCI-Bryan, experimental: after each commit,
+     * replace sepset entries that no longer separate their pair in the committed graph by ones that do, keeping
+     * the map faithful to the current PAG; default false.
+     */
+    public static final String REHARVEST_SEPSETS = "reharvestSepsets";
     /**
      * Constant <code>USE_BOSS_ADJACENCIES="useBossAdjacencies"</code>
      */

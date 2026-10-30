@@ -20,6 +20,8 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetradapp.ThemeUtils;
+
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetradapp.model.FactorAnalysisRunner;
@@ -95,7 +97,7 @@ public class FactorAnalysisEditor extends AbstractSearchEditor {
         JScrollPane scrollPane = new JScrollPane(display);
         scrollPane.setPreferredSize(new Dimension(500, 400));
         display.setEditable(false);
-        display.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        display.setFont(ThemeUtils.monospaced(12));
 
         LayoutUtil.defaultLayout(graph);
 //        LayoutUtil.fruchtermanReingoldLayout(graph);
