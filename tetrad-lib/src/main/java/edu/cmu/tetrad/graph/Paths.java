@@ -2609,9 +2609,20 @@ public class Paths implements TetradSerializable {
      *
      * @param node1 the starting node of the path
      * @param node2 the target node of the path
-     * @return true if a directed path exists from node1 to node2, false otherwise
+     * @return true if a directed path exists from node1 to node2, false otherwise; also false if either node has no
+     * same-named node in this graph.
      */
     public boolean existsDirectedPath(Node node1, Node node2) {
+        // Edge traversal below compares nodes by identity, so map the arguments onto this graph's own node
+        // objects first. Otherwise a node taken from another graph (an estimated graph that was not aligned with
+        // replaceNodes, say) silently yields false.
+        node1 = graph.getNode(node1.getName());
+        node2 = graph.getNode(node2.getName());
+
+        if (node1 == null || node2 == null) {
+            return false;
+        }
+
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
 

@@ -22,6 +22,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.Serial;
@@ -87,7 +88,27 @@ public interface Statistic extends Serializable {
     }
 
     /**
-     * Returns the value of this statistic, given the true graph and the estimated graph.
+     * Returns the estimated graph with its nodes replaced, by name, with the true graph's node objects. Graph
+     * traversal in Tetrad compares nodes by identity, so a statistic handed an estimated graph over different node
+     * objects (an algorithm's output over data variables, say) would otherwise find no adjacencies or paths at all
+     * and report zeros without complaint. Comparison and CompareTwoGraphs align their graphs before calling the
+     * five-argument getValue; the four-argument defaults below do it here for everyone else.
+     *
+     * @param trueGraph The true graph; may be null, in which case estGraph is returned unchanged.
+     * @param estGraph  The estimated graph; may be null, in which case null is returned.
+     * @return The aligned estimated graph.
+     */
+    static Graph alignNodes(Graph trueGraph, Graph estGraph) {
+        if (trueGraph == null || estGraph == null) {
+            return estGraph;
+        }
+
+        return GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
+    }
+
+    /**
+     * Returns the value of this statistic, given the true graph and the estimated graph. The estimated graph is
+     * aligned to the true graph's node objects first; see {@link #alignNodes(Graph, Graph)}.
      *
      * @param trueGraph  The true graph (DAG, CPDAG, PAG_of_the_true_DAG).
      * @param estGraph   The estimated graph (same type).
@@ -96,7 +117,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        return getValue(null, trueGraph, estGraph, dataModel, parameters);
+        return getValue(null, trueGraph, alignNodes(trueGraph, estGraph), dataModel, parameters);
     }
 
     /**
@@ -108,7 +129,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return getValue(null, trueGraph, estGraph, dataModel, null);
+        return getValue(trueGraph, estGraph, dataModel, null);
     }
 
     /**
@@ -120,7 +141,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph, Parameters parameters) {
-        return getValue(null, trueGraph, estGraph, null, parameters);
+        return getValue(trueGraph, estGraph, null, parameters);
     }
 
     /**
@@ -131,7 +152,7 @@ public interface Statistic extends Serializable {
      * @return The value of the statistic.
      */
     default double getValue(Graph trueGraph, Graph estGraph) {
-        return getValue(null, trueGraph, estGraph, null, null);
+        return getValue(trueGraph, estGraph, null, null);
     }
 
     /**
