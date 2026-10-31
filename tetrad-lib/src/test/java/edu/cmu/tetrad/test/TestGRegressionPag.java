@@ -126,7 +126,9 @@ public class TestGRegressionPag {
         RandomUtil.getInstance().setSeed(771231L);
         int checked = 0;
 
-        for (int rep = 0; rep < 12; rep++) {
+        // Amenable pairs are rare in these graphs, roughly one per replication, so this needs a fair number of
+        // replications to clear the floor below. Each is one RICF fit at the population covariance, so quick.
+        for (int rep = 0; rep < 50; rep++) {
             Graph dag = RandomGraph.randomDag(12, 3, 20, 100, 100, 100, false);
             SemIm im = new SemIm(new SemPm(dag));
             List<Node> all = im.getVariableNodes();
