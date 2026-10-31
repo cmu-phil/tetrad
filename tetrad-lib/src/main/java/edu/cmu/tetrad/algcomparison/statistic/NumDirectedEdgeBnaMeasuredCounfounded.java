@@ -70,6 +70,7 @@ public class NumDirectedEdgeBnaMeasuredCounfounded implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -77,8 +78,8 @@ public class NumDirectedEdgeBnaMeasuredCounfounded implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.paths().isAncestorOf(x, y) && !trueGraph.paths().isAncestorOf(y, x) &&
-                    (existsCommonAncestor(trueGraph, edge) && !existsLatentCommonAncestor(trueGraph, edge))) {
+                if (!dag.paths().isAncestorOf(x, y) && !dag.paths().isAncestorOf(y, x) &&
+                    (existsCommonAncestor(dag, edge) && !existsLatentCommonAncestor(dag, edge))) {
                     tp++;
                 }
             }

@@ -67,6 +67,7 @@ public class NumDirectedEdgeAncestors implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
@@ -74,7 +75,7 @@ public class NumDirectedEdgeAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.paths().isAncestorOf(x, y)) {
+                if (dag.paths().isAncestorOf(x, y)) {
                     tp++;
                 }
             }

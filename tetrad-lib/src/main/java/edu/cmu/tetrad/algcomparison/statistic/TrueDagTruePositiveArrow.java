@@ -78,17 +78,18 @@ public class TrueDagTruePositiveArrow implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.ARROW) {
-                if (!trueGraph.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
+                if (!dag.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
                     tp++;
                 }
             }
 
             if (edge.getEndpoint2() == Endpoint.ARROW) {
-                if (!trueGraph.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
+                if (!dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
                     tp++;
                 }
             }

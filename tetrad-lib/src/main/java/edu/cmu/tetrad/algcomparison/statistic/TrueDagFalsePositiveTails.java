@@ -74,17 +74,18 @@ public class TrueDagFalsePositiveTails implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) {
-                if (!trueGraph.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
+                if (!dag.paths().isAncestorOf(edge.getNode1(), edge.getNode2())) {
                     fp++;
                 }
             }
 
             if (edge.getEndpoint2() == Endpoint.TAIL) {
-                if (!trueGraph.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
+                if (!dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1())) {
                     fp++;
                 }
             }

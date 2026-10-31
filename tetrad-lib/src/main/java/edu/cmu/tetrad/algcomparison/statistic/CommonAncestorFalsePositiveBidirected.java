@@ -68,11 +68,12 @@ public class CommonAncestorFalsePositiveBidirected implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (!existsCommonAncestor(trueGraph, edge)) fp++;
+                if (!existsCommonAncestor(dag, edge)) fp++;
             }
         }
 

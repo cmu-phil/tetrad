@@ -66,6 +66,7 @@ public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
 //        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
 
@@ -80,7 +81,7 @@ public class NumCompatibleDirectedEdgeNonAncestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.paths().isAncestorOf(x, y) && !existsLatentCommonAncestor(trueGraph, edge)) {
+                if (!dag.paths().isAncestorOf(x, y) && !existsLatentCommonAncestor(dag, edge)) {
                     tp++;
                 } else {
                     fp++;

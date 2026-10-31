@@ -80,6 +80,7 @@ public class TrueDagPrecisionArrow implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
         int fp = 0;
 
@@ -88,7 +89,7 @@ public class TrueDagPrecisionArrow implements Statistic {
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (estGraph.isAdjacentTo(x, y) && estGraph.getEndpoint(x, y) == Endpoint.ARROW) {
-                    if (!trueDag.paths().isAncestorOf(y, x)) {
+                    if (!dag.paths().isAncestorOf(y, x)) {
                         tp++;
                     } else {
 //                        System.out.println("Shouldn't be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));

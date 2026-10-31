@@ -66,14 +66,15 @@ public class NumDirectedPathsTrue implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        List<Node> nodes = trueGraph.getNodes();
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
+        List<Node> nodes = dag.getNodes();
         int count = 0;
 
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (trueGraph.paths().isAncestorOf(x, y)) {
+                if (dag.paths().isAncestorOf(x, y)) {
                     count++;
                 }
             }

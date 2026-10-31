@@ -67,10 +67,11 @@ public class DefiniteDirectedPathRecall implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0, fn = 0;
 
-        List<Node> nodes = trueGraph.getNodes();
-        Graph cpdag = GraphTransforms.dagToCpdag(trueGraph);
+        List<Node> nodes = dag.getNodes();
+        Graph cpdag = GraphTransforms.dagToCpdag(dag);
 
         for (Node x : nodes) {
             for (Node y : nodes) {

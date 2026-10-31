@@ -58,14 +58,33 @@ public interface Statistic extends Serializable {
      * Calculates and returns the value of the statistic based on the provided graphs, data model,
      * and parameters.
      *
-     * @param trueDag    The true directed acyclic graph (DAG).
-     * @param trueGraph  The true graph, which could be a DAG, a CPDAG, or a PAG derived from the true DAG.
+     * @param trueDag    The true directed acyclic graph (DAG), including any latent and selection nodes, or null if
+     *                   no DAG is available. Statistics that ask DAG-level questions (ancestry, latent confounding,
+     *                   conversion to CPDAG or PAG) should read them off this graph, via
+     *                   {@link #trueDagOrGraph(Graph, Graph)}, not off trueGraph.
+     * @param trueGraph  The comparison graph, which could be a DAG, a CPDAG, or a PAG derived from the true DAG.
+     *                   Statistics that compare adjacencies or endpoints read them off this graph.
      * @param estGraph   The estimated graph, which corresponds to the same type as the trueGraph.
      * @param dataModel  The data model, which may be null.
      * @param parameters The parameters for the calculation, which may be null.
      * @return The computed value of the statistic as a double.
      */
     double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters);
+
+    /**
+     * Returns the graph a statistic should use for DAG-level questions--ancestry, latent confounding, or converting
+     * the truth to a CPDAG or PAG. This is the true DAG when the caller supplied one; otherwise it falls back to the
+     * comparison graph, which is all that callers of the four-argument getValue methods have. The fallback keeps
+     * the pre-existing behavior for those callers; when the comparison graph is itself a CPDAG or PAG, DAG-level
+     * questions asked of it are only approximate.
+     *
+     * @param trueDag   The true DAG, or null if none was supplied.
+     * @param trueGraph The comparison graph.
+     * @return trueDag if non-null, else trueGraph.
+     */
+    static Graph trueDagOrGraph(Graph trueDag, Graph trueGraph) {
+        return trueDag != null ? trueDag : trueGraph;
+    }
 
     /**
      * Returns the value of this statistic, given the true graph and the estimated graph.

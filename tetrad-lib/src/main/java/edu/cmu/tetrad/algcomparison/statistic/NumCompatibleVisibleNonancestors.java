@@ -67,7 +67,8 @@ public class NumCompatibleVisibleNonancestors implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        Graph pag = GraphTransforms.dagToPag(trueGraph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
+        Graph pag = GraphTransforms.dagToPag(dag, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         int tp = 0;
         int fp = 0;
@@ -80,7 +81,7 @@ public class NumCompatibleVisibleNonancestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.paths().isAncestorOf(x, y)) {
+                if (dag.paths().isAncestorOf(x, y)) {
 //                    System.out.println("Ancestor(x, y): " + Edges.directedEdge(x, y));
                     tp++;
                 } else {

@@ -69,15 +69,16 @@ public class MaximalityCondition implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         Graph pag = estGraph;
 
-        List<Node> latent = trueGraph.getNodes().stream()
+        List<Node> latent = dag.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.LATENT).toList();
 
-        List<Node> measured = trueGraph.getNodes().stream()
+        List<Node> measured = dag.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.MEASURED).toList();
 
-        List<Node> selection = trueGraph.getNodes().stream()
+        List<Node> selection = dag.getNodes().stream()
                 .filter(node -> node.getNodeType() == NodeType.SELECTION).toList();
 
         Graph mag = GraphTransforms.zhangMagFromPag(estGraph);

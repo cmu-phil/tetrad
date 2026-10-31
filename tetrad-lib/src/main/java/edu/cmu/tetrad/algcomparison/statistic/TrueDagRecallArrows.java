@@ -67,6 +67,7 @@ public class TrueDagRecallArrows implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
         int fn = 0;
 
@@ -76,7 +77,7 @@ public class TrueDagRecallArrows implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!trueDag.paths().isAncestorOf(y, x)) {
+                if (!dag.paths().isAncestorOf(y, x)) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {

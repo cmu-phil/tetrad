@@ -68,11 +68,12 @@ public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
-        Graph pag = GraphTransforms.dagToPag(trueGraph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
+        Graph pag = GraphTransforms.dagToPag(dag, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         int fn = 0;
 
-        List<Node> nodes = trueGraph.getNodes();
+        List<Node> nodes = dag.getNodes();
 
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
@@ -80,13 +81,13 @@ public class LatentCommonAncestorFalseNegativeBidirected implements Statistic {
                 Node y = nodes.get(j);
 
                 if (x.getNodeType() == NodeType.MEASURED && y.getNodeType() == NodeType.MEASURED) {
-                    if (existsLatentCommonAncestor(trueGraph, new Edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE))) {
+                    if (existsLatentCommonAncestor(dag, new Edge(x, y, Endpoint.CIRCLE, Endpoint.CIRCLE))) {
                         Edge edge2 = estGraph.getEdge(x, y);
 
                         if (edge2 == null) continue;
 
                         if (!(edge2 != null && Edges.isBidirectedEdge(edge2)
-                              && existsLatentCommonAncestor(trueGraph, edge2))) {
+                              && existsLatentCommonAncestor(dag, edge2))) {
                             fn++;
                         }
                     }

@@ -68,9 +68,10 @@ public class NumCompatibleDirectedEdgeConfounded implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         GraphUtils.addEdgeSpecializationMarkup(estGraph);
 
-        Graph pag = GraphTransforms.dagToPag(trueGraph, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
+        Graph pag = GraphTransforms.dagToPag(dag, parameters.getBoolean(Params.EXCLUDE_SELECTION_BIAS));
 
         int tp = 0;
         int fp = 0;
@@ -83,7 +84,7 @@ public class NumCompatibleDirectedEdgeConfounded implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (existsLatentCommonAncestor(trueGraph, edge)) {
+                if (existsLatentCommonAncestor(dag, edge)) {
                     tp++;
                 } else {
                     fp++;

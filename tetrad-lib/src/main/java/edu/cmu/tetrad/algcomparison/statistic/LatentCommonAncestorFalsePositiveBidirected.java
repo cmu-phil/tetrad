@@ -68,11 +68,12 @@ public class LatentCommonAncestorFalsePositiveBidirected implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int fp = 0;
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (!existsLatentCommonAncestor(trueGraph, edge)) fp++;
+                if (!existsLatentCommonAncestor(dag, edge)) fp++;
             }
         }
 

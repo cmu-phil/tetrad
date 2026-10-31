@@ -137,20 +137,25 @@ public class StatsListEditor extends JPanel {
         // Null means no choice stored: use the default table methods, so output is unchanged for old sessions.
         java.util.List<Statistic> statistics = StatsListStatisticsChooser.selected(this.params);
 
+        // The reference graph as wired in (normally the true DAG, with latents) goes down as the true DAG; the
+        // graph it was converted to under "Compare to..." goes down as the comparison graph. Statistics about
+        // ancestry or latent confounding use the former, adjacency and endpoint statistics the latter.
+        Graph trueDag = this.comparison.getReferenceGraph();
+
         if (targetGraphs.size() == 1) {
             String table = statistics == null
-                    ? CompareTwoGraphs.getStatsListTable(this.referenceGraph, targetGraphs.getFirst(),
+                    ? CompareTwoGraphs.getStatsListTable(trueDag, this.referenceGraph, targetGraphs.getFirst(),
                     this.dataModel, this.comparison.getElapsedTime())
-                    : CompareTwoGraphs.getStatsListTable(this.referenceGraph, targetGraphs.getFirst(),
+                    : CompareTwoGraphs.getStatsListTable(trueDag, this.referenceGraph, targetGraphs.getFirst(),
                     this.dataModel, this.comparison.getElapsedTime(), statistics);
             return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from "
                    + targetNames.getFirst() + "\n\n" + table;
         }
 
         String table = statistics == null
-                ? CompareTwoGraphs.getStatsListTable(this.referenceGraph, targetGraphs, targetNames,
+                ? CompareTwoGraphs.getStatsListTable(trueDag, this.referenceGraph, targetGraphs, targetNames,
                 this.dataModel, this.comparison.getElapsedTimes())
-                : CompareTwoGraphs.getStatsListTable(this.referenceGraph, targetGraphs, targetNames,
+                : CompareTwoGraphs.getStatsListTable(trueDag, this.referenceGraph, targetGraphs, targetNames,
                 this.dataModel, this.comparison.getElapsedTimes(), statistics);
         return "True graph from " + this.comparison.getReferenceName() + "\nTarget graphs from "
                + String.join(", ", targetNames) + "\n\n" + table;

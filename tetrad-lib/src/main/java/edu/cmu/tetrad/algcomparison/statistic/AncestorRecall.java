@@ -72,6 +72,7 @@ public class AncestorRecall implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
         int fn = 0;
 
@@ -80,7 +81,7 @@ public class AncestorRecall implements Statistic {
         for (Node x : nodes) {
             for (Node y : nodes) {
 //                if (x == y) continue;
-                if (trueGraph.paths().isAncestorOf(x, y)) {
+                if (dag.paths().isAncestorOf(x, y)) {
                     if (estGraph.paths().isAncestorOf(x, y)) {
                         tp++;
                     } else {

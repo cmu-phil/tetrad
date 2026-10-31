@@ -81,14 +81,15 @@ public class BidirectedLatentPrecision implements Statistic {
      */
     @Override
     public double getValue(Graph trueDag, Graph trueGraph, Graph estGraph, DataModel dataModel, Parameters parameters) {
+        Graph dag = Statistic.trueDagOrGraph(trueDag, trueGraph);
         int tp = 0;
         int pos = 0;
 
-        estGraph = GraphUtils.replaceNodes(estGraph, trueDag.getNodes());
+        estGraph = GraphUtils.replaceNodes(estGraph, dag.getNodes());
 
         for (Edge edge : estGraph.getEdges()) {
             if (Edges.isBidirectedEdge(edge)) {
-                if (GraphUtils.bidirectedExistsLatentCommonCauseUncovered(edge, trueDag, estGraph)) {
+                if (GraphUtils.bidirectedExistsLatentCommonCauseUncovered(edge, dag, estGraph)) {
                     tp++;
                 }
 
