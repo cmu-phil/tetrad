@@ -415,8 +415,15 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             return true;
         }
 
-        // If both edges have circles at node2 and are covered, it's a def noncollider.
-        if (edge12.getProximalEndpoint(node2) == Endpoint.CIRCLE && edge23.getProximalEndpoint(node2) == Endpoint.CIRCLE && isAdjacentTo(node1, node3)) {
+        // If both edges have circles at node2 and the triple is UNSHIELDED (node1, node3 not adjacent), it's a
+        // definite noncollider: were node2 a collider in any graph of the class, the triple would be an unshielded
+        // collider, which is invariant across the class and so would carry arrowheads at node2 (FCI R0), not
+        // circles. If node1 and node3 ARE adjacent the triple is shielded, some graphs in the class orient node2
+        // as a collider and others do not, and its status is genuinely undetermined. (Zhang 2008; Perković et al.
+        // 2018, definition of a definite status path.) The test was previously inverted -- it returned true for the
+        // shielded case and false for the unshielded one -- which made RecursiveAdjustment treat an open
+        // unshielded circle path as needing no blocking and return adjustment sets that are not GAC-valid.
+        if (edge12.getProximalEndpoint(node2) == Endpoint.CIRCLE && edge23.getProximalEndpoint(node2) == Endpoint.CIRCLE && !isAdjacentTo(node1, node3)) {
             return true;
         }
 
