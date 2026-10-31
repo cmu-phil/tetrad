@@ -52,7 +52,7 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
     private DataSet sourceDataSet;
 
     /**
-     *
+     * A copy of the source dataset, used to look up variables and values when building the merged dataset.
      */
     private DataSet sourceDataSetCopy;
 

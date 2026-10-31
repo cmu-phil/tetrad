@@ -703,6 +703,15 @@ public final class SemEstimatorEditor extends JPanel implements DoNotScroll {
         }
     }
 
+    /**
+     * Asks the user for lavaan export options and writes the given SEM IM to the given file in lavaan syntax.
+     * Does nothing if the user cancels.
+     *
+     * @param parent the parent window for the options dialog
+     * @param semIm  the SEM IM to export
+     * @param file   the file to write to
+     * @throws RuntimeException if the file cannot be written
+     */
     public void exportSemImToLavaan(Window parent, SemIm semIm, File file) {
         SemLavaanOptionsDialog dialog = new SemLavaanOptionsDialog(parent);
         dialog.showDialog();

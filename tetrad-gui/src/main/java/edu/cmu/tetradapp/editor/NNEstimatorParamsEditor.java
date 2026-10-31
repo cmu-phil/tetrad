@@ -47,6 +47,9 @@ import java.text.DecimalFormat;
  */
 public final class NNEstimatorParamsEditor extends JPanel implements ParameterEditor {
 
+    /**
+     * The parameters being edited.
+     */
     private Parameters params;
 
     /** Constructs the editor; the GUI is built in {@link #setup()}. */

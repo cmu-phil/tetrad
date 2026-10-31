@@ -27,14 +27,30 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * A panel that shows one or more graphs, each in its own tab.
+ */
 public final class SearchResultsPanel extends JPanel {
+    /**
+     * The tabbed pane holding one graph workbench per graph.
+     */
     private final JTabbedPane tabs = new JTabbedPane(SwingConstants.LEFT);
 
+    /**
+     * Constructs an empty results panel.
+     */
     public SearchResultsPanel() {
         setLayout(new BorderLayout());
         add(tabs, BorderLayout.CENTER);
     }
 
+    /**
+     * Replaces the shown graphs with the given graphs, one tab per graph.
+     *
+     * @param graphs the graphs to show
+     * @param names  the tab names; may be null or shorter than graphs, in which case missing names default to
+     *               "Result i"
+     */
     public void showGraphs(List<Graph> graphs, List<String> names) {
         tabs.removeAll();
         for (int i = 0; i < graphs.size(); i++) {
@@ -47,6 +63,12 @@ public final class SearchResultsPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Replaces the shown graphs with a single graph.
+     *
+     * @param g     the graph to show
+     * @param title the tab name
+     */
     public void showSingleGraph(Graph g, String title) {
         showGraphs(java.util.Collections.singletonList(g),
                 java.util.Collections.singletonList(title));

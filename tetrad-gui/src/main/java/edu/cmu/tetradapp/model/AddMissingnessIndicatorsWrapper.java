@@ -45,6 +45,8 @@ public class AddMissingnessIndicatorsWrapper extends DataWrapper {
     private static final long serialVersionUID = 23L;
 
     /**
+     * The output data set, with missingness indicator columns added.
+     *
      * @serial Cannot be null.
      */
     private final DataSet outputDataSet;

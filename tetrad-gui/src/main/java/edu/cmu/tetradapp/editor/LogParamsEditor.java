@@ -85,6 +85,14 @@ public class LogParamsEditor extends JPanel implements ParameterEditor {
     private List<Row> rows = new ArrayList<>();
 
     /**
+     * Constructs a new log-transform parameters editor. The parameters and parent models are supplied afterward
+     * through {@link #setParams(Parameters)} and {@link #setParentModels(Object[])}, and the GUI is built by
+     * {@link #setup()}.
+     */
+    public LogParamsEditor() {
+    }
+
+    /**
      * {@inheritDoc}
      */
     public void setParams(Parameters params) {

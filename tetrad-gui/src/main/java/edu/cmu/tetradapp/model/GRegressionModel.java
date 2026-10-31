@@ -56,9 +56,22 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The data set the effects are estimated from.
+     */
     private final DataSet dataSet;
+    /**
+     * The input graph, with its nodes replaced by the data set's variables.
+     */
     private final Graph graph;
+    /**
+     * The parameters for this model.
+     */
     private final Parameters parameters;
+    /**
+     * The SEM IM that simulated the data, used to show true effects, or null if the data were not simulated from a
+     * SEM.
+     */
     private final SemIm trueSemIm;
 
     /**
@@ -67,16 +80,46 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
      */
     private final Knowledge knowledge;
 
+    /**
+     * The treatments.
+     */
     private final LinkedHashSet<Node> X = new LinkedHashSet<>();
+    /**
+     * The outcomes.
+     */
     private final LinkedHashSet<Node> Y = new LinkedHashSet<>();
+    /**
+     * The result rows from the last computation.
+     */
     private final List<ResultRow> results = new ArrayList<>();
 
+    /**
+     * The name of this session model.
+     */
     private String name = "";
+    /**
+     * The effect mode.
+     */
     private EffectMode effectMode = EffectMode.PAIRWISE;
+    /**
+     * The text the user entered to specify the treatments, kept for redisplay.
+     */
     private String treatmentsText = "*";
+    /**
+     * The text the user entered to specify the outcomes, kept for redisplay.
+     */
     private String outcomesText = "*";
+    /**
+     * Whether to close the graph under Meek's rules before estimating.
+     */
     private boolean meekClose = false;
+    /**
+     * The number of bootstrap replications; 0 or 1 disables the bootstrap.
+     */
     private int numBootstraps = 100;
+    /**
+     * The bootstrap seed; a negative value means "don't reseed".
+     */
     private long bootstrapSeed = -1;
 
     /**
@@ -487,6 +530,11 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
     // Accessors.
     // ---------------------------------------------------------------------------------------------------------
 
+    /**
+     * Returns the data set.
+     *
+     * @return the data set
+     */
     public DataSet getDataSet() {
         return dataSet;
     }
@@ -499,6 +547,8 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
     /**
      * The graph used in the last computation (Meek-closed if that was requested), or null if none has been
      * accepted yet.
+     *
+     * @return the effective graph, or null
      */
     public Graph getEffectiveGraph() {
         return effectiveGraph;
@@ -506,6 +556,8 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
 
     /**
      * Why the graph was rejected in the last computation, or null.
+     *
+     * @return a description of the problem, or null if the graph was accepted
      */
     public String getGraphProblem() {
         return graphProblem;
@@ -513,6 +565,8 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
 
     /**
      * A one-line description of the graph as it would be used: number of buckets and undirected edges.
+     *
+     * @return the description, or a note that the graph is not an MPDAG
      */
     public String describeGraph() {
         Graph g = effectiveGraph != null ? effectiveGraph : graph;
@@ -524,98 +578,198 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
         return g.getNumNodes() + " variables, " + undirected + " undirected edges, " + buckets + " buckets" + known;
     }
 
+    /**
+     * Returns the treatments.
+     *
+     * @return an unmodifiable view of the treatments
+     */
     public Set<Node> getX() {
         return Collections.unmodifiableSet(X);
     }
 
+    /**
+     * Sets the treatments, replacing any previous ones.
+     *
+     * @param nodes the treatments; must not be null
+     */
     public void setX(Collection<Node> nodes) {
         X.clear();
         X.addAll(Objects.requireNonNull(nodes));
     }
 
+    /**
+     * Returns the outcomes.
+     *
+     * @return an unmodifiable view of the outcomes
+     */
     public Set<Node> getY() {
         return Collections.unmodifiableSet(Y);
     }
 
+    /**
+     * Sets the outcomes, replacing any previous ones.
+     *
+     * @param nodes the outcomes; must not be null
+     */
     public void setY(Collection<Node> nodes) {
         Y.clear();
         Y.addAll(Objects.requireNonNull(nodes));
     }
 
+    /**
+     * Returns the effect mode.
+     *
+     * @return the effect mode
+     */
     public EffectMode getEffectMode() {
         return effectMode;
     }
 
+    /**
+     * Sets the effect mode.
+     *
+     * @param mode the effect mode; must not be null
+     */
     public void setEffectMode(EffectMode mode) {
         this.effectMode = Objects.requireNonNull(mode);
     }
 
     /**
      * True if background knowledge is attached; the graph is then always Meek-closed after applying it.
+     *
+     * @return true if background knowledge is attached
      */
     public boolean isKnowledgeAttached() {
         return knowledge != null;
     }
 
+    /**
+     * Returns whether the graph is Meek-closed before estimating, which is always the case when knowledge is
+     * attached.
+     *
+     * @return true if the graph will be Meek-closed
+     */
     public boolean isMeekClose() {
         return meekClose || knowledge != null;
     }
 
+    /**
+     * Sets whether to close the graph under Meek's rules before estimating. Ignored when knowledge is attached, in
+     * which case the graph is always Meek-closed.
+     *
+     * @param meekClose true to Meek-close the graph
+     */
     public void setMeekClose(boolean meekClose) {
         this.meekClose = meekClose;
     }
 
+    /**
+     * Returns the number of bootstrap replications.
+     *
+     * @return the number of bootstrap replications
+     */
     public int getNumBootstraps() {
         return numBootstraps;
     }
 
     /**
      * Sets the number of bootstrap replications; 0 or 1 disables the bootstrap.
+     *
+     * @param numBootstraps the number of bootstrap replications
+     * @throws IllegalArgumentException if numBootstraps is negative
      */
     public void setNumBootstraps(int numBootstraps) {
         if (numBootstraps < 0) throw new IllegalArgumentException("Number of bootstraps must be nonnegative.");
         this.numBootstraps = numBootstraps;
     }
 
+    /**
+     * Returns the bootstrap seed.
+     *
+     * @return the bootstrap seed; negative means "don't reseed"
+     */
     public long getBootstrapSeed() {
         return bootstrapSeed;
     }
 
     /**
      * Sets the bootstrap seed; a negative value means "don't reseed".
+     *
+     * @param bootstrapSeed the bootstrap seed
      */
     public void setBootstrapSeed(long bootstrapSeed) {
         this.bootstrapSeed = bootstrapSeed;
     }
 
+    /**
+     * Returns the result rows from the last computation.
+     *
+     * @return an unmodifiable view of the result rows
+     */
     public List<ResultRow> getResults() {
         return Collections.unmodifiableList(results);
     }
 
+    /**
+     * Returns the result row at the given index.
+     *
+     * @param rowIndex the row index
+     * @return the result row
+     */
     public ResultRow getResultRow(int rowIndex) {
         return results.get(rowIndex);
     }
 
+    /**
+     * Returns whether the SEM that simulated the data is available, so true effects can be shown.
+     *
+     * @return true if a simulating SEM IM is available
+     */
     public boolean isTrueSemImAvailable() {
         return trueSemIm != null;
     }
 
+    /**
+     * Returns the parameters.
+     *
+     * @return the parameters
+     */
     public Parameters getParameters() {
         return parameters;
     }
 
+    /**
+     * Returns the text the user entered to specify the treatments.
+     *
+     * @return the treatments text
+     */
     public String getTreatmentsText() {
         return treatmentsText;
     }
 
+    /**
+     * Sets the text the user entered to specify the treatments.
+     *
+     * @param treatmentsText the treatments text; must not be null
+     */
     public void setTreatmentsText(String treatmentsText) {
         this.treatmentsText = Objects.requireNonNull(treatmentsText);
     }
 
+    /**
+     * Returns the text the user entered to specify the outcomes.
+     *
+     * @return the outcomes text
+     */
     public String getOutcomesText() {
         return outcomesText;
     }
 
+    /**
+     * Sets the text the user entered to specify the outcomes.
+     *
+     * @param outcomesText the outcomes text; must not be null
+     */
     public void setOutcomesText(String outcomesText) {
         this.outcomesText = Objects.requireNonNull(outcomesText);
     }
@@ -630,9 +784,21 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
         this.name = Objects.requireNonNull(name);
     }
 
+    /**
+     * Which interventions the effects are computed for.
+     */
     public enum EffectMode {
+        /**
+         * The effect of do(x) on y, for each (x, y) in X &times; Y with x &ne; y.
+         */
         PAIRWISE,       // do(x) on y for all (x, y) in X x Y
+        /**
+         * The effect of the joint intervention do(X \ {y}) on y, for each y in Y.
+         */
         JOINT,          // do(X \ {y}) on y for all y in Y
+        /**
+         * The effect of the joint intervention on the parents of y, do(Pa(y)), for each y in Y; X is ignored.
+         */
         JOINT_PARENTS   // do(Pa(y)) on y for all y in Y; X is ignored
     }
 
@@ -649,7 +815,13 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
         @Serial
         private static final long serialVersionUID = 1L;
 
+        /**
+         * The treatments of this case.
+         */
         public final List<Node> treatments;
+        /**
+         * The outcome of this case.
+         */
         public final Node outcome;
 
         /**
@@ -673,6 +845,16 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
          */
         public final double[] trueEffect;
 
+        /**
+         * Constructs a result row.
+         *
+         * @param treatments the treatments (copied)
+         * @param outcome    the outcome
+         * @param witness    the witness path if the effect is not identified, or null if identified (copied)
+         * @param effect     the estimated effects aligned with the treatments, or null if not identified
+         * @param se         the bootstrap standard errors aligned with the treatments, or null
+         * @param trueEffect the true effects aligned with the treatments, or null
+         */
         public ResultRow(List<Node> treatments, Node outcome, List<Node> witness, double[] effect, double[] se,
                          double[] trueEffect) {
             this.treatments = List.copyOf(treatments);
@@ -683,16 +865,29 @@ public final class GRegressionModel implements SessionModel, GraphSource, Serial
             this.trueEffect = trueEffect;
         }
 
+        /**
+         * Returns whether the effect is identified from the graph.
+         *
+         * @return true if identified (no witness path)
+         */
         public boolean isIdentified() {
             return witness == null;
         }
 
+        /**
+         * Returns the treatment names as a comma-separated string.
+         *
+         * @return the formatted treatments
+         */
         public String formatTreatments() {
             return treatments.stream().map(Node::getName).collect(Collectors.joining(", "));
         }
 
         /**
          * The witness path rendered with the graph's edge marks, or "Yes" if identified.
+         *
+         * @param g the graph whose edge marks are used to render the path
+         * @return "Yes" if identified, or "No: " followed by the rendered witness path
          */
         public String formatIdentification(Graph g) {
             if (witness == null) return "Yes";

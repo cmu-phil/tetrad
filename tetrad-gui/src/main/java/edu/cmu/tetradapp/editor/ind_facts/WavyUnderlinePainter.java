@@ -9,6 +9,11 @@ import java.awt.*;
 public final class WavyUnderlinePainter implements Highlighter.HighlightPainter {
     private final Color color;
 
+    /**
+     * Constructs a painter that draws the squiggle in the given color.
+     *
+     * @param color the color of the squiggle.
+     */
     public WavyUnderlinePainter(Color color) {
         this.color = color;
     }

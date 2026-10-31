@@ -33,6 +33,9 @@ import java.awt.geom.Ellipse2D;
  */
 public class SelectionDisplayComp extends JComponent implements DisplayComp {
 
+    /**
+     * Whether this node display is selected.
+     */
     private boolean selected;
 
     /**

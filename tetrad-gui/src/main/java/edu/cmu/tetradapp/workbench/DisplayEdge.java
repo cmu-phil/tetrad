@@ -34,11 +34,17 @@ import java.beans.PropertyChangeListener;
  */
 public class DisplayEdge extends JComponent implements IDisplayEdge {
 
+    /** Edge type constant for a directed edge. */
     public static final int DIRECTED = 0;
+    /** Edge type constant for a nondirected edge. */
     public static final int NONDIRECTED = 1;
+    /** Edge type constant for an undirected edge. */
     public static final int UNDIRECTED = 2;
+    /** Edge type constant for a partially oriented edge. */
     public static final int PARTIALLY_ORIENTED = 3;
+    /** Edge type constant for a bidirected edge. */
     public static final int BIDIRECTED = 4;
+    /** Edge type constant for a session edge. */
     public static final int SESSION = 5;
 
     protected static final int HALF_ANCHORED = 0;
@@ -63,17 +69,28 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     private static final int BEZIER_BOUNDS_PAD = (int) BEZIER_MAX_APEX + 26;
 
+    /** The first display node of the edge (the one the edge is anchored to). */
     private final DisplayNode node1;
+    /** Listens for moves and resizes of the endpoint nodes and resets the edge bounds. */
     private final ComponentHandler compHandler = new ComponentHandler();
+    /** Listens for property changes on the endpoint nodes. */
     private final PropertyChangeHandler propertyChangeHandler = new PropertyChangeHandler();
 
+    /** The model edge this display edge represents; null for a half-anchored tracking edge. */
     private Edge modelEdge;
+    /** The anchoring mode: HALF_ANCHORED, ANCHORED_UNSELECTED, or ANCHORED_SELECTED. */
     private int mode;
+    /** The edge type, one of DIRECTED, NONDIRECTED, UNDIRECTED, PARTIALLY_ORIENTED, BIDIRECTED, or SESSION. */
     private int type;
+    /** The second display node of the edge; null while the edge is half-anchored. */
     private DisplayNode node2;
+    /** The mouse location, in workbench coordinates, tracked by a half-anchored edge. */
     private Point mouseTrackPoint = new Point();
+    /** The tracked mouse location relative to this component's bounds. */
     private Point relativeMouseTrackPoint = new Point();
+    /** The region around the edge that responds to mouse clicks. */
     private Shape clickRegion;
+    /** Whether only adjacencies are shown, without endpoint decorations. */
     private boolean showAdjacenciesOnly;
 
     /**
@@ -82,7 +99,9 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      * recomputes the bounds, so no external wiring is needed.
      */
     private boolean boundsForBezier;
+    /** The perpendicular offset, in pixels, used to separate multiple edges between the same pair of nodes. */
     private double offset;
+    /** The pair of points on the node boundaries that the edge connects. */
     private PointPair connectedPoints;
 
     /**
@@ -100,9 +119,13 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
      */
     private Color highlightedColor;
 
+    /** The width of the stroke used to draw the edge. */
     private float strokeWidth = 1.2f;
+    /** Whether the edge is highlighted. */
     private boolean highlighted;
+    /** Whether the edge is drawn solid (true) or dashed (false). */
     private boolean solid = true;
+    /** Whether the edge is drawn thick. */
     private boolean thick = false;
 
     //==========================CONSTRUCTORS============================//
@@ -144,10 +167,26 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         resetBounds();
     }
 
+    /**
+     * Constructs a new display edge for the given model edge, connecting the two given display nodes.
+     *
+     * @param modelEdge the model edge represented; must not be null.
+     * @param node1     the first display node; must not be null.
+     * @param node2     the second display node; must not be null.
+     */
     public DisplayEdge(Edge modelEdge, DisplayNode node1, DisplayNode node2) {
         this(modelEdge, node1, node2, null);
     }
 
+    /**
+     * Constructs a new display edge for the given model edge, connecting the two given display nodes and drawn in the
+     * given color.
+     *
+     * @param modelEdge the model edge represented; must not be null.
+     * @param node1     the first display node; must not be null.
+     * @param node2     the second display node; must not be null.
+     * @param color     the line color, or null to use the theme color.
+     */
     public DisplayEdge(Edge modelEdge, DisplayNode node1, DisplayNode node2, Color color) {
         if (modelEdge == null) {
             throw new NullPointerException("Model edge must not be null.");
@@ -181,10 +220,28 @@ public class DisplayEdge extends JComponent implements IDisplayEdge {
         resetBounds();
     }
 
+    /**
+     * Constructs a new half-anchored display edge from the given node to the given mouse location, used while an edge is
+     * being drawn.
+     *
+     * @param node1           the node the edge is anchored to; must not be null.
+     * @param mouseTrackPoint the mouse location to track; must not be null.
+     * @param type            the edge type, one of the type constants of this class.
+     */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type) {
         this(node1, mouseTrackPoint, type, null);
     }
 
+    /**
+     * Constructs a new half-anchored display edge from the given node to the given mouse location, drawn in the given
+     * color.
+     *
+     * @param node1           the node the edge is anchored to; must not be null.
+     * @param mouseTrackPoint the mouse location to track; must not be null.
+     * @param type            the edge type, one of the type constants of this class.
+     * @param color           the line color, or null to use the theme color.
+     * @throws IllegalArgumentException if the type is not one of the type constants.
+     */
     public DisplayEdge(DisplayNode node1, Point mouseTrackPoint, int type, Color color) {
         if (node1 == null) {
             throw new NullPointerException("Node1 must not be null.");

@@ -15,9 +15,21 @@ import java.awt.*;
  */
 public final class NNEstimatorEditor extends JPanel {
 
+    /**
+     * The model being edited.
+     */
     private final NNEstimatorModel model;
+    /**
+     * The compare panel currently shown, rebuilt when another data set is chosen.
+     */
     private JComponent comparePanel;
 
+    /**
+     * Constructs the editor for the given model, adding a data set chooser if the parent data box holds several
+     * data sets.
+     *
+     * @param model the neural-network estimator model
+     */
     public NNEstimatorEditor(NNEstimatorModel model) {
         super(new BorderLayout());
         this.model = model;

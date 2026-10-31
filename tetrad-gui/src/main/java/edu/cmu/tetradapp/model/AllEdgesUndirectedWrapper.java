@@ -54,7 +54,8 @@ public class AllEdgesUndirectedWrapper extends GraphWrapper implements DoNotAddO
     /**
      * <p>Constructor for AllEdgesUndirectedWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public AllEdgesUndirectedWrapper(Graph graph, Parameters parameters) {
         super(GraphUtils.undirectedGraph(graph), parameters, "Make all Edges Undirected");

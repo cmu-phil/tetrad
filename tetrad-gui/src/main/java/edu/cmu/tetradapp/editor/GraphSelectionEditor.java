@@ -391,6 +391,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         });
     }
 
+    /** True while a graph refresh has been scheduled but not yet run, so that several changes give one redraw. */
     private boolean refreshPending = false;
 
     private void tabbedPaneGraphs(GraphSelectionWrapper wrapper) {
@@ -1186,6 +1187,12 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
              * The delegate.
              */
             private final List<Node> delegate = new ArrayList<>();
+
+            /**
+             * Constructs an empty variable list model.
+             */
+            public VariableListModel() {
+            }
 
             /**
              * {@inheritDoc}

@@ -22,6 +22,9 @@ package edu.cmu.tetradapp.util;
 
 import edu.cmu.tetrad.data.DataType;
 
+/**
+ * Types of independence tests, each with a display name and the data type it applies to.
+ */
 public enum IndTestType {
     /**
      * Default test.
@@ -100,6 +103,11 @@ public enum IndTestType {
         return this.name;
     }
 
+    /**
+     * Returns the data type the test applies to.
+     *
+     * @return the data type.
+     */
     public DataType getDataType() {
         return this.dataType;
     }

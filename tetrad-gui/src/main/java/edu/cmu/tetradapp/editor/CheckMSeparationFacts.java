@@ -42,6 +42,10 @@ public class CheckMSeparationFacts extends AbstractAction {
      * The desktop containing the target session editor.
      */
     private GraphWorkbench workbench;
+
+    /**
+     * The simulation graph editor whose graph is checked, if constructed from an editor.
+     */
     private SimulationGraphEditor simulationGraphEditor;
 
     /**
@@ -62,6 +66,11 @@ public class CheckMSeparationFacts extends AbstractAction {
     private void wo() {
     }
 
+    /**
+     * Constructs an action that checks m-separation facts for the graph in the given simulation graph editor.
+     *
+     * @param editor the simulation graph editor.
+     */
     public CheckMSeparationFacts(SimulationGraphEditor editor) {
         super("Check M-Separation Facts");
         this.simulationGraphEditor = editor;

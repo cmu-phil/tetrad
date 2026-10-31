@@ -57,12 +57,24 @@ public final class NNEstimatorComparePanel extends JPanel {
 
     // ── model ─────────────────────────────────────────────────────────────────
 
+    /**
+     * The neural-network estimator model being displayed.
+     */
     private final NNEstimatorModel model;
+    /**
+     * The observed data the model is fitted to.
+     */
     private final DataSet observed;
+    /**
+     * The working DAG; replaced when a pruning is applied or reverted.
+     */
     private Graph dag;
 
     // ── tab 1: cross-validation ───────────────────────────────────────────────
 
+    /**
+     * Spinner for the number of cross-validation folds (k) on the CV tab.
+     */
     private final JSpinner kSpinner;
     /**
      * Second spinner for the Edge Strength tab. A Swing component can have
@@ -71,54 +83,137 @@ public final class NNEstimatorComparePanel extends JPanel {
      * so the two stay in sync.
      */
     private final JSpinner edgeKSpinner;
+    /**
+     * Button that runs cross-validation.
+     */
     private final JButton runCvButton = new JButton("Run Cross-Validation");
+    /**
+     * Label summarizing the cross-validation result.
+     */
     private final JLabel cvSummaryLabel = new JLabel(" ");
+    /**
+     * Table model for the cross-validation results.
+     */
     private final CVTableModel cvTableModel = new CVTableModel();
+    /**
+     * Table showing the cross-validation results.
+     */
     private final JTable cvTable = new JTable(cvTableModel);
 
     // ── tab 2: edge strength ──────────────────────────────────────────────────
 
+    /**
+     * Combo box for choosing the child variable whose parent strengths are computed.
+     */
     private final JComboBox<String> childCombo = new JComboBox<>();
     /** Number of observed parent configurations each edge strength is averaged over. */
     private final JSpinner edgeConfigSpinner =
             new JSpinner(new SpinnerNumberModel(300, 10, 100_000, 50));
+    /**
+     * Button that computes the strengths of the selected child's parents.
+     */
     private final JButton computeEdgeButton = new JButton("Compute Parent Strengths");
+    /**
+     * Button that computes the strengths of all edges in the DAG.
+     */
     private final JButton computeAllButton  = new JButton("Compute All");  // NEW
+    /**
+     * Label showing the progress of an edge strength computation.
+     */
     private final JLabel edgeProgressLabel = new JLabel(" ");
+    /**
+     * Label showing the result of an edge strength computation.
+     */
     private final JLabel edgeResultLabel   = new JLabel(" ");
+    /**
+     * Table model for the edge strength results.
+     */
     private final EdgeStrengthTableModel edgeTableModel = new EdgeStrengthTableModel();
+    /**
+     * Table showing the edge strength results.
+     */
     private final JTable edgeTable = new JTable(edgeTableModel);
 
     // ── tab 3: plot matrix ────────────────────────────────────────────────────
 
+    /**
+     * Spinner for the sample size of the resimulated data.
+     */
     private final JSpinner nSpinner;
+    /**
+     * Button that resimulates data from the fitted model.
+     */
     private final JButton resimulateButton = new JButton("Resimulate");
+    /**
+     * The data most recently simulated from the fitted model.
+     */
     private DataSet simulated;
+    /**
+     * The plot matrix comparing observed and simulated data.
+     */
     private DualPlotMatrix dual;
 
     // ── tab 4: prune ──────────────────────────────────────────────────────────
 
+    /**
+     * Spinner for the keep threshold t, in fold standard errors, used to propose pruning.
+     */
     private final JSpinner pruneTSpinner =
             new JSpinner(new SpinnerNumberModel(1.0, 0.0, 10.0, 0.25));
+    /**
+     * Spinner for the number of folds (k) on the Prune tab; shares the CV tab's spinner model.
+     */
     private final JSpinner pruneKSpinner;
+    /**
+     * Button that proposes edges to prune.
+     */
     private final JButton proposePruneButton = new JButton("Propose Pruning");
+    /**
+     * Button that applies the proposed pruning and re-estimates the model.
+     */
     private final JButton applyPruneButton   = new JButton("Apply && Re-estimate");
+    /**
+     * Button that reverts the applied pruning.
+     */
     private final JButton revertPruneButton  = new JButton("Revert Prune");
+    /**
+     * Label showing the progress of a pruning computation.
+     */
     private final JLabel pruneProgressLabel  = new JLabel(" ");
+    /**
+     * Table model for the pruning proposal.
+     */
     private final PruneTableModel pruneTableModel = new PruneTableModel();
+    /**
+     * Table showing the pruning proposal.
+     */
     private final JTable pruneTable = new JTable(pruneTableModel);
+    /**
+     * The most recent pruning report, or null if none has been computed.
+     */
     private PredictionPruneReport pruneReport;
 
     // ── graph tab ─────────────────────────────────────────────────────────────
 
+    /**
+     * The panel showing the working DAG with edges shaded by a chosen statistic.
+     */
     private final NNEstimatorGraphPanel graphPanel;
 
     // ── shared status ─────────────────────────────────────────────────────────
 
+    /**
+     * Label for status messages shared across tabs.
+     */
     private final JLabel status = new JLabel(" ");
 
     // ── constructor ───────────────────────────────────────────────────────────
 
+    /**
+     * Constructs the panel for the given model, building all of its tabs.
+     *
+     * @param model the fitted neural-network estimator model; must have input data and a graph
+     */
     public NNEstimatorComparePanel(NNEstimatorModel model) {
         super(new BorderLayout(10, 10));
 

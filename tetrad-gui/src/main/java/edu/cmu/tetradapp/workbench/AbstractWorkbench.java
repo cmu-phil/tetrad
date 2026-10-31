@@ -630,6 +630,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         firePropertyChange("modelChanged", null, null);
     }
 
+    /**
+     * Undoes graph changes by restoring graphs from the undo stack, pushing each onto the redo stack, until the graph
+     * differs from the current one or the stack is empty. Does nothing if there is no graph or it is a SemGraph.
+     */
     public void undo() {
         if (graph == null) {
             return;
@@ -657,6 +661,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         } while (graph.equals(oldGraph));
     }
 
+    /**
+     * Redoes graph changes by restoring graphs from the redo stack until the graph differs from the current one or the
+     * stack is empty. Does nothing if there is no graph or it is a SemGraph.
+     */
     public void redo() {
         if (graph == null) {
             return;
@@ -819,6 +827,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         return true;
     }
 
+    /**
+     * Restores the first graph on the undo stack, removing the later ones. Does nothing if the stack holds only one
+     * graph.
+     */
     public void setToOriginal() {
         if (graphStack.size() == 1) {
             return;

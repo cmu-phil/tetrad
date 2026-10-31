@@ -19,12 +19,45 @@ import java.util.stream.Collectors;
  */
 public final class IndFactsDsl {
 
+    /**
+     * Constructs a new IndFactsDsl instance. All methods are static.
+     */
+    public IndFactsDsl() {
+    }
+
     // ---------- Public result types ----------
 
+    /**
+     * A parse error in the DSL text.
+     *
+     * @param lineIndex0  the zero-based index of the line containing the error.
+     * @param startOffset the start offset of the error in the full text.
+     * @param endOffset   the end offset of the error in the full text.
+     * @param message     the error message.
+     */
     public record ParseError(int lineIndex0, int startOffset, int endOffset, String message) {}
 
+    /**
+     * Expansion statistics for one template line.
+     *
+     * @param lineIndex0      the zero-based index of the line.
+     * @param expanded        the number of facts the line expanded to.
+     * @param kept            the number of expanded facts that were kept.
+     * @param skippedInvalid  the number of expanded facts skipped as invalid (Z overlapping {x, y}).
+     * @param warningZeroKept true if the line expanded to facts but none were kept.
+     */
     public record PreviewLineStats(int lineIndex0, int expanded, int kept, int skippedInvalid, boolean warningZeroKept) {}
 
+    /**
+     * The result of parsing and preview-expanding DSL text.
+     *
+     * @param errors              the parse errors found.
+     * @param lineStats           the expansion statistics for each template line.
+     * @param totalExpanded       the total number of facts expanded.
+     * @param totalKept           the total number of facts kept.
+     * @param totalSkippedInvalid the total number of facts skipped as invalid.
+     * @param firstFacts          canonical strings for the first concrete facts, up to the preview limit.
+     */
     public record PreviewResult(
             List<ParseError> errors,
             List<PreviewLineStats> lineStats,
@@ -78,6 +111,7 @@ public final class IndFactsDsl {
      * @param allVars list of variable names
      * @param adjMap adjacency for pool(adj); keys/values are variable names. May be null.
      * @param previewLimit max number of concrete facts to include in preview list
+     * @return the parse errors, per-line statistics, totals and the first concrete facts.
      */
     public static PreviewResult preview(String text, List<String> allVars, Map<String, Set<String>> adjMap, int previewLimit) {
         Objects.requireNonNull(text);

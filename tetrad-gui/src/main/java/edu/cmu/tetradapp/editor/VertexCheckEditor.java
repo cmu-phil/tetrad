@@ -77,9 +77,18 @@ public class VertexCheckEditor extends JPanel {
     private static final int TAB_REPAIR = 1;
     private static final int COL_PV = 3;   // overview p-value column (label follows selected method)
 
+    /**
+     * The model being edited.
+     */
     private final VertexCheckIndTestModel model;
+    /**
+     * The number format for displayed numbers.
+     */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
+    /**
+     * Combo box for choosing the independence test.
+     */
     private final JComboBox<IndependenceTestModel> indTestCombo = new JComboBox<>();
     /**
      * Local switch for listing experimental tests in this editor. Added 2026-8-24.
@@ -94,24 +103,78 @@ public class VertexCheckEditor extends JPanel {
      * Opens the chooser for the block-defining columns used by per-fact ESS.
      */
     private final JButton essBlocksButton = new JButton("Blocks...");
+    /**
+     * Combo box for choosing the conditioning set type.
+     */
     private final JComboBox<ConditioningSetType> conditioningCombo = new JComboBox<>();
+    /**
+     * Check box for verbose output.
+     */
     private final JCheckBox verbose = new JCheckBox("Verbose");
+    /**
+     * Button that shows the independence facts for the selected row.
+     */
     private final JButton showIndepsForRow = new JButton("Independencies");
+    /**
+     * Button that undoes the last graph change.
+     */
     private final JButton undoGraphButton = new JButton("Undo");
+    /**
+     * Button that shows the current graph.
+     */
     private final JButton showGraphButton = new JButton("Graph");
+    /**
+     * The previous graphs, for undo.
+     */
     private final Deque<Graph> graphHistory = new ArrayDeque<>();
+    /**
+     * Label showing the model uniformity p-value.
+     */
     private final JLabel modelPLabel = new JLabel("Model Uniformity P: (not computed)");
+    /**
+     * Label showing the number of p-values.
+     */
     private final JLabel modelNpLabel = new JLabel("# p-values (not computed): -");
 
+    /**
+     * The cached independence queries from the model.
+     */
     private final CachedIndependenceQueries Q;
+    /**
+     * Panel showing the p-value histogram.
+     */
     private final JPanel histogramPanel = new JPanel(new BorderLayout());
+    /**
+     * Combo box for choosing the uniformity test for the model p-value.
+     */
     private final JComboBox<String> modelUniformityTest;
+    /**
+     * The knowledge from the model.
+     */
     private final Knowledge knowledge;
+    /**
+     * Set to request cancellation of the running computation.
+     */
     private final AtomicBoolean cancelRequested = new AtomicBoolean(false);
+    /**
+     * Table giving an overview of results for each vertex.
+     */
     private JTable overviewTable;
+    /**
+     * Table showing the independence facts for the selected vertex.
+     */
     private JTable factsTable;
+    /**
+     * Table model for the overview table.
+     */
     private AbstractTableModel overviewModel;
+    /**
+     * Table model for the facts table.
+     */
     private AbstractTableModel factsModel;
+    /**
+     * The independence test wrapper currently selected.
+     */
     private IndependenceWrapper independenceWrapper;
     /**
      * The message of the last "test could not be constructed" notice shown to the user, so the same notice is
@@ -123,10 +186,23 @@ public class VertexCheckEditor extends JPanel {
      * every sweep. Null if none shown.
      */
     private String lastUntestableNoticeKey;
+    /**
+     * True while the controls are being initialized, so their listeners do nothing.
+     */
     private boolean initializing;
+    /**
+     * True while the editor itself is setting the model's graph, so the change is not pushed onto the undo history
+     * by the listener.
+     */
     private boolean applyingGraphProgrammatically = false;
     //    private volatile boolean runningAll = false;
+    /**
+     * The background worker currently computing, or null if none.
+     */
     private SwingWorker<Void, Void> activeWorker = null;
+    /**
+     * A computation to run once the running worker has been cancelled, or null if none.
+     */
     private Runnable pendingTask = null;
     /**
      * Right-hand tabbed pane ("Check" | "Repair").
@@ -145,13 +221,25 @@ public class VertexCheckEditor extends JPanel {
     // =========================================================================
     // Construction
     // =========================================================================
+    /**
+     * Whether to use the Anderson-Darling test; not currently read by this editor.
+     */
     private boolean useAndersonDarling = false;
 
     // =========================================================================
     // Public API
     // =========================================================================
+    /**
+     * The progress dialog shown while computing.
+     */
     private JDialog progressDialog;   // new field
 
+    /**
+     * Constructs the editor for the given model.
+     *
+     * @param model the vertex check model; must not be null
+     * @throws NullPointerException if model is null
+     */
     public VertexCheckEditor(VertexCheckIndTestModel model) {
         if (model == null) throw new NullPointerException("Expecting a model.");
         this.model = model;
@@ -272,6 +360,13 @@ public class VertexCheckEditor extends JPanel {
     // Repair tab lifecycle
     // =========================================================================
 
+    /**
+     * Creates a panel with an editor for each of the given parameters.
+     *
+     * @param params     the names of the parameters
+     * @param parameters the parameters to edit
+     * @return the panel
+     */
     public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
@@ -420,14 +515,29 @@ public class VertexCheckEditor extends JPanel {
         return a + "|" + b + "|" + String.join(",", z);
     }
 
+    /**
+     * Returns the model being edited.
+     *
+     * @return the model
+     */
     public VertexCheckIndTestModel getIndTestModel() {
         return model;
     }
 
+    /**
+     * Returns the cached independence queries.
+     *
+     * @return the cached independence queries
+     */
     public CachedIndependenceQueries getCachedQueries() {
         return Q;
     }
 
+    /**
+     * Returns the vertex selected in the overview table, or the first vertex of the graph if none is selected.
+     *
+     * @return the selected vertex
+     */
     public Node getSelectedVertex() {
         List<Node> nodes = model.getGraph().getNodes();
         String selectedName = getSelectedVertexName();

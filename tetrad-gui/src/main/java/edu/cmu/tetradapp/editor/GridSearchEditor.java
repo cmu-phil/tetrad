@@ -102,6 +102,7 @@ public class GridSearchEditor extends JPanel {
      * JTextArea used for displaying comparison results.
      */
     private transient final JTextArea comparisonTextArea;
+    /** Button that opens the dialog for managing the table columns shown. */
     JButton manageColumns = new JButton("Manage...");
     /**
      * JTextArea used for displaying verbose output.
@@ -219,7 +220,9 @@ public class GridSearchEditor extends JPanel {
      * Creates a map of parameter components for the given set of parameters and a Parameters object.
      *
      * @param params     the set of parameter names
-     * @param parameters the Parameters object containing the parameter values
+     * @param parameters        the Parameters object containing the parameter values
+     * @param listOptionAllowed whether numeric parameters may be given as a list of values
+     * @param bothOptionAllowed whether boolean parameters may be set to both true and false
      * @return a map of parameter names to corresponding Box components
      */
     public static Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters, boolean listOptionAllowed, boolean bothOptionAllowed) {
@@ -3896,6 +3899,12 @@ public class GridSearchEditor extends JPanel {
     public static class BufferedListeningByteArrayOutputStream extends ByteArrayOutputStream {
         private final StringBuilder buffer = new StringBuilder();
 
+        /**
+         * Constructs a new, empty buffered listening output stream.
+         */
+        public BufferedListeningByteArrayOutputStream() {
+        }
+
         @Override
         public void write(int b) {
             // Convert byte to string and add to buffer
@@ -4194,6 +4203,11 @@ public class GridSearchEditor extends JPanel {
         private final JTextArea textArea;
         private final StringBuilder sb = new StringBuilder();
 
+        /**
+         * Constructs an output stream that appends text to the given text area.
+         *
+         * @param textArea the text area to write to
+         */
         public TextAreaOutputStream(JTextArea textArea) {
             this.textArea = textArea;
         }

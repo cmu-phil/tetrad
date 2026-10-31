@@ -60,8 +60,9 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
     /**
      * Constructs a new time series dataset.
      *
-     * @param data   - Previous data (from the parent node)
-     * @param params - The parameters.
+     * @param data      - Previous data (from the parent node)
+     * @param knowledge - Knowledge used when creating the lagged data; may be null.
+     * @param params    - The parameters.
      */
     public TimeSeriesWrapper(DataWrapper data, Knowledge knowledge, Parameters params) {
         DataModelList dataSets = data.getDataModelList();

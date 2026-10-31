@@ -90,6 +90,9 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
      * The conditioning set.
      */
     private Set<Node> conditioningSet = new HashSet<>();
+    /**
+     * The label for the conditioning variables field.
+     */
     private JLabel conditionOnLabel;
 
     /**

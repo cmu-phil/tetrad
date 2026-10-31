@@ -43,6 +43,11 @@ import java.util.prefs.Preferences;
  */
 public class CategorizingModelChooser extends JPanel implements ModelChooser {
 
+    /**
+     * Constructs a new categorizing model chooser.
+     */
+    public CategorizingModelChooser() {
+    }
 
     /**
      * The title of the chooser.

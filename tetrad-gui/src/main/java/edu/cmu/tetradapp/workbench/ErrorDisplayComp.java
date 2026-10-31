@@ -144,6 +144,8 @@ public class ErrorDisplayComp extends JComponent implements DisplayComp {
     }
 
     /**
+     * Returns whether this component is selected.
+     *
      * @return true iff selected
      */
     public boolean isSelected() {

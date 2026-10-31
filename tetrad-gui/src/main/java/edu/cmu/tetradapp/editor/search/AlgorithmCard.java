@@ -192,8 +192,17 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
      * Multi-data algorithm.
      */
     private final boolean multiDataAlgo;
+    /**
+     * The block spec for block tests and scores; typically null.
+     */
     private final BlockSpec blockSpec;
+    /**
+     * The box mode, which determines which algorithms are listed.
+     */
     private final AlgorithmChooserLogic.BoxMode mode;
+    /**
+     * The parameters of the algorithm runner.
+     */
     private final Parameters parameters;
     // Persisted UI selections (stored in Parameters)
 //    private static final String UI_IND_TEST = "ui.search.ind_test";
@@ -223,6 +232,7 @@ public class AlgorithmCard extends JPanel implements AlgorithmChooser {
      * <p>Constructor for AlgorithmCard.</p>
      *
      * @param algorithmRunner a {@link edu.cmu.tetradapp.model.GeneralAlgorithmRunner} object
+     * @param blockSpec       the block spec for block tests and scores; typically null.
      */
     public AlgorithmCard(GeneralAlgorithmRunner algorithmRunner, BlockSpec blockSpec) {
         this.algorithmRunner = algorithmRunner;

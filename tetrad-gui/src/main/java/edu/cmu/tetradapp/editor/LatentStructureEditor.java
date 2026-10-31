@@ -34,6 +34,9 @@ public class LatentStructureEditor extends JPanel implements FinalizingEditor {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The general algorithm editor this editor delegates to.
+     */
     private final GeneralAlgorithmEditor delegate;
 
     /**

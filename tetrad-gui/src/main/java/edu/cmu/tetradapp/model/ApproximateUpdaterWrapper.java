@@ -43,11 +43,15 @@ public class ApproximateUpdaterWrapper implements SessionModel, UpdaterWrapper, 
     private static final long serialVersionUID = 23L;
 
     /**
+     * The name of this session model.
+     *
      * @serial Can be null.
      */
     private String name;
 
     /**
+     * The approximate Bayes updater wrapped by this model.
+     *
      * @serial Cannot be null.
      */
     private ManipulatingBayesUpdater bayesUpdater;

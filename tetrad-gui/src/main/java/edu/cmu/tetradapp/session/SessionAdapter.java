@@ -30,6 +30,12 @@ package edu.cmu.tetradapp.session;
 public class SessionAdapter implements SessionListener {
 
     /**
+     * Constructs a new session adapter whose methods do nothing.
+     */
+    public SessionAdapter() {
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * Indicates that a node has been added.

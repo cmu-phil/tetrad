@@ -58,10 +58,14 @@ public class EdgeTypeTable extends JPanel {
             "<->"
     };
 
+    /** The title label shown above the table. */
     private final JLabel title = new JLabel();
+    /** The table listing edges and their types. */
     private final EdgeInfoTable table = new EdgeInfoTable(new DefaultTableModel());
+    /** The graph whose edges are displayed. */
     private Graph graph;
 
+    /** Constructs an empty edge type table. */
     public EdgeTypeTable() {
         initComponents();
     }
@@ -138,6 +142,11 @@ public class EdgeTypeTable extends JPanel {
         repaint();
     }
 
+    /**
+     * Updates the table to show the (non-null) edges of the given graph, with edge type probabilities if present.
+     *
+     * @param graph the graph to display
+     */
     public void update(Graph graph) {
         List<Edge> edges = graph.getEdges().stream()
                 .filter(edge -> !edge.isNull())
@@ -335,6 +344,11 @@ public class EdgeTypeTable extends JPanel {
         return false;
     }
 
+    /**
+     * Returns the graph currently displayed.
+     *
+     * @return the graph
+     */
     public Graph getGraph() {
         return graph;
     }

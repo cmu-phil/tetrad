@@ -51,7 +51,8 @@ public class UndirectedToBidirectedWrapper extends GraphWrapper implements DoNot
     /**
      * <p>Constructor for UndirectedToBidirectedWrapper.</p>
      *
-     * @param graph a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param graph      a {@link edu.cmu.tetrad.graph.Graph} object
+     * @param parameters a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public UndirectedToBidirectedWrapper(Graph graph, Parameters parameters) {
         super(GraphUtils.undirectedToBidirected(graph), parameters, "Make Bidirected Edges Undirected");

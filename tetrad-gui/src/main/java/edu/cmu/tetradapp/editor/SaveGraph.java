@@ -316,7 +316,7 @@ public class SaveGraph extends AbstractAction {
         xml,
 
         /**
-         *
+         * Save as a JSON file.
          */
         json,
 

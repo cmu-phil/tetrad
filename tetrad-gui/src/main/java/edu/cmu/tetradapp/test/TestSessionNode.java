@@ -52,6 +52,12 @@ import static org.junit.Assert.*;
 public class TestSessionNode {
 
     /**
+     * Constructs a new test instance.
+     */
+    public TestSessionNode() {
+    }
+
+    /**
      * A string field to help debug events.
      */
     private String eventId;

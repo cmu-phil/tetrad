@@ -23,6 +23,9 @@ package edu.cmu.tetradapp.util;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * A text field that shows prompt text in light gray when it is empty and does not have the focus.
+ */
 public class JTextFieldWithPrompt extends JTextField {
 
     /**
@@ -30,10 +33,20 @@ public class JTextFieldWithPrompt extends JTextField {
      */
     private final String promptText;
 
+    /**
+     * Constructs a text field with the given prompt text.
+     *
+     * @param promptText the text shown when the field is empty and unfocused.
+     */
     public JTextFieldWithPrompt(String promptText) {
         this.promptText = promptText;
     }
 
+    /**
+     * Shows an example of the text field in a frame.
+     *
+     * @param args ignored.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("JTextField with Prompt Example");

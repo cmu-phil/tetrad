@@ -37,6 +37,12 @@ import edu.cmu.tetradapp.session.Session;
  * @version $Id: $Id
  */
 public class DesktopController implements DesktopControllable {
+
+    /**
+     * Constructs a new DesktopController. Access to the desktop is through the static methods.
+     */
+    public DesktopController() {
+    }
     private static DesktopControllable INSTANCE;
 
 

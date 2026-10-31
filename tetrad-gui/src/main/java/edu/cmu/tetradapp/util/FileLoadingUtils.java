@@ -36,6 +36,12 @@ import java.nio.charset.StandardCharsets;
  * @version $Id: $Id
  */
 public class FileLoadingUtils {
+
+    /**
+     * Constructs a new FileLoadingUtils. All methods are static.
+     */
+    public FileLoadingUtils() {
+    }
     // Converts the contents of a file into a CharSequence
     // suitable for use by the regex package.
 

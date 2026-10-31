@@ -32,30 +32,59 @@ import java.util.stream.Collectors;
  */
 public final class HybridCgPmEditor extends JPanel {
 
+    /** The wrapper holding the PM being edited. */
     private final HybridCgPmWrapper pmWrapper;
+    /** The parameters holding the cutpoint settings. */
     private final Parameters params;
 
     // --------------- top: variable/type editing ----------------
+    /** Table for editing variables and their types. */
     private final JTable varTable = new JTable();
+    /** The table model backing the variable table. */
     private VarTableModel varModel;
 
     // --------------- cutpoints controls ------------------------
+    /** Selector for the method used to compute cutpoints. */
     private final JComboBox<String> methodCombo =
             new JComboBox<>(new String[]{"equal_frequency", "equal_interval", "none"});
+    /** Spinner for the number of bins used to compute cutpoints. */
     private final JSpinner binsSpinner = new JSpinner(new SpinnerNumberModel(3, 2, 50, 1));
 
+    /** Table for editing the cutpoints of the selected child and parent. */
     private final JTable cutTable = new JTable();
+    /** The table model backing the cutpoints table. */
     private CutpointsTableModel cutModel;
 
+    /** Selector for a discrete child that has continuous parents. */
     private final JComboBox<Node> childCombo = new JComboBox<>();
+    /** Selector for a continuous parent of the selected child. */
     private final JComboBox<Node> parentCombo = new JComboBox<>();
 
+    /**
+     * Constructs an editor for the given PM wrapper, with no data and default parameters.
+     *
+     * @param pmWrapper the PM wrapper
+     */
     public HybridCgPmEditor(HybridCgPmWrapper pmWrapper) {
         this(pmWrapper, null, new Parameters());
     }
+    /**
+     * Constructs an editor for the given PM wrapper and parameters, with no data.
+     *
+     * @param pmWrapper the PM wrapper
+     * @param params    the parameters
+     */
     public HybridCgPmEditor(HybridCgPmWrapper pmWrapper, Parameters params) {
         this(pmWrapper, null, params);
     }
+    /**
+     * Constructs an editor for the given PM wrapper, optional data and parameters.
+     *
+     * @param pmWrapper  the PM wrapper
+     * @param dataOrNull data from which cutpoints may be computed, or null if none
+     * @param params     the parameters; if null, default parameters are used
+     * @throws NullPointerException if pmWrapper is null
+     */
     public HybridCgPmEditor(HybridCgPmWrapper pmWrapper, DataSet dataOrNull, Parameters params) {
         this.pmWrapper = Objects.requireNonNull(pmWrapper, "pmWrapper");
         this.params = (params == null) ? new Parameters() : params;

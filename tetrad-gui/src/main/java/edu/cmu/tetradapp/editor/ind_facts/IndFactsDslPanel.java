@@ -10,21 +10,55 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
+/**
+ * A panel for editing independence fact templates in the IndFacts DSL, with a Preview button that parses and expands
+ * the templates, underlines parse errors with a squiggle (with the message as a tooltip), and lists the expanded facts.
+ */
 public final class IndFactsDslPanel extends JPanel {
 
+    /**
+     * The text pane in which the DSL templates are edited.
+     */
     private final JTextPane editor = new JTextPane();
+    /**
+     * The read-only area showing the preview output.
+     */
     private final JTextArea output = new JTextArea();
+    /**
+     * The highlighter of the editor, used to mark parse errors.
+     */
     private final Highlighter highlighter;
+    /**
+     * The painter used to underline parse errors.
+     */
     private final Highlighter.HighlightPainter squiggle = new WavyUnderlinePainter(Color.RED);
 
+    /**
+     * The variable names available to the templates.
+     */
     private final List<String> varNames;
+    /**
+     * The adjacency map used for pool(adj); may be null.
+     */
     private final Map<String, Set<String>> adjMap; // may be null
 
+    /**
+     * The maximum number of concrete facts to show in the preview.
+     */
     private int previewLimit = 200;
 
     // For tooltips
+    /**
+     * The parse errors from the last preview, used for tooltips.
+     */
     private final List<IndFactsDsl.ParseError> lastErrors = new ArrayList<>();
 
+    /**
+     * Constructs the panel.
+     *
+     * @param varNames the variable names available to the templates.
+     * @param adjMap   the adjacency map (variable name to adjacent variable names) used for pool(adj); may be null.
+     */
     public IndFactsDslPanel(List<String> varNames, Map<String, Set<String>> adjMap) {
         super(new BorderLayout());
         this.varNames = new ArrayList<>(Objects.requireNonNull(varNames));
@@ -141,6 +175,11 @@ public final class IndFactsDslPanel extends JPanel {
     }
 
     // Simple demo main
+    /**
+     * Shows a demo of the panel in a frame, with twelve variables and an example adjacency map.
+     *
+     * @param args ignored.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             List<String> vars = new ArrayList<>();

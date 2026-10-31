@@ -49,6 +49,8 @@ public final class LayoutInheritance {
     }
 
     /**
+     * Returns the node positions of the graph.
+     *
      * @param graph a graph.
      * @return the centers of the nodes of the graph, by node name, in the order of the graph's nodes.
      */
@@ -63,6 +65,8 @@ public final class LayoutInheritance {
     }
 
     /**
+     * Returns whether the named node has been moved since the graph was last synchronized with its reference.
+     *
      * @param name   the name of a node.
      * @param own    the node positions of the graph, by node name.
      * @param record the record of the graph, by node name, or null if it has none.
@@ -80,6 +84,9 @@ public final class LayoutInheritance {
     }
 
     /**
+     * Resolves the positions the nodes of the graph should have, inheriting the reference's positions for nodes that
+     * have not been moved.
+     *
      * @param own       the node positions of the graph, by node name.
      * @param reference the node positions of its reference, by node name.
      * @param record    the record of the graph, by node name, or null if it has none.

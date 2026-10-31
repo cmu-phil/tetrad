@@ -45,15 +45,42 @@ import java.util.ArrayList;
  * modifications made.
  */
 public class DataSubsetParamsEditor extends JPanel implements FinalizingParameterEditor {
+    /**
+     * The data subset editor hosted by this panel.
+     */
     private DataSubsetEditor dataSubsetEditor;
+    /**
+     * The parameters in which the subset settings are stored.
+     */
     private Parameters parameters;
+    /**
+     * The source data set from which the subset is taken.
+     */
     private DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, 0), new ArrayList<>());
+    /**
+     * The previously stored selected variable names, restored into the editor; may be null.
+     */
     private java.util.List<String> initialSelectedVarNames;
+    /**
+     * The previously stored row spec, restored into the editor; may be null.
+     */
     private String initialRowSpec;
 
+    /**
+     * The previously stored condition spec, restored into the editor; may be null.
+     */
     private String initialConditionSpec;
+    /**
+     * The previously stored sampling mode, restored into the editor; may be null.
+     */
     private DataSubsetter.SamplingMode initialSamplingMode;
+    /**
+     * The previously stored sample size, restored into the editor; may be null.
+     */
     private Integer initialSampleSize;
+    /**
+     * The previously stored random seed text, restored into the editor; may be null.
+     */
     private String initialSeedText;
 
     /**

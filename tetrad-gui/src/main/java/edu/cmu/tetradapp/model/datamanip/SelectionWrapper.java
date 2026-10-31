@@ -245,6 +245,12 @@ public class SelectionWrapper extends DataWrapper {
     // Custom serialization
     // -------------------------------------------------------------------------
 
+    /**
+     * Writes the object to the specified ObjectOutputStream, logging any failure.
+     *
+     * @param out The ObjectOutputStream to write the object to.
+     * @throws IOException If an I/O error occurs.
+     */
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         try {
@@ -256,6 +262,13 @@ public class SelectionWrapper extends DataWrapper {
         }
     }
 
+    /**
+     * Reads the object from the specified ObjectInputStream, logging any failure.
+     *
+     * @param in The ObjectInputStream to read the object from.
+     * @throws IOException            If an I/O error occurs.
+     * @throws ClassNotFoundException If the class of the serialized object cannot be found.
+     */
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         try {
@@ -307,6 +320,8 @@ public class SelectionWrapper extends DataWrapper {
          * Creates a {@link SelectionSpec} for a <em>continuous</em> variable.
          *
          * @param intervals a list of two-element arrays {@code {lo, hi}}; must not be empty
+         * @return the new spec
+         * @throws IllegalArgumentException if the intervals are null or empty
          */
         public static SelectionSpec continuous(List<double[]> intervals) {
             if (intervals == null || intervals.isEmpty()) {
@@ -319,6 +334,8 @@ public class SelectionWrapper extends DataWrapper {
          * Creates a {@link SelectionSpec} for a <em>discrete</em> variable.
          *
          * @param categories the set of accepted category indices; must not be empty
+         * @return the new spec
+         * @throws IllegalArgumentException if the categories are null or empty
          */
         public static SelectionSpec discrete(Set<Integer> categories) {
             if (categories == null || categories.isEmpty()) {
@@ -340,6 +357,8 @@ public class SelectionWrapper extends DataWrapper {
          * Returns {@code true} if {@code value} falls within at least one of the
          * stored intervals (union of closed intervals).
          *
+         * @param value the continuous value to check
+         * @return {@code true} if the value lies in one of the intervals
          * @throws IllegalStateException if this spec was constructed for a discrete variable
          */
         public boolean acceptsContinuous(double value) {
@@ -357,6 +376,8 @@ public class SelectionWrapper extends DataWrapper {
         /**
          * Returns {@code true} if {@code categoryIndex} is among the accepted categories.
          *
+         * @param categoryIndex the category index to check
+         * @return {@code true} if the category is accepted
          * @throws IllegalStateException if this spec was constructed for a continuous variable
          */
         public boolean acceptsDiscrete(int categoryIndex) {
@@ -370,17 +391,29 @@ public class SelectionWrapper extends DataWrapper {
         // Accessors (used by the editor to restore state)
         // ------------------------------------------------------------------
 
-        /** Returns the continuous intervals, or {@code null} for discrete specs. */
+        /**
+         * Returns the continuous intervals, or {@code null} for discrete specs.
+         *
+         * @return an unmodifiable list of the intervals, or {@code null} for discrete specs
+         */
         public List<double[]> getContinuousIntervals() {
             return continuousIntervals == null ? null : Collections.unmodifiableList(continuousIntervals);
         }
 
-        /** Returns the accepted discrete categories, or {@code null} for continuous specs. */
+        /**
+         * Returns the accepted discrete categories, or {@code null} for continuous specs.
+         *
+         * @return an unmodifiable set of the accepted categories, or {@code null} for continuous specs
+         */
         public Set<Integer> getAcceptedCategories() {
             return acceptedCategories == null ? null : Collections.unmodifiableSet(acceptedCategories);
         }
 
-        /** Returns {@code true} if this spec describes a continuous constraint. */
+        /**
+         * Returns {@code true} if this spec describes a continuous constraint.
+         *
+         * @return {@code true} if this spec is continuous, {@code false} if discrete
+         */
         public boolean isContinuous() {
             return continuousIntervals != null;
         }

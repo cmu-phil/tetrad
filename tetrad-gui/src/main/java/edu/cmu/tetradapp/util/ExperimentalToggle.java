@@ -54,6 +54,8 @@ public class ExperimentalToggle extends JCheckBox {
     }
 
     /**
+     * Returns whether experimental entries should be listed, that is, whether this toggle is selected.
+     *
      * @return true if experimental entries should be listed in the owning editor.
      */
     public boolean includeExperimental() {

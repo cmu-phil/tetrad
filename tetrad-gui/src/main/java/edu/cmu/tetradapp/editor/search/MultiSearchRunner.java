@@ -30,8 +30,28 @@ import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.GraphResultList;
 import edu.cmu.tetradapp.util.WatchedProcess;
 
+/**
+ * Runs an algorithm over all the data sets in a data wrapper in a watched process, reporting the resulting graphs
+ * through a callback.
+ */
 public final class MultiSearchRunner {
 
+    /**
+     * Constructs a new MultiSearchRunner. All methods are static.
+     */
+    public MultiSearchRunner() {
+    }
+
+    /**
+     * Runs the algorithm in a watched process. A multi-data-set algorithm produces a single graph from all the data
+     * sets, named "Combined"; any other algorithm produces one graph per data set, named after the data set. The
+     * results, or any exception thrown, are passed to the callback.
+     *
+     * @param dataWrapper the data wrapper whose data sets are searched.
+     * @param algo        the algorithm to run.
+     * @param params      the parameters for the algorithm.
+     * @param cb          the callback that receives the results or the error.
+     */
     public static void run(DataWrapper dataWrapper, Algorithm algo, Parameters params, Callback cb) {
         new WatchedProcess() {
             @Override
@@ -69,9 +89,22 @@ public final class MultiSearchRunner {
         };
     }
 
+    /**
+     * Receives the outcome of a run.
+     */
     public interface Callback {
+        /**
+         * Called when the run completes successfully.
+         *
+         * @param results the resulting graphs.
+         */
         void onSuccess(GraphResultList results);
 
+        /**
+         * Called when the run fails.
+         *
+         * @param ex the exception that caused the failure.
+         */
         void onError(Exception ex);
     }
 }

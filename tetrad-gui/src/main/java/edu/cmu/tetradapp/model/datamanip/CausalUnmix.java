@@ -42,6 +42,17 @@ public class CausalUnmix extends DataWrapper {
     @Serial
     private static final long serialVersionUID = 23L;
 
+    /**
+     * Constructs the wrapper and starts unmixing the single continuous, complete data set in the given wrapper, using
+     * the unmix spec stored in the parameters (a default spec is stored if there is none). When unmixing finishes,
+     * the component data sets become this wrapper's data model.
+     *
+     * @param data   the wrapper containing exactly one tabular data set.
+     * @param params the parameters holding the unmix spec.
+     * @throws NullPointerException     if the data is null.
+     * @throws IllegalArgumentException if there is not exactly one data set, or it is not tabular, not all continuous,
+     *                                  or has missing values.
+     */
     public CausalUnmix(DataWrapper data, Parameters params) {
         if (data == null) throw new NullPointerException("The given data must not be null");
 

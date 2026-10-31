@@ -53,7 +53,8 @@ public class AllEdgesNondirectedWrapper extends GraphWrapper implements DoNotAdd
     /**
      * <p>Constructor for AllEdgesUndirectedWrapper.</p>
      *
-     * @param graph a {@link Graph} object
+     * @param graph      a {@link Graph} object
+     * @param parameters a {@link Parameters} object
      */
     public AllEdgesNondirectedWrapper(Graph graph, Parameters parameters) {
         super(GraphUtils.nondirectedGraph(graph), parameters, "Make All Edges Nondirected");

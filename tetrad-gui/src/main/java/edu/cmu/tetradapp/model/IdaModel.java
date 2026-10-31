@@ -75,10 +75,25 @@ public class IdaModel implements SessionModel {
      * Note: This variable is marked as transient, meaning it will not be serialized.
      */
     private transient IdaCheck idaCheckEst;
+    /**
+     * The text specifying the treatment variables, as entered in the editor; "*" means all variables.
+     */
     private String treatmentsText = "*";
+    /**
+     * The text specifying the outcome variables, as entered in the editor; "*" means all variables.
+     */
     private String outcomesText = "*";
+    /**
+     * Whether Optimal IDA is selected in the editor (rather than regular IDA).
+     */
     private boolean optimalIdaSelected;
+    /**
+     * Whether pairs with zero effects should be hidden in the editor.
+     */
     private boolean hideZeroEffects = true;
+    /**
+     * The (treatment, outcome) node pairs currently displayed in the editor.
+     */
     private List<OrderedPair<Node>> currentPairs = new ArrayList<>();
 
     /**
@@ -233,42 +248,92 @@ public class IdaModel implements SessionModel {
         return trueSemIm;
     }
 
+    /**
+     * Returns the text specifying the treatment variables.
+     *
+     * @return the treatments text.
+     */
     public String getTreatmentsText() {
         return treatmentsText;
     }
 
+    /**
+     * Sets the text specifying the treatment variables.
+     *
+     * @param treatmentsText the treatments text.
+     */
     public void setTreatmentsText(String treatmentsText) {
         this.treatmentsText = treatmentsText;
     }
 
+    /**
+     * Returns the text specifying the outcome variables.
+     *
+     * @return the outcomes text.
+     */
     public String getOutcomesText() {
         return outcomesText;
     }
 
+    /**
+     * Sets the text specifying the outcome variables.
+     *
+     * @param outcomesText the outcomes text.
+     */
     public void setOutcomesText(String outcomesText) {
         this.outcomesText = outcomesText;
     }
 
+    /**
+     * Returns whether Optimal IDA is selected.
+     *
+     * @return true if Optimal IDA is selected.
+     */
     public boolean isOptimalIdaSelected() {
         return optimalIdaSelected;
     }
 
+    /**
+     * Sets whether Optimal IDA is selected.
+     *
+     * @param optimalIdaSelected true if Optimal IDA should be selected.
+     */
     public void setOptimalIdaSelected(boolean optimalIdaSelected) {
         this.optimalIdaSelected = optimalIdaSelected;
     }
 
+    /**
+     * Returns whether pairs with zero effects should be hidden.
+     *
+     * @return true if zero effects should be hidden.
+     */
     public boolean getHideZeroEffects() {
         return hideZeroEffects;
     }
 
+    /**
+     * Sets whether pairs with zero effects should be hidden.
+     *
+     * @param hideZeroEffects true if zero effects should be hidden.
+     */
     public void setHideZeroEffects(boolean hideZeroEffects) {
         this.hideZeroEffects = hideZeroEffects;
     }
 
+    /**
+     * Returns a copy of the (treatment, outcome) node pairs currently displayed.
+     *
+     * @return a copy of the current pairs.
+     */
     public List<OrderedPair<Node>> getCurrentPairs() {
         return new ArrayList<>(this.currentPairs);
     }
 
+    /**
+     * Sets the (treatment, outcome) node pairs currently displayed. The list is copied.
+     *
+     * @param currentPairs the current pairs.
+     */
     public void setCurrentPairs(List<OrderedPair<Node>> currentPairs) {
         this.currentPairs = new ArrayList<>(currentPairs);
     }

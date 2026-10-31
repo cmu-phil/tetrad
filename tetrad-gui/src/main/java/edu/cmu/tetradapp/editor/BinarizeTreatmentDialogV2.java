@@ -12,10 +12,25 @@ import java.awt.*;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Modal dialog that lets the user define a binarized (derived) treatment variable from a source variable in a
+ * dataset, using a threshold, quantile, or category-subset rule.
+ */
 public final class BinarizeTreatmentDialogV2 extends JDialog {
 
+    /**
+     * The derived treatment specification chosen by the user, or null if the dialog was cancelled.
+     */
     private DerivedTreatmentSpecV2 result;
 
+    /**
+     * Shows the dialog modally and returns the derived treatment specification the user defined.
+     *
+     * @param parent the component over which the dialog is shown
+     * @param data   the dataset whose variables may be binarized
+     * @param graph  the graph (currently unused)
+     * @return the derived treatment specification, or null if the dialog was cancelled
+     */
     public static DerivedTreatmentSpecV2 showDialog(Component parent, DataSet data, Graph graph) {
         Window w = SwingUtilities.getWindowAncestor(parent);
         BinarizeTreatmentDialogV2 d = new BinarizeTreatmentDialogV2(w, data);

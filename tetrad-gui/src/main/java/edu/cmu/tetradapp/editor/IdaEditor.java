@@ -83,11 +83,13 @@ public class IdaEditor extends JPanel {
      * Swing components that need to be accessed from listeners.
      */
     private final JTable table;
+    /** The number format used to display effects. */
     private final NumberFormat numberFormat;
     /**
      * Text fields for specifying treatments (X) and outcomes (Y). These support simple wildcards "*", "?".
      */
     private final JTextField treatmentsField = new JTextField();
+    /** Text field for the outcomes (Y). */
     private final JTextField outcomesField = new JTextField();
     /**
      * "Run" button to recompute the table for the current X/Y selection.
@@ -107,7 +109,9 @@ public class IdaEditor extends JPanel {
      */
     private List<OrderedPair<Node>> currentPairs = new ArrayList<>();
 
+    /** The table model backing the results table. */
     private IdaTableModel tableModel;
+    /** The row sorter for the results table. */
     private TableRowSorter<IdaTableModel> sorter;
 
     /**

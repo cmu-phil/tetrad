@@ -72,6 +72,10 @@ import java.util.stream.Collectors;
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
+/**
+ * Editor for checking independence facts written in a small DSL. Facts are expanded, then evaluated either by a
+ * statistical independence test on the data or by m-separation in a graph, and the results shown in a table.
+ */
 public final class IndependenceFactsDslEditor extends JPanel {
 
     // -------------------- state persistence --------------------
@@ -81,6 +85,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
     private static final Preferences ROOT_PREFS =
             Preferences.userRoot().node(PREF_NODE_PATH);
 
+    /** The model in which editor state is persisted, or null, in which case user preferences are used. */
     private final IndependenceFactsDslModel model; // may be null
 
     // keys (shared by model + prefs)
@@ -93,6 +98,7 @@ public final class IndependenceFactsDslEditor extends JPanel {
 
     private static final String MSEP_ENGINE_LABEL = "m-separation (current graph)";
     // -------------------- UI --------------------
+    /** Selector for the evaluation engine (an independence test or m-separation). */
     private final JComboBox<Object> engineCombo = new JComboBox<>();
     /**
      * Local switch for listing experimental tests in this editor. Added 2026-8-24. Re-lists the engines and
@@ -106,46 +112,75 @@ public final class IndependenceFactsDslEditor extends JPanel {
         refreshEngines();
         restoreEngineSelection(engine);
     });
+    /** Button that edits the parameters of the selected test. */
     private final JButton paramsButton = new JButton("Params");
+    /** Button that previews the expanded facts without evaluating them. */
     private final JButton previewButton = new JButton("Preview");
+    /** Button that evaluates the facts. */
     private final JButton runButton = new JButton("Run");
+    /** Button that clears the results. */
     private final JButton clearButton = new JButton("Clear");
     //    private final JCheckBox showPValues = new JCheckBox("Show P-values / Scores");
+    /** Label showing status messages. */
     private final JLabel statusLabel = new JLabel(" ");
+    /** Label showing parse warnings. */
     private final JLabel warningsLabel = new JLabel(" ");
+    /** Text pane for editing the DSL text. */
     private final JTextPane dslPane = new JTextPane();
+    /** Scroll pane holding the DSL text pane. */
     private final JScrollPane dslScroll = new JScrollPane(dslPane);
+    /** The table displaying results. */
     private final JTable resultsTable;
+    /** The table model backing the results table. */
     private final ResultsTableModel resultsModel = new ResultsTableModel();
+    /** Text field for the maximum number of facts listed. */
     private final IntTextField limitField;
+    /** Check box for verbose output. */
     private final JCheckBox verboseBox = new JCheckBox("Verbose");
 
     // -------------------- context --------------------
+    /** The data model used for statistical tests. */
     private final DataModel dataModel;
+    /** The graph used for m-separation; optional. */
     private final Graph graph;                    // optional; enables m-sep engine
+    /** The shared parameters. */
     private final Parameters parameters;          // shared parameter bag
     // -------------------- formatting --------------------
+    /** The number format used to display p-values and scores. */
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     // -------------------- parse highlighting --------------------
+    /** The highlighter used to mark parse problems in the DSL text. */
     private final Highlighter highlighter;
+    /** Painter for parse errors. */
     private final Highlighter.HighlightPainter errorPainter = new WavyUnderlineHighlightPainter(new Color(200, 0, 0));
+    /** Painter for parse warnings. */
     private final Highlighter.HighlightPainter warnPainter = new WavyUnderlineHighlightPainter(new Color(170, 120, 0));
     // -------------------- statistical engine wiring --------------------
+    /** The wrapper for the selected independence test. */
     private IndependenceWrapper independenceWrapper;
+    /** The independence test built from the selected wrapper. */
     private IndependenceTest independenceTest;
+    /** The cached independence queries used for statistical evaluation, or null. */
     private CachedIndependenceQueries Q;
     // -------------------- last preview/run expansion --------------------
+    /** The facts expanded by the last preview or run. */
     private List<FactSpec> lastExpanded = List.of();
 
     // -------------------- public constructors --------------------
+    /** The parse problems found by the last preview or run. */
     private List<ParseProblem> lastProblems = List.of();
 
+    /** True while state is being restored or engines relisted, so listeners do not persist intermediate changes. */
     private boolean restoring = false;
 
+    /** True if the cached queries supplied wrap an m-separation test, in which case only m-separation is offered. */
     private final boolean msepOnlyFromCache;
 
     /**
      * Minimal: data-only. This supports statistical tests only.
+     *
+     * @param dataModel  the data model
+     * @param parameters the parameters
      */
     public IndependenceFactsDslEditor(DataModel dataModel, Parameters parameters) {
         this(null, dataModel, null, parameters, null);
@@ -153,6 +188,10 @@ public final class IndependenceFactsDslEditor extends JPanel {
 
     /**
      * Data + graph: enables both statistical tests and m-separation.
+     *
+     * @param dataModel  the data model
+     * @param graph      the graph
+     * @param parameters the parameters
      */
 
     public IndependenceFactsDslEditor(DataModel dataModel, Graph graph, Parameters parameters) {
@@ -177,6 +216,13 @@ public final class IndependenceFactsDslEditor extends JPanel {
 
     /**
      * Data + graph + cached queries (optional): if provided, statistical eval uses cache.
+     *
+     * @param model               the model in which state is persisted, or null to use user preferences
+     * @param dataModel           the data model
+     * @param graph               the graph, or null
+     * @param parameters          the parameters
+     * @param cachedQueriesOrNull cached independence queries, or null
+     * @throws NullPointerException if parameters is null
      */
     public IndependenceFactsDslEditor(IndependenceFactsDslModel model,
                                       DataModel dataModel,
@@ -592,6 +638,13 @@ public final class IndependenceFactsDslEditor extends JPanel {
         return createParamsPanel(testParameters, params);
     }
 
+    /**
+     * Creates a panel with editors for the given parameters.
+     *
+     * @param params     the names of the parameters to edit
+     * @param parameters the parameters holding the values
+     * @return the panel
+     */
     public static JPanel createParamsPanel(Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Parameters"));

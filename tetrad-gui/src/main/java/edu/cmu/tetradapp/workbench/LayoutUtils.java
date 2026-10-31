@@ -42,6 +42,12 @@ import java.util.prefs.Preferences;
  * @version $Id: $Id
  */
 public class LayoutUtils {
+
+    /**
+     * Constructs a new LayoutUtils. All methods are static.
+     */
+    public LayoutUtils() {
+    }
     static Layout layout = Layout.topToBottom;
 
     /**
@@ -640,6 +646,7 @@ public class LayoutUtils {
      * <p>knowledgeLayout.</p>
      *
      * @param layoutEditable a {@link edu.cmu.tetradapp.util.LayoutEditable} object
+     * @param knowledge      the knowledge whose tiers determine the layout
      */
     public static void layoutByKnowledgeTiers(LayoutEditable layoutEditable, Knowledge knowledge) {
         Graph graph = new EdgeListGraph(layoutEditable.getGraph());

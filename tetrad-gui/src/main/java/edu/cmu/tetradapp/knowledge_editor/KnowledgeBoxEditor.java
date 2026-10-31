@@ -120,6 +120,9 @@ public class KnowledgeBoxEditor extends JPanel {
      */
     private JButton textApplyButton;
 
+    /**
+     * The Revert button of the "Text" tab, enabled only while the tab has unapplied edits.
+     */
     private JButton textRevertButton;
 
     /**
@@ -180,6 +183,9 @@ public class KnowledgeBoxEditor extends JPanel {
      */
     private JCheckBoxMenuItem showOtherTiersItem;
 
+    /**
+     * The Show menu's "Other Groups" item.
+     */
     private JCheckBoxMenuItem showOtherGroupsItem;
 
     /**
@@ -242,12 +248,24 @@ public class KnowledgeBoxEditor extends JPanel {
      */
     private JCheckBox showForbiddenByTiersBox;
 
+    /**
+     * The Edges tab's checkbox for showing edges forbidden by groups.
+     */
     private JCheckBox showForbiddenByGroupsBox;
 
+    /**
+     * The Edges tab's checkbox for showing explicitly forbidden edges.
+     */
     private JCheckBox showForbiddenExplicitlyBox;
 
+    /**
+     * The Edges tab's checkbox for showing edges required by groups.
+     */
     private JCheckBox showRequiredByGroupsBox;
 
+    /**
+     * The Edges tab's checkbox for showing explicitly required edges.
+     */
     private JCheckBox showRequiredExplicitlyBox;
 
     /**

@@ -78,6 +78,7 @@ public class BayesEstimatorEditor extends JPanel {
      *
      * @param bayesIm a {@link edu.cmu.tetrad.bayes.BayesIm} object
      * @param dataSet a {@link edu.cmu.tetrad.data.DataSet} object
+     * @param parameters the parameters for the estimation
      */
     public BayesEstimatorEditor(BayesIm bayesIm, DataSet dataSet, Parameters parameters) {
         this(new BayesEstimatorWrapper(new DataWrapper(dataSet), new BayesImWrapper(bayesIm), parameters));

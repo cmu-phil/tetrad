@@ -102,6 +102,8 @@ public final class HybridCgGraphViewer {
     }
 
     /**
+     * Returns the panel holding the workbench and legend.
+     *
      * @return the panel holding the workbench and legend
      */
     public JComponent getComponent() {
@@ -109,6 +111,8 @@ public final class HybridCgGraphViewer {
     }
 
     /**
+     * Returns the workbench, for binding menus and actions.
+     *
      * @return the workbench, for binding menus and actions
      */
     public GraphWorkbench getWorkbench() {

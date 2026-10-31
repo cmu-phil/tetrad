@@ -48,6 +48,12 @@ public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterE
     private Parameters params;
 
     /**
+     * Constructs a new edgewise comparison parameters editor.
+     */
+    public EdgewiseComparisonParamsEditor() {
+    }
+
+    /**
      * The parent models. These should be graph sources.
      */
     private Object[] parentModels;

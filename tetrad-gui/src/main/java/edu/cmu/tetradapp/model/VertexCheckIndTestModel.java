@@ -61,13 +61,31 @@ import java.util.function.BooleanSupplier;
  */
 public class VertexCheckIndTestModel implements SessionModel, GraphSource, KnowledgeBoxInput {
 
+    /**
+     * The name of the property fired when the graph changes.
+     */
     public static final String PROP_GRAPH = "graph";
+    /**
+     * The parameter key for the uniformity test used on p-values.
+     */
     public static final String UNIFORMITY_TEST_PARAM = "uniformityTestParam";
+    /**
+     * Uniformity test value: Kolmogorov-Smirnov.
+     */
     public static final String KOLMOGOROV_SMIRNOFF = "kolmogorovSmirnoff";
+    /**
+     * Uniformity test value: Anderson-Darling.
+     */
     public static final String ANDERSON_DARLING = "andersonDarling";
+    /**
+     * Uniformity test value: wild bootstrap.
+     */
     public static final String WILD_BOOTSTRAP = "wildBootstrap";
     @Serial
     private static final long serialVersionUID = 1L;
+    /**
+     * The data model being checked.
+     */
     private DataModel dataModel;
     /**
      * The data models the parent data box offers, in order; the check runs on one of them. Null in sessions saved
@@ -78,18 +96,54 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * The index, in dataModels, of the data model being checked.
      */
     private int dataIndex;
+    /**
+     * The parameters for the check.
+     */
     private final Parameters parameters;
+    /**
+     * The per-vertex summaries, keyed by vertex name.
+     */
     private final Map<String, VertexSummary> summariesByVertex = new LinkedHashMap<>();
+    /**
+     * The per-vertex independence results, keyed by vertex name.
+     */
     private final Map<String, List<IndependenceResult>> resultsByVertex = new LinkedHashMap<>();
+    /**
+     * The cache of independence queries; test errors are treated as independent.
+     */
     private final CachedIndependenceQueries cachedQueries =
             new CachedIndependenceQueries(CachedIndependenceQueries.ErrorPolicy.TREAT_AS_INDEPENDENT);
+    /**
+     * Support for property change listeners.
+     */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    /**
+     * The graph being checked.
+     */
     private Graph graph;
+    /**
+     * The name of this model.
+     */
     private String name = "";
+    /**
+     * The independence test used for the check; transient.
+     */
     private transient IndependenceTest independenceTest;
+    /**
+     * The knowledge.
+     */
     private Knowledge knowledge = new Knowledge();
+    /**
+     * The names of the vertices to check; computed from the independence test's variables if empty.
+     */
     private List<String> vertexNames = new ArrayList<>();
+    /**
+     * Whether verbose output is logged.
+     */
     private boolean verbose = false;
+    /**
+     * The cached model-level summary, or null if not computed.
+     */
     private ModelSummary modelSummary;
 
     /**
@@ -129,6 +183,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         }
     }
 
+    /**
+     * Generates a simple exemplar to test serialization. Note that this returns a Knowledge object, not a
+     * VertexCheckIndTestModel.
+     *
+     * @return a new, empty Knowledge object.
+     */
     public static Knowledge serializableInstance() {
         return new Knowledge();
     }
@@ -168,10 +228,26 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return 1. - generalAndersonDarlingTest.getProbTail(pValues.size(), generalAndersonDarlingTest.getASquared());
     }
 
+    /**
+     * Computes the independence facts implied by the graph for the given vertex, using the given type of
+     * conditioning set.
+     *
+     * @param alignedGraph        the graph, with nodes aligned to the test's variables.
+     * @param x                   the vertex.
+     * @param conditioningSetType the type of conditioning set.
+     * @return the implied facts for the vertex.
+     */
     public static List<IndependenceFact> computeImpliedFactsForVertex(Graph alignedGraph, Node x, ConditioningSetType conditioningSetType) {
         return MarkovCheck.computeImpliedFactsForVertex(alignedGraph, x, conditioningSetType);
     }
 
+    /**
+     * Returns the uniformity p-value of the given p-values under the selected uniformity test (Anderson-Darling
+     * or Kolmogorov-Smirnov). For the wild bootstrap, which does not use a p-value list, NaN is returned.
+     *
+     * @param pvals the p-values.
+     * @return the uniformity p-value, or NaN if there are fewer than two p-values.
+     */
     public double getUniformityP(List<Double> pvals) {
         if (pvals == null || pvals.size() < 2) return Double.NaN;
 
@@ -213,6 +289,11 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         }
     }
 
+    /**
+     * Returns the cache of independence queries.
+     *
+     * @return the cached queries.
+     */
     public CachedIndependenceQueries getCachedQueries() {
         return cachedQueries;
     }
@@ -222,12 +303,22 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return graph;
     }
 
+    /**
+     * Sets the graph and fires a property change event for {@link #PROP_GRAPH}.
+     *
+     * @param g the graph.
+     */
     public void setGraph(Graph g) {
         Graph old = this.graph;
         this.graph = g;
         pcs.firePropertyChange(PROP_GRAPH, old, g);
     }
 
+    /**
+     * Returns the data model being checked.
+     *
+     * @return the data model.
+     */
     public DataModel getDataModel() {
         return dataModel;
     }
@@ -269,14 +360,30 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         clearResults();
     }
 
+    /**
+     * Returns the parameters.
+     *
+     * @return the parameters.
+     */
     public Parameters getParameters() {
         return parameters;
     }
 
+    /**
+     * Returns the independence test.
+     *
+     * @return the independence test, or null if not set.
+     */
     public IndependenceTest getIndependenceTest() {
         return independenceTest;
     }
 
+    /**
+     * Sets the independence test, sets its rows if it is row-settable and the data are tabular, rebinds the
+     * cached queries to it, and clears all results.
+     *
+     * @param test the independence test.
+     */
     public void setIndependenceTest(IndependenceTest test) {
         this.independenceTest = test;
 
@@ -321,6 +428,8 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
+     * Returns whether per-fact effective sample sizes are enabled.
+     *
      * @return True if per-fact effective sample sizes are enabled.
      */
     public boolean isPerFactEss() {
@@ -394,28 +503,58 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 
     // --- Core API used by the editor ------------------------------------------------------------
 
+    /**
+     * Returns the conditioning set type, stored in the parameters; defaults to ORDERED_LOCAL_MARKOV_PROPERTY.
+     *
+     * @return the conditioning set type.
+     */
     public ConditioningSetType getConditioningSetType() {
         return (ConditioningSetType) this.parameters.get("conditioningSetParam", ConditioningSetType.ORDERED_LOCAL_MARKOV_PROPERTY);
     }
 
+    /**
+     * Stores the conditioning set type in the parameters.
+     *
+     * @param conditioningSetType the conditioning set type.
+     */
     public void setConditioningSetType(ConditioningSetType conditioningSetType) {
         this.parameters.set("conditioningSetParam", conditioningSetType);
     }
 
+    /**
+     * Returns the knowledge.
+     *
+     * @return the knowledge.
+     */
     public Knowledge getKnowledge() {
         return knowledge;
     }
 
+    /**
+     * Sets the knowledge to a copy of the given knowledge.
+     *
+     * @param knowledge the knowledge; null is replaced by empty knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = (knowledge == null) ? new Knowledge() : knowledge.copy();
     }
 
+    /**
+     * Returns whether verbose output is logged.
+     *
+     * @return true if verbose.
+     */
     public boolean isVerbose() {
         return verbose;
     }
 
     // --- Implementation -------------------------------------------------------------------------
 
+    /**
+     * Sets whether verbose output is logged.
+     *
+     * @param verbose true if verbose.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -443,11 +582,22 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     /**
      * Runs the vertex checker for all vertices in the graph.
      * Requires an IndependenceTest to have been set.
+     *
+     * @param clear whether to clear existing results first.
      */
     public void runAllVertices(boolean clear) {
         runAllVertices(clear, () -> false);
     }
 
+    /**
+     * Runs the vertex checker for all vertices in the graph, stopping early if cancelled, and then computes the
+     * model-level summary. Data variables not in the graph are skipped. Requires an IndependenceTest to have been
+     * set.
+     *
+     * @param clear     whether to clear existing results first.
+     * @param cancelled returns true if the run should be cancelled.
+     * @throws IllegalStateException if the independence test has not been set.
+     */
     public void runAllVertices(boolean clear, BooleanSupplier cancelled) {
         if (independenceTest == null) {
             throw new IllegalStateException("IndependenceTest has not been set.");
@@ -498,6 +648,11 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
     /**
      * Runs the vertex checker for one vertex name (if present).
+     *
+     * @param vertexName the name of the vertex.
+     * @param clearFirst whether to clear existing results first.
+     * @throws IllegalStateException    if the independence test has not been set.
+     * @throws IllegalArgumentException if the vertex is not in the graph.
      */
     public void runVertexByName(String vertexName, boolean clearFirst) {
         if (independenceTest == null) {
@@ -515,14 +670,31 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         runVertex(alignedGraph, x);
     }
 
+    /**
+     * Returns the summaries of all computed vertices.
+     *
+     * @return the vertex summaries.
+     */
     public List<VertexSummary> getSummaries() {
         return new ArrayList<>(summariesByVertex.values());
     }
 
+    /**
+     * Returns the summary for the given vertex.
+     *
+     * @param vertexName the name of the vertex.
+     * @return the summary, or null if the vertex has not been computed.
+     */
     public VertexSummary getSummary(String vertexName) {
         return summariesByVertex.get(vertexName);
     }
 
+    /**
+     * Returns the independence results for the given vertex.
+     *
+     * @param vertexName the name of the vertex.
+     * @return the results, or an empty list if the vertex has not been computed.
+     */
     public List<IndependenceResult> getResultsForVertex(String vertexName) {
         return resultsByVertex.getOrDefault(vertexName, List.of());
     }
@@ -721,6 +893,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return null;
     }
 
+    /**
+     * Returns the names of the vertices to check, in natural sort order. If none are stored, they are taken from
+     * the independence test's variables.
+     *
+     * @return the vertex names; empty if no independence test is set.
+     */
     public List<String> getVertexNames() {
         if (vertexNames == null || vertexNames.isEmpty()) {
             if (independenceTest == null) return List.of();
@@ -737,10 +915,22 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return _vertexNames;
     }
 
+    /**
+     * Returns whether the given vertex has been computed.
+     *
+     * @param vertexName the name of the vertex.
+     * @return true if the vertex has been computed.
+     */
     public boolean isVertexComputed(String vertexName) {
         return summariesByVertex.containsKey(vertexName);
     }
 
+    /**
+     * Computes the given vertex if it has not been computed yet. Does nothing if the vertex is not in the graph.
+     *
+     * @param vertexName the name of the vertex.
+     * @throws IllegalStateException if the independence test has not been set.
+     */
     public void ensureVertexComputed(String vertexName) {
         if (independenceTest == null) {
             throw new IllegalStateException("IndependenceTest has not been set.");
@@ -761,12 +951,26 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         runVertex(alignedGraph, x);
     }
 
+    /**
+     * Returns the minimum conditioning set size for the given vertex, from stored results if computed, otherwise
+     * from the implied facts without running tests.
+     *
+     * @param vertexName the name of the vertex.
+     * @return the minimum conditioning set size, or -1 if it cannot be determined.
+     */
     public int getMinConditioningSetSizeFast(String vertexName) {
         ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
         return r.min();
     }
 
 
+    /**
+     * Returns the maximum conditioning set size for the given vertex, from stored results if computed, otherwise
+     * from the implied facts without running tests.
+     *
+     * @param vertexName the name of the vertex.
+     * @return the maximum conditioning set size, or -1 if it cannot be determined.
+     */
     public int getMaxConditioningSetSizeFast(String vertexName) {
         ConditioningSetSizeRange r = getConditioningSetSizeRangeFast(vertexName);
         return r.max();
@@ -843,19 +1047,42 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
 //        return GraphUtils.replaceNodes(g, test.getVariables());
 //    }
 
+    /**
+     * Adds a property change listener.
+     *
+     * @param l the listener.
+     */
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }
 
-    /** Cached value or null; never triggers (re)computation. Safe to call on the EDT. */
+    /**
+     * Cached value or null; never triggers (re)computation. Safe to call on the EDT.
+     *
+     * @return the cached model summary, or null.
+     */
     public ModelSummary peekModelSummary() {
         return modelSummary;
     }
 
+    /**
+     * Returns the model-level summary, computing it if necessary.
+     *
+     * @return the model summary.
+     * @throws InterruptedException if the computation is interrupted.
+     */
     public ModelSummary getModelSummary() throws InterruptedException {
         return getModelSummary(() -> false);
     }
 
+    /**
+     * Returns the model-level summary, computing it if necessary. The p-value is the selected uniformity test
+     * applied to all implied facts of the graph, or the wild-bootstrap p-value if that test is selected.
+     *
+     * @param cancelled returns true if the computation should be cancelled.
+     * @return the model summary.
+     * @throws InterruptedException if the computation is cancelled or interrupted.
+     */
     public ModelSummary getModelSummary(BooleanSupplier cancelled) throws InterruptedException {
         if (modelSummary != null) return modelSummary;
 
@@ -931,10 +1158,20 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         return out;
     }
 
+    /**
+     * Returns the selected uniformity test, stored in the parameters; defaults to Kolmogorov-Smirnov.
+     *
+     * @return the uniformity test: KOLMOGOROV_SMIRNOFF, ANDERSON_DARLING or WILD_BOOTSTRAP.
+     */
     public String getUniformityTest() {
         return parameters.getString(UNIFORMITY_TEST_PARAM, KOLMOGOROV_SMIRNOFF);
     }
 
+    /**
+     * Stores the selected uniformity test in the parameters.
+     *
+     * @param mode the uniformity test: KOLMOGOROV_SMIRNOFF, ANDERSON_DARLING or WILD_BOOTSTRAP.
+     */
     public void setUniformityTest(String mode) {
         parameters.set(UNIFORMITY_TEST_PARAM, mode);
     }
@@ -943,6 +1180,9 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
      * The per-vertex uniformity p-value for the currently selected method: KS ({@code modelP}),
      * AD ({@code asP}), or the per-vertex wild-bootstrap omnibus ({@code wbP}). This is what the
      * overview table's single "PV" column shows. NaN if not computed / not applicable.
+     *
+     * @param s the vertex summary; may be null.
+     * @return the selected per-vertex p-value.
      */
     public double selectedVertexP(VertexSummary s) {
         if (s == null) return Double.NaN;
@@ -953,21 +1193,41 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         };
     }
 
-    /** @deprecated use {@link #setUniformityTest(String)}. */
+    /**
+     * Sets the uniformity test to Anderson-Darling or Kolmogorov-Smirnov.
+     *
+     * @param useAndersonDarling true for Anderson-Darling, false for Kolmogorov-Smirnov.
+     * @deprecated use {@link #setUniformityTest(String)}.
+     */
     @Deprecated
     public void setUseAndersonDarling(boolean useAndersonDarling) {
         setUniformityTest(useAndersonDarling ? ANDERSON_DARLING : KOLMOGOROV_SMIRNOFF);
     }
 
+    /**
+     * Returns the saved name of the independence test class, stored in the parameters.
+     *
+     * @return the class name, or null if none is saved.
+     */
     public String getSavedClassName() {
         return this.parameters.getString("independenceTestClassParam", null);
     }
 
+    /**
+     * Stores the name of the independence test class in the parameters.
+     *
+     * @param name the class name.
+     */
     public void setSavedClassName(String name) {
         this.parameters.set("independenceTestClassParam", name);
     }
 
-    /** @deprecated use {@link #getUniformityTest()}. */
+    /**
+     * Returns whether the uniformity test is Anderson-Darling.
+     *
+     * @return true if the uniformity test is Anderson-Darling.
+     * @deprecated use {@link #getUniformityTest()}.
+     */
     @Deprecated
     public boolean isUseAndersonDarling() {
         return ANDERSON_DARLING.equals(getUniformityTest());
@@ -977,8 +1237,21 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
     }
 
     /**
-     * @param numFactsTotal  includes weird p-values too
-     * @param numPValuesUsed p in [0,1]
+     * A per-vertex summary of the check.
+     *
+     * @param vertex              the name of the vertex.
+     * @param conditioningSetSize the conditioning set size; -1 if not recorded.
+     * @param numFactsTotal       includes weird p-values too
+     * @param numPValuesUsed      p in [0,1]
+     * @param modelP              the Kolmogorov-Smirnov uniformity p-value.
+     * @param asP                 the Anderson-Darling uniformity p-value.
+     * @param binP                the binomial p-value for the number of rejections at alpha.
+     * @param fishP               the Fisher combined p-value.
+     * @param fractionReject      the fraction of p-values at or below alpha.
+     * @param numReject           the number of p-values at or below alpha.
+     * @param minP                the minimum p-value.
+     * @param medianP             the median p-value.
+     * @param wbP                 the per-vertex wild-bootstrap omnibus p-value; NaN if not computed.
      */
     public record VertexSummary(String vertex, int conditioningSetSize, int numFactsTotal, int numPValuesUsed,
                                 double modelP, double asP, double binP, double fishP,
@@ -988,6 +1261,12 @@ public class VertexCheckIndTestModel implements SessionModel, GraphSource, Knowl
         private static final long serialVersionUID = 2L;
     }
 
+    /**
+     * A model-level summary of the check.
+     *
+     * @param numPValues the number of p-values used.
+     * @param modelP     the model-level uniformity p-value.
+     */
     public record ModelSummary(int numPValues, double modelP) implements TetradSerializable {
         @Serial
         private static final long serialVersionUID = 23L;

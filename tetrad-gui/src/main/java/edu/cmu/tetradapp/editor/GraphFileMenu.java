@@ -38,6 +38,11 @@ public final class GraphFileMenu extends JMenu {
 
     private static final long serialVersionUID = 8003709852565658589L;
 
+    /**
+     * Constructs a File menu with save and export actions for the graph in the given workbench.
+     *
+     * @param workbench the graph workbench
+     */
     public GraphFileMenu(GraphWorkbench workbench) {
         super("File");
 

@@ -32,19 +32,29 @@ import java.util.Objects;
  */
 public final class InterventionalHistogramEditor extends JPanel {
 
+    /** The model being edited. */
     private final InterventionalHistogramModel model;
 
+    /** Selector for the outcome variable Y. */
     private final JComboBox<String> yCombo = new JComboBox<>();
+    /** Text field for the number of samples to draw. */
     private final JTextField nField = new JTextField("5000");
+    /** Text field for the number of histogram bins. */
     private final JTextField binsField = new JTextField("9");
+    /** Check box for removing zero values from the display. */
     private final JCheckBox removeZero = new JCheckBox("Remove zeros (display)", false);
 
+    /** Button that computes the distribution of Y given do(X). */
     private final JButton runButton = new JButton("Compute Y | do(X)");
+    /** Label showing status messages. */
     private final JLabel statusLabel = new JLabel(" ");
 
     // do() specification rows
+    /** Panel holding the do() specification rows. */
     private final JPanel doRowsPanel = new JPanel();
+    /** Button that adds an intervention row. */
     private final JButton addDoButton = new JButton("Add intervention");
+    /** The do() specification rows. */
     private final List<DoRow> doRows = new ArrayList<>();
 
     /**
@@ -53,13 +63,24 @@ public final class InterventionalHistogramEditor extends JPanel {
     private final List<DiscreteVariable> doCandidates = new ArrayList<>();
 
     // query strip
+    /** Text field for the lower bound of the probability query. */
     private final JTextField loField = new JTextField("-1.0");
+    /** Text field for the upper bound of the probability query. */
     private final JTextField hiField = new JTextField("1.0");
+    /** Button that computes P(lo &le; Y &le; hi). */
     private final JButton probButton = new JButton("P(lo \u2264 Y \u2264 hi)");
+    /** Label showing the result of the probability query. */
     private final JLabel probLabel = new JLabel(" ");
 
+    /** The panel in which the histogram is shown. */
     private final JPanel center = new JPanel(new BorderLayout());
 
+    /**
+     * Constructs an editor for the given interventional histogram model.
+     *
+     * @param model the model to edit
+     * @throws NullPointerException if model is null
+     */
     public InterventionalHistogramEditor(InterventionalHistogramModel model) {
         this.model = Objects.requireNonNull(model, "model");
         setLayout(new BorderLayout(5, 5));

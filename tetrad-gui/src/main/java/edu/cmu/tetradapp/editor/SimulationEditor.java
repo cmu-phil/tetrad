@@ -351,6 +351,11 @@ public final class SimulationEditor extends JPanel implements KnowledgeEditable,
         return this.dataEditor.getSelectedDataModel();
     }
 
+    /**
+     * Returns the graph currently selected in the graph editor.
+     *
+     * @return the selected graph
+     */
     public Graph getSelectedGraph() {
         return this.simulationGraphEditor.getSelectedGraph();
     }

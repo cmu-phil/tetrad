@@ -36,6 +36,12 @@ import java.util.prefs.Preferences;
 public class GraphEditorUtils {
 
     /**
+     * Constructs a new GraphEditorUtils. All methods are static.
+     */
+    public GraphEditorUtils() {
+    }
+
+    /**
      * <p>editkamadaKawaiLayoutParams.</p>
      *
      * @return true if the user clicked OK, false if the dialog was

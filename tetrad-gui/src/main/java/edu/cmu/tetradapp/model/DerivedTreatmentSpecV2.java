@@ -9,26 +9,81 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Specification of a derived binary treatment variable, computed from a source variable in a data set by one of
+ * several rules (median split, threshold, quantile bands, or discrete subset vs. rest).
+ */
 public final class DerivedTreatmentSpecV2 implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The rule used to derive the binary treatment from the source variable.
+     */
     public enum RuleType {
+        /**
+         * Continuous source: values at or above the median map to 1, others to 0.
+         */
         CONT_MEDIAN_SPLIT,
+        /**
+         * Continuous source: values greater than the threshold map to 1, others to 0.
+         */
         CONT_THRESHOLD,
+        /**
+         * Continuous source: values at or below the qLow quantile map to 0, values at or above the qHigh quantile map
+         * to 1, and values in between are treated as missing.
+         */
         CONT_QUANTILE_BANDS,    // bottom qLow =>0, top qHigh =>1, middle => missing (-1)
+        /**
+         * Discrete source: category indices in the subset map to 1, others to 0.
+         */
         DISC_SUBSET_VS_REST     // X in subset =>1 else 0
     }
 
+    /**
+     * The name of the derived treatment variable.
+     */
     private final String derivedName;
+    /**
+     * The name of the source variable.
+     */
     private final String sourceName;
+    /**
+     * The rule used to derive the treatment.
+     */
     private final RuleType ruleType;
 
+    /**
+     * The threshold, used by the CONT_THRESHOLD rule.
+     */
     private final double threshold;
+    /**
+     * The lower quantile, used by the CONT_QUANTILE_BANDS rule.
+     */
     private final double qLow;
+    /**
+     * The upper quantile, used by the CONT_QUANTILE_BANDS rule.
+     */
     private final double qHigh;
+    /**
+     * The set of category indices mapped to 1, used by the DISC_SUBSET_VS_REST rule.
+     */
     private final Set<Integer> subset;
 
+    /**
+     * Constructs a new derived treatment specification. Parameters not used by the given rule type are ignored.
+     *
+     * @param derivedName the name of the derived treatment variable; must be non-empty after trimming
+     * @param sourceName  the name of the source variable; must be non-empty after trimming
+     * @param ruleType    the rule used to derive the treatment
+     * @param threshold   the threshold, for CONT_THRESHOLD
+     * @param qLow        the lower quantile, for CONT_QUANTILE_BANDS
+     * @param qHigh       the upper quantile, for CONT_QUANTILE_BANDS
+     * @param subset      the category indices mapped to 1, for DISC_SUBSET_VS_REST; may be null for other rules
+     * @throws NullPointerException     if derivedName, sourceName or ruleType is null
+     * @throws IllegalArgumentException if a name is empty, the quantiles do not satisfy 0 &lt; qLow &lt; qHigh &lt; 1
+     *                                  for CONT_QUANTILE_BANDS, or the subset is empty for DISC_SUBSET_VS_REST
+     */
     public DerivedTreatmentSpecV2(String derivedName,
                                   String sourceName,
                                   RuleType ruleType,
@@ -57,10 +112,30 @@ public final class DerivedTreatmentSpecV2 implements Serializable {
         }
     }
 
+    /**
+     * Returns the name of the derived treatment variable.
+     *
+     * @return the derived name
+     */
     public String getDerivedName() { return derivedName; }
+    /**
+     * Returns the name of the source variable.
+     *
+     * @return the source name
+     */
     public String getSourceName() { return sourceName; }
+    /**
+     * Returns the rule type.
+     *
+     * @return the rule type
+     */
     public RuleType getRuleType() { return ruleType; }
 
+    /**
+     * Returns a short human-readable description of the rule and its parameters.
+     *
+     * @return the rule description
+     */
     public String describeRule() {
         return switch (ruleType) {
             case CONT_MEDIAN_SPLIT -> "median split";
@@ -72,6 +147,11 @@ public final class DerivedTreatmentSpecV2 implements Serializable {
 
     /**
      * v2.1: Returns vector aligned to data rows: {0,1} or -1 for missing/excluded.
+     *
+     * @param data the data set containing the source variable
+     * @return an array with one entry per row of the data: 0, 1, or -1 for missing/excluded
+     * @throws IllegalArgumentException if the source variable is not in the data, has the wrong type for the rule,
+     *                                  or (for quantile-based rules) has no non-missing values
      */
     public int[] computeX01Full(DataSet data) {
         Objects.requireNonNull(data, "v2.1: data");
@@ -128,6 +208,12 @@ public final class DerivedTreatmentSpecV2 implements Serializable {
         return out;
     }
 
+    /**
+     * Counts the number of 0, 1, and missing entries in the given derived treatment vector.
+     *
+     * @param x01Full a vector as returned by {@link #computeX01Full(DataSet)}
+     * @return the counts
+     */
     public Preview previewCounts(int[] x01Full) {
         int n0 = 0, n1 = 0, nm = 0;
         for (int v : x01Full) {
@@ -138,8 +224,21 @@ public final class DerivedTreatmentSpecV2 implements Serializable {
         return new Preview(n0, n1, nm);
     }
 
+    /**
+     * Counts of 0, 1, and missing entries in a derived treatment vector.
+     */
     public static final class Preview {
+        /**
+         * The counts of rows with treatment 0 (n0), treatment 1 (n1), and missing/excluded (nMissing).
+         */
         public final int n0, n1, nMissing;
+        /**
+         * Constructs a new Preview.
+         *
+         * @param n0       the number of rows with treatment 0
+         * @param n1       the number of rows with treatment 1
+         * @param nMissing the number of missing/excluded rows
+         */
         public Preview(int n0, int n1, int nMissing) {
             this.n0 = n0; this.n1 = n1; this.nMissing = nMissing;
         }

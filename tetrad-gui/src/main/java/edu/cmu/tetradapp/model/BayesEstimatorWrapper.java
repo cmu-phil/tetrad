@@ -112,6 +112,7 @@ public class BayesEstimatorWrapper implements SessionModel {
      *
      * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
                                  BayesPmWrapper bayesPmWrapper, Parameters parameters) {
@@ -163,6 +164,7 @@ public class BayesEstimatorWrapper implements SessionModel {
      *
      * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
      * @param bayesImWrapper a {@link edu.cmu.tetradapp.model.BayesImWrapper} object
+     * @param parameters     a {@link edu.cmu.tetrad.util.Parameters} object
      */
     public BayesEstimatorWrapper(DataWrapper dataWrapper,
                                  BayesImWrapper bayesImWrapper, Parameters parameters) {

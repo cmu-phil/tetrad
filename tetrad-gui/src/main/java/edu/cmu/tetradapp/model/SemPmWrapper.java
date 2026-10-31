@@ -401,10 +401,9 @@ public class SemPmWrapper implements SessionModel {
     }
 
     /**
-     * The wrapped SemPm.
+     * Returns the wrapped SemPms.
      *
      * @return a {@link java.util.List} object
-     * @serial Cannot be null.
      */
     public List<SemPm> getSemPms() {
         return this.semPms;

@@ -71,11 +71,16 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
      */
     private boolean showMenus = true;
 
-    // Models currently displayed in the tabbed pane, in tab order.
-    // This is the source of truth for getSelectedDataModel().
+    /**
+     * Models currently displayed in the tabbed pane, in tab order. This is the source of truth for
+     * getSelectedDataModel().
+     */
     private final java.util.List<DataModel> displayedModels = new java.util.ArrayList<>();
 
-    // Avoid stacking multiple change listeners across resets.
+    /**
+     * True once the tab selection listener has been installed; avoids stacking multiple change listeners across
+     * resets.
+     */
     private boolean selectionListenerInstalled = false;
 
     /**
@@ -89,7 +94,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         }
     };
 
-    // Avoid stacking the wrapper listener across addNotify calls.
+    /**
+     * True once the wrapper listener has been installed; avoids stacking the wrapper listener across addNotify calls.
+     */
     private boolean wrapperListenerInstalled = false;
 
     /**
@@ -116,6 +123,12 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         this.parameters = new Parameters();
     }
 
+    /**
+     * Constructs a data editor with the given tab placement, optionally hiding the menus.
+     *
+     * @param tabPlacement the tab placement for the tabbed pane
+     * @param showMenus    true if menus should be shown
+     */
     public DataEditor(int tabPlacement, boolean showMenus) {
         this.tabbedPane = new JTabbedPane(tabPlacement);
         this.tabbedPane.setPreferredSize(new Dimension(1000, 800));

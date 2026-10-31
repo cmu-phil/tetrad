@@ -535,7 +535,9 @@ public class UpdatedBayesImWizardObs extends JPanel {
     }
 
     /**
-     * @return the getModel parameter set.
+     * Returns the currently selected node.
+     *
+     * @return the selected node.
      */
     public Node getSelectedNode() {
         return this.selectedNode;

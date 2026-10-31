@@ -79,6 +79,9 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
      * The Bayes PM and tolerance the estimate was made with, kept for re-estimating on another data set.
      */
     private BayesPm bayesPm;
+    /**
+     * The EM convergence tolerance the estimate was made with, kept for re-estimating on another data set.
+     */
     private double tolerance = 0.0001;
 
     //============================CONSTRUCTORS==========================//

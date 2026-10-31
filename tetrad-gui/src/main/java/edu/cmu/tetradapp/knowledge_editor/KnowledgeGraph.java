@@ -180,7 +180,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      *
      * @param n1   the first node
      * @param n2   the second node
-     * @param test
+     * @param test the independence test passed to the underlying graph's getSepset
      * @return the set of nodes that form the separator set
      */
     @Override

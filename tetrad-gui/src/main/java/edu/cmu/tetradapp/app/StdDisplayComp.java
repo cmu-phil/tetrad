@@ -59,11 +59,26 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     private static final Font FALLBACK_FONT = new Font("Dialog", Font.PLAIN, 12);
 
+    /**
+     * The session node name shown on the card.
+     */
     private String name = " ";
+    /**
+     * The model acronym shown beneath the name.
+     */
     private String acronym = "No model";
+    /**
+     * The node type, used to choose the band color and label.
+     */
     private String nodeType = "";
 
+    /**
+     * Whether the node has a model; nodes without one are drawn hollow with a dashed border.
+     */
     private boolean hasModel;
+    /**
+     * Whether the node is selected.
+     */
     private boolean selected;
 
     /**

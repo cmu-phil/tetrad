@@ -36,6 +36,9 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
 
     private static final int ARC = 8;
 
+    /**
+     * Whether this node display is selected.
+     */
     private boolean selected;
 
     /**

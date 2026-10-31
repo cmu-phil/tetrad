@@ -326,6 +326,7 @@ final class HybridCgRegEditingTable extends JTable {
      * Simple reusable Double cell editor with number formatting.
      */
     public static final class DoubleCellEditor extends DefaultCellEditor {
+        /** The format used to display values in the editor. */
         private final DecimalFormat fmt;
 
         public DoubleCellEditor(String pattern) {

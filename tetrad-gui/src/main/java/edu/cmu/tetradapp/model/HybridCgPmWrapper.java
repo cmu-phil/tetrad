@@ -32,14 +32,37 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+    /**
+     * The wrapped Hybrid CG PM.
+     */
     private HybridCgModel.HybridCgPm hybridCgPm;
+    /**
+     * The name of this session model.
+     */
     private String name = "Hybrid CG PM";
+    /**
+     * Free-form notes attached to this model.
+     */
     private String notes = "";
 
+    /**
+     * Constructs a HybridCgPmWrapper from the graph of the given graph source, with no data set.
+     *
+     * @param graph      the source of the graph
+     * @param parameters the parameters used to configure the model
+     */
     public HybridCgPmWrapper(GraphSource graph, Parameters parameters) {
         this(graph.getGraph(), null, parameters);
     }
 
+    /**
+     * Constructs a HybridCgPmWrapper from the graph of the given graph source, taking variable types from the data
+     * wrapper's selected data set.
+     *
+     * @param graph      the source of the graph
+     * @param data       the data wrapper; its selected data model must be a DataSet
+     * @param parameters the parameters used to configure the model
+     */
     public HybridCgPmWrapper(GraphSource graph, DataWrapper data, Parameters parameters) {
         this(graph.getGraph(), (DataSet) data.getSelectedDataModel(), parameters);
     }
@@ -413,6 +436,8 @@ public class HybridCgPmWrapper implements SessionModel, Serializable {
 
     /**
      * Quick diagnostic for the GUI: are there any discrete children with continuous parents that still lack cutpoints?
+     *
+     * @return true if some discrete node with continuous parents lacks cutpoints; false otherwise or if the PM is null
      */
     public boolean hasDiscreteChildrenNeedingCutpoints() {
         if (hybridCgPm == null) return false;

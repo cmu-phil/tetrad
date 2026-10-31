@@ -47,27 +47,74 @@ public final class TextBayesUpdateEditor extends JPanel {
         Approximate
     }
 
+    /**
+     * The model being edited.
+     */
     private final TextBayesUpdateModel model;
+    /**
+     * The Bayes IM to update, taken from the model.
+     */
     private final BayesIm bayesIm;
+    /**
+     * The parameters, used to store the editor's settings.
+     */
     private final Parameters params;
 
+    /**
+     * Combo box for choosing the updater algorithm.
+     */
     private final JComboBox<UpdaterKind> updaterCombo = new JComboBox<>(UpdaterKind.values());
+    /**
+     * Text field for the glob pattern selecting which variables to show.
+     */
     private final JTextField varGlobField = new JTextField("*");
+    /**
+     * Text area for the evidence.
+     */
     private final JTextArea evidenceText = new JTextArea(10, 60);
 
+    /**
+     * Button that runs the update.
+     */
     private final JButton doUpdateButton = new JButton("Do Update");
+    /**
+     * Button that shows the result of the last update.
+     */
     private final JButton viewResultButton = new JButton("View Result");
 
+    /**
+     * Table model for the update results.
+     */
     private final ResultsTableModel resultsTableModel = new ResultsTableModel();
+    /**
+     * Table showing the update results.
+     */
     private final JTable resultsTable = new JTable(resultsTableModel);
 
     // last run state (for “View Result”)
+    /**
+     * The updater from the last run, or null if none.
+     */
     private ManipulatingBayesUpdater lastUpdater = null;
+    /**
+     * The evidence from the last run, or null if none.
+     */
     private Evidence lastEvidence = null;
+    /**
+     * The evidence text from the last run.
+     */
     private String lastEvidenceText = "";
 
+    /**
+     * Undo manager for the evidence text area.
+     */
     private final UndoManager evidenceUndo = new UndoManager();
 
+    /**
+     * Constructs the editor for the given model.
+     *
+     * @param model the text Bayes update model; must not be null
+     */
     public TextBayesUpdateEditor(TextBayesUpdateModel model) {
         this.model = Objects.requireNonNull(model, "model");
         this.bayesIm = model.getBayesIm();

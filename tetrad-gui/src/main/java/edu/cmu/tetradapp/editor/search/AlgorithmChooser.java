@@ -36,6 +36,8 @@ import java.beans.PropertyChangeListener;
 public interface AlgorithmChooser {
 
     /**
+     * Returns the currently selected algorithm model.
+     *
      * @return the currently selected algorithm model, or null if none.
      */
     AlgorithmModel getSelectedAlgorithm();
@@ -59,11 +61,15 @@ public interface AlgorithmChooser {
     boolean isAllValid();
 
     /**
+     * Returns this chooser as a Swing component.
+     *
      * @return this chooser as a Swing component for placement in the editor.
      */
     JComponent asComponent();
 
     /**
+     * Adds a property change listener to this chooser.
+     *
      * @param listener listener for the {@code "algoFwdBtn"} property.
      */
     void addPropertyChangeListener(PropertyChangeListener listener);

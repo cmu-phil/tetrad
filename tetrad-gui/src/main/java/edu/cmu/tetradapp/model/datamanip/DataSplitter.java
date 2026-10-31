@@ -195,6 +195,8 @@ public final class DataSplitter {
         }
 
         /**
+         * Returns the remainder name, defaulted if blank.
+         *
          * @return the remainder name, defaulted if blank.
          */
         public String effectiveRemainderName() {
@@ -278,6 +280,8 @@ public final class DataSplitter {
                           int numRows, List<String> impliedDropVarNames, int numSplitsWithUnobservedCategories) {
 
         /**
+         * Returns the number of splits with at least one row.
+         *
          * @return the number of splits with at least one row.
          */
         public int numNonEmpty() {

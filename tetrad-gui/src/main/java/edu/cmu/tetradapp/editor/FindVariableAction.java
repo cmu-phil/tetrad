@@ -94,9 +94,13 @@ public class FindVariableAction extends AbstractAction {
         this.dialog.setVisible(true);
     }
 
+    /** Text field used to filter the variable names. */
     private JTextField filterField;
+    /** List of variable names matching the filter. */
     private JList<String> list;
+    /** The list model backing the variable list. */
     private DefaultListModel<String> listModel;
+    /** Label showing how many variables match. */
     private JLabel countLabel;
 
     private JPanel buildPanel() {

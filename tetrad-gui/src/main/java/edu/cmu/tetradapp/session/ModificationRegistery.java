@@ -37,6 +37,13 @@ import java.util.Set;
  * @version $Id: $Id
  */
 public final class ModificationRegistery {
+
+    /**
+     * Constructs a new ModificationRegistery. All methods are static.
+     */
+    public ModificationRegistery() {
+    }
+
     private static final Set<Object> EDITED_MODELS = new HashSet<>();
     private static final Map<JComponent, SessionNode> EDITORS_TO_SESSION_NODES = new HashMap<>();
     private static final Map<JComponent, PropertyChangeListener> EDITORS_TO_LISTENERS = new HashMap<>();

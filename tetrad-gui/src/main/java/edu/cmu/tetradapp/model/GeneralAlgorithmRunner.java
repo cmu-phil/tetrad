@@ -74,9 +74,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private static final long serialVersionUID = 23L;
 
     /**
-     * The name of the model.
+     * The user's algorithm selections, copied over from the runner this one is constructed from.
      */
     private final Map<String, Object> userAlgoSelections = new HashMap<>();
+    /**
+     * A display subtitle (e.g., sample size or pooling note) for each result graph, keyed by graph identity.
+     */
     private final Map<Graph, String> graphSubtitle = new IdentityHashMap<>();
     /**
      * The graph list.
@@ -88,6 +91,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * saved with the session, which saves graphList.
      */
     private transient List<Graph> layoutReference;
+    /**
+     * The block specification (clusters of measured variables) passed to block-based tests, scores and latent
+     * structure algorithms; null if none.
+     */
     BlockSpec blockSpec = null;
     /**
      * The upstream Latent Clusters runner, non-null only when this search box was given a Latent Clusters box as a
@@ -128,6 +135,9 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
      * The independence tests.
      */
     private transient List<IndependenceTest> independenceTests;
+    /**
+     * The display names of the result graphs, parallel to the graph list.
+     */
     private List<String> resultNames = new ArrayList<>();
     /**
      * The elapsed time for the algorithm to run.
@@ -500,6 +510,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
     }
 
+    /**
+     * Constructs a runner that holds the given result graphs, without an algorithm or data.
+     *
+     * @param graphList the result graphs
+     */
     public GeneralAlgorithmRunner(List<Graph> graphList) {
         this.graphList = graphList;
     }
@@ -541,6 +556,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return (k > 0) ? String.format("aggregated over %d datasets, n_total=%d", k, nTot) : null;
     }
 
+    /**
+     * Returns the display subtitle recorded for the given result graph during the last search.
+     *
+     * @param g the result graph (looked up by identity)
+     * @return the subtitle, or null if none was recorded for this graph
+     */
     public String getGraphSubtitle(Graph g) {
         return graphSubtitle.get(g);
     }
@@ -1064,6 +1085,14 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         }
     }
 
+    /**
+     * Returns a sample-size subtitle (of the form "n = ...") for a result graph, using the data model at the given
+     * index if there is one, and otherwise the runner's data model.
+     *
+     * @param g         the result graph (currently unused)
+     * @param indexHint the index of the data model paired with the graph, or a negative number if unknown
+     * @return the subtitle, or an empty string if no sample size is available
+     */
     public String getGraphSubtitle(Graph g, int indexHint) {
         // Prefer the paired data model when available and aligned by index.
         DataModelList dml = getDataModelList();
@@ -1119,6 +1148,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return false;
     }
 
+    /**
+     * Returns the display names of the result graphs, in the same order as the graphs.
+     *
+     * @return the result names
+     */
     public List<String> getResultNames() {
         return resultNames;
     }
@@ -1479,6 +1513,11 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return this.graphList;
     }
 
+    /**
+     * Replaces the result graphs and resets the selected result to the first one.
+     *
+     * @param gs the new result graphs
+     */
     public void setResultGraphs(List<Graph> gs) {
         this.graphList = gs;
         this.selectedResultIndex = 0;
@@ -1556,10 +1595,20 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         return elapsedTime;
     }
 
+    /**
+     * Returns the block specification used by block-based tests, scores and algorithms.
+     *
+     * @return the block specification, or null if none
+     */
     public BlockSpec getBlockSpec() {
         return blockSpec;
     }
 
+    /**
+     * Sets the block specification used by block-based tests, scores and algorithms.
+     *
+     * @param blockSpec the block specification, or null for none
+     */
     public void setBlockSpec(BlockSpec blockSpec) {
         this.blockSpec = blockSpec;
     }

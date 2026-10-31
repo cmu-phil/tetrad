@@ -68,6 +68,8 @@ public final class AlgorithmModels {
     }
 
     /**
+     * Returns the algorithm model registry for the global experimental preference.
+     *
      * @return the registry honoring the global experimental preference.
      */
     public static AlgorithmModels getInstance() {
@@ -128,6 +130,12 @@ public final class AlgorithmModels {
                 : Collections.EMPTY_LIST;
     }
 
+    /**
+     * Returns the continuous, single-data-set algorithm model with the given name.
+     *
+     * @param lastAlgorithmChoice the name of the algorithm model.
+     * @return the algorithm model with that name, or null if there is none.
+     */
     public AlgorithmModel getAlgorithmModelByName(String lastAlgorithmChoice) {
         AlgorithmModels algorithmModels = AlgorithmModels.getInstance();
         List<AlgorithmModel> algorithmModels1 = algorithmModels.getModels(DataType.Continuous, false);

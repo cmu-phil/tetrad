@@ -40,7 +40,9 @@ import java.util.regex.Pattern;
  */
 public final class DoublyRobustEstEditorV2 extends JPanel {
 
+    /** The model being edited. */
     private final DoublyRobustEstModelV2 model;
+    /** The model's graph, used to compute adjustment sets. */
     private final Graph graph;
 
 //    private final JRadioButton pairwiseRadio =
@@ -48,16 +50,24 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
 //    private final JRadioButton jointRadio =
 //            new JRadioButton("Joint conditioning: p(Y | joint(X)) (v2 supports |X|=1)");
 
+    /** Text field for the treatment variables X (wildcards and lists allowed). */
     private final JTextField treatmentsField = new JTextField();
+    /** Text field for the outcome variables Y (wildcards and lists allowed). */
     private final JTextField outcomesField = new JTextField();
 
+    /** Button that computes adjustment sets and doubly robust ATE estimates. */
     private final JButton runButton = new JButton("Compute adjustment sets and ATE (DR)");
+    /** Button that opens the parameter editor. */
     private final JButton paramsButton = new JButton("Edit parameters...");
+    /** Button that shows details for the selected result row. */
     private final JButton viewDetailsButton = new JButton("View details...");
 
+    /** The table displaying results. */
     private final JTable resultTable;
+    /** The table model backing the results table. */
     private final DoublyRobustEstResultTableModelV2 tableModel;
 
+    /** Right-aligned renderer for numeric cells; shows blanks for null, NaN and infinite values. */
     private final DefaultTableCellRenderer numberRenderer = new DefaultTableCellRenderer() {
         {
             setHorizontalAlignment(SwingConstants.RIGHT);
@@ -82,6 +92,12 @@ public final class DoublyRobustEstEditorV2 extends JPanel {
         }
     };
 
+    /**
+     * Constructs an editor for the given doubly robust estimation model.
+     *
+     * @param model the model to edit
+     * @throws NullPointerException if model or its graph is null
+     */
     public DoublyRobustEstEditorV2(DoublyRobustEstModelV2 model) {
         this.model = Objects.requireNonNull(model, "model");
         this.graph = Objects.requireNonNull(model.getGraph(), "graph");

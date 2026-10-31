@@ -62,7 +62,13 @@ public class LatentClustersEditor extends JPanel implements PropertyChangeListen
      * The desktop.
      */
     private final TetradDesktop desktop;
+    /**
+     * The parameters for the latent clusters search, taken from the runner.
+     */
     private final Parameters parameters;
+    /**
+     * The wizard used to specify and run the block clustering.
+     */
     private BlockClusteringWizard wizard;
 
     /**

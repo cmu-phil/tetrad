@@ -41,9 +41,21 @@ import java.util.ArrayList;
  * nothing but the spec is stored.
  */
 public class DataSplitParamsEditor extends JPanel implements FinalizingParameterEditor {
+    /**
+     * The split editor hosted by this panel; null until the editor is set up.
+     */
     private DataSplitEditor editor;
+    /**
+     * The parameters in which the split spec is stored.
+     */
     private Parameters parameters;
+    /**
+     * The parent data set to be split.
+     */
     private DataSet dataSet = new BoxDataSet(new DoubleDataBox(0, 0), new ArrayList<>());
+    /**
+     * The previously stored split spec, restored into the editor once it is built; may be null.
+     */
     private DataSplitter.Spec initialSpec;
 
     /**

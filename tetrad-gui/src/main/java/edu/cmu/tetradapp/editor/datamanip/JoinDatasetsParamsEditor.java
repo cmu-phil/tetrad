@@ -47,18 +47,30 @@ public class JoinDatasetsParamsEditor extends JPanel implements FinalizingParame
 
     private static final long serialVersionUID = 23L;
 
+    /** The parameters into which the join settings are written. */
     private Parameters params;
+    /** The parent data wrappers whose data sets are joined. */
     private final List<DataWrapper> parents = new ArrayList<>();
 
+    /** Selects which parent supplies the left (primary) table. */
     private JComboBox<String> leftParentBox;
+    /** Shows which parent supplies the right table. */
     private JLabel rightParentLabel;
+    /** The key pair rows, each matching a left variable to a right variable. */
     private final List<KeyRow> keyRows = new ArrayList<>();
+    /** The panel holding the key pair rows. */
     private JPanel keyRowsPanel;
+    /** Selects a left join. */
     private JRadioButton leftJoin;
+    /** Selects an inner join. */
     private JRadioButton innerJoin;
+    /** Selects a full outer join. */
     private JRadioButton fullOuterJoin;
+    /** Whether a right key may repeat (one-to-many join). */
     private JCheckBox allowOneToMany;
+    /** The suffix added to colliding column names from the left table. */
     private JTextField leftSuffix;
+    /** The suffix added to colliding column names from the right table. */
     private JTextField rightSuffix;
 
     /**

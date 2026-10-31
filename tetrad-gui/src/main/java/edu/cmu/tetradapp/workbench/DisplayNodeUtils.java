@@ -31,6 +31,12 @@ import java.awt.*;
  */
 public class DisplayNodeUtils {
 
+    /**
+     * Constructs a new DisplayNodeUtils. All members are static.
+     */
+    public DisplayNodeUtils() {
+    }
+
     // Note that this component must be a JComponent, since non-rectangular
     // shapes are used for some extensions.
 
