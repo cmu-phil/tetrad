@@ -274,7 +274,13 @@ public class Fges implements IGraphSearch, DagScorer {
             this.logger.log("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null, verbose), true);
+        // A GraphScore (d-separation oracle) cannot score a whole DAG, so don't try (and don't warn on every
+        // search); the model score is simply undefined in that case.
+        if (score instanceof GraphScore) {
+            this.modelScore = Double.NaN;
+        } else {
+            this.modelScore = scoreDag(GraphTransforms.dagFromCpdag(graph, null, verbose), true);
+        }
 
         return graph;
     }
@@ -406,7 +412,7 @@ public class Fges implements IGraphSearch, DagScorer {
     /**
      * Returns the score of the final search model.
      *
-     * @return This score.
+     * @return This score, or NaN if the score is a {@link GraphScore}, which cannot score a whole DAG.
      */
     public double getModelScore() {
         return modelScore;
