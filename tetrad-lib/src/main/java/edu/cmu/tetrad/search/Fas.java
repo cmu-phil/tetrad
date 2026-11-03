@@ -155,6 +155,15 @@ public class Fas implements IFas {
 
     private DeterminismGuard determinismGuard = null;
     private final List<BlockedDeletion> blocked = new ArrayList<>();
+    /**
+     * The thread that called {@link #search(List)}, captured so that interruption can be observed and
+     * propagated from inside the parallel decision phase. A check made with
+     * {@code Thread.currentThread()} inside a {@code parallelStream()} lambda interrogates a
+     * ForkJoinPool worker rather than the thread the caller actually interrupted, so it never fires;
+     * and an {@code interrupt()} issued there would leak onto a pooled worker and contaminate
+     * unrelated later tasks.
+     */
+    private volatile Thread searchThread;
 
     /**
      * Wires a determinism guard gating which separating sets FAS is willing to accept. See
@@ -199,7 +208,7 @@ public class Fas implements IFas {
             if (determinismGuard.determines(x, S)) return true;
             return determinismGuard.determines(y, S);
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            propagateInterrupt();
             return true;
         }
     }
@@ -277,6 +286,8 @@ public class Fas implements IFas {
      * @throws InterruptedException if interrupted.
      */
     public Graph search(List<Node> nodes) throws InterruptedException {
+        this.searchThread = Thread.currentThread();
+
         if (!new HashSet<>(test.getVariables()).containsAll(nodes)) {
             throw new IllegalArgumentException("Variables should be a subset of the ones in the test.");
         }
@@ -384,10 +395,10 @@ public class Fas implements IFas {
 //            nodes.forEach(x -> {
             nodes.parallelStream().forEach(x -> {
                 for (Node y : checkAdj.getAdjacentNodes(x)) {
+                    if (searchInterrupted()) return;
                     // Process each unordered pair once (canonical order x<y).
                     if (x.getName().compareTo(y.getName()) >= 0) continue;
                     decideOnePair(checkAdj, d, x, y, removals, blockedThisDepth);
-                    if (Thread.currentThread().isInterrupted()) return;
                 }
             });
 
@@ -424,7 +435,7 @@ public class Fas implements IFas {
                     .thenComparingInt(r -> r.S.size())); // tie-breaker: smaller S first
 
             for (EdgeRemoval r : toApply) {
-                if (Thread.currentThread().isInterrupted()) break;
+                if (searchInterrupted()) break;
 
                 if (knowledge.noEdgeRequired(r.x.getName(), r.y.getName())) {
                     if (modify.isAdjacentTo(r.x, r.y)) {
@@ -447,7 +458,7 @@ public class Fas implements IFas {
                 removeNodesAboutX(modify, modify, d, x);
                 int after = modify.getEdges().size();
                 if (after < before) anyRemoved = true;
-                if (Thread.currentThread().isInterrupted()) break;
+                if (searchInterrupted()) break;
             }
         }
 
@@ -476,7 +487,7 @@ public class Fas implements IFas {
             ChoiceGenerator gen = new ChoiceGenerator(ppx.size(), d);
             int[] choice;
             while ((choice = gen.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) return;
+                if (searchInterrupted()) return;
 
                 Set<Node> S = GraphUtils.asSet(choice, ppx);
 
@@ -484,8 +495,8 @@ public class Fas implements IFas {
                 try {
                     result = test.checkIndependence(x, y, S);
                 } catch (InterruptedException e) {
-                    // Preserve interrupt status and stop working this pair.
-                    Thread.currentThread().interrupt();
+                    // Preserve interrupt status on the SEARCH thread and stop working this pair.
+                    propagateInterrupt();
                     return;
                 }
 
@@ -509,7 +520,7 @@ public class Fas implements IFas {
             ChoiceGenerator gen = new ChoiceGenerator(ppy.size(), d);
             int[] choice;
             while ((choice = gen.next()) != null) {
-                if (Thread.currentThread().isInterrupted()) return;
+                if (searchInterrupted()) return;
 
                 Set<Node> S = GraphUtils.asSet(choice, ppy);
 
@@ -517,7 +528,7 @@ public class Fas implements IFas {
                 try {
                     result = test.checkIndependence(x, y, S);
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                    propagateInterrupt();
                     return;
                 }
 
@@ -553,8 +564,8 @@ public class Fas implements IFas {
                     try {
                         result = test.checkIndependence(x, y, S);
                     } catch (InterruptedException e) {
-                        // Preserve interrupt status and stop working this neighborhood.
-                        Thread.currentThread().interrupt();
+                        // Preserve interrupt status on the SEARCH thread; stop this neighborhood.
+                        propagateInterrupt();
                         return;
                     }
 
@@ -583,8 +594,28 @@ public class Fas implements IFas {
                 }
             }
 
-            if (Thread.currentThread().isInterrupted()) return;
+            if (searchInterrupted()) return;
         }
+    }
+
+    /**
+     * True iff the thread that called {@link #search(List)} has been interrupted. Falls back to the
+     * current thread when no search is in progress.
+     *
+     * @return true iff the search has been interrupted.
+     */
+    private boolean searchInterrupted() {
+        Thread t = this.searchThread;
+        return (t != null ? t : Thread.currentThread()).isInterrupted();
+    }
+
+    /**
+     * Re-asserts interrupted status on the thread that called {@link #search(List)}, so that the depth
+     * loop observes it. Falls back to the current thread when no search is in progress.
+     */
+    private void propagateInterrupt() {
+        Thread t = this.searchThread;
+        (t != null ? t : Thread.currentThread()).interrupt();
     }
 
     /**
