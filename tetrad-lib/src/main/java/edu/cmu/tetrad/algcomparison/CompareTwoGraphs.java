@@ -519,17 +519,28 @@ public class CompareTwoGraphs {
     }
 
     /**
-     * Returns the statistics shown by default in the stats list comparison, in display order, with duplicate
-     * abbreviations removed (the internal default list repeats a few entries, which the plain table methods keep
-     * for unchanged output).
+     * Returns the statistics shown by default in the stats list comparison, in display order. The Elapsed (wall
+     * time) row is not a statistic; the table methods append it separately when an elapsed time is supplied.
      *
      * @return a new list of the default statistics.
      */
     public static List<Statistic> defaultStatistics() {
+        return statistics();
+    }
+
+    /**
+     * Returns a broader, curated set of statistics suitable for the stats list comparison, with duplicate
+     * abbreviations removed. This includes some statistics (e.g., SHD compared to the CPDAG) that need constructor
+     * arguments and so cannot be found by a reflection scan for no-argument constructors; choosers should offer
+     * these in addition to the defaults.
+     *
+     * @return a new list of the curated statistics.
+     */
+    public static List<Statistic> curatedStatistics() {
         List<Statistic> unique = new ArrayList<>();
         java.util.Set<String> seen = new java.util.HashSet<>();
 
-        for (Statistic statistic : statistics()) {
+        for (Statistic statistic : allCuratedStatistics()) {
             if (seen.add(statistic.getAbbreviation())) {
                 unique.add(statistic);
             }
@@ -539,6 +550,21 @@ public class CompareTwoGraphs {
     }
 
     private static List<Statistic> statistics() {
+        List<Statistic> statistics = new ArrayList<>();
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+        statistics.add(new ArrowheadPrecisionCommonEdges());
+        statistics.add(new ArrowheadRecallCommonEdges());
+        statistics.add(new F1Adj());
+        statistics.add(new F1Arrow());
+        statistics.add(new NumberOfEdgesEst());
+        statistics.add(new NumberOfEdgesTrue());
+        return statistics;
+    }
+
+    private static List<Statistic> allCuratedStatistics() {
         List<Statistic> statistics = new ArrayList<>();
 
         // Others

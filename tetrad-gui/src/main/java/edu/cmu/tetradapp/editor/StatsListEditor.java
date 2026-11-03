@@ -134,7 +134,7 @@ public class StatsListEditor extends JPanel {
                    + "\n\nNo target graphs to compare to it.";
         }
 
-        // Null means no choice stored: use the default table methods, so output is unchanged for old sessions.
+        // Null means no choice stored (e.g., old sessions): use the default table methods and default statistics.
         java.util.List<Statistic> statistics = StatsListStatisticsChooser.selected(this.params);
 
         // The reference graph as wired in (normally the true DAG, with latents) goes down as the true DAG; the
