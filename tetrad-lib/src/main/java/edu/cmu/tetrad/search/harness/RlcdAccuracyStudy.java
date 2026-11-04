@@ -96,15 +96,27 @@ import java.util.Set;
  * Edges between observed and latent variables are not scored separately; their effect shows in clus and spur.
  * <p>
  * <b>Arguments</b>, all optional, as key=value: reps=10, ns=2000, structures=mixed30,mixed30i5,rand6,
- * dists=skew,mildskew,gauss, conditions=plain,resolve,tiers,both, penalty=1 (the stage-1 BOSS penalty
- * discount; RLCD's default of 1 matches causal-learn's GES setting), seed=20261022. For example,
- * {@code reps=30 ns=2000,5000 structures=mixed30i5 dists=skew,ceil}. A dot is printed per replication.
+ * dists=skew,mildskew,gauss, conditions=plain,resolve,tiers,both, seed=20261022, and the two swept
+ * parameters:
+ * <ul>
+ *     <li><b>alphas</b>=0.01, a comma-separated list of rank-test alphas (RLCD's default is 0.01);</li>
+ *     <li><b>penalties</b>=1, a comma-separated list of stage-1 BOSS penalty discounts (RLCD's default of 1
+ *     matches causal-learn's GES setting). The older singular {@code penalty=} is still accepted as a synonym
+ *     for a one-element list, so earlier command lines keep working.</li>
+ * </ul>
+ * Every alpha, penalty, and condition cell is run on the <i>same</i> simulated dataset within a replication, so
+ * differences between cells are paired and not sampling noise between them. Add {@code csv=path} to also write
+ * one row per cell to a file, for plotting a sweep. For example,
+ * {@code reps=20 ns=2000,5000 structures=mixed30,rand6 dists=skew conditions=plain alphas=0.001,0.01,0.05,0.1
+ * penalties=0.5,1,2,4 csv=sweep.csv}.
  * <p>
- * Timing, from a smoke run at N = 5000, per RLCD run: mixed30 about 2 s, mixed30i5 about 3 s, rand6 about 7 s
- * (four runs per replication, one per condition). The default grid takes roughly a quarter of an hour. The ceil
- * data are much slower, 25 to 60 s per run, because clipped variables give stage 2 many spurious rank
- * deficiencies to enumerate, so ceil is not in the default list. At reps=10 the standard error of a share is up
- * to 0.16, so only large differences count.
+ * Timing, from a smoke run at N = 5000, per RLCD run: mixed30 about 2 s, mixed30i5 about 3 s, rand6 about 7 s.
+ * The number of runs per replication is alphas x penalties x conditions, so a sweep grid multiplies quickly:
+ * the example above is 8 runs per replication per N, about 20 minutes at reps=20. The ceil data are much slower,
+ * 25 to 60 s per run, because clipped variables give stage 2 many spurious rank deficiencies to enumerate, so
+ * ceil is not in the default list; a large alpha has the same effect, so expect alpha=0.1 cells to run several
+ * times longer than alpha=0.01 ones. At reps=10 the standard error of a share is up to 0.16, so only large
+ * differences count. Start with one structure and one dist before widening the grid.
  *
  * @author josephramsey
  */
@@ -119,7 +131,7 @@ public final class RlcdAccuracyStudy {
      * @param args key=value options; see the class description.
      * @throws InterruptedException if interrupted.
      */
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
         Map<String, String> opt = new HashMap<>();
         for (String a : args) {
             int eq = a.indexOf('=');
@@ -133,40 +145,62 @@ public final class RlcdAccuracyStudy {
         String[] dists = opt.getOrDefault("dists", "skew,mildskew,gauss").split(",");
         String[] conditions = opt.getOrDefault("conditions", "plain,resolve,tiers,both").split(",");
         long seed = Long.parseLong(opt.getOrDefault("seed", "20261022"));
-        double penalty = Double.parseDouble(opt.getOrDefault("penalty", "1"));
+        double[] alphas = Arrays.stream(opt.getOrDefault("alphas", "0.01").split(","))
+                .mapToDouble(s -> Double.parseDouble(s.trim())).toArray();
+        // The singular penalty= of the October 22 harness remains valid as a one-element penalties= list.
+        double[] penalties = Arrays.stream(opt.getOrDefault("penalties", opt.getOrDefault("penalty", "1")).split(","))
+                .mapToDouble(s -> Double.parseDouble(s.trim())).toArray();
+        String csv = opt.get("csv");
         Random random = new Random(seed);
 
         System.out.println("RLCD accuracy on linear non-Gaussian data with latents. reps " + reps
-                           + "; stage-1 penalty discount " + penalty
-                           + "; RLCD defaults otherwise (alpha 0.01, max k 3, BOSS stage 1, latent gate on).");
+                           + "; alphas " + Arrays.toString(alphas)
+                           + "; stage-1 penalty discounts " + Arrays.toString(penalties)
+                           + "; RLCD defaults otherwise (max k 3, BOSS stage 1, latent gate on).");
+        System.out.println("Runs per replication per N: " + (alphas.length * penalties.length * conditions.length)
+                           + ". All cells of a replication share one simulated dataset, so cells are paired.");
 
-        for (String structure : structures) {
-            for (String dist : dists) {
-                System.out.println();
-                System.out.println("=== " + structure + ", errors " + dist + " ===");
-                System.out.printf("%6s %-8s %7s %5s %5s %5s  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s  %5s %6s%n",
-                        "N", "cond", "lat", "clus", "jac", "spur", "LL P", "LL R", "OO P", "OO R", "dir", "dir'd",
-                        "imp", "impDir", "impLat", "rev", "secs");
-                for (int n : ns) {
-                    Map<String, Totals> totals = new LinkedHashMap<>();
-                    for (String c : conditions) totals.put(c, new Totals());
-                    int trueLatents = 0;
-                    System.out.print("  N=" + n + " ");
-                    for (int r = 0; r < reps; r++) {
-                        System.out.print(".");
-                        System.out.flush();
-                        Truth truth = build(structure, random);
-                        trueLatents = truth.latents.size();
-                        DataSet data = truth.simulate(dist, n, random);
-                        long runSeed = Math.floorMod(random.nextLong(), 1_000_000L);
-                        for (String c : conditions) {
-                            long t0 = System.nanoTime();
-                            Graph out = run(data, truth, c, runSeed, penalty);
-                            totals.get(c).add(score(truth, out), (System.nanoTime() - t0) / 1e9);
+        try (java.io.PrintWriter out = csv == null ? null : new java.io.PrintWriter(csv)) {
+            if (out != null) {
+                out.println("structure,dist,n,alpha,penalty,cond,reps,lat,trueLat,clus,jac,spur,llP,llR,ooP,ooR,"
+                            + "dir,dirPct,imp,impDir,impLat,rev,secs");
+            }
+            for (String structure : structures) {
+                for (String dist : dists) {
+                    System.out.println();
+                    System.out.println("=== " + structure + ", errors " + dist + " ===");
+                    System.out.printf("%6s %6s %4s %-8s %7s %5s %5s %5s  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s  "
+                                      + "%5s %6s%n",
+                            "N", "alpha", "pd", "cond", "lat", "clus", "jac", "spur", "LL P", "LL R", "OO P", "OO R",
+                            "dir", "dir'd", "imp", "impDir", "impLat", "rev", "secs");
+                    for (int n : ns) {
+                        Map<Cell, Totals> totals = new LinkedHashMap<>();
+                        for (double alpha : alphas) {
+                            for (double penalty : penalties) {
+                                for (String c : conditions) totals.put(new Cell(alpha, penalty, c), new Totals());
+                            }
+                        }
+                        int trueLatents = 0;
+                        System.out.print("  N=" + n + " ");
+                        for (int r = 0; r < reps; r++) {
+                            System.out.print(".");
+                            System.out.flush();
+                            Truth truth = build(structure, random);
+                            trueLatents = truth.latents.size();
+                            DataSet data = truth.simulate(dist, n, random);
+                            long runSeed = Math.floorMod(random.nextLong(), 1_000_000L);
+                            for (Cell cell : totals.keySet()) {
+                                long t0 = System.nanoTime();
+                                Graph g = run(data, truth, cell.condition(), runSeed, cell.alpha(), cell.penalty());
+                                totals.get(cell).add(score(truth, g), (System.nanoTime() - t0) / 1e9);
+                            }
+                        }
+                        System.out.println();
+                        for (Map.Entry<Cell, Totals> e : totals.entrySet()) {
+                            e.getValue().print(n, e.getKey(), trueLatents);
+                            if (out != null) e.getValue().csv(out, structure, dist, n, e.getKey(), trueLatents);
                         }
                     }
-                    System.out.println();
-                    for (String c : conditions) totals.get(c).print(n, c, trueLatents);
                 }
             }
         }
@@ -182,10 +216,17 @@ public final class RlcdAccuracyStudy {
                            + "relations among observed pairs per run.");
     }
 
-    private static Graph run(DataSet data, Truth truth, String condition, long seed, double penalty)
+    /**
+     * One cell of the sweep: a rank-test alpha, a stage-1 penalty discount, and a condition.
+     */
+    private record Cell(double alpha, double penalty, String condition) {
+    }
+
+    private static Graph run(DataSet data, Truth truth, String condition, long seed, double alpha, double penalty)
             throws InterruptedException {
         Rlcd rlcd = new Rlcd(data);
         rlcd.setSeed(seed);
+        rlcd.setAlpha(alpha);
         rlcd.setPenaltyDiscount(penalty);
         rlcd.setResolveTwoIndicatorLatents(condition.equals("resolve") || condition.equals("both"));
         if (condition.equals("tiers") || condition.equals("both")) rlcd.setKnowledge(truth.depthTiers());
@@ -577,9 +618,10 @@ public final class RlcdAccuracyStudy {
             secs += seconds;
         }
 
-        void print(int n, String condition, int trueLatents) {
-            System.out.printf("%6d %-8s %7s %5.2f %5.2f %5.2f  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s  %5.1f %6.2f%n",
-                    n, condition,
+        void print(int n, Cell cell, int trueLatents) {
+            System.out.printf("%6d %6s %4s %-8s %7s %5.2f %5.2f %5.2f  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s  "
+                              + "%5.1f %6.2f%n",
+                    n, trim(cell.alpha()), trim(cell.penalty()), cell.condition(),
                     String.format("%.1f(%d)", latents / runs, trueLatents),
                     exact / (runs * (double) trueLatents),
                     jaccard / (runs * (double) trueLatents),
@@ -592,8 +634,36 @@ public final class RlcdAccuracyStudy {
                     reversed / (double) runs, secs / runs);
         }
 
+        void csv(java.io.PrintWriter out, String structure, String dist, int n, Cell cell, int trueLatents) {
+            out.printf("%s,%s,%d,%s,%s,%s,%d,%.3f,%d,%.4f,%.4f,%.4f,%s,%s,%s,%s,%s,%s,%s,%s,%s,%.3f,%.3f%n",
+                    structure, dist, n, trim(cell.alpha()), trim(cell.penalty()), cell.condition(), runs,
+                    latents / runs, trueLatents,
+                    exact / (runs * (double) trueLatents),
+                    jaccard / (runs * (double) trueLatents),
+                    spurious / runs,
+                    plain(llTp, llEst), plain(llTp, llTrue),
+                    plain(ooTp, ooEst), plain(ooTp, ooTrue),
+                    plain(dirRight, dirRight + dirWrong), plain(dirRight + dirWrong, ooTp),
+                    impTrue == 0 ? "" : plain(impAdj, impTrue), impTrue == 0 ? "" : plain(impDir, impTrue),
+                    impTrue == 0 ? "" : plain(impLat, impTrue),
+                    reversed / (double) runs, secs / runs);
+        }
+
         private static String ratio(long num, long den) {
             return den == 0 ? "  -  " : String.format("%.2f", num / (double) den);
+        }
+
+        private static String plain(long num, long den) {
+            return den == 0 ? "" : String.format("%.4f", num / (double) den);
+        }
+
+        /**
+         * A parameter value for a column heading: 0.01 rather than 0.010000, 2 rather than 2.0.
+         */
+        private static String trim(double x) {
+            String s = String.format("%.4f", x);
+            s = s.replaceAll("0+$", "");
+            return s.endsWith(".") ? s.substring(0, s.length() - 1) : s;
         }
     }
 }
