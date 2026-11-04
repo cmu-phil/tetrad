@@ -59,7 +59,7 @@ import java.util.List;
         name = "BFCI-Bryan",
         command = "bfci-bryan",
         algoType = AlgType.allow_latent_common_causes,
-        dataType = DataType.Continuous
+        dataType = DataType.Mixed
 )
 @Bootstrapping
 @Experimental
