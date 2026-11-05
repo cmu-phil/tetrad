@@ -61,6 +61,14 @@ public class TestDefaultLayout {
             byDefault = unpositioned();
             LayoutUtil.defaultLayoutConditional(byDefault);
             assertEquals(positions(fr), positions(byDefault));
+
+            LayoutUtil.setDefaultLayout(LayoutUtil.DefaultLayout.KAMADA_KAWAI);
+            Graph kk = unpositioned();
+            LayoutUtil.kamadaKawaiLayout(kk, false, 80.0, 0.2, 1.0, new LayoutUtil.NoOpProgressListener());
+            byDefault = unpositioned();
+            LayoutUtil.defaultLayoutConditional(byDefault);
+            assertEquals(positions(kk), positions(byDefault));
+            assertNotEquals(positions(fr), positions(byDefault));
         } finally {
             LayoutUtil.setDefaultLayout(saved);
         }

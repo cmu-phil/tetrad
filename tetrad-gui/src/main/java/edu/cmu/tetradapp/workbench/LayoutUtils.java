@@ -903,7 +903,14 @@ public class LayoutUtils {
             }
         }
 
-        LayoutUtil.fruchtermanReingoldLayout(graph);
+        if (!GraphEditorUtils.editFruchtermanReingoldLayoutParams()) {
+            return;
+        }
+
+        double naturalEdgeLength = Preferences.userRoot().getDouble(
+                "fruchtermanReingoldNaturalEdgeLength", 0.0);
+
+        LayoutUtil.fruchtermanReingoldLayout(graph, naturalEdgeLength);
         layoutByGraph(layoutEditable, graph);
         LayoutUtils.layout = Layout.fruchtermReingold;
     }

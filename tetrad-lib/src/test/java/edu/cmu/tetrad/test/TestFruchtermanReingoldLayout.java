@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.NodeType;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -208,6 +209,57 @@ public final class TestFruchtermanReingoldLayout {
         assertTrue(a1.getCenterY() > coreBottom);
         assertTrue(b1.getCenterY() > coreBottom);
     }
+
+    /**
+     * The natural edge length must govern the spread of the layout monotonically: on a one-factor measurement model
+     * with ten indicators, doubling it from 40 to 80 to 160 must lengthen the mean edge each time, by a factor
+     * between 1.3 and 3 (it is about 2 in practice: edges settle near twice the natural length), and the zero
+     * argument must reproduce the automatic layout exactly.
+     */
+    @Test
+    public void testNaturalEdgeLengthGovernsSpread() {
+        Graph auto = oneFactor(10);
+        LayoutUtil.fruchtermanReingoldLayout(auto);
+        Graph zero = oneFactor(10);
+        LayoutUtil.fruchtermanReingoldLayout(zero, 0.0);
+        assertEquals(meanEdgeLength(auto), meanEdgeLength(zero), 1e-9);
+
+        double previous = -1;
+        for (double length : new double[]{40, 80, 160}) {
+            Graph g = oneFactor(10);
+            LayoutUtil.fruchtermanReingoldLayout(g, length);
+            double mean = meanEdgeLength(g);
+            assertTrue("length " + length + " gave mean edge " + mean, mean > length && mean < 3 * length);
+            if (previous > 0) {
+                assertTrue("mean edge should grow with natural length: " + previous + " then " + mean,
+                        mean > 1.3 * previous && mean < 3 * previous);
+            }
+            previous = mean;
+        }
+    }
+
+    private static Graph oneFactor(int indicators) {
+        Graph g = new EdgeListGraph();
+        Node l = new GraphNode("L");
+        l.setNodeType(NodeType.LATENT);
+        g.addNode(l);
+        for (int i = 1; i <= indicators; i++) {
+            Node x = new GraphNode("X" + i);
+            g.addNode(x);
+            g.addDirectedEdge(l, x);
+        }
+        return g;
+    }
+
+    private static double meanEdgeLength(Graph g) {
+        double sum = 0;
+        for (Edge e : g.getEdges()) {
+            Node a = e.getNode1(), b = e.getNode2();
+            sum += Math.hypot(a.getCenterX() - b.getCenterX(), a.getCenterY() - b.getCenterY());
+        }
+        return sum / g.getNumEdges();
+    }
+
 }
 
 

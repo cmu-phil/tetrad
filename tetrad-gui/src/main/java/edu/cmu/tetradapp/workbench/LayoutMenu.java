@@ -243,7 +243,9 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
-        JMenuItem kamadaKawai = new JMenuItem("Kamada-Kawai");
+        // Kamada-Kawai was a plain item outside the group, so choosing it left the check mark on the previous
+        // default and the user could not tell it had run. It is a default-layout choice like the others now.
+        JCheckBoxMenuItem kamadaKawai = defaultLayoutItem("Kamada-Kawai", LayoutUtil.DefaultLayout.KAMADA_KAWAI);
         this.add(kamadaKawai);
 
         kamadaKawai.addActionListener(e -> {
