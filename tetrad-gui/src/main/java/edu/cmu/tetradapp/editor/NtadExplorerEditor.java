@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.NtadExplorer;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetradapp.ui.DualListDragAndDrop;
 import edu.cmu.tetradapp.model.datamanip.NtadExplorerWrapper;
 
 import javax.swing.*;
@@ -213,6 +214,9 @@ public class NtadExplorerEditor extends JPanel {
         removeButton.addActionListener(e -> moveSelected(selectedList, selectedModel, availableModel));
         addAllButton.addActionListener(e -> moveAll(availableModel, selectedModel));
         clearButton.addActionListener(e -> moveAll(selectedModel, availableModel));
+
+        // Dragging does what the arrows do; a drop on the same list reorders.
+        DualListDragAndDrop.install(availableList, selectedList, null);
 
         buttonPanel.add(addButton);
         buttonPanel.add(removeButton);

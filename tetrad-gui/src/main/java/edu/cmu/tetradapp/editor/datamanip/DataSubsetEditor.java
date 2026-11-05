@@ -3,6 +3,7 @@ package edu.cmu.tetradapp.editor.datamanip;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetradapp.ui.DualListDragAndDrop;
 import edu.cmu.tetradapp.model.datamanip.DataSubsetter;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetrad.util.TMath;
@@ -232,6 +233,12 @@ public class DataSubsetEditor extends JPanel {
         downButton.addActionListener(e -> moveSelectedDown(selectedList, selectedModel));
 
         pasteVarListButton.addActionListener(e -> showPasteVariableListDialog());
+
+        // Dragging does what the arrows do: drop on the other list to move, drop on the same list to reorder, which
+        // in the Selected list sets the column order of the subset.
+        DualListDragAndDrop.install(availableList, selectedList, null);
+        availableList.setToolTipText("Select variables and press > or drag them to the other list.");
+        selectedList.setToolTipText("Drag to reorder, or drag to the other list to remove. Order is column order.");
 
         buttonPanel.add(Box.createVerticalGlue());
         buttonPanel.add(center(addButton));
