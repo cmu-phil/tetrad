@@ -6996,6 +6996,28 @@ Source:
         <li>Value Type: <span id="rlcdAllowNonLeafX_value_type">Boolean</span></li>
     </ul>
 
+    === rlcdCeilingValue ===
+    <h3 class="parameter_description" id="rlcdCeilingValue">rlcdCeilingValue</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdCeilingValue_short_desc">RLCD: the ceiling at and above which values are censored when rlcdCensorCeiling is on (default 100)</span></li>
+        <li>Long Description: <span id="rlcdCeilingValue_long_desc">The common ceiling used by rlcdCensorCeiling. A value equal to or above it is read as censored. 100 is right for percentage grades; use the top of the scale for other bounded measures.</span></li>
+        <li>Default Value: <span id="rlcdCeilingValue_default_value">100</span></li>
+        <li>Lower Bound: <span id="rlcdCeilingValue_lower_bound">-Infinity</span></li>
+        <li>Upper Bound: <span id="rlcdCeilingValue_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="rlcdCeilingValue_value_type">Double</span></li>
+    </ul>
+
+    === rlcdCensorCeiling ===
+    <h3 class="parameter_description" id="rlcdCensorCeiling">rlcdCensorCeiling</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdCensorCeiling_short_desc">RLCD: treat values at the ceiling (rlcdCeilingValue) as censored, not as exact (default false)</span></li>
+        <li>Long Description: <span id="rlcdCensorCeiling_long_desc">If true, a value equal to or above rlcdCeilingValue in any variable is read as censored: known only to be at least the ceiling. This is what a grade of 100 means when many students score 100: the scale ran out, not the ability. Treated as exact values, ceiling scores flatten the top of each distribution and attenuate every correlation the variable takes part in, which weakens or hides rank constraints; treated as missing, they are missing because of their own size, which the EM policy's missing-at-random assumption does not cover. With this on, RLCD estimates one covariance matrix for both stages by stochastic EM under a multivariate normal model in which each censored value is drawn from its conditional distribution truncated above the ceiling, and runs every rank test on that matrix with a per-query sample size from the pairwise counts of uncensored values. Ordinary missing values (NaN) are handled in the same pass as missing at random. Under Gaussian errors the estimate is close to exact; under skewed errors the correction is partial but large. Uses the same ceiling for every variable; variables with no values at the ceiling are unaffected. When on, this takes the place of missingDataPolicy for RLCD.</span></li>
+        <li>Default Value: <span id="rlcdCensorCeiling_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdCensorCeiling_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdCensorCeiling_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdCensorCeiling_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdCheckV ===
     <h3 class="parameter_description" id="rlcdCheckV">rlcdCheckV</h3>
     <ul class="parameter_description_list">
@@ -7071,28 +7093,6 @@ Source:
         <li>Lower Bound: <span id="rlcdStage1None_lower_bound"></span></li>
         <li>Upper Bound: <span id="rlcdStage1None_upper_bound"></span></li>
         <li>Value Type: <span id="rlcdStage1None_value_type">Boolean</span></li>
-    </ul>
-
-    === rlcdCensorCeiling ===
-    <h3 class="parameter_description" id="rlcdCensorCeiling">rlcdCensorCeiling</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description: <span id="rlcdCensorCeiling_short_desc">RLCD: treat values at the ceiling (rlcdCeilingValue) as censored, not as exact (default false)</span></li>
-        <li>Long Description: <span id="rlcdCensorCeiling_long_desc">If true, a value equal to or above rlcdCeilingValue in any variable is read as censored: known only to be at least the ceiling. This is what a grade of 100 means when many students score 100: the scale ran out, not the ability. Treated as exact values, ceiling scores flatten the top of each distribution and attenuate every correlation the variable takes part in, which weakens or hides rank constraints; treated as missing, they are missing because of their own size, which the EM policy's missing-at-random assumption does not cover. With this on, RLCD estimates one covariance matrix for both stages by stochastic EM under a multivariate normal model in which each censored value is drawn from its conditional distribution truncated above the ceiling, and runs every rank test on that matrix with a per-query sample size from the pairwise counts of uncensored values. Ordinary missing values (NaN) are handled in the same pass as missing at random. Under Gaussian errors the estimate is close to exact; under skewed errors the correction is partial but large. Uses the same ceiling for every variable; variables with no values at the ceiling are unaffected. When on, this takes the place of missingDataPolicy for RLCD.</span></li>
-        <li>Default Value: <span id="rlcdCensorCeiling_default_value">false</span></li>
-        <li>Lower Bound: <span id="rlcdCensorCeiling_lower_bound"></span></li>
-        <li>Upper Bound: <span id="rlcdCensorCeiling_upper_bound"></span></li>
-        <li>Value Type: <span id="rlcdCensorCeiling_value_type">Boolean</span></li>
-    </ul>
-
-    === rlcdCeilingValue ===
-    <h3 class="parameter_description" id="rlcdCeilingValue">rlcdCeilingValue</h3>
-    <ul class="parameter_description_list">
-        <li>Short Description: <span id="rlcdCeilingValue_short_desc">RLCD: the ceiling at and above which values are censored when rlcdCensorCeiling is on (default 100)</span></li>
-        <li>Long Description: <span id="rlcdCeilingValue_long_desc">The common ceiling used by rlcdCensorCeiling. A value equal to or above it is read as censored. 100 is right for percentage grades; use the top of the scale for other bounded measures.</span></li>
-        <li>Default Value: <span id="rlcdCeilingValue_default_value">100</span></li>
-        <li>Lower Bound: <span id="rlcdCeilingValue_lower_bound">-Infinity</span></li>
-        <li>Upper Bound: <span id="rlcdCeilingValue_upper_bound">Infinity</span></li>
-        <li>Value Type: <span id="rlcdCeilingValue_value_type">Double</span></li>
     </ul>
 
     === rlcdUnfoldCovers ===
