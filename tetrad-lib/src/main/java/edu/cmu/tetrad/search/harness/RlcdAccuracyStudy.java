@@ -33,6 +33,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.Rlcd;
@@ -157,6 +158,16 @@ import java.util.Set;
  * rather than answering (too few complete rows, or a non-positive small-sample correction). It is blank for the
  * other arms. A large value means that arm's result rests on the guard.
  * <p>
+ * <b>Scoring other implementations with the same scorer.</b> {@code exportDir=path} writes, for every
+ * replication, the data the arms see ({@code <tag>.data.txt}, tab-delimited, {@code *} for missing) and the truth
+ * ({@code <tag>.truth.txt}), and appends a line to {@code manifest.txt}. An outside program -- the reference RLCD
+ * in causal-learn or scm-identify, through the Python driver {@code rlcd_external_eval.py} -- reads the data, runs,
+ * and writes its graph as Tetrad graph text to {@code <tag>.<label>.graph.txt}, latents in parentheses. Then
+ * {@code scoreDir=path labels=cl,scm} reads the manifest, the truths and those graphs, scores them with exactly the
+ * scorer used for the Tetrad arms, and prints the same table with the label in the hand column. Nothing is
+ * simulated in that mode, so the structures, dists and ns arguments are ignored; cells with no graph file are
+ * counted and reported, not scored.
+ * <p>
  * Timing, from a smoke run at N = 5000, per RLCD run: mixed30 about 2 s, mixed30i5 about 3 s, rand6 about 7 s.
  * The number of runs per replication is alphas x penalties x conditions, so a sweep grid multiplies quickly:
  * the example above is 8 runs per replication per N, about 20 minutes at reps=20. The ceil data are much slower,
@@ -198,6 +209,17 @@ public final class RlcdAccuracyStudy {
         double[] penalties = Arrays.stream(opt.getOrDefault("penalties", opt.getOrDefault("penalty", "1")).split(","))
                 .mapToDouble(s -> Double.parseDouble(s.trim())).toArray();
         String csv = opt.get("csv");
+        String exportDir = opt.get("exportDir");
+        String scoreDir = opt.get("scoreDir");
+        if (scoreDir != null) {
+            scoreExternal(new java.io.File(scoreDir), opt.getOrDefault("labels", "cl").split(","), csv);
+            return;
+        }
+        if (exportDir != null) {
+            java.io.File dir = new java.io.File(exportDir);
+            if (!dir.isDirectory() && !dir.mkdirs()) throw new java.io.IOException("Cannot create " + dir);
+            new java.io.FileWriter(new java.io.File(dir, "manifest.txt"), false).close();   // start afresh
+        }
         String missing = opt.getOrDefault("missing", "none");
         double missingRate = Double.parseDouble(opt.getOrDefault("missingRate", "0.2"));
         int imputationCount = Integer.parseInt(opt.getOrDefault("imputations", "5"));
@@ -263,6 +285,9 @@ public final class RlcdAccuracyStudy {
 
                             DataSet holes = missing.equals("none") ? data
                                     : punchHoles(data, missing, missingRate, random);
+                            if (exportDir != null) {
+                                exportReplication(new java.io.File(exportDir), structure, dist, n, r, holes, truth);
+                            }
                             List<DataSet> imputed = null;
                             Map<Double, Graph> sharedStage1Graphs = new HashMap<>();
 
@@ -436,6 +461,119 @@ public final class RlcdAccuracyStudy {
             }
         }
         return holes;
+    }
+
+    // ---------------------------------------------------------------- export and external scoring
+
+    private static String tag(String structure, String dist, int n, int rep) {
+        return structure + "_" + dist + "_" + n + "_rep" + rep;
+    }
+
+    private static void exportReplication(java.io.File dir, String structure, String dist, int n, int rep,
+                                          DataSet data, Truth truth) throws java.io.IOException {
+        String tag = tag(structure, dist, n, rep);
+        try (java.io.PrintWriter w = new java.io.PrintWriter(new java.io.File(dir, tag + ".data.txt"))) {
+            List<String> names = data.getVariableNames();
+            w.println(String.join("\t", names));
+            for (int i = 0; i < data.getNumRows(); i++) {
+                StringBuilder line = new StringBuilder();
+                for (int j = 0; j < names.size(); j++) {
+                    if (j > 0) line.append('\t');
+                    double v = data.getDouble(i, j);
+                    line.append(Double.isNaN(v) ? "*" : Double.toString(v));
+                }
+                w.println(line);
+            }
+        }
+        try (java.io.PrintWriter w = new java.io.PrintWriter(new java.io.File(dir, tag + ".truth.txt"))) {
+            w.println("# node <name> latent|observed <parents...>; impurity <from> <to>; nodes in causal order");
+            for (String v : truth.names) {
+                w.print("node " + v + " " + (truth.latents.contains(v) ? "latent" : "observed"));
+                for (String pa : truth.parents.get(v)) w.print(" " + pa);
+                w.println();
+            }
+            for (String[] imp : truth.impurities) w.println("impurity " + imp[0] + " " + imp[1]);
+        }
+        try (java.io.PrintWriter w = new java.io.PrintWriter(new java.io.FileWriter(
+                new java.io.File(dir, "manifest.txt"), true))) {
+            w.println(tag + "\t" + structure + "\t" + dist + "\t" + n + "\t" + rep);
+        }
+    }
+
+    private static Truth readTruth(java.io.File file) throws java.io.IOException {
+        Truth t = new Truth();
+        for (String line : java.nio.file.Files.readAllLines(file.toPath())) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("#")) continue;
+            String[] tok = line.split("\\s+");
+            if (tok[0].equals("node")) {
+                t.node(tok[1], tok[2].equals("latent"), Arrays.copyOfRange(tok, 3, tok.length));
+            } else if (tok[0].equals("impurity")) {
+                t.impurities.add(new String[]{tok[1], tok[2]});
+            }
+        }
+        return t;
+    }
+
+    /**
+     * Scores graphs produced outside Tetrad against the exported truths, with the same scorer as the Tetrad arms.
+     */
+    private static void scoreExternal(java.io.File dir, String[] labels, String csv) throws Exception {
+        java.io.File manifest = new java.io.File(dir, "manifest.txt");
+        if (!manifest.isFile()) throw new java.io.FileNotFoundException("No manifest.txt in " + dir);
+        List<String[]> entries = new ArrayList<>();
+        for (String line : java.nio.file.Files.readAllLines(manifest.toPath())) {
+            if (!line.isBlank()) entries.add(line.split("\t"));
+        }
+        System.out.println("Scoring external graphs in " + dir + " for labels " + Arrays.toString(labels)
+                           + "; " + entries.size() + " replications in the manifest. Same scorer as the Tetrad arms; "
+                           + "alpha and penalty are whatever the external run used and are shown as -.");
+
+        // Group by structure, dist, n in manifest order.
+        Map<String, List<String[]>> groups = new LinkedHashMap<>();
+        for (String[] e : entries) groups.computeIfAbsent(e[1] + "\t" + e[2] + "\t" + e[3], k -> new ArrayList<>()).add(e);
+
+        try (java.io.PrintWriter out = csv == null ? null : new java.io.PrintWriter(csv)) {
+            if (out != null) {
+                out.println("structure,dist,n,alpha,penalty,cond,handling,reps,lat,trueLat,clus,jac,spur,llP,llR,"
+                            + "ooP,ooR,dir,dirPct,imp,impDir,impLat,rev,skip,secs");
+            }
+            for (Map.Entry<String, List<String[]>> g : groups.entrySet()) {
+                String[] key = g.getKey().split("\t");
+                String structure = key[0], dist = key[1];
+                int n = Integer.parseInt(key[2]);
+                System.out.println();
+                System.out.println("=== " + structure + ", errors " + dist + " ===");
+                System.out.printf("%6s %6s %4s %-8s %-8s %7s %5s %5s %5s  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s"
+                                  + "  %5s %5s %6s%n",
+                        "N", "alpha", "pd", "cond", "hand", "lat", "clus", "jac", "spur", "LL P", "LL R", "OO P",
+                        "OO R", "dir", "dir'd", "imp", "impDir", "impLat", "rev", "skip", "secs");
+                for (String label : labels) {
+                    Totals totals = new Totals();
+                    int trueLatents = 0, missingFiles = 0;
+                    for (String[] e : g.getValue()) {
+                        Truth truth = readTruth(new java.io.File(dir, e[0] + ".truth.txt"));
+                        trueLatents = truth.latents.size();
+                        java.io.File gf = new java.io.File(dir, e[0] + "." + label + ".graph.txt");
+                        if (!gf.isFile()) {
+                            missingFiles++;
+                            continue;
+                        }
+                        Graph graph = GraphSaveLoadUtils.loadGraphTxt(gf);
+                        totals.add(score(truth, graph), 0.0, -1);
+                    }
+                    Cell cell = new Cell(Double.NaN, Double.NaN, "plain", label);
+                    if (totals.runs > 0) {
+                        totals.print(n, cell, trueLatents);
+                        if (out != null) totals.csv(out, structure, dist, n, cell, trueLatents);
+                    }
+                    if (missingFiles > 0) {
+                        System.out.println("         (" + label + ": " + missingFiles + " of " + g.getValue().size()
+                                           + " replications have no graph file)");
+                    }
+                }
+            }
+        }
     }
 
     // ---------------------------------------------------------------- truth
@@ -901,6 +1039,7 @@ public final class RlcdAccuracyStudy {
          * A parameter value for a column heading: 0.01 rather than 0.010000, 2 rather than 2.0.
          */
         private static String trim(double x) {
+            if (Double.isNaN(x)) return "-";
             String s = String.format("%.4f", x);
             s = s.replaceAll("0+$", "");
             return s.endsWith(".") ? s.substring(0, s.length() - 1) : s;
