@@ -31,6 +31,11 @@ import edu.cmu.tetrad.data.missing.MvnImputer;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
 import edu.cmu.tetrad.search.rlcd.PooledRankTest;
+import edu.cmu.tetrad.search.rlcd.TestwiseDeletionRankTest;
+import edu.cmu.tetrad.search.rlcd.EmCovarianceRankTest;
+import edu.cmu.tetrad.data.missing.CensoredMvnCovarianceEstimator;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.search.rlcd.TierPrecedence;
 import edu.cmu.tetrad.search.rlcd.TwoIndicatorTest;
 import edu.cmu.tetrad.sem.SemIm;
@@ -708,4 +713,226 @@ public class TestRlcd {
                     runTwoIndicator(gauss, true));
         }
     }
+
+    /**
+     * Testwise deletion with no missing values must reproduce the complete-data test exactly: same decisions, same
+     * p-values, since every query's complete rows are all the rows.
+     */
+    @Test
+    public void testTestwiseDeletionMatchesCompleteData() throws Exception {
+        DataSet data = simulate(twoLatentGraph(), 2000, 777L);
+        Chi2RankTest full = new Chi2RankTest(data);
+        TestwiseDeletionRankTest twd = new TestwiseDeletionRankTest(data);
+
+        int[][] ps = {{0, 1}, {0, 1, 2}, {3, 4}, {0, 3}};
+        int[][] qs = {{2, 3, 4, 5}, {3, 4, 5}, {0, 1, 2}, {1, 2, 4, 5}};
+        for (int i = 0; i < ps.length; i++) {
+            for (int r = 0; r < 2; r++) {
+                assertEquals("decision, query " + i + ", rank " + r,
+                        full.failToReject(ps[i], qs[i], r, 0.01),
+                        twd.failToReject(ps[i], qs[i], r, 0.01));
+                assertEquals("p-value, query " + i + ", rank " + r,
+                        full.pValue(ps[i], qs[i], r), twd.pValue(ps[i], qs[i], r), 1e-9);
+            }
+        }
+        assertEquals(0, twd.getSkippedQueries());
+    }
+
+    /**
+     * With a fifth of the values missing completely at random, testwise deletion should still recover the two-latent
+     * measurement model, and should report using fewer rows per query than the data have.
+     */
+    @Test
+    public void testTestwiseDeletionRecoversTwoLatents() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 3000, 4242L);
+        DataSet holes = full.copy();
+        Random random = new Random(4242L);
+        for (int i = 0; i < holes.getNumRows(); i++) {
+            for (int j = 1; j < holes.getNumColumns(); j++) {
+                if (random.nextDouble() < 0.2) holes.setDouble(i, j, Double.NaN);
+            }
+        }
+
+        Rlcd rlcd = new Rlcd(holes);
+        rlcd.setTestwiseDeletion(true);
+        rlcd.setMaxK(2);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        Graph out = rlcd.search();
+
+        List<Node> latents = new ArrayList<>();
+        for (Node v : out.getNodes()) if (v.getNodeType() == NodeType.LATENT) latents.add(v);
+        assertEquals(2, latents.size());
+
+        Set<Set<String>> clusters = new HashSet<>();
+        for (Node l : latents) {
+            Set<String> kids = new HashSet<>();
+            for (Node c : out.getChildren(l)) if (c.getNodeType() != NodeType.LATENT) kids.add(c.getName());
+            clusters.add(kids);
+        }
+        assertTrue("clusters were " + clusters, clusters.contains(Set.of("X1", "X2", "X3")));
+        assertTrue("clusters were " + clusters, clusters.contains(Set.of("X4", "X5", "X6")));
+    }
+
+    /**
+     * The guards: a query whose columns have too few complete rows between them, and a query whose Lawley multiplier
+     * would be non-positive, must both come back as rejections rather than as free rank deficiencies.
+     */
+    @Test
+    public void testTestwiseDeletionGuardsReject() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 400, 99L);
+        DataSet holes = full.copy();
+
+        // X1 and X4 are observed on disjoint halves of the rows, so no row has both.
+        int half = holes.getNumRows() / 2;
+        for (int i = 0; i < holes.getNumRows(); i++) {
+            if (i < half) holes.setDouble(i, 0, Double.NaN);
+            else holes.setDouble(i, 3, Double.NaN);
+        }
+
+        TestwiseDeletionRankTest twd = new TestwiseDeletionRankTest(holes);
+        assertFalse(twd.failToReject(new int[]{0, 1}, new int[]{3, 4}, 1, 0.01));
+        assertEquals(0.0, twd.pValue(new int[]{0, 1}, new int[]{3, 4}, 1), 0.0);
+        assertEquals(2, twd.getSkippedQueries());
+
+        // A tiny minimum sample size lets the no-complete-rows union through the first guard; the multiplier guard
+        // still has to catch it.
+        TestwiseDeletionRankTest small = new TestwiseDeletionRankTest(holes);
+        small.setMinSampleSize(10);
+        assertFalse(small.failToReject(new int[]{0, 1}, new int[]{3, 4}, 1, 0.01));
+        assertTrue(small.getSkippedQueries() > 0);
+        assertTrue(small.getSampleSizeSummary().contains("column unions tested"));
+    }
+
+    /**
+     * Testwise deletion and pooled imputations are different modes and must not be combined silently.
+     */
+    @Test
+    public void testTestwiseDeletionRefusesImputations() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 500, 5L);
+        Rlcd rlcd = new Rlcd(List.of(full, full.copy()));
+        try {
+            rlcd.setTestwiseDeletion(true);
+            fail("Expected an IllegalArgumentException.");
+        } catch (IllegalArgumentException expected) {
+            // Wanted.
+        }
+    }
+
+
+    /**
+     * With no missing values, the EM-covariance rank test on the sample covariance with full N must reproduce the
+     * complete-data test exactly, and the mean-pairwise rule must give the same N as full N.
+     */
+    @Test
+    public void testEmRankTestMatchesCompleteData() throws Exception {
+        DataSet data = simulate(twoLatentGraph(), 1500, 31L);
+        Chi2RankTest full = new Chi2RankTest(data);
+        EmCovarianceEstimator em = new EmCovarianceEstimator(data);
+        EmCovarianceRankTest emTest = new EmCovarianceRankTest(em.estimate(), em.getPairwiseCounts(),
+                data.getNumRows());
+        int[][] ps = {{0, 1}, {0, 1, 2}, {3, 4}};
+        int[][] qs = {{2, 3, 4, 5}, {3, 4, 5}, {0, 1, 2}};
+        for (int i = 0; i < ps.length; i++) {
+            assertEquals(data.getNumRows(), emTest.sampleSize(ps[i], qs[i]), 1e-9);
+            for (int r = 0; r < 2; r++) {
+                assertEquals(full.pValue(ps[i], qs[i], r), emTest.pValue(ps[i], qs[i], r), 1e-6);
+            }
+        }
+    }
+
+    /**
+     * The EM policy should recover the two-latent model at 30 percent missing completely at random, where the
+     * testwise policy's queries have too few complete rows to be sure of it.
+     */
+    @Test
+    public void testEmPolicyRecoversTwoLatents() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 3000, 4242L);
+        DataSet holes = full.copy();
+        Random random = new Random(4242L);
+        for (int i = 0; i < holes.getNumRows(); i++) {
+            for (int j = 1; j < holes.getNumColumns(); j++) {
+                if (random.nextDouble() < 0.3) holes.setDouble(i, j, Double.NaN);
+            }
+        }
+        Rlcd rlcd = new Rlcd(holes);
+        rlcd.setMissingDataSpec(edu.cmu.tetrad.data.missing.MissingDataSpec.emCovariance()
+                .withEssMode(edu.cmu.tetrad.data.missing.MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE));
+        rlcd.setMaxK(2);
+        rlcd.setAlpha(0.01);
+        rlcd.setSeed(1L);
+        Graph out = rlcd.search();
+        Set<Set<String>> clusters = new HashSet<>();
+        for (Node l : out.getNodes()) {
+            if (l.getNodeType() != NodeType.LATENT) continue;
+            Set<String> kids = new HashSet<>();
+            for (Node c : out.getChildren(l)) if (c.getNodeType() != NodeType.LATENT) kids.add(c.getName());
+            clusters.add(kids);
+        }
+        assertTrue("clusters were " + clusters, clusters.contains(Set.of("X1", "X2", "X3")));
+        assertTrue("clusters were " + clusters, clusters.contains(Set.of("X4", "X5", "X6")));
+    }
+
+    /**
+     * The censored estimator with nothing censored must return the sample covariance (to Monte Carlo noise of the
+     * draws there are none of, so exactly), and with the top 30 percent of each indicator censored at a known bound
+     * it must recover the correlation matrix far better than treating those values as missing at random.
+     */
+    @Test
+    public void testCensoredEstimatorRecoversCorrelations() throws Exception {
+        DataSet full = simulate(twoLatentGraph(), 3000, 77L);
+        int p = full.getNumColumns();
+
+        CensoredMvnCovarianceEstimator none = new CensoredMvnCovarianceEstimator(full, null, null);
+        none.setIterations(10, 5);
+        double[][] exact = new CovarianceMatrix(full).getMatrix().toArray();
+        double[][] got = none.estimate().getMatrix().toArray();
+        for (int a = 0; a < p; a++) {
+            for (int b = 0; b < p; b++) assertEquals(exact[a][b] * (full.getNumRows() - 1.0) / full.getNumRows(),
+                    got[a][b], 1e-9);
+        }
+        assertEquals(0, none.getCensoredCells());
+
+        double[] upper = new double[p];
+        DataSet clipped = full.copy();
+        for (int j = 0; j < p; j++) {
+            double[] col = new double[full.getNumRows()];
+            for (int i = 0; i < col.length; i++) col[i] = full.getDouble(i, j);
+            java.util.Arrays.sort(col);
+            upper[j] = col[(int) (0.7 * (col.length - 1))];
+            for (int i = 0; i < col.length; i++) {
+                if (clipped.getDouble(i, j) >= upper[j]) clipped.setDouble(i, j, upper[j]);   // recorded at the bound
+            }
+        }
+        double[][] truth = corr(new CovarianceMatrix(full).getMatrix().toArray());
+        double[][] naive = corr(new CovarianceMatrix(clipped).getMatrix().toArray());
+        CensoredMvnCovarianceEstimator est = new CensoredMvnCovarianceEstimator(clipped, upper, null);
+        est.setSeed(3L);
+        double[][] censored = corr(est.estimate().getMatrix().toArray());
+        assertEquals(full.getNumRows() * p * 3 / 10, est.getCensoredCells(), full.getNumRows() * p / 100);
+
+        double naiveErr = 0, censoredErr = 0;
+        int pairs = 0;
+        for (int a = 0; a < p; a++) {
+            for (int b = a + 1; b < p; b++) {
+                naiveErr += Math.abs(naive[a][b] - truth[a][b]);
+                censoredErr += Math.abs(censored[a][b] - truth[a][b]);
+                pairs++;
+            }
+        }
+        naiveErr /= pairs;
+        censoredErr /= pairs;
+        assertTrue("naive " + naiveErr + " censored " + censoredErr, censoredErr < naiveErr / 3);
+        assertTrue("censored mean abs error " + censoredErr, censoredErr < 0.03);
+    }
+
+    private static double[][] corr(double[][] cov) {
+        int p = cov.length;
+        double[][] out = new double[p][p];
+        for (int a = 0; a < p; a++) {
+            for (int b = 0; b < p; b++) out[a][b] = cov[a][b] / Math.sqrt(cov[a][a] * cov[b][b]);
+        }
+        return out;
+    }
+
 }

@@ -27,7 +27,14 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.data.missing.CensoredMvnCovarianceEstimator;
+import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.MvnImputer;
 import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
+import edu.cmu.tetrad.search.rlcd.TestwiseDeletionRankTest;
 import edu.cmu.tetrad.util.StratifiedRankTests;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
@@ -85,6 +92,59 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
             throw new IllegalArgumentException("RLCD requires a continuous tabular data set.");
         }
 
+        boolean censor = parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false);
+        MissingDataSpec spec = MissingDataUtils.fromParameters(parameters);
+        boolean stratified = parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false);
+        boolean anyMissing = new MissingDataAudit(dataSet).anyMissing();
+
+        if (stratified && (censor || spec != null)) {
+            throw new IllegalArgumentException("Stratified (domain-pooled) RLCD cannot be combined with a "
+                                               + "missing-data policy or ceiling censoring: each sets the rank "
+                                               + "test, and only one of them can. Turn one of the two off.");
+        }
+
+        if (anyMissing && !censor && spec == null) {
+            // Without a policy, RLCD would invert a covariance matrix built from the data and fail deep in the
+            // linear algebra with "Cannot invert a matrix with NaN values", which tells the user nothing about
+            // what to do. Say it here instead, with the ways out and what each is for.
+            throw new IllegalArgumentException("RLCD: the data have missing values and no missing-data policy is "
+                                               + "set. Set missingDataPolicy to \"em\" (recommended: one covariance "
+                                               + "matrix from all the incomplete rows, consistent when values are "
+                                               + "missing at random; set missingEssMode to meanPairwise), to "
+                                               + "\"testwise\" (each rank test from the rows complete on its own "
+                                               + "columns; for few variables or little missingness), to "
+                                               + "\"listwise\", or to \"mi\" with poolImputations. If values sit at "
+                                               + "a ceiling such as 100, see rlcdCensorCeiling instead. Missing: "
+                                               + TestwiseDeletionRankTest.describe(dataSet));
+        }
+
+        if (!stratified && censor) {
+            edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(dataSet);
+            double ceiling = parameters.getDouble(Params.RLCD_CEILING_VALUE, 100.0);
+            CensoredMvnCovarianceEstimator estimator = new CensoredMvnCovarianceEstimator(dataSet,
+                    CensoredMvnCovarianceEstimator.commonCeiling(dataSet.getNumColumns(), ceiling), null);
+            estimator.setSeed(parameters.getLong(Params.SEED));
+            MissingDataSpec.EffectiveSampleSizeMode ess = spec == null
+                    ? MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE : spec.getEssMode();
+            rlcd.setCensoredCovariance(estimator, ess);
+            TetradLogger.getInstance().log("RLCD: censoring at " + ceiling + "; " + estimator.getCensoredCells()
+                                           + " censored cells, " + estimator.getMissingCells()
+                                           + " missing cells handled as missing at random.");
+            return run(rlcd, parameters);
+        }
+
+        if (!stratified && spec != null && anyMissing) {
+            if (spec.getPolicy() == MissingDataPolicy.MULTIPLE_IMPUTATION) {
+                List<DataSet> imputations = new MvnImputer(spec).impute(dataSet, spec.getNumImputations(),
+                        parameters.getLong(Params.SEED));
+                List<DataModel> models = new ArrayList<>(imputations);
+                return searchImputations(models, parameters);
+            }
+            edu.cmu.tetrad.search.Rlcd rlcd = new edu.cmu.tetrad.search.Rlcd(dataSet);
+            rlcd.setMissingDataSpec(spec);
+            return run(rlcd, parameters);
+        }
+
         if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
             // Stratified (domain-pooled) mode, the Phase 1 upgrade of LCD-NOD (Dong et al., ICML 2026). RLCD
             // accepts continuous data, so here the domain index is an integer-valued continuous column, named by
@@ -127,6 +187,12 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
      */
     @Override
     public Graph searchImputations(List<DataModel> imputations, Parameters parameters) {
+        if (parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false)) {
+            throw new IllegalArgumentException("Ceiling censoring cannot be combined with pooled imputations: it "
+                                               + "estimates its own covariance matrix from the data as they are. "
+                                               + "Turn one of the two off.");
+        }
+
         if (parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false)) {
             throw new IllegalArgumentException("Stratified (domain-pooled) RLCD cannot be combined with pooled "
                                                + "imputations: the strata must be independent samples, and "
@@ -217,6 +283,14 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         parameters.add(Params.RLCD_PARTITION_CLIQUE_THRESHOLD);
         parameters.add(Params.RLCD_STAGE1_FGES);
         parameters.add(Params.RLCD_STAGE1_NONE);
+        parameters.add(Params.RLCD_CENSOR_CEILING);
+        parameters.add(Params.RLCD_CEILING_VALUE);
+        parameters.add(Params.MISSING_DATA_POLICY);
+        parameters.add(Params.MISSING_ESS_MODE);
+        parameters.add(Params.MISSING_NUM_IMPUTATIONS);
+        parameters.add(Params.MISSING_EM_RIDGE);
+        parameters.add(Params.MISSING_EM_TOLERANCE);
+        parameters.add(Params.MISSING_EM_MAX_ITERATIONS);
         parameters.add(Params.STRATIFY_BY_DOMAIN);
         parameters.add(Params.DOMAIN_COLUMN);
         parameters.add(Params.POOL_IMPUTATIONS);

@@ -24,13 +24,23 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataTransforms;
+import edu.cmu.tetrad.data.EmCovarianceEstimator;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.missing.CensoredMvnCovarianceEstimator;
+import edu.cmu.tetrad.data.missing.MissingDataAudit;
+import edu.cmu.tetrad.data.missing.MissingDataPolicy;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MissingDataUtils;
+import edu.cmu.tetrad.data.missing.PairwiseCovarianceEstimator;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.rlcd.Chi2RankTest;
+import edu.cmu.tetrad.search.rlcd.EmCovarianceRankTest;
 import edu.cmu.tetrad.search.rlcd.LatentGroups;
 import edu.cmu.tetrad.search.rlcd.PooledRankTest;
 import edu.cmu.tetrad.search.rlcd.RankTester;
 import edu.cmu.tetrad.search.rlcd.StratifiedChi2RankTest;
+import edu.cmu.tetrad.search.rlcd.TestwiseDeletionRankTest;
 import edu.cmu.tetrad.search.rlcd.RlcdClusterSearch;
 import edu.cmu.tetrad.search.rlcd.TierPrecedence;
 import edu.cmu.tetrad.search.rlcd.TwoIndicatorTest;
@@ -125,6 +135,13 @@ public class Rlcd {
      * {@link #setStratifiedRankTest}.
      */
     private CovarianceMatrix stage1CovarianceOverride = null;
+    /**
+     * True in testwise-deletion mode. Stage 1's covariance is then built from the listwise-complete rows, but only
+     * if stage 1 is actually run: with a supplied stage-1 graph, or Stage1Method.NONE, it is never needed, and on
+     * many variables at any real missingness rate it could not be built anyway.
+     */
+    private boolean testwiseDeletion = false;
+    private MissingDataSpec missingDataSpec = null;
     private double alpha = 0.01;
     private double[] alphaByRank = null;
     private int maxK = 3;
@@ -209,6 +226,211 @@ public class Rlcd {
      */
     public void setRankTester(RankTester rankTester) {
         this.rankTester = rankTester;
+    }
+
+    /**
+     * Puts the search into testwise-deletion mode. Equivalent to {@code setMissingDataSpec(MissingDataSpec.testwise())}
+     * when on, and to clearing the spec when off; see {@link #setMissingDataSpec(MissingDataSpec)}.
+     *
+     * @param on true to switch the mode on.
+     */
+    public void setTestwiseDeletion(boolean on) {
+        setMissingDataSpec(on ? MissingDataSpec.testwise() : null);
+    }
+
+    /**
+     * Tells the search how to treat missing values in a single data set, by Tetrad's standard
+     * {@link MissingDataSpec}. Pass null to clear a previous setting. The policies, and what each does to the two
+     * stages of RLCD:
+     * <ul>
+     *     <li><b>EM_COVARIANCE</b> (recommended): one covariance matrix is estimated from all of the incomplete rows
+     *     by EM ({@link EmCovarianceEstimator}), which is consistent under MAR and positive semidefinite. Stage 1
+     *     scores it, with the spec's effective sample size; every stage-2 rank test runs on it through
+     *     {@link EmCovarianceRankTest}, with a sample size chosen per query from the pairwise-complete counts of
+     *     the columns that query mentions, by the spec's {@link MissingDataSpec.EffectiveSampleSizeMode}. The mean
+     *     pairwise rule is recommended; the default FULL_N overstates the information and loses clusters. One
+     *     matrix serves the whole search, so stage 1 and every stage-2 decision see the same estimate.</li>
+     *     <li><b>PAIRWISE_COVARIANCE</b>: as EM_COVARIANCE but with the available-case matrix of
+     *     {@link PairwiseCovarianceEstimator}, which need not be positive semidefinite. Stage 1's score can misbehave
+     *     on such a matrix; supply a stage-1 graph or use {@link Stage1Method#NONE} if it does.</li>
+     *     <li><b>TESTWISE</b>: each stage-2 rank query is answered from the rows complete on that query's columns, by
+     *     {@link TestwiseDeletionRankTest}. Invents nothing, but a query over u columns keeps only about
+     *     (1 − rate)^u of the rows, so it is for few variables or low missingness. When stage 1 is run in this
+     *     mode it runs on the <i>listwise-complete</i> rows, the only choice here guaranteed positive semidefinite;
+     *     with many variables there may be none, in which case supply a stage-1 graph or use
+     *     {@link Stage1Method#NONE} and the listwise matrix is never built.</li>
+     *     <li><b>LISTWISE</b>: both stages run on the rows complete in every column.</li>
+     *     <li><b>MULTIPLE_IMPUTATION</b>: not handled here. Impute, and construct the search over the imputations
+     *     with {@link #Rlcd(List)}, which pools the rank tests by the D2 rule. Be aware that D2 at a handful of
+     *     imputations accepts rank deficiency whenever the statistic varies much across imputations, which on many
+     *     variables returns one latent over nearly everything; see the simulation notes.</li>
+     *     <li><b>FAIL</b>: an exception if the data have any missing value.</li>
+     * </ul>
+     * All of these are decided here, before stage 1, from the single data set the search was constructed over.
+     *
+     * @param spec the spec, or null.
+     * @throws IllegalArgumentException if called on a search constructed over several imputations, or if the policy
+     *                                 is MULTIPLE_IMPUTATION (use the other constructor), or FAIL with missing
+     *                                 values present.
+     */
+    public void setMissingDataSpec(MissingDataSpec spec) {
+        this.rankTester = null;
+        this.stage1CovarianceOverride = null;
+        this.testwiseDeletion = false;
+        this.missingDataSpec = spec;
+        if (spec == null) return;
+
+        if (imputations.size() > 1) {
+            throw new IllegalArgumentException("A missing-data policy applies to a single data set with missing "
+                                               + "values, not to a set of imputations; use one constructor or the "
+                                               + "other.");
+        }
+
+        MissingDataAudit audit = new MissingDataAudit(dataSet);
+        int n = dataSet.getNumRows();
+
+        switch (spec.getPolicy()) {
+            case FAIL -> {
+                if (audit.anyMissing()) {
+                    throw new IllegalArgumentException("RLCD: the data have missing values and the policy is to "
+                                                       + "fail. " + TestwiseDeletionRankTest.describe(dataSet));
+                }
+            }
+            case LISTWISE -> {
+                DataSet complete = MissingDataUtils.listwiseDelete(dataSet);
+                if (complete.getNumRows() < dataSet.getNumColumns() + 2) {
+                    throw new IllegalArgumentException("RLCD: listwise deletion leaves " + complete.getNumRows()
+                                                       + " complete rows of " + n + ", too few. "
+                                                       + TestwiseDeletionRankTest.describe(dataSet));
+                }
+                this.rankTester = new Chi2RankTest(complete);
+                this.stage1CovarianceOverride = new CovarianceMatrix(complete);
+                TetradLogger.getInstance().log("RLCD listwise: " + complete.getNumRows() + " complete rows of " + n);
+            }
+            case TESTWISE -> {
+                this.rankTester = new TestwiseDeletionRankTest(dataSet);
+                this.testwiseDeletion = true;
+            }
+            case EM_COVARIANCE, PAIRWISE_COVARIANCE -> {
+                ICovarianceMatrix cov;
+                int[][] counts;
+                if (spec.getPolicy() == MissingDataPolicy.EM_COVARIANCE) {
+                    EmCovarianceEstimator estimator = new EmCovarianceEstimator(dataSet);
+                    estimator.setRidge(spec.getEmRidge());
+                    estimator.setTolerance(spec.getEmTolerance());
+                    estimator.setMaxIterations(spec.getEmMaxIterations());
+                    cov = estimator.estimate();
+                    counts = estimator.getPairwiseCounts();
+                    TetradLogger.getInstance().log("RLCD EM covariance: " + estimator.getNumIterations()
+                                                   + " iterations, converged " + estimator.isConverged()
+                                                   + ", min pairwise count " + estimator.getMinPairwiseCount());
+                } else {
+                    cov = PairwiseCovarianceEstimator.estimate(dataSet);
+                    counts = audit.getPairwiseCompleteCounts();
+                }
+                this.rankTester = new EmCovarianceRankTest(cov, counts, n, spec.getEssMode(), 1.0);
+                int ess = MissingDataUtils.effectiveSampleSize(dataSet, spec);
+                this.stage1CovarianceOverride = new CovarianceMatrix(variables, cov.getMatrix(), ess < 0 ? n : ess);
+            }
+            case MULTIPLE_IMPUTATION -> throw new IllegalArgumentException("RLCD: for multiple imputation, impute "
+                                                                           + "and construct the search over the "
+                                                                           + "imputations with Rlcd(List<DataSet>).");
+        }
+    }
+
+    /**
+     * The missing-data spec in force, or null.
+     *
+     * @return the spec.
+     */
+    public MissingDataSpec getMissingDataSpec() {
+        return missingDataSpec;
+    }
+
+    /**
+     * Runs both stages on a covariance matrix estimated with censored values treated as censored -- a grade at the
+     * top of its scale is at least that, not missing and not exactly that -- by
+     * {@link CensoredMvnCovarianceEstimator}. Stage 1 scores the estimate; every stage-2 rank test runs on it through
+     * {@link EmCovarianceRankTest} with the given sample-size rule over the pairwise <i>uncensored</i> counts. This is
+     * the treatment for ceilings and floors, which no missing-value policy handles: a value missing or clipped because
+     * of its own size is missing-not-at-random, and the MAR estimate of {@link MissingDataSpec#emCovariance()} is
+     * biased toward attenuated correlations under it. Under Gaussian errors the censored estimate is close to exact;
+     * under skewed errors the correction is partial.
+     *
+     * @param estimator the estimator, constructed over this search's data set with its bounds set.
+     * @param essMode   how a query's sample size is chosen from the pairwise uncensored counts; mean pairwise
+     *                  recommended.
+     * @throws IllegalArgumentException if called on a search constructed over several imputations.
+     */
+    public void setCensoredCovariance(CensoredMvnCovarianceEstimator estimator,
+                                      MissingDataSpec.EffectiveSampleSizeMode essMode) {
+        if (imputations.size() > 1) {
+            throw new IllegalArgumentException("A censored covariance applies to a single data set, not to a set "
+                                               + "of imputations.");
+        }
+        this.missingDataSpec = null;
+        this.testwiseDeletion = false;
+        ICovarianceMatrix cov = estimator.estimate();
+        int[][] counts = estimator.getPairwiseCounts();
+        int n = dataSet.getNumRows();
+        this.rankTester = new EmCovarianceRankTest(cov, counts, n, essMode, 1.0);
+        double sum = 0;
+        int pairs = 0;
+        for (int a = 0; a < counts.length; a++) {
+            for (int b = a + 1; b < counts.length; b++) {
+                sum += counts[a][b];
+                pairs++;
+            }
+        }
+        int ess = essMode == MissingDataSpec.EffectiveSampleSizeMode.FULL_N || pairs == 0 ? n
+                : (int) Math.round(sum / pairs);
+        this.stage1CovarianceOverride = new CovarianceMatrix(variables, cov.getMatrix(), ess);
+        TetradLogger.getInstance().log("RLCD censored covariance: " + estimator.getCensoredCells()
+                                       + " censored cells, " + estimator.getMissingCells() + " missing cells.");
+    }
+
+    /**
+     * The covariance matrix of the rows with no missing value in any column, for stage 1 under testwise deletion.
+     */
+    private CovarianceMatrix listwiseCompleteCovariance() {
+        int n = dataSet.getNumRows(), p = dataSet.getNumColumns();
+        List<Integer> rows = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            boolean ok = true;
+            for (int j = 0; j < p; j++) {
+                if (Double.isNaN(dataSet.getDouble(i, j))) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (ok) rows.add(i);
+        }
+        int m = rows.size();
+        if (m < p + 2) {
+            throw new IllegalArgumentException("Testwise deletion needs a stage-1 covariance matrix, and these data "
+                                               + "have only " + m + " rows complete in all " + p + " columns. Set "
+                                               + "Stage1Method.NONE or supply a stage-1 graph. Missingness: "
+                                               + TestwiseDeletionRankTest.describe(dataSet));
+        }
+        double[] mean = new double[p];
+        for (int i : rows) for (int j = 0; j < p; j++) mean[j] += dataSet.getDouble(i, j);
+        for (int j = 0; j < p; j++) mean[j] /= m;
+
+        Matrix cov = new Matrix(p, p);
+        for (int a = 0; a < p; a++) {
+            for (int b = a; b < p; b++) {
+                double s = 0.0;
+                for (int i : rows) {
+                    s += (dataSet.getDouble(i, a) - mean[a]) * (dataSet.getDouble(i, b) - mean[b]);
+                }
+                double v = s / (m - 1.0);
+                cov.set(a, b, v);
+                cov.set(b, a, v);
+            }
+        }
+        TetradLogger.getInstance().log("RLCD testwise deletion: stage-1 covariance from " + m + " complete rows of "
+                                       + n + ".");
+        return new CovarianceMatrix(dataSet.getVariables(), cov, m);
     }
 
     /**
@@ -1154,6 +1376,10 @@ public class Rlcd {
      */
     private CovarianceMatrix stage1Covariance() {
         if (stage1CovarianceOverride != null) return stage1CovarianceOverride;
+        if (testwiseDeletion) {
+            stage1CovarianceOverride = listwiseCompleteCovariance();
+            return stage1CovarianceOverride;
+        }
 
         CovarianceMatrix first = new CovarianceMatrix(dataSet);
         if (imputations.size() == 1) return first;

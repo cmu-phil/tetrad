@@ -1695,6 +1695,17 @@ public final class Params {
      */
     public static final String RLCD_STAGE1_NONE = "rlcdStage1None";
     /**
+     * Constant <code>RLCD_CENSOR_CEILING="rlcdCensorCeiling"</code> Whether RLCD treats values at a common ceiling
+     * (see RLCD_CEILING_VALUE) as censored -- known only to be at least the ceiling -- and estimates its covariance
+     * matrix accordingly.
+     */
+    public static final String RLCD_CENSOR_CEILING = "rlcdCensorCeiling";
+    /**
+     * Constant <code>RLCD_CEILING_VALUE="rlcdCeilingValue"</code> The ceiling for RLCD_CENSOR_CEILING, the same for
+     * every variable; 100 for percentage grades.
+     */
+    public static final String RLCD_CEILING_VALUE = "rlcdCeilingValue";
+    /**
      * Constant <code>RLCD_UNFOLD_COVERS="rlcdUnfoldCovers"</code>
      */
     public static final String RLCD_UNFOLD_COVERS = "rlcdUnfoldCovers";

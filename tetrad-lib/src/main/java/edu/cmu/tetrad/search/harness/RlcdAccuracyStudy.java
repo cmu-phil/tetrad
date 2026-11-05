@@ -25,6 +25,9 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.missing.CensoredMvnCovarianceEstimator;
+import edu.cmu.tetrad.data.missing.MissingDataSpec;
+import edu.cmu.tetrad.data.missing.MvnImputer;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Edges;
@@ -33,6 +36,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.Rlcd;
+import edu.cmu.tetrad.search.rlcd.TestwiseDeletionRankTest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,6 +61,9 @@ import java.util.Set;
  *     <li><b>mixed30i5</b>: mixed30 with L1 given a fifth indicator, a direct edge X2 --&gt; X3 inside L1's cluster,
  *     and X9 cross-loading on L2 and L3. The fifth indicator matters: after RLCD splits off {X2, X3}, three pure
  *     indicators of L1 remain to serve as references, which the two-indicator step needs.</li>
+ *     <li><b>twolatents</b> (6 variables) and <b>pure12</b> (12 variables): chains of pure latents, L1 -&gt; L2
+ *     (3 indicators each) and L1 -&gt; L2 -&gt; L3 (4 each), with no impurities. These exist for the missing-value
+ *     arms, where the variable count is decisive.</li>
  *     <li><b>rand6</b>: drawn afresh each replication. Six latents in a random DAG (each forward pair with
  *     probability 0.4), five indicators each; three direct edges between two indicators of one latent (distinct
  *     latents); one indicator cross-loading on a second latent; two observed causes of latents, each with one
@@ -110,6 +117,46 @@ import java.util.Set;
  * {@code reps=20 ns=2000,5000 structures=mixed30,rand6 dists=skew conditions=plain alphas=0.001,0.01,0.05,0.1
  * penalties=0.5,1,2,4 csv=sweep.csv}.
  * <p>
+ * <b>Missing values.</b> With {@code missing=} other than none, each replication's data have holes punched in
+ * them and the arms named by {@code handling=} are all run on the same holed data:
+ * <ul>
+ *     <li><b>complete</b>: the data before the holes, the ceiling for the cell;</li>
+ *     <li><b>pooled</b>: {@code imputations=} MVN multiple imputations through {@link MvnImputer}, searched as one
+ *     by {@link Rlcd#Rlcd(List)}, which pools the rank tests by the D2 rule;</li>
+ *     <li><b>testwise</b>: {@link Rlcd#setTestwiseDeletion(boolean)}, each rank query answered from the rows
+ *     complete on that query's columns;</li>
+ *     <li><b>em</b> (also emMean), <b>emFull</b>, <b>emMin</b>: one EM covariance matrix from all the incomplete
+ *     rows, every rank test run on it with a per-query sample size by the mean, full-N, or minimum pairwise rule
+ *     ({@link edu.cmu.tetrad.search.rlcd.EmCovarianceRankTest});</li>
+ *     <li><b>pairwise</b>: as em with the available-case covariance matrix, mean pairwise rule;</li>
+ *     <li><b>censored</b>: for mnar only -- a removed value is read as right-censored at about the largest value
+ *     that survived in its column, and the covariance is estimated by
+ *     {@link CensoredMvnCovarianceEstimator}; under mcar or mar this reading is false and the arm says nothing;</li>
+ *     <li><b>listwise</b>: both stages on the rows complete in every column.</li>
+ * </ul>
+ * Mechanisms, with {@code missingRate=} the share of values removed from an affected variable:
+ * <ul>
+ *     <li><b>mcar</b>: every observed variable but the first loses values at random;</li>
+ *     <li><b>mar</b>: the first observed variable is kept whole and drives the rest -- a value is removed with
+ *     probability rising with the driver's percentile in that row, so missingness depends on observed data but not
+ *     on the missing value itself;</li>
+ *     <li><b>mnar</b>: self-masking. A variable loses its own largest values, which is what a ceiling-truncated
+ *     grade looks like, and is the case the chem data raised.</li>
+ * </ul>
+ * MCAR is where testwise deletion should be sound; MAR and MNAR are where its selection problem should bite, so a
+ * comparison that only runs MCAR proves little.
+ * <p>
+ * <b>Stage 1 is a confound and {@code sharedStage1=true} (the default under missing values) removes it.</b> The arms
+ * differ in their stage-2 rank test, which is the thing of interest, but they also differ in the covariance stage 1
+ * gets: pooled averages the imputations' matrices over all rows, testwise uses the listwise-complete rows. With
+ * sharedStage1, one stage-1 graph is searched per replication from the complete data and handed to every arm
+ * through {@link Rlcd#setStage1Graph(Graph)}, so the columns differ only in the rank test. Set it false to see the
+ * two effects together, which is what a user would actually get.
+ * <p>
+ * The <b>skip</b> column is the mean number of rank queries per run that the testwise guards resolved as rejections
+ * rather than answering (too few complete rows, or a non-positive small-sample correction). It is blank for the
+ * other arms. A large value means that arm's result rests on the guard.
+ * <p>
  * Timing, from a smoke run at N = 5000, per RLCD run: mixed30 about 2 s, mixed30i5 about 3 s, rand6 about 7 s.
  * The number of runs per replication is alphas x penalties x conditions, so a sweep grid multiplies quickly:
  * the example above is 8 runs per replication per N, about 20 minutes at reps=20. The ceil data are much slower,
@@ -151,33 +198,57 @@ public final class RlcdAccuracyStudy {
         double[] penalties = Arrays.stream(opt.getOrDefault("penalties", opt.getOrDefault("penalty", "1")).split(","))
                 .mapToDouble(s -> Double.parseDouble(s.trim())).toArray();
         String csv = opt.get("csv");
+        String missing = opt.getOrDefault("missing", "none");
+        double missingRate = Double.parseDouble(opt.getOrDefault("missingRate", "0.2"));
+        int imputationCount = Integer.parseInt(opt.getOrDefault("imputations", "5"));
+        String[] handling = opt.getOrDefault("handling",
+                missing.equals("none") ? "complete" : "complete,pooled,testwise").split(",");
+        boolean sharedStage1 = Boolean.parseBoolean(opt.getOrDefault("sharedStage1",
+                missing.equals("none") ? "false" : "true"));
+        if (!List.of("none", "mcar", "mar", "mnar").contains(missing)) {
+            throw new IllegalArgumentException("Unknown missing mechanism: " + missing);
+        }
+        if (missing.equals("none") && !(handling.length == 1 && handling[0].equals("complete"))) {
+            throw new IllegalArgumentException("handling= applies only with missing= other than none.");
+        }
         Random random = new Random(seed);
 
         System.out.println("RLCD accuracy on linear non-Gaussian data with latents. reps " + reps
                            + "; alphas " + Arrays.toString(alphas)
                            + "; stage-1 penalty discounts " + Arrays.toString(penalties)
                            + "; RLCD defaults otherwise (max k 3, BOSS stage 1, latent gate on).");
+        if (!missing.equals("none")) {
+            System.out.println("Missing values: " + missing + " at rate " + missingRate + "; arms "
+                               + Arrays.toString(handling) + " on the same holed data; " + imputationCount
+                               + " imputations for the pooled arm; stage-1 graph "
+                               + (sharedStage1 ? "shared across arms (searched on the complete data)"
+                                      : "searched per arm (so stage 1 and the rank test differ together)") + ".");
+        }
         System.out.println("Runs per replication per N: " + (alphas.length * penalties.length * conditions.length)
                            + ". All cells of a replication share one simulated dataset, so cells are paired.");
 
         try (java.io.PrintWriter out = csv == null ? null : new java.io.PrintWriter(csv)) {
             if (out != null) {
-                out.println("structure,dist,n,alpha,penalty,cond,reps,lat,trueLat,clus,jac,spur,llP,llR,ooP,ooR,"
-                            + "dir,dirPct,imp,impDir,impLat,rev,secs");
+                out.println("structure,dist,n,alpha,penalty,cond,handling,reps,lat,trueLat,clus,jac,spur,llP,llR,"
+                            + "ooP,ooR,dir,dirPct,imp,impDir,impLat,rev,skip,secs");
             }
             for (String structure : structures) {
                 for (String dist : dists) {
                     System.out.println();
                     System.out.println("=== " + structure + ", errors " + dist + " ===");
-                    System.out.printf("%6s %6s %4s %-8s %7s %5s %5s %5s  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s  "
-                                      + "%5s %6s%n",
-                            "N", "alpha", "pd", "cond", "lat", "clus", "jac", "spur", "LL P", "LL R", "OO P", "OO R",
-                            "dir", "dir'd", "imp", "impDir", "impLat", "rev", "secs");
+                    System.out.printf("%6s %6s %4s %-8s %-8s %7s %5s %5s %5s  %5s %5s  %5s %5s  %5s %5s  %5s %6s "
+                                      + "%6s  %5s %5s %6s%n",
+                            "N", "alpha", "pd", "cond", "hand", "lat", "clus", "jac", "spur", "LL P", "LL R", "OO P",
+                            "OO R", "dir", "dir'd", "imp", "impDir", "impLat", "rev", "skip", "secs");
                     for (int n : ns) {
                         Map<Cell, Totals> totals = new LinkedHashMap<>();
                         for (double alpha : alphas) {
                             for (double penalty : penalties) {
-                                for (String c : conditions) totals.put(new Cell(alpha, penalty, c), new Totals());
+                                for (String c : conditions) {
+                                    for (String h : handling) {
+                                        totals.put(new Cell(alpha, penalty, c, h), new Totals());
+                                    }
+                                }
                             }
                         }
                         int trueLatents = 0;
@@ -189,10 +260,34 @@ public final class RlcdAccuracyStudy {
                             trueLatents = truth.latents.size();
                             DataSet data = truth.simulate(dist, n, random);
                             long runSeed = Math.floorMod(random.nextLong(), 1_000_000L);
+
+                            DataSet holes = missing.equals("none") ? data
+                                    : punchHoles(data, missing, missingRate, random);
+                            List<DataSet> imputed = null;
+                            Map<Double, Graph> sharedStage1Graphs = new HashMap<>();
+
                             for (Cell cell : totals.keySet()) {
+                                Graph stage1 = null;
+                                if (sharedStage1) {
+                                    Double key = cell.penalty();
+                                    if (!sharedStage1Graphs.containsKey(key)) {
+                                        Rlcd probe = new Rlcd(data);
+                                        probe.setSeed(runSeed);
+                                        probe.setAlpha(cell.alpha());
+                                        probe.setPenaltyDiscount(cell.penalty());
+                                        probe.search();
+                                        sharedStage1Graphs.put(key, probe.getStage1Graph());
+                                    }
+                                    stage1 = sharedStage1Graphs.get(key);
+                                }
+                                if (cell.handling().equals("pooled") && imputed == null) {
+                                    imputed = new MvnImputer(MissingDataSpec.multipleImputation(imputationCount))
+                                            .impute(holes, imputationCount, runSeed);
+                                }
                                 long t0 = System.nanoTime();
-                                Graph g = run(data, truth, cell.condition(), runSeed, cell.alpha(), cell.penalty());
-                                totals.get(cell).add(score(truth, g), (System.nanoTime() - t0) / 1e9);
+                                Run res = run(data, holes, imputed, truth, cell, runSeed, stage1);
+                                totals.get(cell).add(score(truth, res.graph()), (System.nanoTime() - t0) / 1e9,
+                                        res.skipped());
                             }
                         }
                         System.out.println();
@@ -219,18 +314,128 @@ public final class RlcdAccuracyStudy {
     /**
      * One cell of the sweep: a rank-test alpha, a stage-1 penalty discount, and a condition.
      */
-    private record Cell(double alpha, double penalty, String condition) {
+    private record Cell(double alpha, double penalty, String condition, String handling) {
     }
 
-    private static Graph run(DataSet data, Truth truth, String condition, long seed, double alpha, double penalty)
-            throws InterruptedException {
-        Rlcd rlcd = new Rlcd(data);
+    /**
+     * The result of one cell: the graph, and how many rank queries a testwise guard resolved rather than answered.
+     */
+    private record Run(Graph graph, int skipped) {
+    }
+
+    private static Run run(DataSet data, DataSet holes, List<DataSet> imputed, Truth truth, Cell cell, long seed,
+                           Graph stage1) throws InterruptedException {
+        TestwiseDeletionRankTest testwise = null;
+        Rlcd rlcd;
+
+        switch (cell.handling()) {
+            case "complete" -> rlcd = new Rlcd(data);
+            case "pooled" -> rlcd = new Rlcd(imputed);
+            case "testwise" -> {
+                rlcd = new Rlcd(holes);
+                // The tester is held so its guard count can be read afterwards; it is the same test
+                // setTestwiseDeletion installs, which also sets the listwise stage-1 covariance that matters only
+                // when no stage-1 graph is supplied below.
+                rlcd.setTestwiseDeletion(true);
+                testwise = new TestwiseDeletionRankTest(holes);
+                rlcd.setRankTester(testwise);
+            }
+            case "listwise" -> {
+                rlcd = new Rlcd(holes);
+                rlcd.setMissingDataSpec(MissingDataSpec.listwise());
+            }
+            case "em", "emMean" -> {
+                rlcd = new Rlcd(holes);
+                rlcd.setMissingDataSpec(MissingDataSpec.emCovariance()
+                        .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE));
+            }
+            case "emFull" -> {
+                rlcd = new Rlcd(holes);
+                rlcd.setMissingDataSpec(MissingDataSpec.emCovariance()
+                        .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.FULL_N));
+            }
+            case "emMin" -> {
+                rlcd = new Rlcd(holes);
+                rlcd.setMissingDataSpec(MissingDataSpec.emCovariance()
+                        .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MIN_PAIRWISE));
+            }
+            case "censored" -> {
+                // For mnar holes only: a removed value was above its column's cut, so it is right-censored at about
+                // the largest value that survived. Under mcar or mar this reading is false and the arm is meaningless.
+                rlcd = new Rlcd(holes);
+                CensoredMvnCovarianceEstimator est = new CensoredMvnCovarianceEstimator(holes,
+                        CensoredMvnCovarianceEstimator.upperBoundsFromObservedMaxima(holes), null);
+                est.setSeed(seed);
+                est.setMissingAsCensored(true);     // the holes are the censored values, removed
+                rlcd.setCensoredCovariance(est, MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE);
+            }
+            case "pairwise" -> {
+                rlcd = new Rlcd(holes);
+                rlcd.setMissingDataSpec(MissingDataSpec.pairwiseCovariance()
+                        .withEssMode(MissingDataSpec.EffectiveSampleSizeMode.MEAN_PAIRWISE));
+            }
+            default -> throw new IllegalArgumentException("Unknown handling: " + cell.handling());
+        }
+
         rlcd.setSeed(seed);
-        rlcd.setAlpha(alpha);
-        rlcd.setPenaltyDiscount(penalty);
-        rlcd.setResolveTwoIndicatorLatents(condition.equals("resolve") || condition.equals("both"));
-        if (condition.equals("tiers") || condition.equals("both")) rlcd.setKnowledge(truth.depthTiers());
-        return rlcd.search();
+        rlcd.setAlpha(cell.alpha());
+        rlcd.setPenaltyDiscount(cell.penalty());
+        rlcd.setResolveTwoIndicatorLatents(cell.condition().equals("resolve") || cell.condition().equals("both"));
+        if (cell.condition().equals("tiers") || cell.condition().equals("both")) {
+            rlcd.setKnowledge(truth.depthTiers());
+        }
+        if (stage1 != null) rlcd.setStage1Graph(stage1);
+
+        return new Run(rlcd.search(), testwise == null ? -1 : testwise.getSkippedQueries());
+    }
+
+    /**
+     * Removes values from a copy of the data by the named mechanism. The first observed variable is never touched:
+     * under MAR it is the driver, and under the other mechanisms keeping one column whole keeps the cells
+     * comparable with the MAR one.
+     *
+     * @param data    the complete data.
+     * @param missing mcar, mar, or mnar.
+     * @param rate    the share of values removed from an affected variable.
+     * @param random  the generator.
+     * @return a copy with NaN in place of the removed values.
+     */
+    private static DataSet punchHoles(DataSet data, String missing, double rate, Random random) {
+        DataSet holes = data.copy();
+        int n = holes.getNumRows(), p = holes.getNumColumns();
+
+        if (missing.equals("mnar")) {
+            // Self-masking: each affected variable loses its own largest values, as a ceiling-truncated grade does.
+            for (int j = 1; j < p; j++) {
+                double[] col = new double[n];
+                for (int i = 0; i < n; i++) col[i] = data.getDouble(i, j);
+                double[] sorted = col.clone();
+                Arrays.sort(sorted);
+                double cut = sorted[(int) Math.min(n - 1, Math.floor((1 - rate) * (n - 1)))];
+                for (int i = 0; i < n; i++) if (col[i] >= cut) holes.setDouble(i, j, Double.NaN);
+            }
+            return holes;
+        }
+
+        double[] driverPercentile = new double[n];
+        if (missing.equals("mar")) {
+            double[] d = new double[n];
+            for (int i = 0; i < n; i++) d[i] = data.getDouble(i, 0);
+            Integer[] boxed = new Integer[n];
+            for (int i = 0; i < n; i++) boxed[i] = i;
+            Arrays.sort(boxed, (x, y) -> Double.compare(d[x], d[y]));
+            for (int k = 0; k < n; k++) driverPercentile[boxed[k]] = k / (double) (n - 1);
+        }
+
+        for (int i = 0; i < n; i++) {
+            // MCAR: a flat rate. MAR: the rate rises linearly with the driver's percentile, from 0 to twice the
+            // nominal rate, so the mean rate matches MCAR while missingness depends on observed data alone.
+            double pi = missing.equals("mar") ? 2 * rate * driverPercentile[i] : rate;
+            for (int j = 1; j < p; j++) {
+                if (random.nextDouble() < pi) holes.setDouble(i, j, Double.NaN);
+            }
+        }
+        return holes;
     }
 
     // ---------------------------------------------------------------- truth
@@ -341,11 +546,35 @@ public final class RlcdAccuracyStudy {
 
     private static Truth build(String structure, Random random) {
         return switch (structure) {
+            case "twolatents" -> pureChain(2, 3);
+            case "pure12" -> pureChain(3, 4);
             case "mixed30" -> mixed30(false);
             case "mixed30i5" -> mixed30(true);
             case "rand6" -> rand6(random);
             default -> throw new IllegalArgumentException("Unknown structure: " + structure);
         };
+    }
+
+    /**
+     * A chain of pure latents, L1 -&gt; L2 -&gt; ... , each with the given number of pure indicators and no
+     * impurities. Small structures matter for the missing-value arms: the number of columns a rank query mentions
+     * decides how many rows are complete on all of them, so testwise deletion lives or dies by the variable count.
+     *
+     * @param latents    the number of latents.
+     * @param indicators the indicators per latent.
+     * @return the truth.
+     */
+    private static Truth pureChain(int latents, int indicators) {
+        Truth t = new Truth();
+        for (int i = 0; i < latents; i++) {
+            if (i == 0) t.node("L1", true);
+            else t.node("L" + (i + 1), true, "L" + i);
+        }
+        int x = 1;
+        for (int i = 0; i < latents; i++) {
+            for (int j = 0; j < indicators; j++) t.node("X" + (x++), false, "L" + (i + 1));
+        }
+        return t;
     }
 
     private static Truth mixed30(boolean impure) {
@@ -595,9 +824,15 @@ public final class RlcdAccuracyStudy {
         int runs;
         double latents, exact, jaccard, spurious, secs;
         long llTp, llEst, llTrue, ooTp, ooEst, ooTrue, dirRight, dirWrong, impAdj, impDir, impLat, impTrue, reversed;
+        long skipped;
+        int skippedRuns;
 
-        void add(Score s, double seconds) {
+        void add(Score s, double seconds, int skippedQueries) {
             runs++;
+            if (skippedQueries >= 0) {
+                skipped += skippedQueries;
+                skippedRuns++;
+            }
             latents += s.latents();
             exact += s.exactClusters();
             jaccard += s.jaccardSum();
@@ -619,9 +854,9 @@ public final class RlcdAccuracyStudy {
         }
 
         void print(int n, Cell cell, int trueLatents) {
-            System.out.printf("%6d %6s %4s %-8s %7s %5.2f %5.2f %5.2f  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s  "
-                              + "%5.1f %6.2f%n",
-                    n, trim(cell.alpha()), trim(cell.penalty()), cell.condition(),
+            System.out.printf("%6d %6s %4s %-8s %-8s %7s %5.2f %5.2f %5.2f  %5s %5s  %5s %5s  %5s %5s  %5s %6s %6s"
+                              + "  %5.1f %5s %6.2f%n",
+                    n, trim(cell.alpha()), trim(cell.penalty()), cell.condition(), cell.handling(),
                     String.format("%.1f(%d)", latents / runs, trueLatents),
                     exact / (runs * (double) trueLatents),
                     jaccard / (runs * (double) trueLatents),
@@ -631,12 +866,15 @@ public final class RlcdAccuracyStudy {
                     ratio(dirRight, dirRight + dirWrong), ratio(dirRight + dirWrong, ooTp),
                     impTrue == 0 ? "" : ratio(impAdj, impTrue), impTrue == 0 ? "" : ratio(impDir, impTrue),
                     impTrue == 0 ? "" : ratio(impLat, impTrue),
-                    reversed / (double) runs, secs / runs);
+                    reversed / (double) runs,
+                    skippedRuns == 0 ? "" : String.format("%.1f", skipped / (double) skippedRuns),
+                    secs / runs);
         }
 
         void csv(java.io.PrintWriter out, String structure, String dist, int n, Cell cell, int trueLatents) {
-            out.printf("%s,%s,%d,%s,%s,%s,%d,%.3f,%d,%.4f,%.4f,%.4f,%s,%s,%s,%s,%s,%s,%s,%s,%s,%.3f,%.3f%n",
-                    structure, dist, n, trim(cell.alpha()), trim(cell.penalty()), cell.condition(), runs,
+            out.printf("%s,%s,%d,%s,%s,%s,%s,%d,%.3f,%d,%.4f,%.4f,%.4f,%s,%s,%s,%s,%s,%s,%s,%s,%s,%.3f,%s,%.3f%n",
+                    structure, dist, n, trim(cell.alpha()), trim(cell.penalty()), cell.condition(),
+                    cell.handling(), runs,
                     latents / runs, trueLatents,
                     exact / (runs * (double) trueLatents),
                     jaccard / (runs * (double) trueLatents),
@@ -646,7 +884,9 @@ public final class RlcdAccuracyStudy {
                     plain(dirRight, dirRight + dirWrong), plain(dirRight + dirWrong, ooTp),
                     impTrue == 0 ? "" : plain(impAdj, impTrue), impTrue == 0 ? "" : plain(impDir, impTrue),
                     impTrue == 0 ? "" : plain(impLat, impTrue),
-                    reversed / (double) runs, secs / runs);
+                    reversed / (double) runs,
+                    skippedRuns == 0 ? "" : String.format("%.3f", skipped / (double) skippedRuns),
+                    secs / runs);
         }
 
         private static String ratio(long num, long den) {
