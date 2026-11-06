@@ -1706,6 +1706,16 @@ public final class Params {
      */
     public static final String RLCD_OBSERVED_EXPLANATION_ALPHA = "rlcdObservedExplanationAlpha";
     /**
+     * Constant <code>RLCD_STABILITY_RUNS="rlcdStabilityRuns"</code> Number of bootstrap reruns RLCD makes after the
+     * main run to report co-clustering and adjacency frequencies; 0 (the default) makes none.
+     */
+    public static final String RLCD_STABILITY_RUNS = "rlcdStabilityRuns";
+    /**
+     * Constant <code>RLCD_STABILITY_TIME_LIMIT="rlcdStabilityTimeLimit"</code> Wall-clock budget, in seconds, for
+     * the stability reruns; checked between runs.
+     */
+    public static final String RLCD_STABILITY_TIME_LIMIT = "rlcdStabilityTimeLimit";
+    /**
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";

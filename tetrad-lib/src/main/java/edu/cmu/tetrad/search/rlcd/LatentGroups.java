@@ -383,6 +383,12 @@ public final class LatentGroups {
         return before - cl.size();
     }
 
+    /**
+     * Promotes the rank-deficient sets found at the lowest pending rank to clusters, the set covering the most
+     * observed variables (members plus non-sinks) first, and marks the covers involved as leaves or non-leaves.
+     *
+     * @return true if at least one cluster was added.
+     */
     public boolean confirmClusters() {
         int k = Collections.min(clusters.keySet());
         boolean success = false;

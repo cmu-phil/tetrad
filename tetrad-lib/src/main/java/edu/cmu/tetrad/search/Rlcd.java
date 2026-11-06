@@ -553,7 +553,7 @@ public class Rlcd {
 
     /**
      * Sets whether a rank deficiency must survive an observed-explanation check before it becomes a cluster
-     * (default false). See {@link RlcdClusterSearch#setObservedExplanationCheck(boolean, double, int)}. In short: a
+     * (default false). See {@link RlcdClusterSearch#setObservedExplanationCheck(boolean, double, int, int)}. In short: a
      * set is made a cluster of t latents only if no t observed variables explain its rank deficiency equally well.
      * This is the guard against reading a chain of observed variables -- a sequence of unit scores, say -- as a
      * measurement model, which rank constraints alone license, since a chain is rank one across any cut.

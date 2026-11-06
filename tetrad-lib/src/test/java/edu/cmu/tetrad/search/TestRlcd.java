@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
+import edu.cmu.tetrad.search.rlcd.RlcdStabilitySummary;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeTierStructure;
 import edu.cmu.tetrad.data.missing.MissingDataSpec;
@@ -1021,6 +1022,87 @@ public class TestRlcd {
                 assertTrue("L --> O should hold (O is a collider child): " + out, out.isParentOf(latent, oo));
             }
         }
+    }
+
+
+    /**
+     * The stability summary is stated over observed variables only, since latent names are not comparable across
+     * runs. Two runs agree with the main graph on one cluster and split the other.
+     */
+    @Test
+    public void testStabilitySummaryCounts() {
+        Graph main = latentGraph(new String[][]{{"A", "B", "C"}, {"D", "E", "F"}}, "A-D");
+        Graph run1 = latentGraph(new String[][]{{"A", "B", "C"}, {"D", "E", "F"}}, "A-D");
+        Graph run2 = latentGraph(new String[][]{{"A", "B", "C"}, {"D", "E"}, {"F"}}, "");
+        RlcdStabilitySummary s = new RlcdStabilitySummary(main, List.of(run1, run2));
+        assertEquals(2, s.getNumRuns());
+        assertEquals(1.0, s.coClusterFrequency("A", "B"), 1e-12);
+        assertEquals(1.0, s.coClusterFrequency("D", "E"), 1e-12);
+        assertEquals(0.5, s.coClusterFrequency("E", "F"), 1e-12);
+        assertEquals(0.0, s.coClusterFrequency("A", "D"), 1e-12);
+        assertEquals(0.5, s.adjacencyFrequency("A", "D"), 1e-12);
+        String report = s.report();
+        assertTrue(report, report.contains("F 0.50"));
+        assertTrue(report, report.contains("A --- D 0.50"));
+        assertTrue(report, report.contains("2 latents in 1 run") && report.contains("3 latents in 1 run"));
+    }
+
+    /**
+     * The wrapper's stability runs: three bootstrap reruns on a two-latent model, main graph unchanged, attribute
+     * attached. Also checks that a time limit of zero stops after the first rerun.
+     */
+    @Test
+    public void testStabilityRunsThroughWrapper() throws Exception {
+        Graph g = new EdgeListGraph();
+        Node l1 = new GraphNode("L1"), l2 = new GraphNode("L2");
+        l1.setNodeType(NodeType.LATENT);
+        l2.setNodeType(NodeType.LATENT);
+        g.addNode(l1);
+        g.addNode(l2);
+        g.addDirectedEdge(l1, l2);
+        for (int i = 1; i <= 4; i++) {
+            Node x = new GraphNode("X" + i), y = new GraphNode("Y" + i);
+            g.addNode(x);
+            g.addNode(y);
+            g.addDirectedEdge(l1, x);
+            g.addDirectedEdge(l2, y);
+        }
+        DataSet data = simulate(g, 1500, 3L);
+
+        Parameters params = new Parameters();
+        params.set(Params.ALPHA, 0.01);
+        params.set(Params.RLCD_MAX_K, 2);
+        params.set(Params.SEED, 5L);
+        params.set(Params.RLCD_STABILITY_RUNS, 3);
+        edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd wrapper = new edu.cmu.tetrad.algcomparison.algorithm.other.Rlcd();
+        Graph out = wrapper.search(data, params);
+        Object attr = out.getAllAttributes().get("RLCD stability");
+        assertNotNull(attr);
+        assertTrue(attr.toString(), attr.toString().contains("over 3 bootstrap runs"));
+
+        params.set(Params.RLCD_STABILITY_TIME_LIMIT, 0.0);
+        out = wrapper.search(data, params);
+        attr = out.getAllAttributes().get("RLCD stability");
+        assertTrue(attr.toString(), attr.toString().contains("1 of 3 requested runs completed"));
+    }
+
+    private static Graph latentGraph(String[][] clusters, String observedEdge) {
+        Graph g = new EdgeListGraph();
+        int k = 0;
+        for (String[] cluster : clusters) {
+            Node l = new GraphNode("L" + (++k));
+            l.setNodeType(NodeType.LATENT);
+            g.addNode(l);
+            for (String name : cluster) {
+                if (g.getNode(name) == null) g.addNode(new GraphNode(name));
+                g.addDirectedEdge(l, g.getNode(name));
+            }
+        }
+        if (!observedEdge.isEmpty()) {
+            String[] ab = observedEdge.split("-");
+            g.addUndirectedEdge(g.getNode(ab[0]), g.getNode(ab[1]));
+        }
+        return g;
     }
 
 }

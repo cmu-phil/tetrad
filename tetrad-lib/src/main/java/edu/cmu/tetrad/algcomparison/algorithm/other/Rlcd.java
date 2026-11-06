@@ -42,11 +42,13 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.search.rlcd.RlcdStabilitySummary;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Wrapper for the RLCD algorithm (Rank-based Latent Causal Discovery; Dong et al., ICLR 2024), which learns a graph
@@ -92,6 +94,80 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
             throw new IllegalArgumentException("RLCD requires a continuous tabular data set.");
         }
 
+        Graph graph = searchOnce(dataSet, parameters);
+
+        int stabilityRuns = parameters.getInt(Params.RLCD_STABILITY_RUNS, 0);
+        if (stabilityRuns > 0) {
+            stabilitySummary(graph, parameters, stabilityRuns,
+                    random -> searchOnce(dataSet.subsetRows(bootstrapRows(dataSet.getNumRows(), random)), parameters));
+        }
+
+        return graph;
+    }
+
+    /**
+     * Resampled runs for the stability summary: bootstrap the rows, run the same configuration, tally. Bounded by
+     * the run count, by the time limit (checked between runs), and by the interface's stop button (also between
+     * runs). No run is cut off part way, and the main graph is never altered; the summary goes to the log and one
+     * line of it to the graph's attributes.
+     */
+    private void stabilitySummary(Graph graph, Parameters parameters, int runs, Resampler resampler) {
+        long limitMillis = Math.round(parameters.getDouble(Params.RLCD_STABILITY_TIME_LIMIT, 300.0) * 1000.0);
+        long start = System.currentTimeMillis();
+        long seed = parameters.getLong(Params.SEED);
+        List<Graph> sampled = new ArrayList<>();
+        String stoppedBy = null;
+
+        for (int r = 0; r < runs; r++) {
+            if (Thread.currentThread().isInterrupted()) {
+                stoppedBy = "the stop button";
+                break;
+            }
+            long elapsed = System.currentTimeMillis() - start;
+            if (r > 0 && elapsed + elapsed / r > limitMillis) {
+                // the next run would, on the average so far, overrun the budget.
+                stoppedBy = "the time limit of " + (limitMillis / 1000) + " s";
+                break;
+            }
+            try {
+                sampled.add(resampler.run(new Random(seed == -1 ? r : seed + r + 1)));
+            } catch (RuntimeException e) {
+                if (e.getCause() instanceof InterruptedException) {
+                    stoppedBy = "the stop button";
+                    break;
+                }
+                TetradLogger.getInstance().log("RLCD stability run " + (r + 1) + " failed and was skipped: " + e);
+            }
+        }
+
+        RlcdStabilitySummary summary = new RlcdStabilitySummary(graph, sampled);
+        String report = summary.report();
+        if (stoppedBy != null) {
+            report += "Stopped by " + stoppedBy + " after " + sampled.size() + " of " + runs + " requested runs.\n";
+        }
+        TetradLogger.getInstance().log(report);
+        graph.addAttribute("RLCD stability", summary.oneLine()
+                                             + (stoppedBy == null ? "" : " (" + sampled.size() + " of " + runs
+                                                                         + " requested runs completed)"));
+    }
+
+    /**
+     * Runs the search once on a bootstrap resample drawn with the given generator.
+     */
+    private interface Resampler {
+        Graph run(Random random);
+    }
+
+    private static int[] bootstrapRows(int n, Random random) {
+        int[] rows = new int[n];
+        for (int i = 0; i < n; i++) rows[i] = random.nextInt(n);
+        return rows;
+    }
+
+    /**
+     * One RLCD search on the data as given, in whatever configuration the parameters select.
+     */
+    private Graph searchOnce(DataSet dataSet, Parameters parameters) {
         boolean censor = parameters.getBoolean(Params.RLCD_CENSOR_CEILING, false);
         MissingDataSpec spec = MissingDataUtils.fromParameters(parameters);
         boolean stratified = parameters.getBoolean(Params.STRATIFY_BY_DOMAIN, false);
@@ -209,7 +285,19 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
             dataSets.add(dataSet);
         }
 
-        return run(new edu.cmu.tetrad.search.Rlcd(dataSets), parameters);
+        Graph graph = run(new edu.cmu.tetrad.search.Rlcd(dataSets), parameters);
+
+        int stabilityRuns = parameters.getInt(Params.RLCD_STABILITY_RUNS, 0);
+        if (stabilityRuns > 0) {
+            stabilitySummary(graph, parameters, stabilityRuns, random -> {
+                int[] rows = bootstrapRows(dataSets.get(0).getNumRows(), random);
+                List<DataSet> resampled = new ArrayList<>();
+                for (DataSet d : dataSets) resampled.add(d.subsetRows(rows));
+                return run(new edu.cmu.tetrad.search.Rlcd(resampled), parameters);
+            });
+        }
+
+        return graph;
     }
 
     private Graph run(edu.cmu.tetrad.search.Rlcd rlcd, Parameters parameters) {
@@ -291,6 +379,8 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         parameters.add(Params.RLCD_PARTITION_CLIQUE_THRESHOLD);
         parameters.add(Params.RLCD_STAGE1_FGES);
         parameters.add(Params.RLCD_STAGE1_NONE);
+        parameters.add(Params.RLCD_STABILITY_RUNS);
+        parameters.add(Params.RLCD_STABILITY_TIME_LIMIT);
         parameters.add(Params.RLCD_CENSOR_CEILING);
         parameters.add(Params.RLCD_CEILING_VALUE);
         parameters.add(Params.MISSING_DATA_POLICY);

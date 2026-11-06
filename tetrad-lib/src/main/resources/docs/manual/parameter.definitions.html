@@ -7117,6 +7117,28 @@ Source:
         <li>Value Type: <span id="rlcdResolveTwoIndicatorLatents_value_type">Boolean</span></li>
     </ul>
 
+    === rlcdStabilityRuns ===
+    <h3 class="parameter_description" id="rlcdStabilityRuns">rlcdStabilityRuns</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdStabilityRuns_short_desc">RLCD: number of bootstrap reruns for a stability summary after the main run (default 0 = none)</span></li>
+        <li>Long Description: <span id="rlcdStabilityRuns_long_desc">When greater than zero, RLCD first does its normal run, which is the graph returned, and then reruns the same configuration this many times on bootstrap resamples of the rows (the same rows across pooled imputations). The reruns do not change the graph. They produce a report in the log: for each latent of the main graph, its observed children with the fraction of reruns in which each was clustered with the others; the observed pairs clustered together in at least half the reruns but not in the main graph; the observed adjacencies of the main graph with the fraction of reruns in which they appear; and the number of latents found per rerun. One line of this is attached to the graph as the attribute "RLCD stability". Each rerun costs as much as the main run, so ten reruns take ten times as long; see rlcdStabilityTimeLimit. The stop button stops the reruns at the next run boundary and the main graph is still returned, with the summary over the reruns completed. Latent names differ from run to run, so everything in the report is stated in terms of the observed variables.</span></li>
+        <li>Default Value: <span id="rlcdStabilityRuns_default_value">0</span></li>
+        <li>Lower Bound: <span id="rlcdStabilityRuns_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="rlcdStabilityRuns_upper_bound">2147483647</span></li>
+        <li>Value Type: <span id="rlcdStabilityRuns_value_type">Integer</span></li>
+    </ul>
+
+    === rlcdStabilityTimeLimit ===
+    <h3 class="parameter_description" id="rlcdStabilityTimeLimit">rlcdStabilityTimeLimit</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdStabilityTimeLimit_short_desc">RLCD: wall-clock budget in seconds for the stability reruns (default 300)</span></li>
+        <li>Long Description: <span id="rlcdStabilityTimeLimit_long_desc">A bound on the total time spent in the reruns requested by rlcdStabilityRuns. It is checked between reruns: another rerun starts only if, at the average pace so far, it would finish within the budget. No rerun is cut off part way, so the actual time can exceed the budget by at most one run. When the budget stops the reruns early, the report says how many of the requested reruns it is based on. The main run is not subject to this limit.</span></li>
+        <li>Default Value: <span id="rlcdStabilityTimeLimit_default_value">300</span></li>
+        <li>Lower Bound: <span id="rlcdStabilityTimeLimit_lower_bound">0</span></li>
+        <li>Upper Bound: <span id="rlcdStabilityTimeLimit_upper_bound">Infinity</span></li>
+        <li>Value Type: <span id="rlcdStabilityTimeLimit_value_type">Double</span></li>
+    </ul>
+
     === rlcdStage1Fges ===
     <h3 class="parameter_description" id="rlcdStage1Fges">rlcdStage1Fges</h3>
     <ul class="parameter_description_list">

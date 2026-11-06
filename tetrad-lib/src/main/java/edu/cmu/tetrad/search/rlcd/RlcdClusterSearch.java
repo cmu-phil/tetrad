@@ -115,14 +115,6 @@ public final class RlcdClusterSearch {
     }
 
     /**
-     * Sets background knowledge over the observed variables. A non-sink c is not tested as a parent of a candidate
-     * set containing an observed variable a when c → a is forbidden, and a cluster whose new cover would create a
-     * forbidden observed-to-observed edge is rejected. Knowledge cannot refer to latent variables, which are created
-     * by the search.
-     *
-     * @param knowledge the knowledge; null means none.
-     */
-    /**
      * Sets whether a rank deficiency is checked for an observed explanation before it is accepted as a cluster
      * (default false). A set As found rank deficient against Bs given the non-sinks, at a rank that would introduce
      * t new latents, is accepted only if no set T of t observed variables (from the partition, outside the
@@ -171,6 +163,14 @@ public final class RlcdClusterSearch {
         return explainedAway;
     }
 
+    /**
+     * Sets background knowledge over the observed variables. A non-sink c is not tested as a parent of a candidate
+     * set containing an observed variable a when c → a is forbidden, and a cluster whose new cover would create a
+     * forbidden observed-to-observed edge is rejected. Knowledge cannot refer to latent variables, which are created
+     * by the search.
+     *
+     * @param knowledge the knowledge; null means none.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge == null ? new Knowledge() : knowledge;
     }
