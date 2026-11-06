@@ -151,6 +151,7 @@ public class Rlcd {
     private static final int MAX_GATE_TESTS = 20000;
     private boolean latentGate = true;
     private boolean resolveTwoIndicatorLatents = false;
+    private boolean knowledgeInStage1 = true;
     private boolean observedExplanationCheck = false;
     private double observedExplanationAlpha = 0.05;
     private int explainedAway = 0;
@@ -530,6 +531,23 @@ public class Rlcd {
      */
     public void setResolveTwoIndicatorLatents(boolean resolve) {
         this.resolveTwoIndicatorLatents = resolve;
+    }
+
+    /**
+     * Sets whether background knowledge is given to stage 1 as well as stage 2 (default true). Stage 2 always
+     * honours it: no non-sink forbidden as a parent, tier precedence in cluster placement, orientation of what the
+     * tiers order. Stage 1 is the question. Under tier constraints BOSS returns a denser skeleton (about eight more
+     * edges on thirty variables, October 2026), the clique merge then puts more variables in one partition, and
+     * stage 2's rank tests over a larger set with weak correlations fail to reject rank one across it -- the
+     * fourteen-variable cluster seen on the chem data whenever knowledge was on. Measured on mixed30: knowledge in
+     * stage 2 alone did slightly better on latent structure than no knowledge, knowledge in stage 1 did worse; stage
+     * 1 knowledge also removed observed false positives at the partition boundary. So: true where the observed
+     * edges and their directions are the point, false where the latent structure is and the knowledge is rich.
+     *
+     * @param knowledgeInStage1 whether stage 1 sees the knowledge.
+     */
+    public void setKnowledgeInStage1(boolean knowledgeInStage1) {
+        this.knowledgeInStage1 = knowledgeInStage1;
     }
 
     /**
@@ -1443,14 +1461,14 @@ public class Rlcd {
         score.setPenaltyDiscount(penaltyDiscount);
         if (stage1Method == Stage1Method.FGES) {
             Fges fges = new Fges(score);
-            fges.setKnowledge(knowledge);
+            if (knowledgeInStage1) fges.setKnowledge(knowledge);
             fges.setVerbose(false);
             return fges.search();
         } else {
             Boss boss = new Boss(score);
             boss.setVerbose(false);
             PermutationSearch ps = new PermutationSearch(boss);
-            ps.setKnowledge(knowledge);
+            if (knowledgeInStage1) ps.setKnowledge(knowledge);
             if (seed != -1) ps.setSeed(seed);
             return ps.search();
         }

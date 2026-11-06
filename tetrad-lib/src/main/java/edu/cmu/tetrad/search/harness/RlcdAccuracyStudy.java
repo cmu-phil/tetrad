@@ -110,8 +110,8 @@ import java.util.Set;
  * <p>
  * <b>Arguments</b>, all optional, as key=value: reps=10, ns=2000, structures=mixed30,mixed30i5,rand6,
  * dists=skew,mildskew,gauss, conditions=plain,resolve,tiers,both (a condition may also be a '+'-joined set of the
- * tokens plain, resolve, tiers, explain, e.g. {@code tiers+explain}; explain switches on the observed-explanation
- * check), seed=20261022, and the two swept
+ * tokens plain, resolve, tiers, tiers2, explain, e.g. {@code tiers+explain}; explain switches on the
+ * observed-explanation check, tiers2 gives the knowledge to stage 2 only), seed=20261022, and the two swept
  * parameters:
  * <ul>
  *     <li><b>alphas</b>=0.01, a comma-separated list of rank-test alphas (RLCD's default is 0.01);</li>
@@ -418,6 +418,10 @@ public final class RlcdAccuracyStudy {
         rlcd.setResolveTwoIndicatorLatents(tokens.contains("resolve"));
         if (tokens.contains("tiers")) rlcd.setKnowledge(truth.depthTiers());
         if (tokens.contains("explain")) rlcd.setObservedExplanationCheck(true, 0.05);
+        if (tokens.contains("tiers2")) {          // knowledge in stage 2 only
+            rlcd.setKnowledge(truth.depthTiers());
+            rlcd.setKnowledgeInStage1(false);
+        }
         if (stage1 != null) rlcd.setStage1Graph(stage1);
 
         return new Run(rlcd.search(), testwise == null ? -1 : testwise.getSkippedQueries());

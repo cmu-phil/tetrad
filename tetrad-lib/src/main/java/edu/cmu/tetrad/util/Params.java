@@ -1691,6 +1691,11 @@ public final class Params {
      */
     public static final String RLCD_OBSERVED_EXPLANATION_CHECK = "rlcdObservedExplanationCheck";
     /**
+     * Constant <code>RLCD_KNOWLEDGE_IN_STAGE1="rlcdKnowledgeInStage1"</code> Whether RLCD gives background knowledge
+     * to stage 1 as well as stage 2.
+     */
+    public static final String RLCD_KNOWLEDGE_IN_STAGE1 = "rlcdKnowledgeInStage1";
+    /**
      * Constant <code>RLCD_OBSERVED_EXPLANATION_ALPHA="rlcdObservedExplanationAlpha"</code> The alpha of RLCD's
      * observed-explanation test.
      */

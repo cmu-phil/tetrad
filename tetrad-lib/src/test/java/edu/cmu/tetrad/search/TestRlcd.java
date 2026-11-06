@@ -907,23 +907,40 @@ public class TestRlcd {
         double[][] truth = corr(new CovarianceMatrix(full).getMatrix().toArray());
         double[][] naive = corr(new CovarianceMatrix(clipped).getMatrix().toArray());
         CensoredMvnCovarianceEstimator est = new CensoredMvnCovarianceEstimator(clipped, upper, null);
-        est.setSeed(3L);
         double[][] censored = corr(est.estimate().getMatrix().toArray());
         assertEquals(full.getNumRows() * p * 3 / 10, est.getCensoredCells(), full.getNumRows() * p / 100);
+        assertTrue("deterministic form should converge before the cap", est.getNumIterationsRun() < 60);
 
-        double naiveErr = 0, censoredErr = 0;
+        // Deterministic: a second estimator over the same data gives the identical matrix.
+        double[][] again = new CensoredMvnCovarianceEstimator(clipped, upper, null).estimate().getMatrix().toArray();
+        for (int a = 0; a < p; a++) for (int b = 0; b < p; b++) assertEquals(again[a][b],
+                est.estimate().getMatrix().toArray()[a][b], 0.0);
+
+        // The stochastic form agrees with it closely.
+        CensoredMvnCovarianceEstimator stoch = new CensoredMvnCovarianceEstimator(clipped, upper, null);
+        stoch.setStochastic(true);
+        stoch.setSeed(3L);
+        double[][] stochastic = corr(stoch.estimate().getMatrix().toArray());
+
+        double naiveErr = 0, censoredErr = 0, stochErr = 0, disagreement = 0;
         int pairs = 0;
         for (int a = 0; a < p; a++) {
             for (int b = a + 1; b < p; b++) {
                 naiveErr += Math.abs(naive[a][b] - truth[a][b]);
                 censoredErr += Math.abs(censored[a][b] - truth[a][b]);
+                stochErr += Math.abs(stochastic[a][b] - truth[a][b]);
+                disagreement += Math.abs(stochastic[a][b] - censored[a][b]);
                 pairs++;
             }
         }
         naiveErr /= pairs;
         censoredErr /= pairs;
+        stochErr /= pairs;
+        disagreement /= pairs;
         assertTrue("naive " + naiveErr + " censored " + censoredErr, censoredErr < naiveErr / 3);
         assertTrue("censored mean abs error " + censoredErr, censoredErr < 0.03);
+        assertTrue("stochastic mean abs error " + stochErr, stochErr < 0.03);
+        assertTrue("forms disagree by " + disagreement, disagreement < 0.02);
     }
 
     private static double[][] corr(double[][] cov) {

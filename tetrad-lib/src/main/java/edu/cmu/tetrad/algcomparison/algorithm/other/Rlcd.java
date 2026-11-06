@@ -220,6 +220,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         rlcd.setCheckV(parameters.getBoolean(Params.RLCD_CHECK_V));
         rlcd.setLatentGate(parameters.getBoolean(Params.RLCD_LATENT_GATE));
         rlcd.setResolveTwoIndicatorLatents(parameters.getBoolean(Params.RLCD_RESOLVE_TWO_INDICATOR_LATENTS, false));
+        rlcd.setKnowledgeInStage1(parameters.getBoolean(Params.RLCD_KNOWLEDGE_IN_STAGE1, true));
         rlcd.setObservedExplanationCheck(parameters.getBoolean(Params.RLCD_OBSERVED_EXPLANATION_CHECK, false),
                 parameters.getDouble(Params.RLCD_OBSERVED_EXPLANATION_ALPHA, 0.05));
         rlcd.setPartitionCliqueThreshold(parameters.getInt(Params.RLCD_PARTITION_CLIQUE_THRESHOLD));
@@ -282,6 +283,7 @@ public class Rlcd implements Algorithm, AcceptsKnowledge, PoolsImputations {
         parameters.add(Params.RLCD_CHECK_V);
         parameters.add(Params.RLCD_LATENT_GATE);
         parameters.add(Params.RLCD_RESOLVE_TWO_INDICATOR_LATENTS);
+        parameters.add(Params.RLCD_KNOWLEDGE_IN_STAGE1);
         parameters.add(Params.RLCD_OBSERVED_EXPLANATION_CHECK);
         parameters.add(Params.RLCD_OBSERVED_EXPLANATION_ALPHA);
         parameters.add(Params.RLCD_PARTITION_CLIQUE_THRESHOLD);
