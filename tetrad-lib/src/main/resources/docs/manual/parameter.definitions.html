@@ -7051,6 +7051,28 @@ Source:
         <li>Value Type: <span id="rlcdMaxK_value_type">Integer</span></li>
     </ul>
 
+    === rlcdObservedExplanationAlpha ===
+    <h3 class="parameter_description" id="rlcdObservedExplanationAlpha">rlcdObservedExplanationAlpha</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdObservedExplanationAlpha_short_desc">RLCD: alpha of the observed-explanation test (default 0.05)</span></li>
+        <li>Long Description: <span id="rlcdObservedExplanationAlpha_long_desc">The significance level of the rank test used by rlcdObservedExplanationCheck to decide whether a set of observed variables explains a rank deficiency. It is separate from, and by default larger than, the cluster alpha: a larger alpha rejects more readily, so an underpowered explanation test is less likely to explain a true cluster away by accident. Lower it to remove more candidate latents, raise it to protect more of them.</span></li>
+        <li>Default Value: <span id="rlcdObservedExplanationAlpha_default_value">0.05</span></li>
+        <li>Lower Bound: <span id="rlcdObservedExplanationAlpha_lower_bound">0.0</span></li>
+        <li>Upper Bound: <span id="rlcdObservedExplanationAlpha_upper_bound">1.0</span></li>
+        <li>Value Type: <span id="rlcdObservedExplanationAlpha_value_type">Double</span></li>
+    </ul>
+
+    === rlcdObservedExplanationCheck ===
+    <h3 class="parameter_description" id="rlcdObservedExplanationCheck">rlcdObservedExplanationCheck</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdObservedExplanationCheck_short_desc">RLCD: make a cluster only if no equally small set of observed variables explains its rank deficiency (default false)</span></li>
+        <li>Long Description: <span id="rlcdObservedExplanationCheck_long_desc">If true, a set of variables found rank deficient, at a rank that would introduce t new latents, becomes a cluster only if no t observed variables from the same partition explain the deficiency equally well, that is, make the two sides rank-independent when conditioned on. Rank constraints alone cannot tell a latent common cause from an observed separator: the later part of a chain of observed variables (unit scores in course order, say) is rank one against the earlier part because the variable between them separates them, and without this check RLCD reads the chain as a measurement model. The check also removes rank deficiencies that a dense observed causal structure implies in the population, which no test of implied constraints can remove because they are real. In simulation it costs nothing on true measurement models at moderate sample size; at small sample size an underpowered explanation test can explain a true cluster away by accident, which the separate, larger rlcdObservedExplanationAlpha guards against. Candidate explaining sets are tried from one variable up to t, smallest first, up to 20000 sets per deficiency.</span></li>
+        <li>Default Value: <span id="rlcdObservedExplanationCheck_default_value">false</span></li>
+        <li>Lower Bound: <span id="rlcdObservedExplanationCheck_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdObservedExplanationCheck_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdObservedExplanationCheck_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdPartitionCliqueThreshold ===
     <h3 class="parameter_description" id="rlcdPartitionCliqueThreshold">rlcdPartitionCliqueThreshold</h3>
     <ul class="parameter_description_list">

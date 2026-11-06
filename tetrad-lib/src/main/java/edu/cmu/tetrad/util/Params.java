@@ -1686,6 +1686,16 @@ public final class Params {
      */
     public static final String RLCD_RESOLVE_TWO_INDICATOR_LATENTS = "rlcdResolveTwoIndicatorLatents";
     /**
+     * Constant <code>RLCD_OBSERVED_EXPLANATION_CHECK="rlcdObservedExplanationCheck"</code> Whether RLCD accepts a
+     * rank deficiency as a cluster only if no equally small set of observed variables explains it.
+     */
+    public static final String RLCD_OBSERVED_EXPLANATION_CHECK = "rlcdObservedExplanationCheck";
+    /**
+     * Constant <code>RLCD_OBSERVED_EXPLANATION_ALPHA="rlcdObservedExplanationAlpha"</code> The alpha of RLCD's
+     * observed-explanation test.
+     */
+    public static final String RLCD_OBSERVED_EXPLANATION_ALPHA = "rlcdObservedExplanationAlpha";
+    /**
      * Constant <code>RLCD_STAGE1_FGES="rlcdStage1Fges"</code>
      */
     public static final String RLCD_STAGE1_FGES = "rlcdStage1Fges";

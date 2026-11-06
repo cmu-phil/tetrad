@@ -151,6 +151,9 @@ public class Rlcd {
     private static final int MAX_GATE_TESTS = 20000;
     private boolean latentGate = true;
     private boolean resolveTwoIndicatorLatents = false;
+    private boolean observedExplanationCheck = false;
+    private double observedExplanationAlpha = 0.05;
+    private int explainedAway = 0;
     private boolean allowNonLeafX = true;
     private boolean unfoldCovers = true;
     private boolean checkV = true;
@@ -503,7 +506,8 @@ public class Rlcd {
     }
 
     /**
-     * Sets whether to try to replace two-indicator latents by direct edges, using non-Gaussianity (default false).
+     * Sets whether to try to replace two-indicator latents by direct edges, using non-Gaussianity or, failing that,
+     * the temporal tiers of the background knowledge (default false).
      * Rank constraints cannot tell L --&gt; {X1, X2} with X1 --&gt; X2 from a second latent over {X1, X2}, and RLCD
      * reports the second latent. With this set, each latent of the output that has exactly two observed children,
      * no observed parent and exactly one latent neighbor M, where M has at least three pure observed children, is
@@ -512,13 +516,44 @@ public class Rlcd {
      * edge; otherwise the latent is left as it is. The test is conservative (it needs positive evidence for the
      * edge) and needs skewed data; with Gaussian data nothing changes. Not done under a stratified rank test, whose
      * pooled domains make the data non-Gaussian whatever the model. With several imputations, the edge is taken
-     * only if every imputation shows it. {@link #getAdjacency()} and {@link #getLatentGroups()} describe the search
-     * before this step.
+     * only if every imputation shows it.
+     * <p>
+     * When the test is unavailable (no reference cluster: the latent has no latent neighbor, as a latent standing for
+     * one link of a chain of observed variables has none) or undecided, and the knowledge's tiers order the two
+     * indicators, the edge is drawn in the tier direction instead. A two-indicator latent and a direct edge between
+     * its indicators are rank-equivalent, so this changes the representation of the same covariance to the more
+     * parsimonious one, not the fit. In that no-neighbor case the indicators may have observed parents of their own
+     * (which they keep) but not latent ones. {@link #getAdjacency()} and {@link #getLatentGroups()} describe the
+     * search before this step.
      *
      * @param resolve true to try.
      */
     public void setResolveTwoIndicatorLatents(boolean resolve) {
         this.resolveTwoIndicatorLatents = resolve;
+    }
+
+    /**
+     * Sets whether a rank deficiency must survive an observed-explanation check before it becomes a cluster
+     * (default false). See {@link RlcdClusterSearch#setObservedExplanationCheck(boolean, double, int)}. In short: a
+     * set is made a cluster of t latents only if no t observed variables explain its rank deficiency equally well.
+     * This is the guard against reading a chain of observed variables -- a sequence of unit scores, say -- as a
+     * measurement model, which rank constraints alone license, since a chain is rank one across any cut.
+     *
+     * @param check whether to check.
+     * @param alpha the alpha of the explanation test; 0.05 by default, larger than the cluster alpha on purpose.
+     */
+    public void setObservedExplanationCheck(boolean check, double alpha) {
+        this.observedExplanationCheck = check;
+        this.observedExplanationAlpha = alpha;
+    }
+
+    /**
+     * The number of rank deficiencies the last search explained away by observed variables, summed over partitions.
+     *
+     * @return the count; 0 when the check is off.
+     */
+    public int getExplainedAway() {
+        return explainedAway;
     }
 
     /**
@@ -667,6 +702,7 @@ public class Rlcd {
         RlcdClusterSearch search = new RlcdClusterSearch(xvars, rankTester, this::alphaFor, maxK,
                 allowNonLeafX, unfoldCovers, checkV);
         search.setKnowledge(knowledge);
+        search.setObservedExplanationCheck(observedExplanationCheck, observedExplanationAlpha, maxK, 20000);
         if (verbose) search.setLog(this::log);
 
         for (List<Node> group : partition) {
@@ -719,6 +755,7 @@ public class Rlcd {
 
             current = search.findClusters(current);
             latentGroups.add(current);
+            explainedAway = search.getExplainedAway();
 
             LatentGroups.AdjacencyResult out = current.toAdjacency();
             int[][] outAdj = getReducedAdj(out.adjacency(), m);
@@ -824,7 +861,7 @@ public class Rlcd {
         for (Node lp : latents) {
             if (!graph.containsNode(lp)) continue;
 
-            // Exactly two observed neighbors, both children, and exactly one latent neighbor.
+            // Exactly two observed neighbors, both children, no parent, and at most one latent neighbor.
             List<Node> children = new ArrayList<>();
             Node m = null;
             boolean ok = true;
@@ -842,44 +879,73 @@ public class Rlcd {
                     break;
                 }
             }
-            if (!ok || m == null || children.size() != 2) continue;
+            if (!ok || children.size() != 2) continue;
             children.sort(Comparator.comparing(Node::getName));
             Node x1 = children.get(0), x2 = children.get(1);
-            if (!isPureChildOf(graph, x1, lp) || !isPureChildOf(graph, x2, lp) || graph.isAdjacentTo(x1, x2)) {
-                continue;
-            }
+            if (graph.isAdjacentTo(x1, x2)) continue;
 
-            List<Node> refs = new ArrayList<>();
-            for (Node c : graph.getChildren(m)) {
-                if (c.getNodeType() != NodeType.LATENT && isPureChildOf(graph, c, m)) refs.add(c);
-            }
-            if (refs.size() < 3) continue;
-            refs.sort(Comparator.comparing(Node::getName));
-            if (refs.size() > TWO_INDICATOR_MAX_REFS) refs = refs.subList(0, TWO_INDICATOR_MAX_REFS);
+            // With a latent neighbor M, the children must be pure (M's cluster is the reference set); without one,
+            // the children may have observed parents of their own -- the chain case, where Z --> X1, Z --> X2 and a
+            // latent over X1, X2 stands for X1 --> X2 -- but no latent parent.
+            boolean pure = isPureChildOf(graph, x1, lp) && isPureChildOf(graph, x2, lp);
+            if (m != null && !pure) continue;
+            if (m == null && (!hasOnlyObservedParentsBesides(graph, x1, lp)
+                              || !hasOnlyObservedParentsBesides(graph, x2, lp))) continue;
 
-            TwoIndicatorTest.Answer answer = null;
-            StringBuilder detail = new StringBuilder();
-            for (DataSet d : imputations) {
-                TwoIndicatorTest.Result r = TwoIndicatorTest.test(column(d, x1), column(d, x2), columns(d, refs),
-                        TWO_INDICATOR_DELTA, TWO_INDICATOR_BOOT, seed == -1 ? 17L : seed);
-                detail.append(String.format(" [n12 = %.3f, n21 = %.3f, N = %d: %s]", r.n12(), r.n21(), r.n(),
-                        r.answer()));
-                if (answer == null) answer = r.answer();
-                else if (answer != r.answer()) answer = TwoIndicatorTest.Answer.UNDECIDED;
+            // First choice: the non-Gaussian test, when there is a reference cluster to run it against.
+            TwoIndicatorTest.Answer answer = TwoIndicatorTest.Answer.UNDECIDED;
+            if (m != null) {
+                List<Node> refs = new ArrayList<>();
+                for (Node c : graph.getChildren(m)) {
+                    if (c.getNodeType() != NodeType.LATENT && isPureChildOf(graph, c, m)) refs.add(c);
+                }
+                if (refs.size() >= 3) {
+                    refs.sort(Comparator.comparing(Node::getName));
+                    if (refs.size() > TWO_INDICATOR_MAX_REFS) refs = refs.subList(0, TWO_INDICATOR_MAX_REFS);
+                    answer = null;
+                    StringBuilder detail = new StringBuilder();
+                    for (DataSet d : imputations) {
+                        TwoIndicatorTest.Result r = TwoIndicatorTest.test(column(d, x1), column(d, x2),
+                                columns(d, refs), TWO_INDICATOR_DELTA, TWO_INDICATOR_BOOT, seed == -1 ? 17L : seed);
+                        detail.append(String.format(" [n12 = %.3f, n21 = %.3f, N = %d: %s]", r.n12(), r.n21(),
+                                r.n(), r.answer()));
+                        if (answer == null) answer = r.answer();
+                        else if (answer != r.answer()) answer = TwoIndicatorTest.Answer.UNDECIDED;
+                    }
+                    log("Two-indicator latent " + lp + " over " + x1 + ", " + x2 + ", references " + refs
+                        + " under " + m + ":" + detail);
+                }
             }
-            log("Two-indicator latent " + lp + " over " + x1 + ", " + x2 + ", references " + refs + " under " + m
-                + ":" + detail);
 
             Node from, to;
+            String basis;
             if (answer == TwoIndicatorTest.Answer.X1_TO_X2) {
                 from = x1;
                 to = x2;
+                basis = "non-Gaussianity";
             } else if (answer == TwoIndicatorTest.Answer.X2_TO_X1) {
                 from = x2;
                 to = x1;
+                basis = "non-Gaussianity";
+            } else if (knowledge.isForbidden(x2.getName(), x1.getName())
+                       && !knowledge.isForbidden(x1.getName(), x2.getName())) {
+                // Second choice: the temporal tiers order the pair. A two-indicator latent is rank-equivalent to a
+                // direct edge between its indicators (or to correlated errors); when knowledge says which way the
+                // edge would run, the edge is the more parsimonious reading of the same covariance.
+                from = x1;
+                to = x2;
+                basis = "knowledge";
+            } else if (knowledge.isForbidden(x1.getName(), x2.getName())
+                       && !knowledge.isForbidden(x2.getName(), x1.getName())) {
+                from = x2;
+                to = x1;
+                basis = "knowledge";
             } else {
+                if (m == null) log("Two-indicator latent " + lp + " over " + x1 + ", " + x2 + " has no reference "
+                                   + "cluster and knowledge does not order the pair; kept.");
                 continue;
             }
+            log("   Direction " + from + " --> " + to + " by " + basis + ".");
 
             if (knowledge.isForbidden(from.getName(), to.getName())) {
                 log("   Knowledge forbids " + from + " --> " + to + "; " + lp + " kept.");
@@ -896,12 +962,32 @@ public class Rlcd {
             }
 
             graph.removeNode(lp);
-            graph.addDirectedEdge(m, x1);
-            graph.addDirectedEdge(m, x2);
+            if (m != null) {
+                graph.addDirectedEdge(m, x1);
+                graph.addDirectedEdge(m, x2);
+            }
             graph.addDirectedEdge(from, to);
-            log("   Replaced " + lp + " by " + m + " --> " + x1 + ", " + m + " --> " + x2 + ", " + from + " --> "
-                + to + ".");
+            log("   Replaced " + lp + " by " + (m != null ? m + " --> " + x1 + ", " + m + " --> " + x2 + ", " : "")
+                + from + " --> " + to + ".");
         }
+    }
+
+    /**
+     * Whether every edge at an observed node, other than the one from the given latent, is either directed away
+     * from it or directed into it from an observed node.
+     */
+    private static boolean hasOnlyObservedParentsBesides(Graph graph, Node x, Node latent) {
+        for (Edge e : graph.getEdges(x)) {
+            Node other = e.getDistalNode(x);
+            if (other == latent) {
+                if (!graph.isParentOf(latent, x)) return false;
+            } else if (!Edges.isDirectedEdge(e)) {
+                return false;
+            } else if (Edges.getDirectedEdgeHead(e) == x && other.getNodeType() == NodeType.LATENT) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

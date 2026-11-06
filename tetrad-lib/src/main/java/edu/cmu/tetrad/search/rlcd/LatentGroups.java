@@ -366,6 +366,23 @@ public final class LatentGroups {
      *
      * @return whether any cluster was successfully added.
      */
+    /**
+     * Removes, from the clusters determined for the current round, those that fail a test. Used between
+     * {@link #determineClusters()} and {@link #confirmClusters()}, so that a check applies to a merged cluster as a
+     * whole and not only to the rank-deficient sets it was merged from.
+     *
+     * @param keep the test; a cluster is kept if it returns true for the cluster's covers.
+     * @return the number removed.
+     */
+    public int filterClusters(java.util.function.Predicate<Set<Cover>> keep) {
+        if (clusters.isEmpty()) return 0;
+        int k = Collections.min(clusters.keySet());
+        List<RankDefSet> cl = clusters.get(k);
+        int before = cl.size();
+        cl.removeIf(c -> !keep.test(c.vs));
+        return before - cl.size();
+    }
+
     public boolean confirmClusters() {
         int k = Collections.min(clusters.keySet());
         boolean success = false;

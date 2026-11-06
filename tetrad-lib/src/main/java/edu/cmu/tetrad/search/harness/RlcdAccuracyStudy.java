@@ -62,6 +62,11 @@ import java.util.Set;
  *     <li><b>mixed30i5</b>: mixed30 with L1 given a fifth indicator, a direct edge X2 --&gt; X3 inside L1's cluster,
  *     and X9 cross-loading on L2 and L3. The fifth indicator matters: after RLCD splits off {X2, X3}, three pure
  *     indicators of L1 remain to serve as references, which the two-indicator step needs.</li>
+ *     <li><b>chainplus</b> (14 variables): two pure latents with three indicators each, plus an eight-variable
+ *     first-order chain of observed variables hanging off the second latent. Any latent over the chain is
+ *     spurious. <b>chain2plus</b> adds weak skip edges two steps along the chain, which is what lets RLCD's
+ *     partition reach it; this is the structure for the observed-explanation check (condition token
+ *     {@code explain}).</li>
  *     <li><b>twolatents</b> (6 variables) and <b>pure12</b> (12 variables): chains of pure latents, L1 -&gt; L2
  *     (3 indicators each) and L1 -&gt; L2 -&gt; L3 (4 each), with no impurities. These exist for the missing-value
  *     arms, where the variable count is decisive.</li>
@@ -104,7 +109,9 @@ import java.util.Set;
  * Edges between observed and latent variables are not scored separately; their effect shows in clus and spur.
  * <p>
  * <b>Arguments</b>, all optional, as key=value: reps=10, ns=2000, structures=mixed30,mixed30i5,rand6,
- * dists=skew,mildskew,gauss, conditions=plain,resolve,tiers,both, seed=20261022, and the two swept
+ * dists=skew,mildskew,gauss, conditions=plain,resolve,tiers,both (a condition may also be a '+'-joined set of the
+ * tokens plain, resolve, tiers, explain, e.g. {@code tiers+explain}; explain switches on the observed-explanation
+ * check), seed=20261022, and the two swept
  * parameters:
  * <ul>
  *     <li><b>alphas</b>=0.01, a comma-separated list of rank-test alphas (RLCD's default is 0.01);</li>
@@ -405,10 +412,12 @@ public final class RlcdAccuracyStudy {
         rlcd.setSeed(seed);
         rlcd.setAlpha(cell.alpha());
         rlcd.setPenaltyDiscount(cell.penalty());
-        rlcd.setResolveTwoIndicatorLatents(cell.condition().equals("resolve") || cell.condition().equals("both"));
-        if (cell.condition().equals("tiers") || cell.condition().equals("both")) {
-            rlcd.setKnowledge(truth.depthTiers());
-        }
+        // A condition is a '+'-joined set of tokens: plain, resolve, tiers, explain; "both" is resolve+tiers.
+        String cond = cell.condition().equals("both") ? "resolve+tiers" : cell.condition();
+        Set<String> tokens = new HashSet<>(Arrays.asList(cond.split("\\+")));
+        rlcd.setResolveTwoIndicatorLatents(tokens.contains("resolve"));
+        if (tokens.contains("tiers")) rlcd.setKnowledge(truth.depthTiers());
+        if (tokens.contains("explain")) rlcd.setObservedExplanationCheck(true, 0.05);
         if (stage1 != null) rlcd.setStage1Graph(stage1);
 
         return new Run(rlcd.search(), testwise == null ? -1 : testwise.getSkippedQueries());
@@ -586,6 +595,7 @@ public final class RlcdAccuracyStudy {
         final Map<String, List<String>> parents = new HashMap<>();
         final Set<String> latents = new HashSet<>();
         final List<String[]> impurities = new ArrayList<>();   // within-cluster direct edges, {from, to}
+        final Set<String> weak = new HashSet<>();                  // "child<-parent" pairs drawn with a small coefficient
 
         void node(String name, boolean latent, String... pa) {
             if (parents.containsKey(name)) throw new IllegalArgumentException(name);
@@ -638,7 +648,9 @@ public final class RlcdAccuracyStudy {
             for (String v : names) {
                 double[] x = error(base, n, random);
                 for (String p : parents.get(v)) {
-                    double c = (0.5 + random.nextDouble()) * (random.nextBoolean() ? 1 : -1);
+                    double c = weak.contains(v + "<-" + p)
+                            ? (0.2 + 0.2 * random.nextDouble()) * (random.nextBoolean() ? 1 : -1)
+                            : (0.5 + random.nextDouble()) * (random.nextBoolean() ? 1 : -1);
                     double[] xp = values.get(p);
                     for (int i = 0; i < n; i++) x[i] += c * xp[i];
                 }
@@ -686,6 +698,8 @@ public final class RlcdAccuracyStudy {
         return switch (structure) {
             case "twolatents" -> pureChain(2, 3);
             case "pure12" -> pureChain(3, 4);
+            case "chainplus" -> chainPlus();
+            case "chain2plus" -> chainPlus(true);
             case "mixed30" -> mixed30(false);
             case "mixed30i5" -> mixed30(true);
             case "rand6" -> rand6(random);
@@ -711,6 +725,42 @@ public final class RlcdAccuracyStudy {
         int x = 1;
         for (int i = 0; i < latents; i++) {
             for (int j = 0; j < indicators; j++) t.node("X" + (x++), false, "L" + (i + 1));
+        }
+        return t;
+    }
+
+    /**
+     * Two pure latents (L1 -&gt; L2, three indicators each) and an eight-variable first-order chain of observed
+     * variables C1 -&gt; C2 -&gt; ... -&gt; C8 with L2 -&gt; C1. The chain is the structure RLCD misreads as a
+     * measurement model, since any cut through a chain is rank one; the latents are there so that a remedy for
+     * that can be seen to leave true clusters alone. Any latent reported over the C variables is spurious.
+     */
+    private static Truth chainPlus() {
+        return chainPlus(false);
+    }
+
+    /**
+     * As {@link #chainPlus()}; with {@code secondOrder} each chain variable also has a weak edge (coefficient 0.2 to
+     * 0.4) from the variable two before it. A first-order chain forms no stage-1 clique of three, so RLCD's
+     * partition never reaches it and it is never misread; the skip edges make triangles, the chain enters the
+     * partition, and any cut through it is rank two, which is what the unit-progress block of the chem data
+     * showed. Structure name {@code chain2plus}.
+     */
+    private static Truth chainPlus(boolean secondOrder) {
+        Truth t = new Truth();
+        t.node("L1", true);
+        t.node("L2", true, "L1");
+        for (int j = 1; j <= 3; j++) t.node("X" + j, false, "L1");
+        for (int j = 4; j <= 6; j++) t.node("X" + j, false, "L2");
+        t.node("C1", false, "L2");
+        t.node("C2", false, "C1");
+        for (int j = 3; j <= 8; j++) {
+            if (secondOrder) {
+                t.node("C" + j, false, "C" + (j - 1), "C" + (j - 2));
+                t.weak.add("C" + j + "<-C" + (j - 2));
+            } else {
+                t.node("C" + j, false, "C" + (j - 1));
+            }
         }
         return t;
     }
