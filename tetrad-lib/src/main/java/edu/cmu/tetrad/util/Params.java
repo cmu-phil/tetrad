@@ -1696,6 +1696,11 @@ public final class Params {
      */
     public static final String RLCD_KNOWLEDGE_IN_STAGE1 = "rlcdKnowledgeInStage1";
     /**
+     * Constant <code>RLCD_QUALIFY_OBSERVED_CAUSES="rlcdQualifyObservedCauses"</code> Whether RLCD keeps an arrow from
+     * an observed variable into a latent only when an observed parent of that variable identifies the direction.
+     */
+    public static final String RLCD_QUALIFY_OBSERVED_CAUSES = "rlcdQualifyObservedCauses";
+    /**
      * Constant <code>RLCD_OBSERVED_EXPLANATION_ALPHA="rlcdObservedExplanationAlpha"</code> The alpha of RLCD's
      * observed-explanation test.
      */

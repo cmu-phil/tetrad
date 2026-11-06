@@ -189,9 +189,24 @@ public class TestRlcd {
         }
         DataSet data = simulate(g, 3000, 3L);
 
+        // With the default qualification of observed causes, F --> L1 and F --> L2 are placements the data cannot
+        // support (F has no observed parent), so they come out undirected.
+        Rlcd qualified = new Rlcd(data);
+        qualified.setMaxK(2);
+        qualified.setSeed(1L);
+        Graph q = qualified.search();
+        for (Node l : q.getNodes()) {
+            if (l.getNodeType() != NodeType.LATENT) continue;
+            Edge e = q.getEdge(q.getNode("F"), l);
+            assertTrue("F to " + l + " should be undirected, was " + e + " in " + q, e != null
+                                                                                      && Edges.isUndirectedEdge(e));
+        }
+
+        // The rest of the test is about tiers constraining ancestry, which needs the raw placements.
         Rlcd plain = new Rlcd(data);
         plain.setMaxK(2);
         plain.setSeed(1L);
+        plain.setQualifyObservedCauses(false);
         Graph unconstrained = plain.search();
         assertTrue("Precondition: without knowledge F should be an ancestor of E1: " + unconstrained,
                 unconstrained.paths().isAncestorOf(unconstrained.getNode("F"), unconstrained.getNode("E1")));
@@ -212,6 +227,7 @@ public class TestRlcd {
         rlcd.setMaxK(2);
         rlcd.setSeed(1L);
         rlcd.setKnowledge(knowledge);
+        rlcd.setQualifyObservedCauses(false);
         Graph out = rlcd.search();
 
         for (Node a : out.getNodes()) {
@@ -950,6 +966,61 @@ public class TestRlcd {
             for (int b = 0; b < p; b++) out[a][b] = cov[a][b] / Math.sqrt(cov[a][a] * cov[b][b]);
         }
         return out;
+    }
+
+
+    /**
+     * The qualification of observed causes. With P --> O known, P --> O --> L --> {X1..X4} gives O --> L: P depends
+     * on the indicators marginally and not given O. P --> O <-- L --> {X1..X4} gives L --> O: P is independent of
+     * the indicators marginally and dependent given O. Which placement stage 2 makes is immaterial: the check reads
+     * the arrow off the output and corrects it from P.
+     */
+    @Test
+    public void testQualifyObservedCauses() throws Exception {
+        for (boolean oCauses : new boolean[]{true, false}) {
+            Graph g = new EdgeListGraph();
+            Node p = new GraphNode("P"), o = new GraphNode("O"), l = new GraphNode("L");
+            l.setNodeType(NodeType.LATENT);
+            g.addNode(p);
+            g.addNode(o);
+            g.addNode(l);
+            g.addDirectedEdge(p, o);
+            if (oCauses) g.addDirectedEdge(o, l);
+            else g.addDirectedEdge(l, o);
+            for (int i = 1; i <= 4; i++) {
+                Node x = new GraphNode("X" + i);
+                g.addNode(x);
+                g.addDirectedEdge(l, x);
+            }
+            DataSet data = simulate(g, 4000, 11L);
+
+            Rlcd rlcd = new Rlcd(data);
+            rlcd.setMaxK(2);
+            rlcd.setSeed(1L);
+            if (oCauses) {
+                // Without a known direction on P -- O the chain P - O - L - X is rank-equivalent either way;
+                // the tiers supply P --> O, and the check then identifies O --> L from it.
+                Knowledge k = new Knowledge();
+                k.addToTier(0, "P");
+                k.addToTier(1, "O");
+                for (int i = 1; i <= 4; i++) k.addToTier(1, "X" + i);
+                rlcd.setKnowledge(k);
+            }
+            Graph out = rlcd.search();
+            Node oo = out.getNode("O");
+            Node latent = null;
+            for (Node v : out.getNodes()) {
+                if (v.getNodeType() == NodeType.LATENT && out.getChildren(v).contains(out.getNode("X1"))) latent = v;
+            }
+            assertNotNull("a latent over the X's: " + out, latent);
+            Edge e = out.getEdge(oo, latent);
+            assertNotNull("O adjacent to the latent: " + out, e);
+            if (oCauses) {
+                assertTrue("O --> L should be kept: " + out, out.isParentOf(oo, latent));
+            } else {
+                assertTrue("L --> O should hold (O is a collider child): " + out, out.isParentOf(latent, oo));
+            }
+        }
     }
 
 }

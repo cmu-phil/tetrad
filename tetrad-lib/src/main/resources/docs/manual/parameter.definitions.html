@@ -7095,6 +7095,17 @@ Source:
         <li>Value Type: <span id="rlcdPartitionCliqueThreshold_value_type">Integer</span></li>
     </ul>
 
+    === rlcdQualifyObservedCauses ===
+    <h3 class="parameter_description" id="rlcdQualifyObservedCauses">rlcdQualifyObservedCauses</h3>
+    <ul class="parameter_description_list">
+        <li>Short Description: <span id="rlcdQualifyObservedCauses_short_desc">RLCD: keep an observed-to-latent arrow only when an observed parent identifies its direction (default true)</span></li>
+        <li>Long Description: <span id="rlcdQualifyObservedCauses_long_desc">Rank constraints cannot tell an observed cause of a latent from an indicator of it: an observed variable pointing into a latent, and the same variable as a child of the latent, imply the same covariance over the observed variables. So an arrow between an observed variable O and a latent L in RLCD's output is a placement rather than a finding. What identifies the direction is a directed observed parent P of O that is not itself attached to L. If O causes L, P is dependent on L's indicators marginally and independent of them given O (a chain). If O is an indicator, P is independent of them marginally and dependent given O (a collider at O). With this on, each directed observed-latent edge is checked against every such parent: all chain signatures give O into L, all collider signatures give L into O, and anything else is not identified. An arrow from O into L that is not identified, including one with no directed observed parent, is made undirected; an arrow from L into O that is not identified is left as the measurement-model default, unless the parents actively disagree, in which case it too is made undirected. Latent-to-latent edges are not touched. Set false to see the raw stage-2 placements.</span></li>
+        <li>Default Value: <span id="rlcdQualifyObservedCauses_default_value">true</span></li>
+        <li>Lower Bound: <span id="rlcdQualifyObservedCauses_lower_bound"></span></li>
+        <li>Upper Bound: <span id="rlcdQualifyObservedCauses_upper_bound"></span></li>
+        <li>Value Type: <span id="rlcdQualifyObservedCauses_value_type">Boolean</span></li>
+    </ul>
+
     === rlcdResolveTwoIndicatorLatents ===
     <h3 class="parameter_description" id="rlcdResolveTwoIndicatorLatents">rlcdResolveTwoIndicatorLatents</h3>
     <ul class="parameter_description_list">

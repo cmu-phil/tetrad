@@ -152,6 +152,7 @@ public class Rlcd {
     private boolean latentGate = true;
     private boolean resolveTwoIndicatorLatents = false;
     private boolean knowledgeInStage1 = true;
+    private boolean qualifyObservedCauses = true;
     private boolean observedExplanationCheck = false;
     private double observedExplanationAlpha = 0.05;
     private int explainedAway = 0;
@@ -842,8 +843,134 @@ public class Rlcd {
         }
         Graph graph = adjacencyToGraph(adj, nodes);
         orientLatentEdgesByRankTests(graph);
+        if (qualifyObservedCauses) qualifyObservedCausesOfLatents(graph);
         if (resolveTwoIndicatorLatents) resolveTwoIndicatorLatents(graph);
         return graph;
+    }
+
+    // ---------------------------------------------------------------- observed causes of latents
+
+    /**
+     * Sets whether a directed edge between an observed variable O and a latent L is kept only when the data identify
+     * its direction (default true). Rank constraints cannot tell an observed cause of a latent from an indicator of
+     * it: O --&gt; L --&gt; X and L --&gt; O, L --&gt; X give the same covariance over the observed variables, so the
+     * direction stage 2 reports is a placement, not a finding. What does identify it is a directed observed parent P
+     * of O not itself attached to L. Under the chain P --&gt; O --&gt; L --&gt; X, P is dependent on the indicators
+     * marginally and independent of them given O; under the collider P --&gt; O &lt;-- L --&gt; X, P is independent of
+     * them marginally and dependent given O. Each directed observed-latent edge is checked against every such parent:
+     * all chain signatures give O --&gt; L, all collider signatures give L --&gt; O, anything else is unidentified. An
+     * unidentified O --&gt; L (including one with no directed observed parent) is made undirected; an unidentified
+     * L --&gt; O is left as the measurement-model default unless the parents actively disagree, when it too is made
+     * undirected. The tests are rank tests on the search's own rank tester at the cluster alphas (rank 0 marginally,
+     * rank 1 with O added to both sides), so they pool over imputations or honour censoring as the rest of the search
+     * does.
+     *
+     * @param qualify whether to qualify such edges.
+     */
+    public void setQualifyObservedCauses(boolean qualify) {
+        this.qualifyObservedCauses = qualify;
+    }
+
+    /**
+     * See {@link #setQualifyObservedCauses(boolean)}.
+     *
+     * @param graph the output graph, changed in place.
+     */
+    private void qualifyObservedCausesOfLatents(Graph graph) {
+        List<String> xvars = new ArrayList<>();
+        for (Node v : variables) xvars.add(v.getName());
+
+        // Every directed edge between an observed O and a latent L, in either direction.
+        List<Edge> candidates = new ArrayList<>();
+        for (Edge e : graph.getEdges()) {
+            if (!Edges.isDirectedEdge(e)) continue;
+            Node from = Edges.getDirectedEdgeTail(e), to = Edges.getDirectedEdgeHead(e);
+            boolean fromLatent = from.getNodeType() == NodeType.LATENT, toLatent = to.getNodeType() == NodeType.LATENT;
+            if (fromLatent != toLatent) candidates.add(e);
+        }
+        candidates.sort(Comparator.comparing(Edge::toString));
+
+        for (Edge e : candidates) {
+            Node tail = Edges.getDirectedEdgeTail(e), head = Edges.getDirectedEdgeHead(e);
+            boolean placedAsCause = head.getNodeType() == NodeType.LATENT;
+            Node o = placedAsCause ? tail : head, l = placedAsCause ? head : tail;
+            String placed = o + " --> " + l;
+
+            List<Node> indicators = new ArrayList<>();
+            for (Node c : graph.getChildren(l)) {
+                if (c.getNodeType() != NodeType.LATENT && c != o) indicators.add(c);
+            }
+            // Directed observed parents of O that are not themselves attached to L.
+            List<Node> parents = new ArrayList<>();
+            for (Node pa : graph.getParents(o)) {
+                if (pa.getNodeType() == NodeType.LATENT) continue;
+                if (graph.isAdjacentTo(pa, l)) continue;
+                parents.add(pa);
+            }
+
+            if (indicators.isEmpty() || parents.isEmpty()) {
+                if (!placedAsCause) continue; // L --> O is the measurement-model default; leave it.
+                String why = indicators.isEmpty() ? "no indicators to test against" : "no directed observed parent of " + o;
+                graph.removeEdge(e);
+                graph.addUndirectedEdge(o, l);
+                log("Observed cause " + placed + ": " + why + "; direction undetermined, made undirected.");
+                continue;
+            }
+
+            // Two signatures per parent P. Chain P --> O --> L --> X: P dependent on the indicators marginally,
+            // independent given O. Collider P --> O <-- L --> X: P independent marginally, dependent given O.
+            // Anything else (another path from P to the indicators) is uninformative.
+            int oCol = xvars.indexOf(o.getName());
+            int[] qcols = indicators.stream().mapToInt(v -> xvars.indexOf(v.getName())).toArray();
+            int[] qcolsO = Arrays.copyOf(qcols, qcols.length + 1);
+            qcolsO[qcols.length] = oCol;
+            int chain = 0, collider = 0, other = 0;
+            StringBuilder detail = new StringBuilder();
+            for (Node pa : parents) {
+                int pCol = xvars.indexOf(pa.getName());
+                boolean margIndep = rankTester.failToReject(new int[]{pCol}, qcols, 0, alphaFor(0));
+                boolean condIndep = rankTester.failToReject(new int[]{pCol, oCol}, qcolsO, 1, alphaFor(1));
+                String sig;
+                if (!margIndep && condIndep) {
+                    chain++;
+                    sig = "chain";
+                } else if (margIndep && !condIndep) {
+                    collider++;
+                    sig = "collider";
+                } else {
+                    other++;
+                    sig = "uninformative";
+                }
+                detail.append(' ').append(pa).append(':').append(sig);
+            }
+
+            if (chain > 0 && collider == 0 && other == 0) {
+                if (!placedAsCause) {
+                    graph.removeEdge(e);
+                    graph.addDirectedEdge(o, l);
+                    log("Indicator " + l + " --> " + o + ":" + detail + "; reversed to " + placed
+                        + " (its observed parents reach the indicators only through " + o + ").");
+                } else {
+                    log("Observed cause " + placed + ":" + detail + "; kept.");
+                }
+            } else if (collider > 0 && chain == 0 && other == 0) {
+                if (placedAsCause) {
+                    graph.removeEdge(e);
+                    graph.addDirectedEdge(l, o);
+                    log("Observed cause " + placed + ":" + detail + "; reversed to " + l + " --> " + o
+                        + " (" + o + " is a collider between its observed parents and " + l + ", hence a child).");
+                } else {
+                    log("Indicator " + l + " --> " + o + ":" + detail + "; kept.");
+                }
+            } else if (chain == 0 && collider == 0 && !placedAsCause) {
+                log("Indicator " + l + " --> " + o + ":" + detail + "; kept (default).");
+            } else {
+                graph.removeEdge(e);
+                graph.addUndirectedEdge(o, l);
+                log((placedAsCause ? "Observed cause " + placed : "Indicator " + l + " --> " + o) + ":" + detail
+                    + "; not identified, made undirected.");
+            }
+        }
     }
 
     // ---------------------------------------------------------------- two-indicator latents
