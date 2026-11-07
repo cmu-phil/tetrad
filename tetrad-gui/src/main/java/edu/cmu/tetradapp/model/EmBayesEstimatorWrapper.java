@@ -98,13 +98,6 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     }
 
     /**
-     * <p>Constructor for EmBayesEstimatorWrapper.</p>
-     *
-     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
-     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
-     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
-     */
-    /**
      * Estimates from a Graph (or Search) box directly, building the Bayes PM from the DAG and the data's
      * categories as the Bayes PM box would. The data must be all discrete and the graph a DAG.
      *
@@ -122,6 +115,13 @@ public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
         return dataWrapper;
     }
 
+    /**
+     * <p>Constructor for EmBayesEstimatorWrapper.</p>
+     *
+     * @param dataWrapper    a {@link edu.cmu.tetradapp.model.DataWrapper} object
+     * @param bayesPmWrapper a {@link edu.cmu.tetradapp.model.BayesPmWrapper} object
+     * @param params         a {@link edu.cmu.tetrad.util.Parameters} object
+     */
     public EmBayesEstimatorWrapper(DataWrapper dataWrapper,
                                    BayesPmWrapper bayesPmWrapper, Parameters params) {
         if (dataWrapper == null) {

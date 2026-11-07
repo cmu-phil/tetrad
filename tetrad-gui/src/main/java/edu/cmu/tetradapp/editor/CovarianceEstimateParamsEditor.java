@@ -36,6 +36,9 @@ import java.text.NumberFormat;
  */
 public class CovarianceEstimateParamsEditor extends JPanel implements ParameterEditor {
 
+    /**
+     * The parameters being edited.
+     */
     private Parameters params;
 
     /**

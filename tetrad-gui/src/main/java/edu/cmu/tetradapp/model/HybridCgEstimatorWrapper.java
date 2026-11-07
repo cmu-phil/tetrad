@@ -139,18 +139,6 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
     }
 
     /**
-     * Constructs a HybridCgEstimatorWrapper instance initialized with the specified data wrapper,
-     * parameter model wrapper, and estimation parameters.
-     *
-     * @param dataWrapper the data wrapper containing the dataset(s) for estimation; must not be null
-     * @param pmWrapper the parameter model wrapper (HybridCgPmWrapper) providing the structure
-     *                  required for the estimation; must not be null
-     * @param parameters the estimation parameters; if null, default parameters will be used
-     * @throws NullPointerException if dataWrapper or pmWrapper is null
-     * @throws IllegalArgumentException if the data wrapper contains an empty list
-     *                                  or non-DataSet entries
-     */
-    /**
      * Estimates from a Graph (or Search) box directly, building the Hybrid CG PM from the DAG with the variable
      * types and categories taken from the data, as the Hybrid CG PM box would. The graph must be a DAG.
      *
@@ -163,6 +151,18 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
                 EstimatorGraphs.dataSet(dataWrapper, "The Hybrid CG estimator"), parameters), parameters);
     }
 
+    /**
+     * Constructs a HybridCgEstimatorWrapper instance initialized with the specified data wrapper,
+     * parameter model wrapper, and estimation parameters.
+     *
+     * @param dataWrapper the data wrapper containing the dataset(s) for estimation; must not be null
+     * @param pmWrapper the parameter model wrapper (HybridCgPmWrapper) providing the structure
+     *                  required for the estimation; must not be null
+     * @param parameters the estimation parameters; if null, default parameters will be used
+     * @throws NullPointerException if dataWrapper or pmWrapper is null
+     * @throws IllegalArgumentException if the data wrapper contains an empty list
+     *                                  or non-DataSet entries
+     */
     public HybridCgEstimatorWrapper(DataWrapper dataWrapper,
                                     HybridCgPmWrapper pmWrapper,
                                     Parameters parameters) {
