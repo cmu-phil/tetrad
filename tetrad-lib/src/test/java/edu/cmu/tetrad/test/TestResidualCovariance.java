@@ -171,15 +171,18 @@ public class TestResidualCovariance {
     }
 
     /**
-     * An impurity between clusters, with ten indicators per cluster, is the largest residual by a clear margin
-     * (with five per cluster it is in about seven seeds of ten, since the edge also distorts the fitted latent
-     * covariance and spills into the other cross-cluster pairs; that case is documented, not pinned).
+     * An impurity between clusters, with ten indicators per cluster, is the largest residual by a clear margin:
+     * in ten seeds of ten it exceeds every other pair by at least 1.3 times. (With five per cluster it does in
+     * about seven of ten, since the edge also distorts the fitted latent covariance and spills into the other
+     * cross-cluster pairs; that case is documented, not pinned.) The assertion is on the ratio, with only a low
+     * absolute floor: the magnitudes depend on which local optimum the estimator lands in, which changed when the
+     * optimizers got scale-aware starts, while the ratio did not.
      */
     @Test
     public void testCrossClusterImpurityShowsInResidualForLargeClusters() throws Exception {
         double[] s = impurityContrast(10, 0, 10, 1003L);
         assertTrue("Cross-cluster, ten per cluster: the impure pair (" + s[0] + ") must exceed the rest (" + s[1]
-                   + ").", s[0] > 0.4 && s[0] > 1.3 * s[1]);
+                   + ") by 1.3x.", s[0] > 0.2 && s[0] > 1.3 * s[1]);
     }
 
     /**
