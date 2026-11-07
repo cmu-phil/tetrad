@@ -149,7 +149,7 @@ public final class ResidualCovariance {
      * @param measured the variables, for the log.
      * @return the matrix, ridged if it had to be.
      */
-    static Matrix ridgeIfIndefinite(Matrix m, List<Node> measured) {
+    public static Matrix ridgeIfIndefinite(Matrix m, List<Node> measured) {
         int p = m.getNumRows();
         double meanDiag = 0;
         for (int i = 0; i < p; i++) meanDiag += m.get(i, i);
