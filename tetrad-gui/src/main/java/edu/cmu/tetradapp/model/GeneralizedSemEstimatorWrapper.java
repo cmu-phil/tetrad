@@ -110,6 +110,19 @@ public class GeneralizedSemEstimatorWrapper implements SessionModel, GraphSource
      * @param semPm a {@link edu.cmu.tetradapp.model.GeneralizedSemPmWrapper} object
      * @param data  a {@link edu.cmu.tetradapp.model.DataWrapper} object
      */
+    /**
+     * Estimates from a Graph (or Search) box directly, building the generalized SEM PM from the graph as the PM
+     * box would (linear, Gaussian). The graph must have every edge directed or bidirected.
+     *
+     * @param dataWrapper the Data box.
+     * @param graphSource the Graph box (or any box that supplies a graph).
+     * @param parameters  the parameters (unused).
+     */
+    public GeneralizedSemEstimatorWrapper(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        this(new GeneralizedSemPmWrapper(EstimatorGraphs.semGraph(graphSource, "The generalized SEM estimator")),
+                dataWrapper);
+    }
+
     public GeneralizedSemEstimatorWrapper(GeneralizedSemPmWrapper semPm, DataWrapper data) {
         if (semPm == null) {
             throw new NullPointerException("SEM PM must not be null.");

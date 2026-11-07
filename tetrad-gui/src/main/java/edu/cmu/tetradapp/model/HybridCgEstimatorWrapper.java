@@ -150,6 +150,19 @@ public class HybridCgEstimatorWrapper implements SessionModel, GraphSource {
      * @throws IllegalArgumentException if the data wrapper contains an empty list
      *                                  or non-DataSet entries
      */
+    /**
+     * Estimates from a Graph (or Search) box directly, building the Hybrid CG PM from the DAG with the variable
+     * types and categories taken from the data, as the Hybrid CG PM box would. The graph must be a DAG.
+     *
+     * @param dataWrapper the Data box.
+     * @param graphSource the Graph box (or any box that supplies a graph).
+     * @param parameters  the parameters.
+     */
+    public HybridCgEstimatorWrapper(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters) {
+        this(dataWrapper, new HybridCgPmWrapper(EstimatorGraphs.dag(graphSource, "The Hybrid CG estimator"),
+                EstimatorGraphs.dataSet(dataWrapper, "The Hybrid CG estimator"), parameters), parameters);
+    }
+
     public HybridCgEstimatorWrapper(DataWrapper dataWrapper,
                                     HybridCgPmWrapper pmWrapper,
                                     Parameters parameters) {
