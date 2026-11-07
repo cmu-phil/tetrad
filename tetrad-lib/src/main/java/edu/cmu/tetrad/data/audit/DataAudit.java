@@ -906,8 +906,13 @@ public final class DataAudit {
 
             if (k < this.config.sentinelMinDistinct) continue;
 
-            sentinelCandidate(j, distinct, counts, k, m, true);
-            sentinelCandidate(j, distinct, counts, k, m, false);
+            for (boolean low : new boolean[]{true, false}) {
+                if (smallGap(distinct, k, low)) {
+                    boundaryAtomCandidate(j, distinct, counts, k, m, low);
+                } else {
+                    sentinelCandidate(j, distinct, counts, k, m, low);
+                }
+            }
         }
     }
 
@@ -920,7 +925,9 @@ public final class DataAudit {
      * @param counts   the number of observations at each distinct value, in the same positions.
      * @param k        the number of distinct observed values; at least sentinelMinDistinct, hence at least three.
      * @param m        the number of observed (non-missing) values in the column.
-     * @param low      true to examine the minimum, false to examine the maximum.
+     * @param low      true to examine the minimum, false to examine the maximum. Called only when the gap at that
+     *                 end is not small in the sense of {@link #smallGap(double[], int, boolean)}, so a floor or
+     *                 ceiling adjacent to the rest of the distribution never reaches this check.
      */
     private void sentinelCandidate(int j, double[] distinct, int[] counts, int k, int m, boolean low) {
         int index = low ? 0 : k - 1;
@@ -975,6 +982,74 @@ public final class DataAudit {
                         + (commonCode ? "; " + fmt(candidate) + " is a value commonly written as a missing-data code"
                         : "") + "."));
     }
+
+    /**
+     * Whether the extreme value at one end of a column sits adjacent to the rest of the distribution: the gap to its
+     * nearest observed neighbor is at most boundaryAtomMaxGapFraction of the observed range, or at most one median
+     * step between adjacent observed values elsewhere in the column. The first clause is the scale-aware test that
+     * the sentinel gap ratio lacks; the second keeps a count variable's zero, one grid step below its neighbors,
+     * on the boundary side however short its range.
+     *
+     * @param distinct the distinct observed values, ascending, in positions 0 through k - 1; k at least three.
+     * @param k        the number of distinct observed values.
+     * @param low      true for the minimum, false for the maximum.
+     * @return true if the gap at that end is small.
+     */
+    private boolean smallGap(double[] distinct, int k, boolean low) {
+        double gap = low ? distinct[1] - distinct[0] : distinct[k - 1] - distinct[k - 2];
+        double range = distinct[k - 1] - distinct[0];
+        double[] spacings = new double[k - 2];
+        for (int t = 0; t < k - 2; t++) {
+            int a = low ? t + 1 : t;
+            spacings[t] = distinct[a + 1] - distinct[a];
+        }
+        Arrays.sort(spacings);
+        int half = spacings.length / 2;
+        double medianSpacing = spacings.length % 2 == 1
+                ? spacings[half] : 0.5 * (spacings[half - 1] + spacings[half]);
+        return gap <= this.config.boundaryAtomMaxGapFraction * range || gap <= medianSpacing;
+    }
+
+    /**
+     * Examines one end of a continuous variable's observed range for a boundary atom -- a large point mass at the
+     * extreme adjacent to the rest of the distribution -- and adds a BOUNDARY_ATOM finding if the mass is at least
+     * boundaryAtomMinMass and the sentinel count floor holds. Called only when the gap at that end is small in the
+     * sense of {@link #smallGap(double[], int, boolean)}, the sentinel check being called otherwise, so an extreme
+     * value is reported as one or the other, never both.
+     *
+     * @param j        the column index of the variable.
+     * @param distinct the distinct observed values, ascending, in positions 0 through k - 1.
+     * @param counts   the number of observations at each distinct value, in the same positions.
+     * @param k        the number of distinct observed values.
+     * @param m        the number of observed (non-missing) values in the column.
+     * @param low      true to examine the minimum, false to examine the maximum.
+     */
+    private void boundaryAtomCandidate(int j, double[] distinct, int[] counts, int k, int m, boolean low) {
+        int index = low ? 0 : k - 1;
+        double bound = distinct[index];
+        int count = counts[index];
+        double mass = count / (double) m;
+
+        if (count < this.config.sentinelMinCount) return;
+        if (mass < this.config.boundaryAtomMinMass) return;
+
+        Map<String, Double> values = new LinkedHashMap<>();
+        values.put("value", bound);
+        values.put("count", (double) count);
+        values.put("mass", mass);
+        values.put("atMinimum", low ? 1.0 : 0.0);
+
+        this.findings.add(new AuditFinding(FindingCode.BOUNDARY_ATOM, AuditFinding.Severity.WARNING,
+                List.of(this.names[j]), values,
+                "Continuous variable " + this.names[j] + " has " + count + " of its " + m + " observed values ("
+                        + fmt(100 * mass) + "%) at its " + (low ? "minimum" : "maximum") + " " + fmt(bound)
+                        + ", adjacent to the rest of the distribution: a " + (low ? "floor" : "ceiling")
+                        + " rather than a code. Cells at the bound carry less information than their value "
+                        + "suggests; treat the bound as a bound (censored covariance, or a test for mixed data after "
+                        + "dichotomizing at it) rather than as an exact value or as missing."));
+    }
+
+
 
     /**
      * True for the values most often written into data files as missing-data codes. This is used only to annotate a
@@ -2749,6 +2824,23 @@ public final class DataAudit {
         private final int sentinelMinDistinct;
 
         /**
+         * The minimum share of a column's observed values that must sit at its observed maximum or minimum, with no
+         * gap, for BOUNDARY_ATOM to fire there. Default 0.10. The count floor and minimum-distinct-values condition
+         * of the sentinel check apply as well, since the two checks are run from the same tally.
+         */
+        private final double boundaryAtomMinMass;
+
+        /**
+         * The largest gap, as a fraction of the variable's observed range, between an extreme value and its nearest
+         * observed neighbor for the extreme to count as adjacent to the rest of the distribution. Default 0.05. A gap
+         * of at most this fraction of the range, or of at most one median step between adjacent observed values,
+         * is a "small gap": with a large mass it makes a BOUNDARY_ATOM, and it blocks SENTINEL_VALUE, whose gap-ratio
+         * test is blind to scale and would otherwise read a two-point gap below 100 in a column of fractional grades
+         * as a code.
+         */
+        private final double boundaryAtomMaxGapFraction;
+
+        /**
          * Constructs a config with default thresholds.
          */
         public Config() {
@@ -2813,7 +2905,7 @@ public final class DataAudit {
                     r2Determinism, etaSquaredDeterminism, adAlpha, minAdSampleSize, lowSampleRatio,
                     nearConstantFrequency, nearConstantVariance, serialMaxLag, serialAlpha,
                     serialMinAbsAutocorrelation, minSerialSampleSize, serialGroupVariable, 3, 30, 1e-9,
-                    0.95, 3, 3, 0.005, 3.0, 5);
+                    0.95, 3, 3, 0.005, 3.0, 5, 0.10, 0.05);
         }
 
         /**
@@ -2830,7 +2922,8 @@ public final class DataAudit {
                        double cellDeterminismTolerance,
                        double nonlinearR2Determinism, int nonlinearDeterminismMaxSetSize,
                        int sentinelMinCount, double sentinelMinMass,
-                       double sentinelGapRatio, int sentinelMinDistinct) {
+                       double sentinelGapRatio, int sentinelMinDistinct,
+                       double boundaryAtomMinMass, double boundaryAtomMaxGapFraction) {
             this.fewContinuousValues = fewContinuousValues;
             this.manyDiscreteLevels = manyDiscreteLevels;
             this.smallCellCount = smallCellCount;
@@ -2857,6 +2950,8 @@ public final class DataAudit {
             this.sentinelMinMass = sentinelMinMass;
             this.sentinelGapRatio = sentinelGapRatio;
             this.sentinelMinDistinct = sentinelMinDistinct;
+            this.boundaryAtomMinMass = boundaryAtomMinMass;
+            this.boundaryAtomMaxGapFraction = boundaryAtomMaxGapFraction;
         }
 
         /**
@@ -2871,7 +2966,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -2886,7 +2981,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -2901,7 +2996,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -2916,7 +3011,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -2941,7 +3036,7 @@ public final class DataAudit {
                     cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -2960,7 +3055,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -2979,7 +3074,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -2997,7 +3092,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -3016,7 +3111,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -3031,7 +3126,7 @@ public final class DataAudit {
                     this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
                     this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio,
-                    this.sentinelMinDistinct);
+                    this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -3046,7 +3141,7 @@ public final class DataAudit {
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
                     this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
-                    sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct);
+                    sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -3061,7 +3156,7 @@ public final class DataAudit {
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
                     this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
-                    this.sentinelMinCount, sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct);
+                    this.sentinelMinCount, sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -3076,7 +3171,7 @@ public final class DataAudit {
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
                     this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
-                    this.sentinelMinCount, this.sentinelMinMass, sentinelGapRatio, this.sentinelMinDistinct);
+                    this.sentinelMinCount, this.sentinelMinMass, sentinelGapRatio, this.sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
         }
 
         /**
@@ -3091,7 +3186,38 @@ public final class DataAudit {
                     this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
                     this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
                     this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
-                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, sentinelMinDistinct);
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, sentinelMinDistinct, this.boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given minimum mass for BOUNDARY_ATOM.
+         *
+         * @param boundaryAtomMinMass the new threshold.
+         * @return the new config.
+         */
+        public Config withBoundaryAtomMinMass(double boundaryAtomMinMass) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation,
+                    this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
+                    this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct, boundaryAtomMinMass, this.boundaryAtomMaxGapFraction);
+        }
+
+        /**
+         * Returns a config identical to this one but with the given small-gap fraction (see
+         * {@link #boundaryAtomMaxGapFraction}).
+         *
+         * @param boundaryAtomMaxGapFraction the new fraction of the observed range.
+         * @return the new config.
+         */
+        public Config withBoundaryAtomMaxGapFraction(double boundaryAtomMaxGapFraction) {
+            return new Config(this.fewContinuousValues, this.manyDiscreteLevels, this.smallCellCount, this.minExpectedPairwiseCell, this.highCorrelation,
+                    this.r2Determinism, this.etaSquaredDeterminism, this.adAlpha, this.minAdSampleSize, this.lowSampleRatio,
+                    this.nearConstantFrequency, this.nearConstantVariance, this.serialMaxLag, this.serialAlpha, this.serialMinAbsAutocorrelation,
+                    this.minSerialSampleSize, this.serialGroupVariable, this.cellDeterminismMaxSetSize, this.cellDeterminismMaxCardinality, this.cellDeterminismTolerance,
+                    this.nonlinearR2Determinism, this.nonlinearDeterminismMaxSetSize,
+                    this.sentinelMinCount, this.sentinelMinMass, this.sentinelGapRatio, this.sentinelMinDistinct, this.boundaryAtomMinMass, boundaryAtomMaxGapFraction);
         }
     }
 }
