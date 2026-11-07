@@ -285,9 +285,54 @@ public final class SemEstimator implements TetradSerializable {
         String message = "Model BIC = " + nf.format(semIm.getBicScore());
         TetradLogger.getInstance().log(message);
 
+        String warning = varianceMisfitWarning(semIm);
+        if (warning != null) TetradLogger.getInstance().log(warning);
+
         System.out.println(this.estimatedSem);
 
         return this.estimatedSem;
+    }
+
+    /**
+     * The factor by which an implied variance may differ from its sample variance before the estimate is reported
+     * as not reproducing the variances.
+     */
+    public static final double VARIANCE_MISFIT_FACTOR = 3.0;
+
+    /**
+     * A warning when the estimate does not even reproduce the sample variances -- some implied variance is more than
+     * a factor of {@link #VARIANCE_MISFIT_FACTOR} away from its sample value -- which is what an optimizer that never
+     * left its starting point looks like, and what a user would otherwise discover only by reading the implied
+     * covariance matrix. Null when every variance is within the factor.
+     *
+     * @param semIm the estimate.
+     * @return the warning, or null.
+     */
+    public static String varianceMisfitWarning(SemIm semIm) {
+        Matrix sample = semIm.getSampleCovar();
+        if (sample == null) return null;
+        Matrix implied = semIm.getImplCovarMeas();
+        List<Node> measured = semIm.getMeasuredNodes();
+        int worst = -1;
+        double worstRatio = 1.0;
+
+        for (int i = 0; i < measured.size(); i++) {
+            double s = sample.get(i, i), m = implied.get(i, i);
+            if (!(s > 0) || !(m > 0)) continue;
+            double ratio = Math.max(s / m, m / s);
+            if (ratio > worstRatio) {
+                worstRatio = ratio;
+                worst = i;
+            }
+        }
+
+        if (worst < 0 || worstRatio <= VARIANCE_MISFIT_FACTOR) return null;
+
+        return String.format("WARNING: the estimate does not reproduce the sample variances. For %s the implied "
+                             + "variance is %.3g against a sample variance of %.3g (a factor of %.1f). The optimizer "
+                             + "may not have moved from its starting point. Try the Powell optimizer with restarts, "
+                             + "and check that the model is identified.",
+                measured.get(worst).getName(), implied.get(worst, worst), sample.get(worst, worst), worstRatio);
     }
 
     /**

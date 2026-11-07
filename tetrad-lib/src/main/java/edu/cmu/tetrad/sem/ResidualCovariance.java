@@ -26,6 +26,9 @@ import edu.cmu.tetrad.util.Matrix;
 import org.ejml.simple.SimpleEVD;
 import org.ejml.simple.SimpleMatrix;
 
+import edu.cmu.tetrad.util.TetradLogger;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -66,12 +69,28 @@ import java.util.List;
  * sample covariances divided by the error standard deviations: with strong loadings and small error variances,
  * noise of 0.1 to 0.15 at n = 5000 is normal, and a search on the residual needs a penalty that respects it.
  * <p>
- * The matrix S - Sigma + Theta need not be positive semidefinite in a sample, so eigenvalues below a small floor
- * are raised to it before the result is returned. The sample size carried is the estimated model's.
+ * <b>Indefiniteness, and what it means.</b> The matrix S - Sigma + Theta need not be positive definite in a
+ * sample, and when it is not, that is information: some combination of the measured variables has less sample
+ * covariance than the model implies for it, which is misfit, typically between clusters (one latent-to-latent
+ * correlation cannot fit a cross-block covariance that is not rank one). Raising the offending eigenvalues to a
+ * tiny floor would be the wrong repair: a direction with next to no variance is a deterministic relation, and a
+ * search on the result draws every variable into whichever one that direction loads on. (On the chemistry data,
+ * a residual over exams plus checkpoints had a smallest eigenvalue of -51 against a next of +56, and BOSS drew
+ * thirty edges into Exam1.) Instead, when the smallest eigenvalue is below {@link #MIN_EIGENVALUE_FRACTION} of
+ * the mean residual variance, a ridge is added to the diagonal to bring it up to that, and the smallest
+ * eigenvalue, the ridge, and the variables the deficient direction loads on are logged. A large ridge is a sign
+ * to residualize a block at a time -- the checkpoint block under its one factor is positive definite on its own
+ * -- rather than the whole model. The sample size carried is the estimated model's.
  *
  * @author josephramsey
  */
 public final class ResidualCovariance {
+
+    /**
+     * The smallest eigenvalue allowed, as a fraction of the mean residual variance; a ridge brings a smaller one
+     * up to this.
+     */
+    public static final double MIN_EIGENVALUE_FRACTION = 0.05;
 
     private ResidualCovariance() {
     }
@@ -117,39 +136,62 @@ public final class ResidualCovariance {
             }
         }
 
-        Matrix floored = floorSpectrum(residual, 1e-8);
-        return new CovarianceMatrix(measured, floored, semIm.getSampleSize());
+        Matrix repaired = ridgeIfIndefinite(residual, measured);
+        return new CovarianceMatrix(measured, repaired, semIm.getSampleSize());
     }
 
     /**
-     * Returns the matrix with every eigenvalue below the floor raised to it (the symmetric part is used), or the
-     * matrix itself when none is below.
+     * Adds a ridge to the diagonal if the smallest eigenvalue is below MIN_EIGENVALUE_FRACTION of the mean
+     * diagonal, logging what was done and which variables the deficient direction loads on; otherwise returns
+     * the matrix itself.
      *
-     * @param m     a symmetric matrix.
-     * @param floor the smallest eigenvalue allowed.
-     * @return the adjusted matrix.
+     * @param m        a symmetric matrix.
+     * @param measured the variables, for the log.
+     * @return the matrix, ridged if it had to be.
      */
-    static Matrix floorSpectrum(Matrix m, double floor) {
-        SimpleMatrix s = m.getSimpleMatrix();
-        SimpleEVD<SimpleMatrix> evd = s.eig();
+    static Matrix ridgeIfIndefinite(Matrix m, List<Node> measured) {
         int p = m.getNumRows();
-        boolean adjust = false;
+        double meanDiag = 0;
+        for (int i = 0; i < p; i++) meanDiag += m.get(i, i);
+        meanDiag /= p;
+
+        SimpleEVD<SimpleMatrix> evd = m.getSimpleMatrix().eig();
+        int argmin = 0;
+        double min = Double.POSITIVE_INFINITY;
 
         for (int i = 0; i < p; i++) {
-            if (evd.getEigenvalue(i).getReal() < floor) adjust = true;
+            double e = evd.getEigenvalue(i).getReal();
+            if (e < min) {
+                min = e;
+                argmin = i;
+            }
         }
 
-        if (!adjust) return m;
+        double target = MIN_EIGENVALUE_FRACTION * meanDiag;
+        if (min >= target) return m;
 
-        SimpleMatrix v = new SimpleMatrix(p, p);
-        SimpleMatrix d = new SimpleMatrix(p, p);
+        double ridge = target - min;
+        Matrix out = m.copy();
+        for (int i = 0; i < p; i++) out.set(i, i, out.get(i, i) + ridge);
 
-        for (int i = 0; i < p; i++) {
-            SimpleMatrix vec = evd.getEigenVector(i);
-            for (int r = 0; r < p; r++) v.set(r, i, vec.get(r, 0));
-            d.set(i, i, Math.max(evd.getEigenvalue(i).getReal(), floor));
+        SimpleMatrix vec = evd.getEigenVector(argmin);
+        List<Integer> order = new ArrayList<>();
+        for (int i = 0; i < p; i++) order.add(i);
+        order.sort((a, b) -> Double.compare(Math.abs(vec.get(b, 0)), Math.abs(vec.get(a, 0))));
+        StringBuilder loads = new StringBuilder();
+        for (int k = 0; k < Math.min(6, p); k++) {
+            int i = order.get(k);
+            loads.append(k == 0 ? "" : ", ").append(measured.get(i).getName())
+                    .append(String.format(" %+.2f", vec.get(i, 0)));
         }
 
-        return new Matrix(v.mult(d).mult(v.transpose()));
+        TetradLogger.getInstance().log(String.format(
+                "Residual covariance is not positive definite: smallest eigenvalue %.2f against a mean residual "
+                + "variance of %.2f. A ridge of %.2f was added to every variance to bring it to %.2f. The deficient "
+                + "direction loads mainly on: %s. A ridge this size means the measurement model misfits in that "
+                + "direction, usually between clusters; consider residualizing one block at a time.",
+                min, meanDiag, ridge, target, loads));
+        return out;
     }
+
 }

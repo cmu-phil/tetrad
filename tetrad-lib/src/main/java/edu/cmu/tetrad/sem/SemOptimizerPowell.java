@@ -20,7 +20,6 @@
 
 package edu.cmu.tetrad.sem;
 
-import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
@@ -78,17 +77,9 @@ public class SemOptimizerPowell implements SemOptimizer {
 
             List<Parameter> freeParameters = _sem2.getFreeParameters();
 
-            double[] p = new double[freeParameters.size()];
-
-            for (int i = 0; i < freeParameters.size(); i++) {
-                if (freeParameters.get(i).getType() == ParamType.VAR) {
-                    p[i] = RandomUtil.getInstance().nextUniform(0, 1);
-                } else {
-                    p[i] = RandomUtil.getInstance().nextUniform(-1, 1);
-                }
-            }
-
-            _sem2.setFreeParamValues(p);
+            // Every trial starts from a scale-aware random draw (see SemStartValues); the model's own
+            // initialization is scale-blind and, on data with large variances, hopeless as a start.
+            _sem2.setFreeParamValues(SemStartValues.draw(_sem2, freeParameters));
 
             MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
             PointValuePair pair = search.optimize(

@@ -833,7 +833,7 @@
                     edu.cmu.tetradapp.editor.ImputeMissingDataParamsEditor
                 </params-editor-class>
             </model>
-            <model name="Covariance Matrix from Incomplete Data (EM / censored)" acronym="Covariance Estimate"
+            <model name="Covariance Matrix from Incomplete Data--EM or Censored" acronym="Covariance Estimate"
                    help="data" category="Missing Values">
                 <logger>
                     <event id="info" description="Information" default="on"/>
@@ -1054,7 +1054,7 @@
                 </model-class>
                 <editor-class>edu.cmu.tetradapp.editor.DataEditor</editor-class>
             </model>
-            <model name="Residual Covariance Matrix (latents factored out)" acronym="Residual Covar" help="data"
+            <model name="Residual Covariance Matrix--Latents Factored Out" acronym="Residual Covar" help="data"
                    category="implied">
                 <logger>
                     <event id="info" description="Information" default="on"/>

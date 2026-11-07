@@ -183,17 +183,22 @@ public class TestResidualCovariance {
     }
 
     /**
-     * The spectrum floor: a symmetric matrix with a negative eigenvalue comes back with that eigenvalue raised to
-     * the floor and the others untouched; a positive definite one comes back as itself.
+     * The ridge: a symmetric matrix with a negative eigenvalue comes back positive definite with every variance
+     * raised by the same amount, and a well-conditioned one comes back as itself.
      */
     @Test
-    public void testSpectrumFloor() {
+    public void testRidgeOnIndefiniteResidual() {
+        List<Node> names = new ArrayList<>();
+        for (String n : new String[]{"A", "B", "C"}) names.add(new GraphNode(n));
         Matrix bad = new Matrix(new double[][]{{1.0, 0.99, 0.99}, {0.99, 1.0, -0.99}, {0.99, -0.99, 1.0}});
         assertTrue(!MatrixUtils.isPositiveDefinite(bad));
-        Matrix fixed = ResidualCovariance.floorSpectrum(bad, 1e-8);
+        Matrix fixed = ResidualCovariance.ridgeIfIndefinite(bad, names);
         assertTrue(MatrixUtils.isPositiveDefinite(fixed));
+        assertEquals("Off-diagonals are untouched by the ridge.", 0.99, fixed.get(0, 1), 1e-12);
+        assertEquals("Every variance is raised by the same ridge.", fixed.get(0, 0) - 1.0, fixed.get(2, 2) - 1.0,
+                1e-12);
 
         Matrix good = new Matrix(new double[][]{{1.0, 0.3}, {0.3, 1.0}});
-        assertTrue(ResidualCovariance.floorSpectrum(good, 1e-8) == good);
+        assertTrue(ResidualCovariance.ridgeIfIndefinite(good, names.subList(0, 2)) == good);
     }
 }
