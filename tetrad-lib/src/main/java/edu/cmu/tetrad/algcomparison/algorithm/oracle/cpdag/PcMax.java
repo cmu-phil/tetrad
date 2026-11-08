@@ -60,7 +60,6 @@ import static edu.cmu.tetrad.search.utils.LogUtilsSearch.stampWithBic;
         command = "pc-max",
         algoType = AlgType.forbid_latent_common_causes
 )
-@Deprecated(since = "7.9", forRemoval = false)
 @Bootstrapping
 public class PcMax extends AbstractBootstrapAlgorithm implements Algorithm, AcceptsKnowledge,
         TakesIndependenceWrapper, ReturnsBootstrapGraphs, TakesCovarianceMatrix, LatentStructureAlgorithm {
